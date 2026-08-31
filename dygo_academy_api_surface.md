@@ -12,9 +12,9 @@ Conflating them is how a roadmap quietly turns into a status report.
 
 | Tier | Count | Meaning |
 | :--- | :---: | :--- |
-| **Live** | 29 | Exists and responds today. Verified by direct code read (not yet re-verified against a running boot — see note below) 2026-09-01. |
-| **Specified** | 5 | Named verbatim in `dygo_academy_tech_spec_and_conventions.md` §3.4 or in `dygo_academy_complete_system_architecture_master.md`. The only endpoints committed to in writing. |
-| **Implied** | 20 | Derived from the BRD's functional requirements. **Carries no authority** — review before treating as a plan. |
+| **Live** | 36 | Exists and responds today. Verified by direct code read (not yet re-verified against a running boot — see note below) 2026-09-01. |
+| **Specified** | 4 | Named verbatim in `dygo_academy_tech_spec_and_conventions.md` §3.4 or in `dygo_academy_complete_system_architecture_master.md`. The only endpoints committed to in writing. |
+| **Implied** | 14 | Derived from the BRD's functional requirements. **Carries no authority** — review before treating as a plan. |
 
 > **The live API is the authority, not this file.** Swagger is generated from the
 > code at boot and cannot go stale: **http://localhost:3001/api/docs**. This
@@ -140,15 +140,56 @@ Conflating them is how a roadmap quietly turns into a status report.
 > `tsc --noEmit` and lint clean on both sides. **Still unverified against a
 > running Postgres/Redis stack** — same standing sandbox limitation as every
 > note above.
+>
+> **2026-09-01 note (7):** Module 6 (Web Push & Habit Scheduling, Phase 3) is
+> code-complete — `NotificationsService`/`NotificationsController`
+> (`GET /notifications/vapid-public-key`, `POST`/`DELETE
+> /notifications/subscribe`, `GET`/`POST /notifications/schedules`, `DELETE
+> /notifications/schedules/:id`, `POST
+> /notifications/groups/:groupId/sprint`) plus a real `NotificationProcessor`
+> — this doc's §4 Module 6 table is now empty and marked complete, same
+> treatment as Modules 1/3/5. Two deliberate deviations from that table's
+> guessed shape: schedules are `POST`-upserted (`on conflict (user_id,
+> reminder_time)`) rather than `PATCH`ed by id — the frontend's settings
+> screen has no separate "edit" affordance, so a second `POST` for the same
+> clock time is the edit — and the sprint route lives under
+> `/notifications/groups/:groupId/sprint` (singular, plural resource) rather
+> than `/groups/:id/sprints`, keeping every push-sending route in one
+> controller. New shared `PushDispatchService` (send + dead-subscription
+> cleanup on a 404/410, used by both the tick and the sprint route) and a
+> pure `notification-message.ts` (`buildReminderPayload`) deciding **one**
+> message per matched `study_schedules` row: FR-6.4 (leech drill) outranks
+> FR-6.3 (streak protection) outranks FR-6.1 (plain habit nudge), since no
+> `notification_log` table exists to track "already notified today" — same
+> "don't persist what's derivable" instinct as Module 5's stateless quiz
+> items. Bucket-matches each tick against a user's *own* local day via
+> `width_bucket` over seconds-of-day (96 buckets of 15 minutes), which is
+> what makes half-hour and 45-minute-offset zones (`Asia/Kathmandu`,
+> UTC+5:45) land correctly despite the tick itself running on UTC
+> quarter-hours. FR-6.2's sprint route is `has_group_role`-gated explicitly
+> in application code rather than via RLS's `with check` (the codebase's
+> usual pattern — see `GroupsService.createInvite`'s header comment) because
+> there is no table row being written here for RLS to gate. FR-5.3's
+> counterpart for FR-6.2: no teacher-facing trigger screen exists on the
+> frontend — there is no group-management frontend at all yet (roster/invite
+> screens are still wireframe-only since turn 3) — so this route is API- and
+> wireframe-only for now; flagged in the wireframe's turn 8g caption rather
+> than silently built with no way to reach it. 22 new backend unit tests
+> (129 total, up from 107). `tsc --noEmit` and lint clean on both sides.
+> **Still unverified against a running Postgres/Redis stack** — same
+> standing sandbox limitation as every note above; in particular the
+> `width_bucket` bucket-matching SQL and the VAPID `web-push` calls have
+> only been exercised through mocks, never against real Postgres or a real
+> browser push service.
 
 ---
 
 ## 2. Live today
 
-**29 operations · Phase 0 + Module 1 + Module 3 + Module 5 complete**
+**36 operations · Phase 0 + Module 1 + Module 3 + Module 5 + Module 6 complete**
 
-Two other controllers are registered — `billing`,
-`notifications` — but declare no routes, so they answer `404`, not `401`.
+One other controller is registered — `billing` — but declares no routes, so
+it answers `404`, not `401`.
 
 | Method | Path | Auth | Returns |
 | :--- | :--- | :--- | :--- |
@@ -181,12 +222,19 @@ Two other controllers are registered — `billing`,
 | `POST` | `/api/v1/quizzes/generate` | bearer | FR-5.1–5.4 — Cloze, Dictation, Matching, Contextual Choice, drawn from `READY` words the caller can read. Stateless: an item's id (`` `${topicWordId}:${type}` ``) encodes enough to grade it later without a persisted row — see note (6). |
 | `GET` | `/api/v1/quizzes/leech-drill` | bearer | FR-3.3's remedial queue, built on `SrsService.findLeeches`. Prefers the richest question type each leech word's data supports. |
 | `POST` | `/api/v1/quizzes/:id/answer` | bearer | FR-5.5 — grades against the item id, and only on a wrong answer asks Gemini (`GeminiEnrichmentService.explainNuance`) for a short nuance explanation. Degrades to a generic message if that call fails. |
+| `GET` | `/api/v1/notifications/vapid-public-key` | bearer | FR-6.5 — the value the frontend passes as `applicationServerKey` to `pushManager.subscribe()`. Not a secret; kept behind auth anyway since only a signed-in student needs it. |
+| `POST` | `/api/v1/notifications/subscribe` | bearer | FR-6.5 — registers a browser's `PushSubscriptionJSON` verbatim. `on conflict (endpoint)` — one browser is one row regardless of which account last registered it. |
+| `DELETE` | `/api/v1/notifications/subscribe` | bearer | Unregisters one browser's subscription by endpoint. |
+| `GET` | `/api/v1/notifications/schedules` | bearer | FR-6.1 — the caller's own daily reminder times. |
+| `POST` | `/api/v1/notifications/schedules` | bearer | FR-6.1 — upsert on `(user_id, reminder_time)`, not create-only; see note (7). |
+| `DELETE` | `/api/v1/notifications/schedules/:id` | bearer | Removes a reminder schedule. |
+| `POST` | `/api/v1/notifications/groups/:groupId/sprint` | bearer | FR-6.2 — ADMIN-only, immediate (not tick-scheduled) push to every other group member's registered devices. `403` via an explicit `has_group_role` check — see note (7) for why this one doesn't lean on RLS like most writes here. |
 
 ---
 
 ## 3. Named in the specification
 
-**5 operations · quoted, not inferred**
+**4 operations · quoted, not inferred**
 
 | Method | Path | Status | Source & purpose |
 | :--- | :--- | :--- | :--- |
@@ -195,7 +243,7 @@ Two other controllers are registered — `billing`,
 | `GET` | `/api/v1/topics/:topicId/cards/due` | **live** | Tech spec §3.4 — the SRS review queue. Carries the **p95 < 15 ms** SLO, unmeasured — see note (5). Built 2026-09-01. |
 | `POST` | `/api/v1/srs/rate` | **live** | Tech spec §3.4 — submit a review rating (`AGAIN` / `HARD` / `GOOD` / `EASY`). Built 2026-09-01. |
 | `POST` | `/api/v1/billing/checkout` | spec | Tech spec §3.4 — create a Stripe checkout session. See the conflict below. |
-| `POST` | `/api/v1/notifications/subscribe` | spec | Architecture §4 sequence diagram — register a VAPID endpoint with `p256dh` and `auth` keys. |
+| `POST` | `/api/v1/notifications/subscribe` | **live** | Architecture §4 sequence diagram — register a VAPID endpoint with `p256dh` and `auth` keys. Built 2026-09-01; see note (7) and §2. |
 
 ### ⚠️ Two documents disagree
 
@@ -213,7 +261,7 @@ document should be corrected.
 
 ## 4. Implied by the requirements
 
-**28 operations · inferred, needs review**
+**14 operations · inferred, needs review**
 
 No document names these. Each is derived from a functional requirement that
 cannot be satisfied without it — a teacher who can invite students needs
@@ -254,14 +302,11 @@ work is done, not merely absent.
 
 ### Module 6 — Push & habit scheduling · Phase 3
 
-| Method | Path | Min role | Requirement |
-| :--- | :--- | :--- | :--- |
-| `DELETE` | `/notifications/subscribe` | self | Unsubscribe a dead endpoint |
-| `GET` | `/schedules` | self | FR-6.1 |
-| `POST` | `/schedules` | self | FR-6.1 — local time plus IANA timezone |
-| `PATCH` | `/schedules/:id` | self | FR-6.1 — change time, enable, disable |
-| `DELETE` | `/schedules/:id` | self | FR-6.1 |
-| `POST` | `/groups/:id/sprints` | WRITE | FR-6.2 — teacher-triggered class-wide alert |
+**Complete** — every endpoint this table used to list is now live, under
+`/notifications/...` rather than the bare paths guessed here; see §2 and
+note (7) for the two deliberate shape deviations (upsert instead of
+`PATCH`, and the sprint route's exact path/role). Kept as a heading for the
+same reason Modules 1/3/5 are.
 
 ### Module 7 — Seat billing · Phase 4
 
@@ -294,7 +339,7 @@ the expensive work happens elsewhere.
 | Processor | Queue | State | Behaviour |
 | :--- | :--- | :--- | :--- |
 | `EnrichmentProcessor` | `enrichment-queue` | **working** | Dedup lookup (FR-2.2) returns early on a `master_lexicon` hit — no Gemini call for a word already cached. On a miss: Gemini 1.5 Flash for linguistic fields, Gemini TTS for audio, upload to R2/MinIO, upsert `master_lexicon`, mark the `topic_word` `READY`. A terminal failure (last BullMQ attempt) marks it `FAILED` with a reason instead of retrying forever or leaving it stuck `ENRICHING`. See note (4) above for the `.wav`-not-`.mp3` deviation. |
-| `NotificationProcessor` | `notification-queue` | stub | Now genuinely receiving a job every 15 minutes, but only logs the tick. The timezone match against `study_schedules` and the VAPID dispatch land in Phase 3. |
+| `NotificationProcessor` | `notification-queue` | **working** | Every 15-minute tick, bucket-matches `study_schedules` against each user's own local time (`width_bucket`, see note (7)), decides one message per matched user (`notification-message.ts`), and dispatches via `PushDispatchService` — real VAPID `web-push` calls, not a log line. |
 | `MaintenanceProcessor` | `maintenance-queue` | **working** | Provisions `review_logs` partitions 6 months ahead and warns if rows land in the DEFAULT partition. |
 
 ### 5.2 Producers (repeating jobs)

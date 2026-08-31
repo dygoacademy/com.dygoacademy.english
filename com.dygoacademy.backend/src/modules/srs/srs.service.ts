@@ -379,8 +379,14 @@ function toRateDto(item: SyncReviewItemDto): RateWordDto {
   return dto;
 }
 
-/** Consecutive UTC calendar days ending today or yesterday (a day not yet studied doesn't break a streak until it's fully elapsed). */
-function computeStreak(descendingDates: string[]): number {
+/**
+ * Consecutive UTC calendar days ending today or yesterday (a day not yet
+ * studied doesn't break a streak until it's fully elapsed). Exported —
+ * NotificationProcessor (Module 6, FR-6.3) reuses this for the same reason
+ * `QuizService.leechDrill` reuses `SrsService.findLeeches`: one definition
+ * of "what counts as a streak."
+ */
+export function computeStreak(descendingDates: string[]): number {
   if (descendingDates.length === 0) return 0;
 
   const toUtcDay = (d: string): number => Date.parse(`${d}T00:00:00.000Z`) / 86_400_000;

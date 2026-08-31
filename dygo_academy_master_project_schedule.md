@@ -1,9 +1,10 @@
 # 📅 Dygo Academy: Master Project Schedule & Phasing Strategy
-**Document Version**: 5.3 (Phase 3 Module 5 marked code-complete)  
+**Document Version**: 5.4 (Phase 3 complete — Module 5 and Module 6 both code-complete)  
 **Author**: Principal Cloud & SaaS Solutions Advisory  
 **Status**: Approved for Engineering & Product Execution  
 
 **Changelog**
+* **5.4** (2026-09-01) — Phase 3, Module 6 (Web Push & Habit Scheduling) marked code-complete — Phase 3 as a whole is now done. See status notes under §2.
 * **5.3** (2026-09-01) — Phase 3, Module 5 (Dynamic Multi-Modal Quiz Engine) marked code-complete; Module 6 (Push & Habit Scheduling) is still open. See status notes under §2. Also fixed a standing Phase 1 gap: the last-ADMIN-removal guard.
 * **5.2** (2026-09-01) — Phase 2 (Modules 3 & 4) marked code-complete; see status notes under §2.
 * **5.1** (2026-08-31) — Phase 0 core engineering tasks marked complete; see status notes under §2.
@@ -189,19 +190,45 @@ gantt
   page (mirroring `/study`'s Suspense-split structure) covers all four quiz
   types plus FR-5.5's AI nuance feedback on a wrong answer, and the topic
   detail page's new "Quiz" button and the home screen's leech nudge both
-  route into it. **Module 6 (Web Push & Habit Scheduling) is not started** —
-  `NotificationsModule`/`NotificationProcessor` are still the Phase 0 stub
-  that only logs a tick every 15 minutes; no VAPID subscription endpoint,
-  no schedule matching, no actual push dispatch. This pass also fixed a
-  standing Phase 1 gap unrelated to Module 5: `DELETE
-  /groups/:id/members/:userId` now blocks removing a group's last ADMIN
-  (`409 Conflict`) instead of silently permitting it. **None of Module 5 has
-  run against a live Postgres/Redis stack** — same standing sandbox
-  limitation as Phases 1 and 2; verify a real `POST /quizzes/generate` →
-  `POST /quizzes/:id/answer` round-trip, including a real Gemini nuance-
-  explanation call, before treating Phase 3 as done. `tsc`/lint clean on
-  both sides; frontend `next build` still hangs in this sandbox (5th
-  occurrence across 5 sessions).
+  route into it. This pass also fixed a standing Phase 1 gap unrelated to
+  Module 5: `DELETE /groups/:id/members/:userId` now blocks removing a
+  group's last ADMIN (`409 Conflict`) instead of silently permitting it.
+  **Module 6 (Web Push & Habit Scheduling) is code-complete as of a later
+  pass the same day** — `NotificationsService`/`NotificationsController`
+  (`GET /notifications/vapid-public-key`, `POST`/`DELETE
+  /notifications/subscribe`, `GET`/`POST /notifications/schedules`, `DELETE
+  /notifications/schedules/:id`, `POST
+  /notifications/groups/:groupId/sprint`) implement FR-6.1–6.5; a shared
+  `PushDispatchService` owns the actual VAPID `web-push` send and
+  dead-subscription cleanup, used by both `NotificationProcessor`'s
+  15-minute tick and the sprint route's immediate dispatch. FR-6.1/6.3/6.4
+  are merged into one priority-ordered decision per matched schedule
+  (`notification-message.ts`'s `buildReminderPayload`: leech drill outranks
+  streak protection outranks a plain habit nudge) rather than three
+  independent triggers, since no `notification_log` table exists to track
+  "already notified today" — same "don't persist what's derivable" instinct
+  Module 5 used for its stateless quiz items. The tick matches each user's
+  own local reminder time via `width_bucket` bucketing rather than a UTC
+  offset comparison, so half- and quarter-hour zones (`Asia/Kathmandu`,
+  UTC+5:45) still land in the right 15-minute window despite the tick
+  itself running on UTC quarter-hours. FR-6.2's teacher sprint is
+  ADMIN-gated by an explicit `has_group_role` check rather than RLS (there
+  is no table row being written for RLS to gate) and is API- and
+  wireframe-only for now — there is no group-management frontend at all yet
+  for a teacher to trigger it from, flagged in wireframe turn 8g's caption
+  rather than silently built unreachable. Settings ("You" tab), a
+  "Coming in a later phase" stub since turn 1, is real now: push
+  on/off, add/remove a daily reminder time. 22 new backend unit tests (129
+  total). **Phase 3 is now fully code-complete — both Module 5 and Module 6.**
+  **Neither module has run against a live Postgres/Redis stack, and Module
+  6's VAPID sends have never hit a real browser push service** — same
+  standing sandbox limitation as Phases 1 and 2; verify a real
+  `POST /quizzes/generate` → `POST /quizzes/:id/answer` round-trip
+  (including a real Gemini nuance-explanation call) and a real
+  `POST /notifications/subscribe` → wait for a matching tick → browser
+  receives the push round-trip before treating Phase 3 as done. `tsc`/lint
+  clean on both sides; frontend `next build` still hangs in this sandbox
+  (6th occurrence across 6 sessions).
 
 #### Core Engineering Tasks:
 1. **Module 5: Dynamic Multi-Modal Exercise Engine**:

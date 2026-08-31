@@ -34,6 +34,18 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
     },
   });
 
+  // 204 No Content (every `@HttpCode(HttpStatus.NO_CONTENT)` DELETE route —
+  // see GroupsController's removeMember/revokeInvite, and Module 6's
+  // unsubscribe/deleteSchedule) has no body at all: Express strips it from
+  // the response regardless of what TransformResponseInterceptor produced,
+  // so `res.json()` always fails to parse here. That failure means
+  // "succeeded with nothing to unwrap," not an error — only fall through to
+  // the ApiError path when the status itself says something went wrong.
+  if (res.status === 204) {
+    if (!res.ok) throw new ApiError(res.statusText, res.status);
+    return undefined as T;
+  }
+
   const body = (await res.json().catch(() => undefined)) as ApiResponse<T> | undefined;
 
   if (!res.ok || !body?.success) {
@@ -49,5 +61,6 @@ export const apiClient = {
     request<T>(path, { method: 'POST', body: json ? JSON.stringify(json) : undefined }),
   patch: <T>(path: string, json?: unknown) =>
     request<T>(path, { method: 'PATCH', body: json ? JSON.stringify(json) : undefined }),
-  delete: <T>(path: string) => request<T>(path, { method: 'DELETE' }),
+  delete: <T>(path: string, json?: unknown) =>
+    request<T>(path, { method: 'DELETE', body: json ? JSON.stringify(json) : undefined }),
 };

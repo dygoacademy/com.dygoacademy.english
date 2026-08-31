@@ -5,3 +5,4 @@ export * from './topic';
 export * from './word';
 export * from './srs';
 export * from './quiz';
+export * from './notification';

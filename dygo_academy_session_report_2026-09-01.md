@@ -1,9 +1,222 @@
-# Dygo Academy — session report, 2026‑09‑01 (fifth pass)
+# Dygo Academy — session report, 2026‑09‑01 (sixth pass)
 **Run**: automated scheduled task, no user present. UAT is scheduled for tomorrow morning (2026‑09‑02).
-This file now covers five runs today. Passes one through four (Groups/Words
-first slice, the rest of Module 1, Module 2's real Gemini/TTS pipeline, then
-Module 3/4's SRS engine and flashcard player) are preserved below under
-"First pass" through "Fourth pass" — read top-down for the current state.
+This file now covers six runs today. Passes one through five (Groups/Words
+first slice, the rest of Module 1, Module 2's real Gemini/TTS pipeline,
+Module 3/4's SRS engine and flashcard player, then Module 5's quiz engine)
+are preserved below under "First pass" through "Fifth pass" — read top-down
+for the current state.
+
+---
+
+## Sixth pass — Phase 3, Module 6: push & habit scheduling goes live, Phase 3 complete
+
+### What this pass did
+
+Same standing instruction as every prior pass: compared the working tree
+against `dygo_academy_master_project_schedule.md` and
+`dygo_academy_api_surface.md`. `git status` was clean and `git log` showed
+five prior commits, all landed — no repeat of the second pass's
+`.git/index.lock` blocker. `npm run test` reproduced the fifth pass's
+107/107 backend pass before any new work started. Phase 3's other half was
+the clear next step: `NotificationsService`/`NotificationsController` were
+still the Phase 0 stub (constructor only), `NotificationProcessor` only
+logged a tick, and the schedule says Phase 4 (Stripe billing, analytics
+heatmaps) shouldn't start until Phase 3 is actually done — Module 6, not
+Module 7, was next.
+
+### Module 6 — Web Push & Habit Scheduling
+
+New `src/modules/notifications/` on the backend, following the split
+Modules 3 and 5 established: `notification-message.ts` holds a pure,
+DB-free decision function (`buildReminderPayload`, unit tested in
+isolation) for "what does the tick's push say," `push-dispatch.service.ts`
+owns the actual VAPID `web-push` send plus dead-subscription cleanup,
+`notifications.service.ts` owns the Postgres reads/writes and RLS scoping,
+`notifications.controller.ts` exposes seven routes: `GET
+/notifications/vapid-public-key`, `POST`/`DELETE /notifications/subscribe`,
+`GET`/`POST /notifications/schedules`, `DELETE
+/notifications/schedules/:id`, `POST
+/notifications/groups/:groupId/sprint`. `study_schedules` and
+`push_subscriptions` already existed as tables with RLS policies from
+Phase 0 — nothing to migrate, this pass is pure application code.
+
+The design call that had to be made before writing the processor, same
+spirit as Module 5's "no persisted quiz row" and Module 3's
+`recent_mistakes`-decay decision: **no `notification_log` table.** The BRD
+describes FR-6.1 (daily habit), FR-6.3 (streak protection), and FR-6.4
+(leech alerts) as three separate triggers, but nothing here tracks "was
+this user already notified today." Instead, `buildReminderPayload` decides
+**one** message per matched schedule, priority-ordered — leech drill
+outranks streak protection outranks a plain habit nudge — so a student
+with both a leech word and a streak at risk gets one actionable push, not
+two. A user with nothing due gets nothing.
+
+`NotificationProcessor`'s 15-minute tick needed a real answer for
+"which schedules are due right now," and a plain UTC-quarter-hour
+comparison doesn't work: `Asia/Kathmandu` is UTC+5:45, so its users'
+local reminder times never land on a UTC `:00/:15/:30/:45` boundary at
+all. The fix is `width_bucket(extract(epoch from local_time), 0, 86400,
+96)` — 96 fixed 900-second buckets anchored to each user's *own* local
+midnight, computed inside the SQL rather than in the tick schedule. Both
+"now" and `reminder_time` get bucketed the same way, so the comparison
+is offset-agnostic. Documented in the processor's own header comment
+since it's the one piece of this pass with real correctness risk
+un-testable without a live Postgres to actually run `width_bucket`
+against — a syntax or semantics mistake here wouldn't show up in a
+jest mock.
+
+`PushDispatchService` is exported from `NotificationsModule` and injected
+into both `NotificationProcessor` (the tick) and
+`NotificationsService.triggerSprint` (FR-6.2's immediate teacher-triggered
+push) — one implementation of "send + prune a dead subscription on
+404/410," not two. FR-6.2 itself is ADMIN-gated by an explicit
+`has_group_role` application-level check rather than leaning on RLS's
+`with check` the way most writes in this codebase do (see
+`GroupsService.createInvite`'s own header comment on that convention) —
+there's no table row being written here for RLS to gate, so the explicit
+check is the only enforcement point. No teacher-facing trigger screen
+exists for it: there is no group-management frontend at all yet (roster
+and invite screens have been wireframe-only since turn 3), so this route
+is API- and wireframe-only for now — flagged in wireframe turn 8g's
+caption, same "nothing live to fix" treatment the fifth pass gave the
+topic-delete-button gap.
+
+22 new backend unit tests (129 total, up from 107): 6 for
+`notification-message.spec.ts` (the priority ordering, singular/plural
+phrasing, the null case), 5 for `push-dispatch.service.spec.ts` (no-op
+when unconfigured, successful send, 410-prunes, non-410 failure counted
+without pruning, `vapidPublicKey()`), 7 for `notifications.service.spec.ts`
+(subscribe upsert, unsubscribe/deleteSchedule 404s, schedule upsert
+defaults, sprint's forbidden/conflict/success paths), 4 for
+`notification.processor.spec.ts` (nothing due, matched-but-nothing-to-say,
+leech-priority dispatch, one user's failure not stopping the tick).
+`tsc --noEmit` and `npm run lint` clean.
+
+### Frontend
+
+New `public/sw.js` — the actual push/notificationclick service worker;
+Module 4's offline-sync worker (still an open gap, unrelated) is a
+separate concern this file has nothing to do with. `src/lib/push.ts` wraps
+the Push API's own plumbing (VAPID key base64url→`Uint8Array` conversion,
+service worker registration, subscribe/unsubscribe) so
+`usePushSubscription.ts` — a plain `useState`/`useEffect` hook, not a
+TanStack Query one, since a live browser `PushSubscription` object has no
+`queryFn` to point at — stays about state, not browser-API mechanics. New
+`useNotificationSchedules`/`useUpsertSchedule`/`useDeleteSchedule` hooks
+follow the existing TanStack Query conventions exactly (see
+`useGenerateQuiz`/`useRateWord`).
+
+The Settings ("You" tab) page — a literal "Coming in a later phase." stub
+since turn 0/1 — is real now: `NotificationSettings.tsx`, a push on/off
+card plus a daily-reminder list with an add/remove form, using the
+browser's own `Intl.DateTimeFormat().resolvedOptions().timeZone` so a
+student is never asked to type an IANA zone name by hand.
+
+One real bug found and fixed while wiring this up, not specific to Module
+6: `apiClient.delete()` (`lib/api-client.ts`) had no way to send a request
+body, but `DELETE /notifications/subscribe` needs one (the endpoint to
+remove). Extended it to accept an optional JSON body, matching
+`post`/`patch`'s existing signature. Surfaced a second, latent bug in the
+same file while fixing the first: every `@HttpCode(HttpStatus.NO_CONTENT)`
+route in this codebase (`removeMember`, `revokeInvite`, and now
+`unsubscribe`/`deleteSchedule`) returns a body-less 204 — Express strips
+the body regardless of what `TransformResponseInterceptor` produced — but
+`request()` unconditionally called `res.json()` and, on the ok-but-bodiless
+204, threw an `ApiError` anyway (`body?.success` is `undefined` on nothing
+to parse). No frontend caller had ever hit a 204 route before this pass
+(no group-management frontend exists), so this had never been exercised;
+fixed by special-casing 204 to resolve `undefined` when `res.ok`, rather
+than only when there's a real envelope to unwrap.
+
+### Wireframes
+
+Added turn 8 (`Dygo Academy Wireframes.html`) — 7 screens (8a–8g) across
+four groups: turning on notifications (the settings toggle, then the
+browser's own native permission dialog, deliberately rendered in the dark
+`.wf.dk` phone frame to visually separate "the browser's own UI, which
+Dygo cannot skin" from the app's own screens), the daily reminder
+schedule form and its saved state, two priority-ordered push examples
+(leech drill outranking streak protection, shown as locked-screen
+notification banners), and the teacher sprint push with a caption flagging
+that no trigger screen exists for it yet. Same edit process as turns 4–7:
+decoded the JSON blob, inserted the new `<section id="t8">` immediately
+before `id="t7"` (newest-first ordering), verified programmatically before
+writing anything back — open/close tag counts balance for the new
+section, all seven new `dv-opt` ids (`8a`–`8g`) plus `id="t8"` each appear
+exactly once, the re-encoded JSON round-trips byte-for-byte through
+`json.loads`/`json.dumps`, and the `__bundler/manifest`/`ext_resources`/
+`page_order` blocks still parse untouched. `git diff --stat` confirms
+exactly one line changed. Not visually confirmed in a browser — same
+sandbox limitation as every prior turn.
+
+### Testing performed
+
+| Check | Result |
+| :--- | :--- |
+| Backend `jest` | ✅ 129/129 pass (22 new: 6 message-priority, 5 push-dispatch, 7 notifications.service, 4 processor) |
+| Backend `tsc --noEmit` | ✅ clean |
+| Backend `npm run lint` | ✅ clean |
+| Frontend `tsc --noEmit` | ✅ clean |
+| Frontend `next lint` | ✅ clean |
+| Frontend `next build` | ❌ hung again — **6th occurrence across 6 sessions**, exit 124 confirmed through a piped `timeout` |
+| Wireframes JSON round-trip + tag balance | ✅ verified programmatically |
+| `width_bucket` tick-matching SQL, VAPID `web-push` sends, RLS on `study_schedules`/`push_subscriptions` | ❌ not possible here — no Docker, and a real send would need a real browser subscription this sandbox cannot produce |
+
+### Known gaps — not fixed, flagged for grooming
+
+- **No group-management frontend exists at all.** Roster, invite, and now
+  sprint-trigger screens are wireframe-only (turns 3, 4, 8g). This is the
+  single biggest gap standing between "Module 1/6 API is done" and "a
+  teacher can actually use any of it."
+- **FR-6.2's sprint has no rate limiting.** An ADMIN can call it in a tight
+  loop and fan out a push storm to an entire group; nothing here throttles
+  it. Not specified in the BRD — flagged, not guessed at.
+- **`width_bucket` tick-matching has never run against real Postgres.**
+  The 96-bucket math is straightforward but unverified outside a jest
+  mock — this is the one piece of this pass worth hand-checking against a
+  few real half/quarter-hour timezones before trusting it in production.
+- **No `notification_log` / delivery-receipt table**, per the design call
+  above — there is no way to answer "did user X get pushed yesterday" from
+  the database today, only "would they be pushed right now."
+- **Push payloads are unencrypted-at-rest in the job**, i.e. plain text in
+  the BullMQ job/queue log, same as every other job payload in this
+  codebase (no BullMQ payload encryption anywhere) — consistent with
+  existing practice, not a regression, but worth a security-review line
+  item before Phase 5.
+- Everything in "Known gaps" from the fifth pass is still open except the
+  two items this pass closed (Module 6 itself, and the `apiClient.delete()`
+  body/204 bugs above).
+
+### UAT checklist for tomorrow (supersedes the fifth pass's own checklist)
+
+1. `docker compose up -d && ./database/apply-migrations.sh --test` —
+   confirms schema, RLS suite, and indexes against real Postgres (unchanged
+   this pass — no new migration; `study_schedules`/`push_subscriptions` RLS
+   is Phase 0's, not new).
+2. `cd com.dygoacademy.backend && npm run start:dev`, hit `/api/docs`.
+   Spot-check Modules 1–5 as prior checklists described, **plus**: set
+   `VAPID_PUBLIC_KEY`/`VAPID_PRIVATE_KEY`/`VAPID_SUBJECT` in `.env` (`npx
+   web-push generate-vapid-keys` if you don't have a pair), `POST
+   /notifications/subscribe` with a real browser subscription →
+   `POST /notifications/schedules` with a reminder time a few minutes out
+   → wait for `notification-tick-every-15m` (or trigger the BullMQ job
+   manually) → confirm a real push arrives and tapping it opens `/study` or
+   `/quiz?mode=leech`. Also: `POST
+   /notifications/groups/:groupId/sprint` as a non-ADMIN → confirm `403`.
+3. `cd com.dygoacademy.frontend && npm run build` — confirm the production
+   build completes; unverified here across a 6th session running.
+4. In the running frontend, open Settings ("You" tab) → turn on push
+   notifications → accept the browser's permission prompt → add a
+   reminder time → confirm it appears in the list → remove it → confirm
+   it's gone.
+5. Open `Dygo Academy Wireframes.html` directly and check turn 8 (screens
+   8a–8g) renders correctly, same caveat as every prior turn.
+6. **With Phase 3 now fully code-complete**, decide whether to start Phase
+   4 (Stripe seat billing, Module 7) next, or spend a pass first on the
+   standing "no group-management frontend" gap — Module 7's own free
+   student-onboarding flow (FR-7's "$0-cost join") is hard to demo
+   meaningfully without a teacher-facing screen to originate an invite
+   from in the running app, not just the wireframe.
 
 ---
 
