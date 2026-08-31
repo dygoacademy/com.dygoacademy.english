@@ -1,6 +1,6 @@
 import { randomBytes } from 'node:crypto';
 
-import { GoneException, Injectable, NotFoundException } from '@nestjs/common';
+import { ConflictException, GoneException, Injectable, NotFoundException } from '@nestjs/common';
 
 import { DatabaseService } from '../../database/database.service';
 import { CreateGroupDto } from './dto/create-group.dto';
@@ -210,21 +210,59 @@ export class GroupsService {
   /**
    * ADMIN only, via `group_members_delete_admin`.
    *
-   * Known gap, not fixed here: nothing stops an ADMIN removing themselves
-   * (or the last ADMIN) from a group, which would leave it with no one able
-   * to manage it — `groups.owner_id` still points at them, but ownership and
-   * group_members ADMIN role are tracked separately. Not specified in the
-   * BRD; flagging for grooming rather than guessing at "last admin" rules.
+   * **Fixes a known gap** flagged since the second pass: nothing stopped an
+   * ADMIN removing the group's last ADMIN (including themselves), leaving a
+   * group no one could manage — `groups.owner_id` still points at them, but
+   * ownership and `group_members` ADMIN role are tracked separately, so
+   * losing the last ADMIN row is a real dead end, not just cosmetic. Not
+   * specified in the BRD, so the rule chosen is the narrowest one that
+   * prevents the dead end: block the delete only when the target is
+   * genuinely the *last* ADMIN, via a count query inside the same
+   * transaction as the delete (`withUser`, not `queryAs`, so nothing else
+   * can remove/add an ADMIN between the count and the delete). A group is
+   * still free to have zero WRITE/READ members, or to have its one ADMIN
+   * remove everyone else — only the group's last management seat is
+   * protected.
+   *
+   * The pre-delete SELECT runs under the same RLS as everything else here:
+   * a non-ADMIN caller reaching this method at all (no application-level
+   * role gate, matching this codebase's "RLS is the enforcement" rule) either
+   * can't see the target row (READ members only see their own row) or can
+   * see it but has the final DELETE blocked by `group_members_delete_admin`
+   * — both cases still collapse to the same 404 they did before this fix,
+   * not a new 403, so existing callers see no behavior change except when
+   * the last-ADMIN case is actually hit.
    */
   async removeMember(userId: string, groupId: string, memberUserId: string): Promise<void> {
-    const rows = await this.db.queryAs<{ id: string }>(
-      userId,
-      `delete from public.group_members where group_id = $1 and user_id = $2 returning id`,
-      [groupId, memberUserId],
-    );
-    if (rows.length === 0) {
-      throw new NotFoundException('Membership not found.');
-    }
+    return this.db.withUser(userId, async (client) => {
+      const memberRows = await client.query<{ role: GroupRole }>(
+        `select role from public.group_members where group_id = $1 and user_id = $2`,
+        [groupId, memberUserId],
+      );
+      if (memberRows.rows.length === 0) {
+        throw new NotFoundException('Membership not found.');
+      }
+
+      if (memberRows.rows[0].role === 'ADMIN') {
+        const adminCountRows = await client.query<{ count: string }>(
+          `select count(*) as count from public.group_members where group_id = $1 and role = 'ADMIN'`,
+          [groupId],
+        );
+        if (Number(adminCountRows.rows[0].count) <= 1) {
+          throw new ConflictException(
+            'Cannot remove the last ADMIN from a group — assign another ADMIN first.',
+          );
+        }
+      }
+
+      const deleted = await client.query<{ id: string }>(
+        `delete from public.group_members where group_id = $1 and user_id = $2 returning id`,
+        [groupId, memberUserId],
+      );
+      if (deleted.rows.length === 0) {
+        throw new NotFoundException('Membership not found.');
+      }
+    });
   }
 
   /**

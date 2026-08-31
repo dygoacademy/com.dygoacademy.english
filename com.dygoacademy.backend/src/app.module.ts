@@ -13,6 +13,7 @@ import { HealthModule } from './health/health.module';
 import { BillingModule } from './modules/billing/billing.module';
 import { GroupsModule } from './modules/groups/groups.module';
 import { NotificationsModule } from './modules/notifications/notifications.module';
+import { QuizModule } from './modules/quiz/quiz.module';
 import { SrsModule } from './modules/srs/srs.module';
 import { TopicsModule } from './modules/topics/topics.module';
 import { WordsModule } from './modules/words/words.module';
@@ -40,6 +41,7 @@ import { NotificationProcessor } from './workers/notification.processor';
     TopicsModule,
     WordsModule,
     SrsModule,
+    QuizModule,
     BillingModule,
     NotificationsModule,
   ],

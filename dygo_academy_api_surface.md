@@ -12,9 +12,9 @@ Conflating them is how a roadmap quietly turns into a status report.
 
 | Tier | Count | Meaning |
 | :--- | :---: | :--- |
-| **Live** | 26 | Exists and responds today. Verified by direct code read (not yet re-verified against a running boot — see note below) 2026-09-01. |
+| **Live** | 29 | Exists and responds today. Verified by direct code read (not yet re-verified against a running boot — see note below) 2026-09-01. |
 | **Specified** | 5 | Named verbatim in `dygo_academy_tech_spec_and_conventions.md` §3.4 or in `dygo_academy_complete_system_architecture_master.md`. The only endpoints committed to in writing. |
-| **Implied** | 23 | Derived from the BRD's functional requirements. **Carries no authority** — review before treating as a plan. |
+| **Implied** | 20 | Derived from the BRD's functional requirements. **Carries no authority** — review before treating as a plan. |
 
 > **The live API is the authority, not this file.** Swagger is generated from the
 > code at boot and cannot go stale: **http://localhost:3001/api/docs**. This
@@ -105,12 +105,47 @@ Conflating them is how a roadmap quietly turns into a status report.
 > **Still unverified against a running Postgres** — same standing caveat as
 > notes (1)–(4); the p95 < 15ms budget on the due-card read path in
 > particular has not been measured anywhere real.
+>
+> **2026-09-01 note (6):** Module 5 (Dynamic Multi-Modal Quiz Engine, Phase
+> 3) is code-complete — `QuizService`/`QuizController` (`POST
+> /quizzes/generate`, `POST /quizzes/:id/answer`, `GET
+> /quizzes/leech-drill`), all three named in this doc's own §4 table as
+> "implied," now moved to §2. The generation/grading math lives in
+> `src/modules/quiz/quiz-generator.ts` as pure, unit-tested functions — same
+> split as `srs-algorithm.ts`. Biggest design call, made because nothing in
+> the schema backs it: **no persisted quiz/session/attempt row.** A quiz
+> item's id is deterministic (`` `${topicWordId}:${type}` ``) and its correct
+> answer is always derived the same way (first example sentence, first
+> synonym, etc.), so `POST /quizzes/:id/answer` can re-derive and grade the
+> exact question `POST /quizzes/generate` handed out earlier without a
+> database row remembering it — only the wrong-answer distractor options
+> differ run to run, and grading never looks at those. FR-5.3 ("Synonym &
+> Antonym Matching... drag-and-drop semantic pairing") is implemented as
+> one-word-at-a-time multiple choice, not a multi-pair board — flagged as a
+> deliberate simplification in `quiz-generator.ts`'s header comment, same
+> spirit as the Module 4 clue-ladder disagreement already flagged above.
+> FR-5.5's AI nuance explanation only calls Gemini
+> (`GeminiEnrichmentService.explainNuance`, new this pass) on a **wrong**
+> answer, and degrades to a generic message if that call itself fails —
+> never a 500. `GET /quizzes/leech-drill` builds on `SrsService.findLeeches`
+> rather than a second leech query, and is the destination note (5)'s own
+> Phase 2 gap ("no dedicated leech-drill queue screen exists yet") pointed
+> at; the frontend's leech nudge now links there instead of being a dead
+> end. Separately, this pass also fixed a real gap flagged since the second
+> pass: `DELETE /groups/:id/members/:userId` now blocks removing a group's
+> last ADMIN (`409 Conflict`) rather than silently leaving a group no one
+> can manage — see §2's entry for that route. 32 new backend unit tests (107
+> total, up from 75: 28 for quiz-generator/QuizService, 4 replacing the old
+> single-case `removeMember` test with real last-ADMIN coverage).
+> `tsc --noEmit` and lint clean on both sides. **Still unverified against a
+> running Postgres/Redis stack** — same standing sandbox limitation as every
+> note above.
 
 ---
 
 ## 2. Live today
 
-**26 operations · Phase 0 + Module 1 + Module 3 complete**
+**29 operations · Phase 0 + Module 1 + Module 3 + Module 5 complete**
 
 Two other controllers are registered — `billing`,
 `notifications` — but declare no routes, so they answer `404`, not `401`.
@@ -131,7 +166,7 @@ Two other controllers are registered — `billing`,
 | `DELETE` | `/api/v1/groups/:id` | bearer | ADMIN only (`groups_delete_admin`). |
 | `GET` | `/api/v1/groups/:id/members` | bearer | The roster. WRITE-and-above see everyone; a READ member sees only their own row — enforced by `group_members_select`, not this endpoint. |
 | `PATCH` | `/api/v1/groups/:id/members/:userId` | bearer | Assign a member's role. ADMIN only (`group_members_update_admin`). |
-| `DELETE` | `/api/v1/groups/:id/members/:userId` | bearer | Revoke a member's access. ADMIN only (`group_members_delete_admin`). Known gap: nothing stops an ADMIN removing the last ADMIN from a group — unspecified in the BRD. |
+| `DELETE` | `/api/v1/groups/:id/members/:userId` | bearer | Revoke a member's access. ADMIN only (`group_members_delete_admin`). **2026-09-01 (Phase 3 pass):** now blocks removing a group's last ADMIN (`409 Conflict`) — see `GroupsService.removeMember`'s header comment. |
 | `POST` | `/api/v1/groups/:id/invites` | bearer | Mints a magic invite link. ADMIN only (`group_invites_insert_admin`). The raw token is generated in Node, returned exactly once, and never persisted — only `public.hash_invite_token`'s SHA-256 of it is. |
 | `GET` | `/api/v1/groups/:id/invites` | bearer | Lists **live** invites only (not revoked, not expired, not exhausted). ADMIN only (`group_invites_select_admin`); a non-ADMIN gets `[]`, not `403`. |
 | `DELETE` | `/api/v1/invites/:id` | bearer | Soft-revokes an invite (sets `revoked_at`; does not delete the row) — top-level path, not nested under a group, per the spec. ADMIN only (`group_invites_update_admin`). |
@@ -143,6 +178,9 @@ Two other controllers are registered — `billing`,
 | `POST` | `/api/v1/srs/rate` | bearer | FR-3.2 — submit `AGAIN`/`HARD`/`GOOD`/`EASY`. Updates ease factor, interval, and leech status per the FR-3.1 formula (`srs-algorithm.ts`); one transaction covering the state read, the `review_logs` insert, and the `user_word_srs` upsert. |
 | `POST` | `/api/v1/srs/sessions` | bearer | FR-4.3 — Standard/Reverse/Listening mode. Returns a due-card batch tagged with the mode; does not persist a session row (none exists in the schema). |
 | `POST` | `/api/v1/srs/sync` | bearer | Architecture §1 — replays offline-queued reviews in chronological order via the same rating logic as `/srs/rate`; a bad item in the batch is reported per-item, not a batch failure. |
+| `POST` | `/api/v1/quizzes/generate` | bearer | FR-5.1–5.4 — Cloze, Dictation, Matching, Contextual Choice, drawn from `READY` words the caller can read. Stateless: an item's id (`` `${topicWordId}:${type}` ``) encodes enough to grade it later without a persisted row — see note (6). |
+| `GET` | `/api/v1/quizzes/leech-drill` | bearer | FR-3.3's remedial queue, built on `SrsService.findLeeches`. Prefers the richest question type each leech word's data supports. |
+| `POST` | `/api/v1/quizzes/:id/answer` | bearer | FR-5.5 — grades against the item id, and only on a wrong answer asks Gemini (`GeminiEnrichmentService.explainNuance`) for a short nuance explanation. Degrades to a generic message if that call fails. |
 
 ---
 
@@ -209,11 +247,10 @@ surface of its own — it consumes these same endpoints.
 
 ### Module 5 — Dynamic quizzes · Phase 3
 
-| Method | Path | Min role | Requirement |
-| :--- | :--- | :--- | :--- |
-| `POST` | `/quizzes/generate` | READ | FR-5.1–5.4 — cloze, dictation, matching, contextual choice |
-| `POST` | `/quizzes/:id/answer` | self | FR-5.5 — returns the AI nuance explanation on a wrong answer |
-| `GET` | `/quizzes/leech-drill` | self | FR-3.3 — the remedial queue |
+**Complete** — all three endpoints this table used to list are now live; see
+§2 and note (6). Kept as a heading for the same reason Module 1's and
+Module 3's are: so a reader scanning by module can tell this one's implied
+work is done, not merely absent.
 
 ### Module 6 — Push & habit scheduling · Phase 3
 

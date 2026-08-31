@@ -1,0 +1,237 @@
+import { Injectable, Logger, NotFoundException } from '@nestjs/common';
+
+import { GeminiEnrichmentService } from '../../ai/gemini-enrichment.service';
+import { DatabaseService } from '../../database/database.service';
+import { SrsService } from '../srs/srs.service';
+import { GenerateQuizDto } from './dto/generate-quiz.dto';
+import { SubmitAnswerDto } from './dto/submit-answer.dto';
+import {
+  MIN_DISTRACTORS,
+  QUIZ_TYPES,
+  QuizItem,
+  QuizSourceWord,
+  QuizType,
+  buildQuizItem,
+  deriveCorrectAnswer,
+  gradeAnswer,
+  parseQuizItemId,
+  promptFor,
+} from './quiz-generator';
+
+interface QuizWordRow {
+  topic_word_id: string;
+  topic_id: string;
+  source_word: string;
+  audio_url: string | null;
+  synonyms: Array<{ word: string; level: string }> | null;
+  antonyms: Array<{ word: string; level: string }> | null;
+  example_sentences: Array<{ sentence: string; level: string; translation_hint: string }> | null;
+}
+
+export interface AnswerResult {
+  quizItemId: string;
+  correct: boolean;
+  correctAnswer: string;
+  /** FR-5.5 — only populated on a wrong answer; see GeminiEnrichmentService.explainNuance. */
+  nuanceExplanation?: string;
+}
+
+const WORD_COLUMNS = `
+  tw.id as topic_word_id,
+  tw.topic_id,
+  tw.source_word,
+  ml.audio_url,
+  ml.synonyms,
+  ml.antonyms,
+  ml.example_sentences
+`;
+
+function mapRow(row: QuizWordRow): QuizSourceWord {
+  return {
+    topicWordId: row.topic_word_id,
+    topicId: row.topic_id,
+    sourceWord: row.source_word,
+    audioUrl: row.audio_url,
+    synonyms: row.synonyms ?? [],
+    antonyms: row.antonyms ?? [],
+    exampleSentences: row.example_sentences ?? [],
+  };
+}
+
+/**
+ * Module 5 — Dynamic Multi-Modal Quiz Engine (Phase 3). See
+ * `quiz-generator.ts` for the generation/grading math (pure, unit tested in
+ * isolation) — this class owns the DB reads and the one AI call FR-5.5
+ * needs, same split as `SrsService`/`srs-algorithm.ts`.
+ */
+@Injectable()
+export class QuizService {
+  private readonly logger = new Logger(QuizService.name);
+
+  constructor(
+    private readonly db: DatabaseService,
+    private readonly srs: SrsService,
+    private readonly gemini: GeminiEnrichmentService,
+  ) {}
+
+  /**
+   * FR-5.1–5.4. Oversamples candidate words (up to 4x `limit`, capped at
+   * 100) because not every word has the data every requested type needs —
+   * `buildQuizItem` returning `null` for, say, a word with no example
+   * sentence is expected, not an error, so the fetch asks for more raw
+   * material than the final answer needs rather than round-tripping again.
+   */
+  async generate(userId: string, dto: GenerateQuizDto): Promise<QuizItem[]> {
+    const types: QuizType[] = dto.types?.length ? dto.types : [...QUIZ_TYPES];
+    const limit = dto.limit ?? 10;
+    const candidateLimit = Math.min(100, limit * 4);
+
+    const rows = await this.db.queryAs<QuizWordRow>(
+      userId,
+      `select ${WORD_COLUMNS}
+         from public.topic_words tw
+         join public.master_lexicon ml on ml.id = tw.lexicon_id
+        where tw.status = 'READY'
+          ${dto.topicId ? 'and tw.topic_id = $1' : ''}
+        order by random()
+        limit ${dto.topicId ? '$2' : '$1'}`,
+      dto.topicId ? [dto.topicId, candidateLimit] : [candidateLimit],
+    );
+    if (rows.length === 0) return [];
+
+    const words = rows.map(mapRow);
+    const pool = await this.buildDistractorPool(
+      userId,
+      words.map((w) => w.sourceWord),
+    );
+
+    const items: QuizItem[] = [];
+    for (const word of words) {
+      if (items.length >= limit) break;
+      for (const type of types) {
+        if (items.length >= limit) break;
+        const item = buildQuizItem(word, type, pool);
+        if (item) items.push(item);
+      }
+    }
+    return items;
+  }
+
+  /**
+   * FR-5.5. Re-derives the exact question from `id` (see
+   * `quiz-generator.ts`'s module doc — no session row backs a quiz item) and
+   * grades it. Only calls Gemini when the answer was wrong, and only ever
+   * degrades to a generic message on failure — a broken AI explanation call
+   * must never turn a working quiz into a 500.
+   */
+  async answer(userId: string, itemId: string, dto: SubmitAnswerDto): Promise<AnswerResult> {
+    let parsed: { topicWordId: string; type: QuizType };
+    try {
+      parsed = parseQuizItemId(itemId);
+    } catch {
+      throw new NotFoundException('Unknown quiz item.');
+    }
+
+    const rows = await this.db.queryAs<QuizWordRow>(
+      userId,
+      `select ${WORD_COLUMNS}
+         from public.topic_words tw
+         join public.master_lexicon ml on ml.id = tw.lexicon_id
+        where tw.id = $1 and tw.status = 'READY'`,
+      [parsed.topicWordId],
+    );
+    if (rows.length === 0) {
+      throw new NotFoundException('Quiz word not found.');
+    }
+    const word = mapRow(rows[0]);
+    const derived = deriveCorrectAnswer(word, parsed.type);
+    if (!derived) {
+      throw new NotFoundException(
+        'This quiz item is no longer answerable — its source data changed.',
+      );
+    }
+
+    const correct = gradeAnswer(derived.answer, dto.answer);
+    const result: AnswerResult = { quizItemId: itemId, correct, correctAnswer: derived.answer };
+
+    if (!correct) {
+      try {
+        result.nuanceExplanation = await this.gemini.explainNuance(
+          word.sourceWord,
+          derived.answer,
+          dto.answer,
+          promptFor(word, parsed.type, derived),
+        );
+      } catch (err) {
+        this.logger.warn(
+          `FR-5.5 nuance explanation failed for "${word.sourceWord}" (${parsed.type}): ${
+            err instanceof Error ? err.message : String(err)
+          }`,
+        );
+        result.nuanceExplanation = `Not quite — the correct answer was "${derived.answer}".`;
+      }
+    }
+
+    return result;
+  }
+
+  /**
+   * FR-3.3's "intensive remedial drill", built on `SrsService.findLeeches`
+   * rather than a second leech query — one definition of "leech" for the
+   * whole codebase. Tries the richest type first per word (a full sentence
+   * forces real recall, closest to what FR-3.3 implies by "intensive"),
+   * falling back through whatever the word's own enrichment data supports.
+   */
+  async leechDrill(userId: string, limit = 20): Promise<QuizItem[]> {
+    const leeches = await this.srs.findLeeches(userId);
+    if (leeches.length === 0) return [];
+
+    const ids = leeches.slice(0, limit).map((l) => l.topic_word_id);
+    const rows = await this.db.queryAs<QuizWordRow>(
+      userId,
+      `select ${WORD_COLUMNS}
+         from public.topic_words tw
+         join public.master_lexicon ml on ml.id = tw.lexicon_id
+        where tw.id = any($1::uuid[])`,
+      [ids],
+    );
+    const words = rows.map(mapRow);
+    const pool = await this.buildDistractorPool(
+      userId,
+      words.map((w) => w.sourceWord),
+    );
+
+    const preferenceOrder: QuizType[] = ['CONTEXTUAL_CHOICE', 'CLOZE', 'MATCHING', 'DICTATION'];
+    const items: QuizItem[] = [];
+    for (const word of words) {
+      for (const type of preferenceOrder) {
+        const item = buildQuizItem(word, type, pool);
+        if (item) {
+          items.push(item);
+          break;
+        }
+      }
+    }
+    return items;
+  }
+
+  /**
+   * A small topic (or a leech batch of one or two words) may not itself
+   * supply >= MIN_DISTRACTORS other words, so this falls back to a random
+   * `master_lexicon` sample — global, not tenant-scoped, exactly like the
+   * dedup cache it already backs (FR-2.2). Distractors are cosmetic (see
+   * quiz-generator.ts's module doc), so borrowing unrelated words from the
+   * global lexicon when a topic is too small is a fine trade.
+   */
+  private async buildDistractorPool(userId: string, candidateWords: string[]): Promise<string[]> {
+    const pool = new Set(candidateWords);
+    if (pool.size <= MIN_DISTRACTORS) {
+      const extra = await this.db.queryAs<{ source_word: string }>(
+        userId,
+        `select normalized_word as source_word from public.master_lexicon order by random() limit 30`,
+      );
+      extra.forEach((r) => pool.add(r.source_word));
+    }
+    return [...pool];
+  }
+}

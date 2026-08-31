@@ -1,15 +1,31 @@
-import { GoneException, NotFoundException } from '@nestjs/common';
+import { ConflictException, GoneException, NotFoundException } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 
 import { DatabaseService } from '../../database/database.service';
 import { GroupsService } from './groups.service';
 
-/** Builds a fresh GroupsService wired to a stubbed DatabaseService.queryAs. */
-async function makeService(queryAsMock: jest.Mock): Promise<GroupsService> {
+/** Builds a fresh GroupsService wired to a stubbed DatabaseService.queryAs (and, optionally, withUser). */
+async function makeService(
+  queryAsMock: jest.Mock,
+  withUserMock?: jest.Mock,
+): Promise<GroupsService> {
   const moduleRef = await Test.createTestingModule({
-    providers: [GroupsService, { provide: DatabaseService, useValue: { queryAs: queryAsMock } }],
+    providers: [
+      GroupsService,
+      {
+        provide: DatabaseService,
+        useValue: { queryAs: queryAsMock, withUser: withUserMock ?? jest.fn() },
+      },
+    ],
   }).compile();
   return moduleRef.get(GroupsService);
+}
+
+/** Fakes DatabaseService.withUser by handing the callback a stub pg client (same helper shape as SrsService's spec). */
+function withUserOf(queryMock: jest.Mock): jest.Mock {
+  return jest.fn((_userId: string, work: (client: { query: jest.Mock }) => unknown) =>
+    work({ query: queryMock }),
+  );
 }
 
 describe('GroupsService', () => {
@@ -174,11 +190,63 @@ describe('GroupsService', () => {
   });
 
   describe('removeMember', () => {
-    it('throws NotFoundException on zero rows', async () => {
-      const queryAsMock = jest.fn().mockResolvedValue([]);
-      const service = await makeService(queryAsMock);
+    it('throws NotFoundException when the membership does not exist (or is not visible to the caller)', async () => {
+      const queryMock = jest.fn().mockResolvedValueOnce({ rows: [] });
+      const service = await makeService(jest.fn(), withUserOf(queryMock));
 
       await expect(service.removeMember('admin-1', 'group-1', 'member-1')).rejects.toBeInstanceOf(
+        NotFoundException,
+      );
+      expect(queryMock).toHaveBeenCalledTimes(1); // stopped after the existence check, no delete attempted
+    });
+
+    it('removes a non-ADMIN member without checking the ADMIN count', async () => {
+      const queryMock = jest
+        .fn()
+        .mockResolvedValueOnce({ rows: [{ role: 'WRITE' }] }) // membership lookup
+        .mockResolvedValueOnce({ rows: [{ id: 'membership-1' }] }); // delete
+      const service = await makeService(jest.fn(), withUserOf(queryMock));
+
+      await service.removeMember('admin-1', 'group-1', 'member-1');
+
+      expect(queryMock).toHaveBeenCalledTimes(2); // no ADMIN-count query for a non-ADMIN target
+    });
+
+    it('blocks removing the last ADMIN', async () => {
+      const queryMock = jest
+        .fn()
+        .mockResolvedValueOnce({ rows: [{ role: 'ADMIN' }] }) // membership lookup
+        .mockResolvedValueOnce({ rows: [{ count: '1' }] }); // only one ADMIN left
+      const service = await makeService(jest.fn(), withUserOf(queryMock));
+
+      await expect(service.removeMember('admin-1', 'group-1', 'admin-1')).rejects.toBeInstanceOf(
+        ConflictException,
+      );
+      expect(queryMock).toHaveBeenCalledTimes(2); // stopped before the delete
+    });
+
+    it('allows removing an ADMIN when another ADMIN remains', async () => {
+      const queryMock = jest
+        .fn()
+        .mockResolvedValueOnce({ rows: [{ role: 'ADMIN' }] })
+        .mockResolvedValueOnce({ rows: [{ count: '2' }] })
+        .mockResolvedValueOnce({ rows: [{ id: 'membership-1' }] });
+      const service = await makeService(jest.fn(), withUserOf(queryMock));
+
+      await expect(
+        service.removeMember('admin-1', 'group-1', 'other-admin'),
+      ).resolves.toBeUndefined();
+      expect(queryMock).toHaveBeenCalledTimes(3);
+    });
+
+    it('throws NotFoundException when RLS blocks the delete itself (caller lacks ADMIN)', async () => {
+      const queryMock = jest
+        .fn()
+        .mockResolvedValueOnce({ rows: [{ role: 'WRITE' }] })
+        .mockResolvedValueOnce({ rows: [] }); // group_members_delete_admin filtered the DELETE's target row out
+      const service = await makeService(jest.fn(), withUserOf(queryMock));
+
+      await expect(service.removeMember('write-1', 'group-1', 'member-1')).rejects.toBeInstanceOf(
         NotFoundException,
       );
     });

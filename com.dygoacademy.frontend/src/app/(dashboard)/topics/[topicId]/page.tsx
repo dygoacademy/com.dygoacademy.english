@@ -55,6 +55,9 @@ export default function TopicDetailPage() {
             <Button size="sm" variant="outline" asChild>
               <Link href={`/study?topicId=${topic.id}`}>Study</Link>
             </Button>
+            <Button size="sm" variant="outline" asChild>
+              <Link href={`/quiz?topicId=${topic.id}`}>Quiz</Link>
+            </Button>
             <Button size="sm" onClick={() => setAddWordOpen(true)}>
               + Add a word
             </Button>

@@ -26,8 +26,18 @@ async function bootstrap(): Promise<void> {
     }),
   );
 
+  // Allow both localhost (desktop) and the configured FRONTEND_URL (e.g. a
+  // LAN IP, for testing from a phone on the same wifi) — `cors` only
+  // string-matches a single `origin` value, so a plain string can't cover
+  // both at once.
+  const allowedOrigins = new Set([
+    'http://localhost:3000',
+    config.get<string>('frontendUrl', 'http://localhost:3000'),
+  ]);
   app.enableCors({
-    origin: config.get<string>('frontendUrl', 'http://localhost:3000'),
+    origin: (origin, callback) => {
+      callback(null, !origin || allowedOrigins.has(origin));
+    },
     credentials: true,
   });
 

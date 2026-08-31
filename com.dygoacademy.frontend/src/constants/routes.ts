@@ -7,7 +7,7 @@
  */
 
 /** Paths that require a signed-in session. Prefix-matched. */
-export const PROTECTED_PATH_PREFIXES = ['/topics', '/study', '/analytics', '/settings'] as const;
+export const PROTECTED_PATH_PREFIXES = ['/topics', '/study', '/quiz', '/analytics', '/settings'] as const;
 
 /** Auth-only paths — a signed-in user is redirected away from these. */
 export const AUTH_PATHS = ['/login', '/register'] as const;
@@ -19,6 +19,7 @@ export const ROUTES = {
   topics: '/topics',
   topicsBrowse: '/topics/browse',
   study: '/study',
+  quiz: '/quiz',
   analytics: '/analytics',
   settings: '/settings',
 } as const;

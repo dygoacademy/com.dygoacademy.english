@@ -175,6 +175,44 @@ export class GeminiEnrichmentService {
   }
 
   /**
+   * FR-5.5 — "AI explains why the choice was wrong and clarifies the
+   * nuance difference." Called from `QuizService.answer` **only when the
+   * submission was wrong** — same cost-avoidance instinct as
+   * `master_lexicon`'s dedup lookup: a correct answer needs no explanation,
+   * so no Gemini call is spent on one. Free-text response, not
+   * structured-JSON like `enrichWord` — a short paragraph of prose is the
+   * actual product here, not a field to store or re-render into a schema.
+   */
+  async explainNuance(
+    word: string,
+    correctAnswer: string,
+    submittedAnswer: string,
+    context: string,
+  ): Promise<string> {
+    const prompt = [
+      `You are a friendly language-learning tutor giving one-sentence feedback on a quiz mistake.`,
+      `Question context: ${context}`,
+      `The correct answer was: "${correctAnswer}"`,
+      `The student answered: "${submittedAnswer}"`,
+      word && word.toLowerCase() !== correctAnswer.toLowerCase()
+        ? `The word being studied is "${word}".`
+        : '',
+      `In 1-2 short sentences, explain *why* the student's answer is wrong and clarify the nuance ` +
+        `difference from the correct answer. Be encouraging, not scolding. Do not just restate the correct answer.`,
+    ]
+      .filter(Boolean)
+      .join('\n');
+
+    const response = await this.getClient().models.generateContent({
+      model: TEXT_MODEL,
+      contents: prompt,
+      config: { temperature: 0.4 },
+    });
+
+    return response.text?.trim() || `Not quite — the correct answer was "${correctAnswer}".`;
+  }
+
+  /**
    * Wraps raw PCM in a WAV container. Stored as `.wav`, not the `.mp3` tech
    * spec §4.2 names — an MP3 encoder needs a native codec (lame/ffmpeg) not
    * available in this sandbox. WAV needs zero dependencies and plays

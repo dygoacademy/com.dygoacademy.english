@@ -1,9 +1,244 @@
-# Dygo Academy — session report, 2026‑09‑01 (fourth pass)
+# Dygo Academy — session report, 2026‑09‑01 (fifth pass)
 **Run**: automated scheduled task, no user present. UAT is scheduled for tomorrow morning (2026‑09‑02).
-This file now covers four runs today. Passes one through three (Groups/Words
-first slice, the rest of Module 1, then Module 2's real Gemini/TTS pipeline)
-are preserved below under "First pass" / "Second pass" / "Third pass" — read
-top-down for the current state.
+This file now covers five runs today. Passes one through four (Groups/Words
+first slice, the rest of Module 1, Module 2's real Gemini/TTS pipeline, then
+Module 3/4's SRS engine and flashcard player) are preserved below under
+"First pass" through "Fourth pass" — read top-down for the current state.
+
+---
+
+## Fifth pass — Phase 3, Module 5: the quiz engine goes live
+
+### What this pass did
+
+Same standing instruction as every prior pass: compared the working tree
+against `dygo_academy_master_project_schedule.md` and
+`dygo_academy_api_surface.md`. Phases 0–2 held up exactly as the fourth pass
+left them — `git log --oneline` showed a clean, fully-committed tree (no
+repeat of the second pass's `.git/index.lock` blocker), and `npm run test`
+reproduced the fourth pass's 75/75 backend pass before any new work started.
+Phase 3 was the clear next step: `SrsController`/`SrsModule` covered Module
+3 completely, but no `quiz`/`billing`(routes)/`notifications`(routes)
+directory existed yet, and the master schedule's own Phase 3 section had no
+status note at all — a clean, unstarted phase.
+
+### Module 5 — Dynamic Multi-Modal Quiz Engine
+
+New `src/modules/quiz/` on the backend, following the same split the SRS
+module already established: `quiz-generator.ts` holds pure, DB-free
+generation and grading functions (unit tested in isolation), `quiz.service.ts`
+owns the Postgres reads and the one Gemini call FR-5.5 needs, `quiz.controller.ts`
+exposes the three routes `dygo_academy_api_surface.md`'s own §4 table had
+already sketched as "implied": `POST /quizzes/generate`, `POST
+/quizzes/:id/answer`, `GET /quizzes/leech-drill`.
+
+The one design call that had to be made before writing any service code,
+same as Module 3's `recent_mistakes`-decay decision last pass: **no
+persisted quiz/session/attempt row.** Checked
+`dygo_academy_database_dictionary.md` — nothing like a `quiz_attempts` table
+exists, and `StartSessionDto`'s own precedent (Phase 2) already treats
+"which cards, what shape" as recomputable rather than stored. Took that one
+step further here: a quiz item's id is deterministic
+(`` `${topicWordId}:${type}` ``), and its correct answer is always *derived*
+the same way for a given word+type — first example sentence for CLOZE/
+CONTEXTUAL_CHOICE, first synonym (falling back to first antonym) for
+MATCHING, the word itself for DICTATION. That means `POST
+/quizzes/:id/answer` can reconstruct and grade the exact question `POST
+/quizzes/generate` handed out earlier without a database row remembering
+it — only the wrong-answer distractor options differ run to run, and
+grading never looks at those, so their non-determinism costs nothing.
+
+Two things worth flagging as deliberate, not accidental:
+
+- **FR-5.3 ("Synonym & Antonym Matching... interactive drag-and-drop
+  semantic pairing") is implemented as one-word-at-a-time multiple choice**,
+  not a multi-pair drag-and-drop board. The BRD's phrase describes a UI
+  interaction, not a grading contract; a single "which of these words is a
+  synonym of X" question tests the identical semantic-relationship
+  knowledge while staying gradable with the same stateless shape as the
+  other three types. Flagged in `quiz-generator.ts`'s header comment and in
+  the API surface doc, same treatment as the Module 4 clue-ladder
+  disagreement two passes ago, rather than picked silently.
+- **CLOZE and CONTEXTUAL_CHOICE mask the target word using the exact same
+  regex** the frontend's `/study` page already uses for Reverse mode
+  (`maskForReverse`) — a word that fails to mask (doesn't literally appear
+  in its own example sentence) behaves identically in both places: the item
+  is skipped rather than shown with the answer visible.
+
+Distractor generation (`pickDistractors`/`buildDistractorPool`) draws first
+from the other candidate words already fetched for the batch, falling back
+to a random `master_lexicon` sample when a topic (or a small leech batch) is
+too small to supply three wrong-answer options on its own — the same
+global-cache reasoning `master_lexicon`'s dedup lookup already relies on,
+since distractors are cosmetic and borrowing unrelated words from the
+global lexicon costs nothing.
+
+FR-5.5's AI nuance explanation is a new method on the existing
+`GeminiEnrichmentService` (`explainNuance`, free-text prompt, not
+structured JSON like `enrichWord`) — called from `QuizService.answer` only
+when the submission was wrong, same cost-avoidance instinct as the dedup
+cache: a correct answer needs no explanation. A failed Gemini call (no API
+key, network error) is caught and degrades to a generic "the correct answer
+was X" message rather than turning a working quiz into a 500 — matches the
+codebase's existing rule that AI-optional features must never break core
+functionality (same as `EnrichmentProcessor`'s per-word failure isolation).
+
+`GET /quizzes/leech-drill` builds on `SrsService.findLeeches` rather than a
+second leech query (one definition of "leech" for the whole codebase, new
+`QuizModule` imports `SrsModule` the same way `TopicsModule` already does),
+and tries the richest question type per word first (CONTEXTUAL_CHOICE →
+CLOZE → MATCHING → DICTATION), falling back through whatever that word's
+enrichment data actually supports. This is the destination the fourth
+pass's own turn-6 caption (screen 6f) said was "still Module 5 work" — it
+exists now.
+
+32 new backend unit tests (107 total, up from 75): 28 across
+`quiz-generator.spec.ts` and `quiz.service.spec.ts` (generation, grading,
+distractor exclusion, the nuance-call/no-call split, Gemini-failure
+degradation, leech-drill preference ordering), plus 4 replacing
+`groups.service.spec.ts`'s old single-case `removeMember` test with real
+last-ADMIN coverage (see below). `tsc --noEmit` and `npm run lint` clean.
+
+### A standing gap fixed in passing: the last-ADMIN-removal guard
+
+Not part of Module 5, but small, well-scoped, and flagged as a real
+correctness bug since the second pass's own report: `DELETE
+/groups/:id/members/:userId` had nothing stopping an ADMIN from removing a
+group's only other ADMIN (or themselves), leaving a group no one could
+manage — `groups.owner_id` still points at them, but ownership and
+`group_members` ADMIN role are tracked separately, so this was a genuine
+dead end, not cosmetic. Fixed in `GroupsService.removeMember`: now runs
+inside a `withUser` transaction (was a single `queryAs` DELETE before),
+counting ADMINs before the delete and throwing `409 Conflict` if the target
+is the last one. The pre-delete SELECT runs under the same RLS as
+everything else — a non-ADMIN caller reaching this method still collapses
+to the same 404 it did before (either they can't see the row, or they can
+but the DELETE itself gets RLS-filtered), so no existing caller sees a
+behavior change except when the last-ADMIN case is actually hit. Did **not**
+touch the frontend's topic-delete-button-showing-for-WRITE gap (also
+flagged since the second pass) — checked, and it turns out no delete-topic
+button exists anywhere in the running frontend yet, only in the wireframe
+(screen 4b's own dashed note); there's nothing live to fix.
+
+### Frontend
+
+New `src/app/(dashboard)/quiz/page.tsx`, mirroring `/study`'s
+`StudyPage`/`StudySessionScreen` Suspense split (same `useSearchParams()`
+requirement). Two entry points share one page: `?topicId=` (a normal quiz
+batch) and `?mode=leech` (the remedial drill) — both
+`useGenerateQuiz`/`useLeechDrillQuiz` hooks are called unconditionally with
+an `enabled` flag deciding which one actually fetches, rather than breaking
+the rules of hooks with a conditional call. `QuizQuestion.tsx` renders any
+of the four FR-5.1–5.4 types off one flag (`answerMode: 'TEXT' | 'CHOICE'`)
+rather than branching on all four type names itself; `QuizFeedback.tsx`
+shows FR-5.5's nuance line whenever the API response includes one. Reused
+`AudioButton.tsx` as-is for DICTATION, same component the flashcard player
+already uses — no mode-specific rebuild.
+
+Two small wiring fixes so the new page is actually reachable, same "worth
+catching before UAT" instinct the fourth pass applied to the "Study" button:
+added a "Quiz" button next to "Study" on the topic detail page, and turned
+`LeechNudge` from a static box into a real `Link` to `/quiz?mode=leech` —
+its own code comment used to say it was "a static box, not a link, until
+there's a real leech-drill destination to send someone to." That
+destination exists now. Did **not** wire the home page's hardcoded
+`dueCount`/`count` mock props to real `/srs/stats`/`/srs/leeches` data —
+that's a separate, still-open task the `LeechNudge` component's updated
+comment now calls out explicitly, not something Module 5's scope covers.
+
+### Wireframes
+
+Added turn 7 (`Dygo Academy Wireframes.html`) — 7 screens (7a–7g) across
+four groups: starting a quiz, the two TEXT-mode types (cloze, dictation),
+the two CHOICE-mode types plus the FR-5.5 nuance-feedback state (matching,
+contextual-choice-with-wrong-answer), and leech drill + completion summary.
+Same edit process as turns 4–6: decoded the JSON blob on line 394 (still the
+actual template line), inserted the new `<section id="t7">` immediately
+before `id="t6"` (newest-first ordering), verified programmatically before
+writing anything back — open/close tag counts balance for the new section,
+all seven new `dv-opt` ids (`7a`–`7g`) plus `id="t7"` each appear exactly
+once, and the re-encoded JSON round-trips byte-for-byte through
+`json.loads`/`json.dumps`. `git diff --stat` confirms exactly one line
+changed. Not visually confirmed in a browser — same sandbox limitation as
+every prior turn.
+
+### Testing performed
+
+| Check | Result |
+| :--- | :--- |
+| Backend `jest` | ✅ 107/107 pass (32 new: 28 quiz, 4 last-ADMIN guard) |
+| Backend `tsc --noEmit` | ✅ clean |
+| Backend `npm run lint` | ✅ clean |
+| Frontend `tsc --noEmit` | ✅ clean |
+| Frontend `next lint` | ✅ clean |
+| Frontend `next build` | ❌ hung again — **5th occurrence across 5 sessions**, see below |
+| Wireframes JSON round-trip + tag balance | ✅ verified programmatically |
+| `POST /quizzes/generate` → `POST /quizzes/:id/answer` against real Postgres + Gemini | ❌ not possible here — no Docker, and a live Gemini call would spend real quota with no way to verify the result in this sandbox |
+| Last-ADMIN guard against real Postgres/RLS | ❌ not possible here — no Docker |
+
+`next build` hung immediately after the `▲ Next.js` banner again, killed by
+a 100s `timeout` (exit code 124, confirmed directly per the fourth pass's
+own note about checking real exit codes through a pipe). Same symptom, same
+timing, now five-for-five across five separate sessions and several
+completely different code changes each time — reads more strongly than ever
+as a sandbox restriction rather than a code defect, but still needs one real
+run on your machine before UAT depends on a production build existing.
+
+### Known gaps — not fixed, flagged for grooming
+
+- Everything in "Known gaps" from the fourth pass (below) is still open
+  **except** the last-ADMIN-removal guard, fixed this pass — *and* the
+  "no dedicated leech-drill queue screen" gap, also closed this pass
+  (`GET /quizzes/leech-drill` + `/quiz?mode=leech`).
+- **Module 6 (Web Push & Habit Scheduling) has not been started.**
+  `NotificationsModule`/`NotificationProcessor` are still exactly the Phase
+  0 stub: a 15-minute cron tick that only logs. No VAPID subscribe endpoint,
+  no `study_schedules` matching, no push dispatch, no FR-6.2 teacher
+  sprints. This is Phase 3's other half and the natural next pass.
+- The home page (`topics/page.tsx`) still hardcodes `dueCount`, `etaMinutes`,
+  streak, and leech `count` — none of it reads real `/srs/stats` or
+  `/srs/leeches` data yet. `LeechNudge`'s link now goes somewhere real, but
+  the number on it is still fake.
+- FR-5.3's literal "drag-and-drop" interaction (as opposed to the
+  one-word-multiple-choice implementation here) is not built — flagged as a
+  deliberate simplification, not silently dropped.
+- Quiz results are not routed back into the SRS system at all — a correct
+  cloze answer doesn't rate the underlying `user_word_srs` row, and there is
+  no attempt/results table (deliberately, per the design call above). The
+  quiz-complete screen's "the 2 you missed will come back around" line
+  (wireframe 7g) is aspirational copy, not a real mechanic yet.
+- Gemini's `explainNuance` free-text output is not validated beyond "did it
+  return non-empty text" — unlike `enrichWord`'s structured-schema
+  guarantees, a low-quality or off-topic explanation wouldn't be caught
+  before reaching the student.
+- `.gitkeep` in `components/quiz/` could not be deleted in this sandbox
+  (same `Operation not permitted` restriction the third pass documented for
+  `.git/`-adjacent files) — harmless, coexists fine with the real files now
+  in that directory.
+
+### UAT checklist for tomorrow (supersedes the fourth pass's own checklist)
+
+1. `docker compose up -d && ./database/apply-migrations.sh --test` —
+   confirms schema, RLS suite, and indexes against real Postgres (unchanged
+   this pass — no new migration).
+2. `cd com.dygoacademy.backend && npm run start:dev`, hit `/api/docs`.
+   Spot-check Modules 1–3 as prior checklists described, **plus**: `POST
+   /quizzes/generate` with a real topic → confirm a mix of CLOZE/DICTATION/
+   MATCHING/CONTEXTUAL_CHOICE items comes back → `POST
+   /quizzes/:id/answer` with a wrong answer and a real `GEMINI_API_KEY` →
+   confirm a real nuance explanation comes back, not the generic fallback →
+   `GET /quizzes/leech-drill` after manually flagging a word as a leech.
+   Also: `DELETE /groups/:id/members/:userId` on a group's last ADMIN →
+   confirm `409`, not a silent success.
+3. `cd com.dygoacademy.frontend && npm run build` — confirm the production
+   build completes; unverified here across a 5th session running.
+4. In the running frontend, open a topic and click the new "Quiz" button →
+   answer a few questions of each type → get one wrong on purpose and
+   confirm the AI nuance line renders. From the home screen, click the
+   leech nudge's "Fix →" link → confirm it lands on the leech-drill quiz,
+   not a dead end.
+5. Open `Dygo Academy Wireframes.html` directly and check turn 7 (screens
+   7a–7g) renders correctly, same caveat as every prior turn.
 
 ---
 

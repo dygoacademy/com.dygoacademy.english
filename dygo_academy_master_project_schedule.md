@@ -1,9 +1,10 @@
 # 📅 Dygo Academy: Master Project Schedule & Phasing Strategy
-**Document Version**: 5.2 (Phase 2 marked code-complete)  
+**Document Version**: 5.3 (Phase 3 Module 5 marked code-complete)  
 **Author**: Principal Cloud & SaaS Solutions Advisory  
 **Status**: Approved for Engineering & Product Execution  
 
 **Changelog**
+* **5.3** (2026-09-01) — Phase 3, Module 5 (Dynamic Multi-Modal Quiz Engine) marked code-complete; Module 6 (Push & Habit Scheduling) is still open. See status notes under §2. Also fixed a standing Phase 1 gap: the last-ADMIN-removal guard.
 * **5.2** (2026-09-01) — Phase 2 (Modules 3 & 4) marked code-complete; see status notes under §2.
 * **5.1** (2026-08-31) — Phase 0 core engineering tasks marked complete; see status notes under §2.
 * **5.0** — Definitive Master Execution Plan (baseline).
@@ -173,6 +174,34 @@ gantt
 ### ✍️ Phase 3: Dynamic Quiz Engine & Habit Push Scheduling
 * **Timeline**: Sprint 4 (Weeks 7 – 8)  
 * **Primary Objective**: Implement **Module 5** (Multi-Modal Quizzes) and **Module 6** (Web Push & Habit Reminders).
+* **Status** (2026-09-01): Module 5 is code-complete —
+  `QuizService`/`QuizController` (`POST /quizzes/generate`, `POST
+  /quizzes/:id/answer`, `GET /quizzes/leech-drill`) implement FR-5.1–5.5;
+  the generation/grading logic is isolated in `src/modules/quiz/quiz-
+  generator.ts` as pure, unit-tested functions (32 new tests, 107 total).
+  Biggest design call: **no persisted quiz/session/attempt row** — a quiz
+  item's id is deterministic and its correct answer always derived the same
+  way, so grading needs no database memory of what was generated (see
+  `dygo_academy_api_surface.md` note (6) for the full reasoning). FR-5.3
+  ("drag-and-drop semantic pairing") is implemented as one-word-at-a-time
+  multiple choice rather than a literal drag-and-drop board — flagged as a
+  deliberate simplification, not a silent scope cut. The frontend's `/quiz`
+  page (mirroring `/study`'s Suspense-split structure) covers all four quiz
+  types plus FR-5.5's AI nuance feedback on a wrong answer, and the topic
+  detail page's new "Quiz" button and the home screen's leech nudge both
+  route into it. **Module 6 (Web Push & Habit Scheduling) is not started** —
+  `NotificationsModule`/`NotificationProcessor` are still the Phase 0 stub
+  that only logs a tick every 15 minutes; no VAPID subscription endpoint,
+  no schedule matching, no actual push dispatch. This pass also fixed a
+  standing Phase 1 gap unrelated to Module 5: `DELETE
+  /groups/:id/members/:userId` now blocks removing a group's last ADMIN
+  (`409 Conflict`) instead of silently permitting it. **None of Module 5 has
+  run against a live Postgres/Redis stack** — same standing sandbox
+  limitation as Phases 1 and 2; verify a real `POST /quizzes/generate` →
+  `POST /quizzes/:id/answer` round-trip, including a real Gemini nuance-
+  explanation call, before treating Phase 3 as done. `tsc`/lint clean on
+  both sides; frontend `next build` still hangs in this sandbox (5th
+  occurrence across 5 sessions).
 
 #### Core Engineering Tasks:
 1. **Module 5: Dynamic Multi-Modal Exercise Engine**:
