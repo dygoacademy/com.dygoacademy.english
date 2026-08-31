@@ -51,9 +51,14 @@ export default function TopicDetailPage() {
       <div className="flex items-center justify-between">
         <h1 className="text-lg font-semibold">{topic.title}</h1>
         {!isEmpty && (
-          <Button size="sm" onClick={() => setAddWordOpen(true)}>
-            + Add a word
-          </Button>
+          <div className="flex gap-2">
+            <Button size="sm" variant="outline" asChild>
+              <Link href={`/study?topicId=${topic.id}`}>Study</Link>
+            </Button>
+            <Button size="sm" onClick={() => setAddWordOpen(true)}>
+              + Add a word
+            </Button>
+          </div>
         )}
       </div>
 

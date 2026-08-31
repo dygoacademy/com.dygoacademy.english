@@ -1,8 +1,246 @@
-# Dygo Academy — session report, 2026‑09‑01 (third pass)
+# Dygo Academy — session report, 2026‑09‑01 (fourth pass)
 **Run**: automated scheduled task, no user present. UAT is scheduled for tomorrow morning (2026‑09‑02).
-This file now covers three runs today. Passes one and two (Groups/Words
-first slice, then the rest of Module 1) are preserved below under "First
-pass" / "Second pass" — read top-down for the current state.
+This file now covers four runs today. Passes one through three (Groups/Words
+first slice, the rest of Module 1, then Module 2's real Gemini/TTS pipeline)
+are preserved below under "First pass" / "Second pass" / "Third pass" — read
+top-down for the current state.
+
+---
+
+## Fourth pass — Phase 2 (Modules 3 & 4): the SRS engine and flashcard player go live
+
+### What this pass did
+
+Compared the working tree against `dygo_academy_master_project_schedule.md`
+and `dygo_academy_api_surface.md` per the task's standing instruction ("check
+the tasks have done then compare with project plan"). Phase 0 and Phase 1
+held up exactly as the third pass left them — `git log` showed a clean,
+fully-committed tree (no repeat of the second pass's `.git/index.lock`
+blocker; whatever caused it either resolved itself or wasn't triggered this
+run), and `npm run test` reproduced third pass's 51/51 backend pass before
+any new work started. Phase 2 (Module 3 — SRS, Module 4 — 3D flashcards) was
+the clear next step: `SrsService`/`SrsController` were the Phase 0 stub
+(`constructor` only, one line), and `/study` ran entirely off a hardcoded
+`MOCK_QUEUE`. Both are real now.
+
+### Module 3 — Error-Adaptive SRS
+
+`src/modules/srs/srs-algorithm.ts` (pure functions, unit tested in isolation
+— same split as `GeminiEnrichmentService.pcmToWav`) implements FR-3.1's
+formula and FR-3.2's four rating actions. Three assumptions had to be made
+because nothing pins them, all documented in that file's header comment and
+cross-referenced from `dygo_academy_api_surface.md`:
+
+- **Rating → SM-2 `q` mapping.** FR-3.1's formula expects `q` on a 0–5
+  scale; FR-3.2 only gives four named buttons. Mapped onto the conventional
+  SM-2/Anki scale (AGAIN→0, HARD→3, GOOD→4, EASY→5) rather than inventing a
+  new curve.
+- **λ = 0.05.** Not specified anywhere. Chosen so the `M_recent` penalty
+  (recent mistakes are realistically 0–6ish, the leech threshold being 4)
+  stays comparable in magnitude to the formula's own AGAIN/EASY swing
+  without letting it alone drive EF negative.
+- **`recent_mistakes` decay — resolves the open question
+  `dygo_academy_api_surface.md` §5.4 flagged for Phase 2.** Recomputed from
+  `review_logs` inside the same transaction as `POST /srs/rate`, not decayed
+  on a schedule. This was the one design call that had to be made *before*
+  writing any service code, not discovered along the way — no third
+  repeating job was needed, and `GET /srs/leeches` still reads a plain
+  stored column rather than a live aggregate.
+
+One spec disagreement surfaced and is flagged rather than silently picked:
+FR-3.2 describes Hard as a flat "×1.2" multiplier, distinct from Good's own
+1d→3d→7d→16d ladder — implemented literally (Hard multiplies the *previous*
+interval, never touches the ladder), which means a card rated Hard
+repeatedly never catches up to Good's pace. Worth a product sign-off if
+that's not the intended feel.
+
+`SrsService` (`src/modules/srs/srs.service.ts`) implements:
+`findDue` (existing due `user_word_srs` rows, topped up with never-reviewed
+"new cards" — there's no separate new-card table, so "no `user_word_srs`
+row yet" is the operational definition used throughout), `rate` (one
+transaction: read state → count recent mistakes → insert `review_logs` →
+upsert `user_word_srs`, via `DatabaseService.withUser` same as
+`TopicsService.clone`), `findLeeches`, `stats` (streak computed from
+distinct UTC review dates), `startSession` (FR-4.3, see below), and `sync`
+(replays offline-queued reviews in chronological order, isolating per-item
+failures rather than failing the whole batch — same philosophy as
+`EnrichmentProcessor`'s per-word failure isolation).
+
+`GET /topics/:id/cards/due` (tech spec §3.4's exact route) lives on
+`TopicsController`, not `SrsController` — `TopicsModule` now imports
+`SrsModule` and the controller just delegates to `SrsService.findDue`,
+rather than duplicating the due-card query on two controllers.
+
+`POST /srs/sessions` does **not** create a persisted session row. Checked
+`dygo_academy_database_dictionary.md` — no `study_sessions` table exists.
+FR-4.3's three modes are a display concern (which face of the card shows
+first, whether audio is the only clue), not server state, so the endpoint
+just returns a due-card batch tagged with the requested mode. Documented in
+`StartSessionDto`'s header rather than assumed silently, since a future pass
+adding real session-resume would need to know this was a deliberate choice,
+not an oversight.
+
+24 new backend unit tests (75 total, up from 51) — `srs-algorithm.spec.ts`
+covers the EF formula, the interval ladder, and each rating's edge cases in
+isolation from the database; `srs.service.spec.ts` covers the due-query
+merge logic, the rate transaction's parameter shapes (including the
+leech-threshold crossover), the leech query, the streak calculation, and
+sync's chronological-ordering + per-item-failure-isolation behavior.
+`tsc --noEmit` and `npm run lint` both clean.
+
+### Module 4 — 3D Flashcard Player
+
+Phase 0 had already scaffolded the flip-card mechanics for real:
+`Flashcard.tsx` (CSS `perspective`/`preserve-3d`/`backface-hidden` flip,
+flip state controlled by the caller) and `RatingButtons.tsx` (two buttons,
+a press-and-hold gesture collecting all four FR-3.2 ratings — tap vs. hold
+past 450ms) were already correct and needed no changes. What Phase 1/2 had
+left as a placeholder was `/study`'s data: a 3-card `MOCK_QUEUE` with a
+`console.log` where a real rating submission should be.
+
+Rewired `/study` to real data:
+
+- **`useStudySession(topicId?, mode, limit)`** — `POST /srs/sessions`
+  fetched via `useQuery`, not `useMutation`: the endpoint has no side
+  effects (see above), so it's a read like every other one in this
+  codebase, and `useQuery` gives loading/error/refetch state for free
+  instead of hand-wiring it.
+- **`useRateWord()`** — `POST /srs/rate`, invalidates the `['srs']` query
+  key on success rather than patching the cache in place; a rated card can
+  leave the due queue entirely, which is an awkward shape for
+  `setQueryData` compared to just refetching (same reasoning
+  `useCreateWord` already used for topic invalidation).
+- **`ProgressiveClues.tsx`** — FR-4.2's tap-to-reveal ladder. The BRD names
+  three steps (First-Letter → IPA → Context Sentence); the master schedule's
+  own Phase 2 task description names four, inserting Audio between IPA and
+  the sentence. Implemented the four-step version, since Module 4's front
+  face already promises audio per FR-4.1 — flagged as a spec disagreement
+  in both the component's header comment and
+  `dygo_academy_api_surface.md`, the same way the billing route name
+  conflict is already flagged there, rather than picking one silently.
+- **`AudioButton.tsx`** — FR-2.4's 0.75x/1.0x speed toggle, one `<audio>`
+  element per mount, reused across all three modes' front and back faces
+  rather than a mode-specific rebuild.
+- **Mode and topic scope read from the URL** (`/study?topicId=&mode=`)
+  rather than component-local state seeded elsewhere — FR-6.5's "1-tap
+  notification deep links routing directly into `/study`" will need exactly
+  this once Module 6 exists, so it's built the way that future caller will
+  actually need it, not the way that's easiest today.
+- `useSearchParams()` requires a Suspense boundary for Next's static
+  rendering — split the page into an outer `StudyPage` (Suspense + fallback)
+  and an inner `StudySessionScreen` (the actual logic), which is new
+  structure this codebase didn't have a precedent for yet.
+
+Reverse mode masks the target word in the topic's first example sentence
+(client-side regex, case-insensitive exact match) rather than a second
+backend endpoint — mode is purely how the fetched card is *displayed*.
+Listening mode hides all word text on the front face; the clue ladder and
+rating buttons are unchanged across all three modes.
+
+Also added a "Study" button to the topic detail page (`topics/[topicId]/page.tsx`),
+linking to `/study?topicId=`. Without it, `/study` was real but unreachable
+from anywhere in the app — worth catching before UAT rather than after.
+It defaults to Standard mode only; there is no in-app mode *picker* yet
+(wireframe 6a exists, the screen behind it doesn't) — Reverse and Listening
+are reachable by editing the URL, which is fine for UAT but not for a real
+user.
+
+**Not implemented**: offline-first sync. `POST /srs/sync` exists and is
+unit-tested on the backend, but nothing on the frontend queues a rating
+locally when offline and replays it later — Module 4's "local SQLite /
+IndexedDB cache" line in the schedule doc is still open. Flagging rather
+than stubbing something that would just be dead code today.
+
+### Wireframes
+
+Added turn 6 (`Dygo Academy Wireframes.html`) — 7 screens (6a–6g) across
+four groups: starting a session (mode picker), standard mode (front with
+the clue ladder mid-reveal, back with rating), reverse and listening modes,
+and leech-flag / empty-session states. Same edit process as turns 4 and 5:
+decoded the JSON blob on line 394 (confirmed still the actual template
+line, unchanged position), inserted the new `<section id="t6">` immediately
+before the existing `id="t5"` (matching the established newest-first
+ordering — t6, t5, t4, t3, t2, t1), then verified programmatically before
+writing anything back: open/close tag counts balance for the new section
+specifically, all seven new `dv-opt` ids (`6a`–`6g`) are unique and appear
+exactly once, `id="t6"` appears exactly once, and the re-encoded JSON
+round-trips byte-for-byte through `json.loads`/`json.dumps`. `git diff
+--stat` confirms exactly one line changed in the file, as expected for this
+edit pattern. Not visually confirmed in a browser — same sandbox limitation
+as turns 4 and 5.
+
+### Testing performed
+
+| Check | Result |
+| :--- | :--- |
+| Backend `jest` | ✅ 75/75 pass (24 new: 15 `srs-algorithm`, 9 `SrsService`) |
+| Backend `tsc --noEmit` | ✅ clean |
+| Backend `npm run lint` | ✅ clean |
+| Frontend `tsc --noEmit` | ✅ clean |
+| Frontend `next lint` | ✅ clean |
+| Frontend `next build` | ❌ hung again — **4th occurrence across 4 sessions**, see below |
+| Wireframes JSON round-trip + tag balance | ✅ verified programmatically |
+| `POST /srs/rate` / due-card queries against real Postgres | ❌ not possible here — no Docker |
+| `p95 < 15ms` due-card query SLO (FR-3.4) | ❌ unmeasured — no running stack to load-test |
+
+`next build` hung immediately after the `▲ Next.js` banner, killed by an
+explicit 100s `timeout` this time (exit code 124, confirmed via the actual
+process exit code rather than a piped command's, which the third pass's own
+tooling didn't check — worth remembering for whoever runs this next: `cmd
+> file 2>&1; echo $?` before trusting an exit code through a pipe). Same
+symptom, same timing as all three prior sessions — still reads as a sandbox
+restriction, not a code defect, but this is now four-for-four and still
+needs one real run on your machine before UAT depends on a production build
+existing.
+
+### Known gaps — not fixed, flagged for grooming
+
+- Everything in "Known gaps" from the third pass (below) is still open:
+  last-ADMIN-removal guard, topic-delete button showing for WRITE,
+  solo-user tenant provisioning, no re-enrichment endpoint, and the
+  standing "nothing here has run against a live Postgres" caveat — which
+  now also covers this pass's `user_word_srs` upsert, the `recent_mistakes`
+  recompute, and the leech-threshold crossover logic.
+- Offline-first sync (Module 4's IndexedDB cache) is not built — see above.
+- No in-app mode picker (wireframe 6a) — the "Study" button added this pass
+  only reaches Standard mode; Reverse/Listening need a manual URL edit.
+- No dedicated leech-drill queue screen exists yet (Module 5 territory per
+  the schedule); today's leech UI is the standard study card with a badge
+  added (wireframe 6f). FR-3.3's "routed to intensive remedial drills"
+  implies something more targeted.
+- `HARD`'s multiplier-not-ladder behavior (see Module 3 section above) is a
+  literal reading of FR-3.2, not confirmed with product — a card stuck on
+  Hard never reaches Good's growth curve.
+- Gemini's structured output is still trusted to return exactly 5
+  synonyms/antonyms per the third pass's own flag — unrelated to this
+  pass's work, just still open.
+
+### UAT checklist for tomorrow (supersedes the third pass's §UAT checklist)
+
+1. `docker compose up -d && ./database/apply-migrations.sh --test` —
+   confirms schema, RLS suite, and indexes (including
+   `idx_user_word_srs_user_next_due`/`_user_leech`) against real Postgres.
+2. `cd com.dygoacademy.backend && npm run start:dev`, hit `/api/docs`.
+   Spot-check Module 1/2 as prior checklists described, **plus**: `POST
+   /srs/rate` with each of AGAIN/HARD/GOOD/EASY on the same word across
+   several calls → confirm `ease_factor`/`interval_days`/`next_due_at` move
+   the way `srs-algorithm.spec.ts` predicts → rate AGAIN 4 times inside 7
+   days → confirm `GET /srs/leeches` picks it up.
+3. `GET /topics/:id/cards/due` and `GET /srs/due` — confirm a never-rated
+   `READY` word appears as a "new card" and a past-due `user_word_srs` row
+   appears too; time this against the `p95 < 15ms` SLO with more than a
+   handful of rows.
+4. `cd com.dygoacademy.frontend && npm run build` — confirm the production
+   build completes; unverified here across a 4th session running.
+5. In the running frontend, open a topic with words and click the new
+   "Study" button (added this pass, topic detail page → `/study?topicId=`,
+   defaults to Standard mode) — rate a few cards for real, confirm the
+   queue shrinks and next_due_at changes stick after a refresh. Then try
+   `/study?mode=REVERSE` and `/study?mode=LISTENING` directly via the URL —
+   there is no in-app mode *picker* yet (turn 6a is a wireframe, not wired
+   UI), so editing the URL is still the only way to reach those two today.
+6. Open `Dygo Academy Wireframes.html` directly and check turn 6 (screens
+   6a–6g) renders correctly, same caveat as turns 4 and 5 before it.
 
 ---
 

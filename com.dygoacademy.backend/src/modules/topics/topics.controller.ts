@@ -12,6 +12,7 @@ import {
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
+import { DueCard, SrsService } from '../srs/srs.service';
 import { CloneTopicDto } from './dto/clone-topic.dto';
 import { CreateTopicDto } from './dto/create-topic.dto';
 import { UpdateTopicDto } from './dto/update-topic.dto';
@@ -21,7 +22,10 @@ import { TopicDetail, TopicRow, TopicsService, TopicSummary } from './topics.ser
 @ApiTags('topics')
 @Controller({ path: 'topics', version: '1' })
 export class TopicsController {
-  constructor(private readonly topicsService: TopicsService) {}
+  constructor(
+    private readonly topicsService: TopicsService,
+    private readonly srsService: SrsService,
+  ) {}
 
   @Get()
   @ApiOperation({
@@ -79,6 +83,20 @@ export class TopicsController {
   })
   async remove(@CurrentUser('id') userId: string, @Param('id') topicId: string): Promise<void> {
     await this.topicsService.remove(userId, topicId);
+  }
+
+  @Get(':id/cards/due')
+  @ApiOperation({
+    summary: 'Due cards, scoped to this topic (FR-3.4)',
+    description:
+      'Same due/new-card logic as GET /srs/due, filtered to one topic — ' +
+      'tech spec §3.4 names this exact route shape. Carries the p95 < 15ms budget.',
+  })
+  async cardsDue(
+    @CurrentUser('id') userId: string,
+    @Param('id') topicId: string,
+  ): Promise<DueCard[]> {
+    return this.srsService.findDue(userId, topicId);
   }
 
   @Post(':id/clone')

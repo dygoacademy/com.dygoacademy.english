@@ -1,9 +1,10 @@
 # 📅 Dygo Academy: Master Project Schedule & Phasing Strategy
-**Document Version**: 5.1 (Phase 0 marked complete)  
+**Document Version**: 5.2 (Phase 2 marked code-complete)  
 **Author**: Principal Cloud & SaaS Solutions Advisory  
 **Status**: Approved for Engineering & Product Execution  
 
 **Changelog**
+* **5.2** (2026-09-01) — Phase 2 (Modules 3 & 4) marked code-complete; see status notes under §2.
 * **5.1** (2026-08-31) — Phase 0 core engineering tasks marked complete; see status notes under §2.
 * **5.0** — Definitive Master Execution Plan (baseline).
 
@@ -130,6 +131,28 @@ gantt
 ### 📈 Phase 2: Error-Adaptive SRS Engine & 3D Flashcards
 * **Timeline**: Sprint 3 (Weeks 5 – 6)  
 * **Primary Objective**: Implement **Module 3** (Mistake-Penalized SRS) and **Module 4** (3D Flashcard Player).
+* **Status** (2026-09-01): Both modules are code-complete. Module 3 —
+  `SrsService`/`SrsController` (`GET /srs/due`, `/leeches`, `/stats`, `POST
+  /rate`, `/sessions`, `/sync`) plus `GET /topics/:id/cards/due` — implements
+  the full FR-3.1 mistake-weighted formula, all four FR-3.2 rating actions,
+  and FR-3.3's leech flag; the scoring math is isolated in
+  `src/modules/srs/srs-algorithm.ts` as pure, unit-tested functions (24 new
+  tests, 75 total). This also **settles the `recent_mistakes` decay question**
+  flagged in `dygo_academy_api_surface.md` §5.4 — recomputed from
+  `review_logs` on every rating, not decayed on a schedule. Module 4 wires
+  the Phase 0 flashcard scaffold (`components/flashcard/Flashcard.tsx`,
+  `RatingButtons.tsx`) to real data via two new hooks
+  (`useStudySession`/`useRateWord`), adds the FR-4.2 progressive clue ladder
+  (`ProgressiveClues.tsx`) and FR-2.4's audio speed toggle (`AudioButton.tsx`),
+  and implements all three FR-4.3 modes (Standard/Reverse/Listening) in
+  `/study`. Offline-first sync (Module 4's "local SQLite/IndexedDB cache")
+  is **not** implemented — `POST /srs/sync` exists on the backend and is
+  unit-tested, but nothing on the frontend queues reviews offline yet; flag
+  this as the next Module 4 gap. **None of this has been run against a live
+  Postgres/Redis stack** — same standing sandbox limitation as Phase 1; verify
+  a real `POST /srs/rate` round-trip and the `p95 < 15ms` due-card query
+  before treating Phase 2 as done. `tsc`/lint clean on both sides; frontend
+  `next build` still hangs in this sandbox (4th occurrence across 4 sessions).
 
 #### Core Engineering Tasks:
 1. **Module 3: Error-Adaptive Spaced Repetition System**:

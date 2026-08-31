@@ -12,9 +12,9 @@ Conflating them is how a roadmap quietly turns into a status report.
 
 | Tier | Count | Meaning |
 | :--- | :---: | :--- |
-| **Live** | 19 | Exists and responds today. Verified by direct code read (not yet re-verified against a running boot — see note below) 2026-09-01. |
+| **Live** | 26 | Exists and responds today. Verified by direct code read (not yet re-verified against a running boot — see note below) 2026-09-01. |
 | **Specified** | 5 | Named verbatim in `dygo_academy_tech_spec_and_conventions.md` §3.4 or in `dygo_academy_complete_system_architecture_master.md`. The only endpoints committed to in writing. |
-| **Implied** | 28 | Derived from the BRD's functional requirements. **Carries no authority** — review before treating as a plan. |
+| **Implied** | 23 | Derived from the BRD's functional requirements. **Carries no authority** — review before treating as a plan. |
 
 > **The live API is the authority, not this file.** Swagger is generated from the
 > code at boot and cannot go stale: **http://localhost:3001/api/docs**. This
@@ -86,14 +86,33 @@ Conflating them is how a roadmap quietly turns into a status report.
 > Postgres/Redis/MinIO stack** — no Docker in this environment; verify the
 > full round-trip (`POST /words` → BullMQ → Gemini/TTS/R2 → `GET
 > /topics/:id` shows `READY` with real IPA/audio) before UAT depends on it.
+>
+> **2026-09-01 note (5):** Module 3 (Error-Adaptive SRS, Phase 2) is
+> code-complete — `SrsService`/`SrsController` plus `GET
+> /topics/:id/cards/due` on `TopicsController` (tech spec §3.4's exact route
+> shape; `TopicsModule` now imports `SrsModule` for it). The scoring math
+> lives in `src/modules/srs/srs-algorithm.ts` as pure, unit-tested functions
+> — it also **settles §5.4's "Open question for Phase 2"** below:
+> `recent_mistakes` is recomputed from `review_logs` inside the same
+> transaction as `POST /srs/rate`, not decayed on a schedule, so no third
+> repeating job was needed. Two other assumptions worth flagging since
+> nothing in the BRD pins them: the AGAIN/HARD/GOOD/EASY → SM-2 `q` mapping
+> (0/3/4/5), and λ = 0.05 in the FR-3.1 formula — both documented, and both
+> easy to retune, in that file's header comment. `POST /srs/sessions` does
+> not persist a session row (no such table exists — see
+> `StartSessionDto`'s comment); it just returns a tagged batch of due cards.
+> 24 new backend unit tests (75 total), `tsc --noEmit` and lint clean.
+> **Still unverified against a running Postgres** — same standing caveat as
+> notes (1)–(4); the p95 < 15ms budget on the due-card read path in
+> particular has not been measured anywhere real.
 
 ---
 
 ## 2. Live today
 
-**19 operations · Phase 0 + Module 1 complete**
+**26 operations · Phase 0 + Module 1 + Module 3 complete**
 
-Three other controllers are registered — `srs`, `billing`,
+Two other controllers are registered — `billing`,
 `notifications` — but declare no routes, so they answer `404`, not `401`.
 
 | Method | Path | Auth | Returns |
@@ -117,6 +136,13 @@ Three other controllers are registered — `srs`, `billing`,
 | `GET` | `/api/v1/groups/:id/invites` | bearer | Lists **live** invites only (not revoked, not expired, not exhausted). ADMIN only (`group_invites_select_admin`); a non-ADMIN gets `[]`, not `403`. |
 | `DELETE` | `/api/v1/invites/:id` | bearer | Soft-revokes an invite (sets `revoked_at`; does not delete the row) — top-level path, not nested under a group, per the spec. ADMIN only (`group_invites_update_admin`). |
 | `POST` | `/api/v1/invites/:token/redeem` | bearer | Any authenticated caller. Runs `public.redeem_group_invite`, a `SECURITY DEFINER` function (005_group_invites_redeem.sql) — the joiner isn't a member yet, so RLS can't show them the group. `404` on an unknown token, `410 Gone` on revoked/expired/exhausted. Replaying an already-redeemed token is idempotent (`already_member: true`), not an error, and does not double-count `use_count`. |
+| `GET` | `/api/v1/topics/:id/cards/due` | bearer | FR-3.4, tech spec §3.4's exact route. Due `user_word_srs` rows for this topic plus never-reviewed `READY` words ("new cards"). Lives on `TopicsController`, delegates to `SrsService.findDue` — see note (5). |
+| `GET` | `/api/v1/srs/due` | bearer | Same as above, not scoped to a topic (FR-3.4). |
+| `GET` | `/api/v1/srs/leeches` | bearer | FR-3.3 — words with `is_leech = true` (≥ 4 failures in the trailing 7 days). Reads the stored flag, not a live aggregate. |
+| `GET` | `/api/v1/srs/stats` | bearer | FR-8.1 — total/mastered/due/leech counts plus a consecutive-day streak computed from `review_logs`. |
+| `POST` | `/api/v1/srs/rate` | bearer | FR-3.2 — submit `AGAIN`/`HARD`/`GOOD`/`EASY`. Updates ease factor, interval, and leech status per the FR-3.1 formula (`srs-algorithm.ts`); one transaction covering the state read, the `review_logs` insert, and the `user_word_srs` upsert. |
+| `POST` | `/api/v1/srs/sessions` | bearer | FR-4.3 — Standard/Reverse/Listening mode. Returns a due-card batch tagged with the mode; does not persist a session row (none exists in the schema). |
+| `POST` | `/api/v1/srs/sync` | bearer | Architecture §1 — replays offline-queued reviews in chronological order via the same rating logic as `/srs/rate`; a bad item in the batch is reported per-item, not a batch failure. |
 
 ---
 
@@ -128,8 +154,8 @@ Three other controllers are registered — `srs`, `billing`,
 | :--- | :--- | :--- | :--- |
 | `POST` | `/api/v1/words` | **live** | Tech spec §3.4 — ingest a word. Must return `201` with status `ENRICHING` in **< 50 ms**. Built 2026-09-01; the <50ms budget itself has not been load-tested (no running stack in this environment). |
 | `GET` | `/api/v1/topics` | **live** | Tech spec §3.4 — list public and private topics. Built. |
-| `GET` | `/api/v1/topics/:topicId/cards/due` | spec | Tech spec §3.4 — the SRS review queue. Carries the **p95 < 15 ms** SLO. |
-| `POST` | `/api/v1/srs/rate` | spec | Tech spec §3.4 — submit a review rating (`AGAIN` / `HARD` / `GOOD` / `EASY`). |
+| `GET` | `/api/v1/topics/:topicId/cards/due` | **live** | Tech spec §3.4 — the SRS review queue. Carries the **p95 < 15 ms** SLO, unmeasured — see note (5). Built 2026-09-01. |
+| `POST` | `/api/v1/srs/rate` | **live** | Tech spec §3.4 — submit a review rating (`AGAIN` / `HARD` / `GOOD` / `EASY`). Built 2026-09-01. |
 | `POST` | `/api/v1/billing/checkout` | spec | Tech spec §3.4 — create a Stripe checkout session. See the conflict below. |
 | `POST` | `/api/v1/notifications/subscribe` | spec | Architecture §4 sequence diagram — register a VAPID endpoint with `p256dh` and `auth` keys. |
 
@@ -175,15 +201,11 @@ still tell Module 1's implied-endpoint work is done, not merely absent.
 | `POST` | `/words/:id/re-enrich` | WRITE | Tech spec §4.1 — WRITE may "trigger re-enrichment" |
 | `GET` | `/lexicon/search` | any | FR-2.2 — backed by the trigram index on `master_lexicon` |
 
-### Modules 3 & 4 — SRS engine and flashcards · Phase 2
+### Module 3 — SRS engine · Phase 2
 
-| Method | Path | Min role | Requirement |
-| :--- | :--- | :--- | :--- |
-| `GET` | `/srs/due` | self | FR-3.4 — all due cards, not scoped to one topic |
-| `GET` | `/srs/leeches` | self | FR-3.3 — ≥ 4 failures in 7 days |
-| `GET` | `/srs/stats` | self | FR-8.1 — streaks, mastery projection |
-| `POST` | `/srs/sessions` | self | FR-4.3 — start a session in standard, reverse or listening mode |
-| `POST` | `/srs/sync` | self | Architecture §1 — offline review logs replayed on reconnect |
+**Complete** — `due`, `leeches`, `stats`, `sessions`, and `sync` are all live;
+see §2. Module 4 (the 3D flashcard player) is frontend-only and has no API
+surface of its own — it consumes these same endpoints.
 
 ### Module 5 — Dynamic quizzes · Phase 3
 
@@ -286,12 +308,10 @@ evaluated when a student opens a review session: a query, not a cron. Nothing
 needs to wake up and mark cards due, which is why the p95 &lt; 15 ms SLO applies
 to a read path rather than to a worker.
 
-> **Open question for Phase 2.** `user_word_srs.recent_mistakes` is the
-> `M_recent` term in FR-3.1's formula, but it is a plain counter with no
-> mechanism to age entries out of the 7-day window. Either recompute it on read
-> from `review_logs` (which has the timestamps) or decay it on a schedule — the
-> latter would add a third repeating job here. The specification does not answer
-> this; it should be settled before the SRS engine is implemented.
+> **Resolved (2026-09-01, see note (5) above).** `user_word_srs.recent_mistakes`
+> is recomputed from `review_logs` inside the same transaction as `POST
+> /srs/rate` — not decayed on a schedule. No third repeating job was added.
+> Detail and reasoning: `src/modules/srs/srs-algorithm.ts`'s header comment.
 
 ---
 
