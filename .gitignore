@@ -1,0 +1,58 @@
+# ==============================================================================
+# Dygo Academy
+# ==============================================================================
+
+# --- Secrets -------------------------------------------------------------
+# .env holds the JWT signing secret, the anon/service_role keys derived from
+# it, the Stripe secret key and the VAPID private key. Only .env.example is
+# ever committed.
+.env
+.env.local
+.env.*.local
+!.env.example
+
+# --- Dependencies --------------------------------------------------------
+node_modules/
+.pnp
+.pnp.js
+.yarn/cache
+.yarn/install-state.gz
+
+# --- Build output --------------------------------------------------------
+dist/
+build/
+.next/
+out/
+*.tsbuildinfo
+
+# --- NestJS / Next.js ----------------------------------------------------
+.nest/
+next-env.d.ts
+
+# --- Test & coverage -----------------------------------------------------
+coverage/
+.nyc_output/
+*.lcov
+
+# --- Logs ----------------------------------------------------------------
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# --- Local volumes & generated artefacts ---------------------------------
+volumes/
+*.bak
+*.bak[0-9]
+docker-compose.yml.bak*
+
+# --- Editors & OS --------------------------------------------------------
+.DS_Store
+.idea/
+.vscode/*
+!.vscode/extensions.json
+*.swp
+*.swo
+Thumbs.db

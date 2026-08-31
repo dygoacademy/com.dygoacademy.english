@@ -1,0 +1,351 @@
+# ==============================================================================
+# Dygo Academy - local stack
+# Image versions tracked against upstream supabase/docker/docker-compose.yml
+# (aligned 2026-08-30). Keep them moving together: mixing a 2026 Studio with a
+# 2024 Postgres is what broke /api/platform/pg-meta earlier.
+# ==============================================================================
+
+services:
+  # ============================================================================
+  # 1. Supabase PostgreSQL Core Database
+  # ============================================================================
+  supabase-db:
+    image: supabase/postgres:17.6.1.136
+    container_name: dygo_supabase_db
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    environment:
+      # Do NOT set POSTGRES_USER. The supabase/postgres image bootstraps its
+      # superuser as `supabase_admin`, and its own migrate.sh connects as that
+      # role. Setting POSTGRES_USER=postgres makes initdb create `postgres`
+      # instead, supabase_admin never exists, and migrate.sh dies with
+      # `FATAL: role "supabase_admin" does not exist`.
+      POSTGRES_HOST: /var/run/postgresql
+      POSTGRES_DB: postgres
+      PGDATABASE: postgres
+      POSTGRES_PORT: 5432
+      PGPORT: 5432
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres_password_local_dev}
+      PGPASSWORD: ${POSTGRES_PASSWORD:-postgres_password_local_dev}
+      JWT_SECRET: ${SUPABASE_JWT_SECRET:-super-secret-jwt-token-with-at-least-32-characters-long}
+      JWT_EXP: ${JWT_EXPIRY:-3600}
+    command:
+      - postgres
+      - -c
+      - config_file=/etc/postgresql/postgresql.conf
+      - -c
+      - log_min_messages=fatal
+    volumes:
+      - supabase_db_data:/var/lib/postgresql/data
+      - db_config:/etc/postgresql-custom
+      # Individual FILES into the subdirectory. Never bind-mount over
+      # /docker-entrypoint-initdb.d itself: the image keeps its own bootstrap
+      # SQL there (auth/storage schemas, anon/authenticated/service_role roles)
+      # and a directory mount masks all of it.
+      - ./database/init/99-roles.sql:/docker-entrypoint-initdb.d/init-scripts/99-roles.sql:ro
+      - ./database/init/99-jwt.sql:/docker-entrypoint-initdb.d/init-scripts/99-jwt.sql:ro
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "postgres", "-h", "localhost"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - dygo-network
+
+  # ============================================================================
+  # 2. Supabase Auth (GoTrue)
+  # ============================================================================
+  supabase-auth:
+    image: supabase/gotrue:v2.189.0
+    container_name: dygo_supabase_auth
+    depends_on:
+      supabase-db:
+        condition: service_healthy
+    restart: unless-stopped
+    environment:
+      GOTRUE_API_HOST: 0.0.0.0
+      GOTRUE_API_PORT: 9999
+      API_EXTERNAL_URL: ${SUPABASE_URL:-http://localhost:8000}/auth/v1
+      GOTRUE_DB_DRIVER: postgres
+      # supabase_auth_admin, not postgres: the image sets
+      # `ALTER ROLE supabase_auth_admin SET search_path = auth` and GoTrue's
+      # migrations issue unqualified CREATE TABLE. Password comes from
+      # database/init/99-roles.sql.
+      GOTRUE_DB_DATABASE_URL: postgres://supabase_auth_admin:${POSTGRES_PASSWORD:-postgres_password_local_dev}@supabase-db:5432/postgres?sslmode=disable
+      GOTRUE_SITE_URL: ${FRONTEND_URL:-http://localhost:3000}
+      GOTRUE_URI_ALLOW_LIST: ${FRONTEND_URL:-http://localhost:3000}/*
+      GOTRUE_JWT_SECRET: ${SUPABASE_JWT_SECRET:-super-secret-jwt-token-with-at-least-32-characters-long}
+      GOTRUE_JWT_EXP: ${JWT_EXPIRY:-3600}
+      GOTRUE_JWT_AUD: authenticated
+      GOTRUE_JWT_ADMIN_ROLES: service_role
+      GOTRUE_JWT_DEFAULT_GROUP_NAME: authenticated
+      GOTRUE_JWT_ISSUER: ${SUPABASE_URL:-http://localhost:8000}/auth/v1
+      GOTRUE_DISABLE_SIGNUP: "false"
+      GOTRUE_EXTERNAL_EMAIL_ENABLED: "true"
+      GOTRUE_MAILER_AUTOCONFIRM: "true"
+      GOTRUE_EXTERNAL_PHONE_ENABLED: "false"
+      GOTRUE_SMS_AUTOCONFIRM: "true"
+    networks:
+      - dygo-network
+
+  # ============================================================================
+  # 3. Supabase PostgREST (Auto-REST API)
+  # ============================================================================
+  supabase-rest:
+    image: postgrest/postgrest:v16.2
+    container_name: dygo_supabase_rest
+    depends_on:
+      supabase-db:
+        condition: service_healthy
+    restart: unless-stopped
+    environment:
+      # authenticator, not postgres: PostgREST switches roles per-request from
+      # this login role. Password comes from database/init/99-roles.sql.
+      PGRST_DB_URI: postgres://authenticator:${POSTGRES_PASSWORD:-postgres_password_local_dev}@supabase-db:5432/postgres
+      PGRST_DB_SCHEMAS: public,storage
+      PGRST_DB_ANON_ROLE: anon
+      PGRST_DB_MAX_ROWS: 1000
+      PGRST_DB_EXTRA_SEARCH_PATH: public
+      PGRST_JWT_SECRET: ${SUPABASE_JWT_SECRET:-super-secret-jwt-token-with-at-least-32-characters-long}
+      PGRST_DB_USE_LEGACY_GUCS: "false"
+      PGRST_APP_SETTINGS_JWT_SECRET: ${SUPABASE_JWT_SECRET:-super-secret-jwt-token-with-at-least-32-characters-long}
+      PGRST_APP_SETTINGS_JWT_EXP: ${JWT_EXPIRY:-3600}
+      PGRST_ADMIN_SERVER_PORT: 3001
+      PGRST_ADMIN_SERVER_HOST: localhost
+    command: ["postgrest"]
+    networks:
+      - dygo-network
+
+  # ============================================================================
+  # 4. Supabase Postgres Meta (backs Studio's schema browser)
+  # ============================================================================
+  supabase-meta:
+    image: supabase/postgres-meta:v0.96.6
+    container_name: dygo_supabase_meta
+    depends_on:
+      supabase-db:
+        condition: service_healthy
+    restart: unless-stopped
+    environment:
+      PG_META_PORT: 8080
+      PG_META_DB_HOST: supabase-db
+      PG_META_DB_PORT: 5432
+      PG_META_DB_NAME: postgres
+      PG_META_DB_USER: postgres
+      PG_META_DB_PASSWORD: ${POSTGRES_PASSWORD:-postgres_password_local_dev}
+      # Required: pg-meta encrypts stored credentials (e.g. foreign data
+      # wrapper options) with this. Missing => 500 on /pg-meta/.../query?key=fdws
+      CRYPTO_KEY: ${PG_META_CRYPTO_KEY}
+    networks:
+      - dygo-network
+
+  # ============================================================================
+  # 5. Supabase Studio (Database Dashboard UI)
+  # ============================================================================
+  supabase-studio:
+    image: supabase/studio:latest
+    container_name: dygo_supabase_studio
+    depends_on:
+      supabase-meta:
+        condition: service_started
+    restart: unless-stopped
+    ports:
+      - "54323:3000"
+    environment:
+      HOSTNAME: "0.0.0.0"
+      STUDIO_PG_META_URL: http://supabase-meta:8080
+      POSTGRES_HOST: supabase-db
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres_password_local_dev}
+      POSTGRES_USER_READ_WRITE: postgres
+      PG_META_CRYPTO_KEY: ${PG_META_CRYPTO_KEY}
+      PGRST_DB_SCHEMAS: public,storage
+      PGRST_DB_MAX_ROWS: 1000
+      PGRST_DB_EXTRA_SEARCH_PATH: public
+      DEFAULT_ORGANIZATION_NAME: "Dygo Academy"
+      DEFAULT_PROJECT_NAME: "Dygo Academy Local"
+      SUPABASE_URL: http://supabase-kong:8000
+      SUPABASE_PUBLIC_URL: ${SUPABASE_URL:-http://localhost:8000}
+      SUPABASE_ANON_KEY: ${SUPABASE_ANON_KEY}
+      SUPABASE_SERVICE_KEY: ${SUPABASE_SERVICE_ROLE_KEY}
+      AUTH_JWT_SECRET: ${SUPABASE_JWT_SECRET:-super-secret-jwt-token-with-at-least-32-characters-long}
+      ENABLED_FEATURES_LOGS_ALL: "false"
+    healthcheck:
+      test: ["CMD-SHELL", "node -e \"fetch('http://localhost:3000/api/platform/profile').then((r) => {if (r.status !== 200) throw new Error(r.status)})\""]
+      timeout: 10s
+      interval: 5s
+      retries: 3
+      start_period: 30s
+    networks:
+      - dygo-network
+
+  # ============================================================================
+  # 6. Supabase Kong Gateway
+  # ============================================================================
+  supabase-kong:
+    image: kong/kong:3.9.1
+    container_name: dygo_supabase_kong
+    depends_on:
+      - supabase-rest
+      - supabase-auth
+      - supabase-storage
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      KONG_DATABASE: "off"
+      KONG_DECLARATIVE_CONFIG: /usr/local/kong/kong.yml
+      KONG_ROUTER_FLAVOR: traditional_compatible
+      KONG_DNS_ORDER: LAST,A,CNAME
+      KONG_DNS_NOT_FOUND_TTL: 1
+      KONG_PLUGINS: request-transformer,cors,key-auth,acl
+      KONG_NGINX_PROXY_PROXY_BUFFER_SIZE: 160k
+      KONG_NGINX_PROXY_PROXY_BUFFERS: 64 160k
+      SUPABASE_ANON_KEY: ${SUPABASE_ANON_KEY}
+      SUPABASE_SERVICE_KEY: ${SUPABASE_SERVICE_ROLE_KEY}
+    volumes:
+      - ./supabase/kong.yml:/home/kong/temp.yml:ro
+      - ./supabase/kong-entrypoint.sh:/home/kong/kong-entrypoint.sh:ro
+    entrypoint: ["/bin/sh", "/home/kong/kong-entrypoint.sh"]
+    healthcheck:
+      test: ["CMD", "kong", "health"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - dygo-network
+
+  # ============================================================================
+  # 7. Redis (BullMQ Queues & Fast Session Cache)
+  # ============================================================================
+  redis:
+    image: redis:7-alpine
+    container_name: dygo_redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    networks:
+      - dygo-network
+
+  # ============================================================================
+  # 8. MinIO (Local S3 / R2 Emulation for Audio Files)
+  # ============================================================================
+  minio:
+    image: minio/minio:latest
+    container_name: dygo_minio
+    restart: unless-stopped
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ACCESS_KEY:-minioadmin}
+      MINIO_ROOT_PASSWORD: ${MINIO_SECRET_KEY:-minioadmin}
+    command: server /data --console-address ":9001"
+    volumes:
+      - minio_data:/data
+    healthcheck:
+      test: ["CMD", "mc", "ready", "local"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - dygo-network
+
+  # ============================================================================
+  # 9. MinIO bucket bootstrap (one-shot)
+  # ============================================================================
+  minio-createbucket:
+    image: minio/mc:latest
+    container_name: dygo_minio_createbucket
+    depends_on:
+      minio:
+        condition: service_healthy
+    restart: "no"
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ACCESS_KEY:-minioadmin}
+      MINIO_ROOT_PASSWORD: ${MINIO_SECRET_KEY:-minioadmin}
+      STORAGE_S3_BUCKET: ${STORAGE_S3_BUCKET:-supabase-storage}
+      MINIO_BUCKET: ${MINIO_BUCKET:-dygo-audio}
+    entrypoint: >
+      /bin/sh -c "
+      mc alias set local http://minio:9000 $$MINIO_ROOT_USER $$MINIO_ROOT_PASSWORD &&
+      mc mb --ignore-existing local/$$STORAGE_S3_BUCKET &&
+      mc mb --ignore-existing local/$$MINIO_BUCKET &&
+      echo 'buckets ready:' && mc ls local
+      "
+    networks:
+      - dygo-network
+
+  # ============================================================================
+  # 10. Supabase Storage API (S3 backend -> MinIO)
+  # ============================================================================
+  supabase-storage:
+    image: supabase/storage-api:v1.60.4
+    container_name: dygo_supabase_storage
+    depends_on:
+      supabase-db:
+        condition: service_healthy
+      supabase-rest:
+        condition: service_started
+      minio-createbucket:
+        condition: service_completed_successfully
+    restart: unless-stopped
+    environment:
+      ANON_KEY: ${SUPABASE_ANON_KEY}
+      SERVICE_KEY: ${SUPABASE_SERVICE_ROLE_KEY}
+      AUTH_JWT_SECRET: ${SUPABASE_JWT_SECRET:-super-secret-jwt-token-with-at-least-32-characters-long}
+      POSTGREST_URL: http://supabase-rest:3000
+      # supabase_storage_admin, password set by database/init/99-roles.sql
+      DATABASE_URL: postgres://supabase_storage_admin:${POSTGRES_PASSWORD:-postgres_password_local_dev}@supabase-db:5432/postgres
+      STORAGE_PUBLIC_URL: ${SUPABASE_URL:-http://localhost:8000}
+      REQUEST_ALLOW_X_FORWARDED_PATH: "true"
+      FILE_SIZE_LIMIT: 52428800
+      TENANT_ID: ${STORAGE_TENANT_ID:-dygo-local}
+      REGION: ${STORAGE_REGION:-us-east-1}
+      # --- S3 backend against the local MinIO ---
+      # The docs use GLOBAL_S3_*; the storage source uses STORAGE_S3_*. They are
+      # aliases and the unused set is ignored, so both are set deliberately
+      # rather than betting on one.
+      STORAGE_BACKEND: s3
+      STORAGE_S3_BUCKET: ${STORAGE_S3_BUCKET:-supabase-storage}
+      STORAGE_S3_ENDPOINT: http://localhost:9000
+      STORAGE_S3_FORCE_PATH_STYLE: "true"
+      STORAGE_S3_REGION: ${STORAGE_REGION:-us-east-1}
+      GLOBAL_S3_BUCKET: ${STORAGE_S3_BUCKET:-supabase-storage}
+      GLOBAL_S3_ENDPOINT: http://localhost:9000
+      GLOBAL_S3_PROTOCOL: http
+      GLOBAL_S3_FORCE_PATH_STYLE: "true"
+      AWS_ACCESS_KEY_ID: ${MINIO_ACCESS_KEY:-minioadmin}
+      AWS_SECRET_ACCESS_KEY: ${MINIO_SECRET_KEY:-minioadmin}
+      AWS_DEFAULT_REGION: ${STORAGE_REGION:-us-east-1}
+      # imgproxy is omitted: upstream wires it through a shared local-filesystem
+      # volume, which does not exist with an S3 backend. Irrelevant for an
+      # audio pipeline; set this true and add imgproxy if images ever need it.
+      ENABLE_IMAGE_TRANSFORMATION: "false"
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:5000/status"]
+      timeout: 5s
+      interval: 5s
+      retries: 5
+      start_period: 15s
+    networks:
+      - dygo-network
+
+volumes:
+  supabase_db_data:
+  db_config:
+  redis_data:
+  minio_data:
+
+networks:
+  dygo-network:
+    driver: bridge

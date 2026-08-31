@@ -1,0 +1,52 @@
+import { Module } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
+import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
+
+import { HttpExceptionFilter } from './common/filters/http-exception.filter';
+import { SupabaseJwtGuard } from './common/guards/supabase-jwt.guard';
+import { TransformResponseInterceptor } from './common/interceptors/transform-response.interceptor';
+import configuration from './config/configuration';
+import { validateEnv } from './config/env.validation';
+import { DatabaseModule } from './database/database.module';
+import { HealthModule } from './health/health.module';
+import { BillingModule } from './modules/billing/billing.module';
+import { NotificationsModule } from './modules/notifications/notifications.module';
+import { SrsModule } from './modules/srs/srs.module';
+import { TopicsModule } from './modules/topics/topics.module';
+import { WordsModule } from './modules/words/words.module';
+import { QueuesModule } from './queues/queues.module';
+import { EnrichmentProcessor } from './workers/enrichment.processor';
+import { MaintenanceProcessor } from './workers/maintenance.processor';
+import { NotificationProcessor } from './workers/notification.processor';
+
+@Module({
+  imports: [
+    ConfigModule.forRoot({
+      isGlobal: true,
+      load: [configuration],
+      validate: validateEnv,
+      // Read the repo-root .env so the API and docker-compose share one file.
+      envFilePath: ['../.env', '.env'],
+    }),
+    DatabaseModule,
+    QueuesModule,
+    HealthModule,
+    TopicsModule,
+    WordsModule,
+    SrsModule,
+    BillingModule,
+    NotificationsModule,
+  ],
+  providers: [
+    EnrichmentProcessor,
+    NotificationProcessor,
+    MaintenanceProcessor,
+    // Authentication is global and opt-OUT via @Public(), not opt-in. A new
+    // controller added six months from now is protected by default; forgetting
+    // a decorator can only ever make a route too strict, never too open.
+    { provide: APP_GUARD, useClass: SupabaseJwtGuard },
+    { provide: APP_INTERCEPTOR, useClass: TransformResponseInterceptor },
+    { provide: APP_FILTER, useClass: HttpExceptionFilter },
+  ],
+})
+export class AppModule {}
