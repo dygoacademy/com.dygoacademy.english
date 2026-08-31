@@ -71,9 +71,7 @@ export class JobSchedulerService implements OnApplicationBootstrap {
       ...(await this.maintenance.getJobSchedulers()),
     ];
     this.logger.log(
-      `repeating jobs registered: ${scheduled
-        .map((s) => `${s.key} (${s.pattern})`)
-        .join(', ')}`,
+      `repeating jobs registered: ${scheduled.map((s) => `${s.key} (${s.pattern})`).join(', ')}`,
     );
   }
 }

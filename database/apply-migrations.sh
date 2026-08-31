@@ -70,6 +70,7 @@ esac
 run_file "$DIR/migrations/001_initial_schema.sql"
 run_file "$DIR/migrations/002_rls_policies.sql"
 run_file "$DIR/migrations/003_indexes.sql"
+run_file "$DIR/migrations/005_group_invites_redeem.sql"
 
 case "${1:-}" in
   --seed)

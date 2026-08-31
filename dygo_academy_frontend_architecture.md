@@ -1,8 +1,13 @@
 # 🏗️ Dygo Academy: Frontend Architecture & Structure
-**Document Version**: 1.0
+**Document Version**: 1.2
 **Author**: Principal Cloud & SaaS Solutions Advisory
-**Status**: Approved Standard — describes `com.dygoacademy.frontend` as of Phase 0 completion (2026-08-31)
+**Status**: Approved Standard — describes `com.dygoacademy.frontend` as of the Topics grid screen (2026-08-31)
 **Companion documents**: [`dygo_academy_tech_spec_and_conventions.md`](dygo_academy_tech_spec_and_conventions.md) (naming rules, full stack matrix), [`dygo_academy_api_surface.md`](dygo_academy_api_surface.md) (backend contract)
+
+**Changelog**
+* **1.2** (2026-08-31) — Wireframe 1f (Topics grid) built at the new route `/topics/browse`, resolving a gap from 1.1: the Navbar's "Topics" link previously pointed at the same route as "Home." Navbar relinked to match the wireframe's actual 4-tab set (Home/Topics/Progress/You) and the standalone "Study" link removed — the source design has no persistent Study tab.
+* **1.1** (2026-08-31) — §15 added: the guest-trial → home → study-session journey implemented from the "Dygo Wireframes" Claude Design canvas. New routes (`/topics/[topicId]`), new feature folders (`components/onboarding/`, `components/topics/`, `components/flashcard/`), the first real data hook (`hooks/useTopics.ts`), and the brand accent token (§9 updated). §3 tree and §6 updated to match.
+* **1.0** — Initial architecture, Phase 0 scaffold.
 
 ---
 
@@ -64,6 +69,7 @@ com.dygoacademy.frontend/
 │   │   ├── group.ts                 #   Group, GroupMember
 │   │   ├── topic.ts                 #   Topic, TopicSummary
 │   │   ├── word.ts                  #   TopicWord, WordStatus, CefrLevel
+│   │   ├── srs.ts                   #   SrsRating
 │   │   └── index.ts                 #   barrel export
 │   ├── lib/
 │   │   ├── api-client.ts            # Typed fetch wrapper — unwraps ApiResponse<T>, attaches bearer token
@@ -74,16 +80,19 @@ com.dygoacademy.frontend/
 │   │       └── middleware.ts        #   updateSession() — the shared logic middleware.ts calls
 │   ├── stores/
 │   │   └── useStudySessionStore.ts  # Zustand — client-only session state (see §6)
-│   ├── hooks/                       # Custom hooks — empty until Phase 1+ (useSrsQueue, useAudioPlayer, ...)
+│   ├── hooks/
+│   │   └── useTopics.ts             # TanStack Query — the first real data hook (§15), wraps live GET /topics
 │   ├── components/
 │   │   ├── ui/                      # shadcn/ui primitives — button.tsx, card.tsx, ... (the design system layer)
 │   │   ├── layout/                  # App chrome — Navbar, SignOutButton, QueryProvider, ThemeProvider
-│   │   ├── flashcard/                # Feature components — Phase 2
-│   │   └── quiz/                    # Feature components — Phase 3
+│   │   ├── onboarding/               # GuestWordTrial.tsx — the pre-signup trial (§15)
+│   │   ├── topics/                  # DueNowCard, TopicCard, TopicGridCard, LeechNudge, WordStatusRow, EmptyTopicState
+│   │   ├── flashcard/                # Flashcard.tsx (flip), RatingButtons.tsx — shared by guest trial & study session
+│   │   └── quiz/                    # Feature components — Phase 3, still empty
 │   └── app/
 │       ├── layout.tsx               # Root layout — ThemeProvider + QueryProvider
-│       ├── page.tsx                 # Landing page
-│       ├── globals.css              # Tailwind + design tokens + 3D transform utilities
+│       ├── page.tsx                 # Landing page — guest word trial (§15)
+│       ├── globals.css              # Tailwind + design tokens (incl. brand accent, §15) + 3D transform utilities
 │       ├── error.tsx                # Root error boundary
 │       ├── global-error.tsx         # Catches errors in the root layout itself
 │       ├── not-found.tsx            # 404
@@ -96,8 +105,10 @@ com.dygoacademy.frontend/
 │           ├── layout.tsx           # Server-side session re-check + Navbar
 │           ├── error.tsx            # Segment-scoped error boundary
 │           ├── loading.tsx          # Segment-scoped loading UI
-│           ├── topics/page.tsx
-│           ├── study/page.tsx
+│           ├── topics/page.tsx      # Home screen — due-now, your topics (real data), leech nudge
+│           ├── topics/browse/page.tsx     # Topics grid (1f) — search filter, all topics, real data
+│           ├── topics/[topicId]/page.tsx  # Topic detail — empty/enriching/failed word states
+│           ├── study/page.tsx       # Study session — flashcard flip + two-button rating
 │           ├── analytics/page.tsx
 │           └── settings/page.tsx
 ├── package.json                     # name: com.dygoacademy.frontend
@@ -189,7 +200,8 @@ rather than a component three renders deep throwing `Cannot read property 'auth'
 
 - **`components/ui/`** is the design-system layer — shadcn/ui primitives (`Button`, `Card`, ...) built on Tailwind + the CSS-variable tokens in `globals.css`. Nothing here knows about Dygo's domain; a `Button` doesn't know what a Topic is. This is what makes dark mode, re-theming, or a future design refresh a one-file change instead of a find-and-replace across every screen.
 - **`components/layout/`** is app chrome — things that appear on every authenticated page regardless of feature (`Navbar`, `SignOutButton`, the `QueryProvider`/`ThemeProvider` wrappers). Not domain components either.
-- **`components/flashcard/`, `components/quiz/`** are feature folders — one per domain area, populated as each phase builds it (currently empty scaffolds; Phase 2 and Phase 3 respectively). This is the pattern to keep following: when Phase 1 builds the Topic Explorer, it gets `components/topics/`, not a growing pile of unrelated components in a flat folder. A flat `components/` directory is the single most common way a React app becomes hard to navigate past a few dozen files.
+- **`components/flashcard/`, `components/topics/`, `components/onboarding/`, `components/quiz/`** are feature folders — one per domain area, populated as each phase builds it. This is the pattern the customer-journey build in §15 followed exactly: `components/topics/` didn't exist until the Topic Explorer needed it, and it holds only topic-related pieces. `components/quiz/` is still an empty scaffold — Phase 3. A flat `components/` directory is the single most common way a React app becomes hard to navigate past a few dozen files.
+- **Cross-context reuse belongs in the feature folder whose concept it is, not a new one.** `Flashcard.tsx` lives in `components/flashcard/` and is used by both the guest trial (`components/onboarding/GuestWordTrial.tsx`) and the real study session (`app/(dashboard)/study/page.tsx`) — it's a flashcard in both places, so it didn't get copied or moved to a generic `components/shared/`.
 - **Composition rule**: `page.tsx` files orchestrate (fetch, lay out, pass props); reusable pieces live in `components/`. A `page.tsx` that's mostly JSX markup instead of composition is a sign a component should be extracted.
 
 ---
@@ -254,3 +266,29 @@ Follow this order for every new module (matches the vertical-slice approach in `
 5. **Components** — a new folder under `components/` named after the feature if it doesn't already exist, built from `components/ui/` primitives.
 6. **Page** — compose the above in `app/(dashboard)/<feature>/page.tsx`. Inherits the segment's `error.tsx`/`loading.tsx` unless the feature needs its own.
 7. **Docs** — update this file's §3 tree and `dygo_academy_api_surface.md` if new endpoints are involved, with a version bump if the change is structural.
+
+---
+
+## 15. The first customer journey — source, decisions, and honesty about mocks
+
+Implemented from the "Dygo Wireframes" Claude Design canvas (project `f856506e-6112-4476-a6d9-ba2f00730ae8`), which laid out 2–5 alternative screens per step rather than one decided flow. The choices below were made by the product owner, not assumed:
+
+| Step | Chosen | Explicitly not built (this pass) |
+| :--- | :--- | :--- |
+| Onboarding entry | 1a — try a word before signup (landing page) | 1b (starter-quiz), 1c (teacher invite-link) — different acquisition channels, own routes when needed |
+| Home screen | 1d — due-now focus | 1e (checklist framing) |
+| Topics tab | 1f — topics grid, at `/topics/browse` | — |
+| Card rating | 1g (light) + 1i (dark) | 1h (four ratings shown at once) |
+| Edge states | 1j/1k/1l — empty / enriching / failed | 2b (session summary), 1m (quiz explain — Phase 3), 1n (paywall — Phase 4) |
+
+**What's real versus mocked, and why that split:**
+
+- `GET /api/v1/topics` is the one live backend endpoint (Phase 0), so `hooks/useTopics.ts` calls it for real — the "Your Topics" list on the home screen and the topic title/word count on the detail page are genuine data. Whether the empty state (1j) shows is a real decision, driven by real data: `word_count === '0'`.
+- Everything that depends on an endpoint that doesn't exist yet — due-count and streak (`GET /srs/due`, `/srs/stats`), the leech nudge (`GET /srs/leeches`), the word list on a topic's detail page (`GET /topics/:topicId/words`), the study queue (`GET /topics/:topicId/cards/due`), and rating persistence (`POST /srs/rate`) — is a clearly labeled mock with a comment naming the endpoint and phase that will replace it. A topic detail page mixes both: real title, mocked word list, with a visible banner saying so. Faking a word list under a real topic id with no disclosure would be more misleading than showing nothing.
+- The 1g/1i split ("same layout, light and dark") is implemented as one set of components styled by the app's existing light/dark tokens (next-themes, already wired since Phase 0), not two hand-duplicated skins — the more scalable reading of "same layout, two modes."
+
+**Brand accent**: `#c2603f` (the wireframe's `--acc`, used for every primary CTA across all ~20 screens) is now the app's `--primary` token in `globals.css`, light and dark. This was a design decision made in the course of implementation, not asked about screen-by-screen — flag it if it's wrong; it's one line to change back.
+
+**New in this pass**: `hooks/useTopics.ts` (first real data hook), `components/onboarding/`, `components/topics/`, `components/flashcard/{Flashcard,RatingButtons}.tsx`, the `app/(dashboard)/topics/[topicId]` dynamic route, `types/srs.ts`, and nav links in `Navbar.tsx`. Measured cost: `/topics` and `/topics/[topicId]` grew to 205 kB First Load JS (from the 103 kB baseline in §10) — the first time a route actually uses TanStack Query, so the jump is inherent to that library shipping to the client, not a regression to chase.
+
+**1.2 addendum — Topics grid (1f)**: built at the new route `/topics/browse` (`components/topics/TopicGridCard.tsx`), using the same `useTopics()` hook as the home screen — real title, word count, and public/private badge per topic, plus a client-side search filter (explicitly commented as distinct from the future `GET /lexicon/search`, FR-2.2). Deliberately omits a per-topic due-count chip: one labeled aggregate mock (the home screen's DUE NOW count) reads as honest; several specific-looking per-topic numbers on a grid would not. This pass also fixed a navigation gap from 1.1 — the Navbar's "Topics" link had pointed at the same route as "Home" — by relinking `Navbar.tsx` to the wireframe's actual persistent tab set (Home/Topics/Progress/You) and removing the standalone "Study" link, which the source design never included as persistent navigation. `/topics/browse` measured at 195 kB First Load JS.

@@ -3,11 +3,7 @@ import { Global, Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 
 import { JobSchedulerService } from './job-scheduler.service';
-import {
-  ENRICHMENT_QUEUE,
-  MAINTENANCE_QUEUE,
-  NOTIFICATION_QUEUE,
-} from './queue.constants';
+import { ENRICHMENT_QUEUE, MAINTENANCE_QUEUE, NOTIFICATION_QUEUE } from './queue.constants';
 
 @Global()
 @Module({

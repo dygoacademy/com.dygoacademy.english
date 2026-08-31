@@ -52,12 +52,9 @@ async function bootstrap(): Promise<void> {
     .addTag('billing', 'Module 7 — seat subscriptions')
     .build();
 
-  SwaggerModule.setup(
-    'api/docs',
-    app,
-    SwaggerModule.createDocument(app, swagger),
-    { swaggerOptions: { persistAuthorization: true } },
-  );
+  SwaggerModule.setup('api/docs', app, SwaggerModule.createDocument(app, swagger), {
+    swaggerOptions: { persistAuthorization: true },
+  });
 
   const port = config.get<number>('port', 3001);
   await app.listen(port);

@@ -17,6 +17,7 @@ export const ROUTES = {
   login: '/login',
   register: '/register',
   topics: '/topics',
+  topicsBrowse: '/topics/browse',
   study: '/study',
   analytics: '/analytics',
   settings: '/settings',

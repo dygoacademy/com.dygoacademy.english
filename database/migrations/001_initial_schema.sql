@@ -383,3 +383,35 @@ $$;
 create trigger trg_auth_user_created
   after insert on auth.users
   for each row execute function public.handle_new_auth_user();
+
+-- -----------------------------------------------------------------------------
+-- Seat the owner as ADMIN the moment a group is created.
+--
+-- Without this, self-service group creation deadlocks under RLS: groups_insert
+-- (002_rls_policies.sql) only requires owner_id = auth.uid(), but
+-- group_members_insert_admin requires has_group_role(group_id, 'ADMIN') —
+-- which is false for every group until a group_members row exists. A brand
+-- new authenticated user could create a group and then be permanently unable
+-- to add themselves to its roster, add topics that need a WRITE/ADMIN group
+-- member, or ever manage it. 004_seed_data.sql never exercises this path
+-- because fixtures are inserted as service_role, which bypasses RLS entirely.
+-- security definer lets this trigger write group_members on the owner's
+-- behalf without needing its own INSERT policy.
+-- -----------------------------------------------------------------------------
+create or replace function public.handle_new_group()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  insert into public.group_members (group_id, user_id, role)
+  values (new.id, new.owner_id, 'ADMIN')
+  on conflict (group_id, user_id) do nothing;
+  return new;
+end;
+$$;
+
+create trigger trg_group_owner_membership
+  after insert on public.groups
+  for each row execute function public.handle_new_group();

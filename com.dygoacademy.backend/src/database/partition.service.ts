@@ -36,16 +36,13 @@ export class PartitionService {
     try {
       const now = new Date();
       for (let i = 0; i <= monthsAhead; i++) {
-        const start = new Date(
-          Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + i, 1),
-        );
-        const end = new Date(
-          Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + i + 1, 1),
-        );
+        const start = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + i, 1));
+        const end = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + i + 1, 1));
 
-        const suffix = `${start.getUTCFullYear()}_${String(
-          start.getUTCMonth() + 1,
-        ).padStart(2, '0')}`;
+        const suffix = `${start.getUTCFullYear()}_${String(start.getUTCMonth() + 1).padStart(
+          2,
+          '0',
+        )}`;
         const table = `review_logs_${suffix}`;
 
         // The identifier is derived from formatted dates, never from input, so
@@ -54,10 +51,7 @@ export class PartitionService {
           throw new Error(`refusing to create suspicious partition "${table}"`);
         }
 
-        const before = await client.query(
-          'select 1 from pg_class where relname = $1',
-          [table],
-        );
+        const before = await client.query('select 1 from pg_class where relname = $1', [table]);
         if (before.rowCount) continue;
 
         await client.query(

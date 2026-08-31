@@ -10,6 +10,7 @@ import { validateEnv } from './config/env.validation';
 import { DatabaseModule } from './database/database.module';
 import { HealthModule } from './health/health.module';
 import { BillingModule } from './modules/billing/billing.module';
+import { GroupsModule } from './modules/groups/groups.module';
 import { NotificationsModule } from './modules/notifications/notifications.module';
 import { SrsModule } from './modules/srs/srs.module';
 import { TopicsModule } from './modules/topics/topics.module';
@@ -31,6 +32,7 @@ import { NotificationProcessor } from './workers/notification.processor';
     DatabaseModule,
     QueuesModule,
     HealthModule,
+    GroupsModule,
     TopicsModule,
     WordsModule,
     SrsModule,

@@ -1,9 +1,4 @@
-import {
-  Injectable,
-  Logger,
-  OnModuleDestroy,
-  OnModuleInit,
-} from '@nestjs/common';
+import { Injectable, Logger, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Pool, PoolClient, QueryResultRow } from 'pg';
 
@@ -35,9 +30,7 @@ export class DatabaseService implements OnModuleInit, OnModuleDestroy {
       connectionTimeoutMillis: 5_000,
     });
 
-    this.pool.on('error', (err) =>
-      this.logger.error(`idle client error: ${err.message}`),
-    );
+    this.pool.on('error', (err) => this.logger.error(`idle client error: ${err.message}`));
   }
 
   async onModuleDestroy(): Promise<void> {
@@ -60,22 +53,15 @@ export class DatabaseService implements OnModuleInit, OnModuleDestroy {
    * pooled connection handed to the next request cannot inherit the previous
    * user's identity. Using plain SET here would be a cross-user data leak.
    */
-  async withUser<T>(
-    userId: string,
-    work: (client: PoolClient) => Promise<T>,
-  ): Promise<T> {
+  async withUser<T>(userId: string, work: (client: PoolClient) => Promise<T>): Promise<T> {
     const client = await this.pool.connect();
     try {
       await client.query('begin');
       await client.query("select set_config('role', 'authenticated', true)");
-      await client.query(
-        "select set_config('request.jwt.claim.sub', $1, true)",
-        [userId],
-      );
-      await client.query(
-        "select set_config('request.jwt.claims', $1, true)",
-        [JSON.stringify({ sub: userId, role: 'authenticated' })],
-      );
+      await client.query("select set_config('request.jwt.claim.sub', $1, true)", [userId]);
+      await client.query("select set_config('request.jwt.claims', $1, true)", [
+        JSON.stringify({ sub: userId, role: 'authenticated' }),
+      ]);
       const result = await work(client);
       await client.query('commit');
       return result;

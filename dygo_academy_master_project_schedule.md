@@ -89,6 +89,16 @@ gantt
 ### 🧠 Phase 1: Collaborative Groups & AI Lexicon Ingestion
 * **Timeline**: Sprint 2 (Weeks 3 – 4)  
 * **Primary Objective**: Implement **Module 1** (Multi-Tenant Groups & RBAC) and **Module 2** (Automated AI Word Enrichment Engine).
+* **Status** (2026-09-01): Module 1 backend is code-complete — 19 live endpoints
+  covering groups, roster/RBAC management, magic invites, and topic CRUD +
+  clone (`dygo_academy_api_surface.md` §2). Module 2 has only its ingestion
+  endpoint (`POST /words`) and the `master_lexicon` dedup lookup; the
+  Gemini/TTS calls inside `EnrichmentProcessor` are still a stub. **None of
+  this has been run against a live Postgres/Redis stack** — no Docker in the
+  sandbox this work was done in. Static checks only: `tsc --noEmit`, `eslint`,
+  and 45 Jest unit tests, all clean. Verify against `/api/docs` and the RLS
+  suite (`database/apply-migrations.sh --test`) before treating Module 1 as
+  done.
 
 #### Core Engineering Tasks:
 1. **Module 1: Groups, Topics & Granular RBAC**:

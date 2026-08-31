@@ -12,38 +12,92 @@ Conflating them is how a roadmap quietly turns into a status report.
 
 | Tier | Count | Meaning |
 | :--- | :---: | :--- |
-| **Live** | 2 | Exists and responds today. Verified from the boot-time OpenAPI document. |
-| **Specified** | 6 | Named verbatim in `dygo_academy_tech_spec_and_conventions.md` §3.4 or in `dygo_academy_complete_system_architecture_master.md`. The only endpoints committed to in writing. |
-| **Implied** | 44 | Derived from the BRD's functional requirements. **Carries no authority** — review before treating as a plan. |
+| **Live** | 19 | Exists and responds today. Verified by direct code read (not yet re-verified against a running boot — see note below) 2026-09-01. |
+| **Specified** | 5 | Named verbatim in `dygo_academy_tech_spec_and_conventions.md` §3.4 or in `dygo_academy_complete_system_architecture_master.md`. The only endpoints committed to in writing. |
+| **Implied** | 28 | Derived from the BRD's functional requirements. **Carries no authority** — review before treating as a plan. |
 
 > **The live API is the authority, not this file.** Swagger is generated from the
 > code at boot and cannot go stale: **http://localhost:3001/api/docs**. This
 > document exists for the part Swagger cannot show — what is coming, and on what
 > evidence. It *will* drift the moment a route is added.
+>
+> **2026-09-01 note:** `POST /api/v1/words` was implemented this session
+> (`words.controller.ts` / `words.service.ts` + unit tests) but has not yet
+> been exercised against a running Postgres/Redis stack (no Docker in this
+> environment) — verify against `/api/docs` before relying on it for UAT.
+>
+> **2026-09-01 note (2):** `GET /api/v1/groups` and `POST /api/v1/groups` were
+> implemented this session (`groups.controller.ts` / `groups.service.ts` + unit
+> tests) — the first slice of Module 1. Building `POST /groups` surfaced a real
+> RLS deadlock: `groups_insert` only required `owner_id = auth.uid()`, but
+> `group_members_insert_admin` required already holding ADMIN on the group,
+> so no authenticated user could ever seat themselves as the first member of
+> a group they'd just created. Fixed with a `security definer` trigger,
+> `trg_group_owner_membership` (`database/migrations/001_initial_schema.sql`),
+> that seats the owner as ADMIN inside the same insert. `004_seed_data.sql`'s
+> membership insert and `database/tests/rls_test.sql` (§E) were updated
+> accordingly. Like everything else in this note, unverified against a running
+> stack — no Docker in this environment.
+>
+> **2026-09-01 note (3):** A second pass this session completed the rest of
+> Module 1's implied table — 14 endpoints, all in §2 now: group detail
+> (`PATCH`/`DELETE /groups/:id`), roster management (`GET`/`PATCH`/`DELETE
+> .../members[/:userId]`), magic invites (`POST`/`GET .../invites`, `DELETE
+> /invites/:id`, `POST /invites/:token/redeem`), and topic CRUD + clone
+> (`POST /topics`, `GET`/`PATCH`/`DELETE /topics/:id`, `POST
+> /topics/:id/clone`). Invite redemption required a new migration,
+> `005_group_invites_redeem.sql` — `public.redeem_group_invite`, a
+> `SECURITY DEFINER` function, not the `DATABASE_ADMIN_URL` superuser
+> connection PartitionService uses, because the joiner is by definition not
+> a member yet and cannot see the group under RLS; see that migration's
+> header comment for why a scoped function was chosen over a broader
+> service-role connection. `database/tests/rls_test.sql` gained §F covering
+> redeem success, replay-is-idempotent, unknown/revoked/expired tokens.
+> `database/apply-migrations.sh` now runs 005 after 003. 25 new backend
+> unit tests (45 total), `tsc --noEmit` clean, `npm run lint` clean. None of
+> this has been exercised against a running Postgres — no Docker in this
+> environment, same limitation as note (2).
 
 ---
 
 ## 2. Live today
 
-**2 operations · Phase 0**
+**19 operations · Phase 0 + Module 1 complete**
 
-Four other controllers are registered — `words`, `srs`, `billing`,
+Three other controllers are registered — `srs`, `billing`,
 `notifications` — but declare no routes, so they answer `404`, not `401`.
 
 | Method | Path | Auth | Returns |
 | :--- | :--- | :--- | :--- |
 | `GET` | `/api/v1/health` | public | Liveness plus a real `select 1` against Postgres. The only route exempt from the global guard. |
 | `GET` | `/api/v1/topics` | bearer | Topics visible to the caller, with word counts. The SQL carries **no** tenant or membership filter — Row-Level Security does the filtering inside Postgres. |
+| `POST` | `/api/v1/topics` | bearer | Creates a topic under a group. Requires WRITE on that group (`topics_insert_write`); a caller without it gets `403` from the INSERT itself. |
+| `GET` | `/api/v1/topics/:id` | bearer | Topic detail plus its words, as two separately RLS-scoped queries (`topics_select`, `topic_words_select`) rather than a join. `404` if the topic doesn't exist or isn't visible to the caller. |
+| `PATCH` | `/api/v1/topics/:id` | bearer | Rename / re-describe / toggle visibility. Requires WRITE (`topics_update_write`); `404` for both "not found" and "not WRITE" — RLS filters the UPDATE's target rows rather than raising. |
+| `DELETE` | `/api/v1/topics/:id` | bearer | ADMIN only (`topics_delete_admin`) — tech spec §4.1 is explicit that WRITE cannot delete a topic. |
+| `POST` | `/api/v1/topics/:id/clone` | bearer | Clones a topic that is genuinely `is_public = true` (checked explicitly, not just RLS-readable) into a new, private-by-default topic under a target group the caller has WRITE on. Copies words including their resolved `lexicon_id` (no re-enrichment); does not copy `custom_note`. Transactional via `DatabaseService.withUser`. |
+| `POST` | `/api/v1/words` | bearer | Inserts a `topic_words` row (`status = ENRICHING`) and enqueues `enrichment-queue`. Returns `201`. WRITE-role enforcement is Postgres RLS (`topic_words_insert_write`), translated to `403`/`409` in `WordsService`, not re-checked in application code. |
+| `GET` | `/api/v1/groups` | bearer | Groups the caller is a `group_members` row in, with their role. Narrower than the `groups_select` RLS policy on purpose — see `GroupsService.findMine`. |
+| `POST` | `/api/v1/groups` | bearer | Creates a group owned by the caller; `tenant_id` is computed from the caller's profile by Postgres, never trusted from the body. The owner is seated as `ADMIN` automatically by `trg_group_owner_membership`. Fails if the caller's profile has no `tenant_id` yet — solo-user tenant provisioning is unspecified (see note above). |
+| `PATCH` | `/api/v1/groups/:id` | bearer | Rename / re-describe / toggle visibility. ADMIN only (`groups_update_admin`); same 404-for-both-cases reasoning as topic update. |
+| `DELETE` | `/api/v1/groups/:id` | bearer | ADMIN only (`groups_delete_admin`). |
+| `GET` | `/api/v1/groups/:id/members` | bearer | The roster. WRITE-and-above see everyone; a READ member sees only their own row — enforced by `group_members_select`, not this endpoint. |
+| `PATCH` | `/api/v1/groups/:id/members/:userId` | bearer | Assign a member's role. ADMIN only (`group_members_update_admin`). |
+| `DELETE` | `/api/v1/groups/:id/members/:userId` | bearer | Revoke a member's access. ADMIN only (`group_members_delete_admin`). Known gap: nothing stops an ADMIN removing the last ADMIN from a group — unspecified in the BRD. |
+| `POST` | `/api/v1/groups/:id/invites` | bearer | Mints a magic invite link. ADMIN only (`group_invites_insert_admin`). The raw token is generated in Node, returned exactly once, and never persisted — only `public.hash_invite_token`'s SHA-256 of it is. |
+| `GET` | `/api/v1/groups/:id/invites` | bearer | Lists **live** invites only (not revoked, not expired, not exhausted). ADMIN only (`group_invites_select_admin`); a non-ADMIN gets `[]`, not `403`. |
+| `DELETE` | `/api/v1/invites/:id` | bearer | Soft-revokes an invite (sets `revoked_at`; does not delete the row) — top-level path, not nested under a group, per the spec. ADMIN only (`group_invites_update_admin`). |
+| `POST` | `/api/v1/invites/:token/redeem` | bearer | Any authenticated caller. Runs `public.redeem_group_invite`, a `SECURITY DEFINER` function (005_group_invites_redeem.sql) — the joiner isn't a member yet, so RLS can't show them the group. `404` on an unknown token, `410 Gone` on revoked/expired/exhausted. Replaying an already-redeemed token is idempotent (`already_member: true`), not an error, and does not double-count `use_count`. |
 
 ---
 
 ## 3. Named in the specification
 
-**6 operations · quoted, not inferred**
+**5 operations · quoted, not inferred**
 
 | Method | Path | Status | Source & purpose |
 | :--- | :--- | :--- | :--- |
-| `POST` | `/api/v1/words` | spec | Tech spec §3.4 — ingest a word. Must return `201` with status `ENRICHING` in **< 50 ms**. |
+| `POST` | `/api/v1/words` | **live** | Tech spec §3.4 — ingest a word. Must return `201` with status `ENRICHING` in **< 50 ms**. Built 2026-09-01; the <50ms budget itself has not been load-tested (no running stack in this environment). |
 | `GET` | `/api/v1/topics` | **live** | Tech spec §3.4 — list public and private topics. Built. |
 | `GET` | `/api/v1/topics/:topicId/cards/due` | spec | Tech spec §3.4 — the SRS review queue. Carries the **p95 < 15 ms** SLO. |
 | `POST` | `/api/v1/srs/rate` | spec | Tech spec §3.4 — submit a review rating (`AGAIN` / `HARD` / `GOOD` / `EASY`). |
@@ -66,7 +120,7 @@ document should be corrected.
 
 ## 4. Implied by the requirements
 
-**44 operations · inferred, needs review**
+**28 operations · inferred, needs review**
 
 No document names these. Each is derived from a functional requirement that
 cannot be satisfied without it — a teacher who can invite students needs
@@ -77,24 +131,9 @@ Paths below omit the `/api/v1` prefix for readability.
 
 ### Module 1 — Groups, topics & RBAC · Phase 1
 
-| Method | Path | Min role | Requirement |
-| :--- | :--- | :--- | :--- |
-| `GET` | `/groups` | member | FR-1.1 — groups the caller belongs to |
-| `POST` | `/groups` | any | FR-1.1 — create a class or workspace |
-| `PATCH` | `/groups/:id` | ADMIN | FR-1.2 — rename, toggle visibility |
-| `DELETE` | `/groups/:id` | ADMIN | FR-1.2 — ADMIN only |
-| `GET` | `/groups/:id/members` | WRITE | FR-1.2 — roster. READ members cannot enumerate classmates |
-| `PATCH` | `/groups/:id/members/:userId` | ADMIN | FR-1.2 — assign role |
-| `DELETE` | `/groups/:id/members/:userId` | ADMIN | FR-1.2 — revoke access |
-| `POST` | `/groups/:id/invites` | ADMIN | FR-1.3 — mint a magic link. Raw token returned once, never stored |
-| `GET` | `/groups/:id/invites` | ADMIN | FR-1.3 — list live invites |
-| `DELETE` | `/invites/:id` | ADMIN | FR-1.3 — revoke |
-| `POST` | `/invites/:token/redeem` | any | FR-1.3 — join. Runs as `service_role`: the joiner is not yet a member, so RLS cannot see the group for them |
-| `POST` | `/topics` | WRITE | FR-1.1 |
-| `GET` | `/topics/:id` | READ | FR-1.1 — detail with words |
-| `PATCH` | `/topics/:id` | WRITE | FR-1.2 |
-| `DELETE` | `/topics/:id` | ADMIN | FR-1.2 — WRITE explicitly **cannot** delete a topic |
-| `POST` | `/topics/:id/clone` | any | FR-1.1 — public topics are "searchable, cloneable" |
+**Complete** — every endpoint this table used to list is now live; see §2.
+Kept as a heading rather than deleted so a reader scanning by module can
+still tell Module 1's implied-endpoint work is done, not merely absent.
 
 ### Module 2 — Word ingestion & AI enrichment · Phase 1
 

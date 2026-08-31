@@ -82,14 +82,21 @@ insert into public.groups (id, tenant_id, owner_id, name, description, is_public
    'Belongs to a different tenant. Must never be visible to Oxford users.',
    false);
 
--- Memberships — every role represented ---------------------------------------
+-- Memberships — every role represented -----------------------------------------
+-- The three ADMIN rows below (each group's owner) are also written by
+-- trg_group_owner_membership the moment the insert above commits (see
+-- 001_initial_schema.sql). Listing them here anyway keeps this file readable
+-- as "the full roster per group" rather than a confusing partial list; ON
+-- CONFLICT reconciles the duplicate instead of erroring on the unique
+-- (group_id, user_id) constraint.
 insert into public.group_members (group_id, user_id, role) values
   ('bbbbbbbb-0000-0000-0000-000000000001', '11111111-1111-1111-1111-111111111111', 'ADMIN'),
   ('bbbbbbbb-0000-0000-0000-000000000001', '22222222-2222-2222-2222-222222222222', 'WRITE'),
   ('bbbbbbbb-0000-0000-0000-000000000001', '33333333-3333-3333-3333-333333333333', 'READ'),
   ('bbbbbbbb-0000-0000-0000-000000000001', '44444444-4444-4444-4444-444444444444', 'READ'),
   ('bbbbbbbb-0000-0000-0000-000000000002', '11111111-1111-1111-1111-111111111111', 'ADMIN'),
-  ('bbbbbbbb-0000-0000-0000-000000000003', '55555555-5555-5555-5555-555555555555', 'ADMIN');
+  ('bbbbbbbb-0000-0000-0000-000000000003', '55555555-5555-5555-5555-555555555555', 'ADMIN')
+on conflict (group_id, user_id) do update set role = excluded.role;
 
 -- Topics --------------------------------------------------------------------
 insert into public.topics (id, group_id, title, description, is_public) values

@@ -1,26 +1,16 @@
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { GuestWordTrial } from '@/components/onboarding/GuestWordTrial';
 
 /**
- * Marketing / landing page. The real page — public topic previews, pricing,
- * sign-up CTA — is Phase 1+; this placeholder exists so the App Router,
- * Tailwind, and shadcn/ui primitives are provably wired end to end.
+ * Landing page — wireframe 1a, "Try one word before signing up." Chosen
+ * over the alternative onboarding paths (3-tap starter quiz, teacher
+ * invite-link arrival) as the default entry for direct/organic visitors;
+ * the invite-link path belongs on its own route once invites exist
+ * (Phase 1, Module 1 — FR-1.3).
  */
 export default function LandingPage() {
   return (
     <main className="flex min-h-screen flex-col items-center justify-center gap-6 p-8">
-      <Card className="max-w-lg">
-        <CardHeader>
-          <CardTitle>Dygo Academy</CardTitle>
-          <CardDescription>
-            Phase 0 frontend scaffold — App Router, Tailwind + shadcn/ui, TanStack Query,
-            Zustand, and Supabase Auth are wired. Domain screens land in Phase 1 onward.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Button disabled>Sign in (Phase 1)</Button>
-        </CardContent>
-      </Card>
+      <GuestWordTrial />
     </main>
   );
 }

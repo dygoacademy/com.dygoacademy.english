@@ -15,9 +15,7 @@ export class MaintenanceProcessor extends WorkerHost {
   }
 
   async process(job: Job<PartitionMaintenanceJob>): Promise<void> {
-    const created = await this.partitions.ensureReviewLogPartitions(
-      job.data?.monthsAhead ?? 6,
-    );
+    const created = await this.partitions.ensureReviewLogPartitions(job.data?.monthsAhead ?? 6);
 
     // Rows here mean provisioning fell behind at some point. Surfaced loudly
     // because relocating them later needs an exclusive lock on review_logs.

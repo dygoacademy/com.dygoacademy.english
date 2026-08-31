@@ -9,8 +9,7 @@ import { IsInt, IsOptional, IsString, MinLength, validateSync } from 'class-vali
 class EnvironmentVariables {
   @IsString()
   @MinLength(32, {
-    message:
-      'SUPABASE_JWT_SECRET must be at least 32 characters — it signs every access token.',
+    message: 'SUPABASE_JWT_SECRET must be at least 32 characters — it signs every access token.',
   })
   SUPABASE_JWT_SECRET!: string;
 
@@ -27,9 +26,7 @@ export function validateEnv(config: Record<string, unknown>) {
   });
   const errors = validateSync(parsed, { skipMissingProperties: false });
   if (errors.length > 0) {
-    const detail = errors
-      .map((e) => Object.values(e.constraints ?? {}).join('; '))
-      .join('\n  - ');
+    const detail = errors.map((e) => Object.values(e.constraints ?? {}).join('; ')).join('\n  - ');
     throw new Error(`Invalid environment configuration:\n  - ${detail}`);
   }
   return config;

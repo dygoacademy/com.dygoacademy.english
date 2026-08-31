@@ -25,6 +25,22 @@ begin
   raise exception 'FAIL: % — statement was ALLOWED but should have been denied', label;
 end $$;
 
+-- Like assert_denied, but for application-level rejections raised on purpose
+-- (redeem_group_invite's "expired" / "revoked" / "not found" checks) rather
+-- than an RLS policy or CHECK constraint. Catches WHEN OTHERS deliberately —
+-- these are plain `raise exception`, not a fixed Postgres error class.
+create or replace function assert_raises(stmt text, label text)
+returns void language plpgsql as $$
+begin
+  begin
+    execute stmt;
+  exception when others then
+    raise notice '  pass: % (raised: %)', label, sqlerrm;
+    return;
+  end;
+  raise exception 'FAIL: % — statement succeeded but should have raised', label;
+end $$;
+
 -- Sets the request settings exactly as Supabase's PostgREST does, so this
 -- suite exercises the real auth.uid() rather than a test-only shortcut.
 create or replace function login_as(p_user uuid)
@@ -165,6 +181,118 @@ select assert_denied(
     values ('44444444-4444-4444-4444-444444444444',
             'eeeeeeee-0000-0000-0000-000000000001','EASY',true)$$,
   'Cannot forge a review log for another user');
+
+\echo ''
+\echo '=== E. Self-service group creation ==========================================='
+-- Regression test for trg_group_owner_membership (001_initial_schema.sql).
+-- groups_insert only requires owner_id = auth.uid(); without the trigger, a
+-- brand-new group has zero group_members rows, and group_members_insert_admin
+-- requires has_group_role(group_id, 'ADMIN') to add one — a deadlock that
+-- would let a user create a group and then never be able to manage it, add a
+-- topic to it, or add classmates to it. 004_seed_data.sql never exercised
+-- this because its fixtures are inserted as service_role, which bypasses RLS.
+reset role;
+set role authenticated;
+select login_as('33333333-3333-3333-3333-333333333333');   -- Alex, READ everywhere else
+with g as (
+  insert into groups (owner_id, tenant_id, name, is_public)
+  values ('33333333-3333-3333-3333-333333333333',
+          public.current_user_tenant_id(), 'Alex''s Study Group', false)
+  returning id
+)
+select assert_eq(
+  (select count(*) from group_members gm join g on g.id = gm.group_id
+    where gm.user_id = '33333333-3333-3333-3333-333333333333' and gm.role = 'ADMIN'),
+  1,
+  'Creating a group immediately seats the owner as ADMIN (trg_group_owner_membership)');
+-- ADMIN outranks WRITE (group_role_rank), so the newly-seated owner should be
+-- able to add a topic to their own brand-new group in the same session —
+-- proof the deadlock is actually broken, not just that a row exists.
+select assert_eq(
+  (select count(*) from topics
+    where group_id = (select id from groups where name = 'Alex''s Study Group')),
+  0,
+  'sanity: no topic yet');
+insert into topics (group_id, title, is_public)
+  values ((select id from groups where name = 'Alex''s Study Group'), 'First Topic', false);
+select assert_eq(
+  (select count(*) from topics
+    where group_id = (select id from groups where name = 'Alex''s Study Group')),
+  1,
+  'Owner of a self-created group can add a topic to it without any other setup');
+
+\echo ''
+\echo '=== F. Invite redemption (redeem_group_invite, 005) ========================='
+-- Dana (Rival tenant) holds no membership in Sarah's Oxford group — the
+-- cross-tenant boundary from §A. She is exactly the caller the function
+-- exists for: someone RLS would otherwise hide the group from entirely.
+reset role;
+set role authenticated;
+select login_as('55555555-5555-5555-5555-555555555555');   -- Dana, Rival tenant
+select assert_eq(
+  (select count(*) from group_members
+    where group_id = 'bbbbbbbb-0000-0000-0000-000000000001'
+      and user_id  = '55555555-5555-5555-5555-555555555555'),
+  0, 'sanity: Dana is not yet a member of Sarah''s group');
+
+select assert_eq(
+  (select count(*) from public.redeem_group_invite('dygo-dev-invite-token')
+    where group_id = 'bbbbbbbb-0000-0000-0000-000000000001'
+      and granted_role = 'READ' and already_member = false),
+  1, 'Dana redeems the seeded invite and is seated READ, not already a member');
+select assert_eq(
+  (select count(*) from group_members
+    where group_id = 'bbbbbbbb-0000-0000-0000-000000000001'
+      and user_id  = '55555555-5555-5555-5555-555555555555' and role = 'READ'),
+  1, 'Redemption actually wrote the group_members row RLS was hiding the group behind');
+select assert_eq(
+  (select use_count from group_invites
+    where token_hash = public.hash_invite_token('dygo-dev-invite-token')),
+  21, 'use_count incremented from the seeded 20');
+
+-- Replaying the same token must not double-count or error — a learner who
+-- clicks the link twice (double-tap, page refresh) should not burn a
+-- second use of a max_uses-limited invite for a join that already happened.
+select assert_eq(
+  (select count(*) from public.redeem_group_invite('dygo-dev-invite-token')
+    where already_member = true),
+  1, 'Replaying an already-redeemed invite reports already_member, not an error');
+select assert_eq(
+  (select use_count from group_invites
+    where token_hash = public.hash_invite_token('dygo-dev-invite-token')),
+  21, 'Replaying a redeemed invite does not increment use_count a second time');
+
+select assert_raises(
+  $$select * from public.redeem_group_invite('this-token-does-not-exist')$$,
+  'Unknown token is rejected, not silently ignored');
+
+-- Revoked and expired invites must be rejected even though the token is
+-- otherwise valid — the exact two states the frontend "Create a group"
+-- turn's invite-link screen needs to distinguish from a live link.
+-- group_invites_insert_admin requires both has_group_role(..., 'ADMIN') AND
+-- created_by = auth.uid(), so these fixtures must be created as Sarah (the
+-- group's ADMIN), not as Dana — Dana only comes back for the redeem attempt.
+reset role;
+set role authenticated;
+select login_as('11111111-1111-1111-1111-111111111111');   -- Sarah, ADMIN
+insert into group_invites (group_id, created_by, token_hash, grant_role, revoked_at)
+  values ('bbbbbbbb-0000-0000-0000-000000000001',
+          '11111111-1111-1111-1111-111111111111',
+          public.hash_invite_token('revoked-test-token'), 'READ', now());
+insert into group_invites (group_id, created_by, token_hash, grant_role, expires_at)
+  values ('bbbbbbbb-0000-0000-0000-000000000001',
+          '11111111-1111-1111-1111-111111111111',
+          public.hash_invite_token('expired-test-token'), 'READ', now() - interval '1 hour');
+
+reset role;
+set role authenticated;
+select login_as('55555555-5555-5555-5555-555555555555');   -- Dana, still not a member
+select assert_raises(
+  $$select * from public.redeem_group_invite('revoked-test-token')$$,
+  'A revoked invite cannot be redeemed even with the right token');
+select assert_raises(
+  $$select * from public.redeem_group_invite('expired-test-token')$$,
+  'An expired invite cannot be redeemed even before revocation catches up to it');
 
 reset role;
 rollback;
