@@ -29,6 +29,7 @@ export interface TopicWordRow {
   language_code: string;
   status: 'ENRICHING' | 'READY' | 'FAILED';
   custom_note: string | null;
+  failure_reason: string | null;
   created_at: Date;
 }
 
@@ -114,7 +115,7 @@ export class TopicsService {
 
     const words = await this.db.queryAs<TopicWordRow>(
       userId,
-      `select id, source_word, language_code, status, custom_note, created_at
+      `select id, source_word, language_code, status, custom_note, failure_reason, created_at
          from public.topic_words
         where topic_id = $1
         order by created_at asc`,

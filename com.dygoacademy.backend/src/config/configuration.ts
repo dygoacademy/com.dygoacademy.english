@@ -29,4 +29,35 @@ export default () => ({
     port: parseInt(process.env.REDIS_PORT ?? '6379', 10),
     password: process.env.REDIS_PASSWORD || undefined,
   },
+
+  // Module 2 (AI enrichment) — Gemini 1.5 Flash for linguistic extraction and
+  // TTS (tech spec §3, §4.2). Empty string, not a thrown error, when unset:
+  // EnrichmentProcessor fails individual jobs (topic_word -> FAILED) rather
+  // than blocking API boot, since a missing key shouldn't 500 every request.
+  ai: {
+    geminiApiKey: process.env.GEMINI_API_KEY ?? '',
+  },
+
+  // Audio object storage — Cloudflare R2 in production, MinIO locally
+  // (docker-compose.yml service `minio`, S3-compatible). R2 env vars take
+  // precedence when present; falls back to the MinIO defaults from
+  // .env.example otherwise, so a fresh `docker compose up` works with zero
+  // config.
+  storage: {
+    endpoint: process.env.R2_ACCOUNT_ID
+      ? `https://${process.env.R2_ACCOUNT_ID}.r2.cloudflarestorage.com`
+      : (process.env.STORAGE_ENDPOINT ?? 'http://localhost:9000'),
+    accessKeyId: process.env.R2_ACCESS_KEY_ID ?? process.env.MINIO_ACCESS_KEY ?? 'minioadmin',
+    secretAccessKey:
+      process.env.R2_SECRET_ACCESS_KEY ?? process.env.MINIO_SECRET_KEY ?? 'minioadmin',
+    bucket: process.env.R2_BUCKET_NAME ?? process.env.MINIO_BUCKET ?? 'dygo-audio',
+    region: process.env.STORAGE_REGION ?? 'auto',
+    // Public CDN base for the uploaded object's URL. R2's public bucket URL
+    // in prod; the MinIO console port locally (browser-playable, not just
+    // API-reachable, since audio_url goes straight into <audio src>).
+    publicUrl: process.env.R2_PUBLIC_URL ?? 'http://localhost:9000',
+    // R2 and most MinIO deployments need path-style addressing
+    // (`endpoint/bucket/key`) rather than virtual-hosted-style.
+    forcePathStyle: !process.env.R2_ACCOUNT_ID,
+  },
 });

@@ -16,6 +16,8 @@
     "token": "node scripts/dev-token.js"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.1122.0",
+    "@google/genai": "^2.19.0",
     "@nestjs/bullmq": "^10.2.3",
     "@nestjs/common": "^10.4.15",
     "@nestjs/config": "^3.3.0",

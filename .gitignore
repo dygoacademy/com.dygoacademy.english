@@ -56,3 +56,4 @@ docker-compose.yml.bak*
 *.swp
 *.swo
 Thumbs.db
+.SANDBOX_UNDELETABLE_JUNK_ignore/

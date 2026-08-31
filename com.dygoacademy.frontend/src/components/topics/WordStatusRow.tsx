@@ -1,4 +1,4 @@
-import type { TopicWord } from '@/types';
+import type { TopicWordSummary } from '@/types';
 
 /**
  * Renders a single word row per its live WordStatus — the exact three
@@ -8,7 +8,7 @@ import type { TopicWord } from '@/types';
  * the state exists (exhausted BullMQ retries), and the wireframe caption
  * for 1l is explicit about the copy choice — this row follows it.
  */
-export function WordStatusRow({ word }: { word: TopicWord }) {
+export function WordStatusRow({ word }: { word: TopicWordSummary }) {
   if (word.status === 'ENRICHING') {
     return (
       <div className="flex flex-col gap-2 rounded-xl border-2 border-primary p-3">
@@ -32,8 +32,9 @@ export function WordStatusRow({ word }: { word: TopicWord }) {
           <span className="font-mono text-xs text-muted-foreground">no audio yet</span>
         </div>
         <p className="text-xs text-muted-foreground">
-          We couldn&apos;t find pronunciation for this one. Your card still works — you can type
-          the meaning yourself.
+          {word.failure_reason
+            ? `We couldn't finish this one: ${word.failure_reason}. Your card still works — you can type the meaning yourself.`
+            : "We couldn't find pronunciation for this one. Your card still works — you can type the meaning yourself."}
         </p>
         <div className="flex gap-2">
           <button className="flex-1 rounded-lg border px-2 py-1.5 text-xs">Try again</button>

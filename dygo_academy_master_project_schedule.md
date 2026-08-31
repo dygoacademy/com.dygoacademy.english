@@ -89,16 +89,23 @@ gantt
 ### 🧠 Phase 1: Collaborative Groups & AI Lexicon Ingestion
 * **Timeline**: Sprint 2 (Weeks 3 – 4)  
 * **Primary Objective**: Implement **Module 1** (Multi-Tenant Groups & RBAC) and **Module 2** (Automated AI Word Enrichment Engine).
-* **Status** (2026-09-01): Module 1 backend is code-complete — 19 live endpoints
-  covering groups, roster/RBAC management, magic invites, and topic CRUD +
-  clone (`dygo_academy_api_surface.md` §2). Module 2 has only its ingestion
-  endpoint (`POST /words`) and the `master_lexicon` dedup lookup; the
-  Gemini/TTS calls inside `EnrichmentProcessor` are still a stub. **None of
-  this has been run against a live Postgres/Redis stack** — no Docker in the
-  sandbox this work was done in. Static checks only: `tsc --noEmit`, `eslint`,
-  and 45 Jest unit tests, all clean. Verify against `/api/docs` and the RLS
-  suite (`database/apply-migrations.sh --test`) before treating Module 1 as
-  done.
+* **Status** (2026-09-01, updated): Module 1 backend is code-complete — 19
+  live endpoints covering groups, roster/RBAC management, magic invites, and
+  topic CRUD + clone (`dygo_academy_api_surface.md` §2). Module 2's ingestion
+  endpoint (`POST /words`) and `EnrichmentProcessor` are both code-complete
+  now too: dedup lookup, real Gemini 1.5 Flash calls for IPA/POS/synonyms/
+  antonyms/examples, Gemini TTS for audio, R2/MinIO upload, `master_lexicon`
+  upsert (see `dygo_academy_api_surface.md` note (4) for the `.wav`-not-`.mp3`
+  deviation and why). Frontend task 3 below (word creation modal + polling)
+  is also done. **None of this has been run against a live
+  Postgres/Redis/MinIO stack** — no Docker in the sandbox this work was done
+  in. Static checks only: `tsc --noEmit`, `eslint`, and 51 Jest unit tests
+  (backend), `tsc`/`next lint` clean (frontend) — `next build` still hangs
+  in this sandbox, reproduced a third time across three sessions, so treat
+  it as a sandbox limitation rather than a code issue pending a real run.
+  Verify against `/api/docs`, the RLS suite
+  (`database/apply-migrations.sh --test`), and a real `POST /words` →
+  enrichment → `GET /topics/:id` round-trip before treating Phase 1 as done.
 
 #### Core Engineering Tasks:
 1. **Module 1: Groups, Topics & Granular RBAC**:

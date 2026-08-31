@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 
+import { AiModule } from './ai/ai.module';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 import { SupabaseJwtGuard } from './common/guards/supabase-jwt.guard';
 import { TransformResponseInterceptor } from './common/interceptors/transform-response.interceptor';
@@ -16,6 +17,7 @@ import { SrsModule } from './modules/srs/srs.module';
 import { TopicsModule } from './modules/topics/topics.module';
 import { WordsModule } from './modules/words/words.module';
 import { QueuesModule } from './queues/queues.module';
+import { StorageModule } from './storage/storage.module';
 import { EnrichmentProcessor } from './workers/enrichment.processor';
 import { MaintenanceProcessor } from './workers/maintenance.processor';
 import { NotificationProcessor } from './workers/notification.processor';
@@ -30,6 +32,8 @@ import { NotificationProcessor } from './workers/notification.processor';
       envFilePath: ['../.env', '.env'],
     }),
     DatabaseModule,
+    AiModule,
+    StorageModule,
     QueuesModule,
     HealthModule,
     GroupsModule,

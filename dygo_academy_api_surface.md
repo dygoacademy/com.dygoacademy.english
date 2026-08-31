@@ -57,6 +57,35 @@ Conflating them is how a roadmap quietly turns into a status report.
 > unit tests (45 total), `tsc --noEmit` clean, `npm run lint` clean. None of
 > this has been exercised against a running Postgres — no Docker in this
 > environment, same limitation as note (2).
+>
+> **2026-09-01 note (4):** `EnrichmentProcessor`'s Gemini/TTS stub (note 2's
+> era) is real now — `src/ai/gemini-enrichment.service.ts` calls Gemini 1.5
+> Flash for the linguistic fields (structured JSON output, schema matches
+> tech spec §4.2 exactly) and Gemini's own TTS model for audio;
+> `src/storage/storage.service.ts` uploads the clip to R2/MinIO
+> (`@aws-sdk/client-s3`, both are S3-compatible) and returns the public URL.
+> One deliberate deviation: audio is stored as `.wav`, not the `.mp3` §4.2
+> names — no MP3 encoder (ffmpeg/lame) is available in this sandbox, and WAV
+> needs zero dependencies while playing natively in every `<audio>` tag;
+> swapping to real MP3 later is a one-function change
+> (`GeminiEnrichmentService.pcmToWav`) plus the R2 key extension. TTS/upload
+> failures no longer fail the whole word — Gemini's text fields still land
+> and `audio_url` stays null, since `topic_words_ready_requires_lexicon`
+> only requires a `lexicon_id`, not audio. `master_lexicon` writes use `ON
+> CONFLICT ... DO UPDATE` (two concurrent enrichments of the same word can
+> both miss the dedup check before either finishes). `GET /topics/:id` also
+> now returns `failure_reason` per word (was selected by nothing before,
+> so the frontend's FAILED state could only show static copy). Frontend:
+> the topic detail page's word list is real data now (`useTopic`, polls
+> every 2.5s while any word is `ENRICHING`), and "+ Add a word" opens a
+> working modal (`AddWordModal` + `useCreateWord`) instead of a disabled
+> Phase-0 button. 6 new backend unit tests (51 total; the Gemini SDK calls
+> themselves aren't covered — no network-mocking harness in this pass, and
+> hitting the live API would cost real quota). `tsc --noEmit` and lint clean
+> on both backend and frontend. **Still unverified against a running
+> Postgres/Redis/MinIO stack** — no Docker in this environment; verify the
+> full round-trip (`POST /words` → BullMQ → Gemini/TTS/R2 → `GET
+> /topics/:id` shows `READY` with real IPA/audio) before UAT depends on it.
 
 ---
 
@@ -205,7 +234,7 @@ the expensive work happens elsewhere.
 
 | Processor | Queue | State | Behaviour |
 | :--- | :--- | :--- | :--- |
-| `EnrichmentProcessor` | `enrichment-queue` | partial | The `master_lexicon` cache lookup (FR-2.2) is implemented and returns early on a hit — no Gemini call is made for a word already in the global lexicon. The Gemini and TTS calls themselves land in Phase 1. |
+| `EnrichmentProcessor` | `enrichment-queue` | **working** | Dedup lookup (FR-2.2) returns early on a `master_lexicon` hit — no Gemini call for a word already cached. On a miss: Gemini 1.5 Flash for linguistic fields, Gemini TTS for audio, upload to R2/MinIO, upsert `master_lexicon`, mark the `topic_word` `READY`. A terminal failure (last BullMQ attempt) marks it `FAILED` with a reason instead of retrying forever or leaving it stuck `ENRICHING`. See note (4) above for the `.wav`-not-`.mp3` deviation. |
 | `NotificationProcessor` | `notification-queue` | stub | Now genuinely receiving a job every 15 minutes, but only logs the tick. The timezone match against `study_schedules` and the VAPID dispatch land in Phase 3. |
 | `MaintenanceProcessor` | `maintenance-queue` | **working** | Provisions `review_logs` partitions 6 months ahead and warns if rows land in the DEFAULT partition. |
 

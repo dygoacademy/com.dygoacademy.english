@@ -1,3 +1,5 @@
+import type { WordStatus } from './word';
+
 /**
  * Matches TopicsService.TopicSummary in
  * com.dygoacademy.backend/src/modules/topics/topics.service.ts exactly —
@@ -27,4 +29,27 @@ export interface Topic {
   is_public: boolean;
   created_at: string;
   updated_at: string;
+}
+
+/**
+ * The word shape `GET /api/v1/topics/:id` actually nests under `words` —
+ * matches TopicsService.TopicWordRow's SELECT list exactly (topics.service.ts
+ * `findById`), which is deliberately narrower than the full `TopicWord`
+ * (word.ts): no `topic_id`/`lexicon_id`/`added_by`/`updated_at`, since the
+ * endpoint never selects those columns. Using the full `TopicWord` type here
+ * would compile but lie about what the response actually contains.
+ */
+export interface TopicWordSummary {
+  id: string;
+  source_word: string;
+  language_code: string;
+  status: WordStatus;
+  custom_note: string | null;
+  failure_reason: string | null;
+  created_at: string;
+}
+
+/** `GET /api/v1/topics/:id` response — TopicsService.TopicDetail. */
+export interface TopicDetail extends Topic {
+  words: TopicWordSummary[];
 }
