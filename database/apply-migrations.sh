@@ -78,6 +78,7 @@ run_file "$DIR/migrations/003_indexes.sql"
 run_file "$DIR/migrations/005_group_invites_redeem.sql"
 run_file "$DIR/migrations/006_solo_tenant_provisioning.sql"
 run_file "$DIR/migrations/007_group_word_heatmap.sql"
+run_file "$DIR/migrations/008_profiles_group_visibility.sql"
 
 case "${1:-}" in
   --seed)

@@ -1,9 +1,32 @@
 # 📅 Dygo Academy: Master Project Schedule & Phasing Strategy
-**Document Version**: 5.7 (solo-user tenant provisioning fixed; Module 8 analytics/heatmap code-complete)  
+**Document Version**: 5.8 (roster invite-redeemed-member name gap closed)  
 **Author**: Principal Cloud & SaaS Solutions Advisory  
 **Status**: Approved for Engineering & Product Execution  
 
 **Changelog**
+* **5.8** (2026-09-01) — Tenth pass, evening before UAT. Closed the standing
+  "roster shows no name for an invite-redeemed member" gap, open since the
+  6th pass and precisely diagnosed (but not fixed) by the 9th:
+  `profiles_select_self_or_tenant` was tenant-equality-only, and a
+  redeemed member's personal tenant (006) deliberately never equals the
+  inviting teacher's. New `database/migrations/008_profiles_group_visibility.sql`
+  adds a `shares_group_with()` SECURITY DEFINER helper and a matching OR
+  clause to that policy — a teacher (or classmate) can now see any
+  groupmate's name/email regardless of tenant; `review_logs`/SRS visibility
+  is untouched. One new `rls_test.sql` section (I, 4 new assertions, 47
+  total) proves both the fix and that isolation still holds for a
+  non-groupmate. Backend 145/145 tests still pass unmodified (this pass's
+  only backend change is the migration + two doc/comment updates, no
+  service logic touched). Wireframe turn 3c's caption updated to describe
+  the fix. Module 7 (Stripe seat billing) remains deliberately untouched —
+  same standing reasoning as the 7th/8th/9th pass, this close to UAT is not
+  the time to start integrating a live payment provider. `next build`
+  still hangs in this sandbox — 10th occurrence across 10 sessions, treated
+  as a sandbox property per the 9th pass's own note, not re-investigated
+  further. Not run against a live Postgres — same standing limitation as
+  every earlier pass; the new migration and RLS section are unverified
+  against a real database. See the 10th pass entry in
+  `dygo_academy_session_report_2026-09-01.md`.
 * **5.7** (2026-09-01) — Ninth pass. Fixed a real, UAT-blocking bug: a
   freshly-registered user (anyone not one of the 5 seeded fixtures)
   couldn't create their first group at all, because `handle_new_auth_user()`

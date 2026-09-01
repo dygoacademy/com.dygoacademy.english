@@ -35,18 +35,17 @@ export interface GroupMember {
   role: GroupRole;
   joined_at: Date;
   /**
-   * From a `left join` onto `profiles`, not `group_members` itself — null
-   * for a member whose profile row isn't visible to the caller under
-   * `profiles_select_self_or_tenant` (real for anyone who joined via a
-   * redeemed invite link: their `profiles.tenant_id` is now always set —
-   * `006_solo_tenant_provisioning.sql` provisions a personal tenant for
-   * every signup — but it's their OWN personal tenant, deliberately
-   * distinct from the inviting teacher's, so it still never equality-matches
-   * the caller's `current_user_tenant_id()`; see that migration's header
-   * comment for why this is a separate, still-open gap rather than the
-   * same one). A left join (not inner) is deliberate: an inner join would
-   * silently drop that member from the roster entirely rather than showing
-   * them with no name.
+   * From a `left join` onto `profiles`, not `group_members` itself. Used to
+   * be null for a member who joined via a redeemed invite link — their
+   * `profiles.tenant_id` is always set (`006_solo_tenant_provisioning.sql`
+   * provisions a personal tenant for every signup), but it's their OWN
+   * personal tenant, deliberately distinct from the inviting teacher's, so
+   * it never equality-matched the caller's `current_user_tenant_id()`.
+   * Fixed in `008_profiles_group_visibility.sql`: `profiles_select_self_or_tenant`
+   * gained a `shares_group_with(id)` clause, so any groupmate's profile is
+   * now visible regardless of tenant. The left join (not inner) stays
+   * deliberate anyway — a future profile genuinely invisible for some other
+   * reason should still render as a roster row with no name, not vanish.
    */
   email: string | null;
   display_name: string | null;

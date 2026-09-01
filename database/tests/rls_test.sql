@@ -362,6 +362,57 @@ select assert_eq(
 -- per-student isolation is preserved even though ADMIN can now see the
 -- cohort total.
 
+\echo ''
+\echo '=== I. Roster visibility for invite-redeemed members (008) ==================='
+-- Regression test for the standing "roster shows no name for an
+-- invite-redeemed member" gap (open since the 6th pass, precisely
+-- diagnosed by 006, actually fixed by 008). Reuses section G's brand-new
+-- signup ('99999999-...') — a genuinely fresh account with its OWN
+-- personal tenant, distinct from Sarah's Oxford tenant, which is exactly
+-- the case the old tenant-equality check could never pass.
+reset role;
+set role authenticated;
+select login_as('11111111-1111-1111-1111-111111111111');   -- Sarah, ADMIN of bbbbbbbb-...0001
+with i as (
+  insert into group_invites (group_id, created_by, token_hash, grant_role, expires_at)
+  values ('bbbbbbbb-0000-0000-0000-000000000001',
+          '11111111-1111-1111-1111-111111111111',
+          public.hash_invite_token('newkid-test-token'), 'READ', now() + interval '1 day')
+  returning id
+)
+select assert_eq((select count(*) from i), 1, 'Sarah can mint an invite for her own group');
+
+reset role;
+set role authenticated;
+select login_as('99999999-9999-9999-9999-999999999999');   -- new kid, own personal tenant
+select assert_eq(
+  (select count(*) from public.redeem_group_invite('newkid-test-token')
+    where group_id = 'bbbbbbbb-0000-0000-0000-000000000001'),
+  1, 'New kid redeems Sarah''s invite and joins her group despite having a different tenant');
+
+reset role;
+set role authenticated;
+select login_as('11111111-1111-1111-1111-111111111111');   -- Sarah again, reading her roster
+select assert_eq(
+  (select count(*) from public.group_members gm
+     join public.profiles p on p.id = gm.user_id
+    where gm.group_id = 'bbbbbbbb-0000-0000-0000-000000000001'
+      and gm.user_id = '99999999-9999-9999-9999-999999999999'
+      and p.email = 'newkid@example.com'),
+  1,
+  'The exact bug: before 008, this inner join returned 0 rows (profiles side '
+  'filtered out by tenant mismatch) even though the group_members row existed — '
+  'GroupsService''s left join rendered a blank name. Now Sarah sees the real email.');
+
+reset role;
+set role authenticated;
+select login_as('55555555-5555-5555-5555-555555555555');   -- Dana, Rival Academy ADMIN — shares no group
+select assert_eq(
+  (select count(*) from public.profiles where id = '99999999-9999-9999-9999-999999999999'),
+  0,
+  'Isolation still holds: Dana shares no group and no tenant with new kid, so '
+  'shares_group_with() is false and the profile stays invisible to her');
+
 reset role;
 rollback;
 

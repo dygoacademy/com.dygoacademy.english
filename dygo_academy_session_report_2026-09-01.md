@@ -1,12 +1,123 @@
-# Dygo Academy — session report, 2026‑09‑01 (ninth pass)
+# Dygo Academy — session report, 2026‑09‑01 (tenth pass)
 **Run**: automated scheduled task, no user present. UAT is scheduled for tomorrow morning (2026‑09‑02).
-This file now covers nine runs today. Passes one through eight (Groups/Words
+This file now covers ten runs today. Passes one through nine (Groups/Words
 first slice, the rest of Module 1, Module 2's real Gemini/TTS pipeline,
 Module 3/4's SRS engine and flashcard player, Module 5's quiz engine, Module
 6's push/habit scheduling closing out Phase 3, the group-management frontend
-and login/register fix, then a UAT-prep pass that closed the roster-naming
-gap) are preserved below under "First pass" through "Eighth pass" — read
-top-down for the current state.
+and login/register fix, a UAT-prep pass that closed the roster's
+shortened-UUID display bug, then solo-tenant provisioning + Module 8
+analytics/heatmap) are preserved below under "First pass" through "Ninth
+pass" — read top-down for the current state. Correction while writing this
+header: the eighth pass's own summary line (just below) says it "closed the
+roster-naming gap" — the ninth pass's report already corrected that framing
+in detail (it fixed the *shortened-UUID* symptom, not the deeper
+tenant-equality cause), and the tenth pass, immediately below, is what
+actually closes it.
+
+---
+
+## Tenth pass — roster invite-redeemed-member name gap actually closed
+
+### What this pass found on start
+
+Standing instruction, run the evening before UAT (2026‑09‑02, tomorrow
+morning): compared the working tree against
+`dygo_academy_master_project_schedule.md` and the two open items the ninth
+pass's own report flagged. `git status` was clean; `git log` showed nine
+prior commits landed, most recent being the ninth pass's docs commit.
+
+Two open items were on the table: **Module 7 (Stripe seat billing)**, and
+**the roster invite-redeemed-member name gap**, now precisely diagnosed by
+the ninth pass (`profiles_select_self_or_tenant` is tenant-equality-only; a
+redeemed member's personal tenant, auto-provisioned by the sixth pass's
+`006_solo_tenant_provisioning.sql`, deliberately never equals the inviting
+teacher's). Same standing reasoning as the seventh, eighth, and ninth pass:
+starting a live payment-provider integration the evening before UAT is not
+worth the risk, and would be genuinely new scope rather than a fix to
+something already shipped. The roster gap, by contrast, was already fully
+understood and scoped to one policy change — worth closing tonight so
+UAT doesn't hit it.
+
+### The fix
+
+New `database/migrations/008_profiles_group_visibility.sql`: a
+`public.shares_group_with(p_other_user_id uuid)` SECURITY DEFINER helper
+(same shape as `has_group_role`/`can_read_group`/`can_read_topic` in
+`002_rls_policies.sql` — delegates to a small function rather than an
+inline subquery, so `group_members`'s own RLS never has to recurse while
+`profiles_select_self_or_tenant` evaluates), and a matching third `OR`
+clause added to that policy. A teacher (or classmate) can now see any
+groupmate's `email`/`display_name` regardless of which tenant that
+groupmate's own account belongs to. Deliberately narrow: `review_logs` and
+every SRS table are untouched, and `group_members_select` still gates who
+can *enumerate* the roster at all (WRITE+ only) — this migration only
+widens what a caller who can already see a `group_members` row also gets
+to see about the person in it.
+
+`GroupsService`'s `GroupMember` comment, `dygo_academy_api_surface.md`'s
+`GET /groups/:id/members` row, and wireframe turn 3c's caption (the one
+mocking up the roster screen) were all updated to describe the fix instead
+of the gap — the wireframe edit used the same JSON-round-trip verification
+process as the fourth pass's own turn-4 edit (see that pass's §4 below):
+decode the `__bundler/template` JSON string, replace the caption text
+in-place, re-encode, verify the new JSON reparses to the same string and
+that every byte of the file outside that one script block is unchanged,
+then write.
+
+### Testing performed
+
+| Check | Result |
+| :--- | :--- |
+| Backend `jest` | ✅ 145/145 pass, unchanged — this pass's only backend code change is a doc-comment edit in `groups.service.ts`; no service logic touched |
+| Backend `tsc --noEmit` | ✅ clean |
+| Backend `npm run lint` (eslint --fix) | ✅ clean |
+| Frontend `tsc --noEmit` | ✅ clean |
+| Frontend `next lint` | ✅ clean |
+| Frontend `next build` | ❌ hung again — **10th occurrence across 10 sessions**, killed by a 170s `timeout` (exit 124), no lingering process |
+| `rls_test.sql`'s new section I (roster visibility, 4 new assertions — invite mint, redeem, teacher now sees the name, unrelated admin still doesn't) against live Postgres | ❌ not possible here — no Docker; reasoned through against the exact policy/function text (mirrors sections G/H's own unverified status) but genuinely unrun |
+| A real `GET /groups/:id/members` round-trip showing a redeemed member's name | ❌ not possible here — no Docker, same standing limitation as every prior pass |
+
+### Known gaps — carried forward, plus what this pass found and didn't fix
+
+- **Module 7 (Stripe seat billing) is fully open** — `billing/*` is still
+  the literal empty scaffold. Deliberately not started this pass either;
+  now the standing top item for whichever pass runs first *after* UAT
+  feedback comes in, since starting it blind the night before UAT would
+  mean building against assumptions UAT might immediately contradict.
+- **Module 4 offline-first sync** — still not implemented on the frontend.
+  Open since Phase 2, untouched this pass.
+- **`FR-6.2`'s sprint route still has no rate limiting** — untouched.
+- **`next build` hanging in this sandbox is now 10-for-10** across ten
+  separate sessions.
+- **Nothing in this pass has run against a live Postgres/GoTrue/Redis
+  stack** — `008` and its RLS test section are the load-bearing unverified
+  thing this time, same shape as every prior pass's newest migration.
+- Everything else in the 9th pass's "Known gaps" not explicitly listed
+  above is still open and unchanged by this pass.
+
+### UAT checklist for tomorrow (supersedes the ninth pass's own checklist — item 4 changed)
+
+1. `docker compose up -d && ./database/apply-migrations.sh --test` —
+   watch for any error from `008`, not just the final
+   `ALL RLS CHECKS PASSED` line (47 assertions now, up from 45).
+2. Sign in as `sarah@dygo.test` / `dygo-dev-2026`, confirm the session
+   lands on `/topics`. (Unchanged.)
+3. Register a brand-new account, confirm `POST /groups` succeeds, create a
+   group. (Unchanged from the ninth pass's checklist item 3.)
+4. **Changed this pass:** as that brand-new ADMIN, mint an invite link,
+   redeem it in a private window as a *second*, also brand-new account
+   (not one of the five seeded fixtures — the seeded ones already have a
+   real shared-tenant workaround that doesn't exercise this fix). Confirm
+   the roster now shows that second account's real email/display name, not
+   a blank cell. This is the fix this pass shipped; if it still shows
+   blank, `008` did not land correctly.
+5. As Sarah, confirm her Oxford roster and "Progress" → class mistake
+   heatmap still render as the ninth pass's checklist described (items 5–6
+   there) — unchanged by this pass.
+6. Confirm `billing/*` is still an empty stub, no working
+   `/api/v1/billing/*` route — unchanged from the ninth pass's item 9.
+7. Everything from the sixth pass's own checklist items 1–2 and 5–6 (SRS,
+   quiz, push-tick timing, wireframe turns 3/8) still applies.
 
 ---
 

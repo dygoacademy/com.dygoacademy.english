@@ -3,21 +3,25 @@
 AI-powered collaborative vocabulary platform — automated word enrichment (dual-accent IPA, neural audio, CEFR-graded synonyms and examples), error-adaptive spaced repetition, and multi-tenant classroom groups with granular RBAC.
 
 > **Project status — Phases 0–3 code-complete; Module 8 (analytics + the
-> class mistake heatmap) is code-complete too, and a brand-new signup can
-> now actually create their first group.** *(2026-09-01)* Groups/RBAC, AI
-> word enrichment, the error-adaptive SRS flashcard player, the multi-modal
-> quiz engine, web push/habit scheduling, and student + teacher analytics
-> are all built on both backend and frontend. **Module 7 (Stripe seat
-> billing) is the one thing still fully open** — deliberately not started
-> the day before UAT; see the schedule doc's Phase 4 section. UAT is
-> scheduled for the morning of 2026-09-02 — see
+> class mistake heatmap) is code-complete too, a brand-new signup can
+> now actually create their first group, and the roster now shows every
+> member's real name — even one who joined via a redeemed invite link.**
+> *(2026-09-01)* Groups/RBAC, AI word enrichment, the error-adaptive SRS
+> flashcard player, the multi-modal quiz engine, web push/habit scheduling,
+> and student + teacher analytics are all built on both backend and
+> frontend. **Module 7 (Stripe seat billing) is the one thing still fully
+> open** — deliberately not started this close to UAT; see the schedule
+> doc's Phase 4 section. UAT is scheduled for the morning of 2026-09-02 —
+> see
 > [`dygo_academy_session_report_2026-09-01.md`](dygo_academy_session_report_2026-09-01.md)
-> (ninth pass) for exactly what to click through, and
+> (tenth pass) for exactly what to click through, and
 > [`dygo_academy_master_project_schedule.md`](dygo_academy_master_project_schedule.md)
 > for the full 12-week plan and per-phase status notes. **None of this has
 > run against a live Postgres/GoTrue/Redis stack** — every session so far
 > ran in a sandbox with no Docker; verify against a real `docker compose up`
-> before trusting this status banner over your own boot.
+> before trusting this status banner over your own boot, and watch
+> `008_profiles_group_visibility.sql`'s migration output closely since it
+> has never actually executed anywhere yet either.
 
 ---
 
@@ -168,10 +172,9 @@ re-running `001-003` would fail on "already exists":
 | `003_indexes.sql` | Performance and partial indexes |
 | `004_seed_data.sql` | Dev fixtures — **never run against production** |
 
-`--test` runs 45 assertions (was 26 as of the 8th pass — the count had
-already drifted from the doc before this pass; the 9th pass's own additions,
-sections G and H, cover solo-user tenant auto-provisioning and the FR-8.2
-cohort heatmap function) proving cross-tenant isolation, that a student's
+`--test` runs 47 assertions (was 45 as of the 9th pass; the 10th pass's own
+addition, section I, covers the roster-visibility fix — see
+`008_profiles_group_visibility.sql`) proving cross-tenant isolation, that a student's
 SRS progress is unreadable even by their teacher, that a `READ` member cannot
 add words or enumerate the class roster, that `WRITE` cannot delete a topic,
 and that self-promotion to `ADMIN` is blocked. Expect it to end with

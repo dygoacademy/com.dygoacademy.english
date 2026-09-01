@@ -869,12 +869,15 @@ full reset is `docker compose down -v`.
 
 ### Verifying the security model
 
-`database/tests/rls_test.sql` contains 45 assertions (9th pass; was 26 as
-documented here through the 8th) covering cross-tenant isolation, per-user
+`database/tests/rls_test.sql` contains 47 assertions (10th pass; was 45
+through the 9th) covering cross-tenant isolation, per-user
 SRS isolation (including from the group `ADMIN`), the role hierarchy, the
 anonymous surface, privilege-escalation attempts, solo-user tenant
-auto-provisioning, and the FR-8.2 cohort heatmap's own ADMIN gate and
-per-student isolation. It wraps
+auto-provisioning, the FR-8.2 cohort heatmap's own ADMIN gate and
+per-student isolation, and (section I, new) that an invite-redeemed
+member's name is now visible on the inviting teacher's roster regardless of
+tenant, while remaining invisible to an unrelated admin who shares no group
+with them. It wraps
 everything in a transaction and rolls back, so it is safe to re-run. Run it
 after **any** change to `002_rls_policies.sql`:
 
