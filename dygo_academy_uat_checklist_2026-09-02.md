@@ -163,17 +163,37 @@ owns "Oxford English Center"), `marco@dygo.test` (WRITE), `alex@dygo.test`
     turn **11** (screens 11a–11d, added the 15th pass) — the
     card-decline/dunning follow-on (FR-7.3): in-app banner, past-due
     billing panel, the "email Stripe sends" mockup, and the suspended
-    state — and the new **turn 12** (screens 12a–12c, added the 16th
-    pass) — the academy-tier director rollup and cohort ROI export
-    (BRD Journey 3, FR-8.2 widened tenant-wide). None of the three has
-    ever been rendered in a real browser; confirm all display correctly
-    at all (a JSON-escaping mistake would be the likely failure mode)
-    before treating their content as reviewed design. Turn 12's own
-    opening note also flags that its access model (an ADMIN of every
-    group in a tenant, standing in for a "director" role that doesn't
-    exist in the schema) is itself an open design question, not just an
-    unrendered-screen risk — worth a product call during UAT, not only a
-    visual check.
+    state — turn **12** (screens 12a–12c, added the 16th pass) — the
+    academy-tier director rollup and cohort ROI export (BRD Journey 3,
+    FR-8.2 widened tenant-wide) — and the new **turn 13** (screens
+    13a–13b, added the 17th pass) — the same rollup for a brand-new
+    class under 7 days old, before there's a retention curve to draw.
+    None of the four has ever been rendered in a real browser; confirm
+    all display correctly (a JSON-escaping mistake would be the likely
+    failure mode) before treating their content as reviewed design.
+    Turn 13's opening note **partially corrects** turn 12's own note:
+    turn 12 said "there is no tenant-level director role in the
+    schema" and treated 12a's access model as a stand-in for one; it
+    turns out `is_tenant_admin()` already exists and already grants
+    exactly that reach — see item 24 below, which is the real,
+    backend-side follow-up this correction produced, not just a
+    wireframe caption fix. What's still genuinely open, unchanged from
+    turn 12: `AnalyticsService.getHeatmap` is still single-`groupId`
+    only, so the tenant-wide rollup query itself is still unbuilt —
+    worth confirming during UAT whether that's still the right thing
+    to defer past this release.
+24. **New this pass (009_tenant_admin_read_expansion.sql):** run
+    `./database/apply-migrations.sh` (which now runs 009) then
+    `./database/apply-migrations.sh --test` and confirm section **J**
+    of `rls_test.sql` passes — it asserts that a tenant admin (`ADMIN`
+    of even one group) can now read a *sibling* group's roster and
+    topics in the same tenant despite never having joined it
+    (`group_members_select`/`can_read_group` previously granted this
+    for `groups_select` and `tenant_seats_select` only), while a rival
+    tenant's admin still cannot. This has never run against a real
+    Postgres in the sandbox that wrote it — same standing limitation as
+    everything else in this section — so section J passing for real is
+    itself part of what this UAT run is confirming, not a given.
 
 ## J. Build & regression (already run this pass, re-verify if anything above fails)
 

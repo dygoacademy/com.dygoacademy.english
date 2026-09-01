@@ -15,10 +15,13 @@
 # --*-only flags to add fixtures or run tests without touching the schema, or
 # reset entirely with:  docker compose down -v && docker compose up -d
 #
-# 005-007 (invite redemption, solo-tenant provisioning, the FR-8.2 heatmap
-# function) all use CREATE OR REPLACE FUNCTION, so unlike 001-003 they ARE
-# safe to re-run on an already-migrated database if you only need to pick up
-# a change to one of them.
+# 005-007 and 009 (invite redemption, solo-tenant provisioning, the FR-8.2
+# heatmap function, the tenant-admin read expansion) all use CREATE OR
+# REPLACE FUNCTION, so unlike 001-003 they ARE safe to re-run on an
+# already-migrated database if you only need to pick up a change to one of
+# them. 009's one DROP POLICY/CREATE POLICY pair (group_members_select) is
+# also safe to re-run — CREATE POLICY errors on a duplicate name, which is
+# exactly why it's preceded by DROP POLICY IF EXISTS.
 # =============================================================================
 set -euo pipefail
 
@@ -79,6 +82,7 @@ run_file "$DIR/migrations/005_group_invites_redeem.sql"
 run_file "$DIR/migrations/006_solo_tenant_provisioning.sql"
 run_file "$DIR/migrations/007_group_word_heatmap.sql"
 run_file "$DIR/migrations/008_profiles_group_visibility.sql"
+run_file "$DIR/migrations/009_tenant_admin_read_expansion.sql"
 
 case "${1:-}" in
   --seed)

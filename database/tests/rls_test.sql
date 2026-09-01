@@ -414,6 +414,62 @@ select assert_eq(
   'shares_group_with() is false and the profile stays invisible to her');
 
 reset role;
+
+\echo ''
+\echo '=== J. Tenant-admin read expansion (009) ====================================='
+-- Regression test for the gap found while wireframing turn 12 (17th pass):
+-- is_tenant_admin() already let a tenant admin see that a sibling group in
+-- their tenant existed (groups_select), but not read its topics, words, or
+-- roster. 009 closes that. Uses a brand-new group inserted inside this
+-- transaction rather than touching 004's seed data, so it can't perturb any
+-- of the exact-count assertions elsewhere in this file (section A's
+-- `count(*) from groups = 2` for Alex, etc.) — this whole section rolls
+-- back with everything else.
+set role authenticated;
+select login_as('22222222-2222-2222-2222-222222222222');   -- Marco, WRITE in 0001, not ADMIN anywhere yet
+with g as (
+  insert into public.groups (id, tenant_id, owner_id, name, is_public)
+  values ('bbbbbbbb-0000-0000-0000-000000000009',
+          'aaaaaaaa-0000-0000-0000-000000000001',           -- Oxford, same tenant as Sarah
+          '22222222-2222-2222-2222-222222222222', 'Marco''s New Section', false)
+  returning id
+)
+select assert_eq((select count(*) from g), 1,
+  'Marco creates a brand-new private Oxford group Sarah is not a member of '
+  '(trg_group_owner_membership seats Marco himself as its ADMIN)');
+
+insert into public.topics (id, group_id, title, is_public)
+values ('cccccccc-0000-0000-0000-000000000009',
+        'bbbbbbbb-0000-0000-0000-000000000009', 'Marco-only topic', false);
+
+reset role;
+set role authenticated;
+select login_as('11111111-1111-1111-1111-111111111111');   -- Sarah — ADMIN elsewhere in Oxford, NOT a member of Marco's new group
+select assert_eq(
+  (select count(*) from public.group_members
+    where group_id = 'bbbbbbbb-0000-0000-0000-000000000009'),
+  1,
+  'Before 009 this was 0 (group_members_select had no is_tenant_admin branch) — '
+  'Sarah now sees Marco''s roster in a group she never joined, via tenant-admin reach only');
+select assert_eq(
+  (select count(*) from public.topics where id = 'cccccccc-0000-0000-0000-000000000009'), 1,
+  'Before 009 this was 0 (can_read_group had no is_tenant_admin branch, so '
+  'topics_select/can_read_topic could not see it either) — now visible tenant-wide');
+select assert_eq(
+  (select count(*) from public.groups where id = 'bbbbbbbb-0000-0000-0000-000000000009'), 1,
+  'Sanity check: groups_select already granted this before 009 (unchanged by this migration)');
+
+reset role;
+set role authenticated;
+select login_as('55555555-5555-5555-5555-555555555555');   -- Dana, Rival Academy ADMIN — different tenant entirely
+select assert_eq(
+  (select count(*) from public.group_members
+    where group_id = 'bbbbbbbb-0000-0000-0000-000000000009'),
+  0,
+  'Cross-tenant isolation still holds: is_tenant_admin(Oxford) is false for Dana, '
+  'so 009''s wider grant does not leak across the tenant boundary');
+
+reset role;
 rollback;
 
 \echo ''

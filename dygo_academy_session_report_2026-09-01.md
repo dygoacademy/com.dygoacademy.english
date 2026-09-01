@@ -1,7 +1,7 @@
-# Dygo Academy — session report, 2026‑09‑01 (sixteenth pass)
+# Dygo Academy — session report, 2026‑09‑01 (seventeenth pass)
 **Run**: automated scheduled task, no user present. UAT is scheduled for tomorrow morning (2026‑09‑02).
-This file now covers sixteen runs today. The sixteenth pass is
-immediately below; passes one through fifteen (Groups/Words first slice, the
+This file now covers seventeen runs today. The seventeenth pass is
+immediately below; passes one through sixteen (Groups/Words first slice, the
 rest of Module 1, Module 2's real Gemini/TTS pipeline, Module 3/4's SRS
 engine and flashcard player, Module 5's quiz engine, Module 6's push/habit
 scheduling closing out Phase 3, the group-management frontend and
@@ -10,14 +10,210 @@ shortened-UUID display bug, solo-tenant provisioning + Module 8
 analytics/heatmap, the roster invite-redeemed-member name gap, Module 4
 offline-first sync + FR-6.2 sprint rate limiting, the FAILED word's "Try
 again" retry endpoint, a regression-only pass that consolidated the
-UAT script, the Module 7 seat-billing paywall wireframe, then the
-card-decline/dunning follow-on) are preserved below under "First pass"
-through "Fifteenth pass" — read top-down for the current state.
+UAT script, the Module 7 seat-billing paywall wireframe, the
+card-decline/dunning follow-on, then finding and finishing an uncommitted
+live-stack integration test package alongside the director-rollup
+wireframe) are preserved below under "First pass" through "Sixteenth
+pass" — read top-down for the current state.
 Correction while writing this header: the eighth pass's own summary line
 (further below) says it "closed the roster-naming gap" — the ninth
 pass's report already corrected that framing in detail (it fixed the
 *shortened-UUID* symptom, not the deeper tenant-equality cause), and the
 tenth pass is what actually closes it — see that pass's own entry below
+
+---
+
+## Seventeenth pass — closed a real RLS gap behind the director rollup (`is_tenant_admin()` already existed, its reach was inconsistent); wireframed the brand-new-class empty state
+
+### What this pass found on start
+
+Standing instruction, same day as tomorrow morning's UAT (2026‑09‑02):
+read the master schedule's changelog (5.14, the sixteenth pass's entry)
+and the sixteenth pass's own report section before touching anything.
+`git status` was clean — no leftover uncommitted work this time (unlike
+the start of the 16th pass). `git log` showed sixteen prior commits,
+most recent being the sixteenth pass's turn-12 wireframe + integration
+test commit.
+
+Ran the full regression suite first: backend `jest` (153/153,
+unchanged), backend `tsc --noEmit` and `npm run lint` (clean), frontend
+`tsc --noEmit` and `next lint` (clean, no warnings). Re-grepped backend
+`src/` for `TODO`/`FIXME` — none found, the eleventh straight pass (7th
+through 17th) reaching that conclusion. `BillingController`/
+`BillingService` confirmed still a zero-route, zero-logic scaffold.
+
+### The finding: turn 12's own note was only half right
+
+Turn 12's "Try next" line offered two options: wireframe a brand-new
+class with no history yet, or sketch the `tenants.director_id`-shaped
+migration its opening note called out ("there is no tenant-level
+director role anywhere in the schema... 12a's ADMIN-of-every-group
+access model is a stand-in for a role that doesn't exist yet"). Before
+writing a new migration on that premise, checked whether it was
+actually true by reading `002_rls_policies.sql` in full rather than
+trusting the prior pass's own framing. It wasn't fully true:
+`is_tenant_admin(p_tenant_id uuid)` already exists — "Caller holds
+ADMIN in any group of that tenant. There is no separate tenant-role
+table" per its own comment — and it's already used by two policies,
+`groups_select` and `tenant_seats_select`, to grant exactly the reach a
+director rollup needs: a user who is `ADMIN` of even one group in a
+tenant already sees every group's row and every paid seat in that
+tenant, not just the groups they personally belong to.
+
+Traced which tables a rollup screen actually needs to read
+(`groups`, `topics`, `topic_words`, `group_members`) and checked each
+one's RLS policy against `is_tenant_admin()` to find where the real gap
+was: `can_read_group()` — called by `can_read_topic()`, which
+`topics_select` and `topic_words_select` both use — and
+`group_members_select` never carried the same grant `groups_select` and
+`tenant_seats_select` already had. Concretely: a tenant admin could
+already see THAT a sibling class existed, but not read its topics, its
+words, or its roster. That inconsistency, not a missing role, is what
+made 12a's access model feel unbacked by the schema.
+
+### The fix: `009_tenant_admin_read_expansion.sql`
+
+Additive-only, two `CREATE OR REPLACE FUNCTION`s and one
+`DROP POLICY IF EXISTS` / `CREATE POLICY` pair, no new table or column:
+
+- `can_read_group(p_group_id)` gained a third branch,
+  `or public.is_tenant_admin(g.tenant_id)`, matching `groups_select`'s
+  own existing clause. Cascades automatically to `can_read_topic()`,
+  `topics_select`, and `topic_words_select` since all three call it.
+- A small new helper, `group_tenant_id(p_group_id)`, looks up a group's
+  `tenant_id` bypassing RLS (`security definer`, same pattern as every
+  other helper in this file) — needed so `group_members_select` can
+  call `is_tenant_admin()` without its own subquery against `groups`
+  silently returning null under the querying user's own RLS.
+- `group_members_select` gained the same third branch:
+  `or public.is_tenant_admin(public.group_tenant_id(group_id))`.
+
+**Deliberately not touched:** `user_word_srs_all_own`. Its own comment
+is explicit — "A tutor must not be able to read or alter a student's
+scheduling state," no teacher exception, per FR-1.2 — and that holds
+for a tenant admin too. A tenant-wide rollup still has no path to a
+single student's raw SRS row, only to `group_word_heatmap()`'s
+aggregate output, which has no `user_id` column to begin with.
+
+Updated `database/apply-migrations.sh` to run 009 (idempotent like
+005–007, via `CREATE OR REPLACE FUNCTION` / `DROP POLICY IF EXISTS`)
+and `dygo_academy_database_dictionary.md`'s RLS policy and function
+tables to describe the widened `group_members_select`,
+`can_read_group()`, and the new `group_tenant_id()` helper, and to
+reframe `is_tenant_admin()`'s own row as "this function **is** the
+tenant-wide/director role at the RLS layer," not a placeholder for one.
+
+### Testing this pass added
+
+Added **section J** to `database/tests/rls_test.sql` (54 assertions
+total now, up from 47) rather than touching `004_seed_data.sql` — the
+existing fixtures have no user who is `ADMIN` of one Oxford group but
+NOT a member of another, which is exactly the scenario that needs
+proving, and modifying seed data risked perturbing the exact-count
+assertions other sections already depend on (e.g. section A's
+`count(*) from groups = 2` for Alex). Instead, section J inserts a
+brand-new group and topic *inside its own transaction* (as Marco, who
+is `WRITE`-only in the seed data's group 1 and `ADMIN` of nothing until
+this test seats him as owner of the new group via the existing
+`trg_group_owner_membership` trigger), then proves as Sarah — already
+`ADMIN` elsewhere in the same Oxford tenant, never a member of Marco's
+new group — that she can now read its `group_members` roster and its
+topic, where before 009 both would have returned zero rows. A fourth
+assertion, as Dana (Rival Academy's `ADMIN`, a different tenant
+entirely), confirms the wider grant does not cross the tenant boundary.
+Everything rolls back with the rest of the file, so it leaves no
+residue and doesn't touch `004`.
+
+This suite has never actually run against a real Postgres in this
+sandbox — no Docker here, the same standing limitation as every
+migration since the first pass. Static review is the ceiling: read the
+policy definitions and the trigger they depend on line by line rather
+than assuming correctness. Added as UAT checklist item 24
+(`dygo_academy_uat_checklist_2026-09-02.md`) — section J actually
+passing against real Postgres is itself part of what tomorrow's UAT is
+expected to confirm, not a given.
+
+### Wireframes — turn 13: a class too new to have a retention curve yet
+
+Picked up the other half of turn 12's own "Try next" line (the
+`tenants.director_id` migration option is superseded by the finding
+above — there's no new column to sketch, the existing function just
+needed consistent reach). Added **turn 13** (screens 13a–13b) to
+`Dygo Academy Wireframes.html`:
+
+- **13a** — the single-class rollup (12b's layout) for a class 3 days
+  old: an explicit "not enough history yet" empty state in place of the
+  retention curve, rather than a flat or zeroed chart that would
+  misleadingly read as 0% retention. The mistake heatmap below it is
+  NOT gated the same way — `group_word_heatmap()` (007) has no
+  minimum-history check, only a week-over-week retention comparison
+  would need one, and it hasn't been built on either the single- or
+  tenant-wide path yet — so 13a shows real (if sparse) mistake data
+  alongside the empty retention section, with a caption explaining why
+  the two halves of the screen behave differently.
+- **13b** — the academy-wide overview (12a's layout) with the new class
+  as one row: a "NEW" chip and a one-line note replace the mastery bar
+  it doesn't have real data for yet. The export button stays enabled;
+  the export itself would need to note the new class's limited window
+  rather than blocking the whole report, though that's still
+  unspecified (12c's own export modal doesn't have a "partial data"
+  affordance today — flagged, not built, in this turn's own note).
+
+The turn's own opening note documents the `is_tenant_admin()` correction
+above in full, so a future pass reading only turn 13 (not this report)
+still gets the corrected framing rather than re-reading turn 12's
+now-outdated one.
+
+Edited via the same Python decode/splice/re-encode procedure as turns
+10–12 — decode the `<script type="__bundler/template">` JSON blob,
+build the new section as a plain HTML string, re-encode, splice back
+into the one line that holds it. This pass's splice located the correct
+line on the first attempt: found by the `"<!DOCTYPE html>` prefix (not
+a loose `{"` heuristic, which is what caught the wrong line the 16th
+pass), and the old blob's decoded length was asserted against the
+previously-known 117,335 characters before writing anything.
+
+Validated before and after writing: the new blob re-parses as JSON,
+every tag type used in the document (`div`, `section`, `p`, `span`,
+`h3`, `h4`, `a`) has equal open/close counts across the full new
+124,775-character decoded document, and all 77 `id=` anchors are unique
+(up from 74 — added `t13`, `13a`, `13b`). `git diff --stat` shows the
+file as "1 line changed," as expected for this bundle format. This
+sandbox still cannot open the file in a real browser to confirm visual
+rendering — now four unverified turns (10, 11, 12, 13) instead of
+three; `dygo_academy_uat_checklist_2026-09-02.md` item 23 updated to
+list all four and to point to item 24 for the backend-side follow-up.
+
+### What this pass did not do, and why
+
+Did not start `BillingController`'s real Stripe integration or the
+`subscription_status` migration — same reasoning as the 7th through
+16th passes, now the eleventh pass running that same reasoning. Did not
+build the tenant-wide `AnalyticsService.getHeatmap` query itself — 009
+only unblocks the RLS layer underneath it; the endpoint widening
+`groupId` to a group list is still new backend scope, per turn 12's
+still-accurate finding. Did not attempt `next build` — 14-for-14 hang
+standing, not re-attempted a 15th time, same token-budget judgment call
+as passes 12–16. Did not modify `004_seed_data.sql` — see "Testing this
+pass added" above for why that risk wasn't worth taking for this test.
+
+### Try next
+
+Two real options, not the same "wireframe vs. sketch a migration" shape
+as turn 12 had (that ambiguity is resolved now): (1) build the actual
+tenant-wide heatmap query — `AnalyticsService.getHeatmap` widening a
+single `groupId` to "every group this tenant owns," now that 009 gives
+it RLS to stand on — which is real backend scope but no longer blocked
+on a schema question, only on the same "is it wise to start non-critical
+feature work hours before UAT" judgment call the 7th–17th passes have
+made consistently about Module 7; (2) wireframe what 12c's export modal
+looks like when the date range includes a class like 13a/13b that
+doesn't have a full window yet — a smaller, design-only extension in
+the same spirit as this pass's own turn 13. Module 7's real backend and
+the `subscription_status` migration remain correctly deferred until
+after UAT feedback lands, now for the eleventh straight pass.
+
+---
 for detail.
 
 ---

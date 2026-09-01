@@ -1,9 +1,71 @@
 # 📅 Dygo Academy: Master Project Schedule & Phasing Strategy
-**Document Version**: 5.14 (live-stack integration test suite landed + director-rollup wireframe, backend still deferred)  
+**Document Version**: 5.15 (tenant-admin RLS read gap closed + new-class empty-state wireframe, backend still deferred)  
 **Author**: Principal Cloud & SaaS Solutions Advisory  
 **Status**: Approved for Engineering & Product Execution  
 
 **Changelog**
+* **5.15** (2026-09-01) — Seventeenth pass, still the same day, still ahead
+  of tomorrow morning's UAT (2026-09-02). Full regression confirmed no
+  drift from 5.14 (153/153 backend jest, clean `tsc`/lint both sides,
+  frontend `tsc`/`next lint` clean, backend `TODO`/`FIXME` grep still
+  empty — the eleventh straight pass, 7th–17th, reaching that
+  conclusion; `BillingController`/`BillingService` still a zero-route
+  scaffold). While scoping turn 12's own "Try next" line (sketch the
+  `tenants.director_id`-shaped migration it called out), found that the
+  premise was only half right: `is_tenant_admin(tenant_id)`
+  (`002_rls_policies.sql`) already exists and already grants a
+  tenant-wide read — it's what `groups_select` and
+  `tenant_seats_select` already use to let a user who is `ADMIN` of
+  even one group in a tenant see every group and every seat in that
+  tenant. The real, narrower gap: `can_read_group()` (and therefore
+  `topics_select`/`topic_words_select`, which call it via
+  `can_read_topic()`) and `group_members_select` never carried the same
+  grant, so a tenant admin could see that a sibling class existed but
+  not read its topics, words, or roster — exactly what the director
+  rollup screens need. Closed with
+  `database/migrations/009_tenant_admin_read_expansion.sql` — two
+  `CREATE OR REPLACE FUNCTION`s and one policy swap, additive only, no
+  new column or migration risk this close to UAT. Deliberately left
+  `user_word_srs_all_own` untouched: FR-1.2's "no teacher exception for
+  a student's own SRS state" holds for tenant admins too. Added three
+  new RLS assertions (section J, `rls_test.sql`, now 54 total, up from
+  47) proving the fix and proving it doesn't cross the tenant boundary,
+  using a group inserted inside the test's own transaction rather than
+  touching `004_seed_data.sql` (avoids perturbing any of that file's
+  existing exact-count assertions elsewhere in the suite). Updated
+  `database/apply-migrations.sh` to run 009 and
+  `dygo_academy_database_dictionary.md`'s RLS policy/function tables to
+  match. None of this has run against a real Postgres in this
+  Docker-less sandbox — same standing limitation as every migration
+  since the first pass — so section J passing for real is itself an
+  open UAT item, added as item 24 in
+  `dygo_academy_uat_checklist_2026-09-02.md`.
+
+  Also continued the wireframe work: added **turn 13** (screens 13a–13b)
+  to `Dygo Academy Wireframes.html`, picking up the other half of turn
+  12's "Try next" line — what the rollup looks like for a class under 7
+  days old, before there's a full week of data for a retention curve.
+  13a shows the single-class view with an explicit "not enough history
+  yet" empty state instead of a misleading flat/zeroed chart (the
+  mistake heatmap itself has no such gate — `group_word_heatmap()` has
+  no minimum-history check, only the retention curve does); 13b shows
+  the same class as one row in the academy-wide overview with a "NEW"
+  chip in place of a mastery bar with nothing real to fill it. The
+  turn's own opening note documents the `is_tenant_admin()` correction
+  above rather than silently reusing turn 12's now-outdated framing.
+  Edited via the same Python decode/splice/re-encode procedure as turns
+  10–13; this pass's splice was correct on the first attempt (located by
+  the `"<!DOCTYPE html>` prefix, old-length asserted against the known
+  117,335 before writing). Validated: the new blob re-parses as JSON,
+  every tag used in the document balances open/close counts across the
+  full 124,775-character decoded document, and none of the 77 total
+  `id=` anchors collide (up from 74). This sandbox still cannot render
+  it in a real browser — now four unrenderable turns (10–13) instead of
+  three; `dygo_academy_uat_checklist_2026-09-02.md` item 23 updated
+  accordingly. `next build` not re-attempted — 14-for-14 hang standing,
+  not re-tried a 15th time, same token-budget judgment call as passes
+  12–16. See the seventeenth pass entry in
+  `dygo_academy_session_report_2026-09-01.md`.
 * **5.14** (2026-09-01) — Sixteenth pass, still the same day, still
   ahead of tomorrow morning's UAT. Full regression confirmed no drift
   from 5.13 (153/153 backend jest, clean `tsc`/lint both sides). Two

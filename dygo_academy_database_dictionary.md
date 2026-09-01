@@ -311,7 +311,7 @@ RBAC join table. The single source of truth for who can do what.
 | :--- | :--- | :--- | :--- |
 | `group_members_delete_admin` | DELETE | {authenticated} | `has_group_role(group_id, 'ADMIN'::group_role)` |
 | `group_members_insert_admin` | INSERT | {authenticated} | `has_group_role(group_id, 'ADMIN'::group_role)` |
-| `group_members_select` | SELECT | {authenticated} | `((user_id = auth.uid()) OR has_group_role(group_id, 'WRITE'::group_role))` |
+| `group_members_select` | SELECT | {authenticated} | `((user_id = auth.uid()) OR has_group_role(group_id, 'WRITE'::group_role) OR is_tenant_admin(group_tenant_id(group_id)))` *(third branch added 009)* |
 | `group_members_update_admin` | UPDATE | {authenticated} | `has_group_role(group_id, 'ADMIN'::group_role)` |
 
 **Operational notes**
@@ -785,10 +785,11 @@ breaking the cycle.
 | `current_user_tenant_id()` | `uuid` | definer | Tenant of `auth.uid()`. |
 | `group_role_rank(group_role)` | `integer` | invoker (immutable) | Maps `ADMIN`/`WRITE`/`READ` to 3/2/1 so policies can compare. |
 | `has_group_role(uuid, group_role)` | `boolean` | definer | Caller holds at least this role in the group. |
-| `can_read_group(uuid)` | `boolean` | definer | Group is public, or caller is a member. |
-| `can_read_topic(uuid)` | `boolean` | definer | Topic is public, or its group is readable. |
+| `can_read_group(uuid)` | `boolean` | definer | Group is public, caller is a member, **or (009) caller is `is_tenant_admin()` of that group's tenant.** |
+| `can_read_topic(uuid)` | `boolean` | definer | Topic is public, or its group is readable (inherits 009's tenant-admin branch via `can_read_group`). |
 | `has_topic_role(uuid, group_role)` | `boolean` | definer | Role check via the topic's group. |
-| `is_tenant_admin(uuid)` | `boolean` | definer | Caller holds `ADMIN` in any group of that tenant. There is no separate tenant-role table. |
+| `is_tenant_admin(uuid)` | `boolean` | definer | Caller holds `ADMIN` in any group of that tenant. There is no separate tenant-role table — this function **is** the tenant-wide/"director" role at the RLS layer (see 009's header comment). |
+| `group_tenant_id(uuid)` *(009)* | `uuid` | definer | `tenant_id` of a group, looked up bypassing RLS so `group_members_select` can call `is_tenant_admin()` without a blocked subquery. |
 | `handle_new_auth_user()` | `trigger` | definer | Creates a `profiles` row on `auth.users` INSERT. |
 | `set_updated_at()` | `trigger` | invoker | Maintains `updated_at` on eight tables. |
 
@@ -869,15 +870,17 @@ full reset is `docker compose down -v`.
 
 ### Verifying the security model
 
-`database/tests/rls_test.sql` contains 47 assertions (10th pass; was 45
-through the 9th) covering cross-tenant isolation, per-user
+`database/tests/rls_test.sql` contains 54 assertions (17th pass; was 47
+through the 10th) covering cross-tenant isolation, per-user
 SRS isolation (including from the group `ADMIN`), the role hierarchy, the
 anonymous surface, privilege-escalation attempts, solo-user tenant
 auto-provisioning, the FR-8.2 cohort heatmap's own ADMIN gate and
-per-student isolation, and (section I, new) that an invite-redeemed
+per-student isolation, that an invite-redeemed
 member's name is now visible on the inviting teacher's roster regardless of
-tenant, while remaining invisible to an unrelated admin who shares no group
-with them. It wraps
+tenant while remaining invisible to an unrelated admin who shares no group
+with them (section I), and (section J, new) that `009`'s tenant-admin read
+expansion lets a tenant admin read a sibling group's roster and topics they
+never joined, without leaking across the tenant boundary. It wraps
 everything in a transaction and rolls back, so it is safe to re-run. Run it
 after **any** change to `002_rls_policies.sql`:
 
