@@ -53,11 +53,20 @@ export interface GroupMember {
  * Deliberately narrower than the `GroupMember` table type above: no `id`/
  * `group_id`, since the roster endpoint is already scoped to one group and
  * never selects its own join-row primary key.
+ *
+ * `email`/`display_name` come from a `left join` onto `profiles` on the
+ * backend, so both are nullable — null for a member whose profile isn't
+ * visible to the caller under `profiles_select_self_or_tenant` (real today
+ * for anyone seated via a redeemed invite link, since that flow never sets
+ * `profiles.tenant_id`). `RosterPanel` falls back to the shortened user id
+ * when both are null, same as it always has.
  */
 export interface GroupRosterMember {
   user_id: string;
   role: GroupRole;
   joined_at: string;
+  email: string | null;
+  display_name: string | null;
 }
 
 /** `GET /api/v1/groups/:id/invites` row shape — GroupsService.GroupInviteSummary. */

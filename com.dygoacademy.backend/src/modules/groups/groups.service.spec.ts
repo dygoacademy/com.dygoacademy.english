@@ -150,11 +150,15 @@ describe('GroupsService', () => {
 
   describe('findMembers', () => {
     it('scopes to the group id and lets RLS decide how much roster is visible', async () => {
-      const queryAsMock = jest
-        .fn()
-        .mockResolvedValue([
-          { user_id: 'user-1', role: 'ADMIN', joined_at: new Date('2026-08-01T00:00:00Z') },
-        ]);
+      const queryAsMock = jest.fn().mockResolvedValue([
+        {
+          user_id: 'user-1',
+          role: 'ADMIN',
+          joined_at: new Date('2026-08-01T00:00:00Z'),
+          email: 'sarah@dygo.test',
+          display_name: 'Sarah',
+        },
+      ]);
       const service = await makeService(queryAsMock);
 
       const result = await service.findMembers('user-1', 'group-1');
@@ -163,6 +167,23 @@ describe('GroupsService', () => {
       expect(sql).toMatch(/from public\.group_members/i);
       expect(params).toEqual(['group-1']);
       expect(result).toHaveLength(1);
+      expect(result[0].email).toBe('sarah@dygo.test');
+      expect(result[0].display_name).toBe('Sarah');
+    });
+
+    it('left joins profiles rather than inner joining, so a member with no visible profile is not dropped from the roster', async () => {
+      const queryAsMock = jest.fn().mockResolvedValue([
+        { user_id: 'user-2', role: 'READ', joined_at: new Date('2026-08-02T00:00:00Z'), email: null, display_name: null },
+      ]);
+      const service = await makeService(queryAsMock);
+
+      const result = await service.findMembers('user-1', 'group-1');
+
+      const [, sql] = queryAsMock.mock.calls[0];
+      expect(sql).toMatch(/left join public\.profiles/i);
+      expect(result).toHaveLength(1);
+      expect(result[0].email).toBeNull();
+      expect(result[0].display_name).toBeNull();
     });
   });
 

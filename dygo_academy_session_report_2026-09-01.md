@@ -1,11 +1,162 @@
-# Dygo Academy — session report, 2026‑09‑01 (seventh pass)
+# Dygo Academy — session report, 2026‑09‑01 (eighth pass)
 **Run**: automated scheduled task, no user present. UAT is scheduled for tomorrow morning (2026‑09‑02).
-This file now covers seven runs today. Passes one through six (Groups/Words
+This file now covers eight runs today. Passes one through seven (Groups/Words
 first slice, the rest of Module 1, Module 2's real Gemini/TTS pipeline,
-Module 3/4's SRS engine and flashcard player, Module 5's quiz engine, then
-Module 6's push/habit scheduling closing out Phase 3) are preserved below
-under "First pass" through "Sixth pass" — read top-down for the current
-state.
+Module 3/4's SRS engine and flashcard player, Module 5's quiz engine, Module
+6's push/habit scheduling closing out Phase 3, then the group-management
+frontend and login/register fix) are preserved below under "First pass"
+through "Seventh pass" — read top-down for the current state.
+
+---
+
+## Eighth pass — UAT-prep pass: roster naming gap closed, stale wireframe captions fixed
+
+### What this pass did
+
+Same standing instruction as every prior pass, run the morning of UAT
+(2026‑09‑02, tomorrow): compared the working tree against
+`dygo_academy_master_project_schedule.md` and `dygo_academy_api_surface.md`.
+`git status` was clean, `git log` showed seven prior commits all landed, and
+`npm run test` reproduced the seventh pass's 129/129 backend pass before any
+new work started. Also re-checked whether this sandbox now has Docker
+available (it would let this pass finally verify against a live stack,
+something all seven prior passes flagged as impossible) — it does not;
+`docker`/`docker compose` are still not installed here. So this pass stayed
+scoped to what static checks and code review can actually fix, and treated
+tomorrow's UAT as the point where the real Postgres/GoTrue/Redis run finally
+happens.
+
+With Phase 3 code-complete and Phase 4 (Stripe billing) not yet started,
+this pass took the seventh pass's own most actionable open item rather than
+opening Phase 4 cold the morning before UAT: **`GET /groups/:id/members` has
+no email/display-name join**, flagged as a known gap since the 7th pass's
+own report and directly visible in tomorrow's UAT checklist item 3 (open the
+roster, expect to see "Marco"/"Alex"/"Priya" — the running frontend would
+have shown three shortened UUIDs instead). Fixing a rough edge someone will
+actually click through tomorrow morning outranked starting a new, multi-day
+billing module the day before UAT.
+
+### Roster naming fix
+
+`GroupsService.findMembers` (`com.dygoacademy.backend/src/modules/groups/groups.service.ts`)
+now `left join`s `public.profiles` for `email`/`display_name`, instead of
+selecting only `user_id`/`role`/`joined_at` off `group_members`. The join
+choice needed a real decision, not just "add a join": `profiles`' own RLS
+policy (`profiles_select_self_or_tenant`) only lets a caller see another
+user's profile row when that row's `tenant_id` matches the caller's own —
+and `redeem_group_invite()` (`005_group_invites_redeem.sql`) seats a new
+member into `group_members` without ever touching `profiles.tenant_id` (the
+same root cause as the standing "no solo-user tenant provisioning" gap,
+first flagged in the very first session report, still open). An `inner`
+join would have silently dropped every invite-redeemed member from the
+roster entirely the moment their profile became RLS-invisible to the
+caller — worse than the UUID it was replacing. A `left` join instead
+returns `email`/`display_name` as `null` for exactly that case, so the row
+still renders, just without a name — the same graceful-degradation instinct
+Module 5 and Module 6 used for "don't persist what's derivable," applied
+here to "don't drop a row RLS happens to obscure part of."
+
+`GroupMember` (backend interface) and `GroupRosterMember` (frontend type,
+`com.dygoacademy.frontend/src/types/group.ts`) both gained `email: string |
+null` and `display_name: string | null`, with header comments explaining
+the null case rather than leaving it to be rediscovered. `RosterPanel.tsx`
+now renders `display_name`, falling back to `email`, falling back to the
+shortened user id — the exact fallback chain its own prior-pass comment
+said didn't exist yet because the API didn't return anything to fall back
+to. `groups.controller.ts`'s Swagger description for the route was updated
+to match. 1 new backend unit test added to `groups.service.spec.ts`
+(specifically exercising the left-join-not-inner-join behavior with a
+null-profile row), for 130 total, up from 129 — the existing "scopes to the
+group id" test was also updated to assert on the new fields rather than
+just row count. `tsc --noEmit` and lint are clean on both sides.
+
+### Wireframes
+
+Two caption corrections, not a new turn — turn 3's own roster/invite
+screens (3c, 3d) already depicted this fix's end state (`RosterPanel`
+shows "Sarah (you)" / "Marco" / "Alex" in the mockup, real names, not
+UUIDs) since they were drawn; what was stale was the *caption* under each,
+which still read "Not live yet... Implied, not built" long after
+`GET`/`POST /groups/:id/members` and `/invites` actually shipped (as early
+as the 2nd/3rd pass, per the 7th pass's own account of when these routes
+first existed) and after the frontend caught up to them in the 7th pass.
+3c's caption now explains the left-join fix directly; 3d's now just marks
+the endpoint and screen both live. `Dygo Academy Wireframes.html` was
+touched for these two caption edits only — no new mockup, since none was
+needed for a data-shape fix to a screen already designed correctly.
+
+### Testing performed
+
+| Check | Result |
+| :--- | :--- |
+| Backend `jest` | ✅ 130/130 pass (129 prior + 1 new) |
+| Frontend `tsc --noEmit` | ✅ clean |
+| Frontend `next lint` | ✅ clean |
+| Backend `tsc --noEmit` | ✅ clean |
+| Frontend `next build` | ❌ hung again — **8th occurrence across 8 sessions**, timed out at ~178s under a piped `timeout` |
+| A real `GET /groups/:id/members` round-trip against live Postgres, to confirm the RLS-visible/RLS-hidden cases both behave as designed | ❌ not possible here — no Docker; **this is the one change this pass most needs a real run before UAT depends on it**, same caveat every prior pass has carried for its own changes |
+
+### Known gaps — not fixed, flagged for grooming
+
+- **No solo-user tenant provisioning** (open since the 1st session report)
+  is now visibly the same root cause behind *two* symptoms instead of one:
+  a brand-new solo signup can't create a group (original symptom), and an
+  invite-redeemed member's name never shows up to other members in the
+  roster this pass just fixed for everyone else (new symptom, surfaced
+  while building this fix, not introduced by it). Fixing tenant
+  provisioning properly would close both at once — worth prioritizing
+  over either symptom individually next time this area comes up.
+- **`FR-6.2`'s sprint route still has no rate limiting** (flagged 6th and
+  7th pass) — untouched this pass.
+- Everything else in "Known gaps" from the 7th pass is still open except
+  the roster-naming item closed above.
+- `next build` hanging in this sandbox is now an 8-for-8 pattern across
+  eight separate sessions — strong enough at this point to treat as a
+  property of this sandbox, not something worth re-investigating in a 9th
+  pass without a different environment to test in.
+
+### UAT checklist for tomorrow (supersedes the seventh pass's own checklist — only item 3 changed)
+
+1. `docker compose up -d && ./database/apply-migrations.sh --seed` (or
+   `--test` for the RLS suite too) — unchanged from the 7th pass's own
+   checklist; this pass did not touch migrations.
+2. Open the frontend at `localhost:3000/login` and sign in as
+   `sarah@dygo.test` / `dygo-dev-2026` (or marco/alex/priya/dana, same
+   password). Confirm the session lands on `/topics` and the Navbar shows
+   five tabs including "Groups." (Unchanged from 7th pass.)
+3. Click "Groups" → confirm Sarah's Oxford English Center group appears →
+   open it → **confirm the roster now shows "Marco," "Alex," and "Priya" by
+   name (or their `@dygo.test` email, if `display_name` is unset for any of
+   them) — not shortened UUIDs** — then confirm invite links can still be
+   minted (copy the `/join/:token` URL) and revoked, and — as Sarah
+   specifically — "Send a reminder now" returns a real `sent`/`recipients`
+   count (needs `VAPID_*` configured and at least one subscribed device).
+4. Sign out, register a brand-new account, confirm the copy on `/register`
+   about not being able to create a group yet is accurate (`POST /groups`
+   should fail until tenant provisioning exists) — expected, not a
+   regression.
+5. Open the `/join/:token` link copied in step 3 in a private/incognito
+   window, sign in as `priya@dygo.test`, confirm it redeems and lands on
+   the group. **New note for this step given today's fix:** Priya joined
+   via the seed script, not a redeemed invite, so her `profiles.tenant_id`
+   is already set — her name will show correctly in the roster. If UAT
+   wants to specifically exercise the left-join's null-profile fallback
+   path (a genuinely invite-redeemed member), that requires registering a
+   brand-new account and having someone redeem an invite as them — item 4's
+   own no-tenant-yet limitation means that account can't be the one
+   redeeming into an *existing* group's roster check either, so this path
+   is easiest confirmed by reading `groups.service.spec.ts`'s new test
+   rather than by hand tomorrow morning.
+6. From the group detail page, click "+ New topic," confirm it appears
+   under Topics, then delete it as Sarah (ADMIN) and confirm it's gone; as
+   Marco (WRITE) confirm the delete button doesn't render at all.
+   (Unchanged from 7th pass.)
+7. `cd com.dygoacademy.frontend && npm run build` — confirm the production
+   build completes; unverified here across an 8th session running (see
+   "Testing performed" above).
+8. Everything from the 6th pass's own checklist items 1–2 and 5–6 (SRS,
+   quiz, push-tick timing, wireframes turn 8) still applies and is
+   unchanged by this pass.
 
 ---
 

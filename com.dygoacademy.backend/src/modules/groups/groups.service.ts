@@ -34,6 +34,19 @@ export interface GroupMember {
   user_id: string;
   role: GroupRole;
   joined_at: Date;
+  /**
+   * From a `left join` onto `profiles`, not `group_members` itself — null
+   * for a member whose profile row isn't visible to the caller under
+   * `profiles_select_self_or_tenant` (real for anyone who joined via a
+   * redeemed invite link: `redeem_group_invite()` seats them in
+   * `group_members` but never sets `profiles.tenant_id`, so they never
+   * satisfy that policy's tenant-match clause for anyone but themselves —
+   * same root cause as the "no solo-user tenant provisioning" gap). A left
+   * join (not inner) is deliberate: an inner join would silently drop that
+   * member from the roster entirely rather than showing them with no name.
+   */
+  email: string | null;
+  display_name: string | null;
 }
 
 export interface GroupInviteSummary {
@@ -178,10 +191,11 @@ export class GroupsService {
   async findMembers(userId: string, groupId: string): Promise<GroupMember[]> {
     return this.db.queryAs<GroupMember>(
       userId,
-      `select user_id, role, joined_at
-         from public.group_members
-        where group_id = $1
-        order by joined_at asc`,
+      `select gm.user_id, gm.role, gm.joined_at, p.email, p.display_name
+         from public.group_members gm
+         left join public.profiles p on p.id = gm.user_id
+        where gm.group_id = $1
+        order by gm.joined_at asc`,
       [groupId],
     );
   }

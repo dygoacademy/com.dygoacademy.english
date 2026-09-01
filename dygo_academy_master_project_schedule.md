@@ -1,9 +1,16 @@
 # 📅 Dygo Academy: Master Project Schedule & Phasing Strategy
-**Document Version**: 5.5 (group-management frontend built; login/register forms — a bigger, previously-missed gap — closed too)  
+**Document Version**: 5.6 (roster now shows real names, not UUIDs; two stale wireframe captions fixed)  
 **Author**: Principal Cloud & SaaS Solutions Advisory  
 **Status**: Approved for Engineering & Product Execution  
 
 **Changelog**
+* **5.6** (2026-09-01) — UAT-prep pass, no new module work: closed the
+  known "`GET /groups/:id/members` has no email/display-name join" gap
+  flagged since the 7th pass (`RosterPanel` showed a shortened user id).
+  Also corrected two stale wireframe captions (turns 3c/3d) that still said
+  their endpoints were "Implied, not built" long after both shipped. See
+  status notes under §2 (Phase 1) and the 8th pass entry in
+  `dygo_academy_session_report_2026-09-01.md`.
 * **5.5** (2026-09-01) — No new backend phase work; this pass closed the standing "no group-management frontend" gap (Phase 1's own status note below) and, more importantly, discovered and fixed that `(auth)/login`/`(auth)/register` had never been built — see status notes under §2 (Phase 1) for both.
 * **5.4** (2026-09-01) — Phase 3, Module 6 (Web Push & Habit Scheduling) marked code-complete — Phase 3 as a whole is now done. See status notes under §2.
 * **5.3** (2026-09-01) — Phase 3, Module 5 (Dynamic Multi-Modal Quiz Engine) marked code-complete; Module 6 (Push & Habit Scheduling) is still open. See status notes under §2. Also fixed a standing Phase 1 gap: the last-ADMIN-removal guard.
@@ -129,6 +136,20 @@ gantt
   a live Postgres/GoTrue stack** — same standing sandbox limitation as
   everything else in this document; verify a real sign-in and a real
   invite-link round-trip before treating this as done.
+  **Update (2026-09-01, 8th pass):** the roster's own known gap — no email
+  or display name, only a shortened user id — is fixed. `GroupsService.findMembers`
+  now `left join`s `profiles` for `email`/`display_name`; `RosterPanel` shows
+  `display_name`, falling back to `email`, falling back to the shortened id
+  only when both are null. A `left` (not `inner`) join is the deliberate
+  choice: an inner join would have silently dropped from the roster any
+  member whose profile `profiles_select_self_or_tenant` hides from the
+  caller — real today for anyone seated via a redeemed invite link, since
+  `redeem_group_invite()` seats them in `group_members` but never sets
+  `profiles.tenant_id` (same root cause as the standing "no solo-user
+  tenant provisioning" gap, not a new one). 1 new backend unit test (130
+  total, up from 129); `tsc`/lint clean both sides. Two wireframe captions
+  (3c, 3d) that still read "Implied, not built" — stale since as early as
+  the 2nd/3rd pass — were also corrected to reflect current reality.
 
 #### Core Engineering Tasks:
 1. **Module 1: Groups, Topics & Granular RBAC**:

@@ -80,7 +80,10 @@ export class GroupsController {
     summary: 'List the roster',
     description:
       'WRITE and above see everyone; a READ member sees only their own row ' +
-      '(group_members_select) — enforced by RLS, not this endpoint.',
+      '(group_members_select) — enforced by RLS, not this endpoint. Each row ' +
+      'now includes email/display_name from a left join onto profiles — null ' +
+      'for a member whose profile RLS hides from the caller (real today for ' +
+      'anyone seated via a redeemed invite link; see GroupMember\'s own comment).',
   })
   async findMembers(
     @CurrentUser('id') userId: string,

@@ -10,12 +10,13 @@ import type { GroupRole } from '@/types';
 const ROLES: GroupRole[] = ['ADMIN', 'WRITE', 'READ'];
 
 /**
- * Wireframe 3c — the roster. `GET /groups/:id/members` never returns an
- * email or display name (`GroupRosterMember` is `user_id`/`role`/
- * `joined_at` only — no profile join in `GroupsService.findMembers`), so
- * this shows a shortened user id rather than inventing a name the API
- * doesn't provide. Flagged in the session report as a real gap (no
- * roster-with-profile endpoint exists yet), not silently patched over here.
+ * Wireframe 3c — the roster. `GET /groups/:id/members` now left-joins
+ * `profiles` for `email`/`display_name` (previously `user_id`/`role`/
+ * `joined_at` only), so this shows `display_name`, falling back to `email`,
+ * falling back to the shortened user id — never inventing a name the API
+ * doesn't provide for a given row. The id fallback still matters: a member
+ * seated via a redeemed invite link has no visible profile under RLS (see
+ * `GroupRosterMember`'s own comment) and comes back with both fields null.
  *
  * `canManage` gates the role dropdown and remove button — a READ member's
  * own request only ever returns their own row anyway (RLS,
@@ -72,13 +73,15 @@ export function RosterPanel({
       {error && <p className="text-xs text-destructive">{error}</p>}
 
       <div className="flex flex-col gap-1.5">
-        {members?.map((member) => (
+        {members?.map((member) => {
+          const label = member.display_name || member.email;
+          return (
           <div
             key={member.user_id}
             className="flex items-center justify-between rounded-xl border px-3 py-2 text-sm"
           >
-            <span className="font-mono text-xs">
-              {member.user_id.slice(0, 8)}…
+            <span className={label ? 'text-sm' : 'font-mono text-xs'}>
+              {label ?? `${member.user_id.slice(0, 8)}…`}
               {member.user_id === currentUserId && ' (you)'}
             </span>
 
@@ -112,7 +115,8 @@ export function RosterPanel({
               </span>
             )}
           </div>
-        ))}
+          );
+        })}
       </div>
     </section>
   );

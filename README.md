@@ -3,12 +3,13 @@
 AI-powered collaborative vocabulary platform — automated word enrichment (dual-accent IPA, neural audio, CEFR-graded synonyms and examples), error-adaptive spaced repetition, and multi-tenant classroom groups with granular RBAC.
 
 > **Project status — Phases 0–3 code-complete; group-management frontend and
-> real login now exist too.** *(2026-09-01)* Groups/RBAC, AI word
+> real login now exist too. The roster shows real names, not UUIDs, as of
+> today.** *(2026-09-01)* Groups/RBAC, AI word
 > enrichment, the error-adaptive SRS flashcard player, the multi-modal quiz
 > engine, and web push/habit scheduling are all built on both backend and
 > frontend. UAT is scheduled for the morning of 2026-09-02 — see
 > [`dygo_academy_session_report_2026-09-01.md`](dygo_academy_session_report_2026-09-01.md)
-> (seventh pass) for exactly what to click through, and
+> (eighth pass) for exactly what to click through, and
 > [`dygo_academy_master_project_schedule.md`](dygo_academy_master_project_schedule.md)
 > for the full 12-week plan and per-phase status notes. **None of this has
 > run against a live Postgres/GoTrue/Redis stack** — every session so far
