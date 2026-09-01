@@ -10,6 +10,7 @@ import configuration from './config/configuration';
 import { validateEnv } from './config/env.validation';
 import { DatabaseModule } from './database/database.module';
 import { HealthModule } from './health/health.module';
+import { AnalyticsModule } from './modules/analytics/analytics.module';
 import { BillingModule } from './modules/billing/billing.module';
 import { GroupsModule } from './modules/groups/groups.module';
 import { NotificationsModule } from './modules/notifications/notifications.module';
@@ -44,6 +45,7 @@ import { NotificationProcessor } from './workers/notification.processor';
     QuizModule,
     BillingModule,
     NotificationsModule,
+    AnalyticsModule,
   ],
   providers: [
     EnrichmentProcessor,

@@ -75,3 +75,29 @@ export interface SrsStats {
   leech_count: number;
   current_streak_days: number;
 }
+
+/** `GET /api/v1/srs/leeches` row shape — SrsService.LeechCard. */
+export interface LeechCard {
+  topic_word_id: string;
+  topic_id: string;
+  source_word: string;
+  recent_mistakes: number;
+  total_mistakes: number;
+  next_due_at: string;
+}
+
+/**
+ * `GET /api/v1/groups/:id/heatmap` row shape — Module 8, FR-8.2. Mirrors
+ * `HeatmapEntry` (com.dygoacademy.backend/src/modules/analytics/heatmap-aggregator.ts)
+ * field-for-field. `failure_rate` is a fraction (0–1), not a percentage —
+ * format with `Math.round(failure_rate * 100)` at the render site.
+ */
+export interface GroupHeatmapEntry {
+  topic_word_id: string;
+  source_word: string;
+  topic_id: string;
+  topic_title: string;
+  attempts: number;
+  failures: number;
+  failure_rate: number;
+}
