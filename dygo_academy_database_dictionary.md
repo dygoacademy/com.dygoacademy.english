@@ -869,9 +869,12 @@ full reset is `docker compose down -v`.
 
 ### Verifying the security model
 
-`database/tests/rls_test.sql` contains 26 assertions covering cross-tenant
-isolation, per-user SRS isolation (including from the group `ADMIN`), the role
-hierarchy, the anonymous surface, and privilege-escalation attempts. It wraps
+`database/tests/rls_test.sql` contains 45 assertions (9th pass; was 26 as
+documented here through the 8th) covering cross-tenant isolation, per-user
+SRS isolation (including from the group `ADMIN`), the role hierarchy, the
+anonymous surface, privilege-escalation attempts, solo-user tenant
+auto-provisioning, and the FR-8.2 cohort heatmap's own ADMIN gate and
+per-student isolation. It wraps
 everything in a transaction and rolls back, so it is safe to re-run. Run it
 after **any** change to `002_rls_policies.sql`:
 

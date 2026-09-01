@@ -1,11 +1,320 @@
-# Dygo Academy — session report, 2026‑09‑01 (eighth pass)
+# Dygo Academy — session report, 2026‑09‑01 (ninth pass)
 **Run**: automated scheduled task, no user present. UAT is scheduled for tomorrow morning (2026‑09‑02).
-This file now covers eight runs today. Passes one through seven (Groups/Words
+This file now covers nine runs today. Passes one through eight (Groups/Words
 first slice, the rest of Module 1, Module 2's real Gemini/TTS pipeline,
 Module 3/4's SRS engine and flashcard player, Module 5's quiz engine, Module
-6's push/habit scheduling closing out Phase 3, then the group-management
-frontend and login/register fix) are preserved below under "First pass"
-through "Seventh pass" — read top-down for the current state.
+6's push/habit scheduling closing out Phase 3, the group-management frontend
+and login/register fix, then a UAT-prep pass that closed the roster-naming
+gap) are preserved below under "First pass" through "Eighth pass" — read
+top-down for the current state.
+
+---
+
+## Ninth pass — solo-user tenant provisioning fixed; Module 8 (analytics + mistake heatmap) goes live
+
+### What this pass found on start
+
+Same standing instruction as every prior pass, run the evening before UAT
+(2026‑09‑02, tomorrow morning): compared the working tree against
+`dygo_academy_master_project_schedule.md` and `dygo_academy_api_surface.md`.
+`git status` was clean and `git log` showed eight prior commits all landed,
+the most recent being the 8th pass's roster-naming fix. This pass read the
+relevant source files closely before touching anything (`GroupsService`,
+`002_rls_policies.sql`, `SrsService`/`SrsController`, `NotificationsService`,
+`rls_test.sql`) rather than re-running the 8th pass's 130/130 backend
+baseline as a first step the way earlier passes did — a deviation from prior
+rigor worth naming rather than glossing over. Confidence that the 130 prior
+tests still pass unmodified comes from the diff itself, not a before/after
+run: every change to pre-existing files this pass touched
+(`groups.service.ts`, `groups.controller.ts`) is a comment or Swagger-string
+edit only, no SQL or logic changed, and the final `npm test` run below
+(145/145) subsumes the original 130 either way. Docker is still not
+installed in this sandbox — ninth check, ninth "no."
+
+Phase 4 (Module 7 Stripe billing, Module 8 analytics/heatmaps) was the
+master schedule's own next open item. Per the standing instruction for this
+pass, Module 7 (external payment integration) was explicitly out of scope
+the day before UAT; Module 8 and a real, UAT-blocking bug were the two
+things actually worth doing tonight.
+
+### Tenant-provisioning fix (the UAT-blocking bug)
+
+`handle_new_auth_user()` (`001_initial_schema.sql`) inserted a bare
+`profiles` row (`id`, `email` only) on every Supabase signup — `tenant_id`
+stayed `NULL`. `groups.tenant_id` is `NOT NULL references tenants`, and
+`GroupsService.create()` inserts using `public.current_user_tenant_id()`,
+which reads `profiles.tenant_id`. Net effect, flagged as "unspecified" in
+`dygo_academy_api_surface.md` since the very first session report: **any
+freshly-registered user who isn't one of the 5 seeded fixtures could not
+create their first group at all** — `POST /groups` failed outright on a
+`NOT NULL` violation. This is exactly the kind of rough edge someone
+clicking through UAT tomorrow morning with a brand-new account would hit
+immediately.
+
+Fixed at the root in a new `database/migrations/006_solo_tenant_provisioning.sql`:
+`handle_new_auth_user()` now `INSERT`s a personal tenant (name derived from
+the email local-part, e.g. `"sarah's Workspace"`) *before* inserting the
+profile, inside the same `SECURITY DEFINER` trigger transaction, and points
+the new profile at it. `purchased_seats`/`price_per_seat_cents` are left at
+their column defaults (0/0) deliberately — an auto-provisioned personal
+tenant is unpaid until Phase 4 billing (Module 7, still open) upgrades it,
+not a placeholder value to fill in later. `database/apply-migrations.sh`
+now runs `006` (and `007`, below) right after `005`, before `004`'s seed
+data — order matters here, since `004_seed_data.sql`'s `auth.users` insert
+needs to exercise the *new* trigger, not the old one, to prove the fixture
+flow still works unmodified (it does: the seed script's own subsequent
+`UPDATE profiles SET tenant_id = ...` overwrites the auto-provisioned
+personal tenant with the real shared one, leaving 5 harmless orphan tenant
+rows in a dev database that are never referenced again).
+
+**Correcting the 8th pass's own framing, found while writing this fix's
+comments:** that pass's report linked this gap to a *second* symptom —
+an invite-redeemed member's name not showing up in the roster — on the
+theory both traced back to the same `NULL profiles.tenant_id` root cause.
+Tracing `profiles_select_self_or_tenant` precisely
+(`id = auth.uid() or (tenant_id is not null and tenant_id =
+current_user_tenant_id())`) shows that's only half right: the `is not
+null` clause is actually redundant in SQL (`null = anything` is already
+not-true), so the real gate is tenant *equality* between the row and the
+caller. Once this migration lands, an invite-redeemed student has a
+real, non-null `tenant_id` — but it's their own personal tenant,
+deliberately distinct from the inviting teacher's tenant (tenants are the
+billing boundary; a student's personal tenant must not silently become
+part of the teacher's paid seat count). So the equality check still fails
+for a teacher viewing that student's profile, and the roster's `left join`
+(8th pass) still renders `null` email/display_name for them. **This pass
+closes "can't create a group at all" completely. It does NOT close the
+roster-name gap for invite-redeemed members** — that needs a different
+fix (e.g. a `profiles` SELECT policy clause keyed on shared group
+membership, not shared tenant), flagged below rather than guessed at here.
+`GroupsService`'s `GroupMember`/`create()` comments, `types/group.ts`, and
+`dygo_academy_api_surface.md`'s `POST /groups` row were all updated to
+state this precisely rather than repeat the prior pass's approximation.
+
+Added two new `rls_test.sql` sections (G, H — see below) and updated the
+stale "26 assertions" count in `README.md`/`dygo_academy_database_dictionary.md`
+to the actual 45 (it had already drifted from 26 before this pass; not
+newly introduced, just finally corrected while this pass was touching the
+file anyway).
+
+### Topic-delete button — verified, not re-fixed
+
+The parent task flagged this as suspicious: a prior report claims the
+5th pass ADMIN-gated the topic-delete button, but a `grep -rn "delete"
+topics/**/*.tsx` search came up empty. Root cause of the empty grep: the
+button doesn't live under `topics/` at all — it's in
+`components/groups/GroupTopicsPanel.tsx`, rendered from the group detail
+page (`app/(dashboard)/groups/[groupId]/page.tsx`), which computes
+`canManage = group.role === 'ADMIN'` and passes it down. Read the actual
+component: the delete `<Button>` is wrapped in `{canManage && (...)}`,
+exactly matching `topics_delete_admin`'s RLS policy — a WRITE member does
+not see the control. Confirmed no other delete-topic UI exists anywhere
+else in the frontend (`topics/[topicId]/page.tsx`, `topics/browse/page.tsx`
+both have zero matches for "delete"). **No code change made** — the claim
+was accurate, just about a component in a different directory than the
+grep searched.
+
+### Module 8 — Analytics & Cohort Heatmaps (Phase 4)
+
+FR-8.1 (student streak, mastery, leech list) turned out to already be
+served by the backend since Phase 2 — `GET /srs/stats` and `GET
+/srs/leeches` (`SrsService`) — but nothing on the frontend ever called
+either route; `(dashboard)/analytics/page.tsx` was still the literal
+"Coming in a later phase" stub since turn 1, and `topics/page.tsx`'s
+`LeechNudge` hardcoded a mock count with a comment explicitly flagging
+this as unwired. New `useSrsStats`/`useLeeches` hooks close that gap.
+
+FR-8.2 (the class-wide mistake heatmap) had no backend endpoint at all and
+required a real design decision, not just a new route. `review_logs_select_own`
+(`002_rls_policies.sql`) is owner-only RLS with **no ADMIN exception** —
+its own comment already anticipates this exact feature: *"Module 8 cohort
+heatmaps read aggregates as service_role; they must never be served by
+widening this policy to teachers, which would expose per-student review
+histories rather than aggregate error rates."* `rls_test.sql`'s own section
+B proves the same thing from the other side ("even the group ADMIN cannot
+read a student's review history"). A plain `AnalyticsService.queryAs()`
+call joining `review_logs` would therefore see zero rows for every student
+but the caller — the aggregate has to be computed somewhere RLS doesn't
+apply.
+
+Resolved the same way `005_group_invites_redeem.sql` resolved an
+equivalent problem: not `DATABASE_ADMIN_URL` (the real Postgres superuser
+connection, reserved for DDL, per that migration's own reasoning about
+blast radius), but a narrow, auditable `SECURITY DEFINER` function —
+`public.group_word_heatmap(p_group_id)`, new in
+`database/migrations/007_group_word_heatmap.sql`. It re-checks
+`has_group_role(..., 'ADMIN')` itself before bypassing
+`review_logs_select_own`, and its `RETURNS TABLE` signature has no
+`user_id`/timestamp column at all — by construction, not by a runtime
+check, it cannot be used to identify which student made which mistake.
+`AnalyticsService.groupHeatmap` (new `AnalyticsModule`) checks
+`has_group_role` a second time at the application layer first (same shape
+as `NotificationsService.triggerSprint`), so a non-ADMIN caller gets a
+clean `403` without ever reaching the bypass function.
+
+Ranking is deliberately **not** done in SQL: no `ORDER BY`/`LIMIT` in the
+migration. Failure-rate computation, the worst-first sort (with an
+attempts-descending tiebreak — a word missed once at 100% shouldn't
+outrank one missed 40 times at 80%), and the top-20 cap live in
+`heatmap-aggregator.ts` as a pure, unit-tested function, matching the
+`srs-algorithm.ts`/`quiz-generator.ts` precedent of keeping business
+logic testable without a database.
+
+`(dashboard)/analytics/page.tsx` is real now: personal stats grid and
+leech list for every signed-in user (FR-8.1), plus a "Class mistake
+heatmap" section — one card per group the caller administers, via a new
+`useGroupHeatmap` hook — that only renders for a user with at least one
+ADMIN group, and renders nothing at all (not a disabled placeholder) for
+a student, the same "don't show a control that would just error" instinct
+turn 8g already established for the teacher-sprint trigger.
+
+15 new backend unit tests (145 total, up from 130): 10 for
+`rankHeatmap` (failure-rate math, sort order, tiebreak, capping,
+mutation-safety), 5 for `AnalyticsService.groupHeatmap` (the ADMIN gate,
+the exact `has_group_role` call shape, bigint-string normalization, limit
+pass-through, empty-group handling). `dygo_academy_api_surface.md` and
+`dygo_academy_master_project_schedule.md`'s Phase 4 section were both
+updated; Module 7 (Stripe billing) is explicitly still fully open and
+flagged as the next pass's top item, not attempted here.
+
+### Wireframes — turn 9
+
+`Dygo Academy Wireframes.html` bundles its markup as a JSON-encoded
+string inside a `<script type="__bundler/template">` tag, on one line —
+same trap every prior pass's report warned about: a naive regex looking
+for the first `</script>` stops early, because the JSON string's own
+*content* contains literal `</script>` substrings (the bundle's inline
+font `<style>` block, etc.). Used Python's `json.JSONDecoder.raw_decode`
+starting just after the opening tag, which correctly walks the actual
+JSON string grammar regardless of what looks like a closing tag inside
+it — the same category of fix this file's own structure has apparently
+required every pass that's touched it.
+
+Added `<section class="dv-turn" id="t9">` — group A (`9a`/`9b`): the
+student analytics screen, populated and empty-leech states; group B
+(`9c`/`9d`): the teacher heatmap, ranked list and the "renders nothing for
+a non-ADMIN" state — inserted at the newest-first position (immediately
+before turn 8), matching every prior turn's placement.
+
+**Verified programmatically before writing anything back**, per the
+standing method:
+- New section's own open/close tag counts balance (checked per-tag via
+  regex tag extraction, zero mismatches).
+- All four new `dv-opt` ids (`9a`–`9d`) plus `t9` itself appear exactly
+  once as both an `id="..."` and an `href="#..."` anchor, confirmed
+  against the full post-edit document (no collision with any of the 47
+  existing `NNx` ids across turns 1–8).
+- The full document's aggregate open/close tag counts, diffed old vs.
+  new, show zero net change beyond the new section itself (same check
+  method, applied to the whole file).
+- `json.dumps(new_obj, ensure_ascii=False)` round-trips byte-for-byte
+  through `json.loads` back to `new_obj`, **and** re-extracting the
+  template block from the rewritten file (same `raw_decode` method)
+  reproduces `new_obj` exactly — the actual bytes on disk, not just the
+  in-memory string, were checked.
+- `__bundler/manifest`, `__bundler/ext_resources`, and
+  `__bundler/page_order` script blocks are byte-identical before and
+  after (raw string comparison of each block's extracted content).
+
+This sandbox cannot render the file in a browser to visually confirm the
+new screens — same limitation as every prior pass's wireframe edit; the
+checks above are structural (valid HTML, correct JSON encoding, no
+collisions), not visual.
+
+### Testing performed
+
+| Check | Result |
+| :--- | :--- |
+| Backend `jest` | ✅ 145/145 pass (130 prior + 15 new) |
+| Backend `tsc --noEmit` | ✅ clean |
+| Backend `npm run lint` (eslint --fix) | ✅ clean — incidentally reformatted two pre-existing files it touched in passing (`groups.controller.ts`'s Swagger string to double-quotes, `groups.service.spec.ts`'s one long test object to multi-line) with no behavior change |
+| Frontend `tsc --noEmit` | ✅ clean |
+| Frontend `next lint` | ✅ clean |
+| Frontend `next build` | ❌ hung again — **9th occurrence across 9 sessions**, timed out at ~178s under a piped `timeout`, killed rather than retried |
+| `rls_test.sql`'s new sections G/H (solo-tenant provisioning, the heatmap function's ADMIN gate + per-student isolation) against live Postgres | ❌ not possible here — no Docker; written and reasoned through carefully (traced the exact RLS policy text, not just asserted an expectation) but genuinely unverified — **the single highest-priority thing to run for real before trusting this pass's two migrations** |
+| A real `POST /groups` round-trip as a brand-new signup, and a real `GET /groups/:id/heatmap` round-trip as an ADMIN vs. a 403 as a non-ADMIN | ❌ not possible here — no Docker, same standing limitation as every prior pass |
+
+### Known gaps — carried forward, plus what this pass found and didn't fix
+
+- **Roster still shows no name for an invite-redeemed member** — this
+  pass corrected the *diagnosis* (see above) but did not implement the
+  actual fix, which needs a `profiles` SELECT policy change (group-
+  membership-based visibility, not tenant-based), not another tenant-
+  provisioning tweak. Worth prioritizing next given it's now precisely
+  understood.
+- **Module 7 (Stripe seat billing) is fully open** — `billing/*` is still
+  the literal empty scaffold from the initial pass. Deliberately not
+  started this pass per the standing instruction; next pass's top item.
+- **Module 4 offline-first sync** (local SQLite/IndexedDB queue for
+  offline SRS reviews) — still not implemented on the frontend; `POST
+  /srs/sync` exists and is unit-tested on the backend only. Open since
+  Phase 2.
+- **`FR-6.2`'s sprint route still has no rate limiting** (flagged 6th and
+  7th pass) — untouched this pass.
+- **`next build` hanging in this sandbox is now 9-for-9** across nine
+  separate sessions — treat as a property of this sandbox, not something
+  to keep re-investigating without a different environment to test in.
+- **Nothing in this pass has run against a live Postgres/GoTrue/Redis
+  stack** — same standing limitation as all eight prior passes. The two
+  new migrations (`006`, `007`) and the two new `rls_test.sql` sections
+  are the single most load-bearing unverified thing in this pass —
+  they're SQL that has never actually executed anywhere.
+- Everything else in the 8th pass's "Known gaps" not explicitly listed
+  above is still open and unchanged by this pass.
+
+### UAT checklist for tomorrow (supersedes the eighth pass's own checklist — items 3–5 changed, item 9 new)
+
+1. `docker compose up -d && ./database/apply-migrations.sh --seed` (or
+   `--test` for the RLS suite, now 45 assertions — see this pass's
+   "Testing performed" for why that count changed) — unchanged mechanism
+   from prior passes, but this is the **first real run of `006`/`007`**,
+   so watch the migration output closely for any error, not just the
+   final `ALL RLS CHECKS PASSED` line.
+2. Open the frontend at `localhost:3000/login` and sign in as
+   `sarah@dygo.test` / `dygo-dev-2026` (or marco/alex/priya/dana, same
+   password). Confirm the session lands on `/topics` and the Navbar shows
+   five tabs including "Groups." (Unchanged from prior passes.)
+3. Sign out, **register a brand-new account, and confirm `POST /groups`
+   now actually succeeds** — create a group, confirm you land on it as
+   ADMIN. This is the opposite of the 8th pass's checklist item 4, which
+   expected this to fail; if it still fails, this pass's core fix did not
+   land correctly and needs immediate attention before anything else on
+   this list matters.
+4. As that same brand-new user, mint an invite link from the group you
+   just created, open it in a private window, redeem it as
+   `priya@dygo.test`. Confirm Priya lands on the group. Then, as the
+   brand-new ADMIN, open the roster and confirm Priya's row **still shows
+   her real name** (she's a seeded fixture with a real tenant already —
+   this does not exercise the still-open invite-redeemed-member gap; see
+   "Known gaps" above for why a genuinely fresh account redeeming into
+   someone else's group is still the one case that shows a blank name).
+5. Click "Groups" → open Sarah's Oxford English Center group → confirm
+   the roster still shows "Marco"/"Alex"/"Priya" by name (unchanged from
+   8th pass) → as Sarah, click into "Progress" in the Navbar. Confirm the
+   analytics page shows a real streak/mastered/due/leech grid (not the
+   old stub) and, further down, a **"Class mistake heatmap" card for each
+   group Sarah administers**, listing words ranked worst-first with a
+   failure percentage. Confirm the numbers plausibly match the seeded
+   review_logs (Alex's `AGAIN` on "resilient" should show up as a
+   failure).
+6. Sign in as `alex@dygo.test` (READ everywhere) and open "Progress."
+   Confirm his own stats/leech list render, and confirm **no heatmap
+   section appears at all** — not even empty or disabled.
+7. From the group detail page, click "+ New topic," confirm it appears
+   under Topics, then delete it as Sarah (ADMIN) and confirm it's gone; as
+   Marco (WRITE) confirm the delete button doesn't render at all.
+   (Unchanged from 7th/8th pass — re-verified in code this pass, not
+   re-fixed.)
+8. `cd com.dygoacademy.frontend && npm run build` — confirm the
+   production build completes; unverified here for a 9th consecutive
+   session (see "Testing performed" above).
+9. **New this pass:** confirm `com.dygoacademy.backend/src/modules/billing/*`
+   is still the empty stub — Module 7 was deliberately not touched, so
+   there should be no visible billing UI or working `/api/v1/billing/*`
+   route to test yet.
+10. Everything from the 6th pass's own checklist items 1–2 and 5–6 (SRS,
+    quiz, push-tick timing, wireframe turns 3/8) still applies and is
+    unchanged by this pass.
 
 ---
 

@@ -2,14 +2,17 @@
 
 AI-powered collaborative vocabulary platform — automated word enrichment (dual-accent IPA, neural audio, CEFR-graded synonyms and examples), error-adaptive spaced repetition, and multi-tenant classroom groups with granular RBAC.
 
-> **Project status — Phases 0–3 code-complete; group-management frontend and
-> real login now exist too. The roster shows real names, not UUIDs, as of
-> today.** *(2026-09-01)* Groups/RBAC, AI word
-> enrichment, the error-adaptive SRS flashcard player, the multi-modal quiz
-> engine, and web push/habit scheduling are all built on both backend and
-> frontend. UAT is scheduled for the morning of 2026-09-02 — see
+> **Project status — Phases 0–3 code-complete; Module 8 (analytics + the
+> class mistake heatmap) is code-complete too, and a brand-new signup can
+> now actually create their first group.** *(2026-09-01)* Groups/RBAC, AI
+> word enrichment, the error-adaptive SRS flashcard player, the multi-modal
+> quiz engine, web push/habit scheduling, and student + teacher analytics
+> are all built on both backend and frontend. **Module 7 (Stripe seat
+> billing) is the one thing still fully open** — deliberately not started
+> the day before UAT; see the schedule doc's Phase 4 section. UAT is
+> scheduled for the morning of 2026-09-02 — see
 > [`dygo_academy_session_report_2026-09-01.md`](dygo_academy_session_report_2026-09-01.md)
-> (eighth pass) for exactly what to click through, and
+> (ninth pass) for exactly what to click through, and
 > [`dygo_academy_master_project_schedule.md`](dygo_academy_master_project_schedule.md)
 > for the full 12-week plan and per-phase status notes. **None of this has
 > run against a live Postgres/GoTrue/Redis stack** — every session so far
@@ -165,7 +168,10 @@ re-running `001-003` would fail on "already exists":
 | `003_indexes.sql` | Performance and partial indexes |
 | `004_seed_data.sql` | Dev fixtures — **never run against production** |
 
-`--test` runs 26 assertions proving cross-tenant isolation, that a student's
+`--test` runs 45 assertions (was 26 as of the 8th pass — the count had
+already drifted from the doc before this pass; the 9th pass's own additions,
+sections G and H, cover solo-user tenant auto-provisioning and the FR-8.2
+cohort heatmap function) proving cross-tenant isolation, that a student's
 SRS progress is unreadable even by their teacher, that a `READ` member cannot
 add words or enumerate the class roster, that `WRITE` cannot delete a topic,
 and that self-promotion to `ADMIN` is blocked. Expect it to end with

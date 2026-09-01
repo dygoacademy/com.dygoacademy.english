@@ -1,9 +1,29 @@
 # 📅 Dygo Academy: Master Project Schedule & Phasing Strategy
-**Document Version**: 5.6 (roster now shows real names, not UUIDs; two stale wireframe captions fixed)  
+**Document Version**: 5.7 (solo-user tenant provisioning fixed; Module 8 analytics/heatmap code-complete)  
 **Author**: Principal Cloud & SaaS Solutions Advisory  
 **Status**: Approved for Engineering & Product Execution  
 
 **Changelog**
+* **5.7** (2026-09-01) — Ninth pass. Fixed a real, UAT-blocking bug: a
+  freshly-registered user (anyone not one of the 5 seeded fixtures)
+  couldn't create their first group at all, because `handle_new_auth_user()`
+  left `profiles.tenant_id` NULL and `groups.tenant_id` is `NOT NULL` —
+  `006_solo_tenant_provisioning.sql` now auto-provisions a personal,
+  unpaid (0-seat) tenant for every signup inside the same trigger. Traced
+  through `profiles_select_self_or_tenant` precisely enough to correct the
+  8th pass's assumption that this was "the same root cause" as invite-
+  redeemed members showing no name in the roster — it isn't quite; that
+  gap is still open, see the migration's own header comment. Verified (not
+  re-fixed) that the topic-delete button is still correctly ADMIN-gated in
+  `GroupTopicsPanel.tsx`. Built Module 8 (Phase 4) end to end: wired the
+  frontend to FR-8.1's already-existing `/srs/stats`/`/srs/leeches` routes,
+  and built FR-8.2's class-wide mistake heatmap new from scratch
+  (`AnalyticsModule`, `GET /groups/:id/heatmap`, backed by a `SECURITY
+  DEFINER` function since `review_logs` RLS is owner-only with no ADMIN
+  exception). Module 7 (Stripe billing) deliberately untouched — flagged
+  for the next pass. Added wireframe turn 9 (student analytics + teacher
+  heatmap screens). 15 new backend unit tests (145 total). See the 9th
+  pass entry in `dygo_academy_session_report_2026-09-01.md`.
 * **5.6** (2026-09-01) — UAT-prep pass, no new module work: closed the
   known "`GET /groups/:id/members` has no email/display-name join" gap
   flagged since the 7th pass (`RosterPanel` showed a shortened user id).
@@ -75,7 +95,7 @@ gantt
      WHERE next_due_at <= NOW();
      ```
    * Set up monthly table partitioning for `review_logs`.
-   * *Done — `database/migrations/001_initial_schema.sql`, `002_rls_policies.sql`, `003_indexes.sql`; verified by the 26-assertion RLS suite in `database/tests/rls_test.sql`.*
+   * *Done — `database/migrations/001_initial_schema.sql`, `002_rls_policies.sql`, `003_indexes.sql`; verified by the RLS suite in `database/tests/rls_test.sql` (45 assertions as of the 9th pass — see 5.7 changelog entry).*
 
 2. ✅ **Backend Monolith Framework (NestJS)**:
    * Scaffold Clean Architecture modules: `TopicsModule`, `WordsModule`, `SrsModule`, `SeatSubscriptionModule`, `NotificationModule`.
@@ -290,6 +310,29 @@ gantt
 ### 🎟️ Phase 4: Tiered Seat Billing & Analytics Heatmaps
 * **Timeline**: Sprint 5 (Weeks 9 – 10)  
 * **Primary Objective**: Implement **Module 7** (Stripe Seat Monetization) and **Module 8** (Teacher Heatmaps).
+* **Status** (2026-09-01, 9th pass): Module 8 is code-complete. FR-8.1
+  (student streak/mastery/leech list) was already served by `GET
+  /srs/stats`/`/srs/leeches` since Phase 2 — this pass wired the frontend
+  (`useSrsStats`, `useLeeches`, `(dashboard)/analytics/page.tsx`, previously
+  the literal "Coming in a later phase" stub since turn 1). FR-8.2 (the
+  class-wide mistake heatmap) is new end-to-end: `GET /groups/:id/heatmap`
+  (new `AnalyticsModule`), ADMIN-gated the same `has_group_role` way the
+  Module 6 teacher-sprint route is, backed by `public.group_word_heatmap()`
+  (`007_group_word_heatmap.sql`) — a narrowly-scoped `SECURITY DEFINER`
+  function, required because `review_logs_select_own` is owner-only RLS
+  with no ADMIN exception (confirmed by `rls_test.sql`'s own "even the
+  group ADMIN cannot read a student's review history" assertion); the
+  function returns only per-word aggregate counts, never a raw row or a
+  `user_id`. Ranking (failure-rate computation, worst-first sort, top-20
+  cap) is isolated in `heatmap-aggregator.ts` as a pure, unit-tested
+  function, matching the `srs-algorithm.ts`/`quiz-generator.ts` precedent.
+  15 new backend unit tests. **Module 7 (Stripe seat billing) is
+  untouched and still fully open** — `billing/*` is still the literal
+  empty scaffold stub; deliberately not started this pass (the day before
+  UAT is not the time to start integrating a live payment provider) —
+  flagged as the top item for the next pass. **Not run against a live
+  Postgres/Redis stack** — same standing sandbox limitation as every
+  earlier phase.
 
 #### Core Engineering Tasks:
 1. **Module 7: Unified Seat-Based Monetization**:
