@@ -153,11 +153,16 @@ owns "Oxford English Center"), `marco@dygo.test` (WRITE), `alex@dygo.test`
 ## I. Wireframes / UI-UX review
 
 22. Open `Dygo Academy Wireframes.html` directly in a browser. Scroll
-    through all nine turns. Specifically re-check turn 1, screen **1l**
+    through all ten turns. Specifically re-check turn 1, screen **1l**
     (the FAILED word state) — its caption was updated this pass to
     describe "Try again" as live and "Write it myself" as an
     intentionally disabled stub; confirm that reads clearly against the
     actual running app's behavior from step 9 above.
+23. Check the new **turn 10** (screens 10a–10d, added the 14th pass) —
+    the Module 7 seat-billing paywall's teacher/ADMIN-side wireframes.
+    This has never been rendered in a real browser; confirm it displays
+    correctly at all (a JSON-escaping mistake would be the likely failure
+    mode) before treating its content as reviewed design.
 
 ## J. Build & regression (already run this pass, re-verify if anything above fails)
 

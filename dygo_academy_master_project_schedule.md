@@ -1,9 +1,30 @@
 # 📅 Dygo Academy: Master Project Schedule & Phasing Strategy
-**Document Version**: 5.11 (regression-clean, UAT script consolidated)  
+**Document Version**: 5.12 (Module 7 wireframed, backend still deferred)  
 **Author**: Principal Cloud & SaaS Solutions Advisory  
 **Status**: Approved for Engineering & Product Execution  
 
 **Changelog**
+* **5.12** (2026-09-01) — Fourteenth pass, still the day of tomorrow
+  morning's UAT. Full regression confirmed no drift from 5.11 (153/153
+  backend jest, clean `tsc`/lint both sides). Backend-wide `TODO`/`FIXME`
+  grep again came back empty and `BillingController`/`BillingService` are
+  confirmed still a zero-route scaffold — no new backend gap this pass
+  either, same honest conclusion as the 13th. Acted on this pass's
+  explicit UI/UX instruction and the wireframe file's own twice-repeated
+  "Try next" suggestion: added **turn 10** to `Dygo Academy
+  Wireframes.html`, wireframing the Module 7 seat-billing paywall's
+  teacher/ADMIN side (FR-7.1's four-tier picker, the Stripe Checkout
+  handoff, the ADMIN billing panel, and confirming a sponsored student
+  sees no billing UI at all) — design only, zero payment code, so it
+  doesn't conflict with the 7th–13th passes' correct decision to keep
+  `BillingController` untouched this close to UAT. Edited via the
+  bundled file's `JSON.parse`d template string (Python `json` module
+  decode/splice/re-encode, not manual text surgery), then validated: the
+  new blob re-parses as JSON, all HTML tags balance across the document,
+  and no `id=` collides with the existing 61 anchors — this sandbox still
+  cannot render it in a real browser to confirm visually. `next build`
+  not re-attempted — 13-for-13 hang standing, unchanged. See the
+  fourteenth pass entry in `dygo_academy_session_report_2026-09-01.md`.
 * **5.11** (2026-09-01) — Thirteenth pass, the day of tomorrow morning's
   UAT. Full regression run first (153/153 backend jest, clean `tsc`/lint
   both sides) confirmed no drift from 5.10. Searched for a new small

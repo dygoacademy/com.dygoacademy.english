@@ -1,21 +1,139 @@
-# Dygo Academy — session report, 2026‑09‑01 (thirteenth pass)
+# Dygo Academy — session report, 2026‑09‑01 (fourteenth pass)
 **Run**: automated scheduled task, no user present. UAT is scheduled for tomorrow morning (2026‑09‑02).
-This file now covers thirteen runs today. The thirteenth pass is
-immediately below; passes one through twelve (Groups/Words first slice, the
+This file now covers fourteen runs today. The fourteenth pass is
+immediately below; passes one through thirteen (Groups/Words first slice, the
 rest of Module 1, Module 2's real Gemini/TTS pipeline, Module 3/4's SRS
 engine and flashcard player, Module 5's quiz engine, Module 6's push/habit
 scheduling closing out Phase 3, the group-management frontend and
 login/register fix, a UAT-prep pass that closed the roster's
 shortened-UUID display bug, solo-tenant provisioning + Module 8
 analytics/heatmap, the roster invite-redeemed-member name gap, Module 4
-offline-first sync + FR-6.2 sprint rate limiting, then the FAILED word's
-"Try again" retry endpoint) are preserved below under "First pass" through
-"Twelfth pass" — read top-down for the current state. Correction while
-writing this header: the eighth pass's own summary line (just below) says
-it "closed the roster-naming gap" — the ninth pass's report already
-corrected that framing in detail (it fixed the *shortened-UUID* symptom,
-not the deeper tenant-equality cause), and the tenth pass is what actually
-closes it — see that pass's own entry below for detail.
+offline-first sync + FR-6.2 sprint rate limiting, the FAILED word's "Try
+again" retry endpoint, then a regression-only pass that consolidated the
+UAT script) are preserved below under "First pass" through "Thirteenth
+pass" — read top-down for the current state. Correction while writing this
+header: the eighth pass's own summary line (just below) says it "closed
+the roster-naming gap" — the ninth pass's report already corrected that
+framing in detail (it fixed the *shortened-UUID* symptom, not the deeper
+tenant-equality cause), and the tenth pass is what actually closes it —
+see that pass's own entry below for detail.
+
+---
+
+## Fourteenth pass — Module 7 seat-billing paywall wireframed (design only); regression re-confirmed, no backend gap found
+
+### What this pass found on start
+
+Standing instruction, same day as tomorrow morning's UAT (2026‑09‑02):
+read the master schedule's changelog (5.11, the thirteenth pass's entry)
+and the thirteenth pass's own report section before touching anything.
+`git status` was clean; `git log` showed thirteen prior commits, most
+recent being the thirteenth pass's regression/docs commit.
+
+Ran the full regression suite first: backend `jest` (153/153, unchanged),
+backend `tsc --noEmit` (clean), frontend `tsc --noEmit` and `next lint`
+(clean, no warnings). Re-grepped backend `src/` and frontend `src/` for
+`TODO`/`FIXME`/`XXX`/`HACK` — none found, same as the 13th pass. Confirmed
+`BillingController`/`BillingService` are still a zero-route, zero-logic
+scaffold. No new backend or frontend code gap surfaced — same honest
+"nothing small left to close" conclusion as the 13th pass, for the same
+reason (the 10th–12th passes closed every named small gap; what remains,
+Module 7's real Stripe integration, is deliberately deferred feature
+work, not a quick fix).
+
+### What this pass did instead
+
+This pass's task instructions explicitly called out `Dygo Academy
+Wireframes.html` for UI/UX design work, and the wireframe file's own
+embedded "Try next" suggestion lines (turn 7 and turn 9) had twice
+proposed the same unstarted idea: "wireframe the Phase 4 Stripe
+seat-billing paywall (Module 7, still fully open)." Turn 1's screen 1n
+already covers the individual $7.99/mo self-serve upgrade, but nothing had
+ever wireframed the *other* half of FR-7.1–7.4 — a teacher or school admin
+buying seats for other people. Wireframing this is pure design, zero
+payment risk, and doesn't touch the backend code that the 7th–13th passes
+correctly judged too risky to start this close to UAT — so it was in
+scope this pass even though live `BillingController` work still isn't.
+
+Added **turn 10** (screens 10a–10d) to `Dygo Academy Wireframes.html`:
+
+- **10a** — the four-tier seat picker (FR-7.1: Solo/Tutor/Academy/District,
+  with the BRD's exact per-seat prices and volume-discount percentages),
+  a seat-count stepper, and a computed monthly total.
+- **10b** — the handoff to Stripe's own hosted Checkout page, with a
+  caption making explicit that this is a deliberate design constraint (no
+  card form of our own, ever), not just a UAT-week shortcut — grounded in
+  the database dictionary's note that `tenants.purchased_seats` /
+  `price_per_seat_cents` have no user-facing `UPDATE` policy at all, only
+  `service_role` (the Stripe webhook) can write them.
+- **10c** — the ADMIN's billing panel inside the "You" tab: current tier,
+  seats used vs. purchased read from the existing `tenants` columns, and a
+  "Manage billing" button to Stripe's hosted Customer Portal, plus an "Add
+  seats" entry point into FR-7.4's mid-cycle proration.
+- **10d** — the same tab for a sponsored, non-ADMIN student (Marco):
+  confirms no billing section renders at all, not even disabled — the same
+  "don't show a control that would just error" pattern turns 5, 8g and 9d
+  already established, here grounded in `tenant_seats_select`'s RLS (self
+  row or `is_tenant_admin` only).
+
+This is the file's `<script type="__bundler/template">` JSON-string
+payload (the whole page renders from one JSON-encoded HTML string,
+`JSON.parse`d and injected client-side by the bundler script at the top of
+the file) — edited by decoding it with Python's `json` module, splicing
+in the new turn's HTML as plain text (reusing only CSS classes already
+defined in the page's own `<style>` block — no new CSS), re-encoding with
+`json.dumps`, and writing the single changed line back. Verified before
+and after: the new blob round-trips through `json.loads` cleanly, all
+`<div>`/`<section>` tags balance across the whole document (a scripted
+stack check, not eyeballing — this document has effectively no line
+breaks so `git diff` shows it as "1 line changed" regardless of how much
+text moved), and no `id=` attribute collides with any of the existing 61
+anchors. This sandbox cannot render the file in a real browser to confirm
+visually (see the UAT checklist's "read this first" section) — static
+validation is the ceiling here, same limitation as every prior pass's
+wireframe edits.
+
+No app code changed this pass. `BillingController`/`BillingService`
+remain deliberately untouched.
+
+### Testing performed
+
+| Check | Result |
+| :--- | :--- |
+| Backend `jest` | ✅ 153/153 pass, unchanged from 13th pass |
+| Backend `tsc --noEmit` | ✅ clean |
+| Frontend `tsc --noEmit` | ✅ clean |
+| Frontend `next lint` | ✅ clean, no warnings |
+| Frontend `next build` | ⏭️ not re-attempted — 13-for-13 hung identically; carried forward unchanged per the same token-budget reasoning as the 12th/13th passes |
+| Backend + frontend `src/` grep for `TODO`/`FIXME`/`XXX`/`HACK` | ✅ none found |
+| `BillingController` route count | ✅ confirmed still zero (empty scaffold) |
+| New wireframe JSON blob re-parses via `json.loads` | ✅ valid |
+| New wireframe `<div>`/`<section>` tag balance (scripted stack check) | ✅ balanced |
+| New wireframe `id=` attributes vs. existing 61 | ✅ no collisions |
+
+### Known gaps — unchanged by this pass
+
+- **Module 7 (Stripe seat billing) backend is still fully open** —
+  `BillingController`/`BillingService` untouched, same standing reasoning
+  as the 7th–13th passes. This pass added the *design* half only (turn 10
+  wireframes); the top implementation item for the first pass after UAT
+  feedback lands is unchanged.
+- **"Write it myself" manual word entry is still unbuilt** — unchanged
+  from the 12th/13th passes.
+- **`next build` hanging in this sandbox stands at 13-for-13** — not
+  re-tested this pass.
+- **Nothing in this or any pass has run against a live Postgres/Redis
+  stack or a real browser** — the new turn 10 wireframe screens inherit
+  this same limitation; they have been statically validated (see above)
+  but never rendered.
+- Everything else in the thirteenth pass's "Known gaps" not explicitly
+  listed above is still open and unchanged by this pass.
+
+### UAT checklist for tomorrow
+
+No change to the actual test script — `dygo_academy_uat_checklist_2026-09-02.md`
+still supersedes and merges everything, run that file. Its §I (wireframe
+review) now also covers turn 10 — added as a line item there this pass.
 
 ---
 
