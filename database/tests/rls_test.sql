@@ -294,6 +294,74 @@ select assert_raises(
   $$select * from public.redeem_group_invite('expired-test-token')$$,
   'An expired invite cannot be redeemed even before revocation catches up to it');
 
+\echo ''
+\echo '=== G. Solo-user tenant provisioning (006) =================================='
+-- Regression test for handle_new_auth_user() (006_solo_tenant_provisioning.sql).
+-- Runs as postgres (superuser), matching how 004_seed_data.sql itself
+-- inserts into auth.users — application traffic never does this directly,
+-- GoTrue does, but the trigger fires identically either way.
+reset role;
+insert into auth.users (id, email) values
+  ('99999999-9999-9999-9999-999999999999', 'newkid@example.com');
+select assert_eq(
+  (select count(*) from public.profiles
+    where id = '99999999-9999-9999-9999-999999999999' and tenant_id is not null),
+  1, 'A brand-new signup gets a non-null tenant_id, not the old bare-profile row');
+select assert_eq(
+  (select count(*) from public.tenants t
+     join public.profiles p on p.tenant_id = t.id
+    where p.id = '99999999-9999-9999-9999-999999999999'
+      and t.purchased_seats = 0 and t.price_per_seat_cents = 0),
+  1, 'The auto-provisioned personal tenant is unpaid (0 seats) — free until Phase 4 billing upgrades it');
+
+-- The new user can now do what the standing gap this migration fixes used
+-- to make impossible: create their first group at all.
+set role authenticated;
+select login_as('99999999-9999-9999-9999-999999999999');
+with g as (
+  insert into groups (owner_id, tenant_id, name, is_public)
+  values ('99999999-9999-9999-9999-999999999999',
+          public.current_user_tenant_id(), 'New Kid''s First Group', false)
+  returning id
+)
+select assert_eq(
+  (select count(*) from group_members gm join g on g.id = gm.group_id
+    where gm.user_id = '99999999-9999-9999-9999-999999999999' and gm.role = 'ADMIN'),
+  1,
+  'A brand-new solo signup can now create a group and gets seated ADMIN — the original bug, fixed');
+
+\echo ''
+\echo '=== H. Cohort mistake heatmap (007, FR-8.2) =================================='
+-- Sarah's private class (bbbbbbbb-...0001) has 3 seeded review_logs rows,
+-- all under topic cccccccc-...0001: Alex AGAIN on 'resilient' (a failure),
+-- Alex GOOD on 'ephemeral', Priya EASY on 'resilient'. See 004_seed_data.sql.
+reset role;
+set role authenticated;
+select login_as('22222222-2222-2222-2222-222222222222');   -- Marco, WRITE — not ADMIN
+select assert_raises(
+  $$select * from public.group_word_heatmap('bbbbbbbb-0000-0000-0000-000000000001')$$,
+  'A WRITE (non-ADMIN) member cannot read the group heatmap, even though they can read the roster');
+
+reset role;
+set role authenticated;
+select login_as('11111111-1111-1111-1111-111111111111');   -- Sarah, ADMIN
+select assert_eq(
+  (select count(*) from public.group_word_heatmap('bbbbbbbb-0000-0000-0000-000000000001')),
+  2, 'ADMIN sees both distinct words with review activity in her group (ephemeral, resilient)');
+select assert_eq(
+  (select sum(attempts) from public.group_word_heatmap('bbbbbbbb-0000-0000-0000-000000000001'))::bigint,
+  3, 'Total attempts across the heatmap matches the 3 seeded review_logs rows for this group');
+select assert_eq(
+  (select failures from public.group_word_heatmap('bbbbbbbb-0000-0000-0000-000000000001')
+    where source_word = 'resilient'),
+  1, '''resilient'' shows exactly 1 failure — Alex''s AGAIN — not Priya''s EASY too');
+-- The function's RETURNS TABLE signature (declared in 007_group_word_heatmap.sql)
+-- has no user_id/reviewed_at column at all — by construction, not by a
+-- runtime check, there is no row shape this function could return that
+-- identifies which student made which mistake. review_logs_select_own's
+-- per-student isolation is preserved even though ADMIN can now see the
+-- cohort total.
+
 reset role;
 rollback;
 

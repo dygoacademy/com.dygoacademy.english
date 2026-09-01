@@ -14,6 +14,11 @@
 # re-running them on a migrated database fails on "already exists". Use the
 # --*-only flags to add fixtures or run tests without touching the schema, or
 # reset entirely with:  docker compose down -v && docker compose up -d
+#
+# 005-007 (invite redemption, solo-tenant provisioning, the FR-8.2 heatmap
+# function) all use CREATE OR REPLACE FUNCTION, so unlike 001-003 they ARE
+# safe to re-run on an already-migrated database if you only need to pick up
+# a change to one of them.
 # =============================================================================
 set -euo pipefail
 
@@ -71,6 +76,8 @@ run_file "$DIR/migrations/001_initial_schema.sql"
 run_file "$DIR/migrations/002_rls_policies.sql"
 run_file "$DIR/migrations/003_indexes.sql"
 run_file "$DIR/migrations/005_group_invites_redeem.sql"
+run_file "$DIR/migrations/006_solo_tenant_provisioning.sql"
+run_file "$DIR/migrations/007_group_word_heatmap.sql"
 
 case "${1:-}" in
   --seed)

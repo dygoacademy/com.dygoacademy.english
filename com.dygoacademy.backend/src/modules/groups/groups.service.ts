@@ -38,12 +38,15 @@ export interface GroupMember {
    * From a `left join` onto `profiles`, not `group_members` itself — null
    * for a member whose profile row isn't visible to the caller under
    * `profiles_select_self_or_tenant` (real for anyone who joined via a
-   * redeemed invite link: `redeem_group_invite()` seats them in
-   * `group_members` but never sets `profiles.tenant_id`, so they never
-   * satisfy that policy's tenant-match clause for anyone but themselves —
-   * same root cause as the "no solo-user tenant provisioning" gap). A left
-   * join (not inner) is deliberate: an inner join would silently drop that
-   * member from the roster entirely rather than showing them with no name.
+   * redeemed invite link: their `profiles.tenant_id` is now always set —
+   * `006_solo_tenant_provisioning.sql` provisions a personal tenant for
+   * every signup — but it's their OWN personal tenant, deliberately
+   * distinct from the inviting teacher's, so it still never equality-matches
+   * the caller's `current_user_tenant_id()`; see that migration's header
+   * comment for why this is a separate, still-open gap rather than the
+   * same one). A left join (not inner) is deliberate: an inner join would
+   * silently drop that member from the roster entirely rather than showing
+   * them with no name.
    */
   email: string | null;
   display_name: string | null;
@@ -122,11 +125,12 @@ export class GroupsService {
    * group_members row required already having ADMIN on the group. See the
    * trigger's own comment for the full explanation.
    *
-   * Known gap: `groups.tenant_id` is NOT NULL, so this fails for a caller
-   * whose profile has no tenant yet (e.g. a solo learner who registered
-   * without going through an academy). Tenant self-provisioning for solo
-   * users isn't specified anywhere yet — flagging for Phase 1 grooming
-   * rather than guessing at the shape here.
+   * **Fixed (9th pass):** `groups.tenant_id` is NOT NULL, and every caller
+   * now always has one — `handle_new_auth_user()`
+   * (006_solo_tenant_provisioning.sql) provisions a personal, unpaid
+   * (0-seat) tenant for every new signup at the moment their profile is
+   * created, closing the standing "solo-user tenant provisioning" gap.
+   * `current_user_tenant_id()` can no longer return NULL for a real user.
    */
   async create(userId: string, dto: CreateGroupDto): Promise<GroupSummary> {
     const rows = await this.db.queryAs<GroupRow>(

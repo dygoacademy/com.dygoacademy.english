@@ -173,7 +173,13 @@ describe('GroupsService', () => {
 
     it('left joins profiles rather than inner joining, so a member with no visible profile is not dropped from the roster', async () => {
       const queryAsMock = jest.fn().mockResolvedValue([
-        { user_id: 'user-2', role: 'READ', joined_at: new Date('2026-08-02T00:00:00Z'), email: null, display_name: null },
+        {
+          user_id: 'user-2',
+          role: 'READ',
+          joined_at: new Date('2026-08-02T00:00:00Z'),
+          email: null,
+          display_name: null,
+        },
       ]);
       const service = await makeService(queryAsMock);
 

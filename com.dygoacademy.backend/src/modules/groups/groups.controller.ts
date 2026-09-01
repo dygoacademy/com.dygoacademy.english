@@ -83,7 +83,7 @@ export class GroupsController {
       '(group_members_select) — enforced by RLS, not this endpoint. Each row ' +
       'now includes email/display_name from a left join onto profiles — null ' +
       'for a member whose profile RLS hides from the caller (real today for ' +
-      'anyone seated via a redeemed invite link; see GroupMember\'s own comment).',
+      "anyone seated via a redeemed invite link; see GroupMember's own comment).",
   })
   async findMembers(
     @CurrentUser('id') userId: string,

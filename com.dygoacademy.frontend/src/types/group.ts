@@ -56,10 +56,15 @@ export interface GroupMember {
  *
  * `email`/`display_name` come from a `left join` onto `profiles` on the
  * backend, so both are nullable — null for a member whose profile isn't
- * visible to the caller under `profiles_select_self_or_tenant` (real today
- * for anyone seated via a redeemed invite link, since that flow never sets
- * `profiles.tenant_id`). `RosterPanel` falls back to the shortened user id
- * when both are null, same as it always has.
+ * visible to the caller under `profiles_select_self_or_tenant` (still real
+ * today for anyone seated via a redeemed invite link: as of the 9th pass's
+ * `006_solo_tenant_provisioning.sql`, every user has a non-null tenant_id
+ * from signup, but an invited student's is their own personal tenant, not
+ * the inviting teacher's, so the policy's tenant-equality check still fails
+ * for the teacher viewing them — a distinct, still-open gap from the one
+ * that migration actually closed; see its header comment). `RosterPanel`
+ * falls back to the shortened user id when both are null, same as it
+ * always has.
  */
 export interface GroupRosterMember {
   user_id: string;
