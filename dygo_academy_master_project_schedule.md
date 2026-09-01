@@ -1,9 +1,39 @@
 # 📅 Dygo Academy: Master Project Schedule & Phasing Strategy
-**Document Version**: 5.15 (tenant-admin RLS read gap closed + new-class empty-state wireframe, backend still deferred)  
+**Document Version**: 5.16 (export-modal/report partial-window wireframe; regression clean, no new backend gap, 12th straight pass)  
 **Author**: Principal Cloud & SaaS Solutions Advisory  
 **Status**: Approved for Engineering & Product Execution  
 
 **Changelog**
+* **5.16** (2026-09-01) — Eighteenth pass, still the same day, still ahead
+  of tomorrow morning's UAT (2026-09-02). Full regression confirmed no
+  drift from 5.15 (153/153 backend jest, clean `tsc`/lint both sides,
+  frontend `tsc`/`next lint` clean, backend/frontend `TODO`/`FIXME` grep
+  both empty, `BillingController`/`BillingService` still a zero-route
+  scaffold) — the twelfth straight pass (7th–18th) reaching that same
+  conclusion. Took the smallest of turn 13's three "Try next" options
+  rather than either real-backend-scope one (the tenant-wide heatmap
+  query, or Module 7's Stripe integration) — both still correctly
+  deferred past UAT feedback, same standing reasoning as every pass
+  since the 7th. Added **turn 14** (screens 14a–14b) to
+  `Dygo Academy Wireframes.html`: what turn 12's export modal (12c) and
+  the resulting emailed report look like when the selected range
+  includes a class like 13a/13b's Saturday Beginners — &lt;7 days old,
+  no retention number yet, but real mistake-heatmap data already (the
+  underlying `group_word_heatmap()` query has no minimum-history gate;
+  only the still-unbuilt retention curve waits on 7 days). 14a shows the
+  pre-export warning; 14b shows that same "partial" signal surviving
+  into the actual report row a director keeps, not just a modal warning
+  they might not remember reading. Edited via the same Python
+  decode/splice/re-encode procedure as turns 10–13, old length asserted
+  (124,775) before writing, validated after (new length 130,466, tags
+  balanced, 80 total `id=` anchors with no collisions, up from 77).
+  Still unrenderable in this sandbox — five turns (10–14) now unverified
+  in a real browser instead of four. Also caught and fixed a stale "47
+  RLS assertions" line in `dygo_academy_uat_checklist_2026-09-02.md`'s
+  own summary section — the 17th pass's `009` migration raised the real
+  count to 54 but that number never propagated past that pass's own
+  checklist item 24. See the eighteenth pass entry in
+  `dygo_academy_session_report_2026-09-01.md`.
 * **5.15** (2026-09-01) — Seventeenth pass, still the same day, still ahead
   of tomorrow morning's UAT (2026-09-02). Full regression confirmed no
   drift from 5.14 (153/153 backend jest, clean `tsc`/lint both sides,

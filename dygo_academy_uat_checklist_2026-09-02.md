@@ -14,9 +14,11 @@ backend jest, clean `tsc`/lint both sides) in a sandbox with **no Docker**.
 That means three things have *never actually run* anywhere before
 tomorrow, and UAT is the first real signal on all three:
 
-1. **The database migrations and all 47 RLS assertions** — reasoned
+1. **The database migrations and all 54 RLS assertions** — reasoned
    through against policy text and mocked queries only, never against a
-   live Postgres.
+   live Postgres. (Was 47 as of the 16th pass; the 17th pass's item 24
+   below added three more — this line was stale until the 18th pass
+   caught it while updating item 23.)
 2. **`npm run build` on the frontend** — hung with no output ~170s in,
    identically, across all 12 automated sessions. Unknown whether this is
    a real bug or an artifact of that specific sandbox. If it also hangs on
@@ -165,12 +167,16 @@ owns "Oxford English Center"), `marco@dygo.test` (WRITE), `alex@dygo.test`
     billing panel, the "email Stripe sends" mockup, and the suspended
     state — turn **12** (screens 12a–12c, added the 16th pass) — the
     academy-tier director rollup and cohort ROI export (BRD Journey 3,
-    FR-8.2 widened tenant-wide) — and the new **turn 13** (screens
-    13a–13b, added the 17th pass) — the same rollup for a brand-new
-    class under 7 days old, before there's a retention curve to draw.
-    None of the four has ever been rendered in a real browser; confirm
-    all display correctly (a JSON-escaping mistake would be the likely
-    failure mode) before treating their content as reviewed design.
+    FR-8.2 widened tenant-wide) — turn **13** (screens 13a–13b, added
+    the 17th pass) — the same rollup for a brand-new class under 7 days
+    old, before there's a retention curve to draw — and the new
+    **turn 14** (screens 14a–14b, added the 18th pass) — what 12c's
+    export modal and the resulting emailed report look like when the
+    selected range includes a class like 13a/13b, mid-window with real
+    mistake data but no retention number yet. None of the five has
+    ever been rendered in a real browser; confirm all display correctly
+    (a JSON-escaping mistake would be the likely failure mode) before
+    treating their content as reviewed design.
     Turn 13's opening note **partially corrects** turn 12's own note:
     turn 12 said "there is no tenant-level director role in the
     schema" and treated 12a's access model as a stand-in for one; it

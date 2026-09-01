@@ -1,7 +1,7 @@
-# Dygo Academy — session report, 2026‑09‑01 (seventeenth pass)
+# Dygo Academy — session report, 2026‑09‑01 (eighteenth pass)
 **Run**: automated scheduled task, no user present. UAT is scheduled for tomorrow morning (2026‑09‑02).
-This file now covers seventeen runs today. The seventeenth pass is
-immediately below; passes one through sixteen (Groups/Words first slice, the
+This file now covers eighteen runs today. The eighteenth pass is
+immediately below; passes one through seventeen (Groups/Words first slice, the
 rest of Module 1, Module 2's real Gemini/TTS pipeline, Module 3/4's SRS
 engine and flashcard player, Module 5's quiz engine, Module 6's push/habit
 scheduling closing out Phase 3, the group-management frontend and
@@ -11,15 +11,133 @@ analytics/heatmap, the roster invite-redeemed-member name gap, Module 4
 offline-first sync + FR-6.2 sprint rate limiting, the FAILED word's "Try
 again" retry endpoint, a regression-only pass that consolidated the
 UAT script, the Module 7 seat-billing paywall wireframe, the
-card-decline/dunning follow-on, then finding and finishing an uncommitted
+card-decline/dunning follow-on, finding and finishing an uncommitted
 live-stack integration test package alongside the director-rollup
-wireframe) are preserved below under "First pass" through "Sixteenth
-pass" — read top-down for the current state.
+wireframe, then closing the tenant-admin RLS read gap alongside a
+new-class empty-state wireframe) are preserved below under "First pass"
+through "Seventeenth pass" — read top-down for the current state.
 Correction while writing this header: the eighth pass's own summary line
 (further below) says it "closed the roster-naming gap" — the ninth
 pass's report already corrected that framing in detail (it fixed the
 *shortened-UUID* symptom, not the deeper tenant-equality cause), and the
 tenth pass is what actually closes it — see that pass's own entry below
+
+---
+
+## Eighteenth pass — regression clean, no new backend gap (12th straight pass reaching that conclusion); wireframed the export-modal/report partial-window state turn 13 itself asked for next
+
+### What this pass found on start
+
+Standing instruction, same day as tomorrow morning's UAT (2026‑09‑02):
+read the master schedule's changelog (5.15, the seventeenth pass's entry)
+and the latest session report section before touching anything. `git
+status` was clean — no uncommitted work left behind by the seventeenth
+pass or anything else, unlike the process-finding the sixteenth pass
+documented (see that pass's own entry, and
+[[dygo-sandbox-git-quirks]]). Working tree matched `5a734b2` exactly.
+
+### Regression
+
+Full regression, same suite as the 7th–17th passes:
+
+| Check | Result |
+| :--- | :--- |
+| Backend `jest` | ✅ 153/153 pass, unchanged since the 12th pass |
+| Backend `tsc --noEmit` | ✅ clean |
+| Backend `npm run lint` | ✅ clean |
+| Frontend `tsc --noEmit` | ✅ clean |
+| Frontend `next lint` | ✅ clean, no warnings |
+| Backend `TODO`/`FIXME` grep | ✅ empty |
+| Frontend `TODO`/`FIXME` grep | ✅ empty |
+| `BillingController`/`BillingService` | Confirmed still a zero-route scaffold (11/9-line stub files) |
+
+No drift from 5.15. This makes the twelfth straight pass (7th–18th)
+reaching "no new well-scoped feature backend gap" as its conclusion.
+`next build` not re-attempted — 14-for-14 hang standing as of the 17th
+pass, not re-tried a 15th time this pass either, same token-budget
+judgment call as passes 12–17.
+
+### Wireframes — turn 14: what 12c's export looks like with a mid-window new class mixed in
+
+Turn 13's own closing "Try next" line offered three options; this pass
+took the smallest, design-only one rather than either of the two real
+backend-scope options (building the tenant-wide heatmap query, or
+starting Module 7's Stripe integration) — both correctly still deferred
+past UAT for the same reason the 7th–17th passes have given every time
+about non-critical scope this close to a feedback checkpoint. Added
+**turn 14** (screens 14a–14b) to `Dygo Academy Wireframes.html`:
+
+- **14a** — the same export modal as 12c, now showing what happens when
+  the selected range ("This term") includes a class like 13a/13b's
+  Saturday Beginners, &lt;7 days old. A heads-up box (reusing the
+  existing accent-bordered `.wf-box` style, no new CSS) flags that one
+  of the five classes in range has no retention number yet, but its
+  mistake-heatmap data is real and will be included — the export button
+  stays enabled, matching 13b's own "don't block the whole export on
+  one new class" note.
+- **14b** — the emailed report itself, showing that same class's row
+  rendered as "PARTIAL · 3 days in" with a real top-mistake figure next
+  to it instead of a percentage — so the "partial" signal survives past
+  the pre-export modal into the artifact a director actually keeps,
+  rather than only existing as a warning someone might not have read
+  three months earlier.
+
+Both screens make explicit that "partial" and "mistake data already
+real" are two different backend maturities sitting in the same report
+row: `group_word_heatmap()` (007) still has no minimum-history gate, so
+mistake numbers are as real for a 3-day-old class as a mature one; the
+retention curve is the only thing waiting on 7 days, and — per turn 12's
+still-accurate finding, unchanged by this pass — a tenant-wide version
+of either query doesn't exist as a real endpoint yet regardless of what
+these screens show. No route exists for any of this today; nearest is
+still the single-group `GET /groups/:id/heatmap` the automation suite
+covers.
+
+Edited via the same Python decode/splice/re-encode procedure as turns
+10–13 ([[dygo-wireframe-bundle-format]]): located by the
+`"<!DOCTYPE html>` prefix, old decoded length asserted against the
+known 124,775 before writing anything. Validated afterward: the new
+blob re-parses as JSON, every tag used balances open/close across the
+full 130,466-character decoded document, none of the 80 total `id=`
+anchors collide (up from 77), and the untouched `__bundler/manifest`
+blob at its own line still parses independently — `git diff --stat`
+shows the expected single-line change. Still unrenderable in this
+sandbox (no `file://` support, nothing to serve it over http); now five
+unrenderable turns (10–14) instead of four.
+`dygo_academy_uat_checklist_2026-09-02.md` item 23 updated to name turn
+14 and its two screens; while there, also caught and fixed a stale
+"47 RLS assertions" line in that same file's "Read this first" section
+— the 17th pass's own migration raised the real count to 54 but never
+propagated that number past its own item 24, so the checklist's summary
+paragraph was quietly wrong for one full pass.
+
+### What this pass did not do, and why
+
+Did not build the actual tenant-wide `AnalyticsService.getHeatmap`
+query or its export endpoint — both are real backend scope per turn
+12's still-open finding, and the same "not hours before UAT" judgment
+call the 7th–17th passes made about Module 7 applies here too, now for
+the twelfth straight pass. Did not start `BillingController`'s Stripe
+integration or the `subscription_status` migration — unchanged
+reasoning. Did not modify `004_seed_data.sql` or any migration — no
+schema change was in scope this pass. Did not attempt `next build` —
+see Regression above.
+
+### Try next
+
+Whoever runs the pass after UAT feedback lands has three real options
+now, not more design-only wireframe extensions — turns 10–14 have
+covered every angle of Module 7's UI and the director rollup's export
+path that doesn't require new backend, so continuing to wireframe
+without new backend scope would start producing screens nobody asked
+for: (1) build `AnalyticsService.getHeatmap`'s tenant-wide widening,
+now unblocked at the RLS layer since the 17th pass's `009` migration;
+(2) start Module 7's real Stripe integration plus the
+`subscription_status` migration turn 11's screens have been assuming
+exists since the 15th pass; (3) if UAT surfaces anything else, prioritize
+that over either of the above — this report and the master schedule are
+reasoned-through, never-run-live artifacts until tomorrow morning's
+feedback says otherwise.
 
 ---
 
