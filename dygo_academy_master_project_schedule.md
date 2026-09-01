@@ -1,9 +1,10 @@
 # 📅 Dygo Academy: Master Project Schedule & Phasing Strategy
-**Document Version**: 5.4 (Phase 3 complete — Module 5 and Module 6 both code-complete)  
+**Document Version**: 5.5 (group-management frontend built; login/register forms — a bigger, previously-missed gap — closed too)  
 **Author**: Principal Cloud & SaaS Solutions Advisory  
 **Status**: Approved for Engineering & Product Execution  
 
 **Changelog**
+* **5.5** (2026-09-01) — No new backend phase work; this pass closed the standing "no group-management frontend" gap (Phase 1's own status note below) and, more importantly, discovered and fixed that `(auth)/login`/`(auth)/register` had never been built — see status notes under §2 (Phase 1) for both.
 * **5.4** (2026-09-01) — Phase 3, Module 6 (Web Push & Habit Scheduling) marked code-complete — Phase 3 as a whole is now done. See status notes under §2.
 * **5.3** (2026-09-01) — Phase 3, Module 5 (Dynamic Multi-Modal Quiz Engine) marked code-complete; Module 6 (Push & Habit Scheduling) is still open. See status notes under §2. Also fixed a standing Phase 1 gap: the last-ADMIN-removal guard.
 * **5.2** (2026-09-01) — Phase 2 (Modules 3 & 4) marked code-complete; see status notes under §2.
@@ -109,6 +110,25 @@ gantt
   Verify against `/api/docs`, the RLS suite
   (`database/apply-migrations.sh --test`), and a real `POST /words` →
   enrichment → `GET /topics/:id` round-trip before treating Phase 1 as done.
+  **Update (2026-09-01, 7th pass):** frontend task 3's own scope — "Build
+  Topic/Group Explorer" — is now actually complete; the "Group" half was
+  missing until this pass (`app/(dashboard)/groups/`,
+  `app/(dashboard)/join/[token]/`: list/create groups, roster + role
+  management + member removal, invite mint/list/revoke, ADMIN settings/
+  delete, the Module 6 teacher-sprint trigger, and topic create/delete —
+  all previously API- and wireframe-only). Separately, and more
+  foundationally: `(auth)/login` and `(auth)/register` were discovered to
+  still be Phase-0 stubs with no form at all, meaning no route in this
+  application was reachable through an actual browser regardless of
+  backend completeness — six prior passes never caught this because none
+  booted a browser. Both are real now (`signInWithPassword`/`signUp`), and
+  `database/migrations/004_seed_data.sql` was fixed to give the seeded
+  fixtures a real GoTrue password (`dygo-dev-2026`) so UAT can sign in
+  through the browser, not only via `scripts/dev-token.js` + curl/Swagger.
+  **Neither the roster/invite screens nor the login form have run against
+  a live Postgres/GoTrue stack** — same standing sandbox limitation as
+  everything else in this document; verify a real sign-in and a real
+  invite-link round-trip before treating this as done.
 
 #### Core Engineering Tasks:
 1. **Module 1: Groups, Topics & Granular RBAC**:

@@ -1,10 +1,215 @@
-# Dygo Academy — session report, 2026‑09‑01 (sixth pass)
+# Dygo Academy — session report, 2026‑09‑01 (seventh pass)
 **Run**: automated scheduled task, no user present. UAT is scheduled for tomorrow morning (2026‑09‑02).
-This file now covers six runs today. Passes one through five (Groups/Words
+This file now covers seven runs today. Passes one through six (Groups/Words
 first slice, the rest of Module 1, Module 2's real Gemini/TTS pipeline,
-Module 3/4's SRS engine and flashcard player, then Module 5's quiz engine)
-are preserved below under "First pass" through "Fifth pass" — read top-down
-for the current state.
+Module 3/4's SRS engine and flashcard player, Module 5's quiz engine, then
+Module 6's push/habit scheduling closing out Phase 3) are preserved below
+under "First pass" through "Sixth pass" — read top-down for the current
+state.
+
+---
+
+## Seventh pass — group-management frontend goes live; login/register forms (a bigger, previously-missed gap) fixed
+
+### What this pass did
+
+Same standing instruction as every prior pass: compared the working tree
+against `dygo_academy_master_project_schedule.md` and
+`dygo_academy_api_surface.md`. `git status` was clean, `git log` showed six
+prior commits all landed, and `npm run test` reproduced the sixth pass's
+129/129 backend pass before any new work started. Phase 3 (both modules) is
+code-complete and the master schedule's own Phase 4 (Stripe billing,
+Module 7) hasn't started — a clean decision point, same one the sixth
+pass's own report left open: start Phase 4, or close the "no
+group-management frontend" gap every single prior pass (second through
+sixth) flagged as open. Took the sixth pass's own recommendation: Module
+7's free student-onboarding flow is hard to demo meaningfully without a
+teacher-facing screen to originate an invite from, so the gap came first.
+
+This is a **frontend-only pass** — every route it wires up
+(`GET`/`POST /groups`, roster, invites, `POST /topics`, `DELETE /topics/:id`,
+the Module 6 sprint trigger) has existed on the backend since as early as
+the second pass. No backend module, migration, or test changed as a result
+of this work; `npm run test` at the end of this pass is byte-identical to
+its start, 129/129.
+
+### Group-management frontend (Module 1's missing half)
+
+New `app/(dashboard)/groups/` (list + create, wireframe 3a/3b) and
+`app/(dashboard)/groups/[groupId]/` (roster with role management and member
+removal — 3c; invite mint/list/revoke with a copy-link affordance — 3d;
+the Module 6 teacher-sprint trigger — 8g; ADMIN settings: rename,
+visibility, delete; topics-in-group list with create — 4a — and
+ADMIN-gated delete — 4b), plus `app/(dashboard)/join/[token]/` (the invite
+redemption landing screen turn 3's own "Try next" note asked for, closing a
+gap flagged since the second pass).
+
+There is no `GET /groups/:id` — Module 1's API surface never named a
+single-group route, only the list. The group detail page's header (name,
+description, the caller's own role) is read from `useGroups()` filtered to
+one id client-side, the exact "list + client-side find" pattern the topic
+detail page used before `GET /topics/:id` existed (third pass). Everything
+below the header — roster, invites, topics — has its own real,
+group-scoped endpoint, so only the header needed the workaround.
+
+One real, structural limitation surfaced building the roster panel, not
+fixed here: `GET /groups/:id/members` (`GroupsService.findMembers`) returns
+`user_id`/`role`/`joined_at` only — no email or display name join anywhere
+in that query. `RosterPanel` shows a shortened UUID rather than inventing a
+name the API doesn't provide, and its own header comment flags this as a
+real gap (no roster-with-profile endpoint exists) rather than a rendering
+bug — see "Known gaps" below.
+
+`CreateTopicModal` is shared between two callers: the group detail page
+(pre-selects that group via `fixedGroupId`, hides the picker) and
+`topics/browse`'s "+ New Topic" tile, which had read "· Phase 1" since
+turn 1f and is real now, with a group picker filtered to WRITE/ADMIN
+memberships (`POST /topics` requires WRITE on the target group). Topic
+delete is the first frontend caller of `DELETE /topics/:id` at all — the
+fifth pass's own last-ADMIN-removal work checked and found "no delete-topic
+button exists anywhere in the running frontend yet, only in the wireframe";
+`GroupTopicsPanel` gates it to `canManage` (ADMIN) specifically, matching
+`topics_delete_admin` and wireframe 4b's own dashed note about not showing
+WRITE members a button that would silently no-op.
+
+New types added rather than reused from adjacent ones, following the
+existing `TopicWordSummary`/`TopicRow` precedent of "don't claim a field
+the response doesn't have": `GroupSummary`/`GroupRow`/`GroupRosterMember`/
+`GroupInviteSummary`/`CreatedInvite`/`RedeemedInvite` (`types/group.ts`) and
+`TopicRow` (`types/topic.ts`, narrower than `Topic` — no `updated_at`,
+since `POST`/`PATCH /topics` never return it). New hooks:
+`useGroups`/`useCreateGroup`/`useUpdateGroup`/`useDeleteGroup`,
+`useGroupMembers`/`useUpdateMemberRole`/`useRemoveMember`,
+`useInvites`/`useCreateInvite`/`useRevokeInvite`/`useRedeemInvite`,
+`useTriggerSprint`, `useCreateTopic`/`useUpdateTopic`/`useDeleteTopic`/
+`useCloneTopic`, and `useCurrentUser` (nothing client-side previously
+resolved the caller's own user id — `RosterPanel` needs it to label "(you)"
+on the caller's own roster row). `RemoveMember`'s error handling
+specifically surfaces the fifth pass's own 409 last-ADMIN guard
+("Can't remove the group's last ADMIN — assign someone else first.")
+rather than a generic failure message. `/groups` and `/join` were added to
+`PROTECTED_PATH_PREFIXES` (`constants/routes.ts`); `Navbar` gained a fifth
+tab, "Groups," between Topics and Progress.
+
+### A bigger gap, found while wiring the "Login" link into a working page
+
+Adding a "Sign in" link from the new `/join/:token` error state led to
+actually opening `(auth)/login` — and it was still the literal
+"Coming in Phase 1" stub from Phase 0, no form, no `supabase.auth` call
+anywhere. Checked `(auth)/register`: identical. **This meant no route in
+this entire application was reachable through a real browser**, independent
+of how complete Modules 1–6 were on paper — every one of the six prior
+session reports verified only `tsc`/`eslint`/`jest`, none of which would
+ever catch a page with no interactive form on it, and none of the six
+booted an actual browser (no Docker in this sandbox, so nothing to boot it
+against). Fixed: real `signInWithPassword` (`/login`) and `signUp`
+(`/register`) forms, both honoring `middleware.ts`'s existing `?next=`
+redirect param (already being set on every unauthenticated bounce to a
+protected path — session five's own work — but nothing previously read it
+back). Also added `app/(auth)/layout.tsx`, a server-side redirect for an
+*already*-signed-in user hitting either route — `constants/routes.ts` has
+exported an `isAuthPath` helper since before this pass that nothing ever
+called; closed as dead code once these routes became real.
+
+That surfaced a second, older gap underneath the first:
+`database/migrations/004_seed_data.sql`'s `auth.users` insert only ever set
+`id`/`email`. That's sufficient for `scripts/dev-token.js` (it signs its
+own JWT with `SUPABASE_JWT_SECRET` directly and never touches GoTrue at
+all — its own header comment says so) but not sufficient for the real
+`supabase-auth` (GoTrue) container the new login form actually calls:
+GoTrue rejects a null `encrypted_password` and an unconfirmed email
+outright. Fixed by setting `encrypted_password` (`crypt('dygo-dev-2026',
+gen_salt('bf'))`, `pgcrypto` was already enabled in `001_initial_schema.sql`)
+and `email_confirmed_at` on all five fixtures, changing the insert's
+conflict clause from `do nothing` to an update of just those two columns so
+re-running the seed script upgrades an already-seeded database rather than
+silently leaving old rows without a password. `instance_id`/`aud`/`role`/
+`raw_app_meta_data` are left to the `supabase/postgres` image's own column
+defaults, as they always were — nothing about adding a password needed to
+touch those.
+
+The register page's copy explicitly warns that a brand-new solo signup
+can't create its own group yet — `groups.tenant_id` is `not null` and
+nothing provisions a tenant for a user with none, a gap flagged since the
+very first session report and still open — rather than letting someone hit
+an unexplained 500 on their first click after signing up.
+
+### Wireframes
+
+No new turn added — unlike every prior pass, this one didn't need one.
+Turns 3 (3a–3d), 4 (4a–4e), and 8g already designed every screen this pass
+built: the groups dashboard, create-group form, roster, invite-link screen,
+topic create/edit/delete, and the sprint trigger. `Dygo Academy
+Wireframes.html` itself was not touched this pass — checked, and there was
+nothing left to design here, only to build. Same "points back to existing
+screens rather than re-drawing them" call the third pass made for turn 5's
+intro. Not re-verified against a browser (same standing sandbox
+limitation) since the file wasn't edited.
+
+### Testing performed
+
+| Check | Result |
+| :--- | :--- |
+| Backend `jest` | ✅ 129/129 pass, unchanged — no backend code touched this pass |
+| Frontend `tsc --noEmit` | ✅ clean |
+| Frontend `next lint` | ✅ clean |
+| Frontend `next build` | ❌ hung again — **7th occurrence across 7 sessions**, exit 124 confirmed through a piped `timeout` |
+| `POST /invites/:token/redeem`, roster/invite CRUD, `POST /groups`, real `signInWithPassword` against GoTrue | ❌ not possible here — no Docker |
+| The `encrypted_password`/`email_confirmed_at` seed fix, against a real `supabase-auth` container | ❌ not possible here — no Docker; this is the one change this pass most needs a real run before UAT depends on it |
+
+### Known gaps — not fixed, flagged for grooming
+
+- **`GET /groups/:id/members` has no email/display-name join.** The roster
+  UI shows a shortened user id. A `GET /groups/:id/members` response that
+  included `profiles.display_name`/`email` (RLS already scopes `profiles`
+  reads appropriately elsewhere in this codebase) would let this show real
+  names instead — flagged, not guessed at with a fake join here.
+- **No solo-user tenant provisioning**, per the register page's own
+  warning above — open since the first session report.
+- **`FR-6.2`'s sprint route still has no rate limiting** (sixth pass's own
+  flag) — the new trigger button doesn't add one; an ADMIN could still
+  click it in a tight loop.
+- Everything else in "Known gaps" from the sixth pass is still open except
+  the two closed this pass (group-management frontend, login/register).
+- The `CreateGroupForm`/`GroupSettingsPanel`/roster/invite panels have not
+  been visually confirmed in a real browser — same standing sandbox
+  limitation `next build`'s own hang represents; `tsc`/lint catch type and
+  syntax errors, not layout or interaction bugs.
+
+### UAT checklist for tomorrow (supersedes the sixth pass's own checklist)
+
+1. `docker compose up -d && ./database/apply-migrations.sh --seed` (or
+   `--test` for the RLS suite too) — **this pass changed 004's insert**, so
+   run this even on an already-migrated database; the `on conflict ... do
+   update` clause upgrades existing fixture rows with real passwords rather
+   than requiring a full reset.
+2. Open the frontend at `localhost:3000/login` and sign in as
+   `sarah@dygo.test` / `dygo-dev-2026` (or marco/alex/priya/dana, same
+   password) — **this is the first UAT checklist item across all seven
+   passes that starts in the browser instead of curl/Swagger.** Confirm the
+   session lands on `/topics` and the Navbar shows five tabs including the
+   new "Groups."
+3. Click "Groups" → confirm Sarah's Oxford English Center group appears →
+   open it → confirm the roster shows Marco/Alex/Priya, invite links can be
+   minted (copy the `/join/:token` URL) and revoked, and — as Sarah
+   specifically — "Send a reminder now" returns a real `sent`/`recipients`
+   count (needs `VAPID_*` configured and at least one subscribed device,
+   per the sixth pass's own checklist item 2).
+4. Sign out, register a brand-new account, confirm the copy on `/register`
+   about not being able to create a group yet is accurate (`POST /groups`
+   should fail until tenant provisioning exists) — this is expected, not a
+   regression to chase down before UAT.
+5. Open the `/join/:token` link copied in step 3 in a private/incognito
+   window, sign in as `priya@dygo.test`, confirm it redeems and lands on
+   the group.
+6. From the group detail page, click "+ New topic," confirm it appears
+   under Topics, then delete it as Sarah (ADMIN) and confirm it's gone; as
+   Marco (WRITE) confirm the delete button doesn't render at all.
+7. `cd com.dygoacademy.frontend && npm run build` — confirm the production
+   build completes; unverified here across a 7th session running.
+8. Everything from the sixth pass's own checklist items 1–2 and 5–6 (SRS,
+   quiz, push-tick timing, wireframes turn 8) still applies and is
+   unchanged by this pass.
 
 ---
 

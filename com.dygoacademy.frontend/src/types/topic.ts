@@ -32,6 +32,22 @@ export interface Topic {
 }
 
 /**
+ * `POST`/`PATCH /api/v1/topics(/:id)` response shape — matches
+ * TopicsService.TopicRow exactly. Narrower than `Topic` above: no
+ * `updated_at`, since neither endpoint's SELECT/RETURNING list includes
+ * it — same "don't claim a field the response doesn't have" rule
+ * `TopicWordSummary` documents below.
+ */
+export interface TopicRow {
+  id: string;
+  group_id: string;
+  title: string;
+  description: string | null;
+  is_public: boolean;
+  created_at: string;
+}
+
+/**
  * The word shape `GET /api/v1/topics/:id` actually nests under `words` —
  * matches TopicsService.TopicWordRow's SELECT list exactly (topics.service.ts
  * `findById`), which is deliberately narrower than the full `TopicWord`

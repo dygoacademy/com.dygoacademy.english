@@ -181,6 +181,40 @@ Conflating them is how a roadmap quietly turns into a status report.
 > `width_bucket` bucket-matching SQL and the VAPID `web-push` calls have
 > only been exercised through mocks, never against real Postgres or a real
 > browser push service.
+>
+> **2026-09-01 note (7th pass) — no new backend routes, but the standing
+> "no group-management frontend" gap this doc has flagged since Module 6
+> (§ above) is closed.** Every Module 1 route already listed as Live below
+> now has a real caller: `app/(dashboard)/groups/` (list, create, roster
+> with role management and member removal, invite mint/list/revoke,
+> settings/delete) and `app/(dashboard)/join/[token]/` (redeem). The
+> teacher-sprint route (`POST /notifications/groups/:groupId/sprint`,
+> Module 6) has its own trigger button on the group detail page too — the
+> "API- and wireframe-only for now" line above no longer applies. Also
+> closed in passing, not part of Module 1/6: `POST /topics` finally has a
+> frontend caller (the topics/browse "+ New Topic" tile read "· Phase 1"
+> since turn 1f), and `DELETE /topics/:id` has its first-ever frontend
+> caller (checked during the fifth pass's own last-ADMIN work — "no
+> delete-topic button exists anywhere in the running frontend yet," only in
+> the wireframe; it does now, ADMIN-gated in the UI to match
+> `topics_delete_admin`).
+>
+> **A bigger, previously-undiscovered gap closed the same pass: `(auth)/login`
+> and `(auth)/register` were still the literal Phase-0 "Coming in Phase 1"
+> stubs** — no form, no `supabase.auth` call, nothing. This meant no route in
+> this application was reachable through a real browser at all, independent
+> of how much of the rest of the stack existed; six prior session reports
+> never caught it because none of them could boot a browser to notice. Real
+> `signInWithPassword`/`signUp` forms now exist. That surfaced a second,
+> older gap: `database/migrations/004_seed_data.sql`'s `auth.users` insert
+> only ever set `id`/`email` — enough for `scripts/dev-token.js` (which
+> signs its own JWT and never touches GoTrue) but not enough to sign in
+> through the real `supabase-auth` container the new login form actually
+> calls. Fixed by setting `encrypted_password`/`email_confirmed_at` on all
+> five fixtures (shared dev password `dygo-dev-2026`) — **unverified against
+> a real GoTrue container in this sandbox**, same standing caveat as
+> everything else on this page; confirm one real sign-in before trusting it
+> for UAT.
 
 ---
 

@@ -2,7 +2,9 @@
 
 import { useState } from 'react';
 
+import { CreateTopicModal } from '@/components/groups/CreateTopicModal';
 import { TopicGridCard } from '@/components/topics/TopicGridCard';
+import { useGroups } from '@/hooks/useGroups';
 import { useTopics } from '@/hooks/useTopics';
 
 /**
@@ -15,12 +17,21 @@ import { useTopics } from '@/hooks/useTopics';
  * The search box filters the already-fetched list client-side. That's a
  * different thing from FR-2.2's GET /lexicon/search (Phase 1) — this box
  * filters topic titles you already belong to, not the public lexicon.
+ *
+ * The "+ New Topic" tile read "· Phase 1" (disabled, no click handler) from
+ * turn 1 until this pass — `CreateTopicModal` (built alongside the group
+ * detail page, same pass) is shared here with a group picker, since this
+ * page — unlike the group detail page — has no single group already in
+ * scope.
  */
 export default function TopicsBrowsePage() {
   const { data: topics, isPending, isError } = useTopics();
+  const { data: groups } = useGroups();
   const [query, setQuery] = useState('');
+  const [modalOpen, setModalOpen] = useState(false);
 
   const filtered = topics?.filter((t) => t.title.toLowerCase().includes(query.toLowerCase()));
+  const writableGroups = groups?.filter((g) => g.role === 'ADMIN' || g.role === 'WRITE') ?? [];
 
   return (
     <div className="mx-auto flex max-w-2xl flex-col gap-4 p-6">
@@ -50,10 +61,17 @@ export default function TopicsBrowsePage() {
           {filtered.map((topic) => (
             <TopicGridCard key={topic.id} topic={topic} />
           ))}
-          <div className="flex flex-col items-center justify-center gap-1 rounded-xl border border-dashed p-3.5 text-center text-muted-foreground">
+          <button
+            type="button"
+            onClick={() => setModalOpen(true)}
+            disabled={writableGroups.length === 0}
+            className="flex flex-col items-center justify-center gap-1 rounded-xl border border-dashed p-3.5 text-center text-muted-foreground hover:bg-muted/40 disabled:cursor-not-allowed disabled:opacity-50"
+          >
             <span className="text-lg">+</span>
-            <span className="text-xs">New Topic · Phase 1</span>
-          </div>
+            <span className="text-xs">
+              {writableGroups.length === 0 ? 'New Topic · join a group first' : 'New Topic'}
+            </span>
+          </button>
         </div>
       )}
 
@@ -65,6 +83,8 @@ export default function TopicsBrowsePage() {
         Due counts per topic land with Module 3 — reviews are cross-topic in the meantime, see
         the Home tab.
       </p>
+
+      <CreateTopicModal open={modalOpen} onOpenChange={setModalOpen} groups={writableGroups} />
     </div>
   );
 }

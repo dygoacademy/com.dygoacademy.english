@@ -21,13 +21,32 @@
 -- 4444… Priya (READ)  | 5555… Dana  (other tenant ADMIN)
 -- ---------------------------------------------------------------------------
 
-insert into auth.users (id, email) values
-  ('11111111-1111-1111-1111-111111111111', 'sarah@dygo.test'),
-  ('22222222-2222-2222-2222-222222222222', 'marco@dygo.test'),
-  ('33333333-3333-3333-3333-333333333333', 'alex@dygo.test'),
-  ('44444444-4444-4444-4444-444444444444', 'priya@dygo.test'),
-  ('55555555-5555-5555-5555-555555555555', 'dana@dygo.test')
-on conflict (id) do nothing;
+-- `encrypted_password`/`email_confirmed_at` were missing until this pass —
+-- every prior insert here only set `id`/`email`, which is enough for
+-- `scripts/dev-token.js` (it signs its own JWT with SUPABASE_JWT_SECRET and
+-- never touches GoTrue at all) but NOT enough to sign in through the actual
+-- `supabase-auth` (GoTrue) container the frontend's real login form talks to
+-- — GoTrue rejects a null `encrypted_password` and an unconfirmed email
+-- outright. All five fixtures share one dev-only password so UAT can sign in
+-- through the browser instead of only through dev-token.js + curl/Swagger.
+-- `instance_id`/`aud`/`role`/`raw_app_meta_data` are left to the
+-- `supabase/postgres` image's own column defaults (00000000…0000/
+-- authenticated/authenticated/`{"provider":"email","providers":["email"]}`)
+-- rather than restated here — this file has never set them explicitly and
+-- nothing about adding a password changes that. Unverified against a real
+-- GoTrue container in this sandbox (no Docker here — see every prior pass's
+-- session report) — confirm `POST /auth/v1/token?grant_type=password` (or
+-- the login form itself) actually succeeds for one fixture before relying
+-- on this for UAT.
+insert into auth.users (id, email, encrypted_password, email_confirmed_at) values
+  ('11111111-1111-1111-1111-111111111111', 'sarah@dygo.test', crypt('dygo-dev-2026', gen_salt('bf')), now()),
+  ('22222222-2222-2222-2222-222222222222', 'marco@dygo.test', crypt('dygo-dev-2026', gen_salt('bf')), now()),
+  ('33333333-3333-3333-3333-333333333333', 'alex@dygo.test',  crypt('dygo-dev-2026', gen_salt('bf')), now()),
+  ('44444444-4444-4444-4444-444444444444', 'priya@dygo.test', crypt('dygo-dev-2026', gen_salt('bf')), now()),
+  ('55555555-5555-5555-5555-555555555555', 'dana@dygo.test',  crypt('dygo-dev-2026', gen_salt('bf')), now())
+on conflict (id) do update set
+  encrypted_password = excluded.encrypted_password,
+  email_confirmed_at = coalesce(auth.users.email_confirmed_at, excluded.email_confirmed_at);
 
 -- Tenants -------------------------------------------------------------------
 insert into public.tenants (id, name, purchased_seats, active_seats_used, price_per_seat_cents) values

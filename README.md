@@ -2,12 +2,18 @@
 
 AI-powered collaborative vocabulary platform — automated word enrichment (dual-accent IPA, neural audio, CEFR-graded synonyms and examples), error-adaptive spaced repetition, and multi-tenant classroom groups with granular RBAC.
 
-> **Project status — Phase 0 (Foundations), complete.** *(2026-08-31)*
-> The local infrastructure stack, the database foundation, the NestJS
-> backend scaffold, and the Next.js frontend scaffold are all working.
-> Domain endpoints and screens land in Phase 1 onwards. See
+> **Project status — Phases 0–3 code-complete; group-management frontend and
+> real login now exist too.** *(2026-09-01)* Groups/RBAC, AI word
+> enrichment, the error-adaptive SRS flashcard player, the multi-modal quiz
+> engine, and web push/habit scheduling are all built on both backend and
+> frontend. UAT is scheduled for the morning of 2026-09-02 — see
+> [`dygo_academy_session_report_2026-09-01.md`](dygo_academy_session_report_2026-09-01.md)
+> (seventh pass) for exactly what to click through, and
 > [`dygo_academy_master_project_schedule.md`](dygo_academy_master_project_schedule.md)
-> for the full 12-week plan.
+> for the full 12-week plan and per-phase status notes. **None of this has
+> run against a live Postgres/GoTrue/Redis stack** — every session so far
+> ran in a sandbox with no Docker; verify against a real `docker compose up`
+> before trusting this status banner over your own boot.
 
 ---
 
@@ -24,8 +30,10 @@ cd ../com.dygoacademy.frontend && npm install && npm run dev
 ```
 
 Then open http://localhost:3001/api/docs and authorize with
-`npm run token alex`, and http://localhost:3000 for the frontend shell.
-Each step is expanded below.
+`npm run token alex` for API-level testing, or http://localhost:3000/login
+and sign in as `sarah@dygo.test` / `dygo-dev-2026` (marco/alex/priya/dana
+share the same password — see `database/migrations/004_seed_data.sql`'s
+own header comment) for the actual frontend. Each step is expanded below.
 
 ---
 
