@@ -1,7 +1,7 @@
-# Dygo Academy — session report, 2026‑09‑01 (fourteenth pass)
+# Dygo Academy — session report, 2026‑09‑01 (fifteenth pass)
 **Run**: automated scheduled task, no user present. UAT is scheduled for tomorrow morning (2026‑09‑02).
-This file now covers fourteen runs today. The fourteenth pass is
-immediately below; passes one through thirteen (Groups/Words first slice, the
+This file now covers fifteen runs today. The fifteenth pass is
+immediately below; passes one through fourteen (Groups/Words first slice, the
 rest of Module 1, Module 2's real Gemini/TTS pipeline, Module 3/4's SRS
 engine and flashcard player, Module 5's quiz engine, Module 6's push/habit
 scheduling closing out Phase 3, the group-management frontend and
@@ -9,14 +9,159 @@ login/register fix, a UAT-prep pass that closed the roster's
 shortened-UUID display bug, solo-tenant provisioning + Module 8
 analytics/heatmap, the roster invite-redeemed-member name gap, Module 4
 offline-first sync + FR-6.2 sprint rate limiting, the FAILED word's "Try
-again" retry endpoint, then a regression-only pass that consolidated the
-UAT script) are preserved below under "First pass" through "Thirteenth
-pass" — read top-down for the current state. Correction while writing this
-header: the eighth pass's own summary line (just below) says it "closed
-the roster-naming gap" — the ninth pass's report already corrected that
+again" retry endpoint, a regression-only pass that consolidated the
+UAT script, then the Module 7 seat-billing paywall wireframe) are
+preserved below under "First pass" through "Fourteenth pass" — read
+top-down for the current state. Correction while writing this header: the
+eighth pass's own summary line (further below) says it "closed the
+roster-naming gap" — the ninth pass's report already corrected that
 framing in detail (it fixed the *shortened-UUID* symptom, not the deeper
 tenant-equality cause), and the tenth pass is what actually closes it —
 see that pass's own entry below for detail.
+
+---
+
+## Fifteenth pass — Module 7 card-decline/dunning wireframed (design only); regression re-confirmed, no backend gap found
+
+### What this pass found on start
+
+Standing instruction, same day as tomorrow morning's UAT (2026‑09‑02):
+read the master schedule's changelog (5.12, the fourteenth pass's entry)
+and the fourteenth pass's own report section before touching anything.
+`git status` was clean; `git log` showed fourteen prior commits, most
+recent being the fourteenth pass's turn-10 wireframe commit.
+
+Ran the full regression suite first: backend `jest` (153/153, unchanged),
+backend `tsc --noEmit` and `npm run lint` (clean), frontend `tsc --noEmit`
+and `next lint` (clean, no warnings). Re-grepped backend `src/` for
+`TODO`/`FIXME` — none found, same as the 13th/14th passes. Confirmed
+`BillingController`/`BillingService` are still a zero-route, zero-logic
+scaffold (just a bare `@Controller`/`@Injectable` pair). No new backend or
+frontend gap surfaced — the same honest conclusion as the 13th and 14th
+passes, for the same reason: what remains open is Module 7's real Stripe
+integration, deliberately deferred feature work, not a quick fix.
+
+### What this pass did instead
+
+Same task instruction as the 14th pass explicitly named `Dygo Academy
+Wireframes.html` for UI/UX work, and turn 10's own "Try next" line (added
+14th pass) offered three concrete options: (1) build `BillingController`'s
+real Stripe route — declined, same standing reasoning as every pass since
+the 7th; (2) wireframe the academy-tier director view (BRD Journey 3,
+cohort ROI export); (3) wireframe the failed-renewal/card-decline dunning
+email and in-app banner (FR-7.3). Picked (3) over (2): it's a direct,
+smaller-scoped extension of turn 10's already-established billing-panel
+screens rather than a new screen family, lower risk to get subtly wrong
+within one pass's token budget, and it fully covers what FR-7.3 actually
+promises ("handles card retry dunning") that turn 10 explicitly left open.
+(2) remains available and was carried forward into this turn's own "Try
+next" line for a future pass.
+
+Added **turn 11** (screens 11a–11d) to `Dygo Academy Wireframes.html`:
+
+- **11a** — ADMIN's Home screen with a payment-failed banner during the
+  grace window ("day 2 of 7"), explicit that everyone keeps studying
+  normally — a card decline is the ADMIN's problem to see first, not a
+  reason to degrade anyone's flashcards.
+- **11b** — the billing panel (from turn 10c) in its past-due state: same
+  layout, an accent-colored "PAST DUE" chip, "Update payment method"
+  (→ Stripe's Customer Portal, same external handoff turn 10 established)
+  and "Add seats" correctly greyed rather than removed.
+- **11c** — a mockup of the dunning email itself, captioned explicitly as
+  Stripe's own templated email (Dygo neither composes nor sends it) — the
+  same "never a form we build ourselves" principle turn 10b drew for card
+  entry, and the same "wireframe the browser/platform's own surface"
+  pattern screen 8b already used for the push-permission dialog.
+- **11d** — the suspended state once the grace window lapses: the ADMIN
+  card is a full wireframe; the sponsored-student equivalent is one
+  sentence of prose ("Ask your teacher to fix billing — nothing you did"),
+  a deliberate choice not to draw a phone frame around what's really a
+  near-total UI absence.
+
+One finding worth flagging that isn't just a restatement of turn 10: while
+writing 11a/11b/11d's captions and checking them against
+`dygo_academy_database_dictionary.md`, confirmed `tenants` has **no
+`subscription_status`-shaped column today** — only `purchased_seats`,
+`active_seats_used`, `price_per_seat_cents`. All three of those screens
+therefore imply a schema column (and a webhook target to write it) that
+doesn't exist yet; said so plainly in the turn's opening `<p class="dv-sub">`
+note and in its own "Try next" line, rather than silently wireframing
+something with no home in the current schema. This is genuinely new
+information this pass surfaced, not something turn 10 needed to say.
+
+Edited via the same bundled-file procedure as the 14th pass (and per
+[[dygo-wireframe-bundle-format]]): decode the `<script
+type="__bundler/template">` JSON string with Python's `json` module,
+splice in the new turn's HTML (reusing only existing `<style>`-block CSS
+classes — no new CSS added), re-encode with `json.dumps`, write back the
+single changed physical line. One sandbox gotcha hit and worked around
+this pass, not previously documented: the obvious `/tmp/wf_decoded.html`
+scratch path silently failed to write (`PermissionError`, stale file
+ownership from an earlier pass) and a naive `tail` right after read back
+that *stale* file's old content instead of erroring loudly — caught by
+noticing the tail output didn't contain the expected turn-10 markup at
+all, not by any script failure. Fixed by writing scratch files under the
+session's own `/sessions/.../mnt/outputs/` instead of `/tmp` — this
+matches the commit-message gotcha the 14th pass logged in
+[[dygo-academy-project-status]] closely enough that it's being folded into
+[[dygo-sandbox-git-quirks]] as the same underlying class of problem (stale
+files under a shared/unreliable scratch path silently serving wrong
+content rather than erroring). Validated before writing anything back:
+the new blob round-trips through `json.loads` cleanly, all HTML tags
+balance across the whole 108,627-char decoded document (scripted stack
+check), and none of the resulting 70 `id=` anchors collide (up from 61
+after turn 10, 66 after checking — actually 70 total, four new: 11a–11d).
+This sandbox still cannot render the file in a real browser — same
+standing limitation as every prior wireframe-editing pass, now covering
+two never-rendered turns (10 and 11) instead of one.
+
+No app code changed this pass. `BillingController`/`BillingService`
+remain deliberately untouched.
+
+### Testing performed
+
+| Check | Result |
+| :--- | :--- |
+| Backend `jest` | ✅ 153/153 pass, unchanged from 14th pass |
+| Backend `tsc --noEmit` | ✅ clean |
+| Backend `npm run lint` | ✅ clean |
+| Frontend `tsc --noEmit` | ✅ clean |
+| Frontend `next lint` | ✅ clean, no warnings |
+| Frontend `next build` | ⏭️ not re-attempted — 14-for-14 hung identically; carried forward unchanged per the same token-budget reasoning as the 12th–14th passes |
+| Backend `src/` grep for `TODO`/`FIXME` | ✅ none found |
+| `BillingController`/`BillingService` route/logic count | ✅ confirmed still zero (bare scaffold) |
+| New wireframe JSON blob re-parses via `json.loads` | ✅ valid |
+| New wireframe tag balance (scripted stack check, whole document) | ✅ balanced |
+| New wireframe `id=` attributes vs. existing 66 | ✅ no collisions, 70 total |
+
+### Known gaps — unchanged by this pass
+
+- **Module 7 (Stripe seat billing) backend is still fully open** —
+  `BillingController`/`BillingService` untouched, same standing reasoning
+  as the 7th–15th passes. This pass added more of the *design* half only
+  (turn 11); the top implementation item for the first pass after UAT
+  feedback lands is unchanged, and now additionally includes a
+  `subscription_status`-shaped migration that turns 11a/11b/11d imply but
+  that doesn't exist in the schema yet.
+- **"Write it myself" manual word entry is still unbuilt** — unchanged
+  from the 12th–14th passes.
+- **`next build` hanging in this sandbox stands at 14-for-14** — not
+  re-tested this pass.
+- **Nothing in this or any pass has run against a live Postgres/Redis
+  stack or a real browser** — turns 10 and 11 both inherit this limitation;
+  statically validated (see above) but never rendered.
+- The academy-tier director view (BRD Journey 3, cohort ROI export) —
+  turn 10's second "Try next" option, not picked this pass — remains open
+  and is carried forward in turn 11's own "Try next" line too.
+- Everything else in the fourteenth pass's "Known gaps" not explicitly
+  listed above is still open and unchanged by this pass.
+
+### UAT checklist for tomorrow
+
+No change to the actual test script's structure —
+`dygo_academy_uat_checklist_2026-09-02.md` still supersedes and merges
+everything, run that file. Its §I item 23 (wireframe review) was updated
+this pass to also cover turn 11.
 
 ---
 

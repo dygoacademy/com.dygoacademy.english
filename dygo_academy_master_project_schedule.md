@@ -1,9 +1,43 @@
 # 📅 Dygo Academy: Master Project Schedule & Phasing Strategy
-**Document Version**: 5.12 (Module 7 wireframed, backend still deferred)  
+**Document Version**: 5.13 (Module 7 wireframed — paywall + dunning, backend still deferred)  
 **Author**: Principal Cloud & SaaS Solutions Advisory  
 **Status**: Approved for Engineering & Product Execution  
 
 **Changelog**
+* **5.13** (2026-09-01) — Fifteenth pass, still the same day, still
+  ahead of tomorrow morning's UAT (2026-09-02). Full regression confirmed
+  no drift from 5.12 (153/153 backend jest, clean `tsc`/lint both sides,
+  frontend `tsc`/`next lint` clean). Backend-wide `TODO`/`FIXME` grep
+  again came back empty and `BillingController`/`BillingService` are
+  confirmed still a zero-route scaffold — the ninth straight pass (7th
+  through 15th) reaching that same conclusion, so Module 7's backend
+  remains correctly untouched rather than started hours before UAT
+  feedback that might redirect it. Acted on the same explicit UI/UX
+  instruction as the 14th pass and on turn 10's own "Try next" line:
+  added **turn 11** to `Dygo Academy Wireframes.html`, wireframing FR-7.3
+  (card decline / dunning) — the ADMIN's payment-failed banner and grace
+  window, the past-due billing panel, a mockup of the email Stripe itself
+  sends (never Dygo), and the suspended state once the grace window
+  lapses, including the one-sentence description of what a sponsored
+  student sees (nothing billing-related, per FR-7.2). Design only, zero
+  payment code, same non-conflicting relationship to the deferred backend
+  as turn 10. One genuinely new finding surfaced while writing this
+  turn's captions, not just a restatement of turn 10: `tenants` has no
+  `subscription_status`-shaped column today per
+  `dygo_academy_database_dictionary.md` — only `purchased_seats`/
+  `active_seats_used`/`price_per_seat_cents` — so screens 11a/11b/11d
+  imply a migration that doesn't exist yet; flagged in the turn's own
+  opening note and folded into its "Try next" line rather than silently
+  assumed. Edited via the same bundled-file `JSON.parse`d template string
+  procedure as the 14th pass (Python decode/splice/re-encode); validated:
+  the new blob re-parses as JSON, all HTML tags balance across the full
+  108,627-char decoded document, and none of the 70 total `id=` anchors
+  collide. This sandbox still cannot render it in a real browser to
+  confirm visually — same standing limitation, now covering two unverified
+  turns (10 and 11) instead of one; the UAT checklist's item 23 was
+  updated accordingly. `next build` not re-attempted — 14-for-14 hang
+  standing, unchanged. See the fifteenth pass entry in
+  `dygo_academy_session_report_2026-09-01.md`.
 * **5.12** (2026-09-01) — Fourteenth pass, still the day of tomorrow
   morning's UAT. Full regression confirmed no drift from 5.11 (153/153
   backend jest, clean `tsc`/lint both sides). Backend-wide `TODO`/`FIXME`
