@@ -1,9 +1,31 @@
 # 📅 Dygo Academy: Master Project Schedule & Phasing Strategy
-**Document Version**: 5.10 (word re-enrichment retry shipped)  
+**Document Version**: 5.11 (regression-clean, UAT script consolidated)  
 **Author**: Principal Cloud & SaaS Solutions Advisory  
 **Status**: Approved for Engineering & Product Execution  
 
 **Changelog**
+* **5.11** (2026-09-01) — Thirteenth pass, the day of tomorrow morning's
+  UAT. Full regression run first (153/153 backend jest, clean `tsc`/lint
+  both sides) confirmed no drift from 5.10. Searched for a new small
+  well-scoped gap in the style of the 10th–12th passes' picks and found
+  none — a backend-wide `TODO`/`FIXME` grep came back empty and
+  `BillingController` is confirmed still a zero-route scaffold; what
+  remains open (Module 7, "Write it myself") is real feature scope, not a
+  quick fix, so none was invented. Instead: corrected a stale wireframe
+  caption (turn 1, screen 1l — "Try again"/"Write it myself" hadn't been
+  updated to reflect the 12th pass shipping the former and disabling the
+  latter in the real frontend), and replaced the ten scattered, serially
+  "superseding" per-pass UAT checklist sections in
+  `dygo_academy_session_report_2026-09-01.md` with one linear,
+  deduplicated script, `dygo_academy_uat_checklist_2026-09-02.md`, that
+  also states plainly up front which three things (live-Postgres
+  migrations/RLS, `next build`, real-browser behavior) have never
+  actually run anywhere outside this Docker-less sandbox. Module 7
+  reasoning unchanged from the 7th–12th passes — still deliberately
+  deferred, still the standing top item for the first pass after UAT
+  feedback lands. `next build` not re-attempted — 12-for-12 hang standing,
+  unchanged. See the thirteenth pass entry in
+  `dygo_academy_session_report_2026-09-01.md`.
 * **5.10** (2026-09-01) — Twelfth pass, same day as the eleventh, still
   ahead of tomorrow morning's UAT. Module 7 (Stripe seat billing) reasoning
   is unchanged from the 7th–11th passes — still deliberately deferred to

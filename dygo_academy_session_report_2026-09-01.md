@@ -1,20 +1,121 @@
-# Dygo Academy — session report, 2026‑09‑01 (twelfth pass)
+# Dygo Academy — session report, 2026‑09‑01 (thirteenth pass)
 **Run**: automated scheduled task, no user present. UAT is scheduled for tomorrow morning (2026‑09‑02).
-This file now covers twelve runs today. The twelfth pass is immediately
-below; passes one through eleven (Groups/Words first slice, the rest of
-Module 1, Module 2's real Gemini/TTS pipeline, Module 3/4's SRS engine and
-flashcard player, Module 5's quiz engine, Module 6's push/habit scheduling
-closing out Phase 3, the group-management frontend and login/register fix, a
-UAT-prep pass that closed the roster's shortened-UUID display bug, solo-tenant
-provisioning + Module 8 analytics/heatmap, the roster invite-redeemed-member
-name gap, then Module 4 offline-first sync + FR-6.2 sprint rate limiting) are
-preserved below under "First pass" through "Eleventh pass" — read top-down
-for the current state. Correction while writing this header: the eighth
-pass's own summary line (just below) says it "closed the roster-naming gap"
-— the ninth pass's report already corrected that framing in detail (it fixed
-the *shortened-UUID* symptom, not the deeper tenant-equality cause), and the
-tenth pass is what actually closes it — see that pass's own entry below for
-detail.
+This file now covers thirteen runs today. The thirteenth pass is
+immediately below; passes one through twelve (Groups/Words first slice, the
+rest of Module 1, Module 2's real Gemini/TTS pipeline, Module 3/4's SRS
+engine and flashcard player, Module 5's quiz engine, Module 6's push/habit
+scheduling closing out Phase 3, the group-management frontend and
+login/register fix, a UAT-prep pass that closed the roster's
+shortened-UUID display bug, solo-tenant provisioning + Module 8
+analytics/heatmap, the roster invite-redeemed-member name gap, Module 4
+offline-first sync + FR-6.2 sprint rate limiting, then the FAILED word's
+"Try again" retry endpoint) are preserved below under "First pass" through
+"Twelfth pass" — read top-down for the current state. Correction while
+writing this header: the eighth pass's own summary line (just below) says
+it "closed the roster-naming gap" — the ninth pass's report already
+corrected that framing in detail (it fixed the *shortened-UUID* symptom,
+not the deeper tenant-equality cause), and the tenth pass is what actually
+closes it — see that pass's own entry below for detail.
+
+---
+
+## Thirteenth pass — regression-only pass: no code gap found, wireframe caption corrected, UAT script consolidated
+
+### What this pass found on start
+
+Standing instruction, same day as tomorrow morning's UAT (2026‑09‑02): read
+the master schedule's changelog (5.10, the twelfth pass's entry) and the
+twelfth pass's own report section before touching anything. `git status`
+was clean; `git log` showed twelve prior commits, most recent being the
+twelfth pass's re-enrich commit.
+
+Ran the full regression suite first, before looking for new work: backend
+`jest` (153/153, unchanged), backend `tsc --noEmit` and `npm run lint`
+(clean), frontend `tsc --noEmit` and `next lint` (clean). No regression
+from the twelfth pass's commit.
+
+Looked for a small, well-scoped gap in the same style as the 10th–12th
+passes' picks, the same standing reasoning on Module 7 (Stripe seat
+billing — starting a live payment integration on the day of UAT is no
+safer than the evening before; still fully open, still the top item for
+whichever pass runs first after UAT feedback lands). Grepped the entire
+backend `src/` for `TODO`/`FIXME` (none found — the codebase carries no
+inline marker debt) and re-confirmed `BillingController` is still the
+literal empty scaffold (no routes declared). **Found no new well-scoped
+code gap this pass** — the 10th, 11th, and 12th passes had already closed
+every named, precisely-scoped item (roster visibility, offline sync,
+sprint rate limiting, the re-enrich retry); what's left (Module 7, and
+"Write it myself" manual word entry) is real, larger feature work, not a
+small fix. Reporting this plainly rather than inventing scope: an honest
+"nothing small left to close" is a valid outcome of this step, not a
+failure to find something.
+
+### What this pass did instead
+
+1. **Wireframe caption correction** (`Dygo Academy Wireframes.html`, turn
+   1 / screen 1l): the FAILED word state still showed "Try again" and
+   "Write it myself" as two equal-weight buttons, unchanged since before
+   the 12th pass wired the first one to a real endpoint and explicitly
+   disabled the second in the actual frontend
+   (`WordStatusRow.tsx`). The wireframe was stale relative to shipped
+   code — the same class of gap the 8th pass fixed for turns 3c/3d.
+   Restyled "Write it myself" dashed/muted with a small "soon" label and
+   updated screen 1l's caption to state plainly that "Try again" is live
+   (`POST /words/:id/re-enrich`, no refresh needed) and "Write it myself"
+   has no endpoint yet. No app code changed — this is a documentation-of-
+   reality fix in the mockup file only.
+2. **Consolidated UAT script**: `dygo_academy_uat_checklist_2026-09-01.md`
+   → written as `dygo_academy_uat_checklist_2026-09-02.md`, merging the
+   ten separate "UAT checklist for tomorrow" sections appended by the
+   6th–12th passes (each one explicitly "supersedes" or "adds to" the
+   last, so reading them in order was the only way to reconstruct the
+   current script before this pass). New file has one linear script
+   covering registration/solo-tenant, groups/roster/invites, word
+   ingestion + the FAILED/retry state, SRS + offline sync, quizzes, push +
+   sprint rate limiting, the analytics heatmap (both the ADMIN and
+   non-ADMIN-sees-nothing cases), an explicit "confirm billing is absent,
+   not broken" step, the wireframe re-check, and a "read this first"
+   section up top naming the three things that have never run outside
+   this Docker-less sandbox (migrations/RLS against real Postgres, `next
+   build`, anything touching a real browser) so whoever runs UAT knows
+   which failures would be new information rather than known sandbox
+   noise.
+
+### Testing performed
+
+| Check | Result |
+| :--- | :--- |
+| Backend `jest` | ✅ 153/153 pass, unchanged from 12th pass |
+| Backend `tsc --noEmit` | ✅ clean |
+| Backend `npm run lint` | ✅ clean |
+| Frontend `tsc --noEmit` | ✅ clean |
+| Frontend `next lint` | ✅ clean, no warnings |
+| Frontend `next build` | ⏭️ not re-attempted — 12-for-12 hung identically; carried forward unchanged per the same token-budget reasoning as the 12th pass |
+| Backend `src/` grep for `TODO`/`FIXME` | ✅ none found |
+| `BillingController` route count | ✅ confirmed still zero (empty scaffold) |
+
+### Known gaps — unchanged by this pass
+
+- **Module 7 (Stripe seat billing) is still fully open** — untouched,
+  same standing reasoning as the 7th–12th passes, now the top item for
+  the first pass after UAT feedback lands.
+- **"Write it myself" manual word entry is still unbuilt** — this pass
+  only made its disabled state visible in the wireframe to match the
+  frontend; no endpoint or UI exists.
+- **`next build` hanging in this sandbox stands at 12-for-12** — not
+  re-tested this pass.
+- **Nothing in this or any pass has run against a live Postgres/Redis
+  stack or a real browser** — see the new UAT script's "read this first"
+  section, which is now the canonical place this limitation is explained
+  to a human tester rather than restated per-pass here.
+- Everything else in the twelfth pass's "Known gaps" not explicitly
+  listed above is still open and unchanged by this pass.
+
+### UAT checklist for tomorrow
+
+Superseded by the new standalone `dygo_academy_uat_checklist_2026-09-02.md`
+— run that file, not the accumulated per-pass sections below it in this
+report. It supersedes and merges all of them.
 
 ---
 
