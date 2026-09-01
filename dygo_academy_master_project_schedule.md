@@ -1,9 +1,45 @@
 # 📅 Dygo Academy: Master Project Schedule & Phasing Strategy
-**Document Version**: 5.8 (roster invite-redeemed-member name gap closed)  
+**Document Version**: 5.9 (offline-first sync shipped; sprint route rate-limited)  
 **Author**: Principal Cloud & SaaS Solutions Advisory  
 **Status**: Approved for Engineering & Product Execution  
 
 **Changelog**
+* **5.9** (2026-09-01) — Eleventh pass, same day as the tenth, still ahead
+  of tomorrow morning's UAT. Module 7 (Stripe seat billing) reasoning is
+  unchanged from the 7th–10th passes — still deliberately deferred to
+  after UAT feedback lands, not started this pass either. Instead closed
+  two standing, lower-risk known gaps that had been carried forward
+  unfixed for several passes: **Module 4's offline-first sync** (open
+  since Phase 2) and **FR-6.2's unrated sprint route** (flagged since the
+  5th pass). Offline sync: new `lib/offline-review-queue.ts` (native
+  IndexedDB, no new dependency) queues a rating when `POST /srs/rate`
+  fails at the network level (not a real `ApiError` from a reachable
+  server — that still surfaces as before); `useOfflineReviewSync`, mounted
+  once at the app root in `QueryProvider.tsx`, drains that queue through
+  the already-existing, already-unit-tested `POST /srs/sync` on the
+  browser's `online` event. No backend change was needed — `SrsService.sync`
+  has done the actual work since Phase 2, only nothing on the frontend ever
+  called it outside a manual replay. Sprint rate limiting: new
+  `SprintRateLimitGuard` (in-process, per-group 60s cooldown, no new
+  dependency — `@nestjs/throttler` was considered and deliberately not
+  added this close to UAT), registered as a provider in
+  `NotificationsModule` and applied via `@UseGuards` on
+  `POST /groups/:groupId/sprint`; documented as a single-instance-only
+  limiter, not what a horizontally-scaled deployment would want. 6 new
+  backend unit tests (151 total, up from 145); frontend has no test
+  runner, `tsc --noEmit` and `next lint` clean on both changes. No
+  wireframe change — offline sync and the rate limit are both invisible
+  mechanisms, not new screens. Also cleaned up `.tmp_work/`, a stray
+  scratch directory left over from a prior pass's wireframe-editing
+  process that this sandbox's `rm`/`mv`-across-filesystem permission quirk
+  wouldn't let this pass actually delete — same-filesystem `mv` into the
+  already-gitignored `.SANDBOX_UNDELETABLE_JUNK_ignore/` worked instead
+  (see the master reference memory / eleventh pass's session report entry
+  for the exact commands). `next build` still hangs in this sandbox — 11th
+  occurrence across 11 sessions. Nothing this pass touched has run against
+  a live Postgres/Redis stack or a real browser's IndexedDB/`online`
+  event — same standing sandbox limitation as every earlier pass. See the
+  eleventh pass entry in `dygo_academy_session_report_2026-09-01.md`.
 * **5.8** (2026-09-01) — Tenth pass, evening before UAT. Closed the standing
   "roster shows no name for an invite-redeemed member" gap, open since the
   6th pass and precisely diagnosed (but not fixed) by the 9th:
@@ -232,13 +268,21 @@ gantt
   (`ProgressiveClues.tsx`) and FR-2.4's audio speed toggle (`AudioButton.tsx`),
   and implements all three FR-4.3 modes (Standard/Reverse/Listening) in
   `/study`. Offline-first sync (Module 4's "local SQLite/IndexedDB cache")
-  is **not** implemented — `POST /srs/sync` exists on the backend and is
-  unit-tested, but nothing on the frontend queues reviews offline yet; flag
-  this as the next Module 4 gap. **None of this has been run against a live
-  Postgres/Redis stack** — same standing sandbox limitation as Phase 1; verify
-  a real `POST /srs/rate` round-trip and the `p95 < 15ms` due-card query
-  before treating Phase 2 as done. `tsc`/lint clean on both sides; frontend
-  `next build` still hangs in this sandbox (4th occurrence across 4 sessions).
+  was **not** implemented as of this pass — `POST /srs/sync` existed on the
+  backend and was unit-tested, but nothing on the frontend queued reviews
+  offline. **Update (2026-09-01, 11th pass): closed.** `lib/offline-review-queue.ts`
+  (native IndexedDB) queues a rating when `POST /srs/rate` fails at the
+  network level; `useOfflineReviewSync`, mounted at the app root, drains
+  the queue through the existing `POST /srs/sync` on the browser's
+  `online` event. See the 11th pass's session report entry for the full
+  design and its deliberate scope limits (no client-side ease-factor
+  computation, no retry of server-rejected items). **None of this has been
+  run against a live Postgres/Redis stack, or a real browser's
+  IndexedDB/`online` event** — same standing sandbox limitation as Phase 1;
+  verify a real `POST /srs/rate` round-trip and the `p95 < 15ms` due-card
+  query before treating Phase 2 as done. `tsc`/lint clean on both sides;
+  frontend `next build` still hangs in this sandbox (4th occurrence across
+  4 sessions as of this pass, 11th as of the 11th pass overall).
 
 #### Core Engineering Tasks:
 1. **Module 3: Error-Adaptive Spaced Repetition System**:

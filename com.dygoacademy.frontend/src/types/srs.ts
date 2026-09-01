@@ -87,6 +87,30 @@ export interface LeechCard {
 }
 
 /**
+ * One offline-queued review, as sent to `POST /api/v1/srs/sync` — mirrors
+ * the backend's `SyncReviewItemDto` field-for-field. camelCase, unlike this
+ * file's `select`-shaped response types (`DueCard`, `RateWordResult`, etc.):
+ * this is a request body the client constructs, not a row echoed back from
+ * Postgres, so the "no camelCase" rule those types follow doesn't apply.
+ */
+export interface SyncReviewItem {
+  topicWordId: string;
+  rating: SrsRating;
+  reviewedAt: string;
+  responseMs?: number;
+}
+
+/**
+ * `POST /api/v1/srs/sync` per-item result — SrsService.SyncItemResult.
+ * Discriminated on `status` so a caller can tell a genuinely-applied
+ * rating from one the server rejected (e.g. the word was deleted since it
+ * was queued offline) without a runtime type check on `result`/`error`.
+ */
+export type SyncItemResult =
+  | { topicWordId: string; status: 'applied'; result: RateWordResult }
+  | { topicWordId: string; status: 'error'; error: string };
+
+/**
  * `GET /api/v1/groups/:id/heatmap` row shape — Module 8, FR-8.2. Mirrors
  * `HeatmapEntry` (com.dygoacademy.backend/src/modules/analytics/heatmap-aggregator.ts)
  * field-for-field. `failure_rate` is a fraction (0–1), not a percentage —

@@ -1,6 +1,7 @@
-# Dygo Academy — session report, 2026‑09‑01 (tenth pass)
+# Dygo Academy — session report, 2026‑09‑01 (eleventh pass)
 **Run**: automated scheduled task, no user present. UAT is scheduled for tomorrow morning (2026‑09‑02).
-This file now covers ten runs today. Passes one through nine (Groups/Words
+This file now covers eleven runs today. The eleventh pass is immediately
+below; passes one through nine (Groups/Words
 first slice, the rest of Module 1, Module 2's real Gemini/TTS pipeline,
 Module 3/4's SRS engine and flashcard player, Module 5's quiz engine, Module
 6's push/habit scheduling closing out Phase 3, the group-management frontend
@@ -11,8 +12,178 @@ pass" — read top-down for the current state. Correction while writing this
 header: the eighth pass's own summary line (just below) says it "closed the
 roster-naming gap" — the ninth pass's report already corrected that framing
 in detail (it fixed the *shortened-UUID* symptom, not the deeper
-tenant-equality cause), and the tenth pass, immediately below, is what
-actually closes it.
+tenant-equality cause), and the tenth pass is what actually closes it — see
+that pass's own entry below the eleventh's for detail.
+
+---
+
+## Eleventh pass — offline-first sync shipped; sprint route rate-limited
+
+### What this pass found on start
+
+Same standing instruction as passes seven through ten: run ahead of
+tomorrow morning's UAT (2026‑09‑02). `git status` was clean; `git log`
+showed ten prior commits, most recent being the tenth pass's roster-
+visibility migration. Read the master schedule's own changelog (5.8, the
+tenth pass's entry) and that pass's session report section before touching
+anything, per this project's own standing instruction for picking up a
+fresh pass with no memory of prior runs.
+
+Two open items were on the table, both carried forward unchanged since
+earlier passes: **Module 7 (Stripe seat billing)**, still fully open, and
+two known, already-scoped gaps flagged but not fixed across several prior
+passes — **Module 4's offline-first sync** (open since Phase 2, the fifth
+pass onward) and **FR-6.2's sprint route having no rate limit** (flagged
+since the fifth pass, carried forward unfixed through the tenth). Same
+standing reasoning as the 7th–10th passes on Module 7: starting a live
+payment-provider integration on the same day as UAT is not worth the risk,
+and doing so a few hours out is no safer than doing so the evening before.
+The other two gaps were different in kind — both already fully understood,
+both scoped to changes that touch no payment code and no RLS policy, and
+both genuinely load-bearing for a UAT session that might run for hours
+(an offline blip mid-session currently loses a rating silently; a teacher
+double-tapping "sprint" currently spams the whole class twice). Worth
+closing tonight; Module 7 is not.
+
+### Offline-first sync (Module 4's standing gap)
+
+`POST /srs/sync` (`SrsService.sync`) has replayed a batch of client-queued
+reviews in chronological order since Phase 2, and has been unit-tested
+that whole time — but no code on the frontend had ever called it outside
+a manual test. `useRateWord`'s mutation would simply reject on any network
+failure, React Query would record the error in the mutation's own state,
+and nothing surfaced it to the student or retried it: a rating submitted
+with no connectivity was silently lost.
+
+New `lib/offline-review-queue.ts` — a thin wrapper over the native
+`indexedDB` API (one object store, `pending-reviews`, auto-incrementing
+key). No new dependency (no `idb`, no `Dexie`): this is the only
+IndexedDB usage anywhere in the codebase so far, so a full wrapper library
+would be premature, and the raw API is a handful of `Promise`-wrapped
+calls for a single store. `enqueueReview`/`getQueuedReviews`/
+`removeQueuedReviews` all swallow their own failures (private-browsing
+IndexedDB restrictions, quota errors) rather than throwing — a queue
+failure degrades to "this one review is lost," the same outcome as before
+this file existed, rather than surfacing a scary error over what the
+student experiences as tapping a flashcard rating button.
+
+`useRateWord` (`hooks/useRateWord.ts`) now distinguishes two failure
+modes. An `ApiError` — the server was reached and said no (a 4xx/5xx) —
+is rethrown unchanged; retrying the identical request later would fail
+the same way, and silently queuing a real error would hide it from
+`rateWord.isError` for good. Anything else (`fetch` itself throwing —
+no network path to the API at all) is queued via `enqueueReview` and the
+mutation resolves as `{ status: 'queued' }` instead of rejecting. The
+mutation's resolved value changed shape (`RateWordOutcome`, a discriminated
+union) to make that distinction visible to any future caller — checked
+that `study/page.tsx` is the only current caller and it never reads the
+resolved value at all (fire-and-forget: `handleRate` calls `.mutate()` and
+advances to the next card immediately regardless), so this is not a
+breaking change to today's UI, only to the type signature.
+
+New `hooks/useOfflineReviewSync.ts` drains the queue through `POST
+/srs/sync` on the browser's `online` event (and once on mount, for a queue
+left over from before the tab was last closed). Mounted once, at the app
+root inside `components/layout/QueryProvider.tsx` (a new
+`OfflineReviewSyncBoundary` child component, needed because
+`useOfflineReviewSync` calls `useQueryClient()`, which only resolves
+inside a `QueryClientProvider` descendant — it can't run in `QueryProvider`
+itself above that provider's own return) rather than on `/study` alone, so
+a review queued there still syncs after the student navigates elsewhere
+before reconnecting. Every item the server actually processes — applied or
+rejected — is cleared from the queue; only a request that never reached
+the server at all (the whole sync call throwing) leaves records queued for
+the next attempt. Deliberately does not try to replicate `srs-algorithm.ts`'s
+mistake-weighted math client-side to show an optimistic ease-factor/interval
+update for a queued rating — that would mean maintaining two
+implementations of the same formula, exactly the kind of duplication this
+codebase has avoided elsewhere (see `computeStreak`'s and
+`heatmap-aggregator.ts`'s own "one definition of X" reasoning).
+
+### FR-6.2 sprint route — rate limiting
+
+`POST /notifications/groups/:groupId/sprint` had no rate limit of any kind
+since it shipped — flagged as a known gap in the master schedule and every
+session report since the fifth pass, never fixed. New
+`SprintRateLimitGuard` (`common/guards/sprint-rate-limit.guard.ts`): a
+single in-process `Map<groupId, lastTriggeredAt>` cooldown, 60 seconds,
+same `CanActivate` shape as `SupabaseJwtGuard`. Deliberately not
+`@nestjs/throttler` — a new dependency, a network install, and its own
+config surface, on the same day as UAT, to fix a nuisance-not-security-hole
+gap, was judged not worth it; the guard's own header comment documents
+this explicitly as a scope decision, not an oversight. Also deliberately
+**not** a globally-registered `APP_GUARD` like `SupabaseJwtGuard` — applied
+narrowly via `@UseGuards(SprintRateLimitGuard)` on the one route that needs
+it, and registered as a provider in `NotificationsModule` (not just
+referenced by class) specifically so Nest's DI container keeps it a
+singleton — the cooldown `Map` has to survive across requests to do
+anything, and an unregistered guard class instantiated ad hoc by Nest has
+no such guarantee. Explicitly documented as a single-process limiter: a
+horizontally-scaled deployment would let each instance grant its own
+independent cooldown. Closing "no limit at all" now was judged worth more
+than leaving the gap open until a proper Redis-backed limiter — flagged as
+the natural next step, and noted that Module 7's eventual Stripe work
+already means a Redis client is coming into this codebase anyway.
+
+### Testing performed
+
+| Check | Result |
+| :--- | :--- |
+| Backend `jest` | ✅ 151/151 pass (6 new: `SprintRateLimitGuard`) |
+| Backend `tsc --noEmit` | ✅ clean |
+| Backend `npm run lint` (eslint --fix) | ✅ clean |
+| Frontend `tsc --noEmit` | ✅ clean |
+| Frontend `next lint` | ✅ clean (frontend has no jest/test runner at all — confirmed again this pass, same as every prior one; `tsc`+lint is the whole frontend static-check bar here) |
+| Frontend `next build` | ❌ hung again — **11th occurrence across 11 sessions**, same immediate-hang-after-banner symptom as every prior pass; not re-investigated further per the tenth pass's own note that this is a sandbox property |
+| A real offline → reconnect → `POST /srs/sync` round-trip in an actual browser | ❌ not possible here — no browser, no live Postgres. `getQueuedReviews`/`enqueueReview`/`removeQueuedReviews` and the `useRateWord`/`useOfflineReviewSync` logic were read through carefully but never executed against a real `indexedDB` or a real `online` event |
+| A real double-tap of the sprint button showing the second call `429` | ❌ not possible here — no live server process; the guard's own unit tests (mocked `Date.now()`) are the only verification |
+
+### Known gaps — carried forward, plus what this pass closed
+
+- **Closed this pass**: Module 4 offline-first sync (frontend half); FR-6.2
+  sprint route rate limiting.
+- **Module 7 (Stripe seat billing) is still fully open** — `billing/*` is
+  still the literal empty scaffold. Deliberately not started this pass
+  either, for the same reason as the 7th–10th passes. Still the standing
+  top item for whichever pass runs first after UAT feedback lands.
+- **`next build` hanging in this sandbox is now 11-for-11** across eleven
+  separate sessions.
+- **Nothing in this pass has run against a live Postgres/Redis stack, a
+  real browser's IndexedDB, or a real `online`/`offline` event** — same
+  standing sandbox limitation as every prior pass, now also covering this
+  pass's own two changes.
+- Also cleaned up (not a code gap, a sandbox-artifact one): a stray
+  `.tmp_work/` directory — leftover scratch files from an earlier pass's
+  JSON-decode/re-encode wireframe-editing process, already superseded by
+  the committed `Dygo Academy Wireframes.html` — was cluttering `git
+  status` as untracked. This sandbox's `rm` (and cross-filesystem `mv`)
+  both fail with `Operation not permitted` on these files, the same
+  quirk documented for `.git/index.lock` in the sandbox-quirks reference
+  memory; a same-filesystem `mv` into the already-gitignored
+  `.SANDBOX_UNDELETABLE_JUNK_ignore/` worked, since a rename within one
+  filesystem doesn't require deleting the underlying file content the way
+  `rm`/cross-mount `mv` do.
+- Everything else in the tenth pass's "Known gaps" not explicitly listed
+  above is still open and unchanged by this pass.
+
+### UAT checklist for tomorrow (adds to, does not replace, the tenth pass's own checklist)
+
+1. Everything in the tenth pass's checklist (items 1–7) still applies
+   unchanged.
+2. **New this pass:** in the running frontend, use browser devtools to go
+   offline (Network tab → Offline, or disable Wi-Fi), rate a flashcard in
+   `/study`, confirm the card still advances immediately (it does not wait
+   on the network). Reconnect, confirm the rating lands within a few
+   seconds without a manual refresh — check `GET /srs/stats`'s due/mastered
+   counts moved, or inspect the `dygo-offline-queue` IndexedDB database in
+   devtools directly to confirm the `pending-reviews` store is empty
+   afterward.
+3. **New this pass:** as a group ADMIN, trigger a class sprint twice in a
+   row. Confirm the second call returns `429 Too Many Requests` with a
+   `retryAfterSeconds` in the body, then confirm a third call succeeds
+   after waiting that long (or after restarting the API process, since the
+   cooldown is in-memory and doesn't survive a restart — expected, see the
+   guard's own header comment).
 
 ---
 

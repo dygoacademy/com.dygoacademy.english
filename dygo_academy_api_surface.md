@@ -252,7 +252,7 @@ it answers `404`, not `401`.
 | `GET` | `/api/v1/srs/stats` | bearer | FR-8.1 — total/mastered/due/leech counts plus a consecutive-day streak computed from `review_logs`. |
 | `POST` | `/api/v1/srs/rate` | bearer | FR-3.2 — submit `AGAIN`/`HARD`/`GOOD`/`EASY`. Updates ease factor, interval, and leech status per the FR-3.1 formula (`srs-algorithm.ts`); one transaction covering the state read, the `review_logs` insert, and the `user_word_srs` upsert. |
 | `POST` | `/api/v1/srs/sessions` | bearer | FR-4.3 — Standard/Reverse/Listening mode. Returns a due-card batch tagged with the mode; does not persist a session row (none exists in the schema). |
-| `POST` | `/api/v1/srs/sync` | bearer | Architecture §1 — replays offline-queued reviews in chronological order via the same rating logic as `/srs/rate`; a bad item in the batch is reported per-item, not a batch failure. |
+| `POST` | `/api/v1/srs/sync` | bearer | Architecture §1 — replays offline-queued reviews in chronological order via the same rating logic as `/srs/rate`; a bad item in the batch is reported per-item, not a batch failure. **Has a real frontend caller as of the 11th pass** — `useOfflineReviewSync` (`lib/offline-review-queue.ts`'s IndexedDB queue, drained on the browser's `online` event) — this route existed and was unit-tested since Phase 2 but nothing on the frontend called it until now. |
 | `POST` | `/api/v1/quizzes/generate` | bearer | FR-5.1–5.4 — Cloze, Dictation, Matching, Contextual Choice, drawn from `READY` words the caller can read. Stateless: an item's id (`` `${topicWordId}:${type}` ``) encodes enough to grade it later without a persisted row — see note (6). |
 | `GET` | `/api/v1/quizzes/leech-drill` | bearer | FR-3.3's remedial queue, built on `SrsService.findLeeches`. Prefers the richest question type each leech word's data supports. |
 | `POST` | `/api/v1/quizzes/:id/answer` | bearer | FR-5.5 — grades against the item id, and only on a wrong answer asks Gemini (`GeminiEnrichmentService.explainNuance`) for a short nuance explanation. Degrades to a generic message if that call fails. |
@@ -262,7 +262,7 @@ it answers `404`, not `401`.
 | `GET` | `/api/v1/notifications/schedules` | bearer | FR-6.1 — the caller's own daily reminder times. |
 | `POST` | `/api/v1/notifications/schedules` | bearer | FR-6.1 — upsert on `(user_id, reminder_time)`, not create-only; see note (7). |
 | `DELETE` | `/api/v1/notifications/schedules/:id` | bearer | Removes a reminder schedule. |
-| `POST` | `/api/v1/notifications/groups/:groupId/sprint` | bearer | FR-6.2 — ADMIN-only, immediate (not tick-scheduled) push to every other group member's registered devices. `403` via an explicit `has_group_role` check — see note (7) for why this one doesn't lean on RLS like most writes here. |
+| `POST` | `/api/v1/notifications/groups/:groupId/sprint` | bearer | FR-6.2 — ADMIN-only, immediate (not tick-scheduled) push to every other group member's registered devices. `403` via an explicit `has_group_role` check — see note (7) for why this one doesn't lean on RLS like most writes here. **`429` after one call per group per 60s** (11th pass, `SprintRateLimitGuard`) — was unrated since the 5th pass, flagged as a known gap through the 10th. |
 
 ---
 

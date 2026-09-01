@@ -1,7 +1,18 @@
-import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Param,
+  Post,
+  UseGuards,
+} from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
+import { SprintRateLimitGuard } from '../../common/guards/sprint-rate-limit.guard';
 import { SubscribePushDto } from './dto/subscribe-push.dto';
 import { TriggerSprintDto } from './dto/trigger-sprint.dto';
 import { UnsubscribePushDto } from './dto/unsubscribe-push.dto';
@@ -74,10 +85,12 @@ export class NotificationsController {
 
   @Post('groups/:groupId/sprint')
   @HttpCode(HttpStatus.OK)
+  @UseGuards(SprintRateLimitGuard)
   @ApiOperation({
     summary: 'Trigger an immediate class-wide reminder (FR-6.2)',
     description:
-      'ADMIN-only. Pushes to every other member’s registered devices right now, not on the next tick.',
+      'ADMIN-only. Pushes to every other member’s registered devices right now, not on the next tick. ' +
+      `Rate-limited to one sprint per group per ${SprintRateLimitGuard.COOLDOWN_MS / 1000}s (429 Too Many Requests otherwise).`,
   })
   async triggerSprint(
     @CurrentUser('id') userId: string,
