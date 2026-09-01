@@ -70,7 +70,7 @@ export default function TopicDetailPage() {
       ) : (
         <div className="flex flex-col gap-2">
           {topic.words.map((word) => (
-            <WordStatusRow key={word.id} word={word} />
+            <WordStatusRow key={word.id} word={word} topicId={topic.id} />
           ))}
         </div>
       )}

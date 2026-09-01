@@ -1,9 +1,30 @@
 # 📅 Dygo Academy: Master Project Schedule & Phasing Strategy
-**Document Version**: 5.9 (offline-first sync shipped; sprint route rate-limited)  
+**Document Version**: 5.10 (word re-enrichment retry shipped)  
 **Author**: Principal Cloud & SaaS Solutions Advisory  
 **Status**: Approved for Engineering & Product Execution  
 
 **Changelog**
+* **5.10** (2026-09-01) — Twelfth pass, same day as the eleventh, still
+  ahead of tomorrow morning's UAT. Module 7 (Stripe seat billing) reasoning
+  is unchanged from the 7th–11th passes — still deliberately deferred to
+  after UAT feedback lands. Closed one small, well-scoped, low-risk gap
+  instead: the FAILED word state's "Try again" button (wireframe 1l) had
+  no backend route and no `onClick` since Module 2 shipped. New
+  `POST /words/:id/re-enrich` (`WordsService.reEnrich`) flips a `FAILED`
+  `topic_words` row back to `ENRICHING` and re-enqueues the existing
+  `enrich-word` BullMQ job, gated by the already-existing
+  `topic_words_update_write` RLS policy — no new migration needed. Frontend:
+  `useReEnrichWord` + `WordStatusRow.tsx` wiring, invalidating the same
+  topic-detail query `useTopic`'s existing 2.5s poll already watches. Also
+  disabled (rather than left silently inert) the adjacent "Write it myself"
+  button, a separate unbuilt feature. 2 new backend unit tests (153 total,
+  up from 151). `dygo_academy_api_surface.md` updated: the endpoint moved
+  from "implied" to "live" (37 live, 13 implied), and the `GET /words/:id`
+  implied row was annotated as possibly unneeded — the frontend actually
+  polls `GET /topics/:id`, not a per-word route. `next build` was not
+  re-attempted this pass (11-for-11 hang standing, unchanged, not
+  re-verified a 12th time — token budget judgment call). See the twelfth
+  pass entry in `dygo_academy_session_report_2026-09-01.md`.
 * **5.9** (2026-09-01) — Eleventh pass, same day as the tenth, still ahead
   of tomorrow morning's UAT. Module 7 (Stripe seat billing) reasoning is
   unchanged from the 7th–10th passes — still deliberately deferred to

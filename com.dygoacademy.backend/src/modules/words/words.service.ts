@@ -1,4 +1,9 @@
-import { ConflictException, ForbiddenException, Injectable } from '@nestjs/common';
+import {
+  ConflictException,
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectQueue } from '@nestjs/bullmq';
 import { Queue } from 'bullmq';
 
@@ -58,13 +63,61 @@ export class WordsService {
     // Fire the enrichment job after the row is committed. A failure to
     // enqueue must not roll back the insert or fail the request: the word
     // exists and stays ENRICHING; MaintenanceProcessor / a manual re-enrich
-    // (POST /words/:id/re-enrich, not yet built) can recover it later rather
+    // (POST /words/:id/re-enrich, see below) can recover it later rather
     // than the caller seeing a 500 for a queue hiccup.
     await this.enrichmentQueue.add('enrich-word', {
       topicWordId: row.id,
       word: row.source_word,
       languageCode: row.language_code,
       targetCEFR: dto.targetCEFR,
+      triggeredByUserId: userId,
+    });
+
+    return row;
+  }
+
+  /**
+   * POST /words/:id/re-enrich — the "Try again" action on wireframe 1l's
+   * FAILED state (WordStatusRow.tsx), unimplemented since Module 2 shipped
+   * (this replaces the "not yet built" note that used to sit on `ingest`,
+   * above). Only flips FAILED -> ENRICHING: a word that's already
+   * ENRICHING would get a second, concurrent job for the same row, and a
+   * READY word has nothing to retry, so both are excluded by the WHERE
+   * clause rather than a separate application check.
+   *
+   * Same RLS-does-the-permission-check pattern as `ingest`:
+   * `topic_words_update_write` (002_rls_policies.sql) requires WRITE role
+   * on the topic for this UPDATE to affect any row at all. Zero rows back
+   * means "doesn't exist," "not visible to this caller," or "not
+   * currently FAILED" — same three-way NotFoundException collapse
+   * `topics.service.ts` and `groups.service.ts` already use elsewhere in
+   * this codebase, rather than a fourth reason to distinguish here.
+   */
+  async reEnrich(userId: string, topicWordId: string): Promise<TopicWord> {
+    const rows = await this.db.queryAs<TopicWord>(
+      userId,
+      `update public.topic_words
+          set status = 'ENRICHING', failure_reason = null, updated_at = now()
+        where id = $1 and status = 'FAILED'
+        returning id, topic_id, source_word, language_code, status, created_at`,
+      [topicWordId],
+    );
+
+    if (rows.length === 0) {
+      throw new NotFoundException('Word not found, or not currently failed.');
+    }
+
+    const row = rows[0];
+
+    // Same fire-after-commit reasoning as ingest: a queue hiccup here
+    // shouldn't roll back the status flip or 500 the request. Unlike
+    // ingest, there's no INSERT to leave orphaned if this add() throws —
+    // worst case the row sits at ENRICHING until the next manual retry or
+    // MaintenanceProcessor sweep, same as any other stuck-ENRICHING row.
+    await this.enrichmentQueue.add('enrich-word', {
+      topicWordId: row.id,
+      word: row.source_word,
+      languageCode: row.language_code,
       triggeredByUserId: userId,
     });
 

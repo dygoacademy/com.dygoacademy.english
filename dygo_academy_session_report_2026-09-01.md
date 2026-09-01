@@ -1,19 +1,157 @@
-# Dygo Academy — session report, 2026‑09‑01 (eleventh pass)
+# Dygo Academy — session report, 2026‑09‑01 (twelfth pass)
 **Run**: automated scheduled task, no user present. UAT is scheduled for tomorrow morning (2026‑09‑02).
-This file now covers eleven runs today. The eleventh pass is immediately
-below; passes one through nine (Groups/Words
-first slice, the rest of Module 1, Module 2's real Gemini/TTS pipeline,
-Module 3/4's SRS engine and flashcard player, Module 5's quiz engine, Module
-6's push/habit scheduling closing out Phase 3, the group-management frontend
-and login/register fix, a UAT-prep pass that closed the roster's
-shortened-UUID display bug, then solo-tenant provisioning + Module 8
-analytics/heatmap) are preserved below under "First pass" through "Ninth
-pass" — read top-down for the current state. Correction while writing this
-header: the eighth pass's own summary line (just below) says it "closed the
-roster-naming gap" — the ninth pass's report already corrected that framing
-in detail (it fixed the *shortened-UUID* symptom, not the deeper
-tenant-equality cause), and the tenth pass is what actually closes it — see
-that pass's own entry below the eleventh's for detail.
+This file now covers twelve runs today. The twelfth pass is immediately
+below; passes one through eleven (Groups/Words first slice, the rest of
+Module 1, Module 2's real Gemini/TTS pipeline, Module 3/4's SRS engine and
+flashcard player, Module 5's quiz engine, Module 6's push/habit scheduling
+closing out Phase 3, the group-management frontend and login/register fix, a
+UAT-prep pass that closed the roster's shortened-UUID display bug, solo-tenant
+provisioning + Module 8 analytics/heatmap, the roster invite-redeemed-member
+name gap, then Module 4 offline-first sync + FR-6.2 sprint rate limiting) are
+preserved below under "First pass" through "Eleventh pass" — read top-down
+for the current state. Correction while writing this header: the eighth
+pass's own summary line (just below) says it "closed the roster-naming gap"
+— the ninth pass's report already corrected that framing in detail (it fixed
+the *shortened-UUID* symptom, not the deeper tenant-equality cause), and the
+tenth pass is what actually closes it — see that pass's own entry below for
+detail.
+
+---
+
+## Twelfth pass — `POST /words/:id/re-enrich` shipped; full regression pass ahead of UAT
+
+### What this pass found on start
+
+Standing instruction, same day as UAT tomorrow morning (2026‑09‑02): `git
+status` was clean, `git log` showed eleven prior commits, most recent being
+the eleventh pass's offline-sync/rate-limit commit. Read the master
+schedule's changelog (5.9) and the eleventh pass's own report section before
+touching anything.
+
+One item was on the table for the same standing reason as the 7th–11th
+passes: **Module 7 (Stripe seat billing)** is still fully open, and starting
+a live payment-provider integration hours before UAT is no safer than doing
+so the evening before — not started this pass either. Looked instead for a
+small, well-understood, low-risk gap worth closing before tomorrow, the same
+class of work the 10th and 11th passes did. Found one: the FAILED word
+state's **"Try again" button had no backend endpoint and no `onClick`** —
+flagged as "not yet built" directly in `words.service.ts`'s own comment
+since Module 2 shipped, and confirmed the frontend button
+(`WordStatusRow.tsx`) really did render inert. `topic_words_update_write`
+(002_rls_policies.sql) already exists and already grants WRITE-role members
+UPDATE on `topic_words` — the same policy shape `ingest` already leans on for
+its INSERT — so this needed no new migration and no new RLS policy, only a
+service method, a controller route, and a frontend mutation hook.
+
+### `POST /words/:id/re-enrich`
+
+`WordsService.reEnrich` (`com.dygoacademy.backend/src/modules/words/words.service.ts`):
+a single `UPDATE public.topic_words SET status = 'ENRICHING', failure_reason
+= null ... WHERE id = $1 AND status = 'FAILED' RETURNING ...`, scoped through
+`queryAs` the same as `ingest`. The `WHERE status = 'FAILED'` clause does two
+jobs at once: it's the retry gate (nothing to retry on a READY word) and the
+concurrency guard (an already-ENRICHING word doesn't get a second race
+enqueued) — no separate application check needed for either. Zero rows back
+collapses "doesn't exist," "RLS hid it (no WRITE)," and "exists but isn't
+FAILED" into one `NotFoundException`, the same three-way collapse
+`topics.service.ts` and `groups.service.ts` already use elsewhere in this
+codebase. On a hit, re-enqueues the same `enrich-word` BullMQ job `ingest`
+uses, fired after the UPDATE commits (same "a queue hiccup shouldn't 500 the
+request" reasoning as `ingest`'s own comment). `targetCEFR` isn't persisted
+on `topic_words` (only ever passed at ingest time), so a retry re-enriches
+without it — accepted as a minor behavior gap rather than adding a column
+this close to UAT for a field the FAILED state's own copy never mentions.
+
+`WordsController` gets `POST /words/:id/re-enrich`, `200` (not `201` — no new
+resource is created, an existing one changes state), same `@Param('id')
+topicWordId: string` pattern every other id-taking route in this codebase
+already uses (no `ParseUUIDPipe` anywhere here; RLS/`NotFoundException`
+already do the job). Also corrected `words.controller.ts`'s `POST /words`
+doc comment, which had claimed the frontend polls `GET /words/:id` — it
+actually polls `GET /topics/:id` (`useTopic.ts`, confirmed by reading it);
+that route doesn't exist and per the api-surface doc's own "implied" table
+may never need to.
+
+Frontend: new `hooks/useReEnrichWord.ts` (`useMutation`, same shape as
+`useCreateWord`/`useDeleteTopic`), invalidates `['topics', topicId]` on
+success so `useTopic`'s existing 2.5s poll picks up the eventual READY/FAILED
+result exactly the way it already does for a brand-new word — no new polling
+logic. `WordStatusRow.tsx`'s FAILED branch now calls it: button reads
+"Retrying…" and disables while pending, shows an inline error on failure. The
+adjacent "Write it myself" button is a separate, larger feature (manual
+definition entry, no endpoint, no design beyond the wireframe caption) —
+left disabled with a `title="Coming soon"` rather than either wiring
+something that doesn't exist or leaving a second silently-inert button next
+to the one this pass just fixed. `WordStatusRow` now takes a `topicId` prop
+(needed for the invalidation key); its one caller
+(`app/(dashboard)/topics/[topicId]/page.tsx`) updated to pass it.
+
+2 new backend unit tests (153 total, up from 151): the happy path (FAILED →
+ENRICHING, re-enqueued with the right payload) and the zero-rows →
+`NotFoundException` path, mirroring `ingest`'s own existing test shape.
+
+### Documentation
+
+`dygo_academy_api_surface.md`: moved `POST /words/:id/re-enrich` from the
+"Implied by the requirements" table (§4, was 14 operations) to the live
+table (§2, now 37), added a dated note in the same style as the two existing
+2026-09-01 notes at the top of the doc. Also annotated the still-implied
+`GET /words/:id` row — flagged that the frontend doesn't actually poll a
+per-word route (it polls `GET /topics/:id`), so that implied endpoint may be
+genuinely unneeded rather than merely unbuilt; left it in the table rather
+than deleting it, since that's a judgment call for whoever grooms this list
+next, not one to make unilaterally mid-pass.
+
+No wireframe change — the FAILED state's copy and layout (screen 1l) were
+already correct; this pass wired the button underneath it, not the screen
+itself.
+
+### Testing performed
+
+| Check | Result |
+| :--- | :--- |
+| Backend `jest` | ✅ 153/153 pass (2 new: `WordsService.reEnrich`) |
+| Backend `tsc --noEmit` | ✅ clean |
+| Backend `npm run lint` (eslint --fix) | ✅ clean (only reflowed the new `import` block's line wrapping) |
+| Frontend `tsc --noEmit` | ✅ clean |
+| Frontend `next lint` | ✅ clean, no warnings |
+| Frontend `next build` | ⏭️ **not re-attempted this pass** — 11-for-11 hung identically across every prior session (see the sandbox-quirks reference); re-running it a 12th time to reconfirm the same unactionable result was judged not worth the token/time budget this pass, given nothing touched this pass changes build configuration. Treat the standing "hangs in this sandbox" finding as unchanged, not as newly re-verified. |
+| A real FAILED → "Try again" → ENRICHING → READY round-trip in a running app | ❌ not possible here — no Docker, no live Gemini call, no browser. The unit tests (mocked `queryAs`/queue) are the only verification |
+
+### Known gaps — carried forward, plus what this pass closed
+
+- **Closed this pass**: the FAILED word state's "Try again" button
+  (`POST /words/:id/re-enrich`, backend + frontend).
+- **Module 7 (Stripe seat billing) is still fully open** — `billing/*` is
+  still the literal empty scaffold (`BillingController` declares no routes,
+  confirmed again this pass). Deliberately not started, same reasoning as
+  the 7th–11th passes. Still the standing top item for whichever pass runs
+  first after UAT feedback lands.
+- **The "Write it myself" alternative on the FAILED state** is still
+  unbuilt — no endpoint, no manual-definition-entry UI. Explicitly disabled
+  in the UI this pass rather than left silently inert; flagged as a real
+  gap, not fixed.
+- **`next build` hanging in this sandbox stands at 11-for-11** — not
+  re-tested this pass (see Testing performed above), so this is carried
+  forward unchanged, not a fresh 12th data point.
+- **Nothing in this pass has run against a live Postgres/Redis stack or a
+  real browser** — same standing sandbox limitation as every prior pass,
+  now also covering this pass's own endpoint.
+- Everything else in the eleventh pass's "Known gaps" not explicitly listed
+  above is still open and unchanged by this pass.
+
+### UAT checklist for tomorrow (adds to, does not replace, the eleventh pass's own checklist)
+
+1. Everything in the eleventh pass's checklist still applies unchanged.
+2. **New this pass:** add a word with an intentionally-invalid state (e.g.
+   temporarily break `GEMINI_API_KEY` to force a real `FAILED`, or wait for
+   an organic failure), confirm the FAILED card shows "Try again," click it,
+   confirm the card flips back to the ENRICHING visual immediately and then
+   resolves to READY (or FAILED again, if the underlying cause wasn't
+   fixed) without a manual page refresh.
+3. **New this pass:** confirm the "Write it myself" button is visibly
+   disabled, not silently non-functional — this pass made that state
+   explicit rather than fixing the underlying feature.
 
 ---
 

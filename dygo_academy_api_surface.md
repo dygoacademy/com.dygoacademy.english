@@ -12,9 +12,9 @@ Conflating them is how a roadmap quietly turns into a status report.
 
 | Tier | Count | Meaning |
 | :--- | :---: | :--- |
-| **Live** | 36 | Exists and responds today. Verified by direct code read (not yet re-verified against a running boot — see note below) 2026-09-01. |
+| **Live** | 37 | Exists and responds today. Verified by direct code read (not yet re-verified against a running boot — see note below) 2026-09-01. |
 | **Specified** | 4 | Named verbatim in `dygo_academy_tech_spec_and_conventions.md` §3.4 or in `dygo_academy_complete_system_architecture_master.md`. The only endpoints committed to in writing. |
-| **Implied** | 14 | Derived from the BRD's functional requirements. **Carries no authority** — review before treating as a plan. |
+| **Implied** | 13 | Derived from the BRD's functional requirements. **Carries no authority** — review before treating as a plan. |
 
 > **The live API is the authority, not this file.** Swagger is generated from the
 > code at boot and cannot go stale: **http://localhost:3001/api/docs**. This
@@ -25,6 +25,12 @@ Conflating them is how a roadmap quietly turns into a status report.
 > (`words.controller.ts` / `words.service.ts` + unit tests) but has not yet
 > been exercised against a running Postgres/Redis stack (no Docker in this
 > environment) — verify against `/api/docs` before relying on it for UAT.
+>
+> **2026-09-01 note (12th pass):** `POST /api/v1/words/:id/re-enrich` was
+> implemented this session — the FAILED word state's "Try again" button had
+> existed since Module 2 shipped with no backend route and no `onClick`.
+> Unverified against a running stack, same standing limitation as everything
+> else in this document.
 >
 > **2026-09-01 note (2):** `GET /api/v1/groups` and `POST /api/v1/groups` were
 > implemented this session (`groups.controller.ts` / `groups.service.ts` + unit
@@ -235,6 +241,7 @@ it answers `404`, not `401`.
 | `DELETE` | `/api/v1/topics/:id` | bearer | ADMIN only (`topics_delete_admin`) — tech spec §4.1 is explicit that WRITE cannot delete a topic. |
 | `POST` | `/api/v1/topics/:id/clone` | bearer | Clones a topic that is genuinely `is_public = true` (checked explicitly, not just RLS-readable) into a new, private-by-default topic under a target group the caller has WRITE on. Copies words including their resolved `lexicon_id` (no re-enrichment); does not copy `custom_note`. Transactional via `DatabaseService.withUser`. |
 | `POST` | `/api/v1/words` | bearer | Inserts a `topic_words` row (`status = ENRICHING`) and enqueues `enrichment-queue`. Returns `201`. WRITE-role enforcement is Postgres RLS (`topic_words_insert_write`), translated to `403`/`409` in `WordsService`, not re-checked in application code. |
+| `POST` | `/api/v1/words/:id/re-enrich` | bearer | **New (12th pass).** The FAILED state's "Try again" button (wireframe 1l) — flags the row back to `ENRICHING` and re-enqueues `enrichment-queue`, only when it is currently `FAILED` (a plain `UPDATE ... WHERE status = 'FAILED'`, not a separate application check). `404` on zero rows — nonexistent, RLS-hidden (no WRITE), or not currently `FAILED` are all indistinguishable, same collapse `topics`/`groups` already use. Frontend wired the same pass (`useReEnrichWord`, `WordStatusRow.tsx`) — the button existed since Module 2 shipped but had no `onClick` until now. |
 | `GET` | `/api/v1/groups` | bearer | Groups the caller is a `group_members` row in, with their role. Narrower than the `groups_select` RLS policy on purpose — see `GroupsService.findMine`. |
 | `POST` | `/api/v1/groups` | bearer | Creates a group owned by the caller; `tenant_id` is computed from the caller's profile by Postgres, never trusted from the body. The owner is seated as `ADMIN` automatically by `trg_group_owner_membership`. **Fixed (9th pass):** every caller now always has a `tenant_id` — `handle_new_auth_user()` (`006_solo_tenant_provisioning.sql`) auto-provisions a personal, unpaid (0-seat) tenant for every signup, so this can no longer fail on a missing tenant. |
 | `PATCH` | `/api/v1/groups/:id` | bearer | Rename / re-describe / toggle visibility. ADMIN only (`groups_update_admin`); same 404-for-both-cases reasoning as topic update. |
@@ -295,7 +302,7 @@ document should be corrected.
 
 ## 4. Implied by the requirements
 
-**14 operations · inferred, needs review**
+**13 operations · inferred, needs review**
 
 No document names these. Each is derived from a functional requirement that
 cannot be satisfied without it — a teacher who can invite students needs
@@ -315,10 +322,9 @@ still tell Module 1's implied-endpoint work is done, not merely absent.
 | Method | Path | Min role | Requirement |
 | :--- | :--- | :--- | :--- |
 | `GET` | `/topics/:topicId/words` | READ | FR-2.1 — list with enrichment status |
-| `GET` | `/words/:id` | READ | Phase 1 frontend polls this for `ENRICHING → READY` |
+| `GET` | `/words/:id` | READ | Phase 1 frontend polls this for `ENRICHING → READY` — **note:** the frontend actually polls `GET /topics/:id` instead (`useTopic.ts`), not a standalone per-word route; this row may be genuinely unneeded rather than merely unbuilt |
 | `PATCH` | `/words/:id` | WRITE | FR-1.2 — edit custom notes |
 | `DELETE` | `/words/:id` | WRITE | Module 1 permission matrix |
-| `POST` | `/words/:id/re-enrich` | WRITE | Tech spec §4.1 — WRITE may "trigger re-enrichment" |
 | `GET` | `/lexicon/search` | any | FR-2.2 — backed by the trigram index on `master_lexicon` |
 
 ### Module 3 — SRS engine · Phase 2
