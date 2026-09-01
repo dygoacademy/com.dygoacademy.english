@@ -1,7 +1,7 @@
-# Dygo Academy — session report, 2026‑09‑01 (fifteenth pass)
+# Dygo Academy — session report, 2026‑09‑01 (sixteenth pass)
 **Run**: automated scheduled task, no user present. UAT is scheduled for tomorrow morning (2026‑09‑02).
-This file now covers fifteen runs today. The fifteenth pass is
-immediately below; passes one through fourteen (Groups/Words first slice, the
+This file now covers sixteen runs today. The sixteenth pass is
+immediately below; passes one through fifteen (Groups/Words first slice, the
 rest of Module 1, Module 2's real Gemini/TTS pipeline, Module 3/4's SRS
 engine and flashcard player, Module 5's quiz engine, Module 6's push/habit
 scheduling closing out Phase 3, the group-management frontend and
@@ -10,14 +10,188 @@ shortened-UUID display bug, solo-tenant provisioning + Module 8
 analytics/heatmap, the roster invite-redeemed-member name gap, Module 4
 offline-first sync + FR-6.2 sprint rate limiting, the FAILED word's "Try
 again" retry endpoint, a regression-only pass that consolidated the
-UAT script, then the Module 7 seat-billing paywall wireframe) are
-preserved below under "First pass" through "Fourteenth pass" — read
-top-down for the current state. Correction while writing this header: the
-eighth pass's own summary line (further below) says it "closed the
-roster-naming gap" — the ninth pass's report already corrected that
-framing in detail (it fixed the *shortened-UUID* symptom, not the deeper
-tenant-equality cause), and the tenth pass is what actually closes it —
-see that pass's own entry below for detail.
+UAT script, the Module 7 seat-billing paywall wireframe, then the
+card-decline/dunning follow-on) are preserved below under "First pass"
+through "Fifteenth pass" — read top-down for the current state.
+Correction while writing this header: the eighth pass's own summary line
+(further below) says it "closed the roster-naming gap" — the ninth
+pass's report already corrected that framing in detail (it fixed the
+*shortened-UUID* symptom, not the deeper tenant-equality cause), and the
+tenth pass is what actually closes it — see that pass's own entry below
+for detail.
+
+---
+
+## Sixteenth pass — found and finished an uncommitted live-stack integration test package; wireframed the academy-tier director rollup (design only)
+
+### What this pass found on start
+
+Standing instruction, same day as tomorrow morning's UAT (2026‑09‑02):
+read the master schedule's changelog (5.13, the fifteenth pass's entry)
+and the fifteenth pass's own report section before touching anything.
+`git log` showed fifteen prior commits, most recent being the fifteenth
+pass's turn-11 wireframe commit — but `git status` was **not** clean:
+an entire untracked directory, `com.dygoacademy.automationtesting/`,
+was sitting on disk with a real `package.json`, `tsconfig.json`,
+`package-lock.json`, an already-run `npm install` (`node_modules/`
+present, correctly `.gitignore`d), and seven fully-written Jest+supertest
+spec files plus three support modules — but no README mention anywhere,
+no master-schedule changelog entry, no session-report section. File
+timestamps placed its creation *after* the fifteenth pass's own commit
+and after the master schedule/session report were last saved that
+pass, which is the signature of a pass that built real work and then
+ran out of token budget before it could commit or document it, exactly
+the failure mode this task's own standing instructions warn about
+("because Claude have limitation of token"). Treated it as unverified
+work-in-progress, not trusted output — read all ten files in full before
+deciding whether to keep, fix, or discard any of it.
+
+### Verifying the uncommitted test package
+
+Cross-checked `api/support/fixtures.ts`'s five user ids, two tenant ids,
+three group ids, three topic ids, and five word ids against
+`database/migrations/004_seed_data.sql` line by line — every single one
+matched exactly, including the more obscure ones (which word is
+`FAILED`, which SRS row is a leech, which topic is the rival tenant's).
+Cross-checked every HTTP route referenced across all seven spec files
+against the real controllers (`groups.controller.ts`,
+`invites.controller.ts`, `topics.controller.ts`, `words.controller.ts`,
+`srs.controller.ts`, `modules/quiz/quiz.controller.ts` — note the
+module directory is `quiz/`, singular, while the controller's own
+`@Controller` path is `quizzes`, plural, which the spec file gets
+right — `analytics.controller.ts`, `notifications.controller.ts`) —
+all matched, nothing hallucinated. `api/support/token.ts` correctly
+reimplements `com.dygoacademy.backend/scripts/dev-token.js`'s exact
+JWT-minting scheme (same claims, same `SUPABASE_JWT_SECRET` lookup
+path). Ran `npx tsc --noEmit` and found one real bug:
+`notifications.spec.ts` line 69 read `r.reminder_time` off a response
+typed as `Array<{ id: string }>` only, so the field didn't exist on the
+type — fixed by widening the inline type to include
+`reminder_time: string`, matching the field name the notifications
+service actually returns. `npx tsc --noEmit` clean after. `npm ls
+--depth=0` confirmed the installed `node_modules` match `package.json`
+(jest 29.7.0, supertest 7.2.2, ts-jest 29.4.12, typescript 5.9.3).
+
+The suite could not actually be *run* — no Docker, no live backend or
+Postgres in this sandbox, the same standing limitation as everything
+else here — so "verified" means statically correct and grounded in the
+real schema/API surface, not "passing." Said so explicitly rather than
+implying otherwise. Documented the package for the first time: added a
+new "## 6. Run the live-stack integration tests" section to `README.md`
+(renumbered nothing else; inserted between "Run the frontend" and
+"Verify the stack end to end") explaining what it is, how it differs
+from the backend's own mocked unit tests, and that it's written for
+whoever runs it against a real Docker Compose stack — including UAT
+tomorrow — not for this sandbox. Updated the `## Layout` tree in the
+same file to list the new package. Added a "## K. Live-stack integration
+tests" section to `dygo_academy_uat_checklist_2026-09-02.md` covering
+how to run it and which of its own assertions are documented one-shot
+(self-skip with a `console.warn` on a second run without a database
+re-seed, not a false failure).
+
+### Regression
+
+Ran the full suite before touching anything else: backend `jest`
+(153/153, unchanged), backend `tsc --noEmit` and `npm run lint` (clean),
+frontend `tsc --noEmit` and `next lint` (clean). Re-grepped backend
+`src/` for `TODO`/`FIXME` — none found, the tenth straight pass (7th
+through 16th) reaching that conclusion. `BillingController`/
+`BillingService` confirmed still a zero-route, zero-logic scaffold.
+
+### Wireframes — turn 12: academy-tier director rollup & cohort ROI export
+
+Per this pass's own explicit UI/UX instruction, and picking up turn
+11's own "Try next" line (BRD Journey 3 step 5's "academy-tier director
+view / cohort ROI export") over its other two options — the real
+Module 7 backend (still correctly deferred to after UAT feedback) and
+the `subscription_status` migration (blocked on Module 7 actually
+starting) — added **turn 12** to `Dygo Academy Wireframes.html`: 12a
+(an ADMIN-of-a-multi-class-tenant's Progress-tab rollup across every
+class), 12b (drilling into one class for a combined retention curve +
+worst-first mistake heatmap, same never-a-`user_id` contract as the
+existing single-group heatmap), and 12c (the export modal — date range,
+PDF/CSV, an explicit "never a student name" note, "email me" rather
+than an in-browser download since no object storage is wired for
+generated reports today). Design only, zero backend, same
+non-conflicting relationship to the deferred `BillingController`/
+`AnalyticsService` work as turns 10–11.
+
+Two findings surfaced honestly in the turn's own opening note, the same
+pattern turn 11 used for the missing `subscription_status` column,
+rather than silently assumed away: **`AnalyticsService.getHeatmap`
+today accepts exactly one `groupId`** (confirmed by reading
+`analytics.service.ts` directly, and independently by this pass's own
+new `analytics.spec.ts` integration test asserting single-group scope)
+— a tenant-wide rollup is new backend surface, not existing code with a
+new screen on top; and **there is no tenant-level "director" role
+anywhere in the schema** — `group_role` is `ADMIN`/`WRITE`/`READ`,
+scoped per group (`001_initial_schema.sql`), and `tenants` has no
+owner/director column at all, so 12a's access model (an ADMIN who
+happens to hold ADMIN on every group in a tenant) is a stand-in for a
+concept that doesn't exist yet, which is a real open product question
+for whoever builds this, not only a rendering risk.
+
+### A mistake caught mid-pass, and how it was fixed
+
+The wireframe file's documented edit procedure (Python: decode the
+`<script type="__bundler/template">` JSON blob, edit the decoded HTML
+string, re-encode, splice back into the one line that holds it) was
+followed, but the first splice attempt located the **wrong line** — a
+heuristic matching lines starting with `{"` caught the earlier
+binary-asset manifest blob (line 381, unrelated font/JS data) instead
+of the actual template blob (line 393), and wrote the new 117KB
+wireframe content into the manifest's line instead. This was caught
+immediately, before treating anything as done, by decoding the
+"old" blob straight after locating it and asserting its length matched
+the previously-known 108,627 characters — it didn't (the manifest blob
+decoded to a 10-character string), which is what surfaced the bug.
+`git status`/`git diff --stat` at that point showed only "1 line
+changed," confirming no other damage. Recovery: this sandbox's
+documented `rm`/cross-mount-`mv`-can't-unlink quirk turned out to apply
+to `git checkout --` too (`error: unable to unlink old '...': Operation
+not permitted`), so the fix was `git show HEAD:"Dygo Academy
+Wireframes.html"` into a scratch file, then a plain Python `open(path,
+'wb').write(data)` over the live path — a truncating write in place,
+not an unlink-and-recreate, which this sandbox does allow. Confirmed
+byte-for-byte restoration (`git diff` clean, size matched HEAD exactly)
+before re-attempting the splice with a corrected line-finder (search
+for the line starting with `"<!DOCTYPE html>` specifically) plus an
+assertion on the decoded length before writing anything, this time
+succeeding. Recorded here in full because it is exactly the class of
+silent-corruption risk the wireframe-bundle-format guidance warns
+about, and the length-assertion guard that caught it is worth any
+future pass repeating verbatim, not just this pass's own memory of it.
+
+Validated the final result the same three ways as turns 10–11: the new
+blob re-parses as JSON, all HTML tags balance across the full
+117,335-character decoded document, and none of the 74 total `id=`
+anchors collide (up from 70). This sandbox still cannot render it in a
+real browser — same standing limitation, now covering three unverified
+turns (10, 11, 12) instead of two; `dygo_academy_uat_checklist_2026-09-02.md`
+item 23 was updated accordingly, including a note about turn 12's own
+open product question above and beyond the usual "does it render"
+check.
+
+### What this pass did not do, and why
+
+Did not start `BillingController`/`BillingService` — same reasoning as
+the 7th through 15th passes, now the tenth pass running that same
+reasoning. Did not attempt `next build` — 14-for-14 hang standing, not
+re-attempted a 15th time, same token-budget judgment call as passes
+12–15. Did not attempt to actually run the new integration test suite
+against a live stack — no Docker here, and its README section says so
+plainly rather than implying it was exercised.
+
+### Try next
+
+Building `BillingController`'s real Stripe integration and the
+tenant-wide heatmap/export backend both remain correctly blocked on UAT
+feedback landing first. Absent that, the best-scoped next design-only
+option is turn 12's own suggestion: wireframe a brand-new class with
+under 7 days of history (what does 12b look like with no retention
+curve yet to draw), or sketch the `tenants.director_id`-shaped
+migration and RLS policy turn 12's opening note calls out so that
+screen stops relying on an ADMIN-of-every-group coincidence.
 
 ---
 

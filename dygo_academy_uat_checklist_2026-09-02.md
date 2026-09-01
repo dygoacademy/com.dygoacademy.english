@@ -159,14 +159,21 @@ owns "Oxford English Center"), `marco@dygo.test` (WRITE), `alex@dygo.test`
     intentionally disabled stub; confirm that reads clearly against the
     actual running app's behavior from step 9 above.
 23. Check turn **10** (screens 10a–10d, added the 14th pass) — the
-    Module 7 seat-billing paywall's teacher/ADMIN-side wireframes — and
-    the new **turn 11** (screens 11a–11d, added the 15th pass) — the
+    Module 7 seat-billing paywall's teacher/ADMIN-side wireframes —
+    turn **11** (screens 11a–11d, added the 15th pass) — the
     card-decline/dunning follow-on (FR-7.3): in-app banner, past-due
     billing panel, the "email Stripe sends" mockup, and the suspended
-    state. Neither turn has ever been rendered in a real browser; confirm
-    both display correctly at all (a JSON-escaping mistake would be the
-    likely failure mode) before treating their content as reviewed
-    design.
+    state — and the new **turn 12** (screens 12a–12c, added the 16th
+    pass) — the academy-tier director rollup and cohort ROI export
+    (BRD Journey 3, FR-8.2 widened tenant-wide). None of the three has
+    ever been rendered in a real browser; confirm all display correctly
+    at all (a JSON-escaping mistake would be the likely failure mode)
+    before treating their content as reviewed design. Turn 12's own
+    opening note also flags that its access model (an ADMIN of every
+    group in a tenant, standing in for a "director" role that doesn't
+    exist in the schema) is itself an open design question, not just an
+    unrendered-screen risk — worth a product call during UAT, not only a
+    visual check.
 
 ## J. Build & regression (already run this pass, re-verify if anything above fails)
 
@@ -175,3 +182,19 @@ owns "Oxford English Center"), `marco@dygo.test` (WRITE), `alex@dygo.test`
 - Frontend: `npx tsc --noEmit` → clean; `next lint` → clean.
 - Frontend `npm run build` — **run this on whatever machine hosts UAT**;
   see point 2 under "Read this first."
+
+## K. Live-stack integration tests (new the 16th pass — never run anywhere)
+
+`com.dygoacademy.automationtesting/` (`npm install && npm test` after
+Setup above) hits the running backend + seeded Postgres directly over
+real HTTP, no mocks — one spec per built module (groups/RBAC, topics,
+word enrichment, SRS, quizzes, analytics/heatmap, notifications). It
+was written and typechecked in the sandbox but **has never actually
+run against a live stack** (no Docker there) — this is its first real
+execution anywhere. A handful of its own assertions are explicitly
+one-shot against a freshly-seeded database (documented in code
+comments, e.g. `words-enrichment.spec.ts`'s FAILED→ENRICHING case) and
+will self-skip with a `console.warn` rather than false-fail on a
+second run without a re-seed — that warning is expected, not a bug.
+Treat any other failure here as a real regression signal alongside the
+backend's own 153 unit tests, not a replacement for them.

@@ -1,9 +1,66 @@
 # 📅 Dygo Academy: Master Project Schedule & Phasing Strategy
-**Document Version**: 5.13 (Module 7 wireframed — paywall + dunning, backend still deferred)  
+**Document Version**: 5.14 (live-stack integration test suite landed + director-rollup wireframe, backend still deferred)  
 **Author**: Principal Cloud & SaaS Solutions Advisory  
 **Status**: Approved for Engineering & Product Execution  
 
 **Changelog**
+* **5.14** (2026-09-01) — Sixteenth pass, still the same day, still
+  ahead of tomorrow morning's UAT. Full regression confirmed no drift
+  from 5.13 (153/153 backend jest, clean `tsc`/lint both sides). Two
+  pieces of work, not one: first, found and finished a full **live-stack
+  integration test package**, `com.dygoacademy.automationtesting/`
+  (Jest + supertest + ts-jest, one spec per built module — groups/RBAC,
+  topics, word enrichment, SRS, quizzes, analytics/heatmap,
+  notifications), that existed on disk fully written but **uncommitted
+  and undocumented** at the start of this pass — almost certainly
+  work-in-progress from the 15th pass that ran out of token budget
+  before it could commit or write up what it had built. This pass
+  verified it rather than assuming it was correct: cross-checked every
+  fixture id in `api/support/fixtures.ts` against
+  `database/migrations/004_seed_data.sql` (exact match) and every route
+  path used in the seven spec files against the real controllers
+  (`groups.controller.ts`, `topics.controller.ts`, `words.controller.ts`,
+  `srs.controller.ts`, `modules/quiz/quiz.controller.ts`,
+  `analytics.controller.ts`, `notifications.controller.ts` — all match,
+  nothing hallucinated), then typechecked it (`npx tsc --noEmit`), which
+  caught and this pass fixed one real bug: `notifications.spec.ts` read
+  `r.reminder_time` off a response typed as `{ id: string }` only. Added
+  a new "Run the live-stack integration tests" section to `README.md`
+  (with the Layout tree updated to match) since nothing previously
+  documented this package existed or how to run it — it cannot run in
+  this Docker-less sandbox, so this is its first-ever real execution
+  target, whoever runs UAT tomorrow. Second, continued the same
+  design-only wireframe work as the 14th/15th passes: added **turn 12**
+  to `Dygo Academy Wireframes.html`, picking up turn 11's own "Try next"
+  suggestion — the Academy-tier director rollup and cohort ROI export
+  (BRD Journey 3 step 5, FR-8.2 widened tenant-wide) — over the other two
+  options (the real Module 7 backend, still correctly deferred to
+  post-UAT; the `subscription_status` migration, blocked on the same
+  thing). Two new findings surfaced honestly in the turn's own opening
+  note rather than assumed away: `AnalyticsService.getHeatmap` only
+  supports one `groupId` today, so a tenant-wide rollup is new backend
+  scope, not existing code with a new screen; and there is no
+  tenant-level "director" role anywhere in the schema
+  (`group_role` is ADMIN/WRITE/READ, scoped per group, and `tenants` has
+  no owner column) — turn 12's 12a screen stands in for that with an
+  ADMIN-of-every-group coincidence, which is a real open product
+  question, not just an unrendered-screen risk. Edited via the same
+  bundled-file Python decode/splice/re-encode procedure as turns 10-11;
+  this pass's first splice attempt located the wrong line (matched the
+  binary-asset manifest blob instead of the template blob) and
+  overwrote it — caught immediately by asserting the decoded length
+  before writing, restored the file from `git show HEAD:...` (the
+  original `rm`/`mv`-can't-unlink sandbox quirk meant `git checkout --`
+  itself failed; writing the git-blob bytes back over the file in place
+  with Python worked), then redid the splice correctly with an assertion
+  guard. Validated afterward the same three ways as turns 10-11: the new
+  blob re-parses as JSON, all HTML tags balance across the full
+  117,335-char decoded document, and none of the 74 total `id=` anchors
+  collide. Updated `dygo_academy_uat_checklist_2026-09-02.md` with a new
+  section K covering the integration-test package and folded turn 12
+  into item 23 alongside turns 10-11. `next build` not re-attempted —
+  14-for-14 hang standing, unchanged. See the sixteenth pass entry in
+  `dygo_academy_session_report_2026-09-01.md`.
 * **5.13** (2026-09-01) — Fifteenth pass, still the same day, still
   ahead of tomorrow morning's UAT (2026-09-02). Full regression confirmed
   no drift from 5.12 (153/153 backend jest, clean `tsc`/lint both sides,

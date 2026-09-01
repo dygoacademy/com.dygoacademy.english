@@ -292,6 +292,40 @@ the landing page itself has no data dependency.
 
 ---
 
+## 6. Run the live-stack integration tests
+
+```bash
+cd com.dygoacademy.automationtesting
+npm install
+npm test
+```
+
+`com.dygoacademy.automationtesting/` is a separate package from
+`com.dygoacademy.backend`'s own `npm test` (Jest unit tests, everything below
+the service layer mocked). This one hits a **running backend + seeded
+Postgres directly** over real HTTP — real guards, real RLS, no mocks — so it
+needs steps 3 and 4 above done first, against a freshly-seeded database
+(`apply-migrations.sh --seed`; several specs assume a one-time seed state,
+e.g. `words-enrichment.spec.ts`'s FAILED→ENRICHING re-enrich case, and note
+in a comment when they'll no-op instead of false-failing on a re-run without
+a re-seed). It mints its own JWTs for the seeded fixture users
+(`api/support/token.ts`, the same signing scheme as
+`com.dygoacademy.backend/scripts/dev-token.js`) so it never touches GoTrue,
+and reads `SUPABASE_JWT_SECRET` from the repo-root `.env` automatically. Set
+`API_BASE_URL` if the backend isn't on `http://localhost:3001/api/v1`.
+
+Coverage is one spec file per built module (`groups-rbac`, `topics`,
+`words-enrichment`, `srs`, `quizzes`, `analytics`, `notifications`) — RBAC/
+tenant-isolation boundaries, the async enrichment pipeline actually
+settling, SRS due/leech/rating math, quiz generation and grading, the
+heatmap's admin-only + no-PII contract, and notification/schedule/rate-limit
+behavior. Module 7 (billing) has no spec — there's no route to test yet.
+This suite has never been run in this project's own dev sandbox (no
+Docker there); it's written for whoever runs it against a real Docker
+Compose stack, including UAT.
+
+---
+
 ## Verify the stack end to end
 
 ```bash
@@ -387,17 +421,21 @@ DygoAcademy/
 │       ├── modules/                # topics, words, srs, billing, notifications
 │       ├── queues/                 # BullMQ queue names & job payload schemas
 │       └── workers/                # enrichment + notification processors
-└── com.dygoacademy.frontend/       # Next.js App Router — scaffolded
-    ├── .env.example                 # NEXT_PUBLIC_* template — copy to .env.local
-    └── src/
-        ├── app/                     # (auth), (dashboard) route groups + api/
-        ├── components/ui/           # shadcn/ui primitives (button, card, ...)
-        ├── hooks/                   # Custom hooks — empty until Phase 1+
-        ├── lib/                     # supabase/{client,server,middleware}.ts, api-client.ts, utils.ts
-        ├── config/                  # env.ts — zod-validated, fail-fast
-        ├── constants/               # routes.ts — single source of truth for path strings
-        ├── types/                   # Domain types mirroring backend DTOs & DB schema
-        └── stores/                  # Zustand stores (useStudySessionStore.ts)
+├── com.dygoacademy.frontend/       # Next.js App Router — scaffolded
+│   ├── .env.example                 # NEXT_PUBLIC_* template — copy to .env.local
+│   └── src/
+│       ├── app/                     # (auth), (dashboard) route groups + api/
+│       ├── components/ui/           # shadcn/ui primitives (button, card, ...)
+│       ├── hooks/                   # Custom hooks — empty until Phase 1+
+│       ├── lib/                     # supabase/{client,server,middleware}.ts, api-client.ts, utils.ts
+│       ├── config/                  # env.ts — zod-validated, fail-fast
+│       ├── constants/               # routes.ts — single source of truth for path strings
+│       ├── types/                   # Domain types mirroring backend DTOs & DB schema
+│       └── stores/                  # Zustand stores (useStudySessionStore.ts)
+└── com.dygoacademy.automationtesting/  # Live-stack integration tests (see step 6) — no mocks
+    └── api/
+        ├── specs/                  # One file per built module
+        └── support/                # client.ts, token.ts, fixtures.ts (mirrors 004_seed_data.sql)
 ```
 
 ## Documentation
