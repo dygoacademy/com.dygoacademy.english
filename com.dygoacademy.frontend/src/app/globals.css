@@ -55,6 +55,26 @@
   body {
     @apply bg-background text-foreground;
   }
+
+  /*
+   * Browser autofill override. Chrome/Edge/Safari paint a pale
+   * yellow/tan background on any field they've autofilled from a saved
+   * credential (e.g. the login form's email/password), which the app's
+   * own CSS can't touch with a plain background-color — the UA style
+   * wins. The box-shadow inset trick does take priority. Applies
+   * everywhere, not just login, since any input with autoComplete can
+   * be autofilled.
+   */
+  input:-webkit-autofill,
+  input:-webkit-autofill:hover,
+  input:-webkit-autofill:focus,
+  input:-webkit-autofill:active {
+    -webkit-box-shadow: 0 0 0px 1000px white inset;
+    box-shadow: 0 0 0px 1000px white inset;
+    -webkit-text-fill-color: black;
+    caret-color: black;
+    transition: background-color 5000s ease-in-out 0s;
+  }
 }
 
 /*

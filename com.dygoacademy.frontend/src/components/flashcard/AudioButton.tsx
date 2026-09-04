@@ -23,17 +23,32 @@ export function AudioButton({
   const [speed, setSpeed] = useState<0.75 | 1>(1);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
-  function play() {
-    if (!src) return;
+  function play(e: React.MouseEvent) {
+    // AudioButton is rendered inside Flashcard's front/back content, which
+    // wraps everything in its own onClick (the flip toggle) — without this,
+    // tapping Play also flips the card, live-reported 2026-09-04.
+    e.stopPropagation();
+    // TEMP debug logging — live-diagnosing 2026-09-04's "clicking Play
+    // does nothing, no console errors" report. The previous silent catch()
+    // made it impossible to tell "no src" from "play() rejected" from
+    // "everything's fine, just no audible sound" from the console alone.
+    // Remove once the real cause is confirmed.
+    console.log('[AudioButton] play() called, src =', src);
+    if (!src) {
+      console.warn('[AudioButton] no src — button should have been disabled');
+      return;
+    }
     if (!audioRef.current || audioRef.current.src !== src) {
       audioRef.current = new Audio(src);
     }
     audioRef.current.playbackRate = speed;
     audioRef.current.currentTime = 0;
-    void audioRef.current.play().catch(() => {
-      // Autoplay-policy or network failure — not worth surfacing as an
-      // error state on a flashcard; the student can just tap again.
-    });
+    void audioRef.current
+      .play()
+      .then(() => console.log('[AudioButton] play() resolved — should be audible now'))
+      .catch((err) => {
+        console.error('[AudioButton] play() rejected:', err);
+      });
   }
 
   return (
@@ -55,7 +70,12 @@ export function AudioButton({
           <button
             key={rate}
             type="button"
-            onClick={() => setSpeed(rate)}
+            onClick={(e) => {
+              // Same bubbling issue as play() above — this button sits
+              // inside Flashcard's flip handler too.
+              e.stopPropagation();
+              setSpeed(rate);
+            }}
             aria-pressed={speed === rate}
             className={cn(
               'px-1.5 py-1 transition-colors',

@@ -20,10 +20,18 @@ export interface SynthesizedAudio {
   sampleRateHz: number;
 }
 
-// gemini-1.5-flash per tech spec §3 ("AI Linguistic Engine"). Kept as a
-// constant rather than config — swapping models is a deliberate code change,
-// not an ops toggle.
-const TEXT_MODEL = 'gemini-1.5-flash';
+// gemini-1.5-flash (tech spec §3, "AI Linguistic Engine") was retired —
+// confirmed 2026-09-04 it's no longer listed in Google's model docs.
+// Tried gemini-2.5-flash-lite next based on that same day's research, but
+// live-verified wrong within hours: the real API rejected it outright —
+//   404 "This model models/gemini-2.5-flash-lite is no longer available
+//   to new users. ... use models/gemini-3.5-flash-lite" — i.e. web
+// research and even Google's own docs pages lag what the API actually
+// accepts for a freshly-created key; the API's own error is the one
+// source that's actually authoritative here. Using its named replacement.
+// Kept as a constant rather than config — swapping models is a
+// deliberate code change, not an ops toggle.
+const TEXT_MODEL = 'gemini-3.5-flash-lite';
 // Gemini's own TTS-capable model. The tech spec names a generic "Neural TTS
 // engine" without pinning a vendor; using Gemini's rather than adding a
 // second AI vendor (e.g. ElevenLabs) keeps one API key and one rate-limit

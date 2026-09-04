@@ -7,7 +7,7 @@ export type RatingValue = (typeof RATINGS)[number];
 /** Body for `POST /api/v1/srs/rate` — FR-3.2's four standardized actions. */
 export class RateWordDto {
   @ApiProperty({ description: 'The topic_words row being reviewed.' })
-  @IsUUID()
+  @IsUUID('loose')
   topicWordId!: string;
 
   @ApiProperty({ enum: RATINGS, description: 'One of the four FR-3.2 rating actions.' })

@@ -160,9 +160,11 @@ On a database that is **already migrated**, use the `-only` flags instead —
 re-running `001-003` would fail on "already exists":
 
 ```bash
-./database/apply-migrations.sh --seed-only   # add fixtures to an existing schema
-./database/apply-migrations.sh --test-only   # run the RLS suite (needs fixtures)
-./database/apply-migrations.sh --verify      # report what is actually installed
+./database/apply-migrations.sh --seed-only           # add fixtures to an existing schema
+./database/apply-migrations.sh --qa-seed-only        # add the optional 3rd-tenant QA fixture (011)
+./database/apply-migrations.sh --qa-words-seed-only  # add 100 sample words on top of 011 (012)
+./database/apply-migrations.sh --test-only           # run the RLS suite (needs fixtures)
+./database/apply-migrations.sh --verify              # report what is actually installed
 ```
 
 | File | Contents |
@@ -171,6 +173,8 @@ re-running `001-003` would fail on "already exists":
 | `002_rls_policies.sql` | Multi-tenant Row-Level Security, ADMIN > WRITE > READ |
 | `003_indexes.sql` | Performance and partial indexes |
 | `004_seed_data.sql` | Dev fixtures — **never run against production** |
+| `011_qa_test_tenant_seed.sql` | Optional 3rd-tenant QA fixture (independent of 004, `--qa-seed-only`) — see its own header |
+| `012_qa_bulk_words_seed.sql` | 100 real words across 5 topics inside 011's QA group (`--qa-words-seed-only`, needs 011 loaded first) |
 
 `--test` runs 47 assertions (was 45 as of the 9th pass; the 10th pass's own
 addition, section I, covers the roster-visibility fix — see

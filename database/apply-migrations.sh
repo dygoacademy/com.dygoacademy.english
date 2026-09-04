@@ -6,22 +6,27 @@
 #   ./database/apply-migrations.sh --seed       # ...plus development fixtures (004)
 #   ./database/apply-migrations.sh --test       # ...plus fixtures, then RLS suite
 #
-#   ./database/apply-migrations.sh --seed-only  # ONLY 004, on an already-migrated db
-#   ./database/apply-migrations.sh --test-only  # ONLY the RLS suite
-#   ./database/apply-migrations.sh --verify     # report what is actually installed
+#   ./database/apply-migrations.sh --seed-only           # ONLY 004, on an already-migrated db
+#   ./database/apply-migrations.sh --qa-seed-only        # ONLY 011 (3rd-tenant QA fixture)
+#   ./database/apply-migrations.sh --qa-words-seed-only  # ONLY 012 (100 QA words) -- needs 011 first
+#   ./database/apply-migrations.sh --hello-world-seed-only  # ONLY 013 (1 test word+audio) -- needs 011 first
+#   ./database/apply-migrations.sh --grants-only            # ONLY 014 (service_role table grants)
+#   ./database/apply-migrations.sh --test-only           # ONLY the RLS suite
+#   ./database/apply-migrations.sh --verify              # report what is actually installed
 #
 # 001-003 are NOT idempotent (plain CREATE, not CREATE IF NOT EXISTS), so
 # re-running them on a migrated database fails on "already exists". Use the
 # --*-only flags to add fixtures or run tests without touching the schema, or
 # reset entirely with:  docker compose down -v && docker compose up -d
 #
-# 005-007 and 009 (invite redemption, solo-tenant provisioning, the FR-8.2
-# heatmap function, the tenant-admin read expansion) all use CREATE OR
-# REPLACE FUNCTION, so unlike 001-003 they ARE safe to re-run on an
-# already-migrated database if you only need to pick up a change to one of
-# them. 009's one DROP POLICY/CREATE POLICY pair (group_members_select) is
-# also safe to re-run — CREATE POLICY errors on a duplicate name, which is
-# exactly why it's preceded by DROP POLICY IF EXISTS.
+# 005-007, 009, and 010 (invite redemption, solo-tenant provisioning, the
+# FR-8.2 heatmap function, the tenant-admin read expansion, the tenant-wide
+# heatmap widening) all use CREATE OR REPLACE FUNCTION, so unlike 001-003
+# they ARE safe to re-run on an already-migrated database if you only need
+# to pick up a change to one of them. 009's one DROP POLICY/CREATE POLICY
+# pair (group_members_select) is also safe to re-run — CREATE POLICY errors
+# on a duplicate name, which is exactly why it's preceded by DROP POLICY IF
+# EXISTS.
 # =============================================================================
 set -euo pipefail
 
@@ -63,6 +68,32 @@ case "${1:-}" in
     verify; exit 0 ;;
   --seed-only)
     run_file "$DIR/migrations/004_seed_data.sql"; verify; echo "done."; exit 0 ;;
+  --qa-seed-only)
+    # Optional third-tenant QA fixture (011) — see that file's own header for
+    # why it's separate from --seed-only's core 004 fixtures. Independent of
+    # 004; either can be loaded without the other.
+    run_file "$DIR/migrations/011_qa_test_tenant_seed.sql"; verify; echo "done."; exit 0 ;;
+  --qa-words-seed-only)
+    # 100 words across 5 topics inside 011's QA group. Foreign-keys onto 011's
+    # group/admin, so 011 must already be loaded.
+    if [ "$(psql_run -t -c "select count(*) from public.groups where id='bbbbbbbb-0000-0000-0000-000000000004'" | tr -d '[:space:]')" = "0" ]; then
+      echo "error: 011's QA group isn't loaded yet — run --qa-seed-only first." >&2
+      exit 1
+    fi
+    run_file "$DIR/migrations/012_qa_bulk_words_seed.sql"; verify; echo "done."; exit 0 ;;
+  --hello-world-seed-only)
+    # One hand-seeded word + real (espeak-ng-synthesized) audio, faking
+    # GeminiEnrichmentService's output for UI testing without a real Gemini
+    # call. Foreign-keys onto 011's topic/admin, same as 012.
+    if [ "$(psql_run -t -c "select count(*) from public.groups where id='bbbbbbbb-0000-0000-0000-000000000004'" | tr -d '[:space:]')" = "0" ]; then
+      echo "error: 011's QA group isn't loaded yet — run --qa-seed-only first." >&2
+      exit 1
+    fi
+    run_file "$DIR/migrations/013_hello_world_test_word.sql"; verify; echo "done."; exit 0 ;;
+  --grants-only)
+    # Idempotent GRANTs (014) — safe to run any time, no dependency on other
+    # fixtures being loaded first.
+    run_file "$DIR/migrations/014_service_role_grants.sql"; verify; echo "done."; exit 0 ;;
   --test-only)
     # The suite asserts exact row counts, so it is meaningless without fixtures.
     if [ "$(psql_run -t -c 'select count(*) from public.tenants' | tr -d '[:space:]')" = "0" ]; then
@@ -83,6 +114,7 @@ run_file "$DIR/migrations/006_solo_tenant_provisioning.sql"
 run_file "$DIR/migrations/007_group_word_heatmap.sql"
 run_file "$DIR/migrations/008_profiles_group_visibility.sql"
 run_file "$DIR/migrations/009_tenant_admin_read_expansion.sql"
+run_file "$DIR/migrations/010_tenant_word_heatmap.sql"
 
 case "${1:-}" in
   --seed)

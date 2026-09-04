@@ -85,6 +85,47 @@ export class DatabaseService implements OnModuleInit, OnModuleDestroy {
     });
   }
 
+  /**
+   * Runs `work` as `service_role` — for background jobs with no acting
+   * user (BullMQ processors), which is not what `query()`'s plain
+   * `authenticator` connection is for. `authenticator` is a bare login
+   * role by design (mirrors PostgREST) with no table grants of its own;
+   * 002_rls_policies.sql's own comment on master_lexicon says it's
+   * "written only by the enrichment worker (service_role)", but nothing
+   * ever actually switched the connection into that role, which is why
+   * EnrichmentProcessor hit "permission denied for table master_lexicon" —
+   * live-verified 2026-09-03. service_role has BYPASSRLS (standard
+   * self-hosted Supabase role setup, not something our own migrations
+   * configure), so no JWT claims are needed here the way withUser sets
+   * them for `authenticated`.
+   */
+  async withServiceRole<T>(work: (client: PoolClient) => Promise<T>): Promise<T> {
+    const client = await this.pool.connect();
+    try {
+      await client.query('begin');
+      await client.query("select set_config('role', 'service_role', true)");
+      const result = await work(client);
+      await client.query('commit');
+      return result;
+    } catch (err) {
+      await client.query('rollback').catch(() => undefined);
+      throw err;
+    } finally {
+      client.release();
+    }
+  }
+
+  /** Convenience wrapper: a single service_role-scoped query. */
+  async queryAsService<T extends QueryResultRow = QueryResultRow>(
+    text: string,
+    params: unknown[] = [],
+  ): Promise<T[]> {
+    return this.withServiceRole(async (client) => {
+      const res = await client.query<T>(text, params);
+      return res.rows;
+    });
+  }
+
   async isHealthy(): Promise<boolean> {
     try {
       await this.pool.query('select 1');

@@ -21,32 +21,82 @@
 -- 4444… Priya (READ)  | 5555… Dana  (other tenant ADMIN)
 -- ---------------------------------------------------------------------------
 
--- `encrypted_password`/`email_confirmed_at` were missing until this pass —
--- every prior insert here only set `id`/`email`, which is enough for
+-- `encrypted_password`/`email_confirmed_at` were added in an earlier pass —
+-- every insert here before that only set `id`/`email`, which is enough for
 -- `scripts/dev-token.js` (it signs its own JWT with SUPABASE_JWT_SECRET and
 -- never touches GoTrue at all) but NOT enough to sign in through the actual
 -- `supabase-auth` (GoTrue) container the frontend's real login form talks to
 -- — GoTrue rejects a null `encrypted_password` and an unconfirmed email
 -- outright. All five fixtures share one dev-only password so UAT can sign in
 -- through the browser instead of only through dev-token.js + curl/Swagger.
--- `instance_id`/`aud`/`role`/`raw_app_meta_data` are left to the
--- `supabase/postgres` image's own column defaults (00000000…0000/
--- authenticated/authenticated/`{"provider":"email","providers":["email"]}`)
--- rather than restated here — this file has never set them explicitly and
--- nothing about adding a password changes that. Unverified against a real
--- GoTrue container in this sandbox (no Docker here — see every prior pass's
--- session report) — confirm `POST /auth/v1/token?grant_type=password` (or
--- the login form itself) actually succeeds for one fixture before relying
--- on this for UAT.
-insert into auth.users (id, email, encrypted_password, email_confirmed_at) values
-  ('11111111-1111-1111-1111-111111111111', 'sarah@dygo.test', crypt('dygo-dev-2026', gen_salt('bf')), now()),
-  ('22222222-2222-2222-2222-222222222222', 'marco@dygo.test', crypt('dygo-dev-2026', gen_salt('bf')), now()),
-  ('33333333-3333-3333-3333-333333333333', 'alex@dygo.test',  crypt('dygo-dev-2026', gen_salt('bf')), now()),
-  ('44444444-4444-4444-4444-444444444444', 'priya@dygo.test', crypt('dygo-dev-2026', gen_salt('bf')), now()),
-  ('55555555-5555-5555-5555-555555555555', 'dana@dygo.test',  crypt('dygo-dev-2026', gen_salt('bf')), now())
+--
+-- CORRECTION (live-verified 2026-09-01): that pass's own comment assumed
+-- `instance_id`/`aud`/`role` fall back to the `supabase/postgres` image's
+-- column defaults when omitted from the insert list, and left it
+-- "unverified... confirm before relying on this for UAT." Confirmed live
+-- against a real GoTrue container, and the assumption was wrong —
+-- `POST /auth/v1/token?grant_type=password` failed with `invalid_credentials`
+-- even with a correct `encrypted_password` (verified separately with
+-- `crypt(password, encrypted_password) = encrypted_password`) and a
+-- non-null `email_confirmed_at`. `instance_id`, `aud`, and `role` all came
+-- back blank on the live row. GoTrue's own user lookup filters on
+-- `instance_id` (self-hosted single-instance mode expects the all-zero
+-- UUID) and checks `aud` against `GOTRUE_JWT_AUD` (`authenticated` in
+-- docker-compose.yml) — a blank `instance_id` never matches, so GoTrue
+-- reports the same generic "invalid credentials" it uses for a
+-- nonexistent user, by design (it doesn't leak which check failed). Now set
+-- explicitly rather than assumed, and included in the upsert so a fixture
+-- seeded by an older version of this file gets repaired by a plain re-seed
+-- instead of silently keeping its stale blank values forever.
+-- CORRECTION #2 (live-verified 2026-09-03): even with instance_id/aud/role
+-- fixed above, a FRESH volume (docker compose down -v && up -d && --seed)
+-- still failed login, this time with a 500 "Database error querying
+-- schema" and dygo_supabase_auth logging:
+--   error finding user: sql: Scan error on column index 3, name
+--   "confirmation_token": converting NULL to string is unsupported
+-- The supabase/postgres image defines several auth.users text columns
+-- with no default (confirmation_token, recovery_token,
+-- email_change_token_new, email_change, email_change_token_current,
+-- phone_change, phone_change_token, reauthentication_token) — GoTrue's Go
+-- driver always selects them on login and can't scan a NULL into a plain
+-- string field, so any insert that omits them (this file's original insert
+-- did) leaves a login-breaking NULL rather than a harmless blank.
+--
+-- Tried a schema-level ALTER TABLE ... SET DEFAULT '' first (would survive
+-- even a future insert that also forgets these columns) but that failed
+-- live: "ERROR: must be owner of table users" — in self-hosted Supabase
+-- auth.users is owned by supabase_auth_admin, not the postgres role this
+-- script connects as, so ALTER TABLE is out even though INSERT/UPDATE are
+-- grantable and do work. Explicit '' values below are therefore the only
+-- fix available at this privilege level — same lesson as CORRECTION #1.
+insert into auth.users (
+  id, instance_id, aud, role, email, encrypted_password, email_confirmed_at, raw_app_meta_data,
+  confirmation_token, recovery_token, email_change_token_new, email_change,
+  email_change_token_current, phone_change, phone_change_token, reauthentication_token,
+  created_at, updated_at
+) values
+  ('11111111-1111-1111-1111-111111111111', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'sarah@dygo.test', crypt('dygo-dev-2026', gen_salt('bf')), now(), '{"provider":"email","providers":["email"]}'::jsonb, '', '', '', '', '', '', '', '', now(), now()),
+  ('22222222-2222-2222-2222-222222222222', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'marco@dygo.test', crypt('dygo-dev-2026', gen_salt('bf')), now(), '{"provider":"email","providers":["email"]}'::jsonb, '', '', '', '', '', '', '', '', now(), now()),
+  ('33333333-3333-3333-3333-333333333333', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'alex@dygo.test',  crypt('dygo-dev-2026', gen_salt('bf')), now(), '{"provider":"email","providers":["email"]}'::jsonb, '', '', '', '', '', '', '', '', now(), now()),
+  ('44444444-4444-4444-4444-444444444444', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'priya@dygo.test', crypt('dygo-dev-2026', gen_salt('bf')), now(), '{"provider":"email","providers":["email"]}'::jsonb, '', '', '', '', '', '', '', '', now(), now()),
+  ('55555555-5555-5555-5555-555555555555', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'dana@dygo.test',  crypt('dygo-dev-2026', gen_salt('bf')), now(), '{"provider":"email","providers":["email"]}'::jsonb, '', '', '', '', '', '', '', '', now(), now())
 on conflict (id) do update set
   encrypted_password = excluded.encrypted_password,
-  email_confirmed_at = coalesce(auth.users.email_confirmed_at, excluded.email_confirmed_at);
+  email_confirmed_at = coalesce(auth.users.email_confirmed_at, excluded.email_confirmed_at),
+  instance_id        = excluded.instance_id,
+  aud                 = excluded.aud,
+  role                = excluded.role,
+  raw_app_meta_data   = coalesce(auth.users.raw_app_meta_data, excluded.raw_app_meta_data),
+  confirmation_token         = coalesce(auth.users.confirmation_token, ''),
+  recovery_token              = coalesce(auth.users.recovery_token, ''),
+  email_change_token_new      = coalesce(auth.users.email_change_token_new, ''),
+  email_change                = coalesce(auth.users.email_change, ''),
+  email_change_token_current  = coalesce(auth.users.email_change_token_current, ''),
+  phone_change                = coalesce(auth.users.phone_change, ''),
+  phone_change_token          = coalesce(auth.users.phone_change_token, ''),
+  reauthentication_token      = coalesce(auth.users.reauthentication_token, ''),
+  created_at                   = coalesce(auth.users.created_at, excluded.created_at),
+  updated_at                   = now();
 
 -- Tenants -------------------------------------------------------------------
 insert into public.tenants (id, name, purchased_seats, active_seats_used, price_per_seat_cents) values

@@ -21,6 +21,6 @@ export class TriggerSprintDto {
     description: 'Deep-links the notification to this topic instead of /study.',
   })
   @IsOptional()
-  @IsUUID()
+  @IsUUID('loose')
   topicId?: string;
 }

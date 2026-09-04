@@ -1,9 +1,86 @@
 # 📅 Dygo Academy: Master Project Schedule & Phasing Strategy
-**Document Version**: 5.16 (export-modal/report partial-window wireframe; regression clean, no new backend gap, 12th straight pass)  
+**Document Version**: 5.17 (tenant-wide mistake heatmap — FR-8.2 "across cohorts" — real backend scope, first since the 17th pass's RLS fix)  
 **Author**: Principal Cloud & SaaS Solutions Advisory  
 **Status**: Approved for Engineering & Product Execution  
 
 **Changelog**
+* **5.17** (2026-09-01) — Nineteenth pass, still the same day, still ahead
+  of tomorrow morning's UAT (2026-09-02). Full regression confirmed no
+  drift from 5.16 before starting (153/153 backend jest, clean `tsc`/lint
+  both sides, frontend `tsc`/`next lint` clean, both sides' `TODO`/`FIXME`
+  grep empty — the thirteenth straight pass, 7th–19th, reaching that
+  conclusion; `BillingController`/`BillingService` still a zero-route
+  scaffold). Took the first of the 18th pass's own three "Try next"
+  options — build `AnalyticsService.getHeatmap`'s tenant-wide widening,
+  named as unblocked at the RLS layer since 009 — rather than either
+  Module 7's Stripe integration (still deferred, same "not hours before
+  UAT" reasoning as every pass since the 7th) or waiting on UAT feedback
+  that doesn't exist yet (UAT is still tomorrow morning, not run yet).
+  This is the first *new backend* work since the 17th pass's RLS fix —
+  the 12 passes in between (7th–18th) all correctly concluded there was
+  no new well-scoped gap to build, and this pass agrees that conclusion
+  held right up until 009 unblocked this specific, previously-named item.
+
+  Shipped `public.tenant_word_heatmap(p_tenant_id)`
+  (`database/migrations/010_tenant_word_heatmap.sql`) — same shape as
+  007's `group_word_heatmap()` (SECURITY DEFINER, re-checks its own gate,
+  returns aggregates only, never a `user_id`), scoped by `g.tenant_id`
+  instead of a single `group_id`, gated by `is_tenant_admin()` (009's
+  already-existing tenant-wide role) instead of `has_group_role`. Two
+  columns wider than 007's shape — `group_id`/`group_name` — since a
+  rollup spanning multiple classes needs to say which class each mistake
+  row happened in; `topic_title` alone isn't a safe attribution key since
+  two teachers can legally reuse the same title in different groups.
+  `AnalyticsService.tenantHeatmap` derives the tenant from the caller
+  (`current_user_tenant_id()`) rather than accepting one as a request
+  param — the only tenant a director rollup can mean is the caller's own,
+  and there is no capability gained by accepting an id, since a caller
+  who isn't `is_tenant_admin()` of it is rejected either way. New route:
+  `GET /api/v1/analytics/tenant/heatmap`, on a new `TenantAnalyticsController`
+  (kept separate from the group-scoped `AnalyticsController`, which is
+  registered under the `groups` path and takes an `:id`). Extended
+  `heatmap-aggregator.ts`'s `rankHeatmap` to a generic
+  (`<T extends WordAttemptCounts>`) rather than duplicating the
+  worst-first/attempts-tiebreak ranking logic for the wider shape.
+
+  While wiring this up, found and fixed a real, unrelated doc gap in
+  `dygo_academy_api_surface.md`: `GET /api/v1/groups/:id/heatmap` — live
+  since Module 8 shipped in the 8th pass — had never been added to that
+  file's §2 "Live today" table at all, eleven passes' worth of drift. The
+  file's own header count (37, then incorrectly "36" in the section body)
+  was stale evidence of the same miss. Both heatmap routes are now listed;
+  live count corrected to 39.
+
+  6 new backend unit tests (159 total, up from 153), `tsc --noEmit` and
+  lint clean on both sides (frontend untouched — no UI calls the new
+  route yet; wireframe turns 12–14 already sketch what one would look
+  like). 9 new RLS assertions in `database/tests/rls_test.sql` §K (63
+  total, up from 54) — proves the aggregate genuinely spans multiple
+  groups in one tenant (inserts a second Oxford class mid-transaction,
+  checks the totals actually move) rather than just re-serving one
+  group's numbers under a new name, and proves a genuine tenant admin of
+  a *different* tenant (Dana, Rival Academy) cannot use this function to
+  read Oxford's rollup even by calling it directly with Oxford's tenant
+  id — `is_tenant_admin()` checks the specific argument, not "is this
+  caller a tenant admin of anything." New `describe` block in
+  `com.dygoacademy.automationtesting`'s `analytics.spec.ts` covering the
+  live route. None of this has run against a real Postgres in this
+  Docker-less sandbox — same standing limitation as every migration since
+  the first pass — so §K passing for real is itself a new UAT item
+  (`dygo_academy_uat_checklist_2026-09-02.md` item 25).
+
+  Did not touch the wireframes this pass (turns 12–14 already sketch this
+  screen; the standing note from the 18th pass was explicit that another
+  wireframe-only extension with no new backend behind it would start
+  producing screens nobody asked for — this pass is the backend those
+  turns were already assuming). Did not start Module 7's Stripe
+  integration or the `subscription_status` migration — unchanged
+  reasoning, now the thirteenth straight pass making that call. Did not
+  wire a frontend "Director rollup" screen to the new route — flagged as
+  an open UAT question (item 23) rather than guessed at, since nothing in
+  the BRD specifies whether that's in scope for this release or deferred
+  like Module 7. See the nineteenth pass entry in
+  `dygo_academy_session_report_2026-09-01.md`.
 * **5.16** (2026-09-01) — Eighteenth pass, still the same day, still ahead
   of tomorrow morning's UAT (2026-09-02). Full regression confirmed no
   drift from 5.15 (153/153 backend jest, clean `tsc`/lint both sides,

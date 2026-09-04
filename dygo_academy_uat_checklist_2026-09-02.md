@@ -9,16 +9,18 @@ they don't need to be read separately. Written by the 13th pass.
 
 ## Read this first: what's genuinely untested
 
-Every check below has passed unit tests and static analysis (153/153
+Every check below has passed unit tests and static analysis (159/159
 backend jest, clean `tsc`/lint both sides) in a sandbox with **no Docker**.
 That means three things have *never actually run* anywhere before
 tomorrow, and UAT is the first real signal on all three:
 
-1. **The database migrations and all 54 RLS assertions** — reasoned
+1. **The database migrations and all 63 RLS assertions** — reasoned
    through against policy text and mocked queries only, never against a
-   live Postgres. (Was 47 as of the 16th pass; the 17th pass's item 24
-   below added three more — this line was stale until the 18th pass
-   caught it while updating item 23.)
+   live Postgres. (Was 47 as of the 16th pass, 54 as of the 17th (item 24
+   below), now 63 as of the 19th pass's item 25 — this line has gone stale
+   after each of the last three passes added assertions, so double-check
+   the real count in `rls_test.sql` rather than trusting this number by
+   the time you read it.)
 2. **`npm run build` on the frontend** — hung with no output ~170s in,
    identically, across all 12 automated sessions. Unknown whether this is
    a real bug or an artifact of that specific sandbox. If it also hangs on
@@ -183,11 +185,14 @@ owns "Oxford English Center"), `marco@dygo.test` (WRITE), `alex@dygo.test`
     turns out `is_tenant_admin()` already exists and already grants
     exactly that reach — see item 24 below, which is the real,
     backend-side follow-up this correction produced, not just a
-    wireframe caption fix. What's still genuinely open, unchanged from
-    turn 12: `AnalyticsService.getHeatmap` is still single-`groupId`
-    only, so the tenant-wide rollup query itself is still unbuilt —
-    worth confirming during UAT whether that's still the right thing
-    to defer past this release.
+    wireframe caption fix. **Update from the 19th pass:** the tenant-wide
+    rollup query itself is no longer unbuilt — `GET
+    /api/v1/analytics/tenant/heatmap` ships the mistake-heatmap half of
+    it (see item 25 below) — but nothing on the frontend calls it yet, so
+    turns 12–14's screens are still ahead of what a director could
+    actually open today; worth confirming during UAT whether wiring a
+    real "Director rollup" screen to the new route is in scope before
+    this release, or stays deferred like Module 7.
 24. **New this pass (009_tenant_admin_read_expansion.sql):** run
     `./database/apply-migrations.sh` (which now runs 009) then
     `./database/apply-migrations.sh --test` and confirm section **J**
@@ -200,11 +205,31 @@ owns "Oxford English Center"), `marco@dygo.test` (WRITE), `alex@dygo.test`
     Postgres in the sandbox that wrote it — same standing limitation as
     everything else in this section — so section J passing for real is
     itself part of what this UAT run is confirming, not a given.
+25. **New this pass (010_tenant_word_heatmap.sql):** with 009 and 010
+    both applied and seeded, `GET /api/v1/analytics/tenant/heatmap` as
+    `sarah@dygo.test` should return the same words/counts as `GET
+    /api/v1/groups/bbbbbbbb-0000-0000-0000-000000000001/heatmap` (only
+    her `ieltsClass` group has seeded review activity — `publicAwl`
+    contributes nothing), each row additionally carrying `group_id`/
+    `group_name`. The same call as `marco@dygo.test` (WRITE, ADMIN
+    nowhere) or `alex@dygo.test` (READ) should `403`; as
+    `dana@dygo.test` (Rival Academy ADMIN, a genuine tenant admin of a
+    *different* tenant) it should `200` with an empty list, not a `403`
+    — she's legitimately asking about her own tenant, which has no
+    review activity in the seed data, and the route takes no `tenantId`
+    param so there's no way for her to ask about Oxford's. Also run
+    `./database/apply-migrations.sh --test` and confirm section **K** of
+    `rls_test.sql` passes — it proves the aggregate genuinely spans
+    multiple groups in one tenant (not just one group re-served under a
+    new name) by inserting a second Oxford class mid-transaction and
+    checking the totals actually change. Like item 24, this has never
+    run against a real Postgres in the sandbox that wrote it.
 
 ## J. Build & regression (already run this pass, re-verify if anything above fails)
 
-- Backend: `npm test` → 153/153; `npx tsc --noEmit` → clean;
-  `npm run lint` → clean.
+- Backend: `npm test` → 159/159 (was 153/153 through the 18th pass; the
+  19th pass added `AnalyticsService.tenantHeatmap`'s 6 tests); `npx tsc
+  --noEmit` → clean; `npm run lint` → clean.
 - Frontend: `npx tsc --noEmit` → clean; `next lint` → clean.
 - Frontend `npm run build` — **run this on whatever machine hosts UAT**;
   see point 2 under "Read this first."
@@ -223,4 +248,6 @@ comments, e.g. `words-enrichment.spec.ts`'s FAILED→ENRICHING case) and
 will self-skip with a `console.warn` rather than false-fail on a
 second run without a re-seed — that warning is expected, not a bug.
 Treat any other failure here as a real regression signal alongside the
-backend's own 153 unit tests, not a replacement for them.
+backend's own 159 unit tests, not a replacement for them. **19th pass:**
+`analytics.spec.ts` gained a second `describe` block covering `GET
+/analytics/tenant/heatmap` (item 25 above) — same never-run-yet caveat.

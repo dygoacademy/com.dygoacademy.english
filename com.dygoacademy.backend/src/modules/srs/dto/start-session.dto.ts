@@ -20,7 +20,7 @@ export type SessionMode = (typeof MODES)[number];
 export class StartSessionDto {
   @ApiPropertyOptional({ description: 'Scope the session to one topic; omit for all due cards.' })
   @IsOptional()
-  @IsUUID()
+  @IsUUID('loose')
   topicId?: string;
 
   @ApiPropertyOptional({ enum: MODES, default: 'STANDARD' })

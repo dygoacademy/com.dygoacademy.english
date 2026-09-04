@@ -1,0 +1,31 @@
+-- =============================================================================
+-- Dygo Academy — 014_service_role_grants.sql
+-- Explicit service_role table grants for the enrichment worker.
+--
+-- ROOT CAUSE (live-verified 2026-09-03): EnrichmentProcessor writing a real
+-- word ("response") failed with:
+--   permission denied for table master_lexicon
+--   permission denied for table topic_words
+-- 002_rls_policies.sql's own comment says master_lexicon is "written only
+-- by the enrichment worker (service_role)", but nothing ever actually
+-- switched the connection into that role — DatabaseService.query() runs as
+-- plain `authenticator`, a bare login role (mirrors PostgREST) with zero
+-- table grants of its own by design. Fixed at the code level in the same
+-- pass (DatabaseService.withServiceRole/queryAsService, wired into
+-- EnrichmentProcessor's 4 call sites) — that's the actual fix, since
+-- `authenticator` was never going to have table access no matter what is
+-- granted to service_role.
+--
+-- This migration is the defense-in-depth half: self-hosted Supabase's own
+-- bootstrap normally grants service_role BYPASSRLS plus broad privileges on
+-- schema public automatically, independent of anything in this project's
+-- migrations, which is almost certainly why this table specifically was
+-- reachable once the code switched roles. But 002_rls_policies.sql's own
+-- GRANT block (mirroring PostgREST convention) never grants anything to
+-- service_role beyond `usage on schema public` for OUR tables, so this
+-- makes that explicit rather than resting on an unverified base-image
+-- assumption. GRANT is idempotent — safe to re-run.
+-- =============================================================================
+
+grant select, insert, update on public.master_lexicon to service_role;
+grant select, insert, update on public.topic_words    to service_role;

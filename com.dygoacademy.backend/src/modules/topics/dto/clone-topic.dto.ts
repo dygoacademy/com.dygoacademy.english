@@ -6,6 +6,6 @@ export class CloneTopicDto {
   @ApiProperty({
     description: 'The group the cloned copy is created in. Caller needs WRITE there.',
   })
-  @IsUUID()
+  @IsUUID('loose')
   targetGroupId!: string;
 }

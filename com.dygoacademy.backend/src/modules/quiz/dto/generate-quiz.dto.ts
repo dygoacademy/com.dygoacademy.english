@@ -16,7 +16,7 @@ export class GenerateQuizDto {
     description: 'Scope to one topic; omit to draw from every READY word the caller can read.',
   })
   @IsOptional()
-  @IsUUID()
+  @IsUUID('loose')
   topicId?: string;
 
   @ApiPropertyOptional({

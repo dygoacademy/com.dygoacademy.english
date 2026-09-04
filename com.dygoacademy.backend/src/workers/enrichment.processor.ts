@@ -39,7 +39,7 @@ export class EnrichmentProcessor extends WorkerHost {
     try {
       // Step 1 — global lexical deduplication (FR-2.2). Checked BEFORE any
       // paid API call; this is what cuts AI cost by ~90%.
-      const [cached] = await this.db.query<MasterLexiconRow>(
+      const [cached] = await this.db.queryAsService<MasterLexiconRow>(
         `select id from public.master_lexicon
           where normalized_word = $1 and language_code = $2`,
         [normalizedWord, languageCode],
@@ -53,7 +53,7 @@ export class EnrichmentProcessor extends WorkerHost {
         this.logger.log(`cache hit for "${word}" — no AI call made`);
       }
 
-      await this.db.query(
+      await this.db.queryAsService(
         `update public.topic_words
             set lexicon_id = $1, status = 'READY', failure_reason = null, updated_at = now()
           where id = $2`,
@@ -66,7 +66,7 @@ export class EnrichmentProcessor extends WorkerHost {
       if (isFinalAttempt) {
         this.logger.error(`enrichment permanently failed for "${word}": ${message}`);
         await this.db
-          .query(
+          .queryAsService(
             `update public.topic_words
                 set status = 'FAILED', failure_reason = $1, updated_at = now()
               where id = $2`,
@@ -121,7 +121,7 @@ export class EnrichmentProcessor extends WorkerHost {
     // enrichAndCache concurrently (both missed the dedup check before either
     // finished). The unique constraint on (normalized_word, language_code)
     // makes the second writer update rather than error.
-    const [row] = await this.db.query<MasterLexiconRow>(
+    const [row] = await this.db.queryAsService<MasterLexiconRow>(
       `insert into public.master_lexicon
          (normalized_word, language_code, part_of_speech, ipa_us, ipa_uk,
           cefr_level, definition_en, audio_url, synonyms, antonyms,

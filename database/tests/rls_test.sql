@@ -470,6 +470,85 @@ select assert_eq(
   'so 009''s wider grant does not leak across the tenant boundary');
 
 reset role;
+
+\echo ''
+\echo '=== K. Tenant-wide mistake heatmap (010, FR-8.2 "across cohorts") ============'
+-- Regression test for tenant_word_heatmap() (010_tenant_word_heatmap.sql),
+-- the 19th pass's widening of section H's group-scoped heatmap. Reuses
+-- section H's own known baseline (Sarah's ieltsClass group: 2 distinct
+-- words, 3 attempts, 1 failure on 'resilient') as the "before" state, then
+-- adds a second Oxford group with its own review activity to prove the
+-- function genuinely aggregates ACROSS groups rather than just re-serving
+-- one group's numbers under a new name — the entire point of "across
+-- cohorts" that section H's single-group function cannot do.
+set role authenticated;
+select login_as('11111111-1111-1111-1111-111111111111');   -- Sarah, ADMIN of ieltsClass, tenant admin of Oxford
+select assert_eq(
+  (select count(*) from public.tenant_word_heatmap('aaaaaaaa-0000-0000-0000-000000000001')),
+  2, 'Before adding a second group''s activity, the tenant-wide total matches section H''s single-group baseline exactly (only ieltsClass has review activity so far)');
+select assert_eq(
+  (select sum(attempts) from public.tenant_word_heatmap('aaaaaaaa-0000-0000-0000-000000000001'))::bigint,
+  3, 'Baseline attempts also match section H''s 3 seeded review_logs rows');
+
+-- Sarah opens a brand-new second Oxford group and logs review activity in
+-- it. She is already tenant admin via ieltsClass, so this does not change
+-- *why* she can read the rollup — only *what* the rollup now contains.
+with g as (
+  insert into public.groups (id, tenant_id, owner_id, name, is_public)
+  values ('bbbbbbbb-0000-0000-0000-00000000000a',
+          'aaaaaaaa-0000-0000-0000-000000000001', -- Oxford, same tenant as ieltsClass
+          '11111111-1111-1111-1111-111111111111', 'Sarah''s Evening Section', false)
+  returning id
+)
+select assert_eq((select count(*) from g), 1,
+  'Sarah opens a second, separate Oxford class');
+
+insert into public.topics (id, group_id, title, is_public) values
+  ('cccccccc-0000-0000-0000-00000000000a',
+   'bbbbbbbb-0000-0000-0000-00000000000a', 'Evening Unit 1', false);
+-- No explicit status: defaults to ENRICHING. topic_words_ready_requires_lexicon
+-- would reject a bare READY with no lexicon_id, and the heatmap function
+-- doesn't care about enrichment status — it only needs a review_logs row
+-- pointing at a real topic_word.
+insert into public.topic_words (id, topic_id, source_word) values
+  ('eeeeeeee-0000-0000-0000-00000000000a',
+   'cccccccc-0000-0000-0000-00000000000a', 'tenacious');
+insert into public.review_logs (user_id, topic_word_id, rating, was_correct) values
+  ('11111111-1111-1111-1111-111111111111',
+   'eeeeeeee-0000-0000-0000-00000000000a', 'AGAIN', false);
+
+select assert_eq(
+  (select count(*) from public.tenant_word_heatmap('aaaaaaaa-0000-0000-0000-000000000001')),
+  3, 'The new word from the second group now appears alongside ieltsClass''s two — proof this is a real cross-group aggregate, not group_word_heatmap(ieltsClass) reused under a new name');
+select assert_eq(
+  (select sum(attempts) from public.tenant_word_heatmap('aaaaaaaa-0000-0000-0000-000000000001'))::bigint,
+  4, 'Total attempts: the 3 seeded ieltsClass rows plus this section''s 1 new row');
+select assert_eq(
+  (select group_id from public.tenant_word_heatmap('aaaaaaaa-0000-0000-0000-000000000001')
+    where source_word = 'tenacious'),
+  'bbbbbbbb-0000-0000-0000-00000000000a',
+  'Each row is attributed to the group it actually happened in, not to whichever group the caller is ADMIN of first — the exact thing a multi-class rollup needs and a single-group function cannot express');
+select assert_eq(
+  (select group_name from public.tenant_word_heatmap('aaaaaaaa-0000-0000-0000-000000000001')
+    where source_word = 'resilient'),
+  'IELTS Band 8.0 Masterclass',
+  'The pre-existing ieltsClass row still carries its own group''s name, unaffected by the new group being added');
+
+reset role;
+set role authenticated;
+select login_as('22222222-2222-2222-2222-222222222222');   -- Marco, WRITE in ieltsClass only, ADMIN nowhere
+select assert_raises(
+  $$select * from public.tenant_word_heatmap('aaaaaaaa-0000-0000-0000-000000000001')$$,
+  'WRITE-in-one-group is not tenant admin — same ADMIN-only gate as the single-group heatmap (section H), now enforced tenant-wide');
+
+reset role;
+set role authenticated;
+select login_as('55555555-5555-5555-5555-555555555555');   -- Dana, Rival Academy ADMIN — a real tenant admin, just of the WRONG tenant
+select assert_raises(
+  $$select * from public.tenant_word_heatmap('aaaaaaaa-0000-0000-0000-000000000001')$$,
+  'Being a genuine tenant admin of Rival Academy does not grant Oxford''s rollup — is_tenant_admin() is checked against the SPECIFIC p_tenant_id argument, not "is this caller a tenant admin of anything"');
+
+reset role;
 rollback;
 
 \echo ''

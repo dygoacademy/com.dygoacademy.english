@@ -24,7 +24,7 @@ export type RatingValue = (typeof RATINGS)[number];
  */
 export class SyncReviewItemDto {
   @ApiProperty()
-  @IsUUID()
+  @IsUUID('loose')
   topicWordId!: string;
 
   @ApiProperty({ enum: RATINGS })

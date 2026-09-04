@@ -280,8 +280,17 @@ services:
       mc alias set local http://minio:9000 $$MINIO_ROOT_USER $$MINIO_ROOT_PASSWORD &&
       mc mb --ignore-existing local/$$STORAGE_S3_BUCKET &&
       mc mb --ignore-existing local/$$MINIO_BUCKET &&
+      mc anonymous set download local/$$MINIO_BUCKET &&
       echo 'buckets ready:' && mc ls local
       "
+    # mc anonymous set download on $MINIO_BUCKET (dygo-audio) makes objects in
+    # it anonymously GET-able. A freshly created MinIO bucket is private by
+    # default, so the backend's authenticated upload (AWS SDK creds) always
+    # succeeded, but the browser's plain <audio src="..."> GET was rejected
+    # with 403 Access-Denied -> surfaced in the browser as NotSupportedError:
+    # "Failed to load because no supported source was found" (live-verified
+    # 2026-09-04). $STORAGE_S3_BUCKET (supabase-storage) is left private
+    # since nothing reads it anonymously today.
     networks:
       - dygo-network
 

@@ -11,6 +11,12 @@
 .env.*.local
 !.env.example
 
+# .env.tailscale carries this machine's real tailscale IP (a personal
+# network identifier) — same rationale as .env.local above, just not
+# matched by the ".local" patterns since it's a separate named profile
+# (see .env.local's own comments for what these profile files are).
+.env.tailscale
+
 # --- Dependencies --------------------------------------------------------
 node_modules/
 .pnp

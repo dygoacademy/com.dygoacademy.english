@@ -12,7 +12,7 @@ Conflating them is how a roadmap quietly turns into a status report.
 
 | Tier | Count | Meaning |
 | :--- | :---: | :--- |
-| **Live** | 37 | Exists and responds today. Verified by direct code read (not yet re-verified against a running boot — see note below) 2026-09-01. |
+| **Live** | 39 | Exists and responds today. Verified by direct code read (not yet re-verified against a running boot — see note below) 2026-09-01. |
 | **Specified** | 4 | Named verbatim in `dygo_academy_tech_spec_and_conventions.md` §3.4 or in `dygo_academy_complete_system_architecture_master.md`. The only endpoints committed to in writing. |
 | **Implied** | 13 | Derived from the BRD's functional requirements. **Carries no authority** — review before treating as a plan. |
 
@@ -221,12 +221,39 @@ Conflating them is how a roadmap quietly turns into a status report.
 > a real GoTrue container in this sandbox**, same standing caveat as
 > everything else on this page; confirm one real sign-in before trusting it
 > for UAT.
+>
+> **2026-09-01 note (8), 19th pass:** Built the tenant-wide widening of the
+> FR-8.2 mistake heatmap (`AnalyticsService.tenantHeatmap`,
+> `010_tenant_word_heatmap.sql`) — the real backend-scope item the 18th
+> pass's standing note named as unblocked (009 closed the RLS side) and
+> deliberately left undone. New `TenantAnalyticsController` route: `GET
+> /api/v1/analytics/tenant/heatmap`, tenant-admin only, no `tenantId` param
+> (always the caller's own tenant). While adding it, found and fixed a
+> real doc gap unrelated to the new work: the *existing* `GET
+> /api/v1/groups/:id/heatmap` route (live since Module 8 shipped, 8th–18th
+> passes) was never added to this file's §2 table at all — this section's
+> own "36 operations" header count was stale evidence of the same miss,
+> off by more than just this one gap (see the corrected count below). Both
+> rows now present; see §2. Also extended `heatmap-aggregator.ts`'s
+> `rankHeatmap` to be generic (`<T extends WordAttemptCounts>`) rather than
+> duplicating the sort/cap logic for the tenant shape — same worst-first,
+> attempts-desc-tiebreak ranking, now reused by both endpoints. 6 new
+> backend unit tests (159 total, up from 153), plus 9 new cross-group
+> aggregation assertions in `database/tests/rls_test.sql` §K and a new
+> `describe` block in `com.dygoacademy.automationtesting`'s
+> `analytics.spec.ts` covering the live route (still never actually run —
+> no Docker in this sandbox, same standing limitation as sections H and J).
+> `tsc --noEmit` and lint clean on both backend and frontend (frontend
+> untouched this pass — no UI consumes this route yet; the wireframe turns
+> 12–14 already sketch what one would look like, still unrenderable in
+> this sandbox). See the nineteenth-pass entry in
+> `dygo_academy_session_report_2026-09-01.md` for the full writeup.
 
 ---
 
 ## 2. Live today
 
-**36 operations · Phase 0 + Module 1 + Module 3 + Module 5 + Module 6 complete**
+**39 operations · Phase 0 + Module 1 + Module 3 + Module 5 + Module 6 complete**
 
 One other controller is registered — `billing` — but declares no routes, so
 it answers `404`, not `401`.
@@ -270,6 +297,8 @@ it answers `404`, not `401`.
 | `POST` | `/api/v1/notifications/schedules` | bearer | FR-6.1 — upsert on `(user_id, reminder_time)`, not create-only; see note (7). |
 | `DELETE` | `/api/v1/notifications/schedules/:id` | bearer | Removes a reminder schedule. |
 | `POST` | `/api/v1/notifications/groups/:groupId/sprint` | bearer | FR-6.2 — ADMIN-only, immediate (not tick-scheduled) push to every other group member's registered devices. `403` via an explicit `has_group_role` check — see note (7) for why this one doesn't lean on RLS like most writes here. **`429` after one call per group per 60s** (11th pass, `SprintRateLimitGuard`) — was unrated since the 5th pass, flagged as a known gap through the 10th. |
+| `GET` | `/api/v1/groups/:id/heatmap` | bearer | FR-8.2 — class-wide mistake heatmap. **Missing from this table since Module 8 shipped (8th–18th passes); added by the 19th pass, which found the gap while adding the row below.** ADMIN only (not WRITE, despite §4's original guess) via an explicit `has_group_role` check, re-checked inside `public.group_word_heatmap()` (007) itself. Registered on `AnalyticsController` under the `groups` path, not its own `analytics` prefix — see that controller's header comment. |
+| `GET` | `/api/v1/analytics/tenant/heatmap` | bearer | **New (19th pass).** FR-8.2 "across cohorts" — the tenant-wide widening of the row above, spanning every group in the caller's own tenant rather than one. Tenant admin only (`is_tenant_admin()`, the same role 009's RLS expansion made consistent), re-checked inside `public.tenant_word_heatmap()` (010) itself. Takes no `tenantId` param — always the caller's own, resolved server-side via `current_user_tenant_id()`. Narrower than §4's original `/analytics/tenant` guess (that row envisioned a broader institution-wide retention-report persona table, FR-8.1-shaped, and the retention curve itself is still unbuilt). Path chosen as `/analytics/tenant/heatmap`, not the bare guessed `/analytics/tenant`, so the two don't collide if that broader endpoint is ever built later — see note (8) and the nineteenth-pass entry in `dygo_academy_session_report_2026-09-01.md`. |
 
 ---
 
@@ -360,11 +389,21 @@ same reason Modules 1/3/5 are.
 
 ### Module 8 — Analytics & heatmaps · Phase 4
 
+**Two of three rows below are live, under different shapes than guessed
+here — see §2 and note (8):** row 1 shipped as `GET /srs/stats` (note 5),
+not `/analytics/me`; row 2 shipped as `GET /groups/:id/heatmap`, ADMIN not
+WRITE (`AnalyticsController`'s header comment explains the path choice).
+Row 3, the broad institution-wide retention-report persona table, is
+**still not built** — what the 19th pass shipped instead is a narrower
+sibling, `GET /analytics/tenant/heatmap` (FR-8.2's tenant-wide widening of
+row 2, not row 3's FR-8.1-shaped retention reports), listed separately in
+§2 rather than replacing this row, since the two are different scope.
+
 | Method | Path | Min role | Requirement |
 | :--- | :--- | :--- | :--- |
 | `GET` | `/analytics/me` | self | FR-8.1 — streaks, retention curve, leech list |
 | `GET` | `/analytics/groups/:id/heatmap` | WRITE | FR-8.2 — cohort error rates. **Must return aggregates only**: RLS keeps `review_logs` owner-only, and this endpoint must not become the way around that |
-| `GET` | `/analytics/tenant` | ADMIN | Persona table — institution-wide retention reports |
+| `GET` | `/analytics/tenant` | ADMIN | Persona table — institution-wide retention reports. **Still open** — see note above; the retention curve itself has no query anywhere yet |
 
 ---
 

@@ -48,6 +48,24 @@ export interface HeatmapEntry extends WordAttemptCounts {
   failure_rate: number;
 }
 
+/**
+ * The tenant-wide widening (`public.tenant_word_heatmap()`,
+ * `010_tenant_word_heatmap.sql`) adds exactly two columns to the per-group
+ * shape: which class each mistake row belongs to. A single-group heatmap
+ * has no need for this (the caller already knows which group they asked
+ * for); a rollup spanning multiple classes does, and `topic_title` alone
+ * isn't a safe attribution key since two teachers can legally reuse the
+ * same title in different groups. See `AnalyticsService.tenantHeatmap`.
+ */
+export interface TenantWordAttemptCounts extends WordAttemptCounts {
+  group_id: string;
+  group_name: string;
+}
+
+export interface TenantHeatmapEntry extends TenantWordAttemptCounts {
+  failure_rate: number;
+}
+
 /** FR-8.2 doesn't name a number; a short worst-offenders list is more useful to a teacher than the whole class roster of words. */
 export const DEFAULT_HEATMAP_LIMIT = 20;
 
@@ -63,11 +81,11 @@ function round4(n: number): number {
  * stable sort since Node 11, so ties beyond the explicit tiebreak keep
  * their input order.
  */
-export function rankHeatmap(
-  rows: WordAttemptCounts[],
+export function rankHeatmap<T extends WordAttemptCounts>(
+  rows: T[],
   limit: number = DEFAULT_HEATMAP_LIMIT,
-): HeatmapEntry[] {
-  const withRate: HeatmapEntry[] = rows.map((row) => ({
+): (T & { failure_rate: number })[] {
+  const withRate: (T & { failure_rate: number })[] = rows.map((row) => ({
     ...row,
     failure_rate: row.attempts > 0 ? round4(row.failures / row.attempts) : 0,
   }));
