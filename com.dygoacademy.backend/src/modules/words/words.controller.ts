@@ -1,9 +1,9 @@
-import { Body, Controller, HttpCode, HttpStatus, Param, Post } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, HttpStatus, Param, Post } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { CreateWordDto } from './dto/create-word.dto';
-import { TopicWord, WordsService } from './words.service';
+import { TopicWord, WordCard, WordsService } from './words.service';
 
 @ApiBearerAuth()
 @ApiTags('words')
@@ -24,6 +24,19 @@ export class WordsController {
   })
   async create(@CurrentUser('id') userId: string, @Body() dto: CreateWordDto): Promise<TopicWord> {
     return this.wordsService.ingest(userId, dto);
+  }
+
+  @Get(':id')
+  @ApiOperation({
+    summary: "Get one word's full card content",
+    description:
+      'Powers clicking a READY word in the topic list to flip its ' +
+      'flashcard right there, independent of whether it is actually due ' +
+      'for SRS review (contrast GET /srs/due). 404 if the word does not ' +
+      'exist or is not visible to this caller under RLS.',
+  })
+  async getCard(@CurrentUser('id') userId: string, @Param('id') id: string): Promise<WordCard> {
+    return this.wordsService.getCard(userId, id);
   }
 
   @Post(':id/re-enrich')

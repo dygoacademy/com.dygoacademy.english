@@ -20,6 +20,30 @@ export interface TopicWord {
   created_at: Date;
 }
 
+/**
+ * One word's full enriched content, joined from `topic_words` +
+ * `master_lexicon` — the same shape SrsService.DueCard carries (see its
+ * DUE_CARD_COLUMNS), minus the SRS scheduling fields that only make sense
+ * in the context of a review session. Backs GET /words/:id, the "click a
+ * READY word in the topic list to flip its flashcard" action — unlike a
+ * due-card fetch, this has no relationship to what's actually due; it is
+ * purely "show me this one word's card," so it takes no session/mode
+ * params and skips user_word_srs entirely.
+ */
+export interface WordCard {
+  topic_word_id: string;
+  topic_id: string;
+  source_word: string;
+  part_of_speech: string | null;
+  ipa_us: string | null;
+  ipa_uk: string | null;
+  definition_en: string | null;
+  audio_url: string | null;
+  synonyms: unknown;
+  antonyms: unknown;
+  example_sentences: unknown;
+}
+
 /** Postgres error codes this service translates into HTTP responses. */
 const PG_UNIQUE_VIOLATION = '23505';
 const PG_ROW_LEVEL_SECURITY_VIOLATION = '42501';
@@ -122,6 +146,42 @@ export class WordsService {
     });
 
     return row;
+  }
+
+  /**
+   * GET /words/:id — a single word's card content, independent of SRS due
+   * status (contrast SrsService.findDue, which only ever returns cards
+   * that are actually due/new). Same three-way NotFoundException collapse
+   * as reEnrich above: RLS hides rows this caller can't read, so "doesn't
+   * exist" and "not visible to this caller" land on the same 404 either
+   * way — there is nothing to distinguish here that reEnrich's comment
+   * doesn't already cover.
+   */
+  async getCard(userId: string, topicWordId: string): Promise<WordCard> {
+    const rows = await this.db.queryAs<WordCard>(
+      userId,
+      `select tw.id as topic_word_id,
+              tw.topic_id,
+              tw.source_word,
+              ml.part_of_speech,
+              ml.ipa_us,
+              ml.ipa_uk,
+              ml.definition_en,
+              ml.audio_url,
+              ml.synonyms,
+              ml.antonyms,
+              ml.example_sentences
+         from public.topic_words tw
+         left join public.master_lexicon ml on ml.id = tw.lexicon_id
+        where tw.id = $1`,
+      [topicWordId],
+    );
+
+    if (rows.length === 0) {
+      throw new NotFoundException('Word not found.');
+    }
+
+    return rows[0];
   }
 
   private translateInsertError(err: unknown): Error {

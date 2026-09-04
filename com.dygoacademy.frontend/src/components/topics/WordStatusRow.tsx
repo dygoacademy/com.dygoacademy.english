@@ -1,3 +1,6 @@
+import { useState } from 'react';
+
+import { WordCardModal } from '@/components/flashcard/WordCardModal';
 import { useReEnrichWord } from '@/hooks/useReEnrichWord';
 import type { TopicWordSummary } from '@/types';
 
@@ -16,6 +19,12 @@ import type { TopicWordSummary } from '@/types';
  */
 export function WordStatusRow({ word, topicId }: { word: TopicWordSummary; topicId: string }) {
   const reEnrich = useReEnrichWord(topicId);
+  // Only a READY word has enriched content to actually show (GET
+  // /words/:id joins master_lexicon, empty for ENRICHING/FAILED rows) --
+  // this is local to each row rather than lifted to the topic page since
+  // rows are otherwise fully independent (same reasoning as reEnrich
+  // above being per-row, not shared).
+  const [reviewOpen, setReviewOpen] = useState(false);
 
   if (word.status === 'ENRICHING') {
     return (
@@ -64,9 +73,18 @@ export function WordStatusRow({ word, topicId }: { word: TopicWordSummary; topic
   }
 
   return (
-    <div className="flex items-center justify-between rounded-xl border px-3 py-2.5">
-      <span>{word.source_word}</span>
-      <span className="font-mono text-xs text-muted-foreground">▶ ready</span>
-    </div>
+    <>
+      <button
+        type="button"
+        onClick={() => setReviewOpen(true)}
+        className="flex items-center justify-between rounded-xl border px-3 py-2.5 text-left transition-colors hover:border-primary"
+      >
+        <span>{word.source_word}</span>
+        <span className="font-mono text-xs text-muted-foreground">▶ ready</span>
+      </button>
+      {reviewOpen && (
+        <WordCardModal topicWordId={word.id} onClose={() => setReviewOpen(false)} />
+      )}
+    </>
   );
 }

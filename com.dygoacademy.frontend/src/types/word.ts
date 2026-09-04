@@ -1,3 +1,5 @@
+import type { LexiconExampleSentence, LexiconRelatedWord } from './srs';
+
 /**
  * `word_status` enum, database/migrations/001_initial_schema.sql line 31.
  * FAILED exists for exhausted BullMQ retries — not in the ERD, added so a
@@ -23,4 +25,24 @@ export interface TopicWord {
   failure_reason: string | null;
   created_at: string;
   updated_at: string;
+}
+
+/**
+ * `GET /api/v1/words/:id` response — mirrors WordsService.WordCard
+ * field-for-field. Same shape as DueCard (srs.ts) minus the SRS
+ * scheduling fields, since this is a due-status-independent "show me this
+ * one word's card" fetch, not a study-session card.
+ */
+export interface WordCard {
+  topic_word_id: string;
+  topic_id: string;
+  source_word: string;
+  part_of_speech: string | null;
+  ipa_us: string | null;
+  ipa_uk: string | null;
+  definition_en: string | null;
+  audio_url: string | null;
+  synonyms: LexiconRelatedWord[];
+  antonyms: LexiconRelatedWord[];
+  example_sentences: LexiconExampleSentence[];
 }

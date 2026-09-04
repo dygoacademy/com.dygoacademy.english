@@ -1,6 +1,5 @@
 import Link from 'next/link';
 
-import { SignOutButton } from '@/components/layout/SignOutButton';
 import { ROUTES } from '@/constants/routes';
 
 const NAV_LINKS = [
@@ -8,11 +7,10 @@ const NAV_LINKS = [
   { href: ROUTES.topicsBrowse, label: 'Topics' },
   { href: ROUTES.groups, label: 'Groups' },
   { href: ROUTES.analytics, label: 'Progress' },
-  { href: ROUTES.settings, label: 'You' },
 ] as const;
 
 /**
- * Authenticated shell header. Five tabs — the wireframe named four (Home
+ * Authenticated shell header. The wireframe named four tabs (Home
  * (due-now, 1d) / Topics (grid, 1f) / Progress / You; no persistent Study
  * tab, since a review session is entered contextually from the
  * DueNowCard's "Start review," not kept as standing navigation), but
@@ -20,11 +18,13 @@ const NAV_LINKS = [
  * existed at all until this pass — every roster/invite screen (turns 3,
  * 4, 8g) was wireframe-only. Added as its own tab rather than nested under
  * an existing one since it's a peer concept to Topics, not a subsection of
- * it. Route names (topics/analytics/settings) don't match the tab labels
- * 1:1 — see dygo_academy_frontend_architecture.md §15 for why the routes
- * kept their existing technical names. A real Sidebar/UserDropdown, per
- * the tech spec's component tree, is still open; this is deliberately a
- * flat link row.
+ * it. "You" was dropped from this list once the account icon below started
+ * linking to the same /settings route -- keeping both was two links to one
+ * destination. Route names (topics/analytics/settings) don't match the tab
+ * labels 1:1 — see dygo_academy_frontend_architecture.md §15 for why the
+ * routes kept their existing technical names. A real Sidebar/UserDropdown,
+ * per the tech spec's component tree, is still open; this is deliberately
+ * a flat link row.
  */
 export function Navbar({ userEmail }: { userEmail: string }) {
   return (
@@ -42,8 +42,22 @@ export function Navbar({ userEmail }: { userEmail: string }) {
         </nav>
       </div>
       <div className="flex items-center gap-3">
-        <span className="text-sm text-muted-foreground">{userEmail}</span>
-        <SignOutButton />
+        {/* Icon only, on purpose -- was a plain-text email span, then an
+            icon + a separate "Sign out" button; both still crowded a
+            narrow viewport (long email pushing the 5-tab nav off-screen,
+            then the icon+button pair doing the same). Sign out now lives
+            on the Settings page this links to, so the header only ever
+            needs this one fixed-size element regardless of screen width.
+            The full email is still available via the native title
+            tooltip and the accessible name below. */}
+        <Link
+          href={ROUTES.settings}
+          title={userEmail}
+          aria-label={`Account: ${userEmail}`}
+          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border bg-muted text-sm font-medium uppercase text-muted-foreground transition-colors hover:text-foreground"
+        >
+          {userEmail.charAt(0) || '?'}
+        </Link>
       </div>
     </header>
   );
