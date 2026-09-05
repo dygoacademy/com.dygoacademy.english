@@ -3,6 +3,7 @@
 import { useState } from 'react';
 
 import { Button } from '@/components/ui/button';
+import { blurActiveElement } from '@/lib/utils';
 import { ApiError } from '@/lib/api-client';
 import { useCreateWord } from '@/hooks/useCreateWord';
 
@@ -29,6 +30,7 @@ export function AddWordModal({
   if (!open) return null;
 
   const close = () => {
+    blurActiveElement();
     setWord('');
     setError(null);
     createWord.reset();
@@ -51,7 +53,7 @@ export function AddWordModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 sm:items-center"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
       role="dialog"
       aria-modal="true"
       aria-label="Add a word"
@@ -60,7 +62,7 @@ export function AddWordModal({
       <form
         onSubmit={submit}
         onClick={(e) => e.stopPropagation()}
-        className="flex w-full max-w-sm flex-col gap-3 rounded-t-2xl border bg-card p-5 shadow-lg sm:rounded-2xl"
+        className="flex w-full max-w-sm flex-col gap-3 rounded-2xl border bg-card p-5 shadow-lg"
       >
         <h2 className="text-lg font-semibold">Add a word</h2>
         <p className="text-xs text-muted-foreground">

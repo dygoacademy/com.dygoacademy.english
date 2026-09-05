@@ -75,6 +75,33 @@
     caret-color: black;
     transition: background-color 5000s ease-in-out 0s;
   }
+
+  /*
+   * iOS Safari auto-zooms the whole page in when focusing any text input,
+   * textarea, or select under 16px, and doesn't zoom back out on its
+   * own -- live-reported repeatedly 2026-09-05 (Create Topic's group
+   * dropdown/description field, the quiz answer input) after being
+   * patched one field at a time. Rather than hunting down every
+   * text-sm/text-xs form field across the app as each one gets noticed,
+   * this floors ALL of them at 16px, everywhere, forever -- global per
+   * the ask ("apply for all screen global app"). Scoped to phone-width
+   * viewports only: desktop/tablet browsers don't zoom on focus, so
+   * their existing text-sm/text-xs sizing is untouched above this
+   * breakpoint. `!important` is required, not just convenient: Tailwind
+   * declares its layers `base, components, utilities` (see the
+   * `@tailwind` directives at the top of this file), and later-declared
+   * layers always beat earlier ones regardless of selector specificity
+   * -- utilities (text-sm etc.) is declared last, so a plain rule here
+   * in `base` would silently lose to any `text-*` utility class without
+   * `!important` to invert that.
+   */
+  @media (max-width: 767px) {
+    input,
+    textarea,
+    select {
+      font-size: 16px !important;
+    }
+  }
 }
 
 /*

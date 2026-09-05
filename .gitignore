@@ -17,6 +17,18 @@
 # (see .env.local's own comments for what these profile files are).
 .env.tailscale
 
+# .env.stg is a third named profile (tailscale + Cloudflare R2), same
+# rationale as .env.tailscale above -- was never actually excluded until
+# now (caught 2026-09-05 while staging an unrelated commit).
+.env.stg
+
+# R2.readme was found sitting in the repo root holding a live Cloudflare
+# API token, Access Key ID and Secret Access Key in plaintext -- not a
+# secrets *pattern* so much as one specific leftover file, but excluded by
+# name so a future `git add -A` can never pick it up. This file should be
+# deleted from disk and those credentials rotated, not just gitignored.
+/R2.readme
+
 # --- Dependencies --------------------------------------------------------
 node_modules/
 .pnp

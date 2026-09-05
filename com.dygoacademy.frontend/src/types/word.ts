@@ -46,3 +46,21 @@ export interface WordCard {
   antonyms: LexiconRelatedWord[];
   example_sentences: LexiconExampleSentence[];
 }
+
+/**
+ * `GET /api/v1/words/guest-lookup` response -- mirrors
+ * WordsService.GuestWordCard field-for-field. Leaner than WordCard: no
+ * topic_word_id/topic_id, since a guest lookup has no signed-in user or
+ * topic to attach to, just whatever master_lexicon already has cached.
+ */
+export interface GuestWordCard {
+  source_word: string;
+  part_of_speech: string | null;
+  ipa_us: string | null;
+  ipa_uk: string | null;
+  definition_en: string | null;
+  audio_url: string | null;
+  synonyms: LexiconRelatedWord[];
+  antonyms: LexiconRelatedWord[];
+  example_sentences: LexiconExampleSentence[];
+}

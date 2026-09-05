@@ -5,6 +5,7 @@ import { useState } from 'react';
 import { AudioButton } from '@/components/flashcard/AudioButton';
 import { Flashcard } from '@/components/flashcard/Flashcard';
 import { Button } from '@/components/ui/button';
+import { blurActiveElement } from '@/lib/utils';
 import { useWordCard } from '@/hooks/useWordCard';
 
 /**
@@ -35,6 +36,7 @@ export function WordCardModal({
   if (!open) return null;
 
   const close = () => {
+    blurActiveElement();
     setFlipped(false);
     onClose();
   };
@@ -61,7 +63,7 @@ export function WordCardModal({
             flipped={flipped}
             onToggle={() => setFlipped((f) => !f)}
             front={
-              <div className="flex h-80 w-full flex-col items-center justify-center gap-3 rounded-2xl border-2 bg-card p-6 text-center">
+              <div className="flex h-80 w-full flex-col items-center justify-center gap-3 overflow-y-auto rounded-2xl border-2 bg-card p-6 text-center">
                 <p className="text-4xl font-semibold">{card.source_word}</p>
                 <AudioButton src={card.audio_url} />
                 {card.part_of_speech && (
@@ -71,7 +73,7 @@ export function WordCardModal({
               </div>
             }
             back={
-              <div className="flex h-80 w-full flex-col gap-2.5 rounded-2xl border-2 bg-card p-6">
+              <div className="flex h-80 w-full flex-col gap-2.5 overflow-y-auto rounded-2xl border-2 bg-card p-6">
                 <div className="flex items-center justify-between">
                   <span className="text-2xl font-semibold">{card.source_word}</span>
                   <AudioButton src={card.audio_url} label="Play pronunciation again" />

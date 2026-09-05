@@ -63,7 +63,13 @@ export function ProgressiveClues({
               key={label}
               type="button"
               disabled={!isNext}
-              onClick={() => {
+              onClick={(e) => {
+                // Same bubbling bug as AudioButton's Play button
+                // (live-reported 2026-09-04): this renders inside
+                // Flashcard's front face, which the card's own onClick
+                // (the flip toggle) wraps entirely -- without this, tapping
+                // any clue step also flips the card.
+                e.stopPropagation();
                 if (step === 3) onPlayAudio();
                 onAdvance();
               }}

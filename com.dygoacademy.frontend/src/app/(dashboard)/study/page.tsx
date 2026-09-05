@@ -143,7 +143,7 @@ function StudySessionScreen() {
         flipped={flipped}
         onToggle={() => setFlipped((f) => !f)}
         front={
-          <div className="flex h-96 w-full flex-col items-center justify-center gap-3 rounded-2xl border-2 bg-card p-6 text-center shadow-sm">
+          <div className="flex h-96 w-full flex-col items-center justify-center gap-3 overflow-y-auto rounded-2xl border-2 bg-card p-6 text-center shadow-sm">
             {isReverse ? (
               <>
                 <p className="text-xs uppercase tracking-wide text-muted-foreground">
@@ -201,7 +201,7 @@ function StudySessionScreen() {
           </div>
         }
         back={
-          <div className="flex h-96 w-full flex-col gap-2.5 rounded-2xl border-2 bg-card p-6 shadow-sm">
+          <div className="flex h-96 w-full flex-col gap-2.5 overflow-y-auto rounded-2xl border-2 bg-card p-6 shadow-sm">
             <div className="flex items-center justify-between">
               <span className="text-2xl font-semibold">{card.source_word}</span>
               <AudioButton src={card.audio_url} label="Play pronunciation again" />

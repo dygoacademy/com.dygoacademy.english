@@ -3,6 +3,7 @@
 import { useState } from 'react';
 
 import { Button } from '@/components/ui/button';
+import { blurActiveElement } from '@/lib/utils';
 import { useCreateTopic } from '@/hooks/useTopicMutations';
 import { ApiError } from '@/lib/api-client';
 import type { GroupSummary } from '@/types';
@@ -41,6 +42,7 @@ export function CreateTopicModal({
   if (!open) return null;
 
   const close = () => {
+    blurActiveElement();
     setTitle('');
     setDescription('');
     setIsPublic(false);
@@ -71,7 +73,7 @@ export function CreateTopicModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 sm:items-center"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
       role="dialog"
       aria-modal="true"
       aria-label="Create a topic"
@@ -80,7 +82,7 @@ export function CreateTopicModal({
       <form
         onSubmit={submit}
         onClick={(e) => e.stopPropagation()}
-        className="flex w-full max-w-sm flex-col gap-3 rounded-t-2xl border bg-card p-5 shadow-lg sm:rounded-2xl"
+        className="flex w-full max-w-sm flex-col gap-3 rounded-2xl border bg-card p-5 shadow-lg"
       >
         <h2 className="text-lg font-semibold">New topic</h2>
 
@@ -89,7 +91,13 @@ export function CreateTopicModal({
             value={groupId}
             onChange={(e) => setGroupId(e.target.value)}
             aria-label="Group"
-            className="rounded-md border px-3 py-2 text-sm outline-none focus:border-primary"
+            // text-base (16px), not text-sm (14px): iOS Safari auto-zooms
+            // the whole page on focus for any form field under 16px, and
+            // doesn't zoom back out on its own (live-reported 2026-09-05,
+            // "the pop-up... make screen zoom in"). Same fix on the
+            // textarea below -- the title input was already text-lg and
+            // never triggered this.
+            className="rounded-md border px-3 py-2 text-base outline-none focus:border-primary"
           >
             {groups.length === 0 && <option value="">No eligible groups</option>}
             {groups.map((g) => (
@@ -116,7 +124,7 @@ export function CreateTopicModal({
           maxLength={2000}
           rows={2}
           aria-label="Topic description"
-          className="resize-none rounded-md border px-3 py-2 text-sm outline-none focus:border-primary"
+          className="resize-none rounded-md border px-3 py-2 text-base outline-none focus:border-primary"
         />
         <label className="flex items-center gap-2 text-xs text-muted-foreground">
           <input type="checkbox" checked={isPublic} onChange={(e) => setIsPublic(e.target.checked)} />

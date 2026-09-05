@@ -54,7 +54,19 @@ export function QuizQuestion({
             onChange={(e) => setText(e.target.value)}
             disabled={disabled}
             placeholder="Type your answer…"
-            className="rounded-lg border bg-background px-3 py-2 text-sm disabled:opacity-50"
+            // These four together stop iOS/Safari from offering a
+            // predictive-text bar, autocorrecting, or auto-capitalizing
+            // the answer -- live-requested 2026-09-05: a spelling/recall
+            // quiz defeats its own purpose if the keyboard can just
+            // suggest or fix the word for the student. text-base (16px),
+            // not text-sm (14px): same iOS auto-zoom-on-focus issue fixed
+            // elsewhere (CreateTopicModal) -- under 16px, Safari zooms the
+            // whole page in on focus and doesn't zoom back out on its own.
+            autoCorrect="off"
+            autoCapitalize="off"
+            autoComplete="off"
+            spellCheck={false}
+            className="rounded-lg border bg-background px-3 py-2 text-base disabled:opacity-50"
           />
           <button
             type="submit"

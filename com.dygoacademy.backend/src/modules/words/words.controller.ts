@@ -1,9 +1,11 @@
-import { Body, Controller, Get, HttpCode, HttpStatus, Param, Post } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, HttpStatus, Param, Post, Query } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
+import { Public } from '../../common/decorators/public.decorator';
 import { CreateWordDto } from './dto/create-word.dto';
-import { TopicWord, WordCard, WordsService } from './words.service';
+import { GuestWordLookupDto } from './dto/guest-word-lookup.dto';
+import { GuestWordCard, TopicWord, WordCard, WordsService } from './words.service';
 
 @ApiBearerAuth()
 @ApiTags('words')
@@ -24,6 +26,26 @@ export class WordsController {
   })
   async create(@CurrentUser('id') userId: string, @Body() dto: CreateWordDto): Promise<TopicWord> {
     return this.wordsService.ingest(userId, dto);
+  }
+
+  // Registered ahead of `@Get(':id')` on purpose: NestJS/Express matches
+  // routes in declaration order, and ':id' matches literally any single
+  // path segment -- including the literal string "guest-lookup" -- so
+  // this would 404 as "word not found" if it came after getCard() below.
+  @Public()
+  @Get('guest-lookup')
+  @ApiOperation({
+    summary: 'Look up one already-enriched word for an unauthenticated guest',
+    description:
+      'Backs the public landing page\'s "try a word before you sign up" ' +
+      'flow (GuestWordTrial.tsx). Only reads master_lexicon -- unlike ' +
+      'POST /words, it never enqueues a Gemini/TTS enrichment job, so a ' +
+      'guest can only find words this app has already enriched for ' +
+      'someone else. 404 means "not cached yet," which the frontend turns ' +
+      'into a prompt to create a free account rather than a raw error.',
+  })
+  async guestLookup(@Query() query: GuestWordLookupDto): Promise<GuestWordCard> {
+    return this.wordsService.lookupGuestWord(query.word, query.languageCode);
   }
 
   @Get(':id')

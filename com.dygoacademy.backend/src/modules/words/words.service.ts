@@ -44,6 +44,25 @@ export interface WordCard {
   example_sentences: unknown;
 }
 
+/**
+ * A guest lookup result -- deliberately leaner than WordCard: there is no
+ * topic_word row at all here (no signed-in user, no topic), just whatever
+ * `master_lexicon` already has cached for this normalized word. Backs
+ * GET /words/guest-lookup (GuestWordTrial.tsx's "try a word before you
+ * sign up" flow, live-requested 2026-09-05).
+ */
+export interface GuestWordCard {
+  source_word: string;
+  part_of_speech: string | null;
+  ipa_us: string | null;
+  ipa_uk: string | null;
+  definition_en: string | null;
+  audio_url: string | null;
+  synonyms: unknown;
+  antonyms: unknown;
+  example_sentences: unknown;
+}
+
 /** Postgres error codes this service translates into HTTP responses. */
 const PG_UNIQUE_VIOLATION = '23505';
 const PG_ROW_LEVEL_SECURITY_VIOLATION = '42501';
@@ -179,6 +198,48 @@ export class WordsService {
 
     if (rows.length === 0) {
       throw new NotFoundException('Word not found.');
+    }
+
+    return rows[0];
+  }
+
+  /**
+   * GET /words/guest-lookup — the BA flow for the public landing page
+   * (live-requested 2026-09-05):
+   *   1. guest types a word and hits the search icon
+   *   2. we look it up in master_lexicon (already-enriched words only --
+   *      a guest request must never trigger a fresh Gemini/TTS enrichment
+   *      job the way an authenticated POST /words does, both for cost
+   *      control and because there is no topic to attach the result to)
+   *   3. found -> return the card content
+   *   4. not found -> 404, which GuestWordTrial.tsx turns into "create a
+   *      free account to add new words" rather than a raw error
+   *
+   * Runs via queryAsAnon (DatabaseService), not queryAs(userId, ...): there
+   * is no userId at all on this path, and 002_rls_policies.sql already
+   * grants the `anon` role SELECT on master_lexicon for exactly this kind
+   * of unauthenticated read.
+   */
+  async lookupGuestWord(word: string, languageCode = 'en'): Promise<GuestWordCard> {
+    const rows = await this.db.queryAsAnon<GuestWordCard>(
+      `select normalized_word as source_word,
+              part_of_speech,
+              ipa_us,
+              ipa_uk,
+              definition_en,
+              audio_url,
+              synonyms,
+              antonyms,
+              example_sentences
+         from public.master_lexicon
+        where normalized_word = lower(trim($1))
+          and language_code = $2
+        limit 1`,
+      [word, languageCode],
+    );
+
+    if (rows.length === 0) {
+      throw new NotFoundException('This word is not in the lexicon yet.');
     }
 
     return rows[0];

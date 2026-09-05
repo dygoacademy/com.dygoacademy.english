@@ -126,6 +126,45 @@ export class DatabaseService implements OnModuleInit, OnModuleDestroy {
     });
   }
 
+  /**
+   * Runs `work` as the `anon` Postgres role — no JWT claims, the same
+   * role PostgREST uses for an unauthenticated request. This backs the
+   * guest word-lookup path (GuestWordTrial.tsx -> GET /words/guest-lookup,
+   * added 2026-09-05 for the "try a word before you sign up" BA flow):
+   * 002_rls_policies.sql already grants `anon` SELECT on `master_lexicon`
+   * (and public topics/topic_words) specifically so unauthenticated
+   * visitors can read already-enriched words, so this reuses that
+   * existing policy rather than reaching for withServiceRole's RLS
+   * bypass -- service_role is for background workers with no user
+   * context at all (EnrichmentProcessor), not a user-facing request path.
+   */
+  async withAnon<T>(work: (client: PoolClient) => Promise<T>): Promise<T> {
+    const client = await this.pool.connect();
+    try {
+      await client.query('begin');
+      await client.query("select set_config('role', 'anon', true)");
+      const result = await work(client);
+      await client.query('commit');
+      return result;
+    } catch (err) {
+      await client.query('rollback').catch(() => undefined);
+      throw err;
+    } finally {
+      client.release();
+    }
+  }
+
+  /** Convenience wrapper: a single anon-scoped query. */
+  async queryAsAnon<T extends QueryResultRow = QueryResultRow>(
+    text: string,
+    params: unknown[] = [],
+  ): Promise<T[]> {
+    return this.withAnon(async (client) => {
+      const res = await client.query<T>(text, params);
+      return res.rows;
+    });
+  }
+
   async isHealthy(): Promise<boolean> {
     try {
       await this.pool.query('select 1');
