@@ -94,7 +94,15 @@ export class PushDispatchService {
       return { sent: 0, pruned: 0, failed: 0 };
     }
 
-    const subs = await this.db.query<PushSubscriptionRow>(
+    // queryAsService, not the unscoped query() authenticator connects as:
+    // this runs for an arbitrary userId with no request-scoped JWT to set
+    // (a BullMQ tick, or triggerSprint fanning out to a whole class), and
+    // authenticator has zero table grants of its own by design (see
+    // DatabaseService.withServiceRole's doc comment and migration 015 --
+    // same root cause EnrichmentProcessor hit on master_lexicon/topic_words,
+    // live-verified again here 2026-09-16: "permission denied for table
+    // push_subscriptions").
+    const subs = await this.db.queryAsService<PushSubscriptionRow>(
       `select id, endpoint, p256dh_key, auth_key from public.push_subscriptions where user_id = $1`,
       [userId],
     );
@@ -122,7 +130,7 @@ export class PushDispatchService {
           );
           result.sent += 1;
           await this.db
-            .query(`update public.push_subscriptions set last_used_at = now() where id = $1`, [
+            .queryAsService(`update public.push_subscriptions set last_used_at = now() where id = $1`, [
               sub.id,
             ])
             .catch(() => undefined);
@@ -134,7 +142,7 @@ export class PushDispatchService {
             // Pruning here means the next tick doesn't keep retrying a dead
             // endpoint forever.
             await this.db
-              .query(`delete from public.push_subscriptions where id = $1`, [sub.id])
+              .queryAsService(`delete from public.push_subscriptions where id = $1`, [sub.id])
               .catch(() => undefined);
             result.pruned += 1;
           } else {

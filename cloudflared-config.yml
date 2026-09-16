@@ -1,0 +1,32 @@
+# Dygo Academy — Cloudflare Tunnel ingress config.
+#
+# Replaces the earlier Caddy + port-forwarding plan (2026-09-16): StarHub's
+# public IP is dynamic and possibly CGNAT'd, so a plain A-record + open
+# ports setup would be fragile or outright unreachable. A tunnel makes an
+# outbound-only connection from this Mac to Cloudflare's edge — Cloudflare
+# terminates TLS and proxies matching hostnames back down it. No public IP
+# needed, no router port forwarding, works even behind CGNAT.
+#
+# Same three subdomains -> local ports as the old Caddyfile, mirroring the
+# host:port pattern .env.stg already uses (see .env.prod's header comment):
+#   www.dygoacademy.com      -> :3000 (frontend)
+#   api.dygoacademy.com      -> :3001 (backend)
+#   supabase.dygoacademy.com -> :8000 (Kong gateway)
+#
+# TUNNEL_ID / credentials-file below are placeholders -- fill them in after
+# running `cloudflared tunnel create dygo-academy` (see README "Production
+# — public domain"). credentials-file is the path `tunnel create` prints,
+# normally ~/.cloudflared/<TUNNEL_ID>.json -- never commit that json file,
+# it holds the tunnel's secret.
+
+tunnel: f6169862-5054-48bc-8b45-746f33bc4cbe
+credentials-file: /Users/dylan/.cloudflared/f6169862-5054-48bc-8b45-746f33bc4cbe.json
+
+ingress:
+  - hostname: www.dygoacademy.com
+    service: http://localhost:3000
+  - hostname: api.dygoacademy.com
+    service: http://localhost:3001
+  - hostname: supabase.dygoacademy.com
+    service: http://localhost:8000
+  - service: http_status:404

@@ -5,7 +5,7 @@ import { useState } from 'react';
 import { AudioButton } from '@/components/flashcard/AudioButton';
 import { Flashcard } from '@/components/flashcard/Flashcard';
 import { Button } from '@/components/ui/button';
-import { blurActiveElement } from '@/lib/utils';
+import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import { useWordCard } from '@/hooks/useWordCard';
 
 /**
@@ -13,9 +13,11 @@ import { useWordCard } from '@/hooks/useWordCard';
  * live-requested 2026-09-04. Deliberately not a study session: no rating
  * buttons, no queue, no relationship to whether the word is actually due
  * (that's /study, backed by useStudySession/SrsService.findDue). This is
- * a standalone peek at one word's card, closed as soon as you're done —
- * same fixed-overlay dialog pattern AddWordModal uses (no Radix dependency
- * in the project yet).
+ * a standalone peek at one word's card, closed as soon as you're done.
+ *
+ * Migrated 2026-09-05 onto shadcn/ui's Dialog (see AddWordModal.tsx's
+ * comment for the full reasoning) instead of the hand-rolled overlay
+ * this used to share with the other two modals.
  *
  * Front/back layout intentionally mirrors the STANDARD-mode card in
  * /study/page.tsx (word + audio + IPA on the front, definition/synonyms/
@@ -33,26 +35,20 @@ export function WordCardModal({
   const { data: card, isPending, isError } = useWordCard(topicWordId, open);
   const [flipped, setFlipped] = useState(false);
 
-  if (!open) return null;
-
   const close = () => {
-    blurActiveElement();
     setFlipped(false);
     onClose();
   };
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
-      role="dialog"
-      aria-modal="true"
-      aria-label="Word card"
-      onClick={close}
+    <Dialog
+      open={open}
+      onOpenChange={(next) => {
+        if (!next) close();
+      }}
     >
-      <div
-        onClick={(e) => e.stopPropagation()}
-        className="flex w-full max-w-sm flex-col gap-3 rounded-2xl border bg-card p-5 shadow-lg"
-      >
+      <DialogContent hideClose>
+        <DialogTitle className="sr-only">Word card</DialogTitle>
         {isPending && <p className="p-6 text-center text-sm text-muted-foreground">Loading…</p>}
         {isError && (
           <p className="p-6 text-center text-sm text-muted-foreground">Couldn&apos;t load this word.</p>
@@ -106,7 +102,7 @@ export function WordCardModal({
         <Button variant="outline" onClick={close}>
           Close
         </Button>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }

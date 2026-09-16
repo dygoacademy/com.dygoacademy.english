@@ -10,7 +10,7 @@
 #   ./database/apply-migrations.sh --qa-seed-only        # ONLY 011 (3rd-tenant QA fixture)
 #   ./database/apply-migrations.sh --qa-words-seed-only  # ONLY 012 (100 QA words) -- needs 011 first
 #   ./database/apply-migrations.sh --hello-world-seed-only  # ONLY 013 (1 test word+audio) -- needs 011 first
-#   ./database/apply-migrations.sh --grants-only            # ONLY 014 (service_role table grants)
+#   ./database/apply-migrations.sh --grants-only            # ONLY 014+015 (service_role table grants)
 #   ./database/apply-migrations.sh --test-only           # ONLY the RLS suite
 #   ./database/apply-migrations.sh --verify              # report what is actually installed
 #
@@ -91,9 +91,11 @@ case "${1:-}" in
     fi
     run_file "$DIR/migrations/013_hello_world_test_word.sql"; verify; echo "done."; exit 0 ;;
   --grants-only)
-    # Idempotent GRANTs (014) — safe to run any time, no dependency on other
-    # fixtures being loaded first.
-    run_file "$DIR/migrations/014_service_role_grants.sql"; verify; echo "done."; exit 0 ;;
+    # Idempotent GRANTs (014, 015) — safe to run any time, no dependency on
+    # other fixtures being loaded first.
+    run_file "$DIR/migrations/014_service_role_grants.sql"
+    run_file "$DIR/migrations/015_push_notification_service_role_grant.sql"
+    verify; echo "done."; exit 0 ;;
   --test-only)
     # The suite asserts exact row counts, so it is meaningless without fixtures.
     if [ "$(psql_run -t -c 'select count(*) from public.tenants' | tr -d '[:space:]')" = "0" ]; then

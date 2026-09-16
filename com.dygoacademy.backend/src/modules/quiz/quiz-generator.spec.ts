@@ -15,6 +15,8 @@ function makeWord(overrides: Partial<QuizSourceWord> = {}): QuizSourceWord {
     topicId: 'topic-1',
     sourceWord: 'resilient',
     audioUrl: 'https://cdn.example/resilient.wav',
+    ipaUs: '/rɪˈzɪljənt/',
+    definition: 'able to recover quickly from difficulties.',
     synonyms: [{ word: 'tough', level: 'B1' }],
     antonyms: [{ word: 'fragile', level: 'B1' }],
     exampleSentences: [

@@ -23,12 +23,18 @@ import type { QuizAnswerResult } from '@/types';
  * unconditionally — see `useGenerateQuiz`'s comment — with `enabled`
  * deciding which one actually fetches, so only one network call happens
  * per visit regardless of which mode this is.
+ *
+ * `max-w-xs` -> `max-w-sm` on every screen state here -- live-reported
+ * 2026-09-05 ("the quiz and flash card screen too small"), matching
+ * `/study`'s same-day width bump. Widened again to `max-w-md` the same
+ * day ("the page quiz should have more space of width") -- `/study`
+ * stayed at `max-w-sm` since only the quiz page's own testing flagged it.
  */
 export default function QuizPage() {
   return (
     <Suspense
       fallback={
-        <main className="mx-auto flex min-h-screen max-w-xs flex-col items-center justify-center p-6">
+        <main className="mx-auto flex min-h-screen max-w-md flex-col items-center justify-center p-4">
           <p className="text-sm text-muted-foreground">Loading…</p>
         </main>
       }
@@ -56,10 +62,10 @@ function QuizScreen() {
   const item = items[index];
   const done = !isLoading && index >= items.length;
 
-  function handleSubmit(answer: string) {
+  function handleSubmit(answer: string, hintUsed: boolean) {
     if (!item) return;
     submitAnswer.mutate(
-      { itemId: item.id, answer },
+      { itemId: item.id, answer, hintUsed },
       {
         onSuccess: (res) => {
           setResult(res);
@@ -76,7 +82,7 @@ function QuizScreen() {
 
   if (isLoading) {
     return (
-      <main className="mx-auto flex min-h-screen max-w-xs flex-col items-center justify-center gap-3 p-6 text-center">
+      <main className="mx-auto flex min-h-screen max-w-md flex-col items-center justify-center gap-3 p-4 text-center">
         <p className="text-sm text-muted-foreground">
           {isLeechDrill ? 'Loading your remedial drill…' : 'Building your quiz…'}
         </p>
@@ -86,7 +92,7 @@ function QuizScreen() {
 
   if (isError) {
     return (
-      <main className="mx-auto flex min-h-screen max-w-xs flex-col items-center justify-center gap-3 p-6 text-center">
+      <main className="mx-auto flex min-h-screen max-w-md flex-col items-center justify-center gap-3 p-4 text-center">
         <p className="text-sm text-muted-foreground">Couldn&apos;t load this quiz.</p>
         <button type="button" onClick={() => void refetch()} className="text-sm underline underline-offset-4">
           Try again
@@ -97,7 +103,7 @@ function QuizScreen() {
 
   if (done) {
     return (
-      <main className="mx-auto flex min-h-screen max-w-xs flex-col items-center justify-center gap-3 p-6 text-center">
+      <main className="mx-auto flex min-h-screen max-w-md flex-col items-center justify-center gap-3 p-4 text-center">
         <p className="text-lg font-semibold">
           {items.length === 0
             ? isLeechDrill
@@ -113,7 +119,7 @@ function QuizScreen() {
   }
 
   return (
-    <main className="mx-auto flex min-h-screen max-w-xs flex-col gap-5 p-6">
+    <main className="mx-auto flex min-h-screen max-w-md flex-col gap-5 p-4">
       <div className="flex items-center justify-between text-xs text-muted-foreground">
         <span>
           {index + 1} of {items.length} · {isLeechDrill ? 'leech drill' : 'quiz'}

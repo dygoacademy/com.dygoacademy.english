@@ -20,7 +20,11 @@ async function makeService(queryMock: jest.Mock, configured = true) {
   const moduleRef = await Test.createTestingModule({
     providers: [
       PushDispatchService,
-      { provide: DatabaseService, useValue: { query: queryMock } },
+      // queryAsService, not query() — see push-dispatch.service.ts's
+      // sendToUser comment: authenticator (query()'s role) has zero grants
+      // on push_subscriptions by design, so the real code runs as
+      // service_role via queryAsService instead (migration 015).
+      { provide: DatabaseService, useValue: { queryAsService: queryMock } },
       {
         provide: ConfigService,
         useValue: configValue(

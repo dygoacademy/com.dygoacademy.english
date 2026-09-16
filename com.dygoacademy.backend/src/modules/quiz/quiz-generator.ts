@@ -61,6 +61,8 @@ export interface QuizSourceWord {
   topicId: string;
   sourceWord: string;
   audioUrl: string | null;
+  ipaUs: string | null;
+  definition: string | null;
   synonyms: Array<{ word: string; level: string }>;
   antonyms: Array<{ word: string; level: string }>;
   exampleSentences: Array<{ sentence: string; level: string; translation_hint: string }>;
@@ -125,6 +127,31 @@ export function deriveCorrectAnswer(
 /** True for MATCHING and CONTEXTUAL_CHOICE — the two types needing distractor options. */
 export function isChoiceType(type: QuizType): boolean {
   return type === 'MATCHING' || type === 'CONTEXTUAL_CHOICE';
+}
+
+/**
+ * FR-5.x follow-up (live-requested 2026-09-16, "when I do the fill in
+ * blank I don't know which word should be fill in ... some suggestion
+ * like IPA and explain meaning"). A TEXT-mode item (CLOZE, DICTATION) has
+ * no options list to fall back on the way CHOICE items do, so a student
+ * who's drawn a blank has nothing else on screen to work from. Kept as a
+ * separate on-demand pull (`GET /quizzes/:id/hint`, `QuizService.hint`)
+ * rather than folded into the initial `QuizItem` payload every quiz item
+ * already gets — same reasoning as `correctAnswer` never being sent until
+ * `/answer`: a hint a student didn't ask for yet shouldn't already be
+ * sitting in the network response for a quick peek. Pure passthrough today
+ * (no gating by type) since the frontend only offers the "Need a hint?"
+ * control on TEXT-mode items in the first place; kept here rather than
+ * inlined in the service so it stays unit-testable alongside the rest of
+ * this file's pure functions.
+ */
+export interface QuizHint {
+  ipaUs: string | null;
+  definition: string | null;
+}
+
+export function deriveHint(word: QuizSourceWord): QuizHint {
+  return { ipaUs: word.ipaUs, definition: word.definition };
 }
 
 /**

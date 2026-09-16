@@ -45,8 +45,8 @@ export function Navbar({ userEmail }: { userEmail: string }) {
           guest landing page) until the standalone "Home" nav tab
           (ROUTES.topics, the due-now dashboard) was dropped as redundant;
           this now points where that tab used to. */}
-      <Link href={ROUTES.topics} className="truncate font-semibold">
-        Dygo Academy
+      <Link href={ROUTES.topics} className="truncate font-bold">
+        Dygo
       </Link>
       <nav className="flex items-center gap-3 overflow-x-auto text-sm text-muted-foreground sm:gap-4">
         {NAV_LINKS.map((link) => (

@@ -12,6 +12,8 @@ function wordRow(overrides: Record<string, unknown> = {}) {
     topic_id: 'topic-1',
     source_word: 'resilient',
     audio_url: 'https://cdn.example/resilient.wav',
+    ipa_us: '/rɪˈzɪljənt/',
+    definition_en: 'able to recover quickly from difficulties.',
     synonyms: [{ word: 'tough', level: 'B1' }],
     antonyms: [{ word: 'fragile', level: 'B1' }],
     example_sentences: [
@@ -118,6 +120,7 @@ describe('QuizService.answer', () => {
       quizItemId: 'tw-1:DICTATION',
       correct: true,
       correctAnswer: 'resilient',
+      hintUsed: false,
     });
     expect(explainNuanceMock).not.toHaveBeenCalled();
   });
@@ -162,6 +165,45 @@ describe('QuizService.answer', () => {
     await expect(
       service.answer('user-1', 'tw-1:MATCHING', { answer: 'anything' }),
     ).rejects.toBeInstanceOf(NotFoundException);
+  });
+
+  it('echoes hintUsed back from the submitted answer', async () => {
+    const queryAsMock = jest.fn().mockResolvedValueOnce([wordRow()]);
+    const service = await makeService({ queryAsMock });
+
+    const result = await service.answer('user-1', 'tw-1:DICTATION', {
+      answer: 'resilient',
+      hintUsed: true,
+    });
+
+    expect(result.hintUsed).toBe(true);
+  });
+});
+
+describe('QuizService.hint', () => {
+  it('throws NotFoundException for a malformed item id', async () => {
+    const service = await makeService({ queryAsMock: jest.fn() });
+    await expect(service.hint('user-1', 'not-an-id')).rejects.toBeInstanceOf(NotFoundException);
+  });
+
+  it('throws NotFoundException when the word no longer exists or is not READY', async () => {
+    const queryAsMock = jest.fn().mockResolvedValueOnce([]);
+    const service = await makeService({ queryAsMock });
+    await expect(service.hint('user-1', 'missing:CLOZE')).rejects.toBeInstanceOf(
+      NotFoundException,
+    );
+  });
+
+  it('returns the IPA and definition for a valid item', async () => {
+    const queryAsMock = jest.fn().mockResolvedValueOnce([wordRow()]);
+    const service = await makeService({ queryAsMock });
+
+    const result = await service.hint('user-1', 'tw-1:CLOZE');
+
+    expect(result).toEqual({
+      ipaUs: '/rɪˈzɪljənt/',
+      definition: 'able to recover quickly from difficulties.',
+    });
   });
 });
 

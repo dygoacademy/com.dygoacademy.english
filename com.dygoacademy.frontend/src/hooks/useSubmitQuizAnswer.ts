@@ -9,6 +9,8 @@ export interface SubmitQuizAnswerInput {
   itemId: string;
   answer: string;
   responseMs?: number;
+  /** Whether the student opened `useQuizHint` for this item before answering. */
+  hintUsed?: boolean;
 }
 
 /**
@@ -24,10 +26,11 @@ export function useSubmitQuizAnswer() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ itemId, answer, responseMs }: SubmitQuizAnswerInput) =>
+    mutationFn: ({ itemId, answer, responseMs, hintUsed }: SubmitQuizAnswerInput) =>
       apiClient.post<QuizAnswerResult>(`/quizzes/${encodeURIComponent(itemId)}/answer`, {
         answer,
         responseMs,
+        hintUsed,
       }),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ['srs'] });

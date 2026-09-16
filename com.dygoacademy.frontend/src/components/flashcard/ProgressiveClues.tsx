@@ -16,27 +16,36 @@ import type { LexiconExampleSentence } from '@/types';
  * already promises "Word + Audio + POS" (FR-4.1), so audio being reachable
  * as a clue step is consistent with the rest of the card.
  *
- * A ladder, not four independent toggles: each clue can only be revealed
- * after the one before it, matching "step-by-step" in both source
- * documents' wording.
+ * First-letter step dropped entirely 2026-09-14 ("remove first letter in
+ * the flash card, that doesn't help student in any aspect") -- the front
+ * face already shows the full word before flipping (Module 4, FR-4.1), so
+ * "starts with X…" was reproducing something already on screen, not a real
+ * hint.
+ *
+ * Audio step dropped the same way 2026-09-15 ("remove audio beside the IPA
+ * hint in the flash card") -- the front face already has its own always-
+ * visible `AudioButton` (FR-4.1), so gating a second play button behind a
+ * clue tap just duplicated a control that was already on screen, same
+ * reasoning as the first-letter removal above. Down to two rungs now: IPA
+ * hint -> In a sentence.
+ *
+ * A ladder, not independent toggles: each clue can only be revealed after
+ * the one before it, matching "step-by-step" in both source documents'
+ * wording.
  */
-export type ClueLevel = 0 | 1 | 2 | 3 | 4;
+export type ClueLevel = 0 | 1 | 2;
 
-const CLUE_LABELS = ['First letter', 'IPA hint', 'Audio', 'In a sentence'] as const;
+const CLUE_LABELS = ['IPA hint', 'In a sentence'] as const;
 
 export function ProgressiveClues({
   word,
   ipaUs,
-  onPlayAudio,
-  hasAudio,
   exampleSentence,
   level,
   onAdvance,
 }: {
   word: string;
   ipaUs: string | null;
-  onPlayAudio: () => void;
-  hasAudio: boolean;
   exampleSentence: LexiconExampleSentence | null;
   level: ClueLevel;
   onAdvance: () => void;
@@ -46,10 +55,8 @@ export function ProgressiveClues({
     : 'No example sentence available.';
 
   const revealed: string[] = [];
-  if (level >= 1) revealed.push(`Starts with “${word[0]?.toUpperCase() ?? '?'}…”`);
-  if (level >= 2) revealed.push(ipaUs ?? 'No IPA available.');
-  if (level >= 3) revealed.push('Audio played.');
-  if (level >= 4) revealed.push(maskedSentence);
+  if (level >= 1) revealed.push(ipaUs ?? 'No IPA available.');
+  if (level >= 2) revealed.push(maskedSentence);
 
   return (
     <div className="flex flex-col items-center gap-2">
@@ -70,7 +77,6 @@ export function ProgressiveClues({
                 // (the flip toggle) wraps entirely -- without this, tapping
                 // any clue step also flips the card.
                 e.stopPropagation();
-                if (step === 3) onPlayAudio();
                 onAdvance();
               }}
               className={cn(
@@ -81,7 +87,6 @@ export function ProgressiveClues({
               )}
             >
               {label}
-              {step === 3 && !hasAudio ? ' (unavailable)' : ''}
             </button>
           );
         })}

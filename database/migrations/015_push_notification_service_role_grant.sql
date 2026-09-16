@@ -1,0 +1,25 @@
+-- =============================================================================
+-- Dygo Academy — 015_push_notification_service_role_grant.sql
+-- Explicit service_role table grant for the push notification dispatcher.
+--
+-- ROOT CAUSE (live-verified 2026-09-16, testing FR-6.5 manually via
+-- scripts/test-push.js): sending a push failed with:
+--   permission denied for table push_subscriptions
+-- Exactly 014_service_role_grants.sql's bug, on a different table:
+-- PushDispatchService.sendToUser reads/updates/deletes push_subscriptions
+-- for an arbitrary userId (a BullMQ tick, or triggerSprint fanning out to a
+-- class) with `DatabaseService.query()`, which runs as plain `authenticator`
+-- — a bare login role with zero table grants of its own by design.
+-- 002_rls_policies.sql's grants only cover `authenticated` (RLS-scoped to
+-- user_id = auth.uid()), which is no help for a background job with no
+-- signed-in user to scope to.
+--
+-- Fixed at the code level in the same pass (PushDispatchService's three
+-- push_subscriptions call sites switched from db.query to
+-- db.queryAsService) — that's the actual fix, same as 014's. This migration
+-- is the defense-in-depth half, in case self-hosted Supabase's bootstrap
+-- grants to service_role ever turn out not to cover this table on some
+-- environment. GRANT is idempotent — safe to re-run.
+-- =============================================================================
+
+grant select, update, delete on public.push_subscriptions to service_role;

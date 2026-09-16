@@ -56,7 +56,22 @@ function LoginForm() {
   }
 
   return (
-    <main className="flex min-h-screen items-center justify-center p-8">
+    <main className="flex min-h-dvh flex-col items-center justify-center gap-4 p-4">
+      {/* Brand mark, top of screen -- live-requested 2026-09-05 ("sign-in
+          page should have the Dygo text on top and navigate back to
+          previous page"). `router.back()` rather than a Link to
+          ROUTES.topics/home: /login is reached from several places
+          (direct visit, or middleware bouncing a signed-out user off a
+          protected route with `?next=`), so "back" means wherever the
+          visitor actually came from, not a fixed destination. */}
+      <button
+        type="button"
+        onClick={() => router.back()}
+        className="text-lg font-semibold hover:opacity-80"
+        aria-label="Go back"
+      >
+        Dygo
+      </button>
       <Card className="w-full max-w-sm">
         <CardHeader>
           <CardTitle>Sign in</CardTitle>

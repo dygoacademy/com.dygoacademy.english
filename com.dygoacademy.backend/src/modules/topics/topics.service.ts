@@ -113,12 +113,18 @@ export class TopicsService {
       throw new NotFoundException('Topic not found.');
     }
 
+    // Newest word first -- live-requested 2026-09-08 ("sort the topics
+    // listing, new word will be show in the top"). Was `asc` (oldest
+    // first), so a word just added via AddWordModal landed at the bottom
+    // of WordStatusRow's list, off-screen on a topic with any real amount
+    // of content -- `desc` puts what the caller just added right where
+    // they're already looking.
     const words = await this.db.queryAs<TopicWordRow>(
       userId,
       `select id, source_word, language_code, status, custom_note, failure_reason, created_at
          from public.topic_words
         where topic_id = $1
-        order by created_at asc`,
+        order by created_at desc`,
       [topicId],
     );
 

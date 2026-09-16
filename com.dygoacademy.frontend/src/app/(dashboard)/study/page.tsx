@@ -25,6 +25,10 @@ import type { DueCard, SessionMode, SrsRating } from '@/types';
  * push-notification deep link (FR-6.5 — "1-tap links... routing directly
  * into /study") can select both without this page needing to know who
  * sent it here.
+ *
+ * `max-w-xs` -> `max-w-sm` on every screen state here -- live-reported
+ * 2026-09-05 ("the quiz and flash card screen too small"), matching the
+ * same width bump already made to the guest word-trial card that day.
  */
 const VALID_MODES: SessionMode[] = ['STANDARD', 'REVERSE', 'LISTENING'];
 
@@ -38,7 +42,7 @@ export default function StudyPage() {
   return (
     <Suspense
       fallback={
-        <main className="mx-auto flex min-h-screen max-w-xs flex-col items-center justify-center p-6">
+        <main className="mx-auto flex min-h-screen max-w-sm flex-col items-center justify-center p-4">
           <p className="text-sm text-muted-foreground">Loading…</p>
         </main>
       }
@@ -63,7 +67,38 @@ function StudySessionScreen() {
   const [flipped, setFlipped] = useState(false);
   const [clueLevel, setClueLevel] = useState<ClueLevel>(0);
 
-  const cards = data?.cards ?? [];
+  // Snapshot the due-card batch once per session (keyed by topicId+mode),
+  // instead of reading `data.cards` live on every render -- live-reported
+  // 2026-09-15 ("click to knew it and didn't know in the flash card the
+  // total word is decrease"). `useRateWord`'s onSuccess invalidates every
+  // `['srs', ...]` query so *other* screens (due-count, stats) pick up the
+  // word's new next_due_at, but this session's own `useStudySession` query
+  // shares that same `['srs', 'sessions', ...]` prefix, so it was one of
+  // the queries getting invalidated -- refetching mid-session and coming
+  // back with one fewer card each time (the one just rated is no longer
+  // due). `cards.length` fed directly from that live result, so the "X of
+  // N" denominator and the flashcard queue itself shrank underneath the
+  // student on every single rating, sometimes ending the session early. A
+  // session is meant to be a fixed batch worked through by `index`, not a
+  // live view of what's still due -- frozen here the first time each
+  // topicId/mode combination loads, and re-frozen only when the student
+  // actually starts a *different* session.
+  const sessionKey = `${topicId ?? 'all'}:${mode}`;
+  const [session, setSession] = useState<{ key: string; cards: DueCard[] } | null>(null);
+
+  // Adjusted during render, not in a `useEffect` -- React explicitly
+  // sanctions calling `setState` mid-render to reset/derive state when a
+  // key changes (it re-renders immediately with the new value before the
+  // browser paints), which matters here specifically: an effect-based
+  // version of this snapshot briefly rendered `cards` as `[]` -- and thus
+  // the "nothing due" screen -- for one frame every time `data` first
+  // arrived, before the effect had a chance to run.
+  if (data && session?.key !== sessionKey) {
+    setSession({ key: sessionKey, cards: data.cards });
+    setIndex(0);
+  }
+
+  const cards = session?.key === sessionKey ? session.cards : [];
   const card: DueCard | undefined = cards[index];
   const done = !isLoading && index >= cards.length;
 
@@ -82,7 +117,7 @@ function StudySessionScreen() {
 
   if (isLoading) {
     return (
-      <main className="mx-auto flex min-h-screen max-w-xs flex-col items-center justify-center gap-3 p-6 text-center">
+      <main className="mx-auto flex min-h-screen max-w-sm flex-col items-center justify-center gap-3 p-4 text-center">
         <p className="text-sm text-muted-foreground">Loading your due cards…</p>
       </main>
     );
@@ -90,7 +125,7 @@ function StudySessionScreen() {
 
   if (isError) {
     return (
-      <main className="mx-auto flex min-h-screen max-w-xs flex-col items-center justify-center gap-3 p-6 text-center">
+      <main className="mx-auto flex min-h-screen max-w-sm flex-col items-center justify-center gap-3 p-4 text-center">
         <p className="text-sm text-muted-foreground">Couldn&apos;t load this session.</p>
         <button type="button" onClick={() => void refetch()} className="text-sm underline underline-offset-4">
           Try again
@@ -101,7 +136,7 @@ function StudySessionScreen() {
 
   if (done) {
     return (
-      <main className="mx-auto flex min-h-screen max-w-xs flex-col items-center justify-center gap-3 p-6 text-center">
+      <main className="mx-auto flex min-h-screen max-w-sm flex-col items-center justify-center gap-3 p-4 text-center">
         <p className="text-lg font-semibold">
           {cards.length === 0 ? 'Nothing due right now.' : "That's every card for now."}
         </p>
@@ -122,7 +157,7 @@ function StudySessionScreen() {
   const isReverse = mode === 'REVERSE';
 
   return (
-    <main className="mx-auto flex min-h-screen max-w-xs flex-col gap-5 p-6">
+    <main className="mx-auto flex min-h-screen max-w-sm flex-col gap-5 p-4">
       <div className="flex items-center justify-between text-xs text-muted-foreground">
         <span>
           {index + 1} of {cards.length} · {mode.toLowerCase()}
@@ -177,13 +212,9 @@ function StudySessionScreen() {
                 <ProgressiveClues
                   word={card.source_word}
                   ipaUs={card.ipa_us}
-                  hasAudio={Boolean(card.audio_url)}
-                  onPlayAudio={() => {
-                    if (card.audio_url) new Audio(card.audio_url).play().catch(() => undefined);
-                  }}
                   exampleSentence={example}
                   level={clueLevel}
-                  onAdvance={() => setClueLevel((l) => (l < 4 ? ((l + 1) as ClueLevel) : l))}
+                  onAdvance={() => setClueLevel((l) => (l < 2 ? ((l + 1) as ClueLevel) : l))}
                 />
               </div>
             )}

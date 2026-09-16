@@ -8,11 +8,13 @@ import { SubmitAnswerDto } from './dto/submit-answer.dto';
 import {
   MIN_DISTRACTORS,
   QUIZ_TYPES,
+  QuizHint,
   QuizItem,
   QuizSourceWord,
   QuizType,
   buildQuizItem,
   deriveCorrectAnswer,
+  deriveHint,
   gradeAnswer,
   parseQuizItemId,
   promptFor,
@@ -23,6 +25,8 @@ interface QuizWordRow {
   topic_id: string;
   source_word: string;
   audio_url: string | null;
+  ipa_us: string | null;
+  definition_en: string | null;
   synonyms: Array<{ word: string; level: string }> | null;
   antonyms: Array<{ word: string; level: string }> | null;
   example_sentences: Array<{ sentence: string; level: string; translation_hint: string }> | null;
@@ -34,6 +38,17 @@ export interface AnswerResult {
   correctAnswer: string;
   /** FR-5.5 — only populated on a wrong answer; see GeminiEnrichmentService.explainNuance. */
   nuanceExplanation?: string;
+  /**
+   * Echoes `SubmitAnswerDto.hintUsed` back, same "accept now, analyze later"
+   * shape as `responseMs` above it in the DTO. Not yet wired into SRS
+   * scheduling: quiz answers of any kind don't touch `SrsService.rate`
+   * today (only `/study`'s flashcard ratings do) — this field exists so a
+   * hint-assisted answer is at least distinguishable in the response,
+   * ready for whichever of {quiz results feeding SRS at all, a leech-
+   * specific rule} gets built first, rather than silently losing the
+   * signal in the meantime.
+   */
+  hintUsed: boolean;
 }
 
 const WORD_COLUMNS = `
@@ -41,6 +56,8 @@ const WORD_COLUMNS = `
   tw.topic_id,
   tw.source_word,
   ml.audio_url,
+  ml.ipa_us,
+  ml.definition_en,
   ml.synonyms,
   ml.antonyms,
   ml.example_sentences
@@ -52,6 +69,8 @@ function mapRow(row: QuizWordRow): QuizSourceWord {
     topicId: row.topic_id,
     sourceWord: row.source_word,
     audioUrl: row.audio_url,
+    ipaUs: row.ipa_us,
+    definition: row.definition_en,
     synonyms: row.synonyms ?? [],
     antonyms: row.antonyms ?? [],
     exampleSentences: row.example_sentences ?? [],
@@ -152,7 +171,12 @@ export class QuizService {
     }
 
     const correct = gradeAnswer(derived.answer, dto.answer);
-    const result: AnswerResult = { quizItemId: itemId, correct, correctAnswer: derived.answer };
+    const result: AnswerResult = {
+      quizItemId: itemId,
+      correct,
+      correctAnswer: derived.answer,
+      hintUsed: dto.hintUsed ?? false,
+    };
 
     if (!correct) {
       try {
@@ -173,6 +197,37 @@ export class QuizService {
     }
 
     return result;
+  }
+
+  /**
+   * On-demand hint for a TEXT-mode item (FR-5.x follow-up — see
+   * `deriveHint`'s doc comment in quiz-generator.ts for why this is a
+   * separate pull rather than data already sitting in the generated
+   * `QuizItem`). Same id-parsing and 404 behavior as `answer()` above,
+   * since both start from "does this quiz item id still resolve to a real,
+   * READY word."
+   */
+  async hint(userId: string, itemId: string): Promise<QuizHint> {
+    let parsed: { topicWordId: string; type: QuizType };
+    try {
+      parsed = parseQuizItemId(itemId);
+    } catch {
+      throw new NotFoundException('Unknown quiz item.');
+    }
+
+    const rows = await this.db.queryAs<QuizWordRow>(
+      userId,
+      `select ${WORD_COLUMNS}
+         from public.topic_words tw
+         join public.master_lexicon ml on ml.id = tw.lexicon_id
+        where tw.id = $1 and tw.status = 'READY'`,
+      [parsed.topicWordId],
+    );
+    if (rows.length === 0) {
+      throw new NotFoundException('Quiz word not found.');
+    }
+
+    return deriveHint(mapRow(rows[0]));
   }
 
   /**

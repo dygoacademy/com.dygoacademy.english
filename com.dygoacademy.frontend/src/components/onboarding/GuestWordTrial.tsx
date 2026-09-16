@@ -6,6 +6,16 @@ import { useState } from 'react';
 import { AudioButton } from '@/components/flashcard/AudioButton';
 import { Flashcard } from '@/components/flashcard/Flashcard';
 import { Button } from '@/components/ui/button';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { ROUTES } from '@/constants/routes';
 import { apiClient, ApiError } from '@/lib/api-client';
 import type { GuestWordCard } from '@/types/word';
@@ -15,23 +25,22 @@ type Stage = 'input' | 'card' | 'not-found';
 /**
  * Wireframe 1a — "Try one word before signing up."
  *
- * Rewritten 2026-09-05 from a fixed mock (typing any word just swapped
- * the headline over a hardcoded "ephemeral" sample card) to the real BA
- * flow, given live 2026-09-05:
- *   1. guest lands on this page
- *   2. types a word
- *   3. taps the search icon
- *   4. we look it up in master_lexicon via GET /words/guest-lookup --
- *      already-enriched words only. This deliberately never calls
- *      POST /words: that route enqueues a real Gemini/TTS enrichment job,
- *      which an anonymous, unauthenticated visitor must not be able to
- *      trigger for cost/abuse reasons, and there is no topic to attach
- *      the result to anyway.
- *   5. found -> show the real card (audio, IPA, definition, synonyms,
- *      antonyms, example sentence -- same layout WordCardModal uses)
- *   6. not found -> a friendly nudge to create a free account, since
- *      that is genuinely the only way to get a brand-new word taught
- *      (the authenticated "Add a word" flow is what enriches it)
+ * Rewritten 2026-09-05 (BA flow) from a fixed mock to a real
+ * GET /words/guest-lookup call -- see that commit for the flow itself.
+ *
+ * Rewritten again same day onto shadcn/ui's Card/Input ("the first page
+ * look not nice ... use the shadcd then align in the center"): the input
+ * and not-found stages were bare text floating on the page with no
+ * container, which is what read as unfinished. Both now sit in a Card,
+ * centered by the flex/justify-center already on the page's <main>
+ * (src/app/page.tsx). The found-word stage keeps its own layout as-is,
+ * without an outer Card -- Flashcard already has its own bordered/shadowed
+ * face, and framing a card inside a card just doubles the border.
+ *
+ * The "DYGO" caption in each Card's header was a tiny muted-mono label --
+ * changed to a proper bold title ("Dygo", matching the Navbar/login-page
+ * wordmark's own font-bold treatment) same day ("the guest page, I need to
+ * change the Dygo link the nice title with bold").
  */
 export function GuestWordTrial() {
   const [word, setWord] = useState('');
@@ -79,7 +88,7 @@ export function GuestWordTrial() {
 
   if (stage === 'card' && card) {
     return (
-      <div className="flex w-full max-w-xs flex-col items-center gap-5">
+      <div className="flex w-full max-w-sm flex-col items-center gap-5">
         <Flashcard
           className="h-80 w-full"
           flipped={flipped}
@@ -138,73 +147,89 @@ export function GuestWordTrial() {
 
   if (stage === 'not-found') {
     return (
-      <div className="flex w-full max-w-xs flex-col items-center gap-4 text-center">
-        <p className="font-mono text-xs text-muted-foreground">DYGO</p>
-        <h1 className="text-xl font-semibold leading-snug">
-          &quot;{lastSearchedWord}&quot; hasn&apos;t been taught here yet.
-        </h1>
-        <p className="text-sm text-muted-foreground">
-          Create a free account and add it yourself — new words get a full card (pronunciation,
-          definition, examples) the moment you save them.
-        </p>
-        <Button asChild size="lg" className="w-full">
-          <Link href={ROUTES.register}>Create free account</Link>
-        </Button>
-        <button
-          type="button"
-          onClick={reset}
-          className="text-sm text-muted-foreground underline-offset-4 hover:underline"
-        >
-          Try a different word
-        </button>
-      </div>
+      <Card className="w-full max-w-sm">
+        <CardHeader className="items-center text-center">
+          <p className="text-base font-bold">Dygo</p>
+          <CardTitle className="text-xl leading-snug">
+            &quot;{lastSearchedWord}&quot; hasn&apos;t been taught here yet.
+          </CardTitle>
+          <CardDescription>
+            Create a free account and add it yourself — new words get a full card (pronunciation,
+            definition, examples) the moment you save them.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Button asChild size="lg" className="w-full">
+            <Link href={ROUTES.register}>Create free account</Link>
+          </Button>
+        </CardContent>
+        <CardFooter className="justify-center">
+          <button
+            type="button"
+            onClick={reset}
+            className="text-sm text-muted-foreground underline-offset-4 hover:underline"
+          >
+            Try a different word
+          </button>
+        </CardFooter>
+      </Card>
     );
   }
 
   return (
-    <form onSubmit={search} className="flex w-full max-w-xs flex-col gap-3">
-      <p className="font-mono text-xs text-muted-foreground">DYGO</p>
-      <h1 className="text-2xl font-semibold leading-tight">
-        Type one word you
-        <br />
-        want to remember.
-      </h1>
-      <div className="flex gap-2">
-        <input
-          value={word}
-          onChange={(e) => setWord(e.target.value)}
-          placeholder="e.g. resilient"
-          maxLength={100}
-          className="min-w-0 flex-1 rounded-xl border-2 border-primary bg-transparent px-3 py-2.5 text-lg outline-none"
-          aria-label="Word to remember"
-        />
-        <button
-          type="submit"
-          disabled={!word.trim() || isSearching}
-          aria-label="Search"
-          className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border-2 border-primary text-primary transition-colors hover:bg-primary/10 disabled:cursor-not-allowed disabled:opacity-40"
-        >
-          {isSearching ? (
-            <span
-              aria-hidden="true"
-              className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent"
+    <Card className="w-full max-w-sm">
+      <CardHeader className="items-center text-center">
+        <p className="text-base font-bold">Dygo</p>
+        <CardTitle className="text-2xl leading-tight">
+          Type one word you
+          <br />
+          want to remember.
+        </CardTitle>
+        <CardDescription>Searches words already taught in Dygo — ready in under a second.</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <form onSubmit={search} className="flex flex-col gap-3">
+          <Label htmlFor="guest-word-input" className="sr-only">
+            Word to remember
+          </Label>
+          <div className="flex gap-2">
+            <Input
+              id="guest-word-input"
+              value={word}
+              onChange={(e) => setWord(e.target.value)}
+              placeholder="e.g. resilient"
+              maxLength={100}
+              className="min-w-0 flex-1 text-lg"
             />
-          ) : (
-            <SearchIcon />
-          )}
-        </button>
-      </div>
-      {error && <p className="text-xs text-destructive">{error}</p>}
-      <p className="text-xs text-muted-foreground">
-        Searches words already taught in Dygo — ready in under a second.
-      </p>
-      <Link
-        href={ROUTES.register}
-        className="text-center text-sm text-muted-foreground underline-offset-4 hover:underline"
-      >
-        Or just create a free account
-      </Link>
-    </form>
+            <Button
+              type="submit"
+              size="icon"
+              disabled={!word.trim() || isSearching}
+              aria-label="Search"
+              className="h-10 w-10 shrink-0"
+            >
+              {isSearching ? (
+                <span
+                  aria-hidden="true"
+                  className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent"
+                />
+              ) : (
+                <SearchIcon />
+              )}
+            </Button>
+          </div>
+          {error && <p className="text-center text-xs text-destructive">{error}</p>}
+        </form>
+      </CardContent>
+      <CardFooter className="justify-center">
+        <Link
+          href={ROUTES.register}
+          className="text-center text-sm text-muted-foreground underline-offset-4 hover:underline"
+        >
+          Or just create a free account
+        </Link>
+      </CardFooter>
+    </Card>
   );
 }
 

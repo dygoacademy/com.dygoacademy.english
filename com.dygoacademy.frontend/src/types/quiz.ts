@@ -28,4 +28,17 @@ export interface QuizAnswerResult {
   correctAnswer: string;
   /** FR-5.5 — only present on a wrong answer. */
   nuanceExplanation?: string;
+  /**
+   * Echo of whether `GET /quizzes/:id/hint` was opened before this answer
+   * was submitted -- live-requested 2026-09-16. Not (yet) used to change
+   * grading or SRS scheduling; see `AnswerResult.hintUsed`'s backend
+   * comment for why.
+   */
+  hintUsed: boolean;
+}
+
+/** `GET /api/v1/quizzes/:id/hint` response — QuizService.hint. */
+export interface QuizHint {
+  ipaUs: string | null;
+  definition: string | null;
 }

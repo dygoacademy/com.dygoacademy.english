@@ -296,6 +296,125 @@ the landing page itself has no data dependency.
 
 ---
 
+## Running modes: local, dev, production
+
+Three profiles, all built on the same mechanism: a small file at the repo
+root holding only the values that differ from the base `.env`, sourced into
+the shell right before the dev/build/start command runs (`set -a; .
+../.env.<profile>; set +a`), so it overrides those keys without editing
+`.env` itself. `.env.local` / `.env.stg` / `.env.prod` are all gitignored —
+see the root `.gitignore`'s own comments on each.
+
+| Profile | Who it's for | Backend | Frontend |
+| :--- | :--- | :--- | :--- |
+| **local** | Browsing from this machine only, via `localhost` | `npm run start:dev:local` | `npm run start:dev:local` |
+| **dev** (network) | Another device on your network (e.g. a phone) via this machine's IP | `npm run start:dev:stg` | `npm run start:dev:stg` |
+| **production** | The public internet, via a real domain | `npm run build` then `npm run start:prod:domain` | `npm run build:prod:domain` then `npm run start` |
+
+local and dev both run in watch mode (`nest start --watch` / `next dev`) —
+no build step, edits reload live. **Production is the only profile that
+builds first**, and the order matters: Next.js bakes every `NEXT_PUBLIC_*`
+value into the browser bundle at `next build` time, not at start time, so
+`.env.prod` must already hold the right values *before*
+`build:prod:domain` runs — editing it after the fact and just restarting
+`next start` does nothing until you rebuild.
+
+### Local
+
+Exactly steps 4–5 above, or the explicit `start:dev:local` variant — same
+values either way, `.env.local` just makes "everything is `localhost`"
+explicit instead of relying on the app's own fallback defaults. Nothing
+extra beyond Docker running (step 2).
+
+### Dev — reachable from another device on your network
+
+`.env.stg` overrides `FRONTEND_URL` / `NEXT_PUBLIC_API_URL` /
+`NEXT_PUBLIC_SUPABASE_URL` to this machine's LAN or tailscale IP instead of
+`localhost` — update that IP in `.env.stg` if it ever changes
+(`ipconfig getifaddr en0` on the Mac, or `tailscale ip -4` if you're on
+tailscale).
+
+```bash
+cd com.dygoacademy.backend && npm run start:dev:stg
+cd ../com.dygoacademy.frontend && npm run start:dev:stg
+```
+
+**Caveat that catches people:** `audio_url` is baked into a word at
+enrichment time, not resolved per-request — a word enriched while running
+under one profile keeps that profile's host in its `audio_url` and won't
+play under a different profile until it's re-enriched (or unless it's
+already served from R2, which is a fixed public URL regardless of profile).
+
+### Production — public domain
+
+Backed by three root-level files: `.env.prod` (the URL overrides above),
+`cloudflared-config.yml` (Cloudflare Tunnel ingress — which local port each
+subdomain maps to), and `ecosystem.config.js` (a
+[pm2](https://pm2.keymetrics.io/) process file so all three processes
+survive crashes and reboots). All three assume `www.<domain>` → the
+frontend, `api.<domain>` → the backend, and `supabase.<domain>` → the Kong
+gateway, mirroring the exact `host:port` split the local/dev profiles
+already use.
+
+**Why a tunnel instead of a plain reverse proxy + port forwarding:** this
+was the original plan, but it needs a stable public IP with ports 80/443
+reachable from the internet. A home ISP connection (this one's on StarHub
+cable in Singapore) typically hands out a *dynamic* IP that can change
+without notice, and may or may not even be a real per-customer public IP —
+some ISPs share it behind carrier-grade NAT (CGNAT), in which case no
+amount of router port-forwarding makes it reachable at all. Cloudflare
+Tunnel sidesteps both problems: `cloudflared` on this Mac opens an
+*outbound* connection to Cloudflare's edge, which terminates TLS and
+proxies matching hostnames back down that connection. No public IP is
+published, no ports need forwarding, and it keeps working even if the IP
+changes or turns out to be CGNAT'd.
+
+**One-time setup, run directly on the Mac** (not through this bridge —
+`cloudflared tunnel login` needs a real browser session, and the tunnel
+needs to stay running against this machine's real network, not a sandbox):
+
+```bash
+# 1. DNS for the domain must already be on Cloudflare (not GoDaddy) — in
+#    the Cloudflare dashboard, add the site, then at your registrar change
+#    the domain's nameservers to the two Cloudflare ones it gives you.
+#    This can take a few minutes to propagate.
+
+# 2. Install cloudflared and authorize it against your Cloudflare account
+#    (opens a browser — log in and click "Authorize").
+brew install cloudflared
+cloudflared tunnel login
+
+# 3. Create the tunnel — prints a tunnel ID and a credentials-file path.
+cloudflared tunnel create dygo-academy
+
+# 4. Open cloudflared-config.yml and replace both TUNNEL_ID placeholders
+#    with the ID printed above (credentials-file is normally
+#    ~/.cloudflared/<TUNNEL_ID>.json — never commit that json file).
+
+# 5. Point each subdomain at the tunnel (repeat per hostname).
+cloudflared tunnel route dns dygo-academy www.dygoacademy.com
+cloudflared tunnel route dns dygo-academy api.dygoacademy.com
+cloudflared tunnel route dns dygo-academy supabase.dygoacademy.com
+# The bare domain -> www redirect is a Cloudflare dashboard rule
+# (Rules > Redirect Rules), not something cloudflared handles.
+
+# 6. Build both apps (NEXT_PUBLIC_* values come from .env.prod at this step).
+cd com.dygoacademy.backend && npm run build
+cd ../com.dygoacademy.frontend && npm run build:prod:domain
+
+# 7. Keep everything running — backend, frontend, and the tunnel.
+npm install -g pm2   # once
+cd ..
+pm2 start ecosystem.config.js
+pm2 save && pm2 startup   # survive a reboot — follow the command pm2 prints
+```
+
+After step 5, DNS is a Cloudflare-managed CNAME to the tunnel rather than
+an A record at a fixed IP, so nothing here needs updating again if the
+home IP changes.
+
+---
+
 ## 6. Run the live-stack integration tests
 
 ```bash
@@ -407,6 +526,9 @@ storage-api and MinIO. Not a blocker for Phase 0 or 1.
 DygoAcademy/
 ├── docker-compose.yml              # Local Supabase, Redis & MinIO stack
 ├── .env.example                    # Template — copy to .env, never commit .env
+├── .env.prod                       # Production URL overrides (gitignored — see "Running modes")
+├── cloudflared-config.yml          # Cloudflare Tunnel ingress for production
+├── ecosystem.config.js             # pm2 process file for production
 ├── database/
 │   ├── apply-migrations.sh         # Migration runner
 │   ├── init/                       # Container bootstrap (runs on empty volume only)

@@ -22,6 +22,12 @@
 # now (caught 2026-09-05 while staging an unrelated commit).
 .env.stg
 
+# .env.prod is the fourth named profile (the public production domain) --
+# same rationale as .env.stg above: a profile overlay that only makes sense
+# for whoever actually runs the production deploy, not something to carry
+# in git.
+.env.prod
+
 # R2.readme was found sitting in the repo root holding a live Cloudflare
 # API token, Access Key ID and Secret Access Key in plaintext -- not a
 # secrets *pattern* so much as one specific leftover file, but excluded by

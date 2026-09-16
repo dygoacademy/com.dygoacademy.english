@@ -8,6 +8,12 @@
     --foreground: 222.2 84% 4.9%;
     --card: 0 0% 100%;
     --card-foreground: 222.2 84% 4.9%;
+    /* Same as background/card in this theme -- added for the shadcn/ui
+       migration (2026-09-05): Select's dropdown content and Dialog's
+       overlay both reference bg-popover/text-popover-foreground, which
+       didn't exist in this file (button.tsx/card.tsx never needed them). */
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
     /* Brand accent — the one color used consistently for every primary CTA
        across the Dygo Wireframes canvas (../dygo_academy_frontend_architecture.md
        §customer journey): hex #c2603f / oklch(0.62 0.16 35), converted to HSL
@@ -33,6 +39,8 @@
     --foreground: 210 40% 98%;
     --card: 222.2 84% 4.9%;
     --card-foreground: 210 40% 98%;
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
     --primary: 15 60% 58%;
     --primary-foreground: 0 0% 100%;
     --secondary: 217.2 32.6% 17.5%;

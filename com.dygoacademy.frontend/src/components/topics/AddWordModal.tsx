@@ -3,16 +3,24 @@
 import { useState } from 'react';
 
 import { Button } from '@/components/ui/button';
-import { blurActiveElement } from '@/lib/utils';
+import { Dialog, DialogContent, DialogFooter, DialogTitle } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { ApiError } from '@/lib/api-client';
 import { useCreateWord } from '@/hooks/useCreateWord';
 
 /**
  * Wireframe follow-up to 1j/1k — the "+ Add a word" action that was
  * `disabled` behind a "Phase 1" label in EmptyTopicState until Module 2's
- * ingestion endpoint existed. Deliberately not a full dialog primitive
- * (no Radix dependency in the project yet, see components/ui/) — a fixed
- * overlay + a single input is the whole interaction FR-2.1 asks for.
+ * ingestion endpoint existed.
+ *
+ * Migrated 2026-09-05 onto shadcn/ui's Dialog (components/ui/dialog.tsx)
+ * instead of the hand-rolled fixed-overlay `<div role="dialog">` this used
+ * to be -- that pattern (shared with CreateTopicModal and WordCardModal)
+ * needed its own centering fix, its own iOS-zoom fix, and its own
+ * blur-before-close patch, each applied per modal as it was noticed. A
+ * real Dialog primitive gets all three for free, for this modal and any
+ * future one.
  */
 export function AddWordModal({
   topicId,
@@ -27,10 +35,7 @@ export function AddWordModal({
   const [error, setError] = useState<string | null>(null);
   const createWord = useCreateWord(topicId);
 
-  if (!open) return null;
-
   const close = () => {
-    blurActiveElement();
     setWord('');
     setError(null);
     createWord.reset();
@@ -52,41 +57,41 @@ export function AddWordModal({
   };
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
-      role="dialog"
-      aria-modal="true"
-      aria-label="Add a word"
-      onClick={close}
+    <Dialog
+      open={open}
+      onOpenChange={(next) => {
+        if (!next) close();
+      }}
     >
-      <form
-        onSubmit={submit}
-        onClick={(e) => e.stopPropagation()}
-        className="flex w-full max-w-sm flex-col gap-3 rounded-2xl border bg-card p-5 shadow-lg"
-      >
-        <h2 className="text-lg font-semibold">Add a word</h2>
+      <DialogContent hideClose>
+        <DialogTitle>Add a word</DialogTitle>
         <p className="text-xs text-muted-foreground">
           IPA, audio, synonyms and example sentences arrive on their own.
         </p>
-        <input
-          autoFocus
-          value={word}
-          onChange={(e) => setWord(e.target.value)}
-          placeholder="e.g. resilient"
-          maxLength={100}
-          className="rounded-xl border-2 border-primary bg-transparent px-3 py-2.5 text-lg outline-none"
-          aria-label="Word to add"
-        />
-        {error && <p className="text-xs text-destructive">{error}</p>}
-        <div className="mt-1 flex gap-2">
-          <Button type="button" variant="outline" className="flex-1" onClick={close}>
-            Cancel
-          </Button>
-          <Button type="submit" className="flex-1" disabled={!word.trim() || createWord.isPending}>
-            {createWord.isPending ? 'Adding…' : 'Add word'}
-          </Button>
-        </div>
-      </form>
-    </div>
+        <form onSubmit={submit} className="flex flex-col gap-3">
+          <Label htmlFor="add-word-input" className="sr-only">
+            Word to add
+          </Label>
+          <Input
+            id="add-word-input"
+            autoFocus
+            value={word}
+            onChange={(e) => setWord(e.target.value)}
+            placeholder="e.g. resilient"
+            maxLength={100}
+            className="text-lg"
+          />
+          {error && <p className="text-xs text-destructive">{error}</p>}
+          <DialogFooter>
+            <Button type="button" variant="outline" className="flex-1" onClick={close}>
+              Cancel
+            </Button>
+            <Button type="submit" className="flex-1" disabled={!word.trim() || createWord.isPending}>
+              {createWord.isPending ? 'Adding…' : 'Add word'}
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
   );
 }
