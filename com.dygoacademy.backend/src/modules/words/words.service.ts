@@ -204,6 +204,34 @@ export class WordsService {
   }
 
   /**
+   * DELETE /words/:id — removes one word from its topic (the trash icon on
+   * each WordStatusRow row, live-requested 2026-09-18: "How to delete word
+   * in the topics?"). `topic_words_delete_write` (002_rls_policies.sql)
+   * already required WRITE role on the topic for this DELETE to affect any
+   * row — that policy existed since the schema was first written but had
+   * no caller until now, same gap useDeleteTopic's comment describes for
+   * topics themselves. Same zero-rows-means-404 collapse as reEnrich/
+   * getCard above: RLS hides rows this caller can't act on, so "doesn't
+   * exist" and "not visible/not writable to this caller" land on the same
+   * 404 either way.
+   *
+   * Deliberately does not touch `user_word_srs`/`review_logs` rows for
+   * this word — both reference `topic_word_id` with `on delete cascade`
+   * (001_initial_schema.sql), so Postgres cleans those up as part of the
+   * same DELETE rather than this needing a second query.
+   */
+  async remove(userId: string, topicWordId: string): Promise<void> {
+    const rows = await this.db.queryAs<{ id: string }>(
+      userId,
+      `delete from public.topic_words where id = $1 returning id`,
+      [topicWordId],
+    );
+    if (rows.length === 0) {
+      throw new NotFoundException('Word not found.');
+    }
+  }
+
+  /**
    * GET /words/guest-lookup — the BA flow for the public landing page
    * (live-requested 2026-09-05):
    *   1. guest types a word and hits the search icon

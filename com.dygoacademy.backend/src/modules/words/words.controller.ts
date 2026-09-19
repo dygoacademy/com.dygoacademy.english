@@ -1,4 +1,14 @@
-import { Body, Controller, Get, HttpCode, HttpStatus, Param, Post, Query } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Param,
+  Post,
+  Query,
+} from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
@@ -77,5 +87,17 @@ export class WordsController {
     @Param('id') topicWordId: string,
   ): Promise<TopicWord> {
     return this.wordsService.reEnrich(userId, topicWordId);
+  }
+
+  @Delete(':id')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiOperation({
+    summary: 'Delete a word from its topic',
+    description:
+      'Requires WRITE on the topic (topic_words_delete_write). The trash ' +
+      'icon on each word row in the topic detail page (WordStatusRow.tsx).',
+  })
+  async remove(@CurrentUser('id') userId: string, @Param('id') topicWordId: string): Promise<void> {
+    await this.wordsService.remove(userId, topicWordId);
   }
 }
