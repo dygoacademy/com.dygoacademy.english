@@ -134,7 +134,7 @@ export function CreateTopicModal({
               checked={isPublic}
               onChange={(e) => setIsPublic(e.target.checked)}
             />
-            Public — discoverable and cloneable by other groups (FR-1.1)
+            Public — discoverable and cloneable by other groups
           </label>
 
           {error && <p className="text-xs text-destructive">{error}</p>}

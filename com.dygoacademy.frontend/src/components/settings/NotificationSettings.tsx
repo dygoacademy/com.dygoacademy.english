@@ -19,6 +19,26 @@ function localTimezone(): string {
   }
 }
 
+/**
+ * Formats a saved `"HH:MM:SS"` schedule row through the browser's own
+ * locale (Phase 2 FR-16.3 -- audit finding: the `<input type="time">`
+ * above renders 12- or 24-hour depending on locale/OS, while the saved
+ * list below always sliced the raw string to a fixed 24-hour "HH:MM",
+ * so the two could visibly disagree). No explicit locale/hourCycle is
+ * passed -- `undefined` defers to the same browser-locale convention the
+ * native time input already uses internally, so this follows it rather
+ * than picking a fixed format that could mismatch a non-US visitor's own
+ * input display. Only hours/minutes matter, so the reference date itself
+ * is arbitrary; a fresh `Date` avoids any DST-transition edge case a
+ * fixed date could hit.
+ */
+function formatReminderTime(time: string): string {
+  const [hours, minutes] = time.split(':');
+  const reference = new Date();
+  reference.setHours(Number(hours), Number(minutes), 0, 0);
+  return new Intl.DateTimeFormat(undefined, { hour: 'numeric', minute: '2-digit' }).format(reference);
+}
+
 const PERMISSION_COPY: Record<string, string> = {
   unsupported: 'This browser does not support push notifications.',
   denied: 'Notifications are blocked for this site in your browser settings.',
@@ -118,7 +138,7 @@ export function NotificationSettings() {
                 className="flex items-center justify-between rounded-lg border px-3 py-2 text-sm"
               >
                 <span>
-                  {schedule.reminder_time.slice(0, 5)} · {schedule.timezone}
+                  {formatReminderTime(schedule.reminder_time)} · {schedule.timezone}
                   {!schedule.is_enabled && (
                     <span className="ml-2 text-xs text-muted-foreground">(disabled)</span>
                   )}

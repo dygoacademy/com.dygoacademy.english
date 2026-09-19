@@ -87,7 +87,7 @@ export function CreateGroupForm({ onCreated }: { onCreated?: () => void }) {
           checked={isPublic}
           onChange={(e) => setIsPublic(e.target.checked)}
         />
-        Public — discoverable, and its topics are cloneable by other groups (FR-1.1)
+        Public — discoverable, and its topics are cloneable by other groups
       </label>
       {error && <p className="text-xs text-destructive">{error}</p>}
       <div className="flex gap-2">
