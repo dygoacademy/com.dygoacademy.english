@@ -83,12 +83,14 @@ Feature work, not remediation, so this isn't `phase 2.md`'s bug-severity scale. 
   * *Acceptance*: Same underlying numbers as today's plain-text version; different presentation only.
 
 ### 🔍 Module 22: Personal Focus List (upgrade of FR-14.1)
-*Why it matters*: **naming correction from the original concept mockup** — its "Focus List" screen was framed as the *student's own* view, but FR-14.1's heatmap (`GroupHeatmapSection`) is admin-only and group-scoped (`GET /groups/:id/heatmap`, gated by `canManage`). A regular student viewing their own Progress page has no equivalent list today — `useLeeches()` returns their leech words, but Progress doesn't render it as a ranked, visual list the way the concept's mockup shows. This module is net-new for students, not a restyle of FR-14.1 for them.
+*Why it matters*: **naming correction from the original concept mockup** — its "Focus List" screen was framed as the *student's own* view, but FR-14.1's heatmap (`GroupHeatmapSection`) is admin-only and group-scoped (`GET /groups/:id/heatmap`, gated by `canManage`).
 **Blocked on `phase 2.md` §9's deploy** for the same reason as Module 21.
 
-* **FR-22.1 (Student-facing focus list)** — Core
-  * *Requirement*: The Progress page SHALL show the signed-in user's own leech words (`useLeeches()`, already live) as a short, ranked list — reusing FR-14.1's intensity-bucket pattern for visual consistency, applied to personal data instead of group-aggregate data.
-  * *Acceptance*: A student with leech words sees them ranked on their own Progress page without needing to be a group ADMIN.
+> **Correction (2026-09-20, during implementation)**: the line above — "a regular student viewing their own Progress page has no equivalent list today" — was wrong. `analytics/page.tsx` has had a personal "Leech words" section, backed by `useLeeches()`, since Module 8's original build (`bfcfd10`), well before Phase 2 or Phase 3. This wasn't caught when this document was first written because that section wasn't re-checked against the concept's specific claim (a *ranked, visually severity-scaled* list) — it existed, but every row shared one fixed color regardless of `recent_mistakes`, the same "one color for every rate" problem FR-14.1 fixed for the *group* heatmap without ever touching this personal one. FR-22.1 below is corrected to match what was actually built: a restyle of the existing section, not a new one.
+
+* **FR-22.1 (Severity-scaled personal leech list)** — Core
+  * *Requirement*: The existing personal "Leech words" section on the Progress page SHALL scale each row's visual severity by `recent_mistakes`, the same way FR-14.1 scales the group heatmap by `failure_rate` — not add a second, parallel list next to it.
+  * *Acceptance*: A student with leech words at different `recent_mistakes` counts sees visibly different row intensities, without needing to be a group ADMIN. ✅ Implemented `8ddff7f` — `leechPillClass` helper, thresholds set relative to `srs-algorithm.ts`'s real `LEECH_THRESHOLD` (4), not guessed.
 
 ### 🤝 Module 23: Opt-in Cohort Momentum
 *Why it matters*: the concept's journey stage 6, grounded in the adult-learner research it cited — personal dashboards over public leaderboards, but private group friendly-competition is a different thing this app already has the RBAC for (Groups, already built in Module 1).
