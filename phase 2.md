@@ -178,7 +178,7 @@ Recommendation (not a decision this document makes): treat the Learning Path con
 | FR-12.2 | Multiple choice hides selection | Moderate | Quiz | P1 | ✅ `4619253` |
 | FR-12.3 | Submit looks disabled when it isn't | Minor | Quiz | P2 | ✅ `590afcb` |
 | FR-13.1 | Empty study-session-complete screen | Minor | Study | P1 | ✅ `cc603bf` |
-| FR-14.1 | Heatmap: one color for every rate | Moderate | Progress | P1 | — |
+| FR-14.1 | Heatmap: one color for every rate | Moderate | Progress | P1 | ✅ `fe9676e` |
 | FR-15.1 | "Phase 1" dead button | Moderate | Home | P1 | ✅ `20dab8e` |
 | FR-15.2 | "Module 3" note in topics copy | Moderate | Topics | P2 | ✅ `769c889` |
 | FR-15.3 | "FR-6.3/6.4" in reminder copy | Minor | Profile | P2 | ✅ `05eccf6` |
