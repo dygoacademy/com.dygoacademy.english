@@ -69,6 +69,11 @@ function StudySessionScreen() {
   const [index, setIndex] = useState(0);
   const [flipped, setFlipped] = useState(false);
   const [clueLevel, setClueLevel] = useState<ClueLevel>(0);
+  // FR-13.1 -- tallied by which of RatingButtons' two buttons was pressed
+  // (AGAIN/HARD are both "Didn't know", held or not; GOOD/EASY are both
+  // "Knew it"), matching the UI's own two-button framing rather than the
+  // four-value SRS rating underneath it.
+  const [tally, setTally] = useState({ knew: 0, missed: 0 });
 
   // Snapshot the due-card batch once per session (keyed by topicId+mode),
   // instead of reading `data.cards` live on every render -- live-reported
@@ -115,6 +120,11 @@ function StudySessionScreen() {
   function handleRate(rating: SrsRating) {
     if (!card) return;
     rateWord.mutate({ topicWordId: card.topic_word_id, rating });
+    setTally((t) =>
+      rating === 'AGAIN' || rating === 'HARD'
+        ? { ...t, missed: t.missed + 1 }
+        : { ...t, knew: t.knew + 1 },
+    );
     setIndex((i) => i + 1);
   }
 
@@ -143,14 +153,35 @@ function StudySessionScreen() {
         <p className="text-lg font-semibold">
           {cards.length === 0 ? 'Nothing due right now.' : "That's every card for now."}
         </p>
-        <p className="text-sm text-muted-foreground">
-          {cards.length === 0
-            ? 'New or overdue words will show up here as they come due.'
-            : `You rated ${cards.length} card${cards.length === 1 ? '' : 's'} this session.`}
-        </p>
-        <Link href={ROUTES.home} className="text-sm underline underline-offset-4">
-          Back to topics
-        </Link>
+        {cards.length === 0 ? (
+          <p className="text-sm text-muted-foreground">
+            New or overdue words will show up here as they come due.
+          </p>
+        ) : (
+          // FR-13.1 -- was a single line naming only the card count, no
+          // knew/missed split and no next step beyond leaving. Kept plain
+          // and textual on purpose (phase 2.md §2.1 / open question 4):
+          // the "Dygo Learning Path" concept has a reward-framed version
+          // of this same screen, but that's separately-scoped future work,
+          // not something this fix should pre-empt.
+          <p className="text-sm text-muted-foreground">
+            {tally.knew} knew it · {tally.missed} didn&apos;t know — {cards.length} card
+            {cards.length === 1 ? '' : 's'} this session.
+          </p>
+        )}
+        <div className="flex flex-col items-center gap-2">
+          {cards.length > 0 && topicId && (
+            <Link
+              href={`/quiz?topicId=${topicId}`}
+              className="rounded-lg bg-primary px-4 py-2 text-sm text-primary-foreground"
+            >
+              Quiz this topic
+            </Link>
+          )}
+          <Link href={ROUTES.home} className="text-sm underline underline-offset-4">
+            Back to topics
+          </Link>
+        </div>
       </main>
     );
   }
