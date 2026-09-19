@@ -15,12 +15,12 @@
     "test": "jest",
     "token": "node scripts/dev-token.js",
     "test-push": "node scripts/test-push.js",
-    "test-push:local": "sh -c 'set -a; . ../.env.local; set +a; node scripts/test-push.js \"$1\"' --",
-    "test-push:stg": "sh -c 'set -a; . ../.env.stg; set +a; node scripts/test-push.js \"$1\"' --",
-    "test-push:prod": "sh -c 'set -a; . ../.env.prod; set +a; node scripts/test-push.js \"$1\"' --",
-    "start:dev:local": "sh -c 'set -a; . ../.env.local; set +a; nest start --watch'",
-    "start:dev:stg": "sh -c 'set -a; . ../.env.stg; set +a; nest start --watch'",
-    "start:prod:domain": "sh -c 'set -a; . ../.env.prod; set +a; node dist/main'"
+    "test-push:local": "sh -c 'set -a; . ../env-profiles/local.env; set +a; node scripts/test-push.js \"$1\"' --",
+    "test-push:stg": "sh -c 'set -a; . ../env-profiles/stg.env; set +a; node scripts/test-push.js \"$1\"' --",
+    "test-push:prod": "sh -c 'set -a; . ../env-profiles/prod.env; set +a; node scripts/test-push.js \"$1\"' --",
+    "start:dev:local": "sh -c 'set -a; . ../env-profiles/local.env; set +a; nest start --watch'",
+    "start:dev:stg": "sh -c 'set -a; . ../env-profiles/stg.env; set +a; nest start --watch'",
+    "start:prod:domain": "sh -c 'set -a; . ../env-profiles/prod.env; set +a; node dist/main'"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1122.0",

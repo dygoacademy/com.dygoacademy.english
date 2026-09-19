@@ -27,9 +27,11 @@ function loadEnv() {
       if (match) env[match[1]] = match[2];
     }
   }
-  // A profile overlay already exported into this shell (e.g. running via
-  // `sh -c 'set -a; . ../.env.prod; set +a; node scripts/test-push.js ...'`)
-  // wins over the base .env file, same precedence the app itself uses.
+  // A profile overlay already exported into this shell (e.g. via the
+  // "test-push:prod" npm script, which sources ../env-profiles/prod.env
+  // first) wins over the base .env file, same precedence the app itself
+  // uses. Plain `npm run test-push` has no overlay sourced, so it falls
+  // through to the base .env's values (localhost) instead.
   for (const key of Object.keys(env)) {
     if (process.env[key] !== undefined) env[key] = process.env[key];
   }

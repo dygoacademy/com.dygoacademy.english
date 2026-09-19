@@ -3,10 +3,10 @@ import { ConfigService } from '@nestjs/config';
 import { PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
 
 /**
- * S3-compatible object storage — Cloudflare R2 in production, MinIO locally
- * (tech spec §3, "Audio Storage & CDN"). Both speak the S3 API, so one
- * client handles both; only the endpoint/credentials differ (configuration.ts
- * `storage`).
+ * S3-compatible object storage — Cloudflare R2, always (tech spec §3,
+ * "Audio Storage & CDN"). Used to fall back to local MinIO in dev; removed
+ * 2026-09-16 so every environment writes to the same real R2 bucket (see
+ * configuration.ts `storage`'s own comment for why).
  */
 @Injectable()
 export class StorageService {
@@ -17,11 +17,11 @@ export class StorageService {
 
   constructor(private readonly config: ConfigService) {
     this.bucket = this.config.get<string>('storage.bucket', 'dygo-audio');
-    this.publicUrl = this.config.get<string>('storage.publicUrl', 'http://localhost:9000');
+    this.publicUrl = this.config.get<string>('storage.publicUrl', '');
     this.client = new S3Client({
       endpoint: this.config.get<string>('storage.endpoint'),
       region: this.config.get<string>('storage.region', 'auto'),
-      forcePathStyle: this.config.get<boolean>('storage.forcePathStyle', true),
+      forcePathStyle: this.config.get<boolean>('storage.forcePathStyle', false),
       credentials: {
         accessKeyId: this.config.get<string>('storage.accessKeyId', ''),
         secretAccessKey: this.config.get<string>('storage.secretAccessKey', ''),
@@ -48,9 +48,10 @@ export class StorageService {
     );
 
     const base = this.publicUrl.replace(/\/+$/, '');
-    // Path-style local (MinIO) needs the bucket in the URL; R2's public
-    // bucket domain already resolves to bucket root.
-    const url = this.config.get<boolean>('storage.forcePathStyle', true)
+    // R2's public bucket domain already resolves to bucket root — no
+    // bucket segment needed (forcePathStyle is always false now; see
+    // configuration.ts).
+    const url = this.config.get<boolean>('storage.forcePathStyle', false)
       ? `${base}/${this.bucket}/${key}`
       : `${base}/${key}`;
 

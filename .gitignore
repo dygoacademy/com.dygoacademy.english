@@ -7,26 +7,25 @@
 # it, the Stripe secret key and the VAPID private key. Only .env.example is
 # ever committed.
 .env
+!.env.example
+
+# com.dygoacademy.frontend/.env.local is Next.js's own auto-loaded local-env
+# file (holds the Supabase anon key) — unrelated to env-profiles/ below,
+# despite the similar-sounding name; see README.md "Running modes" for why
+# those are deliberately two different mechanisms.
 .env.local
 .env.*.local
 !.env.example
 
-# .env.tailscale carries this machine's real tailscale IP (a personal
-# network identifier) — same rationale as .env.local above, just not
-# matched by the ".local" patterns since it's a separate named profile
-# (see .env.local's own comments for what these profile files are).
-.env.tailscale
-
-# .env.stg is a third named profile (tailscale + Cloudflare R2), same
-# rationale as .env.tailscale above -- was never actually excluded until
-# now (caught 2026-09-05 while staging an unrelated commit).
-.env.stg
-
-# .env.prod is the fourth named profile (the public production domain) --
-# same rationale as .env.stg above: a profile overlay that only makes sense
-# for whoever actually runs the production deploy, not something to carry
-# in git.
-.env.prod
+# env-profiles/ — the local/stg/prod running-profile overlays (see
+# README.md "Running modes: local, dev, production"). Real values are
+# gitignored (stg.env carries a personal tailscale IP, prod.env carries
+# live Cloudflare R2 credentials); the *.env.example templates alongside
+# them are safe placeholders and stay tracked. This folder replaced
+# root-level ".env.local" / ".env.stg" / ".env.prod" 2026-09-16 specifically
+# because ".env.local" collided, in name only, with the Next.js file above.
+env-profiles/*.env
+!env-profiles/*.env.example
 
 # R2.readme was found sitting in the repo root holding a live Cloudflare
 # API token, Access Key ID and Secret Access Key in plaintext -- not a

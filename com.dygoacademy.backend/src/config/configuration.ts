@@ -49,26 +49,34 @@ export default () => ({
     subject: process.env.VAPID_SUBJECT ?? 'mailto:dev@dygo.test',
   },
 
-  // Audio object storage — Cloudflare R2 in production, MinIO locally
-  // (docker-compose.yml service `minio`, S3-compatible). R2 env vars take
-  // precedence when present; falls back to the MinIO defaults from
-  // .env.example otherwise, so a fresh `docker compose up` works with zero
-  // config.
+  // Audio object storage — Cloudflare R2, always (tech spec §3, "Audio
+  // Storage & CDN"). Used to fall back to local MinIO (docker-compose.yml
+  // service `minio`) when R2_ACCOUNT_ID was unset, so local/dev could run
+  // offline — removed 2026-09-16 at the user's request, so every profile
+  // (local/stg/prod) now uploads to the same real R2 bucket; the base
+  // .env carries the real credentials (shared across all profiles, same
+  // as DATABASE_URL/SUPABASE_URL/etc. — no longer prod-only).
+  //
+  // MINIO_* env vars still exist and still matter — they configure the
+  // `minio` and `storage-api` (Supabase's own Storage feature) services in
+  // docker-compose.yml, which is unrelated to this app's own audio
+  // uploads and is NOT being removed. This `storage` block just no longer
+  // reads MINIO_* itself.
   storage: {
-    endpoint: process.env.R2_ACCOUNT_ID
-      ? `https://${process.env.R2_ACCOUNT_ID}.r2.cloudflarestorage.com`
-      : (process.env.STORAGE_ENDPOINT ?? 'http://localhost:9000'),
-    accessKeyId: process.env.R2_ACCESS_KEY_ID ?? process.env.MINIO_ACCESS_KEY ?? 'minioadmin',
-    secretAccessKey:
-      process.env.R2_SECRET_ACCESS_KEY ?? process.env.MINIO_SECRET_KEY ?? 'minioadmin',
-    bucket: process.env.R2_BUCKET_NAME ?? process.env.MINIO_BUCKET ?? 'dygo-audio',
+    endpoint: `https://${process.env.R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
+    accessKeyId: process.env.R2_ACCESS_KEY_ID ?? '',
+    secretAccessKey: process.env.R2_SECRET_ACCESS_KEY ?? '',
+    bucket: process.env.R2_BUCKET_NAME ?? 'dygo-audio',
     region: process.env.STORAGE_REGION ?? 'auto',
-    // Public CDN base for the uploaded object's URL. R2's public bucket URL
-    // in prod; the MinIO console port locally (browser-playable, not just
-    // API-reachable, since audio_url goes straight into <audio src>).
-    publicUrl: process.env.R2_PUBLIC_URL ?? 'http://localhost:9000',
-    // R2 and most MinIO deployments need path-style addressing
-    // (`endpoint/bucket/key`) rather than virtual-hosted-style.
-    forcePathStyle: !process.env.R2_ACCOUNT_ID,
+    // Public CDN base for the uploaded object's URL — R2's public bucket
+    // domain (browser-playable, not just API-reachable, since audio_url
+    // goes straight into <audio src>).
+    publicUrl: process.env.R2_PUBLIC_URL ?? '',
+    // R2's public bucket domain already resolves to the bucket root (no
+    // bucket segment in the URL) — false here, live-verified working
+    // against the real R2 credentials already in use. See
+    // StorageService.upload for where this also affects public URL shape,
+    // not just the S3 client's request signing.
+    forcePathStyle: false,
   },
 });

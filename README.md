@@ -298,56 +298,85 @@ the landing page itself has no data dependency.
 
 ## Running modes: local, dev, production
 
-Three profiles, all built on the same mechanism: a small file at the repo
-root holding only the values that differ from the base `.env`, sourced into
-the shell right before the dev/build/start command runs (`set -a; .
-../.env.<profile>; set +a`), so it overrides those keys without editing
-`.env` itself. `.env.local` / `.env.stg` / `.env.prod` are all gitignored —
-see the root `.gitignore`'s own comments on each.
+Three profiles — **local**, **stg** (network/tailscale), **prod** — all
+built on the same mechanism: a small file under `env-profiles/` holding
+only the values that differ from the base `.env`, sourced into the shell
+right before the dev/build/start command runs (`set -a; .
+../env-profiles/<profile>.env; set +a`), so it overrides those keys
+without editing `.env` itself.
+
+`env-profiles/*.env` are gitignored (real values); the matching
+`*.env.example` files next to them are tracked templates — copy one with
+`cp env-profiles/local.env.example env-profiles/local.env` (etc.) to get
+started, or just use the working copies already in this repo checkout.
+
+**Why a whole folder, not root-level `.env.local` / `.env.stg` /
+`.env.prod` (how this used to be laid out):** `.env.local` at the repo root
+collided, in name only, with `com.dygoacademy.frontend/.env.local` — a
+*completely unrelated* file Next.js auto-loads on its own (holds the
+Supabase anon key). Two different mechanisms, same filename, easy to edit
+the wrong one and wonder why nothing changed. `env-profiles/` can't be
+confused with either app's own dotenv conventions.
 
 | Profile | Who it's for | Backend | Frontend |
 | :--- | :--- | :--- | :--- |
 | **local** | Browsing from this machine only, via `localhost` | `npm run start:dev:local` | `npm run start:dev:local` |
-| **dev** (network) | Another device on your network (e.g. a phone) via this machine's IP | `npm run start:dev:stg` | `npm run start:dev:stg` |
-| **production** | The public internet, via a real domain | `npm run build` then `npm run start:prod:domain` | `npm run build:prod:domain` then `npm run start` |
+| **stg** (network) | Another device on your network (e.g. a phone) via this machine's IP | `npm run start:dev:stg` | `npm run start:dev:stg` |
+| **prod** | The public internet, via a real domain | `npm run build` then `npm run start:prod:domain` | `npm run build:prod:domain` then `npm run start` |
 
-local and dev both run in watch mode (`nest start --watch` / `next dev`) —
-no build step, edits reload live. **Production is the only profile that
-builds first**, and the order matters: Next.js bakes every `NEXT_PUBLIC_*`
-value into the browser bundle at `next build` time, not at start time, so
-`.env.prod` must already hold the right values *before*
+local and stg both run in watch mode (`nest start --watch` / `next dev`) —
+no build step, edits reload live. **prod is the only profile that builds
+first**, and the order matters: Next.js bakes every `NEXT_PUBLIC_*` value
+into the browser bundle at `next build` time, not at start time, so
+`env-profiles/prod.env` must already hold the right values *before*
 `build:prod:domain` runs — editing it after the fact and just restarting
 `next start` does nothing until you rebuild.
+
+**Object storage is the same everywhere — Cloudflare R2, no local
+fallback.** This app's own audio uploads (`StorageService`) used to fall
+back to a local MinIO container when `R2_ACCOUNT_ID` was unset, so
+local/dev could run offline — removed 2026-09-16 at the project owner's
+request, so every profile now uploads to the same real R2 bucket. The
+credentials live in the root `.env` (shared across all profiles, like
+`DATABASE_URL`/`SUPABASE_URL` already are), not in any `env-profiles/`
+file — see `.env`'s own storage section. One side-effect worth knowing:
+`docker-compose.yml`'s `minio` service is still there and still running —
+it backs Supabase's own Storage feature (`storage-api`), which is
+unrelated to this app's audio pipeline and wasn't touched. Only this app's
+own `StorageService` stopped pointing at it.
+
+Before this change, only `prod.env` carried real R2 credentials while
+`local`/`stg` fell back to MinIO — but a copy-paste of the real credentials
+had accidentally ended up in `local.env`/`stg.env` too (so local/LAN dev
+was silently uploading to the real bucket) while `prod.env` briefly had
+*none* (so production was silently falling back to an unreachable
+`localhost:9000`). Both were bugs; this section describes the fixed,
+current state.
 
 ### Local
 
 Exactly steps 4–5 above, or the explicit `start:dev:local` variant — same
-values either way, `.env.local` just makes "everything is `localhost`"
-explicit instead of relying on the app's own fallback defaults. Nothing
-extra beyond Docker running (step 2).
+values either way, `env-profiles/local.env` just makes "everything is
+`localhost`" explicit instead of relying on the app's own fallback
+defaults. Nothing extra beyond Docker running (step 2).
 
 ### Dev — reachable from another device on your network
 
-`.env.stg` overrides `FRONTEND_URL` / `NEXT_PUBLIC_API_URL` /
+`env-profiles/stg.env` overrides `FRONTEND_URL` / `NEXT_PUBLIC_API_URL` /
 `NEXT_PUBLIC_SUPABASE_URL` to this machine's LAN or tailscale IP instead of
-`localhost` — update that IP in `.env.stg` if it ever changes
+`localhost` — update that IP in that file if it ever changes
 (`ipconfig getifaddr en0` on the Mac, or `tailscale ip -4` if you're on
-tailscale).
+tailscale). No object-storage override needed here — R2's URL is already a
+real public internet address, reachable from any device.
 
 ```bash
 cd com.dygoacademy.backend && npm run start:dev:stg
 cd ../com.dygoacademy.frontend && npm run start:dev:stg
 ```
 
-**Caveat that catches people:** `audio_url` is baked into a word at
-enrichment time, not resolved per-request — a word enriched while running
-under one profile keeps that profile's host in its `audio_url` and won't
-play under a different profile until it's re-enriched (or unless it's
-already served from R2, which is a fixed public URL regardless of profile).
-
 ### Production — public domain
 
-Backed by three root-level files: `.env.prod` (the URL overrides above),
+Backed by three files: `env-profiles/prod.env` (the URL overrides above),
 `cloudflared-config.yml` (Cloudflare Tunnel ingress — which local port each
 subdomain maps to), and `ecosystem.config.js` (a
 [pm2](https://pm2.keymetrics.io/) process file so all three processes
@@ -398,7 +427,7 @@ cloudflared tunnel route dns dygo-academy supabase.dygoacademy.com
 # The bare domain -> www redirect is a Cloudflare dashboard rule
 # (Rules > Redirect Rules), not something cloudflared handles.
 
-# 6. Build both apps (NEXT_PUBLIC_* values come from .env.prod at this step).
+# 6. Build both apps (NEXT_PUBLIC_* values come from env-profiles/prod.env at this step).
 cd com.dygoacademy.backend && npm run build
 cd ../com.dygoacademy.frontend && npm run build:prod:domain
 
@@ -526,19 +555,23 @@ storage-api and MinIO. Not a blocker for Phase 0 or 1.
 DygoAcademy/
 ├── docker-compose.yml              # Local Supabase, Redis & MinIO stack
 ├── .env.example                    # Template — copy to .env, never commit .env
-├── .env.prod                       # Production URL overrides (gitignored — see "Running modes")
+├── env-profiles/                   # local/stg/prod overlays — see "Running modes"
+│   ├── local.env(.example)         # localhost — no object storage override (MinIO)
+│   ├── stg.env(.example)           # LAN/tailscale IP — MinIO over that IP
+│   └── prod.env(.example)          # real domain + real Cloudflare R2 credentials
 ├── cloudflared-config.yml          # Cloudflare Tunnel ingress for production
 ├── ecosystem.config.js             # pm2 process file for production
 ├── database/
 │   ├── apply-migrations.sh         # Migration runner
 │   ├── init/                       # Container bootstrap (runs on empty volume only)
-│   ├── migrations/                 # 001–004, applied in order
+│   ├── migrations/                 # 001–004 core, 005–015 incremental (see apply-migrations.sh)
 │   └── tests/                      # RLS verification suite
 ├── supabase/
 │   ├── kong.yml                    # Gateway routes (a TEMPLATE — see above)
 │   └── kong-entrypoint.sh          # Renders the template, then starts Kong
 ├── com.dygoacademy.backend/        # NestJS API — scaffolded
 │   ├── scripts/dev-token.js        # Mint tokens for fixture users (dev only)
+│   ├── scripts/test-push.js        # Send a real push to a user's subscription (dev only)
 │   └── src/
 │       ├── common/                 # Guards, interceptors, filters, decorators
 │       ├── config/                 # Config + boot-time env validation
