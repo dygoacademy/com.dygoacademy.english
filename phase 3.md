@@ -1,8 +1,11 @@
 # 📋 Dygo Academy — Phase 3: Learning Path & Engagement Business Requirements
-**Document Version**: 1.0 (Draft for Product review)
+**Document Version**: 1.1 (5 of 7 modules code-complete — see §8/§9 for build and live status)
 **Author**: Product/UX planning follow-up
-**Status**: Draft — scoping only, no FR here is committed or estimated by engineering yet
+**Status**: All buildable modules (17.2, 18, 19, 21, 22) code-complete as of `8ddff7f`. Live verification is blocked, not failed — see §9: a production auth outage (unrelated to this phase's own code) makes every authenticated screen unverifiable right now. Modules 20/23 and FR-17.1 remain unbuilt, blocked on Product per §7.
 **Source**: The "Dygo Learning Path" concept (reimagined customer journey + 4 redesigned screens, published as an artifact 2026-09-19) and `phase 2.md` §2.1, which named this phase explicitly: *"treat the Learning Path concept as a candidate Phase 3, scoped separately, after Phase 2's P0/P1 items ship."*
+
+**Changelog**
+* **1.1** (2026-09-20) — Session 5 close-out. Added §8 (build status across all 5 buildable modules) and §9 (a live-verification attempt that found a production incident instead of confirming deploy status — Supabase auth is misconfigured on the live build, blocking every authenticated screen). Corrected Module 22's original scoping error (see that section) after Session 4 found the "Focus List" it described already existed.
 
 > **Naming note**: same situation as `phase 2.md` — the master schedule (`dygo_academy_master_project_schedule.md`) now has this remediation work filed as its own "Phase 6" (added 2026-09-19), and still has its original Phase 2 (SRS/Flashcards, unrelated). This document is "Phase 3" only in the sense of "the third planning document in this sequence" (`phase 2.md` → `phase 2 implementation plan.md` → this one) — before merging into the master schedule, file it as **Phase 7**.
 
@@ -125,3 +128,44 @@ Feature work, not remediation, so this isn't `phase 2.md`'s bug-severity scale. 
 2. **Module 17 (diagnostic content)**: does the diagnostic draw from a real band-correlated word list Dygo doesn't have yet, or from `master_lexicon`'s existing content? Content sourcing, not engineering.
 3. **Module 23 (cohort opt-in)**: group-level or member-level opt-in?
 4. **Sequencing**: this document lists 7 modules; nothing here says they ship together. Recommend Product picks a first slice — Modules 18 + 19 are the least risky (additive data, no new content, no algorithm) and would be a reasonable Phase 3a on their own.
+
+---
+
+## 8. Build status (2026-09-20, Session 5 close-out)
+
+| Module | FR | Status |
+| :--- | :--- | :--- |
+| 17 | FR-17.2 | ✅ code-complete `d2a7efb` — **live-verified**: `/search`'s headline is confirmed live |
+| 19 | FR-19.1 | ✅ code-complete `d2a7efb` — live status unknown, see §9 (auth outage blocks checking) |
+| 18 | FR-18.1 | ✅ code-complete `6e7b0d4` (backend) + `2c44be1` (frontend) — live status unknown, see §9 |
+| 21 | FR-21.1 | ✅ code-complete `8ddff7f` — shipped without deploy confirmation (see that commit); live status unknown, see §9 |
+| 22 | FR-22.1 | ✅ code-complete `8ddff7f`, corrected scope (see Module 22 above) — live status unknown, see §9 |
+| 20 | FR-20.1/20.2 | Not built — Exploratory, blocked on Product (open question 1) |
+| 17 | FR-17.1 | Not built — blocked on Product (open question 2) |
+| 23 | FR-23.1 | Not built — blocked on Product (open question 3) |
+
+All 5 buildable pieces are code-complete: `tsc --noEmit`, `eslint`, and `jest` clean on every commit above at the time it was made.
+
+## 9. Close-out live verification — found a production incident, not a deploy lag
+
+Session 5's job was to walk every module above against the live app, the same discipline that caught Phase 2's deploy lag. It found something more urgent: **production authentication is completely broken on `dygoacademy.com` right now.**
+
+Signing in as `sarah@dygo.test` (the same fixture used throughout this project) fails with "Failed to fetch." The network trace shows why: the page attempts
+
+```
+POST http://localhost:8000/auth/v1/token?grant_type=password
+→ FAILED: net::ERR_BLOCKED_BY_CLIENT
+```
+
+`localhost:8000` is baked into the shipped JS bundle as `NEXT_PUBLIC_SUPABASE_URL` — a Next.js public env var, inlined at **build time**, not read at runtime. Checked every env file in this repo to confirm what it should be:
+
+* `com.dygoacademy.frontend/.env`, `.env.local`, `.env.example`, and `env-profiles/local.env` all correctly set `NEXT_PUBLIC_SUPABASE_URL=http://localhost:8000` for local development.
+* `env-profiles/prod.env` correctly sets `NEXT_PUBLIC_SUPABASE_URL=https://supabase.dygoacademy.com`.
+
+The live bundle was built with the **local/dev value**, not `prod.env`'s. `README.md`'s own documented production build command is `npm run build:prod:domain`, which sources `env-profiles/prod.env` first (`sh -c 'set -a; . ../env-profiles/prod.env; set +a; next build'`) — whatever produced the currently-live bundle either used a plain `next build`/`npm run build` instead, or the env-sourcing step silently failed.
+
+**Impact**: no one can sign in to the live product right now. This blocks every authenticated screen — Home, Topics, Study, Progress, Groups — for every real user, not just this close-out's verification. It also means **none of Phase 2's or Phase 3's live-verification work in this document or `phase 2.md` could be extended further this session** — the one thing checkable without auth (`/search`'s public headline, FR-17.2) confirmed live; everything past the login wall is unverifiable until this is fixed, not because the code is wrong, but because the deployed build's own auth configuration is.
+
+**This is unrelated to Phase 2's or Phase 3's code** — nothing built in either phase touches Supabase configuration. It's a deployment/build-process issue, most likely introduced by whatever build produced the bundle that *does* show Session 1's new `/search` copy (i.e., a deploy happened recently — using the wrong env profile — which is actually informative: it means deploys are happening again after whatever caused Phase 2's original lag, just with this new problem).
+
+**Action needed, before anything else**: rebuild and redeploy using `env-profiles/prod.env` (via `npm run build:prod:domain`, not a bare `next build`), and add a pre-deploy check that fails loudly if `NEXT_PUBLIC_SUPABASE_URL` ever contains `localhost` in a build tagged for production — this exact failure mode is silent and only surfaces as "Failed to fetch" in the browser console, not a build error, so it can ship undetected.

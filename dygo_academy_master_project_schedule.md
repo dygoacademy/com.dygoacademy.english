@@ -1,9 +1,37 @@
 # 📅 Dygo Academy: Master Project Schedule & Phasing Strategy
-**Document Version**: 5.18 (Phase 6 — UX & trust remediation — 20/20 FRs code-complete, 9 of them found not yet deployed during close-out)  
+**Document Version**: 5.19 (Phase 7 — Learning Path & Engagement — 5/7 modules code-complete; close-out found production sign-in is broken)  
 **Author**: Principal Cloud & SaaS Solutions Advisory  
-**Status**: Approved for Engineering & Product Execution  
+**Status**: Approved for Engineering & Product Execution — **production incident open, see Phase 7**  
 
 **Changelog**
+* **5.19** (2026-09-20) — Added §2's new Phase 7 (Learning Path &
+  Engagement), building the parts of the "Dygo Learning Path" concept
+  Phase 6 explicitly scoped out of its own remediation work. 5 of 7
+  modules code-complete across 4 sessions (a 5th, close-out, found the
+  real headline of this entry): a personalized arrival headline,
+  per-topic mastery rings, a 5-day Home activity trail, a reward-framed
+  study-session summary, and severity-scaled coloring on the personal
+  leech-word list — the last one corrected mid-implementation after
+  discovering `phase 3.md`'s original scoping was wrong (it claimed no
+  personal focus view existed; one has since Module 8). The remaining 2
+  modules and one FR stay unbuilt on purpose, gated on open product
+  questions named in `phase 3.md` §7, same discipline Phase 6 used for
+  its own out-of-scope items.
+  
+  Session 5's close-out did what Phase 6's close-out did — verify against
+  the live app instead of stopping at code review — and this time found
+  something worse than a deploy lag: **production sign-in is completely
+  broken**. The live bundle's `NEXT_PUBLIC_SUPABASE_URL` points at
+  `http://localhost:8000` instead of `env-profiles/prod.env`'s
+  `https://supabase.dygoacademy.com` — a dev value baked in at build time
+  by whatever produced the currently-live bundle, which didn't go through
+  the documented `npm run build:prod:domain` path (or that path's
+  env-sourcing silently failed). Every authenticated screen is unreachable
+  for every real user right now. This also retires Phase 6's own "9 FRs
+  pending deploy" status as checkable — a deploy clearly happened since
+  (Phase 7's own new copy is live), it just shipped this regression
+  instead of resolving that backlog. See `phase 3.md` §9 for the full
+  finding, including the exact failed request and every env file checked.
 * **5.18** (2026-09-19) — Added §2's new Phase 6 (UX & Trust Remediation),
   a post-launch pass this document's own Phase 0–5 never scoped, run
   across 9 sessions against 20 findings from a live-app UX audit. Full
@@ -790,6 +818,17 @@ gantt
 * **Timeline**: Unscheduled — a post-launch pass, not part of the original 12-week/6-sprint plan above.
 * **Primary Objective**: Close 20 findings from a screen-by-screen UX audit of the live app (2026-09-19) — data-integrity bugs in the retention loop (streak/due-count/leech-nudge disagreeing across screens), unconfirmed destructive actions, quiz/study UX gaps, and internal engineering language that had leaked into production copy. Full requirements, root-cause analysis, and a developer implementation plan live in three documents this phase produced, kept outside this file rather than duplicated into it: `phase 2.md` (the 20 FRs — what and why, called "Phase 2" in its own title since that's what it was asked to be named before this section existed to disambiguate it from *this* file's own Phase 2 — see its own naming note), `phase 2 implementation plan.md` (file-by-file developer handoff), and `Claude outputs/phase 2 session schedule.md` (9 token-budgeted sessions this was executed across).
 * **Status** (2026-09-19): **All 20 FRs code-complete** (`tsc --noEmit`, `eslint`, `jest` 165/165 backend clean on every commit) as of `e6750a1`. Session 9's close-out pass did what every earlier phase in this document flagged as a standing gap and never actually did — walked every FR against the live app instead of stopping at code review — and it caught something no amount of code review would have: **a real deploy lag**. Only the first 11 FRs (everything through commit `20dab8e`) are live; the remaining 9 (FR-10.1, FR-10.3, FR-12.1, FR-12.2, FR-12.3, FR-13.1, FR-14.1, FR-15.5, FR-16.3 — commit `88de075` onward) are fully built and tested but still showing pre-fix behavior in production, confirmed by directly reproducing the old behavior live (e.g. clicking "Delete this topic" still does nothing — no dialog — because the pre-fix build is what's actually deployed). This repo's `.github/workflows` has been empty since Phase 0, so there's no deploy-on-commit pipeline to have caught this automatically. **Action needed from whoever owns deploys**: push a new build. Full detail, including exactly which commit is the live/not-live boundary, is in `phase 2.md` §9.
+  * **Update (2026-09-20)**: superseded by Phase 7's finding below — a deploy did eventually happen, but broke production auth in the process. This phase's own 9-FR live/not-live boundary is now moot, since nothing authenticated is checkable until that's fixed. See Phase 7's status.
+
+---
+
+### 🚨 Phase 7: Learning Path & Engagement (Phase 3 planning), and a production incident found while closing it out
+* **Timeline**: Unscheduled — a second post-launch pass, following directly after Phase 6.
+* **Primary Objective**: Build the parts of the "Dygo Learning Path" concept (a reimagined, more game-like customer journey — see that artifact, published 2026-09-19) that Phase 6/`phase 2.md` explicitly left out of its own remediation scope. Full requirements and the developer handoff live in `phase 3.md` (named "Phase 3" in its own title for the same reason `phase 2.md` was — file it as **Phase 7** here to avoid colliding with this document's own Phase 2 and Phase 3, both unrelated), `phase 3 implementation plan.md`, and `Claude outputs/phase 3 session schedule.md` (5 sessions).
+* **Status** (2026-09-20): **5 of 7 modules code-complete** as of `8ddff7f` — a personalized arrival headline, per-topic mastery rings, a 5-day Home activity trail (new backend endpoint + frontend component), a reward-framed study-session summary, and severity-scaled coloring on the personal leech-word list (this last one corrected mid-implementation: `phase 3.md` originally scoped it as a net-new list, but the list already existed since Phase 1/Module 8 — only its flat coloring was the real gap). The remaining 2 modules (an estimated IELTS band score, opt-in cohort momentum) plus one FR (a personalized diagnostic starter deck) are deliberately unbuilt — each has an open product question named in `phase 3.md` §7, not an engineering gap.
+  * **Session 5's close-out found something bigger than a deploy check**: attempting to live-verify this phase's work (and re-verify Phase 6's still-pending 9 FRs) surfaced that **production sign-in is completely broken** on `dygoacademy.com` right now. The live JS bundle calls `http://localhost:8000/auth/v1/token` for Supabase auth instead of `https://supabase.dygoacademy.com` (`env-profiles/prod.env`'s correct value) — a dev-only `NEXT_PUBLIC_SUPABASE_URL` baked in at build time by a production build that didn't source `env-profiles/prod.env` (the documented `npm run build:prod:domain` path does; whatever built the currently-live bundle apparently didn't). Every authenticated screen — Home, Topics, Study, Progress, Groups — is unreachable for every real user until this is fixed. Full detail, including the exact failed network request and every env file checked to confirm the correct value, is in `phase 3.md` §9.
+  * **This also means Phase 6's own remaining "9 FRs pending deploy" status (above) can no longer be re-checked either** — whatever deploy shipped Phase 7's Session 1 work (confirmed live: `/search`'s new headline) also introduced this auth regression, so a deploy clearly *did* happen since Phase 6's close-out, just one with a new, more severe problem than the one it may have fixed.
+  * **Action needed, before anything else in either phase**: rebuild and redeploy via `npm run build:prod:domain` (not a bare `next build`), and add a pre-deploy check that fails loudly on a `localhost` value in any `NEXT_PUBLIC_*` var for a production build — this failure mode is otherwise silent, surfacing only as "Failed to fetch" in a user's browser console, not a build error.
 
 ---
 
