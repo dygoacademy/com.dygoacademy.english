@@ -46,7 +46,7 @@ export class QuizController {
     summary: 'On-demand IPA/meaning hint for a stuck TEXT-mode item',
     description:
       "A CLOZE or DICTATION item has no options list to fall back on, so a student who's " +
-      "drawn a blank has nothing else on screen to work from (live-requested 2026-09-16). " +
+      'drawn a blank has nothing else on screen to work from (live-requested 2026-09-16). ' +
       'Separate from the item payload itself so a hint the student never asked for is never ' +
       'sitting in the initial network response.',
   })

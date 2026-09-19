@@ -130,9 +130,10 @@ export class PushDispatchService {
           );
           result.sent += 1;
           await this.db
-            .queryAsService(`update public.push_subscriptions set last_used_at = now() where id = $1`, [
-              sub.id,
-            ])
+            .queryAsService(
+              `update public.push_subscriptions set last_used_at = now() where id = $1`,
+              [sub.id],
+            )
             .catch(() => undefined);
         } catch (err) {
           const statusCode = (err as { statusCode?: number }).statusCode;
