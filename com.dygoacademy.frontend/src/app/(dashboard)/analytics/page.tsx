@@ -116,15 +116,39 @@ function StatsGrid({ stats }: { stats: SrsStats }) {
 }
 
 /**
+ * Three fixed intensity steps over the existing `destructive` token,
+ * rather than a continuous gradient (Phase 2 implementation plan's own
+ * "a stepped scale is enough" call) or a brand-new hue -- `failure_rate`
+ * is already 0..1 (`heatmap-aggregator.ts`'s `rankHeatmap`), so a plain
+ * threshold split is all a bucket needs.
+ */
+function heatmapPillClass(rate: number): string {
+  if (rate >= 2 / 3) return 'border-destructive bg-destructive/25 text-destructive';
+  if (rate >= 1 / 3) return 'border-destructive/50 bg-destructive/10 text-destructive';
+  return 'border-destructive/25 bg-destructive/5 text-destructive/70';
+}
+
+/**
  * One card per group the caller administers. `useGroupHeatmap` is called
  * unconditionally inside this per-group component (not in a loop inside
  * `AnalyticsPage` itself) so the number of hook calls per render stays
  * fixed regardless of how many groups the caller admins — the standard
  * "extract a subcomponent" fix for the rules-of-hooks issue a `.map()`
  * over a variable-length list plus a hook call would otherwise create.
+ *
+ * Filtered to `failure_rate > 0` and recolored by that rate 2026-09-19
+ * (Phase 2 FR-14.1 -- audit finding: every word in the group rendered here,
+ * including ones never missed, all in the identical pale-red pill as words
+ * missed a third of the time -- a "heatmap" that colors 0% and 33% the
+ * same isn't encoding severity, and burying real problem words under
+ * perfect ones defeats the point of a mistake list). The backend's own
+ * `rankHeatmap` already sorts worst-first and caps at
+ * `DEFAULT_HEATMAP_LIMIT` -- this filter only removes the zero-mistake
+ * tail from that same list, no new query or endpoint needed.
  */
 function GroupHeatmapSection({ group }: { group: GroupSummary }) {
   const { data: heatmap, isPending, isError } = useGroupHeatmap(group.id);
+  const mistakes = heatmap?.filter((entry) => entry.failure_rate > 0);
 
   return (
     <Card>
@@ -141,7 +165,10 @@ function GroupHeatmapSection({ group }: { group: GroupSummary }) {
         {heatmap?.length === 0 && (
           <p className="text-sm text-muted-foreground">No review activity in this group yet.</p>
         )}
-        {heatmap?.map((entry) => (
+        {heatmap && heatmap.length > 0 && mistakes?.length === 0 && (
+          <p className="text-sm text-muted-foreground">No mistakes to review — nice work.</p>
+        )}
+        {mistakes?.map((entry) => (
           <div
             key={entry.topic_word_id}
             className="flex items-center justify-between rounded-xl border px-3 py-2 text-sm"
@@ -154,7 +181,9 @@ function GroupHeatmapSection({ group }: { group: GroupSummary }) {
               <span className="font-mono text-xs text-muted-foreground">
                 {entry.failures}/{entry.attempts}
               </span>
-              <span className="rounded-full border border-destructive/40 bg-destructive/10 px-2 py-0.5 text-[10px] text-destructive">
+              <span
+                className={`rounded-full border px-2 py-0.5 text-[10px] ${heatmapPillClass(entry.failure_rate)}`}
+              >
                 {Math.round(entry.failure_rate * 100)}%
               </span>
             </div>
