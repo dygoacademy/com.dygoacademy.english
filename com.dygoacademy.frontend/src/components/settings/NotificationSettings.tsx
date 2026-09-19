@@ -83,9 +83,11 @@ export function NotificationSettings() {
       <Card>
         <CardHeader>
           <CardTitle>Daily reminder</CardTitle>
+          {/* Trailing "(FR-6.3/6.4)" dropped 2026-09-19 (Phase 2 FR-15.3) --
+              an internal requirement-id citation that had leaked into
+              production copy. The sentence stands fine without it. */}
           <CardDescription>
-            A nudge when cards are due — leech words and streak risk take priority over a plain reminder
-            (FR-6.3/6.4).
+            A nudge when cards are due — leech words and streak risk take priority over a plain reminder.
           </CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col gap-4">

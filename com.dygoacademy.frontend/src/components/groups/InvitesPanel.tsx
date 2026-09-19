@@ -116,9 +116,17 @@ export function InvitesPanel({ groupId }: { groupId: string }) {
             key={invite.id}
             className="flex items-center justify-between rounded-xl border px-3 py-2 text-xs"
           >
+            {/* Pluralization fixed 2026-09-19 (Phase 2 FR-15.4) -- was
+                unconditionally "used {n} times", rendering "used 1 times"
+                for a once-used invite. Only special-cased the no-max_uses
+                case ("used once"): once a max is set, the number reads as
+                part of a ratio ("2/5 times"), where "used once/5 times"
+                would read worse than the numeral. */}
             <span>
-              Joins as <b>{invite.grant_role}</b> · used {invite.use_count}
-              {invite.max_uses ? `/${invite.max_uses}` : ''} times
+              Joins as <b>{invite.grant_role}</b> ·{' '}
+              {invite.use_count === 1 && !invite.max_uses
+                ? 'used once'
+                : `used ${invite.use_count}${invite.max_uses ? `/${invite.max_uses}` : ''} times`}
               {invite.expires_at &&
                 ` · expires ${new Date(invite.expires_at).toLocaleDateString()}`}
             </span>
