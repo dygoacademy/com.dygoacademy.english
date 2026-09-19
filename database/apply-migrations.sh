@@ -11,6 +11,7 @@
 #   ./database/apply-migrations.sh --qa-words-seed-only  # ONLY 012 (100 QA words) -- needs 011 first
 #   ./database/apply-migrations.sh --hello-world-seed-only  # ONLY 013 (1 test word+audio) -- needs 011 first
 #   ./database/apply-migrations.sh --grants-only            # ONLY 014+015 (service_role table grants)
+#   ./database/apply-migrations.sh --invite-fix-only        # ONLY 016+017 (invite creation/redeem fixes)
 #   ./database/apply-migrations.sh --test-only           # ONLY the RLS suite
 #   ./database/apply-migrations.sh --verify              # report what is actually installed
 #
@@ -96,6 +97,14 @@ case "${1:-}" in
     run_file "$DIR/migrations/014_service_role_grants.sql"
     run_file "$DIR/migrations/015_push_notification_service_role_grant.sql"
     verify; echo "done."; exit 0 ;;
+  --invite-fix-only)
+    # Idempotent CREATE OR REPLACE FUNCTION (016, 017) — safe to run any
+    # time. Fixes invite link creation ("function digest(text, unknown)
+    # does not exist") and redemption ("column reference \"group_id\" is
+    # ambiguous") on an already-migrated database.
+    run_file "$DIR/migrations/016_pgcrypto_search_path_fix.sql"
+    run_file "$DIR/migrations/017_redeem_invite_ambiguous_column_fix.sql"
+    verify; echo "done."; exit 0 ;;
   --test-only)
     # The suite asserts exact row counts, so it is meaningless without fixtures.
     if [ "$(psql_run -t -c 'select count(*) from public.tenants' | tr -d '[:space:]')" = "0" ]; then
@@ -117,6 +126,8 @@ run_file "$DIR/migrations/007_group_word_heatmap.sql"
 run_file "$DIR/migrations/008_profiles_group_visibility.sql"
 run_file "$DIR/migrations/009_tenant_admin_read_expansion.sql"
 run_file "$DIR/migrations/010_tenant_word_heatmap.sql"
+run_file "$DIR/migrations/016_pgcrypto_search_path_fix.sql"
+run_file "$DIR/migrations/017_redeem_invite_ambiguous_column_fix.sql"
 
 case "${1:-}" in
   --seed)

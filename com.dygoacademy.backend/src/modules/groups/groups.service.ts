@@ -369,9 +369,14 @@ export class GroupsService {
    */
   async redeemInvite(userId: string, token: string): Promise<RedeemedInvite> {
     try {
+      // joined_group_id, not group_id: the SQL function's own output
+      // column had to be renamed (migration 017) to stop colliding with
+      // group_members.group_id inside its "on conflict (group_id, ...)"
+      // clause — see that migration's header. Aliased back to group_id
+      // here so RedeemedInvite's shape doesn't need to change.
       const rows = await this.db.queryAs<RedeemedInvite>(
         userId,
-        `select group_id, group_name, granted_role, already_member
+        `select joined_group_id as group_id, group_name, granted_role, already_member
            from public.redeem_group_invite($1)`,
         [token],
       );
