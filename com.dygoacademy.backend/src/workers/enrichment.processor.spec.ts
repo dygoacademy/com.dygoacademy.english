@@ -64,7 +64,14 @@ describe('EnrichmentProcessor', () => {
     const moduleRef = await Test.createTestingModule({
       providers: [
         EnrichmentProcessor,
-        { provide: DatabaseService, useValue: { query: queryMock } },
+        // queryAsService, not query() — EnrichmentProcessor's three db calls
+        // (dedup lookup, master_lexicon upsert, FAILED-status write) all run
+        // as service_role (see database.service.ts / migration 014's own
+        // comment: authenticator, query()'s role, has zero grants on
+        // master_lexicon/topic_words by design). Spec was stale relative to
+        // that fix until now — caught 2026-09-16 running the full suite
+        // while unrelated env-profile work was in progress.
+        { provide: DatabaseService, useValue: { queryAsService: queryMock } },
         {
           provide: GeminiEnrichmentService,
           useValue: { enrichWord: enrichWordMock, synthesizeSpeech: synthesizeSpeechMock },
