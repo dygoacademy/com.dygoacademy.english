@@ -48,7 +48,17 @@ export default function AnalyticsPage() {
 
       {/* id targeted by Home's LeechNudge "Fix →" link (Phase 2 FR-9.3) --
           both now read the exact same `useLeeches()` query, so the nudge
-          can no longer point at a page that disagrees with its own count. */}
+          can no longer point at a page that disagrees with its own count.
+          Row coloring scaled by `recent_mistakes` 2026-09-20 (Phase 3
+          Module 22, FR-22.1) -- this personal list already existed since
+          Module 8's original build (predates both Phase 2 and Phase 3),
+          but every row shared the same fixed `border-destructive/40
+          bg-destructive/10`, the exact "one color for every rate" problem
+          FR-14.1 fixed for the *group* heatmap without ever touching this
+          personal one. `phase 3.md`'s original framing of Module 22 as "no
+          personal focus view exists yet" was wrong -- this section already
+          was one; the actual gap was only its flat coloring, corrected here
+          rather than adding a second, redundant list next to it. */}
       <section id="leech-words" className="flex flex-col gap-2 scroll-mt-20">
         <p className="font-mono text-xs uppercase tracking-wide text-muted-foreground">
           Leech words
@@ -66,7 +76,7 @@ export default function AnalyticsPage() {
           {leeches?.map((leech) => (
             <div
               key={leech.topic_word_id}
-              className="flex items-center justify-between rounded-xl border border-destructive/40 bg-destructive/10 px-3 py-2 text-sm"
+              className={`flex items-center justify-between rounded-xl border px-3 py-2 text-sm ${leechPillClass(leech.recent_mistakes)}`}
             >
               <span>{leech.source_word}</span>
               <span className="font-mono text-xs text-muted-foreground">
@@ -125,6 +135,21 @@ function StatsGrid({ stats }: { stats: SrsStats }) {
 function heatmapPillClass(rate: number): string {
   if (rate >= 2 / 3) return 'border-destructive bg-destructive/25 text-destructive';
   if (rate >= 1 / 3) return 'border-destructive/50 bg-destructive/10 text-destructive';
+  return 'border-destructive/25 bg-destructive/5 text-destructive/70';
+}
+
+/**
+ * Same three-step idea as `heatmapPillClass`, but keyed on an absolute
+ * `recent_mistakes` count rather than a 0..1 rate -- `LeechCard` has no
+ * `failure_rate` field, and every row here already cleared
+ * `srs-algorithm.ts`'s `LEECH_THRESHOLD` (4) by definition (that's what
+ * makes it a leech), so the floor for "low" starts there rather than at 0.
+ * Thresholds picked relative to that real value, not a guessed number
+ * (Phase 3 Module 22, FR-22.1).
+ */
+function leechPillClass(recentMistakes: number): string {
+  if (recentMistakes >= 8) return 'border-destructive bg-destructive/25 text-destructive';
+  if (recentMistakes >= 6) return 'border-destructive/50 bg-destructive/10 text-destructive';
   return 'border-destructive/25 bg-destructive/5 text-destructive/70';
 }
 

@@ -11,6 +11,7 @@ import { RatingButtons } from '@/components/flashcard/RatingButtons';
 import { CONTENT_WIDTH } from '@/constants/layout';
 import { ROUTES } from '@/constants/routes';
 import { useRateWord } from '@/hooks/useRateWord';
+import { useSrsStats } from '@/hooks/useSrsStats';
 import { useStudySession } from '@/hooks/useStudySession';
 import { formatIpa } from '@/lib/utils';
 import type { DueCard, SessionMode, SrsRating } from '@/types';
@@ -65,6 +66,10 @@ function StudySessionScreen() {
 
   const { data, isLoading, isError, refetch } = useStudySession(topicId, mode);
   const rateWord = useRateWord();
+  // Phase 3 Module 21 (FR-21.1) — only for the reward-hero streak callout
+  // below; the session flow itself never depended on this and still
+  // doesn't, so a slow/failed stats fetch can't block or break studying.
+  const { data: stats } = useSrsStats();
 
   const [index, setIndex] = useState(0);
   const [flipped, setFlipped] = useState(false);
@@ -148,29 +153,66 @@ function StudySessionScreen() {
   }
 
   if (done) {
-    return (
-      <main className={`mx-auto flex min-h-screen ${CONTENT_WIDTH.default} flex-col items-center justify-center gap-3 p-4 text-center`}>
-        <p className="text-lg font-semibold">
-          {cards.length === 0 ? 'Nothing due right now.' : "That's every card for now."}
-        </p>
-        {cards.length === 0 ? (
+    if (cards.length === 0) {
+      return (
+        <main className={`mx-auto flex min-h-screen ${CONTENT_WIDTH.default} flex-col items-center justify-center gap-3 p-4 text-center`}>
+          <p className="text-lg font-semibold">Nothing due right now.</p>
           <p className="text-sm text-muted-foreground">
             New or overdue words will show up here as they come due.
           </p>
-        ) : (
-          // FR-13.1 -- was a single line naming only the card count, no
-          // knew/missed split and no next step beyond leaving. Kept plain
-          // and textual on purpose (phase 2.md §2.1 / open question 4):
-          // the "Dygo Learning Path" concept has a reward-framed version
-          // of this same screen, but that's separately-scoped future work,
-          // not something this fix should pre-empt.
-          <p className="text-sm text-muted-foreground">
-            {tally.knew} knew it · {tally.missed} didn&apos;t know — {cards.length} card
-            {cards.length === 1 ? '' : 's'} this session.
+          <Link href={ROUTES.home} className="text-sm underline underline-offset-4">
+            Back to topics
+          </Link>
+        </main>
+      );
+    }
+
+    // Phase 3 Module 21 (FR-21.1) — restyles FR-13.1's plain knew/missed
+    // line into the "Dygo Learning Path" concept's reward-hero treatment.
+    // The underlying data is identical to FR-13.1's (tally.knew/missed,
+    // the same topicId-gated CTA) -- this is presentation only. No mastery
+    // claim ("+N words mastered") is made here: that would need a
+    // before/after repetitions comparison this page doesn't have, and the
+    // implementation plan is explicit that this screen shouldn't promise a
+    // number it can't back up. `stats?.current_streak_days` is the one
+    // real number available beyond the session's own tally, so it's the
+    // one used for the streak callout -- omitted entirely while stats is
+    // still loading rather than guessed at.
+    return (
+      <main className={`mx-auto flex min-h-screen ${CONTENT_WIDTH.default} flex-col items-center justify-center gap-4 p-4 text-center`}>
+        <div className="flex w-full flex-col items-center gap-3 rounded-2xl border-2 border-primary/30 bg-gradient-to-b from-primary/10 to-transparent p-6">
+          <span className="text-4xl" aria-hidden="true">
+            🔥
+          </span>
+          <p className="text-lg font-semibold">
+            {stats?.current_streak_days
+              ? `${stats.current_streak_days}-day streak protected`
+              : "That's every card for now."}
           </p>
-        )}
+          <p className="text-sm text-muted-foreground">
+            You reviewed {cards.length} card{cards.length === 1 ? '' : 's'} this session.
+          </p>
+          <div className="flex gap-3">
+            <div className="rounded-xl border bg-card px-4 py-2">
+              <div className="text-lg font-semibold text-emerald-600 dark:text-emerald-400">
+                {tally.knew}
+              </div>
+              <div className="text-[10px] uppercase tracking-wide text-muted-foreground">
+                Knew it
+              </div>
+            </div>
+            <div className="rounded-xl border bg-card px-4 py-2">
+              <div className="text-lg font-semibold text-rose-600 dark:text-rose-400">
+                {tally.missed}
+              </div>
+              <div className="text-[10px] uppercase tracking-wide text-muted-foreground">
+                Didn&apos;t know
+              </div>
+            </div>
+          </div>
+        </div>
         <div className="flex flex-col items-center gap-2">
-          {cards.length > 0 && topicId && (
+          {topicId && (
             <Link
               href={`/quiz?topicId=${topicId}`}
               className="rounded-lg bg-primary px-4 py-2 text-sm text-primary-foreground"
