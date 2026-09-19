@@ -6,16 +6,11 @@ import { Job } from 'bullmq';
 import { DatabaseService } from '../database/database.service';
 import { buildReminderPayload } from '../modules/notifications/notification-message';
 import { PushDispatchService } from '../modules/notifications/push-dispatch.service';
-import { computeStreak } from '../modules/srs/srs.service';
+import { computeSrsSummary } from '../modules/srs/srs.service';
 import { NOTIFICATION_QUEUE, NotificationCronJob } from '../queues/queue.constants';
 
 interface DueScheduleRow {
   user_id: string;
-}
-
-interface StatsRow {
-  due_now: string;
-  leech_count: string;
 }
 
 /**
@@ -92,31 +87,25 @@ export class NotificationProcessor extends WorkerHost {
     );
   }
 
-  /** FR-6.1/6.3/6.4's shared decision — see notification-message.ts. */
+  /**
+   * FR-6.1/6.3/6.4's shared decision — see notification-message.ts.
+   *
+   * Delegates the due/leech/streak numbers to `computeSrsSummary` (see its
+   * own comment in srs.service.ts) instead of this method's own
+   * hand-maintained copy of the query — this file is exactly the second
+   * caller that comment describes. Runs unscoped (`this.db.query`, the
+   * bare `authenticator` role) rather than `queryAs`, since a BullMQ cron
+   * tick has no per-request JWT to scope by and iterates many users per
+   * tick; `computeSrsSummary`'s explicit `where user_id = $1` is what keeps
+   * this safe on that path.
+   */
   private async buildPayload(userId: string) {
-    const [[stats], streakRows] = await Promise.all([
-      this.db.query<StatsRow>(
-        `select
-           count(*) filter (where next_due_at <= now()) as due_now,
-           count(*) filter (where is_leech) as leech_count
-         from public.user_word_srs
-        where user_id = $1`,
-        [userId],
-      ),
-      this.db.query<{ review_date: string }>(
-        `select distinct (reviewed_at at time zone 'utc')::date::text as review_date
-           from public.review_logs
-          where user_id = $1
-          order by review_date desc
-          limit 366`,
-        [userId],
-      ),
-    ]);
+    const summary = await computeSrsSummary((text, params) => this.db.query(text, params), userId);
 
     return buildReminderPayload({
-      dueNow: Number(stats?.due_now ?? 0),
-      leechCount: Number(stats?.leech_count ?? 0),
-      currentStreakDays: computeStreak(streakRows.map((r) => r.review_date)),
+      dueNow: summary.due_now,
+      leechCount: summary.leech_count,
+      currentStreakDays: summary.current_streak_days,
     });
   }
 }

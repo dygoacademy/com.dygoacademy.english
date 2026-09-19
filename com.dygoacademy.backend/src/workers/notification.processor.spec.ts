@@ -4,6 +4,7 @@ import { Job } from 'bullmq';
 
 import { DatabaseService } from '../database/database.service';
 import { PushDispatchService } from '../modules/notifications/push-dispatch.service';
+import { computeSrsSummary, SrsService } from '../modules/srs/srs.service';
 import { NotificationCronJob } from '../queues/queue.constants';
 import { NotificationProcessor } from './notification.processor';
 
@@ -86,5 +87,52 @@ describe('NotificationProcessor', () => {
 
     expect(sendToUserMock).toHaveBeenCalledTimes(1);
     expect(sendToUserMock.mock.calls[0][0]).toBe('user-2');
+  });
+});
+
+describe('NotificationProcessor / SrsService.stats — shared summary source (Wave 1b)', () => {
+  it('produce identical due/leech/streak numbers for the same fixture user, via either call path', async () => {
+    const fixtureTotals = [
+      { total_words: '20', mastered_words: '5', due_now: '4', leech_count: '2' },
+    ];
+    const fixtureStreak = [{ review_date: '2026-09-01' }, { review_date: '2026-08-31' }];
+
+    const realNow = Date.now;
+    Date.now = () => Date.parse('2026-09-01T18:00:00.000Z');
+    try {
+      // Path 1: GET /srs/stats — RLS-scoped via queryAs(userId, text, params).
+      const queryAsMock = jest
+        .fn()
+        .mockResolvedValueOnce(fixtureTotals)
+        .mockResolvedValueOnce(fixtureStreak);
+      const srsModuleRef = await Test.createTestingModule({
+        providers: [
+          SrsService,
+          { provide: DatabaseService, useValue: { queryAs: queryAsMock, withUser: jest.fn() } },
+        ],
+      }).compile();
+      const statsViaApi = await srsModuleRef.get(SrsService).stats('user-1');
+
+      // Path 2: the worker's payload builder — unscoped via query(text, params).
+      const workerQueryMock = jest
+        .fn()
+        .mockResolvedValueOnce(fixtureTotals)
+        .mockResolvedValueOnce(fixtureStreak);
+      const summaryViaWorker = await computeSrsSummary(workerQueryMock, 'user-1');
+
+      // Same fixture rows in, same numbers out — regardless of which
+      // caller's queryFn shape ran them.
+      expect(summaryViaWorker).toEqual(statsViaApi);
+
+      // And it's not just coincidence: both paths execute the exact same
+      // SQL string — the "single source of truth" property Wave 1b exists
+      // to guarantee, not two independently hand-copied queries that
+      // happen to agree today.
+      const [, apiStatsSql] = queryAsMock.mock.calls[0];
+      const [workerStatsSql] = workerQueryMock.mock.calls[0];
+      expect(workerStatsSql).toBe(apiStatsSql);
+    } finally {
+      Date.now = realNow;
+    }
   });
 });

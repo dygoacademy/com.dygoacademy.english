@@ -2,7 +2,7 @@ import { NotFoundException } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 
 import { DatabaseService } from '../../database/database.service';
-import { SrsService } from './srs.service';
+import { SrsService, computeSrsSummary } from './srs.service';
 
 async function makeService(queryAsMock: jest.Mock, withUserMock?: jest.Mock): Promise<SrsService> {
   const moduleRef = await Test.createTestingModule({
@@ -187,6 +187,38 @@ describe('SrsService.stats', () => {
       const stats = await service.stats('user-1');
 
       expect(stats.current_streak_days).toBe(0);
+    } finally {
+      Date.now = realNow;
+    }
+  });
+});
+
+describe('computeSrsSummary (extracted — also used by NotificationProcessor)', () => {
+  it('computes totals/due/leech/streak from a plain queryFn, independent of DatabaseService', async () => {
+    const realNow = Date.now;
+    Date.now = () => Date.parse('2026-09-03T15:00:00.000Z');
+    try {
+      const queryFn = jest
+        .fn()
+        .mockResolvedValueOnce([
+          { total_words: '7', mastered_words: '1', due_now: '2', leech_count: '0' },
+        ])
+        .mockResolvedValueOnce([{ review_date: '2026-09-03' }]);
+
+      const summary = await computeSrsSummary(queryFn, 'user-9');
+
+      expect(summary).toEqual({
+        total_words: 7,
+        mastered_words: 1,
+        due_now: 2,
+        leech_count: 0,
+        current_streak_days: 1,
+      });
+      // Both queries filter explicitly by the passed userId, regardless of
+      // whether the caller's queryFn is RLS-scoped or not (see the
+      // function's own comment on why this is deliberate).
+      expect(queryFn.mock.calls[0][1]).toEqual(['user-9']);
+      expect(queryFn.mock.calls[1][1]).toEqual(['user-9']);
     } finally {
       Date.now = realNow;
     }

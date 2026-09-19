@@ -289,47 +289,12 @@ export class SrsService {
   }
 
   /**
-   * FR-8.1's per-student view. No SLO documented for this endpoint, so it
-   * runs three small aggregate queries plus one for the streak rather than
-   * optimizing prematurely.
+   * FR-8.1's per-student view. Delegates to `computeSrsSummary` (below) --
+   * see that function's own comment for why this stopped being its own
+   * hand-written pair of queries.
    */
   async stats(userId: string): Promise<SrsStats> {
-    const [totals, streakRows] = await Promise.all([
-      this.db.queryAs<{
-        total_words: string;
-        mastered_words: string;
-        due_now: string;
-        leech_count: string;
-      }>(
-        userId,
-        `select
-           count(*) as total_words,
-           count(*) filter (where repetitions >= 4) as mastered_words,
-           count(*) filter (where next_due_at <= now()) as due_now,
-           count(*) filter (where is_leech) as leech_count
-         from public.user_word_srs`,
-      ),
-      this.db.queryAs<{ review_date: string }>(
-        userId,
-        // Cast all the way to text: pg's default type parser turns a bare
-        // ::date column back into a JS Date object, which would just have to
-        // be re-serialized below. review_date is never sent to a client, so
-        // asking Postgres for text directly is simpler than fighting that.
-        `select distinct (reviewed_at at time zone 'utc')::date::text as review_date
-           from public.review_logs
-          order by review_date desc
-          limit 366`,
-      ),
-    ]);
-
-    const t = totals[0];
-    return {
-      total_words: Number(t?.total_words ?? 0),
-      mastered_words: Number(t?.mastered_words ?? 0),
-      due_now: Number(t?.due_now ?? 0),
-      leech_count: Number(t?.leech_count ?? 0),
-      current_streak_days: computeStreak(streakRows.map((r) => r.review_date)),
-    };
+    return computeSrsSummary((text, params) => this.db.queryAs(userId, text, params), userId);
   }
 
   /** FR-4.3 — see StartSessionDto's header comment for why this has no persisted "session" row. */
@@ -382,7 +347,8 @@ function toRateDto(item: SyncReviewItemDto): RateWordDto {
 /**
  * Consecutive UTC calendar days ending today or yesterday (a day not yet
  * studied doesn't break a streak until it's fully elapsed). Exported —
- * NotificationProcessor (Module 6, FR-6.3) reuses this for the same reason
+ * `computeSrsSummary` below (used by both `SrsService.stats` and
+ * `NotificationProcessor`) reuses this for the same reason
  * `QuizService.leechDrill` reuses `SrsService.findLeeches`: one definition
  * of "what counts as a streak."
  */
@@ -410,4 +376,85 @@ export function computeStreak(descendingDates: string[]): number {
     }
   }
   return streak;
+}
+
+/**
+ * A minimal query executor `computeSrsSummary` can run against -- exactly
+ * the shape `DatabaseService.queryAs`/`.query` already have, so a caller
+ * passes one of those in directly as a closure rather than this file
+ * needing to know about `DatabaseService` at all.
+ */
+type SummaryQueryFn = <T extends Record<string, unknown> = Record<string, unknown>>(
+  text: string,
+  params: unknown[],
+) => Promise<T[]>;
+
+/**
+ * The single definition of "this user's streak/due/leech/mastery numbers"
+ * -- extracted 2026-09-19 (Phase 2 FR-9.1/9.2/9.3's deeper fix, per
+ * `phase 2 implementation plan.md` §4 steps 5-6) out of what used to be
+ * `SrsService.stats()`'s own private query, after `NotificationProcessor.
+ * buildPayload()` was found to hand-maintain a *second*, independently
+ * written copy of the due-now/leech-count half of this same query (same
+ * numbers today, but two authored copies of one computation is exactly
+ * the "no single source of truth" pattern Module 9 exists to close, not
+ * just the one visible Home-page bug the live audit actually caught).
+ *
+ * Takes a `queryFn` rather than a `DatabaseService` directly so it works
+ * unchanged for both callers' very different execution contexts:
+ * `SrsService.stats()` needs this RLS-scoped to one authenticated caller
+ * (`queryAs(userId, ...)`), while `NotificationProcessor` iterates many
+ * users from a BullMQ cron tick with no per-request JWT to scope by, and
+ * deliberately runs unscoped (`query(...)`, the bare `authenticator` role)
+ * with an explicit `where user_id = $1` instead -- forcing it onto the
+ * RLS-scoped path would mean one Postgres connection/transaction per user
+ * per tick, which is the wrong tradeoff for a batch job. The SQL below
+ * always filters by `$1` explicitly (even on the RLS-scoped path, where
+ * `user_word_srs_all_own`'s policy would already narrow it to the same
+ * rows) so both callers run the exact same query text -- belt-and-
+ * suspenders on the RLS-scoped path, load-bearing on the unscoped one,
+ * but one string either way rather than two.
+ */
+export async function computeSrsSummary(
+  queryFn: SummaryQueryFn,
+  userId: string,
+): Promise<SrsStats> {
+  const [totals, streakRows] = await Promise.all([
+    queryFn<{
+      total_words: string;
+      mastered_words: string;
+      due_now: string;
+      leech_count: string;
+    }>(
+      `select
+         count(*) as total_words,
+         count(*) filter (where repetitions >= 4) as mastered_words,
+         count(*) filter (where next_due_at <= now()) as due_now,
+         count(*) filter (where is_leech) as leech_count
+       from public.user_word_srs
+      where user_id = $1`,
+      [userId],
+    ),
+    queryFn<{ review_date: string }>(
+      // Cast all the way to text: pg's default type parser turns a bare
+      // ::date column back into a JS Date object, which would just have to
+      // be re-serialized below. review_date is never sent to a client, so
+      // asking Postgres for text directly is simpler than fighting that.
+      `select distinct (reviewed_at at time zone 'utc')::date::text as review_date
+         from public.review_logs
+        where user_id = $1
+        order by review_date desc
+        limit 366`,
+      [userId],
+    ),
+  ]);
+
+  const t = totals[0];
+  return {
+    total_words: Number(t?.total_words ?? 0),
+    mastered_words: Number(t?.mastered_words ?? 0),
+    due_now: Number(t?.due_now ?? 0),
+    leech_count: Number(t?.leech_count ?? 0),
+    current_streak_days: computeStreak(streakRows.map((r) => r.review_date)),
+  };
 }
