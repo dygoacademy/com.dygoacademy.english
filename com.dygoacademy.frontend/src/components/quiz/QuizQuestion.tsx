@@ -123,10 +123,16 @@ export function QuizQuestion({
             spellCheck={false}
             className="rounded-lg border bg-background px-3 py-2 text-base disabled:opacity-50"
           />
+          {/* Disabled state changed from a 50%-opacity copy of the same
+              solid fill to a genuinely different treatment (outline,
+              muted text, transparent fill) 2026-09-19 (Phase 2 FR-12.3 --
+              audit finding: right after typing an answer, Submit briefly
+              read as still-disabled because the only difference was a
+              subtle shade shift, not a shape/fill change). */}
           <button
             type="submit"
             disabled={disabled || !text.trim()}
-            className="rounded-lg bg-primary px-3 py-2 text-sm text-primary-foreground disabled:opacity-50"
+            className="rounded-lg border border-transparent bg-primary px-3 py-2 text-sm text-primary-foreground transition-colors disabled:border-border disabled:bg-transparent disabled:text-muted-foreground"
           >
             Submit
           </button>

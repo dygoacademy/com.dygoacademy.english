@@ -1,11 +1,21 @@
 'use client';
 
 import Link from 'next/link';
-import { useSearchParams } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Suspense, useState } from 'react';
 
 import { QuizFeedback } from '@/components/quiz/QuizFeedback';
 import { QuizQuestion } from '@/components/quiz/QuizQuestion';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { CONTENT_WIDTH } from '@/constants/layout';
 import { ROUTES } from '@/constants/routes';
 import { useGenerateQuiz } from '@/hooks/useGenerateQuiz';
@@ -31,6 +41,14 @@ import type { QuizAnswerResult } from '@/types';
  * `/study`'s same-day width bump. Widened again to `max-w-md` the same
  * day ("the page quiz should have more space of width") -- `/study`
  * stayed at `max-w-sm` since only the quiz page's own testing flagged it.
+ *
+ * The × exit control gained a confirm 2026-09-19 (Phase 2 FR-12.1 --
+ * audit finding: it was a plain `Link`, silently discarding an
+ * in-progress quiz with no warning). Picked the smaller-lift option the
+ * implementation plan offered (confirm dialog) over persisting/resuming
+ * session state, which the plan flagged as the better long-term UX but
+ * bigger scope. `answeredAny` gates it: exiting before answering anything
+ * has nothing to lose, so that case still navigates straight through.
  */
 export default function QuizPage() {
   return (
@@ -47,6 +65,7 @@ export default function QuizPage() {
 }
 
 function QuizScreen() {
+  const router = useRouter();
   const searchParams = useSearchParams();
   const topicId = searchParams.get('topicId') ?? undefined;
   const isLeechDrill = searchParams.get('mode') === 'leech';
@@ -59,6 +78,10 @@ function QuizScreen() {
   const [index, setIndex] = useState(0);
   const [result, setResult] = useState<QuizAnswerResult | null>(null);
   const [correctCount, setCorrectCount] = useState(0);
+  // FR-12.1 -- once true, stays true for the rest of the session; used only
+  // to decide whether leaving needs a confirm, not anything scored.
+  const [answeredAny, setAnsweredAny] = useState(false);
+  const [confirmExitOpen, setConfirmExitOpen] = useState(false);
 
   const items = data ?? [];
   const item = items[index];
@@ -71,6 +94,7 @@ function QuizScreen() {
       {
         onSuccess: (res) => {
           setResult(res);
+          setAnsweredAny(true);
           if (res.correct) setCorrectCount((c) => c + 1);
         },
       },
@@ -80,6 +104,18 @@ function QuizScreen() {
   function handleNext() {
     setResult(null);
     setIndex((i) => i + 1);
+  }
+
+  // FR-12.1 -- the × used to be a plain Link, silently discarding an
+  // in-progress quiz. Exiting before anything's been answered has nothing
+  // to lose, so that case still navigates immediately; once at least one
+  // question has been submitted, this asks first instead.
+  function handleExitClick() {
+    if (answeredAny) {
+      setConfirmExitOpen(true);
+    } else {
+      router.push(ROUTES.home);
+    }
   }
 
   if (isLoading) {
@@ -126,9 +162,9 @@ function QuizScreen() {
         <span>
           {index + 1} of {items.length} · {isLeechDrill ? 'leech drill' : 'quiz'}
         </span>
-        <Link href={ROUTES.home} aria-label="End quiz">
+        <button type="button" onClick={handleExitClick} aria-label="End quiz">
           ✕
-        </Link>
+        </button>
       </div>
       <div className="h-1.5 w-full overflow-hidden rounded-full bg-muted">
         <div
@@ -142,6 +178,24 @@ function QuizScreen() {
       ) : (
         <QuizQuestion item={item} disabled={submitAnswer.isPending} onSubmit={handleSubmit} />
       )}
+
+      <AlertDialog open={confirmExitOpen} onOpenChange={setConfirmExitOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>End this {isLeechDrill ? 'drill' : 'quiz'}?</AlertDialogTitle>
+            <AlertDialogDescription>
+              You&apos;ve answered {index + (result ? 1 : 0)} of {items.length}. Your progress on
+              this session won&apos;t be saved if you leave now.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Keep going</AlertDialogCancel>
+            <AlertDialogAction onClick={() => router.push(ROUTES.home)}>
+              End {isLeechDrill ? 'drill' : 'quiz'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </main>
   );
 }
