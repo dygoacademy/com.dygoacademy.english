@@ -5,17 +5,27 @@ import { Card, CardContent } from '@/components/ui/card';
 import { ROUTES } from '@/constants/routes';
 
 /**
- * Wireframe 1d's centerpiece — "one decision on open." dueCount/etaMinutes
- * are mock props today: GET /srs/due (Phase 2, Module 3) is what will
- * feed this for real. Kept as explicit props rather than hardcoded so the
- * call site is the one place that has to be updated when that lands.
+ * Wireframe 1d's centerpiece — "one decision on open." `dueCount` used to
+ * be a mock prop (`GET /srs/due` didn't have a frontend caller); the
+ * dashboard now passes `useSrsStats()`'s real `due_now` (Phase 2 FR-9.2,
+ * live-audited 2026-09-19: this exact number disagreed with the Progress
+ * page's "DUE NOW" tile because Home was still on a hardcoded literal).
+ *
+ * `etaMinutes` was also a mock prop (a flat "about 4 minutes" regardless
+ * of `dueCount`) with no backing computation anywhere in the schema --
+ * `SrsStats` has no per-card timing data, and inventing a seconds-per-card
+ * constant here would just be a second, differently-shaped version of the
+ * same "number the user can't trust" problem Phase 2 exists to close, not
+ * a fix for it. Made optional and only rendered when a caller actually has
+ * a real value to pass -- today, nothing does, so the estimate line is
+ * gone rather than replaced with a fabricated one.
  */
 export function DueNowCard({
   dueCount,
   etaMinutes,
 }: {
   dueCount: number;
-  etaMinutes: number;
+  etaMinutes?: number;
 }) {
   return (
     <Card className="border-2 border-primary">
@@ -24,7 +34,9 @@ export function DueNowCard({
           Due now
         </span>
         <p className="text-4xl font-semibold leading-none">{dueCount} words</p>
-        <p className="text-sm text-muted-foreground">about {etaMinutes} minutes</p>
+        {etaMinutes !== undefined && (
+          <p className="text-sm text-muted-foreground">about {etaMinutes} minutes</p>
+        )}
         <Button asChild size="lg" className="mt-1">
           <Link href={ROUTES.study}>Start review</Link>
         </Button>

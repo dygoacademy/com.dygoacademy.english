@@ -6,6 +6,7 @@ import { useGroups } from '@/hooks/useGroups';
 import { useLeeches } from '@/hooks/useLeeches';
 import { useSrsStats } from '@/hooks/useSrsStats';
 import type { GroupSummary, SrsStats } from '@/types';
+import { CONTENT_WIDTH } from '@/constants/layout';
 
 /**
  * Module 8 (Phase 4). Was the literal "Coming in a later phase" stub since
@@ -31,7 +32,7 @@ export default function AnalyticsPage() {
   const adminGroups = (groups ?? []).filter((g) => g.role === 'ADMIN');
 
   return (
-    <main className="mx-auto flex max-w-2xl flex-col gap-6 p-6">
+    <main className={`mx-auto flex ${CONTENT_WIDTH.wide} flex-col gap-6 p-6`}>
       <h1 className="text-lg font-semibold">Analytics</h1>
 
       <section className="flex flex-col gap-2">
@@ -45,7 +46,10 @@ export default function AnalyticsPage() {
         {stats && <StatsGrid stats={stats} />}
       </section>
 
-      <section className="flex flex-col gap-2">
+      {/* id targeted by Home's LeechNudge "Fix →" link (Phase 2 FR-9.3) --
+          both now read the exact same `useLeeches()` query, so the nudge
+          can no longer point at a page that disagrees with its own count. */}
+      <section id="leech-words" className="flex flex-col gap-2 scroll-mt-20">
         <p className="font-mono text-xs uppercase tracking-wide text-muted-foreground">
           Leech words
         </p>
