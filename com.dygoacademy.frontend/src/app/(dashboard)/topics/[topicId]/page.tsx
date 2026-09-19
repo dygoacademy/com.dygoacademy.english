@@ -6,6 +6,16 @@ import { useState } from 'react';
 
 import { AddWordModal } from '@/components/topics/AddWordModal';
 import { Button } from '@/components/ui/button';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { EmptyTopicState } from '@/components/topics/EmptyTopicState';
 import { WordStatusRow } from '@/components/topics/WordStatusRow';
 import { ROUTES } from '@/constants/routes';
@@ -27,11 +37,21 @@ import { CONTENT_WIDTH } from '@/constants/layout';
  * Delete added 2026-09-04: `useDeleteTopic()` already existed
  * (useTopicMutations.ts) and was wired into GroupTopicsPanel, but this
  * page — the other place someone naturally lands on a topic — had no way
- * to trigger it at all. Same ADMIN-gating and confirm-dialog pattern as
- * GroupTopicsPanel, since `topics_delete_admin` is the same RLS policy
- * either caller hits; `GET /topics/:id` doesn't return the caller's role
- * in the topic's group, so `useGroups()` is queried here too, same as the
- * group detail page, to find it.
+ * to trigger it at all. Same ADMIN-gating as GroupTopicsPanel, since
+ * `topics_delete_admin` is the same RLS policy either caller hits;
+ * `GET /topics/:id` doesn't return the caller's role in the topic's group,
+ * so `useGroups()` is queried here too, same as the group detail page, to
+ * find it.
+ *
+ * Confirm upgraded from `window.confirm` to `ui/alert-dialog.tsx`'s
+ * Radix-backed AlertDialog 2026-09-19 (Phase 2 FR-10.1 — audit finding:
+ * the native browser dialog looked out of place next to every other popup
+ * in the app already being styled, and named neither the topic nor how
+ * many words it was about to take with it). GroupTopicsPanel's own
+ * `handleDelete` got the identical upgrade in the same pass — the two
+ * pages trigger the exact same mutation on the exact same data, so a
+ * fixed dialog here and a native one there would have been a worse
+ * inconsistency than the one this FR closes.
  */
 export default function TopicDetailPage() {
   const params = useParams<{ topicId: string }>();
@@ -41,6 +61,7 @@ export default function TopicDetailPage() {
   const deleteTopic = useDeleteTopic();
   const [addWordOpen, setAddWordOpen] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
+  const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
 
   if (isPending) {
     return <p className="p-6 text-sm text-muted-foreground">Loading…</p>;
@@ -62,8 +83,13 @@ export default function TopicDetailPage() {
   const isEmpty = topic.words.length === 0;
   const canManage = groups?.find((g) => g.id === topic.group_id)?.role === 'ADMIN';
 
-  const handleDelete = async () => {
-    if (!window.confirm(`Delete "${topic.title}"? This can't be undone.`)) return;
+  // preventDefault stops AlertDialogAction's built-in auto-close (it's
+  // Dialog.Close under the hood) -- same reason WordStatusRow's confirmDelete
+  // does this: closing immediately would hide `deleteError` below if the
+  // mutation fails. On success there's nothing to close anyway, since
+  // router.push navigates the page away.
+  const confirmDelete = async (event: React.MouseEvent<HTMLButtonElement>) => {
+    event.preventDefault();
     setDeleteError(null);
     try {
       await deleteTopic.mutateAsync(topic.id);
@@ -149,9 +175,31 @@ export default function TopicDetailPage() {
       {canManage && (
         <div className="mt-4 border-t pt-4">
           {deleteError && <p className="mb-2 text-xs text-destructive">{deleteError}</p>}
-          <Button size="sm" onClick={handleDelete} disabled={deleteTopic.isPending}>
+          <Button
+            size="sm"
+            onClick={() => setConfirmDeleteOpen(true)}
+            disabled={deleteTopic.isPending}
+          >
             Delete this topic
           </Button>
+          <AlertDialog open={confirmDeleteOpen} onOpenChange={setConfirmDeleteOpen}>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Delete &quot;{topic.title}&quot;?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  This deletes all {topic.words.length}{' '}
+                  {topic.words.length === 1 ? 'word' : 'words'} in it, and everyone&apos;s study
+                  history for them. This can&apos;t be undone.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction onClick={confirmDelete} disabled={deleteTopic.isPending}>
+                  {deleteTopic.isPending ? 'Deleting…' : 'Delete'}
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
         </div>
       )}
     </div>
