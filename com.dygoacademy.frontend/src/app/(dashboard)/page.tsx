@@ -1,5 +1,6 @@
 'use client';
 
+import { ActivityTrail } from '@/components/topics/ActivityTrail';
 import { DueNowCard } from '@/components/topics/DueNowCard';
 import { LeechNudge } from '@/components/topics/LeechNudge';
 import { TopicCard } from '@/components/topics/TopicCard';
@@ -41,6 +42,10 @@ import { CONTENT_WIDTH } from '@/constants/layout';
  * without a new topic-picker UI, which is new scope beyond this
  * remediation. Adding a word from a specific topic already works today,
  * on that topic's own page.
+ *
+ * `ActivityTrail` added below `DueNowCard` 2026-09-20 (Phase 3 Module 18,
+ * FR-18.1) — "how have I been doing" as a 5-day sequence, alongside (not
+ * instead of) the due-count card's "what do I do right now."
  */
 export default function TopicsHomePage() {
   const { data: topics, isPending, isError } = useTopics();
@@ -65,6 +70,8 @@ export default function TopicsHomePage() {
         </p>
       )}
       {stats && <DueNowCard dueCount={stats.due_now} />}
+
+      <ActivityTrail />
 
       <div className="flex flex-col gap-2">
         <p className="font-mono text-xs uppercase tracking-wide text-muted-foreground">

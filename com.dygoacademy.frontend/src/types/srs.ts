@@ -76,6 +76,12 @@ export interface SrsStats {
   current_streak_days: number;
 }
 
+/** `GET /api/v1/srs/activity` row shape — SrsService.DailyActivity (Phase 3 Module 18, FR-18.1). */
+export interface DailyActivity {
+  review_date: string;
+  review_count: number;
+}
+
 /** `GET /api/v1/srs/leeches` row shape — SrsService.LeechCard. */
 export interface LeechCard {
   topic_word_id: string;
