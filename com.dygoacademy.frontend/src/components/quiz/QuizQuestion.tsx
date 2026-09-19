@@ -4,7 +4,14 @@ import { useState } from 'react';
 
 import { AudioButton } from '@/components/flashcard/AudioButton';
 import { useQuizHint } from '@/hooks/useQuizHint';
-import type { QuizItem, QuizType } from '@/types';
+import type { QuizAnswerResult, QuizItem, QuizType } from '@/types';
+
+/** Mirrors quiz-generator.ts's own `normalize` (trim + lowercase) -- same
+ * leniency the backend already grades with, so a CHOICE option isn't
+ * marked as "not the correct answer" over whitespace/casing alone. */
+function sameAnswer(a: string, b: string): boolean {
+  return a.trim().toLowerCase() === b.trim().toLowerCase();
+}
 
 const TYPE_LABELS: Record<QuizType, string> = {
   CLOZE: 'Fill in the blank',
@@ -51,19 +58,43 @@ function displayPrompt(item: QuizItem): string {
  * auto-shown, per the same conversation: an always-visible hint would turn
  * a recall test into a translation exercise and undermine what the SRS
  * review flow assumes "correct" means.
+ *
+ * `result` added 2026-09-19 (Phase 2 FR-12.2 -- audit finding: choosing a
+ * CHOICE option immediately swapped the whole card for `QuizFeedback`,
+ * losing the option list and the learner's own pick with no visual trace).
+ * `quiz/page.tsx` now keeps this component mounted (via `key={item.id}`
+ * on its own side, so state still resets per question) instead of
+ * swapping it out for `QuizFeedback` on submit, and renders `QuizFeedback`
+ * alongside it rather than in its place. While `result` is null this
+ * renders the normal interactive question; once set, CHOICE options
+ * render as a read-only review (the pick and/or the correct answer
+ * marked) instead of disappearing. TEXT items don't need the same
+ * treatment -- there's no options list to lose track of, and
+ * `QuizFeedback`'s existing `correctAnswer` line already covers it -- so
+ * `result` only changes CHOICE's render branch below.
  */
 export function QuizQuestion({
   item,
   disabled,
+  result,
   onSubmit,
 }: {
   item: QuizItem;
   disabled?: boolean;
+  result?: QuizAnswerResult | null;
   onSubmit: (answer: string, hintUsed: boolean) => void;
 }) {
   const [text, setText] = useState('');
+  const [selectedOption, setSelectedOption] = useState<string | null>(null);
   const hint = useQuizHint();
   const hintUsed = hint.data != null;
+  const answered = result != null;
+
+  function selectOption(option: string) {
+    if (answered) return;
+    setSelectedOption(option);
+    onSubmit(option, false);
+  }
 
   return (
     <div className="flex flex-col gap-4 rounded-2xl border-2 bg-card p-6 shadow-sm">
@@ -107,7 +138,7 @@ export function QuizQuestion({
             autoFocus
             value={text}
             onChange={(e) => setText(e.target.value)}
-            disabled={disabled}
+            disabled={disabled || answered}
             placeholder="Type your answer…"
             // These four together stop iOS/Safari from offering a
             // predictive-text bar, autocorrecting, or auto-capitalizing
@@ -131,7 +162,7 @@ export function QuizQuestion({
               subtle shade shift, not a shape/fill change). */}
           <button
             type="submit"
-            disabled={disabled || !text.trim()}
+            disabled={disabled || answered || !text.trim()}
             className="rounded-lg border border-transparent bg-primary px-3 py-2 text-sm text-primary-foreground transition-colors disabled:border-border disabled:bg-transparent disabled:text-muted-foreground"
           >
             Submit
@@ -139,17 +170,32 @@ export function QuizQuestion({
         </form>
       ) : (
         <div className="flex flex-col gap-2">
-          {item.options?.map((option) => (
-            <button
-              key={option}
-              type="button"
-              disabled={disabled}
-              onClick={() => onSubmit(option, false)}
-              className="rounded-lg border px-3 py-2 text-left text-sm transition-colors hover:bg-accent disabled:opacity-50"
-            >
-              {option}
-            </button>
-          ))}
+          {item.options?.map((option) => {
+            const isPick = option === selectedOption;
+            const isCorrectAnswer = answered && result && sameAnswer(option, result.correctAnswer);
+            const isWrongPick = answered && isPick && !result?.correct;
+            return (
+              <button
+                key={option}
+                type="button"
+                disabled={disabled || answered}
+                onClick={() => selectOption(option)}
+                className={`flex items-center justify-between gap-2 rounded-lg border px-3 py-2 text-left text-sm transition-colors ${
+                  isCorrectAnswer
+                    ? 'border-emerald-500 bg-emerald-500/10'
+                    : isWrongPick
+                      ? 'border-destructive bg-destructive/10'
+                      : isPick
+                        ? 'border-primary'
+                        : 'hover:bg-accent'
+                } ${answered ? 'disabled:cursor-default' : 'disabled:opacity-50'}`}
+              >
+                {option}
+                {isCorrectAnswer && <span className="text-emerald-600 dark:text-emerald-400">✓</span>}
+                {isWrongPick && <span className="text-destructive">✕</span>}
+              </button>
+            );
+          })}
         </div>
       )}
     </div>

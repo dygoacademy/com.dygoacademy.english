@@ -173,11 +173,19 @@ function QuizScreen() {
         />
       </div>
 
-      {result ? (
-        <QuizFeedback result={result} onNext={handleNext} />
-      ) : (
-        <QuizQuestion item={item} disabled={submitAnswer.isPending} onSubmit={handleSubmit} />
-      )}
+      {/* QuizQuestion stays mounted through the answered state now (Phase 2
+          FR-12.2) instead of being swapped out for QuizFeedback -- `key`
+          forces a fresh instance (and fresh internal selectedOption/text
+          state) per question, same reset `handleNext`'s old unmount used
+          to give it for free. */}
+      <QuizQuestion
+        key={item.id}
+        item={item}
+        disabled={submitAnswer.isPending}
+        result={result}
+        onSubmit={handleSubmit}
+      />
+      {result && <QuizFeedback result={result} onNext={handleNext} />}
 
       <AlertDialog open={confirmExitOpen} onOpenChange={setConfirmExitOpen}>
         <AlertDialogContent>
