@@ -43,6 +43,7 @@ describe('TopicsService', () => {
         description: null,
         is_public: true,
         word_count: '3',
+        mastered_count: '2',
         created_at: new Date('2026-08-01T00:00:00Z'),
       },
     ]);
@@ -65,14 +66,44 @@ describe('TopicsService', () => {
   it('does not add its own tenant/group filter — RLS is the only gate', async () => {
     await service.findAllVisible('user-42');
 
-    const [, sql] = queryAsMock.mock.calls[0];
-    expect(sql).not.toMatch(/where/i);
+    // Phase 3 Module 19 added a legitimate `filter (where ...)` clause on
+    // the mastered_count aggregate -- strip that before asserting, since
+    // this test's actual concern is a WHERE clause on the topics query
+    // itself (duplicating/contradicting RLS), not the aggregate's own
+    // per-row filter.
+    const [, sql] = queryAsMock.mock.calls[0] as [string, string];
+    const sqlWithoutAggregateFilters = sql.replace(/filter\s*\(\s*where[^)]*\)/gi, '');
+    expect(sqlWithoutAggregateFilters).not.toMatch(/where/i);
   });
 
   it('returns the rows from the database layer unchanged', async () => {
     const result = await service.findAllVisible('user-42');
 
     expect(result).toEqual([expect.objectContaining({ id: 'topic-1', title: 'Phrasal Verbs' })]);
+  });
+
+  /**
+   * Phase 3 Module 19 (FR-19.1) — the DB layer is fully mocked in this
+   * suite (no live Postgres in this sandbox, same standing limitation as
+   * every other backend suite in this repo), so the query's actual
+   * counting logic can't be asserted against real rows here. What these
+   * two tests protect against instead: someone silently dropping the new
+   * join/field, or drifting the mastery threshold away from the one
+   * `computeSrsSummary` already defines.
+   */
+  it('joins user_word_srs and filters mastered_count on the same repetitions >= 4 threshold computeSrsSummary uses', async () => {
+    await service.findAllVisible('user-42');
+
+    const [, sql] = queryAsMock.mock.calls[0];
+    expect(sql).toMatch(/left join public\.user_word_srs/i);
+    expect(sql).toMatch(/mastered_count/i);
+    expect(sql).toMatch(/repetitions >= 4/i);
+  });
+
+  it('passes mastered_count through unchanged, alongside word_count', async () => {
+    const result = await service.findAllVisible('user-42');
+
+    expect(result).toEqual([expect.objectContaining({ word_count: '3', mastered_count: '2' })]);
   });
 });
 

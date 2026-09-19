@@ -11,6 +11,13 @@ export interface TopicSummary {
   description: string | null;
   is_public: boolean;
   word_count: string;
+  /**
+   * Count of this topic's words with `user_word_srs.repetitions >= 4` for
+   * the caller -- same threshold `computeSrsSummary` (srs.service.ts)
+   * already uses for `mastered_words`, reused rather than a second
+   * definition of "mastered" (Phase 3 Module 19, FR-19.1).
+   */
+  mastered_count: string;
   created_at: Date;
 }
 
@@ -53,6 +60,17 @@ export class TopicsService {
    * JWT claims set, so the policies in 002_rls_policies.sql do the filtering
    * inside PostgreSQL. Adding a WHERE clause here would duplicate that logic
    * and create a second place for it to be wrong.
+   *
+   * `mastered_count` added 2026-09-20 (Phase 3 Module 19, FR-19.1) via a
+   * second left join to `user_word_srs` -- no explicit `user_id` predicate
+   * needed on it, same reasoning as everywhere else in this file: `queryAs`
+   * runs this RLS-scoped, and `user_word_srs_all_own` already narrows that
+   * join to the caller's own rows. `distinct` on both counts: the two-way
+   * join (topic_words x user_word_srs) can multiply a topic's row count if
+   * a word has an SRS row, which in practice it's always at most one of,
+   * but `count(tw.id)` un-distinct would silently overcount `word_count`
+   * once a second join is in the query, so both counts are guarded rather
+   * than relying on that 1:1 assumption holding forever.
    */
   async findAllVisible(userId: string): Promise<TopicSummary[]> {
     return this.db.queryAs<TopicSummary>(
@@ -62,10 +80,12 @@ export class TopicsService {
               t.title,
               t.description,
               t.is_public,
-              count(tw.id) as word_count,
+              count(distinct tw.id) as word_count,
+              count(distinct uws.topic_word_id) filter (where uws.repetitions >= 4) as mastered_count,
               t.created_at
          from public.topics t
          left join public.topic_words tw on tw.topic_id = t.id
+         left join public.user_word_srs uws on uws.topic_word_id = tw.id
         group by t.id
         order by t.created_at desc`,
     );

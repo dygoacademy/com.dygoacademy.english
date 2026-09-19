@@ -46,6 +46,13 @@ import { createServerSupabaseClient } from '@/lib/supabase/server';
  * phone despite `items-center justify-center` being correct. `dvh` (the
  * dynamic viewport unit Tailwind 3.4+ exposes as min-h-dvh) tracks the
  * real visible height as the browser chrome shows/hides instead.
+ *
+ * Outcome headline added 2026-09-20 (Phase 3 FR-17.2 -- "Dygo Learning
+ * Path" concept's journey stage 1, "arrive with a promise"). This page
+ * previously led with the mechanic ("try one word") and never named what
+ * it's actually for; a visitor had no reason to connect "type a word,
+ * see its IPA" with an IELTS outcome. Copy-only -- `GuestWordTrial`'s
+ * lookup logic is untouched.
  */
 export default async function LandingPage() {
   const supabase = await createServerSupabaseClient();
@@ -61,6 +68,14 @@ export default async function LandingPage() {
     <div className="flex min-h-dvh flex-col">
       <PublicNavbar />
       <main className="flex flex-1 flex-col items-center justify-center gap-6 p-4">
+        <div className="flex flex-col items-center gap-2 text-center">
+          <h1 className="text-2xl font-semibold leading-snug">
+            Learn the words that move your IELTS score
+          </h1>
+          <p className="max-w-sm text-sm text-muted-foreground">
+            Try one word below — real audio, IPA, and example sentences, no account needed.
+          </p>
+        </div>
         <GuestWordTrial />
       </main>
     </div>
