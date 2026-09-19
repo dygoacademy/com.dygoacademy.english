@@ -160,27 +160,27 @@ Recommendation (not a decision this document makes): treat the Learning Path con
 
 ## 5. Traceability
 
-| FR | Audit finding | Severity | Screen(s) | Priority |
-| :--- | :--- | :--- | :--- | :--- |
-| FR-9.1 | Streak count disagrees with itself | Critical | Home, Progress | P0 |
-| FR-9.2 | Due-now count disagrees with itself | Critical | Home, Progress | P0 |
-| FR-9.3 | "Fix →" points at nothing | Critical | Home | P0 |
-| FR-10.1 | Delete-topic has no confirm | Critical | Topic detail | P0 |
-| FR-10.2 | Delete-word has no confirm | Critical | Topic detail | P1 |
-| FR-10.3 | Save/Delete group equal weight | Moderate | Group admin | P1 |
-| FR-11.1 | Group "Public" default on | Moderate | Group admin | P1 |
-| FR-12.1 | Quiz exit with no warning | Moderate | Quiz | P1 |
-| FR-12.2 | Multiple choice hides selection | Moderate | Quiz | P1 |
-| FR-12.3 | Submit looks disabled when it isn't | Minor | Quiz | P2 |
-| FR-13.1 | Empty study-session-complete screen | Minor | Study | P1 |
-| FR-14.1 | Heatmap: one color for every rate | Moderate | Progress | P1 |
-| FR-15.1 | "Phase 1" dead button | Moderate | Home | P1 |
-| FR-15.2 | "Module 3" note in topics copy | Moderate | Topics | P2 |
-| FR-15.3 | "FR-6.3/6.4" in reminder copy | Minor | Profile | P2 |
-| FR-15.4 | "used 1 times" grammar | Minor | Group admin | P2 |
-| FR-16.1 | No sticky header | Moderate | Global | P1 |
-| FR-16.2 | No labeled Home entry | Minor | Global | P2 |
-| FR-16.3 | 12h/24h time format mismatch | Minor | Profile | P2 |
+| FR | Audit finding | Severity | Screen(s) | Priority | Status |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| FR-9.1 | Streak count disagrees with itself | Critical | Home, Progress | P0 | ✅ `20dab8e` (symptom fixed — Wave 1b's shared-source refactor still open) |
+| FR-9.2 | Due-now count disagrees with itself | Critical | Home, Progress | P0 | ✅ `20dab8e` (symptom fixed — Wave 1b's shared-source refactor still open) |
+| FR-9.3 | "Fix →" points at nothing | Critical | Home | P0 | ✅ `20dab8e` |
+| FR-10.1 | Delete-topic has no confirm | Critical | Topic detail | P0 | — |
+| FR-10.2 | Delete-word has no confirm | Critical | Topic detail | P1 | — (likely already done, see §7 — needs verification) |
+| FR-10.3 | Save/Delete group equal weight | Moderate | Group admin | P1 | — |
+| FR-11.1 | Group "Public" default on | Moderate | Group admin | P1 | — (could not reproduce, see §7 — needs verification, not a build task) |
+| FR-12.1 | Quiz exit with no warning | Moderate | Quiz | P1 | — |
+| FR-12.2 | Multiple choice hides selection | Moderate | Quiz | P1 | — |
+| FR-12.3 | Submit looks disabled when it isn't | Minor | Quiz | P2 | — |
+| FR-13.1 | Empty study-session-complete screen | Minor | Study | P1 | — |
+| FR-14.1 | Heatmap: one color for every rate | Moderate | Progress | P1 | — |
+| FR-15.1 | "Phase 1" dead button | Moderate | Home | P1 | ✅ `20dab8e` |
+| FR-15.2 | "Module 3" note in topics copy | Moderate | Topics | P2 | — |
+| FR-15.3 | "FR-6.3/6.4" in reminder copy | Minor | Profile | P2 | — |
+| FR-15.4 | "used 1 times" grammar | Minor | Group admin | P2 | — |
+| FR-16.1 | No sticky header | Moderate | Global | P1 | ✅ `abe1c44` |
+| FR-16.2 | No labeled Home entry | Minor | Global | P2 | ✅ `abe1c44` |
+| FR-16.3 | 12h/24h time format mismatch | Minor | Profile | P2 | — |
 
 ## 6. Open questions for Product (not decided by this document)
 
