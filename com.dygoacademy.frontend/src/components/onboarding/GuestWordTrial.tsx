@@ -16,8 +16,10 @@ import {
 } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { CONTENT_WIDTH } from '@/constants/layout';
 import { ROUTES } from '@/constants/routes';
 import { apiClient, ApiError } from '@/lib/api-client';
+import { formatIpa } from '@/lib/utils';
 import type { GuestWordCard } from '@/types/word';
 
 type Stage = 'input' | 'card' | 'not-found';
@@ -37,10 +39,33 @@ type Stage = 'input' | 'card' | 'not-found';
  * without an outer Card -- Flashcard already has its own bordered/shadowed
  * face, and framing a card inside a card just doubles the border.
  *
- * The "DYGO" caption in each Card's header was a tiny muted-mono label --
- * changed to a proper bold title ("Dygo", matching the Navbar/login-page
- * wordmark's own font-bold treatment) same day ("the guest page, I need to
- * change the Dygo link the nice title with bold").
+ * The "DYGO" caption in each Card's header was originally a tiny
+ * muted-mono label, changed to a proper bold title same day ("the guest
+ * page, I need to change the Dygo link the nice title with bold") --
+ * then removed outright 2026-09-18 ("remove Dygo in the search box") once
+ * `PublicNavbar` (added after that, same week) already put the "Dygo"
+ * wordmark directly above this card on `/search`, making the in-card
+ * label a second, redundant repetition of the brand name one line above
+ * it. Dropped from both the input-stage and not-found-stage Cards, not
+ * just the one literally called "the search box" -- they share the same
+ * header shape and are steps of the same guest flow, so leaving the
+ * label on one and not the other would read as an inconsistency rather
+ * than a deliberate choice.
+ *
+ * Width bumped from a hardcoded `max-w-sm` to the shared `CONTENT_WIDTH`
+ * config, with an explicit `mx-auto` added -- live-requested 2026-09-17
+ * ("update the block of search screen width to wide", "move that block
+ * to center"). This file's three `max-w-sm` occurrences (the found-word
+ * flashcard wrapper, and the input/not-found Cards) were hardcoded
+ * outside the page-by-page sweep that introduced `CONTENT_WIDTH`
+ * elsewhere in the app -- that pass touched page-level containers and
+ * `ui/dialog.tsx`, not components rendered *inside* a page, so this one
+ * was missed. Centering previously relied entirely on the parent
+ * `<main>`'s `flex items-center justify-center` (`app/search/page.tsx`);
+ * `mx-auto` here makes each stage's own root element self-centering too,
+ * matching the convention every other `CONTENT_WIDTH` call site in the
+ * app already uses, instead of depending on this component always being
+ * rendered inside a centering flex parent.
  */
 export function GuestWordTrial() {
   const [word, setWord] = useState('');
@@ -88,43 +113,93 @@ export function GuestWordTrial() {
 
   if (stage === 'card' && card) {
     return (
-      <div className="flex w-full max-w-sm flex-col items-center gap-5">
+      <div className={`mx-auto flex w-full ${CONTENT_WIDTH.wide} flex-col items-center gap-5`}>
         <Flashcard
-          className="h-80 w-full"
+          className="h-96 w-full"
           flipped={flipped}
           onToggle={() => setFlipped((f) => !f)}
           front={
-            <div className="flex h-80 w-full flex-col items-center justify-center gap-3 overflow-y-auto rounded-2xl border-2 border-primary bg-card p-6 text-center">
-              <p className="text-3xl font-semibold">{card.source_word}</p>
-              <AudioButton src={card.audio_url} />
-              {card.part_of_speech && (
-                <span className="font-mono text-xs text-muted-foreground">{card.part_of_speech}</span>
-              )}
-              <p className="mt-2 text-xs text-muted-foreground">Tap the card to flip</p>
+            <div className="relative flex h-96 w-full flex-col items-center overflow-y-auto rounded-2xl border-2 border-primary bg-card p-6 text-center">
+              {/* Play (+ speed) moved into a floating bottom-right corner
+                  dock -- live-requested 2026-09-18 ("give me options that
+                  help student to focus and easier to use in right hand"),
+                  same `layout="corner"` treatment as WordCardModal/study's
+                  cards (see AudioButton.tsx's comment for the full
+                  history), so Play sits in the same place everywhere. */}
+              <div className="flex flex-1 flex-col items-center justify-center gap-2 pb-2 pr-14">
+                <p className="text-3xl font-semibold">{card.source_word}</p>
+                {card.part_of_speech && (
+                  <span className="font-mono text-xs text-muted-foreground">{card.part_of_speech}</span>
+                )}
+                <p className="text-xs text-muted-foreground">Tap the card to flip</p>
+              </div>
+              <AudioButton src={card.audio_url} layout="corner" className="absolute bottom-4 right-4" />
             </div>
           }
           back={
-            <div className="flex h-80 w-full flex-col gap-2.5 overflow-y-auto rounded-2xl border-2 border-primary bg-card p-6">
-              <span className="font-mono text-xs text-muted-foreground">
-                {card.ipa_us ?? '—'} · {card.ipa_uk ?? '—'}
-              </span>
-              <p className="text-base leading-snug">{card.definition_en ?? 'No definition yet.'}</p>
-              <div className="flex flex-wrap gap-1.5 text-xs">
-                {card.synonyms?.map((s) => (
-                  <span key={s.word} className="rounded-full border px-2 py-0.5">
-                    = {s.word}
+            <div className="flex h-96 w-full flex-col gap-3 overflow-y-auto rounded-2xl border-2 border-primary bg-card p-6">
+              {/* Back side redesigned into labeled sections -- live-requested
+                  2026-09-18 ("the data in the flash card is messy hard to
+                  learn ... recommend to sort all data with UI/UX super easy
+                  for user"), applied consistently with WordCardModal/study's
+                  card. See WordCardModal.tsx's own comment on this block for
+                  the full before/after reasoning. */}
+              <div className="flex flex-wrap items-center gap-2">
+                {card.part_of_speech && (
+                  <span className="rounded-full border px-2 py-0.5 text-[10px] uppercase tracking-wide text-muted-foreground">
+                    {card.part_of_speech}
                   </span>
-                ))}
-                {card.antonyms?.map((a) => (
-                  <span key={a.word} className="rounded-full border px-2 py-0.5">
-                    ≠ {a.word}
-                  </span>
-                ))}
+                )}
+                <span className="font-mono text-xs text-muted-foreground">
+                  {formatIpa(card.ipa_us) ? `US ${formatIpa(card.ipa_us)}` : 'US —'} ·{' '}
+                  {formatIpa(card.ipa_uk) ? `UK ${formatIpa(card.ipa_uk)}` : 'UK —'}
+                </span>
               </div>
-              {card.example_sentences?.[0] && (
-                <p className="mt-auto text-xs italic text-muted-foreground">
-                  &quot;{card.example_sentences[0].sentence}&quot;
+              <div>
+                <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+                  Meaning
                 </p>
+                <p className="text-base leading-snug">{card.definition_en ?? 'No definition yet.'}</p>
+              </div>
+              {(card.synonyms?.length ?? 0) > 0 && (
+                <div className="flex flex-wrap items-center gap-1.5">
+                  <span className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+                    Synonyms
+                  </span>
+                  {card.synonyms.map((s) => (
+                    <span
+                      key={s.word}
+                      className="rounded-full border border-emerald-600/30 bg-emerald-600/10 px-2 py-0.5 text-xs text-emerald-700 dark:border-emerald-400/30 dark:bg-emerald-400/10 dark:text-emerald-400"
+                    >
+                      {s.word}
+                    </span>
+                  ))}
+                </div>
+              )}
+              {(card.antonyms?.length ?? 0) > 0 && (
+                <div className="flex flex-wrap items-center gap-1.5">
+                  <span className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+                    Antonyms
+                  </span>
+                  {card.antonyms.map((a) => (
+                    <span
+                      key={a.word}
+                      className="rounded-full border border-rose-600/30 bg-rose-600/10 px-2 py-0.5 text-xs text-rose-700 dark:border-rose-400/30 dark:bg-rose-400/10 dark:text-rose-400"
+                    >
+                      {a.word}
+                    </span>
+                  ))}
+                </div>
+              )}
+              {card.example_sentences?.[0] && (
+                <div className="rounded-lg bg-muted/50 p-2.5">
+                  <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+                    Example
+                  </p>
+                  <p className="text-xs italic text-muted-foreground">
+                    &quot;{card.example_sentences[0].sentence}&quot;
+                  </p>
+                </div>
               )}
             </div>
           }
@@ -147,9 +222,8 @@ export function GuestWordTrial() {
 
   if (stage === 'not-found') {
     return (
-      <Card className="w-full max-w-sm">
+      <Card className={`mx-auto w-full ${CONTENT_WIDTH.wide}`}>
         <CardHeader className="items-center text-center">
-          <p className="text-base font-bold">Dygo</p>
           <CardTitle className="text-xl leading-snug">
             &quot;{lastSearchedWord}&quot; hasn&apos;t been taught here yet.
           </CardTitle>
@@ -177,9 +251,8 @@ export function GuestWordTrial() {
   }
 
   return (
-    <Card className="w-full max-w-sm">
+    <Card className={`mx-auto w-full ${CONTENT_WIDTH.wide}`}>
       <CardHeader className="items-center text-center">
-        <p className="text-base font-bold">Dygo</p>
         <CardTitle className="text-2xl leading-tight">
           Type one word you
           <br />
@@ -221,12 +294,26 @@ export function GuestWordTrial() {
           {error && <p className="text-center text-xs text-destructive">{error}</p>}
         </form>
       </CardContent>
-      <CardFooter className="justify-center">
+      {/* "Sign in" moved here from PublicNavbar's top menu 2026-09-18
+          ("move login button to search group in the search page") -- sits
+          next to the existing "create a free account" link so both auth
+          paths are together at the point a guest is actually deciding
+          between them, instead of the primary CTA living here and the
+          secondary one being up in the header. PublicNavbar had no other
+          menu item, so it now renders as a plain logo header with no
+          Navigation Menu at all -- see that file's own comment. */}
+      <CardFooter className="flex flex-col items-center gap-1.5">
         <Link
           href={ROUTES.register}
           className="text-center text-sm text-muted-foreground underline-offset-4 hover:underline"
         >
           Or just create a free account
+        </Link>
+        <Link
+          href={ROUTES.login}
+          className="text-center text-sm text-muted-foreground underline-offset-4 hover:underline"
+        >
+          Already have an account? Sign in
         </Link>
       </CardFooter>
     </Card>

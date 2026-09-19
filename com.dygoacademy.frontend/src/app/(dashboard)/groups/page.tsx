@@ -3,6 +3,7 @@
 import { CreateGroupForm } from '@/components/groups/CreateGroupForm';
 import { GroupCard } from '@/components/groups/GroupCard';
 import { useGroups } from '@/hooks/useGroups';
+import { CONTENT_WIDTH } from '@/constants/layout';
 
 /**
  * Wireframe 3a — "Your Groups" dashboard. The one page every prior pass's
@@ -17,7 +18,7 @@ export default function GroupsPage() {
   const { data: groups, isPending, isError } = useGroups();
 
   return (
-    <div className="mx-auto flex max-w-md flex-col gap-4 p-6">
+    <div className={`mx-auto flex ${CONTENT_WIDTH.wide} flex-col gap-4 p-6`}>
       <h1 className="text-lg font-semibold">Your groups</h1>
 
       <CreateGroupForm />

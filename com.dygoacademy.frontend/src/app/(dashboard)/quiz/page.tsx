@@ -6,6 +6,8 @@ import { Suspense, useState } from 'react';
 
 import { QuizFeedback } from '@/components/quiz/QuizFeedback';
 import { QuizQuestion } from '@/components/quiz/QuizQuestion';
+import { CONTENT_WIDTH } from '@/constants/layout';
+import { ROUTES } from '@/constants/routes';
 import { useGenerateQuiz } from '@/hooks/useGenerateQuiz';
 import { useLeechDrillQuiz } from '@/hooks/useLeechDrillQuiz';
 import { useSubmitQuizAnswer } from '@/hooks/useSubmitQuizAnswer';
@@ -34,7 +36,7 @@ export default function QuizPage() {
   return (
     <Suspense
       fallback={
-        <main className="mx-auto flex min-h-screen max-w-md flex-col items-center justify-center p-4">
+        <main className={`mx-auto flex min-h-screen ${CONTENT_WIDTH.default} flex-col items-center justify-center p-4`}>
           <p className="text-sm text-muted-foreground">Loading…</p>
         </main>
       }
@@ -82,7 +84,7 @@ function QuizScreen() {
 
   if (isLoading) {
     return (
-      <main className="mx-auto flex min-h-screen max-w-md flex-col items-center justify-center gap-3 p-4 text-center">
+      <main className={`mx-auto flex min-h-screen ${CONTENT_WIDTH.default} flex-col items-center justify-center gap-3 p-4 text-center`}>
         <p className="text-sm text-muted-foreground">
           {isLeechDrill ? 'Loading your remedial drill…' : 'Building your quiz…'}
         </p>
@@ -92,7 +94,7 @@ function QuizScreen() {
 
   if (isError) {
     return (
-      <main className="mx-auto flex min-h-screen max-w-md flex-col items-center justify-center gap-3 p-4 text-center">
+      <main className={`mx-auto flex min-h-screen ${CONTENT_WIDTH.default} flex-col items-center justify-center gap-3 p-4 text-center`}>
         <p className="text-sm text-muted-foreground">Couldn&apos;t load this quiz.</p>
         <button type="button" onClick={() => void refetch()} className="text-sm underline underline-offset-4">
           Try again
@@ -103,7 +105,7 @@ function QuizScreen() {
 
   if (done) {
     return (
-      <main className="mx-auto flex min-h-screen max-w-md flex-col items-center justify-center gap-3 p-4 text-center">
+      <main className={`mx-auto flex min-h-screen ${CONTENT_WIDTH.default} flex-col items-center justify-center gap-3 p-4 text-center`}>
         <p className="text-lg font-semibold">
           {items.length === 0
             ? isLeechDrill
@@ -111,7 +113,7 @@ function QuizScreen() {
               : 'Not enough enriched words yet for a quiz.'
             : `You got ${correctCount} of ${items.length} right.`}
         </p>
-        <Link href="/topics" className="text-sm underline underline-offset-4">
+        <Link href={ROUTES.home} className="text-sm underline underline-offset-4">
           Back to topics
         </Link>
       </main>
@@ -119,12 +121,12 @@ function QuizScreen() {
   }
 
   return (
-    <main className="mx-auto flex min-h-screen max-w-md flex-col gap-5 p-4">
+    <main className={`mx-auto flex min-h-screen ${CONTENT_WIDTH.default} flex-col gap-5 p-4`}>
       <div className="flex items-center justify-between text-xs text-muted-foreground">
         <span>
           {index + 1} of {items.length} · {isLeechDrill ? 'leech drill' : 'quiz'}
         </span>
-        <Link href="/topics" aria-label="End quiz">
+        <Link href={ROUTES.home} aria-label="End quiz">
           ✕
         </Link>
       </div>

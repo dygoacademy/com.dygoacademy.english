@@ -4,6 +4,7 @@ import * as React from 'react';
 import * as DialogPrimitive from '@radix-ui/react-dialog';
 
 import { cn } from '@/lib/utils';
+import { CONTENT_WIDTH } from '@/constants/layout';
 
 /**
  * shadcn/ui's Dialog, added 2026-09-05 to replace the hand-rolled
@@ -22,6 +23,19 @@ import { cn } from '@/lib/utils';
  *     from its close() handler)
  *   - `aria-modal`, labelling via DialogTitle/DialogDescription, body
  *     scroll lock -- all spec'd once instead of copied by hand per modal
+ *
+ * `DialogContent`'s width reads `CONTENT_WIDTH.default` (not `.narrow`) --
+ * live-requested 2026-09-18 ("make all popup use default width"), after a
+ * brief detour where `WordCardModal` had its own `.compact` (384px)
+ * override (fixing that one popup's width read as floating in a mostly-
+ * empty box) and the other two modals stayed on `.narrow`. Explicitly
+ * asked to make every popup identical again instead, so `WordCardModal`'s
+ * override came back out and this default was pointed at `.default`
+ * instead of `.narrow` -- purely a naming choice today since all four
+ * `CONTENT_WIDTH` tiers still resolve to the same 672px, but it means
+ * "every popup" now traces to one literal name in `layout.ts` rather than
+ * `.narrow`, which reads more like "the auth-card tier that popups happen
+ * to share."
  */
 const Dialog = DialogPrimitive.Root;
 const DialogTrigger = DialogPrimitive.Trigger;
@@ -52,7 +66,7 @@ const DialogContent = React.forwardRef<
     <DialogPrimitive.Content
       ref={ref}
       className={cn(
-        'fixed left-1/2 top-1/2 z-50 grid w-full max-w-sm -translate-x-1/2 -translate-y-1/2 gap-3 rounded-2xl border bg-card p-5 text-card-foreground shadow-lg outline-none duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95',
+        `fixed left-1/2 top-1/2 z-50 grid w-full ${CONTENT_WIDTH.default} -translate-x-1/2 -translate-y-1/2 gap-3 rounded-2xl border bg-card p-5 text-card-foreground shadow-lg outline-none duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95`,
         className,
       )}
       {...props}

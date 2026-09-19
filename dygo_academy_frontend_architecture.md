@@ -1,10 +1,13 @@
 # 🏗️ Dygo Academy: Frontend Architecture & Structure
-**Document Version**: 1.2
+**Document Version**: 1.5
 **Author**: Principal Cloud & SaaS Solutions Advisory
-**Status**: Approved Standard — describes `com.dygoacademy.frontend` as of the Topics grid screen (2026-08-31)
+**Status**: Approved Standard — describes `com.dygoacademy.frontend` as of the Topics grid screen (2026-08-31), plus the §16 responsive-breakpoint standard and §17 shared content-width config (updated same day to a single wide width across all tiers), both added 2026-09-17. Note: §3's tree and §4's route table below still reflect the pre-2026-09-17 URL layout (`/` as the guest landing, `/topics` as the dashboard home, `/topics/browse` as the grid) — the 2026-09-17 URL reshuffle (`/` → dashboard home, `/topics` → grid, guest landing → `/search`) and everything built since 1.2 (groups, invites/`/join`, quiz, settings) aren't reconciled into those sections yet. Flagged here rather than silently left wrong; §16 and §17 are current.
 **Companion documents**: [`dygo_academy_tech_spec_and_conventions.md`](dygo_academy_tech_spec_and_conventions.md) (naming rules, full stack matrix), [`dygo_academy_api_surface.md`](dygo_academy_api_surface.md) (backend contract)
 
 **Changelog**
+* **1.5** (2026-09-17) — §17 updated: all three `CONTENT_WIDTH` tiers now resolve to `max-w-2xl` (672px) — live-requested "wide layout" for every page and popup, after the tradeoff (forms/popups stretching at 672px) was flagged and confirmed anyway. Tier names kept as-is so the values can diverge again later without touching call sites.
+* **1.4** (2026-09-17) — §17 added: `src/constants/layout.ts`'s `CONTENT_WIDTH` — one shared, tiered width config now used by every page container and every modal (`ui/dialog.tsx`'s `DialogContent`), replacing the ad-hoc mix of `max-w-sm`/`max-w-md`/`max-w-lg`/`max-w-2xl` that had drifted across ~13 files with no single source of truth.
+* **1.3** (2026-09-17) — §16 added: standardized responsive breakpoints for the whole app, target-device widths, and `tailwind.config.ts`'s `theme.screens` pinned explicitly to match. §3/§4/§15 not reconciled with the same day's URL reshuffle — see the Status line above.
 * **1.2** (2026-08-31) — Wireframe 1f (Topics grid) built at the new route `/topics/browse`, resolving a gap from 1.1: the Navbar's "Topics" link previously pointed at the same route as "Home." Navbar relinked to match the wireframe's actual 4-tab set (Home/Topics/Progress/You) and the standalone "Study" link removed — the source design has no persistent Study tab.
 * **1.1** (2026-08-31) — §15 added: the guest-trial → home → study-session journey implemented from the "Dygo Wireframes" Claude Design canvas. New routes (`/topics/[topicId]`), new feature folders (`components/onboarding/`, `components/topics/`, `components/flashcard/`), the first real data hook (`hooks/useTopics.ts`), and the brand accent token (§9 updated). §3 tree and §6 updated to match.
 * **1.0** — Initial architecture, Phase 0 scaffold.
@@ -292,3 +295,68 @@ Implemented from the "Dygo Wireframes" Claude Design canvas (project `f856506e-6
 **New in this pass**: `hooks/useTopics.ts` (first real data hook), `components/onboarding/`, `components/topics/`, `components/flashcard/{Flashcard,RatingButtons}.tsx`, the `app/(dashboard)/topics/[topicId]` dynamic route, `types/srs.ts`, and nav links in `Navbar.tsx`. Measured cost: `/topics` and `/topics/[topicId]` grew to 205 kB First Load JS (from the 103 kB baseline in §10) — the first time a route actually uses TanStack Query, so the jump is inherent to that library shipping to the client, not a regression to chase.
 
 **1.2 addendum — Topics grid (1f)**: built at the new route `/topics/browse` (`components/topics/TopicGridCard.tsx`), using the same `useTopics()` hook as the home screen — real title, word count, and public/private badge per topic, plus a client-side search filter (explicitly commented as distinct from the future `GET /lexicon/search`, FR-2.2). Deliberately omits a per-topic due-count chip: one labeled aggregate mock (the home screen's DUE NOW count) reads as honest; several specific-looking per-topic numbers on a grid would not. This pass also fixed a navigation gap from 1.1 — the Navbar's "Topics" link had pointed at the same route as "Home" — by relinking `Navbar.tsx` to the wireframe's actual persistent tab set (Home/Topics/Progress/You) and removing the standalone "Study" link, which the source design never included as persistent navigation. `/topics/browse` measured at 195 kB First Load JS.
+
+
+---
+
+## 16. Responsive breakpoints — target devices and why
+
+Standardized 2026-09-17 ("which screen size for iPhone and iPad when we want to standardize for whole application"). Before this, the app relied on Tailwind's default breakpoint scale implicitly — it happened to already be mobile-first-appropriate (`min-h-dvh` on the guest/search pages, `max-w-sm`/`max-w-md` centered cards everywhere, `sm:` used only for minor spacing in `Navbar`/`PublicNavbar`), but nothing pinned *why* those particular numbers were the right ones for an app whose only two device families are iPhone and iPad.
+
+**Target viewport widths** (CSS pixels / "points," portrait orientation, current lineup as of 2026):
+
+| Device class | Width range | Representative models |
+| :--- | :--- | :--- |
+| iPhone | 375–440px | SE (smallest, 375) → standard 390–402 → Plus/Pro Max 428–440 |
+| iPad mini | 744px | — |
+| iPad / iPad Air / iPad Pro 11" | 820–834px | The two most common iPad sizes |
+| iPad Air 13" / iPad Pro 13" | 1024–1032px | — |
+
+Landscape width equals the portrait *height* for both families — an iPhone in landscape (667–956px) and every iPad in landscape (1133–1376px) both land well past `sm`, which is expected and not something layouts need to special-case for beyond what `sm:`/`md:`/`lg:` already do.
+
+**Mapped onto `tailwind.config.ts`'s `theme.screens`** (pinned explicitly the same pass — see that file's own header comment; the values match Tailwind's own defaults, so no existing `sm:`/`md:`/`lg:` usage changed):
+
+| Prefix | Width | Covers |
+| :--- | :--- | :--- |
+| *(none — base)* | < 640px | Every iPhone, portrait — the mobile-first design target |
+| `sm:` | ≥ 640px | iPhone landscape, iPad mini portrait |
+| `md:` | ≥ 768px | iPad / iPad Air / iPad Pro 11" portrait — the practical tablet breakpoint |
+| `lg:` | ≥ 1024px | iPad Air 13"/Pro 13" portrait, and every iPad landscape |
+
+**Design/test standard going forward**: build and test against **375px** first (the safe floor — an iPhone SE-clean layout is clean on every iPhone), then check **820px** (does a centered `max-w-sm`/`max-w-md` card look absurd floating in the middle of an iPad, or does it need a `md:` treatment). Add a real `lg:` checkpoint (1024px) only once a screen actually gets a multi-column tablet layout — nothing in the app does yet, so `lg:`/`xl:`/`2xl:` remain reserved rather than actively designed against today.
+
+Sources for the device widths: [screensizechecker.com — iPhone viewport sizes](https://screensizechecker.com/devices/iphone-viewport-sizes), [screensizechecker.com — iPad viewport sizes](https://screensizechecker.com/devices/ipad-viewport-sizes).
+
+
+## 17. Shared content-width config — one source of truth for container widths
+
+Added 2026-09-17 ("Can we make every page and pop-up will follow the same global config then follow width of topics side?"). Before this, container widths were hardcoded independently per file — `max-w-sm` on the auth Cards and every Dialog-based modal, `max-w-md` on Study/Quiz/Groups/Settings/Home, `max-w-2xl` on Topics-grid/Analytics — with no shared name tying them together, so a page could drift out of sync with its siblings by a single unreviewed Tailwind class edit (this had already happened once: Study was on `max-w-sm` while Quiz, its closest sibling in the UI, was on `max-w-md`).
+
+Shipped that same day as three named tiers (`narrow`/`default`/`wide` at 384/448/672px) rather than one global width, because a single width matching Topics' grid (`max-w-2xl`) applied to a login form, a delete-confirmation dialog, or the flashcard itself reads as a form floating in a mostly-empty page. Later the same day, live-requested explicitly ("Could you please help me change all page and pop-up to wide layout?") with that exact tradeoff flagged and confirmed anyway — as of this revision **all three tiers resolve to `max-w-2xl` (672px)**, so every page container and every popup is the same width. The three names are kept rather than collapsed into a single constant specifically so a future "actually, popups look stretched, split them back out" is a one-line value change in `layout.ts`, not a re-thread through every call site — each consumer still names the tier it semantically belongs to (modals/forms use `.narrow`, single-item screens use `.default`, grids use `.wide`); only the underlying pixel value converged.
+
+```ts
+// src/constants/layout.ts
+export const CONTENT_WIDTH = {
+  narrow: 'max-w-2xl', // 672px — was max-w-sm (384px) until the wide-everywhere change
+  default: 'max-w-2xl', // 672px — was max-w-md (448px) until the wide-everywhere change
+  wide: 'max-w-2xl', // 672px
+} as const;
+```
+
+**Usage pattern** — every consuming file imports the constant and interpolates it into a template-literal `className`, the same pattern already used for conditional Tailwind classes elsewhere in the codebase:
+
+```tsx
+import { CONTENT_WIDTH } from '@/constants/layout';
+// ...
+<div className={`mx-auto flex ${CONTENT_WIDTH.default} flex-col gap-4 p-6`}>
+```
+
+**Tier assignments, current as of this section** (name → current value → who reads it; the "who reads it" column is unchanged from when the tiers had distinct values, since each call site still names its semantic tier):
+
+| Tier | Current value | Used by |
+| :--- | :--- | :--- |
+| `narrow` | `max-w-2xl` (672px) | `(auth)/login`, `(auth)/register`, `join/[token]` Cards; `ui/dialog.tsx`'s `DialogContent` default (cascades to `WordCardModal`, `AddWordModal`, `CreateTopicModal` — none of which override the width) |
+| `default` | `max-w-2xl` (672px) | `settings`, `study`, `quiz`, `groups`, `groups/[groupId]`, dashboard home (`/`), `topics/[topicId]` |
+| `wide` | `max-w-2xl` (672px) | `topics` (grid), `analytics` |
+
+Same rule as `constants/routes.ts` for paths: never hardcode a `max-w-*` container width inline — go through `CONTENT_WIDTH`. Even with all three tiers converged, a new page should still pick the tier that matches its content density (a form or single-record view uses `.narrow`/`.default`; a grid or multi-card dashboard uses `.wide`) rather than inventing a fourth value — that naming is what makes it cheap to diverge the pixel values again later if a screen turns out to need it.

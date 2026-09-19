@@ -6,6 +6,7 @@ import { useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { CONTENT_WIDTH } from '@/constants/layout';
 import { ROUTES } from '@/constants/routes';
 import { createClient } from '@/lib/supabase/client';
 
@@ -60,13 +61,18 @@ export default function RegisterPage() {
       return;
     }
 
-    router.push(ROUTES.topics);
+    router.push(ROUTES.home);
     router.refresh();
   }
 
   return (
-    <main className="flex min-h-screen items-center justify-center p-8">
-      <Card className="w-full max-w-sm">
+    // `flex-1`, not `min-h-screen` -- this page now renders inside
+    // `(auth)/layout.tsx`'s own `min-h-dvh flex-col` shell, below the
+    // shared `PublicNavbar` it added 2026-09-18 ("add dygo Nav to
+    // register and login page"); this page had no brand header at all
+    // before that.
+    <main className="flex flex-1 items-center justify-center p-8">
+      <Card className={`w-full ${CONTENT_WIDTH.narrow}`}>
         <CardHeader>
           <CardTitle>Create an account</CardTitle>
           <CardDescription>

@@ -72,7 +72,10 @@ export function QuizQuestion({
       </span>
       <p className="text-base leading-snug">{displayPrompt(item)}</p>
 
-      {item.type === 'DICTATION' && <AudioButton src={item.audioUrl ?? null} className="self-start" />}
+      {/* `self-start` dropped 2026-09-18 -- AudioButton's `inline` layout
+          is a fused, full-width bar now, so the old shrink-to-content
+          alignment no longer applies (see AudioButton.tsx's comment). */}
+      {item.type === 'DICTATION' && <AudioButton src={item.audioUrl ?? null} />}
 
       {item.answerMode === 'TEXT' &&
         (hint.data ? (

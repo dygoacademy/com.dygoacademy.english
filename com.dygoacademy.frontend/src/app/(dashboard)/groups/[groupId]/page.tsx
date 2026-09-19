@@ -11,6 +11,7 @@ import { SprintTrigger } from '@/components/groups/SprintTrigger';
 import { ROUTES } from '@/constants/routes';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
 import { useGroups } from '@/hooks/useGroups';
+import { CONTENT_WIDTH } from '@/constants/layout';
 
 /**
  * Wireframes 3c/3d/4b/8g, assembled — the group's own home. There is no
@@ -31,7 +32,7 @@ export default function GroupDetailPage() {
 
   if (isPending) {
     return (
-      <div className="mx-auto max-w-md p-6">
+      <div className={`mx-auto ${CONTENT_WIDTH.default} p-6`}>
         <div className="h-24 w-full animate-pulse rounded-xl bg-muted" />
       </div>
     );
@@ -39,7 +40,7 @@ export default function GroupDetailPage() {
 
   if (isError || !group) {
     return (
-      <div className="mx-auto max-w-md p-6 text-sm text-muted-foreground">
+      <div className={`mx-auto ${CONTENT_WIDTH.default} p-6 text-sm text-muted-foreground`}>
         <Link href={ROUTES.groups} className="hover:underline">
           ← Your groups
         </Link>
@@ -56,7 +57,7 @@ export default function GroupDetailPage() {
   const canWrite = group.role === 'ADMIN' || group.role === 'WRITE';
 
   return (
-    <div className="mx-auto flex max-w-md flex-col gap-6 p-6">
+    <div className={`mx-auto flex ${CONTENT_WIDTH.default} flex-col gap-6 p-6`}>
       <div>
         <Link href={ROUTES.groups} className="text-xs text-muted-foreground hover:underline">
           ← Your groups

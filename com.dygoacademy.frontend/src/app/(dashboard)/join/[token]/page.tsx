@@ -6,6 +6,7 @@ import { useEffect, useRef, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { CONTENT_WIDTH } from '@/constants/layout';
 import { ROUTES } from '@/constants/routes';
 import { useRedeemInvite } from '@/hooks/useInvites';
 import { ApiError } from '@/lib/api-client';
@@ -56,7 +57,7 @@ export default function JoinPage() {
 
   return (
     <main className="flex min-h-[80vh] items-center justify-center p-8">
-      <Card className="w-full max-w-sm">
+      <Card className={`w-full ${CONTENT_WIDTH.narrow}`}>
         <CardHeader>
           <CardTitle>Joining…</CardTitle>
           {redeemInvite.isPending && <CardDescription>Redeeming your invite link.</CardDescription>}

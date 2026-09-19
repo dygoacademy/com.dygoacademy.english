@@ -8,8 +8,11 @@ import { AudioButton } from '@/components/flashcard/AudioButton';
 import { Flashcard } from '@/components/flashcard/Flashcard';
 import { ProgressiveClues, type ClueLevel } from '@/components/flashcard/ProgressiveClues';
 import { RatingButtons } from '@/components/flashcard/RatingButtons';
+import { CONTENT_WIDTH } from '@/constants/layout';
+import { ROUTES } from '@/constants/routes';
 import { useRateWord } from '@/hooks/useRateWord';
 import { useStudySession } from '@/hooks/useStudySession';
+import { formatIpa } from '@/lib/utils';
 import type { DueCard, SessionMode, SrsRating } from '@/types';
 
 /**
@@ -42,7 +45,7 @@ export default function StudyPage() {
   return (
     <Suspense
       fallback={
-        <main className="mx-auto flex min-h-screen max-w-sm flex-col items-center justify-center p-4">
+        <main className={`mx-auto flex min-h-screen ${CONTENT_WIDTH.default} flex-col items-center justify-center p-4`}>
           <p className="text-sm text-muted-foreground">Loading…</p>
         </main>
       }
@@ -117,7 +120,7 @@ function StudySessionScreen() {
 
   if (isLoading) {
     return (
-      <main className="mx-auto flex min-h-screen max-w-sm flex-col items-center justify-center gap-3 p-4 text-center">
+      <main className={`mx-auto flex min-h-screen ${CONTENT_WIDTH.default} flex-col items-center justify-center gap-3 p-4 text-center`}>
         <p className="text-sm text-muted-foreground">Loading your due cards…</p>
       </main>
     );
@@ -125,7 +128,7 @@ function StudySessionScreen() {
 
   if (isError) {
     return (
-      <main className="mx-auto flex min-h-screen max-w-sm flex-col items-center justify-center gap-3 p-4 text-center">
+      <main className={`mx-auto flex min-h-screen ${CONTENT_WIDTH.default} flex-col items-center justify-center gap-3 p-4 text-center`}>
         <p className="text-sm text-muted-foreground">Couldn&apos;t load this session.</p>
         <button type="button" onClick={() => void refetch()} className="text-sm underline underline-offset-4">
           Try again
@@ -136,7 +139,7 @@ function StudySessionScreen() {
 
   if (done) {
     return (
-      <main className="mx-auto flex min-h-screen max-w-sm flex-col items-center justify-center gap-3 p-4 text-center">
+      <main className={`mx-auto flex min-h-screen ${CONTENT_WIDTH.default} flex-col items-center justify-center gap-3 p-4 text-center`}>
         <p className="text-lg font-semibold">
           {cards.length === 0 ? 'Nothing due right now.' : "That's every card for now."}
         </p>
@@ -145,7 +148,7 @@ function StudySessionScreen() {
             ? 'New or overdue words will show up here as they come due.'
             : `You rated ${cards.length} card${cards.length === 1 ? '' : 's'} this session.`}
         </p>
-        <Link href="/topics" className="text-sm underline underline-offset-4">
+        <Link href={ROUTES.home} className="text-sm underline underline-offset-4">
           Back to topics
         </Link>
       </main>
@@ -157,12 +160,12 @@ function StudySessionScreen() {
   const isReverse = mode === 'REVERSE';
 
   return (
-    <main className="mx-auto flex min-h-screen max-w-sm flex-col gap-5 p-4">
+    <main className={`mx-auto flex min-h-screen ${CONTENT_WIDTH.default} flex-col gap-5 p-4`}>
       <div className="flex items-center justify-between text-xs text-muted-foreground">
         <span>
           {index + 1} of {cards.length} · {mode.toLowerCase()}
         </span>
-        <Link href="/topics" aria-label="End session">
+        <Link href={ROUTES.home} aria-label="End session">
           ✕
         </Link>
       </div>
@@ -178,86 +181,168 @@ function StudySessionScreen() {
         flipped={flipped}
         onToggle={() => setFlipped((f) => !f)}
         front={
-          <div className="flex h-96 w-full flex-col items-center justify-center gap-3 overflow-y-auto rounded-2xl border-2 bg-card p-6 text-center shadow-sm">
-            {isReverse ? (
-              <>
-                <p className="text-xs uppercase tracking-wide text-muted-foreground">
-                  Guess the word
-                </p>
-                <p className="text-lg leading-snug">
-                  {example ? maskForReverse(example.sentence, card.source_word) : card.definition_en}
-                </p>
-              </>
-            ) : isListening ? (
-              <>
-                <p className="text-xs uppercase tracking-wide text-muted-foreground">
-                  Listen and recall
-                </p>
-                <AudioButton src={card.audio_url} className="mt-2" />
-              </>
-            ) : (
-              <>
-                <p className="text-4xl font-semibold">{card.source_word}</p>
-                <AudioButton src={card.audio_url} />
-                {card.part_of_speech && (
-                  <span className="font-mono text-xs text-muted-foreground">
-                    {card.part_of_speech}
-                  </span>
-                )}
-              </>
-            )}
+          <div className="relative flex h-96 w-full flex-col items-center overflow-y-auto rounded-2xl border-2 bg-card p-6 text-center shadow-sm">
+            {/* Word/audio/part-of-speech (STANDARD sub-mode) plus the clue
+                and status badges below it are grouped into one centered
+                block, with Play pulled out into a floating bottom-right
+                corner dock -- live-requested 2026-09-18 ("give me options
+                that help student to focus and easier to use in right
+                hand"), same `layout="corner"` treatment as WordCardModal/
+                GuestWordTrial (see AudioButton.tsx's comment for the full
+                history). "Listen and recall" deliberately keeps its Play
+                button large and centered, unchanged -- that screen's whole
+                point is that one button, so there's nothing for it to
+                compete with the way there is on the word-recall front or
+                on the back below. */}
+            <div className="flex flex-1 flex-col items-center justify-center gap-3">
+              {isReverse ? (
+                <>
+                  <p className="text-xs uppercase tracking-wide text-muted-foreground">
+                    Guess the word
+                  </p>
+                  <p className="text-lg leading-snug">
+                    {example ? maskForReverse(example.sentence, card.source_word) : card.definition_en}
+                  </p>
+                </>
+              ) : isListening ? (
+                <>
+                  <p className="text-xs uppercase tracking-wide text-muted-foreground">
+                    Listen and recall
+                  </p>
+                  <AudioButton src={card.audio_url} className="mt-2" />
+                </>
+              ) : (
+                <>
+                  <p className="text-4xl font-semibold">{card.source_word}</p>
+                  {card.part_of_speech && (
+                    <span className="font-mono text-xs text-muted-foreground">
+                      {card.part_of_speech}
+                    </span>
+                  )}
+                </>
+              )}
 
-            {!isReverse && (
-              <div className="mt-2">
-                <ProgressiveClues
-                  word={card.source_word}
-                  ipaUs={card.ipa_us}
-                  exampleSentence={example}
-                  level={clueLevel}
-                  onAdvance={() => setClueLevel((l) => (l < 2 ? ((l + 1) as ClueLevel) : l))}
-                />
-              </div>
-            )}
+              {!isReverse && (
+                <div className="mt-2">
+                  <ProgressiveClues
+                    word={card.source_word}
+                    ipaUs={card.ipa_us}
+                    exampleSentence={example}
+                    level={clueLevel}
+                    onAdvance={() => setClueLevel((l) => (l < 2 ? ((l + 1) as ClueLevel) : l))}
+                  />
+                </div>
+              )}
 
-            {card.is_new && (
-              <span className="mt-1 rounded-full border px-2 py-0.5 text-[10px] text-muted-foreground">
-                New card
-              </span>
-            )}
-            {card.is_leech && (
-              <span className="mt-1 rounded-full border border-destructive/40 bg-destructive/10 px-2 py-0.5 text-[10px] text-destructive">
-                Leech · needs extra practice
-              </span>
+              {card.is_new && (
+                <span className="mt-1 rounded-full border px-2 py-0.5 text-[10px] text-muted-foreground">
+                  New card
+                </span>
+              )}
+              {card.is_leech && (
+                <span className="mt-1 rounded-full border border-destructive/40 bg-destructive/10 px-2 py-0.5 text-[10px] text-destructive">
+                  Leech · needs extra practice
+                </span>
+              )}
+            </div>
+            {!isReverse && !isListening && (
+              <AudioButton src={card.audio_url} layout="corner" className="absolute bottom-4 right-4" />
             )}
           </div>
         }
         back={
-          <div className="flex h-96 w-full flex-col gap-2.5 overflow-y-auto rounded-2xl border-2 bg-card p-6 shadow-sm">
-            <div className="flex items-center justify-between">
+          <div className="relative flex h-96 w-full flex-col rounded-2xl border-2 bg-card p-6 shadow-sm">
+            <div className="flex flex-1 flex-col gap-3 overflow-y-auto pb-16 pr-14">
               <span className="text-2xl font-semibold">{card.source_word}</span>
-              <AudioButton src={card.audio_url} label="Play pronunciation again" />
+              {/* Back side redesigned into labeled sections -- live-requested
+                  2026-09-18 ("the data in the flash card is messy hard to
+                  learn ... recommend to sort all data with UI/UX super easy
+                  for user"), applied consistently with WordCardModal/
+                  GuestWordTrial since all three are documented as mirroring
+                  one another's layout. See WordCardModal.tsx's own comment
+                  on this block for the full before/after reasoning, including
+                  the 2026-09-18 reordering ("The meaning with stick with type
+                  of word that is make sence?" -> confirmed: Word / IPA+Play /
+                  part-of-speech+Meaning / Synonyms-Antonyms-Example) that
+                  grouped IPA+Play (how to say it) separately from
+                  part-of-speech+Meaning (what it is and means), and the
+                  same-day follow-up ("Word / IPA / Play Sound ... Move Play
+                  Sound to another line ... use radix ui to make Play Sound
+                  easy to see and click") that split IPA and Play onto their
+                  own lines and rebuilt Play as a full-width Button --
+                  see AudioButton.tsx's own comment for the full reasoning.
+
+                  Play moved again, same day, to the very bottom of the card
+                  ("Could you please move the Play Sound to the buttom?") --
+                  back then, `mt-auto` pinned it to the bottom of the
+                  scrollable flex column. Superseded 2026-09-18 by the corner
+                  dock below (same change as WordCardModal/GuestWordTrial):
+                  Play now sits outside the scrollable inner div entirely, so
+                  it stays fixed in the same corner regardless of scroll
+                  position, which `mt-auto` inside a scrolling column could
+                  not guarantee once content got long enough to scroll. */}
+              <span className="font-mono text-xs text-muted-foreground">
+                {formatIpa(card.ipa_us) ? `US ${formatIpa(card.ipa_us)}` : 'US —'} ·{' '}
+                {formatIpa(card.ipa_uk) ? `UK ${formatIpa(card.ipa_uk)}` : 'UK —'}
+              </span>
+              <div>
+                <div className="flex items-center gap-2">
+                  <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+                    Meaning
+                  </p>
+                  {card.part_of_speech && (
+                    <span className="rounded-full border px-2 py-0.5 text-[10px] uppercase tracking-wide text-muted-foreground">
+                      {card.part_of_speech}
+                    </span>
+                  )}
+                </div>
+                <p className="text-base leading-snug">{card.definition_en ?? 'No definition yet.'}</p>
+              </div>
+              {(card.synonyms?.length ?? 0) > 0 && (
+                <div className="flex flex-wrap items-center gap-1.5">
+                  <span className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+                    Synonyms
+                  </span>
+                  {card.synonyms.map((s) => (
+                    <span
+                      key={s.word}
+                      className="rounded-full border border-emerald-600/30 bg-emerald-600/10 px-2 py-0.5 text-xs text-emerald-700 dark:border-emerald-400/30 dark:bg-emerald-400/10 dark:text-emerald-400"
+                    >
+                      {s.word}
+                    </span>
+                  ))}
+                </div>
+              )}
+              {(card.antonyms?.length ?? 0) > 0 && (
+                <div className="flex flex-wrap items-center gap-1.5">
+                  <span className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+                    Antonyms
+                  </span>
+                  {card.antonyms.map((a) => (
+                    <span
+                      key={a.word}
+                      className="rounded-full border border-rose-600/30 bg-rose-600/10 px-2 py-0.5 text-xs text-rose-700 dark:border-rose-400/30 dark:bg-rose-400/10 dark:text-rose-400"
+                    >
+                      {a.word}
+                    </span>
+                  ))}
+                </div>
+              )}
+              {example && (
+                <div className="rounded-lg bg-muted/50 p-2.5">
+                  <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+                    Example
+                  </p>
+                  <p className="text-xs italic text-muted-foreground">&quot;{example.sentence}&quot;</p>
+                </div>
+              )}
             </div>
-            <span className="font-mono text-xs text-muted-foreground">
-              {card.ipa_us ?? '—'} · {card.ipa_uk ?? '—'}
-            </span>
-            <p className="text-base leading-snug">{card.definition_en ?? 'No definition yet.'}</p>
-            <div className="flex flex-wrap gap-1.5 text-xs">
-              {card.synonyms?.map((s) => (
-                <span key={s.word} className="rounded-full border px-2 py-0.5">
-                  = {s.word}
-                </span>
-              ))}
-              {card.antonyms?.map((a) => (
-                <span key={a.word} className="rounded-full border px-2 py-0.5">
-                  ≠ {a.word}
-                </span>
-              ))}
-            </div>
-            {example && (
-              <p className="mt-auto text-xs italic text-muted-foreground">
-                &quot;{example.sentence}&quot;
-              </p>
-            )}
+            <AudioButton
+              src={card.audio_url}
+              label="Play pronunciation again"
+              layout="corner"
+              className="absolute bottom-4 right-4"
+            />
           </div>
         }
       />

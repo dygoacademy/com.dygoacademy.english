@@ -10,7 +10,7 @@ import { NextResponse, type NextRequest } from 'next/server';
 import type { CookieOptions } from '@supabase/ssr';
 
 import { env } from '@/config/env';
-import { isProtectedPath } from '@/constants/routes';
+import { isProtectedPath, ROUTES } from '@/constants/routes';
 
 export async function updateSession(request: NextRequest) {
   let response = NextResponse.next({ request });
@@ -44,8 +44,20 @@ export async function updateSession(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
+  // Root is a special case, not just another protected prefix: an
+  // anonymous visitor hitting "/" (the signed-in front door since the
+  // 2026-09-17 reshuffle) isn't trying to reach a specific page they'll
+  // want to resume after logging in -- they're just a guest who landed on
+  // the bare domain, so this sends them to the public entry point
+  // (live-requested same day, "guest go to the website we should redirect
+  // them to search page") instead of dead-ending them on a login form via
+  // the generic `?next=` branch below.
+  if (!user && request.nextUrl.pathname === ROUTES.home) {
+    return NextResponse.redirect(new URL(ROUTES.search, request.url));
+  }
+
   if (!user && isProtectedPath(request.nextUrl.pathname)) {
-    const loginUrl = new URL('/login', request.url);
+    const loginUrl = new URL(ROUTES.login, request.url);
     loginUrl.searchParams.set('next', request.nextUrl.pathname);
     return NextResponse.redirect(loginUrl);
   }

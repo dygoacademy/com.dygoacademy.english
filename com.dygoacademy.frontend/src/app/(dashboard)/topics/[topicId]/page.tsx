@@ -13,6 +13,7 @@ import { useDeleteTopic } from '@/hooks/useTopicMutations';
 import { useGroups } from '@/hooks/useGroups';
 import { useTopic } from '@/hooks/useTopic';
 import { ApiError } from '@/lib/api-client';
+import { CONTENT_WIDTH } from '@/constants/layout';
 
 /**
  * Topic detail — wireframes 1j (empty), 1k (enriching), 1l (failed).
@@ -73,22 +74,58 @@ export default function TopicDetailPage() {
   };
 
   return (
-    <div className="mx-auto flex max-w-md flex-col gap-3 p-6">
+    <div className={`mx-auto flex ${CONTENT_WIDTH.default} flex-col gap-3 p-6`}>
       <Link href="/topics" className="text-xs text-muted-foreground underline underline-offset-4">
         ← Your topics
       </Link>
-      <div className="flex items-center justify-between">
+      {/* Title and the Study/Quiz/Add-word actions each get their own
+          line -- live-requested 2026-09-18 ("The Topic Name and All
+          function show be in individual lines"). Was `justify-between`
+          on one row (title left, button row pinned right), which got
+          tight on a long topic title -- flex-col here stacks them, and
+          the button row keeps its own `flex-wrap` so Study/Quiz/+Add a
+          word can still wrap onto a second line rather than overflow on
+          a narrow phone, same mobile-first convention as everywhere else
+          (§16 of the architecture doc). Buttons stay on the existing
+          `ui/button.tsx` (Radix Primitives' Slot + Tailwind/shadcn, the
+          same pattern Dialog and Navigation Menu use) rather than Radix
+          Themes' separate pre-styled Button -- installing Radix Themes
+          here would mean a second, visually-inconsistent design system
+          alongside every other button in the app; confirmed with the
+          user before proceeding.
+
+          Redesigned again the same day ("refactor ui/ux design of those
+          button Study, Quiz, Add Word that will be follow the radix-ui
+          buttom") -- still the same Radix-Slot-backed `Button`, just
+          styled with clearer visual hierarchy the way a Radix UI button
+          group typically reads: Study/Quiz are the frequent, secondary
+          actions (`outline`), "Add a word" is the one primary action on
+          this row (`default`/solid) so it's the button your eye lands on
+          first. Each now carries a small icon next to its label -- an
+          open book for Study, a checklist for Quiz, a plus for Add a
+          word -- so the row scans by shape, not just text, and bumped
+          from `size="sm"` to the default size for a bigger, easier tap
+          target (matching the same "make it easier to tap" reasoning
+          behind the flashcard's Play Sound button redesign). */}
+      <div className="flex flex-col gap-3">
         <h1 className="text-lg font-semibold">{topic.title}</h1>
         {!isEmpty && (
-          <div className="flex gap-2">
-            <Button size="sm" variant="outline" asChild>
-              <Link href={`/study?topicId=${topic.id}`}>Study</Link>
+          <div className="flex flex-wrap gap-2">
+            <Button variant="outline" className="gap-2" asChild>
+              <Link href={`/study?topicId=${topic.id}`}>
+                <BookIcon className="h-4 w-4" />
+                Study
+              </Link>
             </Button>
-            <Button size="sm" variant="outline" asChild>
-              <Link href={`/quiz?topicId=${topic.id}`}>Quiz</Link>
+            <Button variant="outline" className="gap-2" asChild>
+              <Link href={`/quiz?topicId=${topic.id}`}>
+                <QuizIcon className="h-4 w-4" />
+                Quiz
+              </Link>
             </Button>
-            <Button size="sm" onClick={() => setAddWordOpen(true)}>
-              + Add a word
+            <Button className="gap-2" onClick={() => setAddWordOpen(true)}>
+              <PlusIcon className="h-4 w-4" />
+              Add a word
             </Button>
           </div>
         )}
@@ -118,5 +155,69 @@ export default function TopicDetailPage() {
         </div>
       )}
     </div>
+  );
+}
+
+/**
+ * Small stroke icons for the Study/Quiz/Add-word action row --
+ * live-requested 2026-09-18 ("refactor ui/ux design of those button
+ * Study, Quiz, Add Word"). Hand-rolled inline SVGs rather than a new
+ * icon package dependency, matching the codebase's existing convention
+ * (see ui/dialog.tsx's XIcon, ui/select.tsx's Chevron/Check icons,
+ * ui/navigation-menu.tsx's ChevronDownIcon) -- same viewBox/stroke/
+ * strokeWidth/linecap/linejoin recipe so every icon in the app reads as
+ * one consistent family.
+ */
+function BookIcon(props: React.SVGProps<SVGSVGElement>) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+      {...props}
+    >
+      <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
+      <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2Z" />
+    </svg>
+  );
+}
+
+function QuizIcon(props: React.SVGProps<SVGSVGElement>) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+      {...props}
+    >
+      <rect x="3" y="3" width="18" height="18" rx="2" />
+      <path d="m9 12 2 2 4-4" />
+    </svg>
+  );
+}
+
+function PlusIcon(props: React.SVGProps<SVGSVGElement>) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+      {...props}
+    >
+      <path d="M12 5v14" />
+      <path d="M5 12h14" />
+    </svg>
   );
 }

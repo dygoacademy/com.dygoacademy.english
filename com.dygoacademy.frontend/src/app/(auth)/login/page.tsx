@@ -6,6 +6,7 @@ import { Suspense, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { CONTENT_WIDTH } from '@/constants/layout';
 import { ROUTES } from '@/constants/routes';
 import { createClient } from '@/lib/supabase/client';
 
@@ -50,29 +51,24 @@ function LoginForm() {
     // A hard navigation (see SignOutButton's own comment on why), landing
     // back on whatever protected path middleware.ts bounced the caller
     // from — `?next=` — or the home dashboard if they arrived here directly.
-    const next = searchParams.get('next') || ROUTES.topics;
+    const next = searchParams.get('next') || ROUTES.home;
     router.push(next);
     router.refresh();
   }
 
   return (
-    <main className="flex min-h-dvh flex-col items-center justify-center gap-4 p-4">
-      {/* Brand mark, top of screen -- live-requested 2026-09-05 ("sign-in
-          page should have the Dygo text on top and navigate back to
-          previous page"). `router.back()` rather than a Link to
-          ROUTES.topics/home: /login is reached from several places
-          (direct visit, or middleware bouncing a signed-out user off a
-          protected route with `?next=`), so "back" means wherever the
-          visitor actually came from, not a fixed destination. */}
-      <button
-        type="button"
-        onClick={() => router.back()}
-        className="text-lg font-semibold hover:opacity-80"
-        aria-label="Go back"
-      >
-        Dygo
-      </button>
-      <Card className="w-full max-w-sm">
+    // `flex-1`, not `min-h-dvh` -- this page now renders inside
+    // `(auth)/layout.tsx`'s own `min-h-dvh flex-col` shell, below the
+    // shared `PublicNavbar` it added 2026-09-18 ("add dygo Nav to
+    // register and login page"). The previous "Dygo" brand button here
+    // (a `router.back()` call, live-requested 2026-09-05 so /login --
+    // reachable from several different places -- returned to wherever the
+    // visitor actually came from) was replaced by that shared nav for
+    // consistency across all three guest-facing pages; PublicNavbar's
+    // logo links to `/search` instead of going back, which was confirmed
+    // with the user as an accepted tradeoff.
+    <main className="flex flex-1 flex-col items-center justify-center gap-4 p-4">
+      <Card className={`w-full ${CONTENT_WIDTH.narrow}`}>
         <CardHeader>
           <CardTitle>Sign in</CardTitle>
           <CardDescription>

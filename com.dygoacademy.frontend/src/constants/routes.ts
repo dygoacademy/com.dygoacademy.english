@@ -4,10 +4,28 @@
  * the *actual* browser paths; both src/middleware.ts and any nav
  * component must agree on these, which is the whole reason this file
  * exists instead of each place hardcoding its own strings.
+ *
+ * URL reshuffle (live-requested 2026-09-17, "that will make more sense
+ * for now"): what used to be three separate ideas at three separate URLs
+ * — the public guest trial at "/", the signed-in due-now dashboard at
+ * "/topics", and the topics grid at "/topics/browse" — moved one level
+ * each: "/" is now the signed-in front door (was "/topics"), "/topics" is
+ * now the grid (was "/topics/browse"), and the guest trial moved out to
+ * "/search". ROUTES.home and ROUTES.topics keep their names because what
+ * they conceptually point to (the front door, the topics section) hasn't
+ * changed — only which URL serves it has. Every call site below was
+ * updated to match; see git history on this file for the URLs each
+ * constant used to hold if you're tracing an old bookmark or log line.
  */
 
 /** Paths that require a signed-in session. Prefix-matched. */
 export const PROTECTED_PATH_PREFIXES = [
+  // The signed-in front door itself — was implicitly covered by the old
+  // '/topics' entry back when the front door lived at that URL; now that
+  // it's at the bare root, it needs its own entry. isProtectedPath's
+  // `pathname === prefix` check means this only ever matches the exact
+  // "/", never every route (a naive prefix-match on '/' would).
+  '/',
   '/topics',
   '/study',
   '/quiz',
@@ -21,11 +39,14 @@ export const PROTECTED_PATH_PREFIXES = [
 export const AUTH_PATHS = ['/login', '/register'] as const;
 
 export const ROUTES = {
+  /** Signed-in front door (due-now dashboard) — was "/topics" until the 2026-09-17 reshuffle. */
   home: '/',
   login: '/login',
   register: '/register',
+  /** Anonymous "try one word" landing page — was "/" until the 2026-09-17 reshuffle. */
+  search: '/search',
+  /** Topics grid — was "/topics/browse" until the 2026-09-17 reshuffle. */
   topics: '/topics',
-  topicsBrowse: '/topics/browse',
   study: '/study',
   quiz: '/quiz',
   analytics: '/analytics',

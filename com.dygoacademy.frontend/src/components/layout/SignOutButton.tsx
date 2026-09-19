@@ -42,7 +42,17 @@ export function SignOutButton() {
   }
 
   return (
-    <Button variant="outline" size="sm" onClick={handleSignOut} disabled={loading}>
+    // Default size, not `size="sm"` -- bumped 2026-09-18 ("refactor the
+    // logout button. That seem like not UI/UX design") to match the
+    // other action buttons on the Settings page it now sits alongside
+    // (NotificationSettings' "Turn on/off for this device" buttons are
+    // both default-sized); it had been the one visibly smaller,
+    // lower-weight button on the page for no reason tied to its own
+    // importance. Kept `variant="outline"` rather than `destructive` --
+    // signing out doesn't destroy anything, so a plain outline (the same
+    // variant the push-notification "Turn off" button already uses)
+    // reads as a normal action, not a dangerous one.
+    <Button variant="outline" onClick={handleSignOut} disabled={loading}>
       {loading ? 'Signing out…' : 'Sign out'}
     </Button>
   );
