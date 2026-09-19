@@ -140,6 +140,11 @@ Recommendation (not a decision this document makes): treat the Learning Path con
   * *Requirement*: Usage-count copy SHALL pluralize correctly.
   * *Acceptance*: Renders "used once" / "used N times" (N ≥ 2).
 
+* **FR-15.5 (No ticket references on create-group / create-topic forms)** — P2
+  * *Problem*: Found 2026-09-19 during Wave 2's live verification of FR-11.1 (not part of the original audit, which never opened these forms): the "Public" checkbox label ends in "(FR-1.1)" in two places — `CreateGroupForm.tsx` ("...cloneable by other groups (FR-1.1)") and `CreateTopicModal.tsx` ("...discoverable and cloneable by other groups (FR-1.1)"). `GroupSettingsPanel.tsx`'s own copy of this label is already clean (no suffix) — only these two.
+  * *Requirement*: Same as FR-15.3 — no internal requirement/ticket identifiers in user-facing copy.
+  * *Acceptance*: "(FR-1.1)" removed from both `CreateGroupForm.tsx` and `CreateTopicModal.tsx`.
+
 ### 🧭 Module 16: Navigation & Information Architecture
 * **FR-16.1 (Persistent navigation)** — P1
   * *Problem*: The top bar (Topics/Groups/Progress/Profile) scrolls away with page content; long pages (20-word topic list, group admin panel, full heatmap) require scrolling back to the top to switch sections.
@@ -165,10 +170,10 @@ Recommendation (not a decision this document makes): treat the Learning Path con
 | FR-9.1 | Streak count disagrees with itself | Critical | Home, Progress | P0 | ✅ `20dab8e` + `d442a65` (symptom fixed, and Wave 1b's shared-source refactor closed) |
 | FR-9.2 | Due-now count disagrees with itself | Critical | Home, Progress | P0 | ✅ `20dab8e` + `d442a65` (symptom fixed, and Wave 1b's shared-source refactor closed) |
 | FR-9.3 | "Fix →" points at nothing | Critical | Home | P0 | ✅ `20dab8e` |
-| FR-10.1 | Delete-topic has no confirm | Critical | Topic detail | P0 | — |
-| FR-10.2 | Delete-word has no confirm | Critical | Topic detail | P1 | — (likely already done, see §7 — needs verification) |
-| FR-10.3 | Save/Delete group equal weight | Moderate | Group admin | P1 | — |
-| FR-11.1 | Group "Public" default on | Moderate | Group admin | P1 | — (could not reproduce, see §7 — needs verification, not a build task) |
+| FR-10.1 | Delete-topic has no confirm | Critical | Topic detail | P0 | ✅ `88de075` |
+| FR-10.2 | Delete-word has no confirm | Critical | Topic detail | P1 | ✅ verified live 2026-09-19 — already done |
+| FR-10.3 | Save/Delete group equal weight | Moderate | Group admin | P1 | ✅ `88de075` |
+| FR-11.1 | Group "Public" default on | Moderate | Group admin | P1 | ✅ verified live 2026-09-19 — not a bug, no change needed |
 | FR-12.1 | Quiz exit with no warning | Moderate | Quiz | P1 | — |
 | FR-12.2 | Multiple choice hides selection | Moderate | Quiz | P1 | — |
 | FR-12.3 | Submit looks disabled when it isn't | Minor | Quiz | P2 | — |
@@ -178,6 +183,7 @@ Recommendation (not a decision this document makes): treat the Learning Path con
 | FR-15.2 | "Module 3" note in topics copy | Moderate | Topics | P2 | ✅ `769c889` |
 | FR-15.3 | "FR-6.3/6.4" in reminder copy | Minor | Profile | P2 | ✅ `05eccf6` |
 | FR-15.4 | "used 1 times" grammar | Minor | Group admin | P2 | ✅ `05eccf6` |
+| FR-15.5 | "(FR-1.1)" on create-group checkbox | Minor | Group admin | P2 | — (found 2026-09-19, not in original audit) |
 | FR-16.1 | No sticky header | Moderate | Global | P1 | ✅ `abe1c44` |
 | FR-16.2 | No labeled Home entry | Minor | Global | P2 | ✅ `abe1c44` |
 | FR-16.3 | 12h/24h time format mismatch | Minor | Profile | P2 | — |
