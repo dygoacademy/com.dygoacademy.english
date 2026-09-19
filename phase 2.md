@@ -175,7 +175,7 @@ Recommendation (not a decision this document makes): treat the Learning Path con
 | FR-10.3 | Save/Delete group equal weight | Moderate | Group admin | P1 | ✅ `88de075` |
 | FR-11.1 | Group "Public" default on | Moderate | Group admin | P1 | ✅ verified live 2026-09-19 — not a bug, no change needed |
 | FR-12.1 | Quiz exit with no warning | Moderate | Quiz | P1 | ✅ `590afcb` (confirm-dialog option, not resume) |
-| FR-12.2 | Multiple choice hides selection | Moderate | Quiz | P1 | — |
+| FR-12.2 | Multiple choice hides selection | Moderate | Quiz | P1 | ✅ `4619253` |
 | FR-12.3 | Submit looks disabled when it isn't | Minor | Quiz | P2 | ✅ `590afcb` |
 | FR-13.1 | Empty study-session-complete screen | Minor | Study | P1 | — |
 | FR-14.1 | Heatmap: one color for every rate | Moderate | Progress | P1 | — |
