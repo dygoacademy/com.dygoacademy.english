@@ -67,6 +67,12 @@ export interface SyncItemResult {
   error?: string;
 }
 
+/** One day's review count (Phase 3 Module 18, FR-18.1's activity trail). */
+export interface DailyActivity {
+  review_date: string;
+  review_count: number;
+}
+
 const DUE_CARD_COLUMNS = `
   tw.id as topic_word_id,
   tw.topic_id,
@@ -295,6 +301,45 @@ export class SrsService {
    */
   async stats(userId: string): Promise<SrsStats> {
     return computeSrsSummary((text, params) => this.db.queryAs(userId, text, params), userId);
+  }
+
+  /**
+   * Phase 3 Module 18 (FR-18.1) — per-day review counts for Home's
+   * activity trail. Same table and same `(reviewed_at at time zone
+   * 'utc')::date::text` cast `computeSrsSummary`'s streak query already
+   * uses below, but grouped with a count instead of collected as a flat
+   * distinct-date list -- streak math only needs to know a day happened,
+   * a trail needs to know how much happened. RLS-scoped via `queryAs`,
+   * same as every other read in this class; no explicit `user_id`
+   * predicate beyond the `where` below is needed for RLS itself, but it's
+   * kept anyway since it's also what bounds the date range, not just who
+   * can see it.
+   *
+   * `days` is concatenated into the interval literal via a second bound
+   * parameter (`($2 || ' days')::interval`) rather than string-interpolated
+   * into the query text -- still parameterized, just not a literal
+   * Postgres `interval '$2 days'` (which isn't valid syntax; intervals
+   * don't accept a bound parameter directly inside the literal).
+   */
+  async getDailyActivity(userId: string, days = 7): Promise<DailyActivity[]> {
+    // count(*) comes back as a string (Postgres bigint) -- converted to a
+    // real number here, same as computeSrsSummary does for due_now/
+    // mastered_words/leech_count below, rather than the string-passthrough
+    // convention TopicsService uses for its own count()s. Same service,
+    // one convention: SrsService's counts are already-converted numbers by
+    // the time they leave this file.
+    const rows = await this.db.queryAs<{ review_date: string; review_count: string }>(
+      userId,
+      `select (reviewed_at at time zone 'utc')::date::text as review_date,
+              count(*) as review_count
+         from public.review_logs
+        where user_id = $1
+          and reviewed_at >= now() - ($2 || ' days')::interval
+        group by review_date
+        order by review_date desc`,
+      [userId, days],
+    );
+    return rows.map((r) => ({ review_date: r.review_date, review_count: Number(r.review_count) }));
   }
 
   /** FR-4.3 — see StartSessionDto's header comment for why this has no persisted "session" row. */

@@ -6,6 +6,7 @@ import { RateWordDto } from './dto/rate-word.dto';
 import { StartSessionDto } from './dto/start-session.dto';
 import { SyncReviewsDto } from './dto/sync-reviews.dto';
 import {
+  DailyActivity,
   DueCard,
   LeechCard,
   RateWordResult,
@@ -49,6 +50,19 @@ export class SrsController {
   })
   async stats(@CurrentUser('id') userId: string): Promise<SrsStats> {
     return this.srsService.stats(userId);
+  }
+
+  @Get('activity')
+  @ApiOperation({
+    summary: 'Daily review activity (Phase 3 Module 18, FR-18.1)',
+    description:
+      "Per-day review counts for Home's activity trail. Defaults to the trailing 7 days.",
+  })
+  async activity(
+    @CurrentUser('id') userId: string,
+    @Query('days') days?: string,
+  ): Promise<DailyActivity[]> {
+    return this.srsService.getDailyActivity(userId, days ? Number(days) : undefined);
   }
 
   @Post('rate')

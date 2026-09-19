@@ -143,6 +143,49 @@ describe('SrsService.findLeeches', () => {
   });
 });
 
+describe('SrsService.getDailyActivity', () => {
+  it('converts count(*) bigint strings to real numbers, worst/most-recent first', async () => {
+    const queryAsMock = jest.fn().mockResolvedValue([
+      { review_date: '2026-09-19', review_count: '5' },
+      { review_date: '2026-09-18', review_count: '2' },
+      { review_date: '2026-09-16', review_count: '1' }, // gap on the 17th — no row, not a zero row
+    ]);
+    const service = await makeService(queryAsMock);
+
+    const result = await service.getDailyActivity('user-1');
+
+    expect(result).toEqual([
+      { review_date: '2026-09-19', review_count: 5 },
+      { review_date: '2026-09-18', review_count: 2 },
+      { review_date: '2026-09-16', review_count: 1 },
+    ]);
+  });
+
+  it('defaults to 7 days and is RLS-scoped via queryAs with the caller id', async () => {
+    const queryAsMock = jest.fn().mockResolvedValue([]);
+    const service = await makeService(queryAsMock);
+
+    await service.getDailyActivity('user-1');
+
+    expect(queryAsMock).toHaveBeenCalledTimes(1);
+    const [userId, sql, params] = queryAsMock.mock.calls[0] as [string, string, unknown[]];
+    expect(userId).toBe('user-1');
+    expect(sql).toMatch(/where user_id = \$1/i);
+    expect(sql).toMatch(/group by review_date/i);
+    expect(params).toEqual(['user-1', 7]);
+  });
+
+  it('passes a custom days value through as the second bound parameter', async () => {
+    const queryAsMock = jest.fn().mockResolvedValue([]);
+    const service = await makeService(queryAsMock);
+
+    await service.getDailyActivity('user-1', 30);
+
+    const [, , params] = queryAsMock.mock.calls[0] as [string, string, unknown[]];
+    expect(params).toEqual(['user-1', 30]);
+  });
+});
+
 describe('SrsService.stats', () => {
   it('computes a streak of consecutive UTC days ending today', async () => {
     const realNow = Date.now;
