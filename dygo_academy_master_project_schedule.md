@@ -1,9 +1,31 @@
 # 📅 Dygo Academy: Master Project Schedule & Phasing Strategy
-**Document Version**: 5.17 (tenant-wide mistake heatmap — FR-8.2 "across cohorts" — real backend scope, first since the 17th pass's RLS fix)  
+**Document Version**: 5.18 (Phase 6 — UX & trust remediation — 20/20 FRs code-complete, 9 of them found not yet deployed during close-out)  
 **Author**: Principal Cloud & SaaS Solutions Advisory  
 **Status**: Approved for Engineering & Product Execution  
 
 **Changelog**
+* **5.18** (2026-09-19) — Added §2's new Phase 6 (UX & Trust Remediation),
+  a post-launch pass this document's own Phase 0–5 never scoped, run
+  across 9 sessions against 20 findings from a live-app UX audit. Full
+  detail lives in `phase 2.md`/`phase 2 implementation plan.md`/
+  `Claude outputs/phase 2 session schedule.md` rather than duplicated
+  here — this entry is the pointer those documents' own close-out
+  (`phase 2.md`'s changelog, v1.3) asked to be filed under "Phase 6" to
+  avoid colliding with this file's own pre-existing Phase 2 (SRS/
+  Flashcards, §2 above, unrelated). Headline finding, the reason this
+  entry exists at all: Session 9's close-out did what this document has
+  flagged as a standing gap since the very first pass and never actually
+  done for *any* earlier phase — verified every item against the live
+  app, not just code review — and caught a real deploy lag as a result.
+  11 of 20 FRs are confirmed live; the other 9 are code-complete and
+  test-covered (`tsc --noEmit`/`eslint`/`jest` 165/165 clean) but
+  reproducibly still show pre-fix behavior in production, because
+  nothing has redeployed since partway through this phase's work. Not a
+  code defect — this repo has never had a deploy-on-commit pipeline
+  (`.github/workflows` empty since Phase 0, noted every phase since) —
+  but a real gap between "done" and "shipped" that only a live check
+  caught. See `phase 2.md` §9 for the exact commit boundary and which 9
+  FRs are waiting on a deploy.
 * **5.17** (2026-09-01) — Nineteenth pass, still the same day, still ahead
   of tomorrow morning's UAT (2026-09-02). Full regression confirmed no
   drift from 5.16 before starting (153/153 backend jest, clean `tsc`/lint
@@ -761,6 +783,13 @@ gantt
    * Enable Server-Side Rendering (SSR) for public topic libraries to maximize search indexing.
    * Set up health check endpoints, automated container auto-healing, and alerting.
    * Production release and official onboarding of pilot tutors and language academies.
+
+---
+
+### 🩹 Phase 6: UX & Trust Remediation
+* **Timeline**: Unscheduled — a post-launch pass, not part of the original 12-week/6-sprint plan above.
+* **Primary Objective**: Close 20 findings from a screen-by-screen UX audit of the live app (2026-09-19) — data-integrity bugs in the retention loop (streak/due-count/leech-nudge disagreeing across screens), unconfirmed destructive actions, quiz/study UX gaps, and internal engineering language that had leaked into production copy. Full requirements, root-cause analysis, and a developer implementation plan live in three documents this phase produced, kept outside this file rather than duplicated into it: `phase 2.md` (the 20 FRs — what and why, called "Phase 2" in its own title since that's what it was asked to be named before this section existed to disambiguate it from *this* file's own Phase 2 — see its own naming note), `phase 2 implementation plan.md` (file-by-file developer handoff), and `Claude outputs/phase 2 session schedule.md` (9 token-budgeted sessions this was executed across).
+* **Status** (2026-09-19): **All 20 FRs code-complete** (`tsc --noEmit`, `eslint`, `jest` 165/165 backend clean on every commit) as of `e6750a1`. Session 9's close-out pass did what every earlier phase in this document flagged as a standing gap and never actually did — walked every FR against the live app instead of stopping at code review — and it caught something no amount of code review would have: **a real deploy lag**. Only the first 11 FRs (everything through commit `20dab8e`) are live; the remaining 9 (FR-10.1, FR-10.3, FR-12.1, FR-12.2, FR-12.3, FR-13.1, FR-14.1, FR-15.5, FR-16.3 — commit `88de075` onward) are fully built and tested but still showing pre-fix behavior in production, confirmed by directly reproducing the old behavior live (e.g. clicking "Delete this topic" still does nothing — no dialog — because the pre-fix build is what's actually deployed). This repo's `.github/workflows` has been empty since Phase 0, so there's no deploy-on-commit pipeline to have caught this automatically. **Action needed from whoever owns deploys**: push a new build. Full detail, including exactly which commit is the live/not-live boundary, is in `phase 2.md` §9.
 
 ---
 

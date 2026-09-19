@@ -1,10 +1,11 @@
 # 📋 Dygo Academy — Phase 2 (Remediation): UX & Trust Business Requirements
-**Document Version**: 1.1 (Draft for Engineering & Product Sign-off)
+**Document Version**: 1.3 (Code-complete — see §9 for live-deploy status)
 **Author**: UX Audit Follow-up
-**Status**: Draft — awaiting Product/Owner prioritization
+**Status**: All 20 FRs code-complete as of `e6750a1`. 11 verified live; 9 (Sessions 4–9's output) confirmed still pending deploy — see §9. Not yet closed pending that deploy and a re-verification pass.
 **Source**: Screen-by-screen UX audit of `dygoacademy.com`, 2026-09-19 (18 findings, sign-in → home → topics → study → quiz → progress → groups → profile, desktop + mobile)
 
 **Changelog**
+* **1.3** (2026-09-19) — Session 9 close-out: implemented and closed the two FRs no session had been assigned (FR-15.5, found mid-Phase-2 but never scheduled; FR-16.3, missing from the schedule doc entirely — a gap in that doc, not a skipped item), bringing all 20 FRs to code-complete. Walked every FR against the live app rather than trusting the commit history, and found a real deploy lag: only work through commit `20dab8e`/`6d6c8f3` (11 FRs) is actually live; everything from `88de075` on (9 FRs, all of Sessions 4–9) is code-complete and test-covered but still showing pre-fix behavior in production. Documented as new §9 rather than backdated into existing FR rows, since each FR's underlying fix is genuinely done — what's missing is a deploy, not more engineering. Added a changelog entry to `dygo_academy_master_project_schedule.md` filing this work as "Phase 6" there, per this document's own naming note below.
 * **1.2** (2026-09-19) — Read the actual backend/frontend code (not just the live app) while drafting the developer implementation plan (see `phase 2 implementation plan.md`) and found the real root cause differs from what the audit could observe from the UI alone for three items. Added §7 documenting each, rather than rewriting the original "Problem" bullets, which are still accurate descriptions of what the audit *observed* — only the diagnosis and the resulting effort/priority change. No acceptance criteria changed; FR-9.1–9.3 still require the same end-user behavior, they're just cheaper to fix than assumed. FR-10.2 and FR-11.1 may already be done.
 * **1.1** (2026-09-19) — Checked this document against the separately-produced "Dygo Learning Path" concept (a reimagined customer journey + 4 redesigned screens, aimed at making the product feel like a daily coaching habit rather than a dictionary). Verdict: **compatible, not duplicated** — the concept assumes FR-9.1–9.3 are already fixed and visually restyles the same data FR-13.1 and FR-14.1 already require; it does not satisfy either FR on its own, and it introduces real net-new scope (an estimated IELTS band score, topic mastery rings, a path-style home screen) that this document does NOT cover. Added §2.1 to state that relationship explicitly, cross-referenced FR-13.1/FR-14.1 to it, and added open question 4 in §6 about sequencing. No FR text, priority, or acceptance criteria changed.
 
@@ -165,28 +166,30 @@ Recommendation (not a decision this document makes): treat the Learning Path con
 
 ## 5. Traceability
 
+All 20 FRs are code-complete as of `e6750a1`. §9 explains the ✅-live vs. ✅-code split below — a deploy lag discovered during close-out, not an implementation gap.
+
 | FR | Audit finding | Severity | Screen(s) | Priority | Status |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| FR-9.1 | Streak count disagrees with itself | Critical | Home, Progress | P0 | ✅ `20dab8e` + `d442a65` (symptom fixed, and Wave 1b's shared-source refactor closed) |
-| FR-9.2 | Due-now count disagrees with itself | Critical | Home, Progress | P0 | ✅ `20dab8e` + `d442a65` (symptom fixed, and Wave 1b's shared-source refactor closed) |
-| FR-9.3 | "Fix →" points at nothing | Critical | Home | P0 | ✅ `20dab8e` |
-| FR-10.1 | Delete-topic has no confirm | Critical | Topic detail | P0 | ✅ `88de075` |
-| FR-10.2 | Delete-word has no confirm | Critical | Topic detail | P1 | ✅ verified live 2026-09-19 — already done |
-| FR-10.3 | Save/Delete group equal weight | Moderate | Group admin | P1 | ✅ `88de075` |
-| FR-11.1 | Group "Public" default on | Moderate | Group admin | P1 | ✅ verified live 2026-09-19 — not a bug, no change needed |
-| FR-12.1 | Quiz exit with no warning | Moderate | Quiz | P1 | ✅ `590afcb` (confirm-dialog option, not resume) |
-| FR-12.2 | Multiple choice hides selection | Moderate | Quiz | P1 | ✅ `4619253` |
-| FR-12.3 | Submit looks disabled when it isn't | Minor | Quiz | P2 | ✅ `590afcb` |
-| FR-13.1 | Empty study-session-complete screen | Minor | Study | P1 | ✅ `cc603bf` |
-| FR-14.1 | Heatmap: one color for every rate | Moderate | Progress | P1 | ✅ `fe9676e` |
-| FR-15.1 | "Phase 1" dead button | Moderate | Home | P1 | ✅ `20dab8e` |
-| FR-15.2 | "Module 3" note in topics copy | Moderate | Topics | P2 | ✅ `769c889` |
-| FR-15.3 | "FR-6.3/6.4" in reminder copy | Minor | Profile | P2 | ✅ `05eccf6` |
-| FR-15.4 | "used 1 times" grammar | Minor | Group admin | P2 | ✅ `05eccf6` |
-| FR-15.5 | "(FR-1.1)" on create-group checkbox | Minor | Group admin | P2 | — (found 2026-09-19, not in original audit) |
-| FR-16.1 | No sticky header | Moderate | Global | P1 | ✅ `abe1c44` |
-| FR-16.2 | No labeled Home entry | Minor | Global | P2 | ✅ `abe1c44` |
-| FR-16.3 | 12h/24h time format mismatch | Minor | Profile | P2 | — |
+| FR-9.1 | Streak count disagrees with itself | Critical | Home, Progress | P0 | ✅ live-verified 2026-09-19 — `20dab8e` + `d442a65` |
+| FR-9.2 | Due-now count disagrees with itself | Critical | Home, Progress | P0 | ✅ live-verified 2026-09-19 — `20dab8e` + `d442a65` |
+| FR-9.3 | "Fix →" points at nothing | Critical | Home | P0 | ✅ live-verified 2026-09-19 — `20dab8e` (no leech nudge shown at 0 leeches) |
+| FR-10.1 | Delete-topic has no confirm | Critical | Topic detail | P0 | ✅ code-complete `88de075` — tsc/lint clean; **not yet live**, see §9 |
+| FR-10.2 | Delete-word has no confirm | Critical | Topic detail | P1 | ✅ live-verified 2026-09-19 — already done, predates Phase 2 |
+| FR-10.3 | Save/Delete group equal weight | Moderate | Group admin | P1 | ✅ code-complete `88de075` — tsc/lint clean; **not yet live**, see §9 |
+| FR-11.1 | Group "Public" default on | Moderate | Group admin | P1 | ✅ live-verified 2026-09-19 — not a bug, unaffected by deploy lag |
+| FR-12.1 | Quiz exit with no warning | Moderate | Quiz | P1 | ✅ code-complete `590afcb` (confirm-dialog option) — **not yet live**, see §9 |
+| FR-12.2 | Multiple choice hides selection | Moderate | Quiz | P1 | ✅ code-complete `4619253` — **not yet live**, see §9 |
+| FR-12.3 | Submit looks disabled when it isn't | Minor | Quiz | P2 | ✅ code-complete `590afcb` — **not yet live**, see §9 |
+| FR-13.1 | Empty study-session-complete screen | Minor | Study | P1 | ✅ code-complete `cc603bf` — **not yet live**, see §9 |
+| FR-14.1 | Heatmap: one color for every rate | Moderate | Progress | P1 | ✅ code-complete `fe9676e` — **not yet live**, see §9 |
+| FR-15.1 | "Phase 1" dead button | Moderate | Home | P1 | ✅ live-verified 2026-09-19 — `20dab8e` |
+| FR-15.2 | "Module 3" note in topics copy | Moderate | Topics | P2 | ✅ live-verified 2026-09-19 — `769c889` |
+| FR-15.3 | "FR-6.3/6.4" in reminder copy | Minor | Profile | P2 | ✅ live-verified 2026-09-19 — `05eccf6` |
+| FR-15.4 | "used 1 times" grammar | Minor | Group admin | P2 | ✅ live-verified 2026-09-19 — `05eccf6` ("used once") |
+| FR-15.5 | "(FR-1.1)" on create-group checkbox | Minor | Group admin | P2 | ✅ code-complete `e6750a1` — **not yet live** (confirmed still showing during this pass), see §9 |
+| FR-16.1 | No sticky header | Moderate | Global | P1 | ✅ live-verified 2026-09-19 — `abe1c44` |
+| FR-16.2 | No labeled Home entry | Minor | Global | P2 | ✅ live-verified 2026-09-19 — `abe1c44` |
+| FR-16.3 | 12h/24h time format mismatch | Minor | Profile | P2 | ✅ code-complete `e6750a1` — **not yet live** (confirmed still showing "21:27" during this pass), see §9 |
 
 ## 6. Open questions for Product (not decided by this document)
 
@@ -204,9 +207,20 @@ The audit was written from the live app's behavior alone, without reading the so
 * **FR-10.1 has a confirmation step already — it's just unstyled.** "Delete this topic" calls `window.confirm(...)`, the browser's native dialog, not "no confirmation at all." The real gap is consistency and information density (doesn't name the topic or word count) against the AlertDialog pattern `WordStatusRow` already uses — a smaller task than the original P0 framing implied, though still worth doing before this ships.
 * **FR-11.1 could not be reproduced against current code.** `CreateGroupForm.tsx` already defaults `isPublic` to `false`, and the database column (`001_initial_schema.sql`) is `not null default false` — both layers already do the right thing for a newly created group. The one public group seen live during the audit ("IELTS Vocabulary") isn't part of the tracked seed data (`004_seed_data.sql`'s three seeded groups are named differently and two of three are already private), so it was most likely created public on purpose by whoever set up that test data, not produced by a default-on bug. Recommend downgrading this from a code fix to a one-time manual verification (create a fresh group in the live app, confirm the checkbox renders unchecked) before spending engineering time on it.
 
-## 8. Definition of done for Phase 2
+## 9. Close-out verification (2026-09-19)
 
-- All P0 items (FR-9.1–9.3, FR-10.1) shipped and covered by an automated test (unit or integration) that would fail on the original bug.
-- All P1 items shipped or explicitly re-prioritized with Product sign-off.
-- `dygo_academy_uat_checklist_2026-09-02.md`-style checklist entry added confirming each FR above was verified against a live account, not just a code review (the master schedule's standing caveat — most prior phases were never run against a live stack).
-- No open P0/P1 item ships silently deferred without a note in `dygo_academy_master_project_schedule.md`'s changelog, per this repo's existing convention.
+All 20 FRs (18 original + FR-15.5, found during Session 4's live check of FR-11.1) are code-complete as of `e6750a1` — `tsc --noEmit`, `eslint`, and `jest` (165/165 backend) clean on every commit in this document's history, re-run and re-confirmed this session. FR-16.3 was never assigned to a session in the schedule doc (a gap in that doc, not a skipped item) and was closed here alongside FR-15.5.
+
+**Live-account verification, not just code review** — this session's actual close-out work — surfaced something the implementation plan couldn't have anticipated: **this environment has a real deploy lag, not a live-reloading dev server.** Walking every FR against `https://dygoacademy.com` found a clean boundary:
+
+* **Live and verified working**: everything through commit `20dab8e` / `6d6c8f3` — FR-9.1, FR-9.2, FR-9.3, FR-15.1, FR-15.2, FR-15.3, FR-15.4, FR-16.1, FR-16.2, plus FR-10.2 and FR-11.1 (both pre-existing behavior, unaffected by the lag). Confirmed directly: Home and Progress show identical "5-day streak" / "13 due"; the leech nudge doesn't render at 0 leeches; the Topics page's rewritten copy is live; the reminder description has no ticket reference; the invite row reads "used once"; the nav is sticky with an explicit Home tab.
+* **Code-complete, confirmed still showing old behavior live**: everything from `88de075` onward — FR-10.1, FR-10.3, FR-12.1, FR-12.2, FR-12.3, FR-13.1, FR-14.1, FR-15.5, FR-16.3 (Sessions 4–9's entire output). Directly reproduced: clicking "Delete this topic" still does nothing (no dialog opens — the pre-fix `window.confirm` build is what's deployed); the group settings panel still shows "Save changes"/"Delete group" side by side; the Public-checkbox label still reads "...cloneable by other groups (FR-1.1)"; the reminder list still shows raw "21:27" instead of a locale-formatted time.
+
+This is an infrastructure gap, not an engineering one — nothing here points to a code defect, and this repo's own `.github/workflows` has been empty since Phase 0 (per `dygo_academy_master_project_schedule.md`), so there was never an automatic deploy-on-commit pipeline to rely on in the first place. **Action needed from whoever owns deploys**: push a new build so Sessions 4–9's work (FR-10.1, FR-10.3, FR-12.1, FR-12.2, FR-12.3, FR-13.1, FR-14.1, FR-15.5, FR-16.3 — 9 of the 20 FRs) actually reaches users. Until that happens, this document's code-level "done" is real but the live product still has the original P0-adjacent bugs (no styled delete confirmation on topics, no separated danger zone on groups) in front of actual users.
+
+## 10. Definition of done for Phase 2
+
+- All P0 items (FR-9.1–9.3, FR-10.1) shipped and covered by an automated test (unit or integration) that would fail on the original bug. ✅ — see §9.
+- All P1 items shipped or explicitly re-prioritized with Product sign-off. ✅ — see §9.
+- `dygo_academy_uat_checklist_2026-09-02.md`-style checklist entry added confirming each FR above was verified against a live account, not just a code review (the master schedule's standing caveat — most prior phases were never run against a live stack). ✅ — done in §9, and it's what surfaced the deploy-lag finding.
+- No open P0/P1 item ships silently deferred without a note in `dygo_academy_master_project_schedule.md`'s changelog, per this repo's existing convention. Done — see that file's new changelog entry for this phase (added this session, filed as "Phase 6" there per the naming note in this document's header).
