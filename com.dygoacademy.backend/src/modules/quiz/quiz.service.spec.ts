@@ -120,6 +120,9 @@ describe('QuizService.answer', () => {
       quizItemId: 'tw-1:DICTATION',
       correct: true,
       correctAnswer: 'resilient',
+      word: 'resilient',
+      ipaUs: '/rɪˈzɪljənt/',
+      exampleSentence: 'She remained resilient after the setback.',
       hintUsed: false,
     });
     expect(explainNuanceMock).not.toHaveBeenCalled();
@@ -189,9 +192,7 @@ describe('QuizService.hint', () => {
   it('throws NotFoundException when the word no longer exists or is not READY', async () => {
     const queryAsMock = jest.fn().mockResolvedValueOnce([]);
     const service = await makeService({ queryAsMock });
-    await expect(service.hint('user-1', 'missing:CLOZE')).rejects.toBeInstanceOf(
-      NotFoundException,
-    );
+    await expect(service.hint('user-1', 'missing:CLOZE')).rejects.toBeInstanceOf(NotFoundException);
   });
 
   it('returns the IPA and definition for a valid item', async () => {

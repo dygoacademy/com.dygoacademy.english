@@ -36,6 +36,35 @@ export interface AnswerResult {
   quizItemId: string;
   correct: boolean;
   correctAnswer: string;
+  /**
+   * The word this quiz item was actually testing, plus its US IPA --
+   * live-requested 2026-09-18 ("We should push word and API [IPA] to that
+   * correct to know what is it be done"): a correct CLOZE/DICTATION/etc.
+   * answer only ever echoed the literal answer string back (`correctAnswer`,
+   * which for some quiz types is just the word anyway, but for others isn't
+   * necessarily formatted the way a learner would want to see it presented
+   * as "the word"), with no pronunciation shown at all on a correct
+   * answer -- only a wrong one got that context, via nuanceExplanation.
+   * `word`/`ipaUs` come straight from the same `WORD_COLUMNS` row this
+   * method already queries below to grade the answer, so this is free --
+   * no extra query. `ipaUs` (not `ipaUk` too) mirrors `QuizHint`'s own
+   * existing choice just below.
+   */
+  word: string;
+  ipaUs: string | null;
+  /**
+   * The word's first example sentence, unmasked (CLOZE/CONTEXTUAL_CHOICE
+   * show this same sentence as the *prompt*, word blanked out -- this is
+   * the reveal; DICTATION/MATCHING never showed it at all) -- live-
+   * requested 2026-09-18 ("Any information we can give to the student in
+   * correct result screen"). Same free-row reasoning as `word`/`ipaUs`
+   * above: `word.exampleSentences` is already sitting in the `WORD_COLUMNS`
+   * row this method queries to grade the answer, just not surfaced past
+   * that point before now. Always populated here (cheap — it's already in
+   * memory); QuizFeedback only renders it on the correct path, same as
+   * `word`/`ipaUs`.
+   */
+  exampleSentence?: string;
   /** FR-5.5 — only populated on a wrong answer; see GeminiEnrichmentService.explainNuance. */
   nuanceExplanation?: string;
   /**
@@ -175,6 +204,9 @@ export class QuizService {
       quizItemId: itemId,
       correct,
       correctAnswer: derived.answer,
+      word: word.sourceWord,
+      ipaUs: word.ipaUs,
+      exampleSentence: word.exampleSentences[0]?.sentence,
       hintUsed: dto.hintUsed ?? false,
     };
 
