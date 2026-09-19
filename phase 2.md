@@ -34,6 +34,8 @@ A separate exercise proposed a reimagined customer journey and four redesigned s
 
 Recommendation (not a decision this document makes): treat the Learning Path concept as a candidate **Phase 3**, scoped separately, after Phase 2's P0/P1 items ship. See open question 4 in §6 for the one sequencing choice that does affect this document.
 
+**Update (2026-09-20)**: that scoping pass is done — see `phase 3.md`. It confirms this section's read (Modules 21/22 there are explicitly blocked on this document's §9 deploy finding) and keeps the band-score estimate as an unscoped, exploratory item rather than inventing a formula for it.
+
 ## 3. Priority legend
 
 | Priority | Meaning | Maps to audit severity |
