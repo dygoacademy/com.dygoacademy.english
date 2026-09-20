@@ -20,23 +20,33 @@ function localTimezone(): string {
 }
 
 /**
- * Formats a saved `"HH:MM:SS"` schedule row through the browser's own
- * locale (Phase 2 FR-16.3 -- audit finding: the `<input type="time">`
- * above renders 12- or 24-hour depending on locale/OS, while the saved
- * list below always sliced the raw string to a fixed 24-hour "HH:MM",
- * so the two could visibly disagree). No explicit locale/hourCycle is
- * passed -- `undefined` defers to the same browser-locale convention the
- * native time input already uses internally, so this follows it rather
- * than picking a fixed format that could mismatch a non-US visitor's own
- * input display. Only hours/minutes matter, so the reference date itself
- * is arbitrary; a fresh `Date` avoids any DST-transition edge case a
- * fixed date could hit.
+ * Formats a saved `"HH:MM:SS"` schedule row as explicit 12-hour AM/PM
+ * (Phase 2 FR-16.3 -- audit finding: the `<input type="time">` above and
+ * the saved list below could visibly disagree on 12- vs 24-hour).
+ *
+ * Corrected 2026-09-20, live-verified against the actual deployed page:
+ * this function's first version passed `Intl.DateTimeFormat(undefined,
+ * ...)`, assuming the JS runtime's locale-default hour cycle would match
+ * whatever the native `<input type="time">` renders. It doesn't -- on
+ * this exact deployment the input showed "08:00 PM" (12-hour) while
+ * `Intl.DateTimeFormat(undefined, ...)` on the same page rendered "21:27"
+ * (24-hour): a browser's native time-input widget and the JS engine's
+ * `Intl` locale defaults are two separate subsystems that don't have to
+ * agree, and there's no reliable way from application code to read back
+ * what format the native input actually chose. Forcing `hour12: true`
+ * here instead guarantees the list is at least internally consistent and
+ * unambiguous, even though it can no longer promise it will always match
+ * the native input's own rendering in every browser/OS combination --
+ * that would need replacing the native input with a custom picker,
+ * out of scope for this fix.
  */
 function formatReminderTime(time: string): string {
   const [hours, minutes] = time.split(':');
   const reference = new Date();
   reference.setHours(Number(hours), Number(minutes), 0, 0);
-  return new Intl.DateTimeFormat(undefined, { hour: 'numeric', minute: '2-digit' }).format(reference);
+  return new Intl.DateTimeFormat(undefined, { hour: 'numeric', minute: '2-digit', hour12: true }).format(
+    reference,
+  );
 }
 
 const PERMISSION_COPY: Record<string, string> = {
