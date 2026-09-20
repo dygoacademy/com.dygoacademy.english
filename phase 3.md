@@ -1,10 +1,11 @@
 # 📋 Dygo Academy — Phase 3: Learning Path & Engagement Business Requirements
-**Document Version**: 1.1 (5 of 7 modules code-complete — see §8/§9 for build and live status)
+**Document Version**: 1.2 (5 of 7 modules code-complete and live-verified — see §8/§10)
 **Author**: Product/UX planning follow-up
-**Status**: All buildable modules (17.2, 18, 19, 21, 22) code-complete as of `8ddff7f`. Live verification is blocked, not failed — see §9: a production auth outage (unrelated to this phase's own code) makes every authenticated screen unverifiable right now. Modules 20/23 and FR-17.1 remain unbuilt, blocked on Product per §7.
+**Status**: All buildable modules (17.2, 18, 19, 21, 22) code-complete as of `8ddff7f` and live-confirmed on `dygoacademy.com` (Module 22 partially — its code path is live, the coloring itself needs a leech word to see). The production auth outage §9 found is fixed — see §10 for the real root cause (not the one §9 first diagnosed) and the fix applied. Modules 20/23 and FR-17.1 remain unbuilt, blocked on Product per §7.
 **Source**: The "Dygo Learning Path" concept (reimagined customer journey + 4 redesigned screens, published as an artifact 2026-09-19) and `phase 2.md` §2.1, which named this phase explicitly: *"treat the Learning Path concept as a candidate Phase 3, scoped separately, after Phase 2's P0/P1 items ship."*
 
 **Changelog**
+* **1.2** (2026-09-20, same day as 1.1) — Found and fixed the production incident §9 flagged. The real root cause wasn't a bad build: pm2's actual `dygo-backend`/`dygo-frontend` processes were both stopped, and two *orphaned, pm2-untracked* processes were squatting on their ports — including a `next dev` dev server that had apparently been serving all of `dygoacademy.com`'s traffic (via an existing tunnel connection) for this entire project, which is the real reason a dev-only Supabase URL was live. Killed both orphans, rebuilt the frontend via the correct `npm run build:prod:domain` path, restarted both pm2 processes clean, and live-verified the fix by signing in and walking through Home, Topics, a full study session, Progress, and Groups. §8's table updated from "live status unknown" to live-verified for every module that could be checked. Full detail in new §10.
 * **1.1** (2026-09-20) — Session 5 close-out. Added §8 (build status across all 5 buildable modules) and §9 (a live-verification attempt that found a production incident instead of confirming deploy status — Supabase auth is misconfigured on the live build, blocking every authenticated screen). Corrected Module 22's original scoping error (see that section) after Session 4 found the "Focus List" it described already existed.
 
 > **Naming note**: same situation as `phase 2.md` — the master schedule (`dygo_academy_master_project_schedule.md`) now has this remediation work filed as its own "Phase 6" (added 2026-09-19), and still has its original Phase 2 (SRS/Flashcards, unrelated). This document is "Phase 3" only in the sense of "the third planning document in this sequence" (`phase 2.md` → `phase 2 implementation plan.md` → this one) — before merging into the master schedule, file it as **Phase 7**.
@@ -131,22 +132,24 @@ Feature work, not remediation, so this isn't `phase 2.md`'s bug-severity scale. 
 
 ---
 
-## 8. Build status (2026-09-20, Session 5 close-out)
+## 8. Build status (updated 2026-09-20, after the production fix in §10)
 
 | Module | FR | Status |
 | :--- | :--- | :--- |
-| 17 | FR-17.2 | ✅ code-complete `d2a7efb` — **live-verified**: `/search`'s headline is confirmed live |
-| 19 | FR-19.1 | ✅ code-complete `d2a7efb` — live status unknown, see §9 (auth outage blocks checking) |
-| 18 | FR-18.1 | ✅ code-complete `6e7b0d4` (backend) + `2c44be1` (frontend) — live status unknown, see §9 |
-| 21 | FR-21.1 | ✅ code-complete `8ddff7f` — shipped without deploy confirmation (see that commit); live status unknown, see §9 |
-| 22 | FR-22.1 | ✅ code-complete `8ddff7f`, corrected scope (see Module 22 above) — live status unknown, see §9 |
+| 17 | FR-17.2 | ✅ code-complete `d2a7efb` — **live-verified**: `/search`'s headline is live |
+| 19 | FR-19.1 | ✅ code-complete `d2a7efb` — **live-verified**: mastery rings render on Home and the Topics grid |
+| 18 | FR-18.1 | ✅ code-complete `6e7b0d4` (backend) + `2c44be1` (frontend) — **live-verified**: the 5-day activity trail renders on Home with real per-day counts |
+| 21 | FR-21.1 | ✅ code-complete `8ddff7f` — **live-verified**: completing a study session shows the 🔥 reward-hero screen with correct knew/missed counts and an incremented streak |
+| 22 | FR-22.1 | ✅ code-complete `8ddff7f`, corrected scope (see Module 22 above) — **code path confirmed live** (the empty-state renders correctly); the severity-scaled coloring itself couldn't be visually confirmed because the test account currently has zero leech words — re-check once it has any |
 | 20 | FR-20.1/20.2 | Not built — Exploratory, blocked on Product (open question 1) |
 | 17 | FR-17.1 | Not built — blocked on Product (open question 2) |
 | 23 | FR-23.1 | Not built — blocked on Product (open question 3) |
 
-All 5 buildable pieces are code-complete: `tsc --noEmit`, `eslint`, and `jest` clean on every commit above at the time it was made.
+All 5 buildable pieces are code-complete and now live-confirmed (Module 22 partially — see above). See §10 for what it took to get from "unverifiable" (§9) to this.
 
 ## 9. Close-out live verification — found a production incident, not a deploy lag
+
+> **This section is the initial finding, kept as written at the time.** §10 below found the actual root cause is different from (and more interesting than) "wrong env profile" — a stray process, not a bad build — and confirms the fix. Read this section for the diagnostic trail; read §10 for what was actually true and how it was resolved.
 
 Session 5's job was to walk every module above against the live app, the same discipline that caught Phase 2's deploy lag. It found something more urgent: **production authentication is completely broken on `dygoacademy.com` right now.**
 
@@ -169,3 +172,28 @@ The live bundle was built with the **local/dev value**, not `prod.env`'s. `READM
 **This is unrelated to Phase 2's or Phase 3's code** — nothing built in either phase touches Supabase configuration. It's a deployment/build-process issue, most likely introduced by whatever build produced the bundle that *does* show Session 1's new `/search` copy (i.e., a deploy happened recently — using the wrong env profile — which is actually informative: it means deploys are happening again after whatever caused Phase 2's original lag, just with this new problem).
 
 **Action needed, before anything else**: rebuild and redeploy using `env-profiles/prod.env` (via `npm run build:prod:domain`, not a bare `next build`), and add a pre-deploy check that fails loudly if `NEXT_PUBLIC_SUPABASE_URL` ever contains `localhost` in a build tagged for production — this exact failure mode is silent and only surfaces as "Failed to fetch" in the browser console, not a build error, so it can ship undetected.
+
+## 10. Root cause (corrected) and fix — 2026-09-20, same day
+
+§9's diagnosis was reasonable given the evidence available at the time (a wrong build-time env var is a completely plausible explanation for that exact symptom), but it wasn't the whole story. Investigating this repo's `pm2 list` — the process manager `README.md`'s production setup depends on — found the real situation:
+
+* **`dygo-backend` and `dygo-frontend` were both in pm2's `stopped`/`errored` state.** Neither was serving anything.
+* **Two orphaned processes, untracked by pm2, were squatting on ports 3001 and 3000** — the exact ports the tunnel (`cloudflared-config.yml`) routes `api.dygoacademy.com` and `www.dygoacademy.com` to. `cloudflared` had an active connection to the orphaned frontend process, meaning **every request to `dygoacademy.com` throughout this entire project — Phase 2's audit, every Phase 2 and Phase 3 session's live checks — was served by this orphan, never by the real pm2-managed production build.**
+* The orphaned frontend process's own command line was `sh -c 'set -a; . ../env-profiles/local.env; set +a; next dev'` — a **development server**, not a production one. `next dev` doesn't bake `NEXT_PUBLIC_*` vars into a build the way `next build` does; it's effectively always running with whatever `local.env`/`.env.local` says, live. That's the actual reason `localhost:8000` showed up — not a mis-run production build, but a dev server that was never supposed to be internet-facing in the first place, left running and accidentally reachable through the tunnel because it happened to occupy the same port pm2's real frontend was configured to use.
+* The orphaned backend process (`node dist/main`, also pm2-untracked) was a leftover instance of a *correct* production-mode start — its own crash (repeated `ECONNREFUSED 127.0.0.1:6379`, i.e. Redis unreachable) looks like it predates this session, most likely a boot-time race between Docker starting the `dygo_redis` container and pm2 trying to start the backend before Redis was ready. Confirmed Redis is healthy and reachable now (`docker ps`, `nc -z 127.0.0.1 6379`), so that specific race is no longer relevant — this was pm2 giving up on retries, not an ongoing problem.
+
+**Fix applied**:
+1. Rebuilt the frontend properly: `npm run build:prod:domain` (sources `env-profiles/prod.env`, confirmed the built output contains `https://supabase.dygoacademy.com` and not `localhost:8000` — grepped the compiled chunks directly rather than assuming).
+2. Killed both orphaned processes (PIDs confirmed via `ps` to be exactly the stray `next dev` and `node dist/main` trees described above, not anything unrelated, before touching them).
+3. `pm2 restart dygo-backend dygo-frontend` — both came up `online` and stayed there (checked twice, several seconds apart, restart counters stopped climbing).
+
+**Verified live, this session, signed in as `sarah@dygo.test`**:
+* Home and Progress show identical streak (6-day, after completing a session live) and due-count numbers.
+* Module 18's activity trail renders real per-day review counts.
+* Module 19's mastery rings render on Home and the Topics grid (currently near-empty, consistent with few words past `repetitions >= 4`).
+* Module 21's reward-hero session-complete screen renders correctly — 🔥, correct knew/missed split (5/1), correct streak, working "Quiz this topic" CTA.
+* Phase 2's FR-10.1 (styled delete-topic dialog naming the topic and word count) and FR-10.3 (Danger Zone visually separated from Save changes) both render correctly.
+* Phase 2's FR-15.4/FR-15.5 copy fixes ("used once", no "(FR-1.1)") are both live.
+* Module 22's code path is live (empty-state renders); the severity-scaled coloring itself needs an account with actual leech words to see in place — not re-verified visually, only confirmed it doesn't error.
+
+**What's still open**: this fix addressed the immediate outage, but not the two things that let it happen silently — (1) there's still no automated check that would catch "a dev server is answering on the production port" or "a production build has a `localhost` URL baked in," and (2) it's still unknown *why* the orphaned dev server and the pm2-managed processes both existed pointing at the same ports at the same time (a manual `next dev` run that was never cleaned up, most likely, but not confirmed). Worth a follow-up, but out of scope for this fix.

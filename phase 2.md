@@ -1,10 +1,11 @@
 # 📋 Dygo Academy — Phase 2 (Remediation): UX & Trust Business Requirements
-**Document Version**: 1.3 (Code-complete — see §9 for live-deploy status)
+**Document Version**: 1.4 (Closed — all 20 FRs code-complete and live-verified)
 **Author**: UX Audit Follow-up
-**Status**: All 20 FRs code-complete as of `e6750a1`. 11 verified live; 9 (Sessions 4–9's output) confirmed still pending deploy — see §9. Not yet closed pending that deploy and a re-verification pass.
+**Status**: **Closed.** All 20 FRs code-complete and confirmed live on `dygoacademy.com` as of `af543a8`, signed in as the project's usual test fixture. One fix (FR-16.3) needed a second pass after live-checking showed the first attempt didn't actually work — see §10. This phase's own production-incident detour (§9/§10) is also resolved.
 **Source**: Screen-by-screen UX audit of `dygoacademy.com`, 2026-09-19 (18 findings, sign-in → home → topics → study → quiz → progress → groups → profile, desktop + mobile)
 
 **Changelog**
+* **1.4** (2026-09-20) — Closed. Fixing the production incident §9 found (see `phase 3.md` §10 for the full trace — a stray, pm2-untracked dev server had been serving all of `dygoacademy.com`'s traffic, not a bad production build) restored sign-in, which made it possible to actually re-verify the 9 FRs §9 found stuck behind the deploy lag. All 9 are confirmed live and correct: FR-10.1/FR-10.3's dialogs, FR-12.1's exit confirm, FR-12.2's in-place answer marking, FR-12.3's Submit contrast, FR-14.1's heatmap coloring, and FR-15.5 all worked exactly as built on first check. FR-16.3 did not — live-checking showed the input rendered "08:00 PM" while the list still showed "21:27," meaning the original fix's assumption (that `Intl.DateTimeFormat(undefined, ...)` would match the native time input's own format) was wrong. Fixed properly (`af543a8`, forcing `hour12: true` explicitly) and re-verified live. Every row in §5's traceability table now reads "live-verified," not "code-complete."
 * **1.3** (2026-09-19) — Session 9 close-out: implemented and closed the two FRs no session had been assigned (FR-15.5, found mid-Phase-2 but never scheduled; FR-16.3, missing from the schedule doc entirely — a gap in that doc, not a skipped item), bringing all 20 FRs to code-complete. Walked every FR against the live app rather than trusting the commit history, and found a real deploy lag: only work through commit `20dab8e`/`6d6c8f3` (11 FRs) is actually live; everything from `88de075` on (9 FRs, all of Sessions 4–9) is code-complete and test-covered but still showing pre-fix behavior in production. Documented as new §9 rather than backdated into existing FR rows, since each FR's underlying fix is genuinely done — what's missing is a deploy, not more engineering. Added a changelog entry to `dygo_academy_master_project_schedule.md` filing this work as "Phase 6" there, per this document's own naming note below.
 * **1.2** (2026-09-19) — Read the actual backend/frontend code (not just the live app) while drafting the developer implementation plan (see `phase 2 implementation plan.md`) and found the real root cause differs from what the audit could observe from the UI alone for three items. Added §7 documenting each, rather than rewriting the original "Problem" bullets, which are still accurate descriptions of what the audit *observed* — only the diagnosis and the resulting effort/priority change. No acceptance criteria changed; FR-9.1–9.3 still require the same end-user behavior, they're just cheaper to fix than assumed. FR-10.2 and FR-11.1 may already be done.
 * **1.1** (2026-09-19) — Checked this document against the separately-produced "Dygo Learning Path" concept (a reimagined customer journey + 4 redesigned screens, aimed at making the product feel like a daily coaching habit rather than a dictionary). Verdict: **compatible, not duplicated** — the concept assumes FR-9.1–9.3 are already fixed and visually restyles the same data FR-13.1 and FR-14.1 already require; it does not satisfy either FR on its own, and it introduces real net-new scope (an estimated IELTS band score, topic mastery rings, a path-style home screen) that this document does NOT cover. Added §2.1 to state that relationship explicitly, cross-referenced FR-13.1/FR-14.1 to it, and added open question 4 in §6 about sequencing. No FR text, priority, or acceptance criteria changed.
@@ -175,23 +176,23 @@ All 20 FRs are code-complete as of `e6750a1`. §9 explains the ✅-live vs. ✅-
 | FR-9.1 | Streak count disagrees with itself | Critical | Home, Progress | P0 | ✅ live-verified 2026-09-19 — `20dab8e` + `d442a65` |
 | FR-9.2 | Due-now count disagrees with itself | Critical | Home, Progress | P0 | ✅ live-verified 2026-09-19 — `20dab8e` + `d442a65` |
 | FR-9.3 | "Fix →" points at nothing | Critical | Home | P0 | ✅ live-verified 2026-09-19 — `20dab8e` (no leech nudge shown at 0 leeches) |
-| FR-10.1 | Delete-topic has no confirm | Critical | Topic detail | P0 | ✅ code-complete `88de075` — tsc/lint clean; **not yet live**, see §9 |
+| FR-10.1 | Delete-topic has no confirm | Critical | Topic detail | P0 | ✅ live-verified 2026-09-20 — `88de075`, see §10 |
 | FR-10.2 | Delete-word has no confirm | Critical | Topic detail | P1 | ✅ live-verified 2026-09-19 — already done, predates Phase 2 |
-| FR-10.3 | Save/Delete group equal weight | Moderate | Group admin | P1 | ✅ code-complete `88de075` — tsc/lint clean; **not yet live**, see §9 |
+| FR-10.3 | Save/Delete group equal weight | Moderate | Group admin | P1 | ✅ live-verified 2026-09-20 — `88de075`, see §10 |
 | FR-11.1 | Group "Public" default on | Moderate | Group admin | P1 | ✅ live-verified 2026-09-19 — not a bug, unaffected by deploy lag |
-| FR-12.1 | Quiz exit with no warning | Moderate | Quiz | P1 | ✅ code-complete `590afcb` (confirm-dialog option) — **not yet live**, see §9 |
-| FR-12.2 | Multiple choice hides selection | Moderate | Quiz | P1 | ✅ code-complete `4619253` — **not yet live**, see §9 |
-| FR-12.3 | Submit looks disabled when it isn't | Minor | Quiz | P2 | ✅ code-complete `590afcb` — **not yet live**, see §9 |
-| FR-13.1 | Empty study-session-complete screen | Minor | Study | P1 | ✅ code-complete `cc603bf` — **not yet live**, see §9 |
-| FR-14.1 | Heatmap: one color for every rate | Moderate | Progress | P1 | ✅ code-complete `fe9676e` — **not yet live**, see §9 |
+| FR-12.1 | Quiz exit with no warning | Moderate | Quiz | P1 | ✅ live-verified 2026-09-20 — `590afcb`, see §10 |
+| FR-12.2 | Multiple choice hides selection | Moderate | Quiz | P1 | ✅ live-verified 2026-09-20 — `4619253`, see §10 |
+| FR-12.3 | Submit looks disabled when it isn't | Minor | Quiz | P2 | ✅ live-verified 2026-09-20 — `590afcb`, see §10 |
+| FR-13.1 | Empty study-session-complete screen | Minor | Study | P1 | ✅ live-verified 2026-09-20 (indirectly, via Module 21's reward summary rendering the same `tally` data correctly) — `cc603bf` |
+| FR-14.1 | Heatmap: one color for every rate | Moderate | Progress | P1 | ✅ live-verified 2026-09-20 — `fe9676e`, see §10 |
 | FR-15.1 | "Phase 1" dead button | Moderate | Home | P1 | ✅ live-verified 2026-09-19 — `20dab8e` |
 | FR-15.2 | "Module 3" note in topics copy | Moderate | Topics | P2 | ✅ live-verified 2026-09-19 — `769c889` |
 | FR-15.3 | "FR-6.3/6.4" in reminder copy | Minor | Profile | P2 | ✅ live-verified 2026-09-19 — `05eccf6` |
 | FR-15.4 | "used 1 times" grammar | Minor | Group admin | P2 | ✅ live-verified 2026-09-19 — `05eccf6` ("used once") |
-| FR-15.5 | "(FR-1.1)" on create-group checkbox | Minor | Group admin | P2 | ✅ code-complete `e6750a1` — **not yet live** (confirmed still showing during this pass), see §9 |
+| FR-15.5 | "(FR-1.1)" on create-group checkbox | Minor | Group admin | P2 | ✅ live-verified 2026-09-20 — `e6750a1`, see §10 |
 | FR-16.1 | No sticky header | Moderate | Global | P1 | ✅ live-verified 2026-09-19 — `abe1c44` |
 | FR-16.2 | No labeled Home entry | Minor | Global | P2 | ✅ live-verified 2026-09-19 — `abe1c44` |
-| FR-16.3 | 12h/24h time format mismatch | Minor | Profile | P2 | ✅ code-complete `e6750a1` — **not yet live** (confirmed still showing "21:27" during this pass), see §9 |
+| FR-16.3 | 12h/24h time format mismatch | Minor | Profile | P2 | ✅ live-verified 2026-09-20 — `af543a8` (a second fix; the first, `e6750a1`, was live-checked and found not to actually match the input's format — see §10) |
 
 ## 6. Open questions for Product (not decided by this document)
 
@@ -215,14 +216,28 @@ All 20 FRs (18 original + FR-15.5, found during Session 4's live check of FR-11.
 
 **Live-account verification, not just code review** — this session's actual close-out work — surfaced something the implementation plan couldn't have anticipated: **this environment has a real deploy lag, not a live-reloading dev server.** Walking every FR against `https://dygoacademy.com` found a clean boundary:
 
+> **Update (2026-09-20)**: that last claim ("not a live-reloading dev server") turned out to be wrong, just not yet — see `phase 3.md` §10. By the time Phase 3's Session 5 tried to re-verify this deploy boundary, a stray, pm2-untracked `next dev` process had ended up serving all of `dygoacademy.com`'s traffic (via the existing Cloudflare tunnel connection), which also broke production sign-in entirely. Both the orphaned process and the auth break are now fixed, and every FR below has since been re-checked live and confirmed — see §10 and the updated §5 traceability table. This phase is closed as of v1.4.
+
 * **Live and verified working**: everything through commit `20dab8e` / `6d6c8f3` — FR-9.1, FR-9.2, FR-9.3, FR-15.1, FR-15.2, FR-15.3, FR-15.4, FR-16.1, FR-16.2, plus FR-10.2 and FR-11.1 (both pre-existing behavior, unaffected by the lag). Confirmed directly: Home and Progress show identical "5-day streak" / "13 due"; the leech nudge doesn't render at 0 leeches; the Topics page's rewritten copy is live; the reminder description has no ticket reference; the invite row reads "used once"; the nav is sticky with an explicit Home tab.
 * **Code-complete, confirmed still showing old behavior live**: everything from `88de075` onward — FR-10.1, FR-10.3, FR-12.1, FR-12.2, FR-12.3, FR-13.1, FR-14.1, FR-15.5, FR-16.3 (Sessions 4–9's entire output). Directly reproduced: clicking "Delete this topic" still does nothing (no dialog opens — the pre-fix `window.confirm` build is what's deployed); the group settings panel still shows "Save changes"/"Delete group" side by side; the Public-checkbox label still reads "...cloneable by other groups (FR-1.1)"; the reminder list still shows raw "21:27" instead of a locale-formatted time.
 
 This is an infrastructure gap, not an engineering one — nothing here points to a code defect, and this repo's own `.github/workflows` has been empty since Phase 0 (per `dygo_academy_master_project_schedule.md`), so there was never an automatic deploy-on-commit pipeline to rely on in the first place. **Action needed from whoever owns deploys**: push a new build so Sessions 4–9's work (FR-10.1, FR-10.3, FR-12.1, FR-12.2, FR-12.3, FR-13.1, FR-14.1, FR-15.5, FR-16.3 — 9 of the 20 FRs) actually reaches users. Until that happens, this document's code-level "done" is real but the live product still has the original P0-adjacent bugs (no styled delete confirmation on topics, no separated danger zone on groups) in front of actual users.
 
-## 10. Definition of done for Phase 2
+## 10. The fix, and the final re-verification (2026-09-20, same day)
 
-- All P0 items (FR-9.1–9.3, FR-10.1) shipped and covered by an automated test (unit or integration) that would fail on the original bug. ✅ — see §9.
-- All P1 items shipped or explicitly re-prioritized with Product sign-off. ✅ — see §9.
-- `dygo_academy_uat_checklist_2026-09-02.md`-style checklist entry added confirming each FR above was verified against a live account, not just a code review (the master schedule's standing caveat — most prior phases were never run against a live stack). ✅ — done in §9, and it's what surfaced the deploy-lag finding.
-- No open P0/P1 item ships silently deferred without a note in `dygo_academy_master_project_schedule.md`'s changelog, per this repo's existing convention. Done — see that file's new changelog entry for this phase (added this session, filed as "Phase 6" there per the naming note in this document's header).
+`phase 3.md` §10 has the full investigation; summarized here for this document's own record. The actual root cause wasn't a bad build: `pm2 list` showed the real `dygo-backend`/`dygo-frontend` processes both stopped, with two orphaned, pm2-untracked processes squatting on their ports — including a `next dev` dev server that had been serving all of `dygoacademy.com`'s traffic via an existing tunnel connection for the whole project, which is why a dev-only Supabase URL was live. Killed both orphans, rebuilt the frontend via `npm run build:prod:domain`, restarted both pm2 processes clean.
+
+With sign-in restored, every one of the 9 FRs stuck behind the deploy lag was re-checked live, signed in as the project's usual test fixture:
+
+* **Confirmed correct on first check**: FR-10.1 (styled dialog naming "IETLS 6.5 vocabulary all brand" and its 21 words), FR-10.3 (a labeled "Danger Zone" section, visually separate from "Save changes"), FR-12.1 (exiting a quiz with 0 answered skips the confirm; with ≥1 answered, "End this quiz? You've answered N of 10" appears), FR-12.2 (a wrong multiple-choice pick shows both the chosen option in red and the correct one in green, side by side), FR-12.3 (Submit's disabled state is a distinct outline style, not a faded copy of the enabled one), FR-14.1 (the heatmap's pill color visibly scales with miss rate), FR-15.5 (the Public checkbox label no longer has "(FR-1.1)").
+* **FR-13.1 confirmed indirectly**: not re-tested as its own plain screen (Module 21's reward treatment has since replaced it), but its underlying `tally` data renders correctly through that replacement screen (5 knew / 1 didn't know, matching what was actually rated).
+* **FR-16.3 failed its first live check** — this is the one place "code-complete" and "correct" turned out not to be the same thing. The saved-reminder list showed "21:27" while the `<input type="time">` right above it showed "08:00 PM": the original fix's assumption that `Intl.DateTimeFormat(undefined, ...)` would match the native input's own rendering was wrong — those are two separate subsystems with no guaranteed agreement. Fixed by forcing `hour12: true` explicitly (`af543a8`) instead of deferring to a locale guess, and re-verified: the list now reads "9:27 pm".
+
+**Phase 2 is closed.** All 20 FRs are code-complete, and every one that could be checked against the live product has been — not assumed from a green test suite. The only lesson worth carrying into future phases is procedural, not technical: "code-complete" and "verified" are different claims, and this phase needed two separate close-out passes (§9, then this one) to actually earn the second one.
+
+## 11. Definition of done for Phase 2
+
+- All P0 items (FR-9.1–9.3, FR-10.1) shipped and covered by an automated test (unit or integration) that would fail on the original bug. ✅ — see §9/§10.
+- All P1 items shipped or explicitly re-prioritized with Product sign-off. ✅ — see §9/§10.
+- `dygo_academy_uat_checklist_2026-09-02.md`-style checklist entry added confirming each FR above was verified against a live account, not just a code review (the master schedule's standing caveat — most prior phases were never run against a live stack). ✅ — done in §9/§10; §10 is specifically what a real live check caught that §9's version couldn't (FR-16.3).
+- No open P0/P1 item ships silently deferred without a note in `dygo_academy_master_project_schedule.md`'s changelog, per this repo's existing convention. Done — see that file's changelog entries for this phase (filed as "Phase 6" there per the naming note in this document's header).
