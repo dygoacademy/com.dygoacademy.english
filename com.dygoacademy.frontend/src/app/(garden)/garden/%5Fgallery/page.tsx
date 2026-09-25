@@ -3,11 +3,15 @@ import { getFormatter, getTranslations } from 'next-intl/server';
 
 import {
   AudioButton,
+  BottomTabBar,
   Button,
   Card,
+  GardenTabIcon,
   HeroGardenCard,
   IconButton,
+  MeTabIcon,
   MissionRow,
+  MissionsTabIcon,
   PlantIcon,
   StarIcon,
   WaterIcon,
@@ -17,6 +21,7 @@ import {
   PlantGlyph,
   ReviewCard,
   StatTile,
+  TopicsTabIcon,
   stageFromSrs,
   type GardenFsrsState,
 } from '@/components/garden';
@@ -28,6 +33,9 @@ import {
   GalleryBloom,
   GalleryChips,
   GalleryRatingBar,
+  GallerySheets,
+  GalleryStaticToast,
+  GalleryToasts,
   GalleryReviewToggle,
   GalleryStageTiles,
   GallerySwitches,
@@ -95,6 +103,28 @@ function Speaker() {
 export default async function GardenGalleryPage() {
   const t = await getTranslations('gallery');
   const plant = await getTranslations('components.plant');
+  const tab = await getTranslations('components.tabBar');
+  const tabs = [
+    {
+      key: 'garden',
+      href: `${GARDEN_ROUTES.gallery}#tab-garden`,
+      label: tab('garden'),
+      icon: <GardenTabIcon />,
+    },
+    {
+      key: 'missions',
+      href: `${GARDEN_ROUTES.gallery}#tab-missions`,
+      label: tab('missions'),
+      icon: <MissionsTabIcon />,
+    },
+    {
+      key: 'topics',
+      href: `${GARDEN_ROUTES.gallery}#tab-topics`,
+      label: tab('topics'),
+      icon: <TopicsTabIcon />,
+    },
+    { key: 'me', href: `${GARDEN_ROUTES.gallery}#tab-me`, label: tab('me'), icon: <MeTabIcon /> },
+  ];
   const format = await getFormatter();
 
   return (
@@ -441,6 +471,27 @@ export default async function GardenGalleryPage() {
             dueText={t('sample.wordInDays')}
             stage="tree"
           />
+        </Section>
+
+        <Section title={t('sections.tabBar')}>
+          <StateLabel>{t('states.activeGarden')}</StateLabel>
+          <BottomTabBar fixed={false} items={tabs} activeKey="garden" />
+          <StateLabel>{t('states.activeTopics')}</StateLabel>
+          <BottomTabBar fixed={false} items={tabs} activeKey="topics" />
+        </Section>
+
+        <Section title={t('sections.sheet')}>
+          <p className="mb-3 text-body-s text-garden-muted">{t('states.sheetHint')}</p>
+          <GallerySheets />
+        </Section>
+
+        <Section title={t('sections.toast')}>
+          <StateLabel>{t('states.info')}</StateLabel>
+          <GalleryStaticToast variant="info" />
+          <StateLabel>{t('states.success')}</StateLabel>
+          <GalleryStaticToast variant="success" />
+          <StateLabel>{t('states.toastLive')}</StateLabel>
+          <GalleryToasts />
         </Section>
       </div>
     </main>

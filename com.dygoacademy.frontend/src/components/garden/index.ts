@@ -3,6 +3,8 @@
  * Every component is shown in every state on /garden/_gallery.
  */
 export { AudioButton, type AudioStatus, type GardenAudioButtonProps } from './AudioButton';
+export { BottomSheet, type BottomSheetProps } from './BottomSheet';
+export { BottomTabBar, type BottomTabBarProps, type TabItem } from './BottomTabBar';
 export { Button, type GardenButtonProps } from './Button';
 export { Card, type CardProps } from './Card';
 export { Chip, type ChipProps } from './Chip';
@@ -31,4 +33,5 @@ export { Spinner } from './Spinner';
 export { StageTile, type StageTileProps } from './StageTile';
 export { StatTile } from './StatTile';
 export { Switch, type SwitchProps } from './Switch';
+export { Toast, type ToastProps } from './Toast';
 export { WordRow, type WordRowProps, type WordRowVariant } from './WordRow';

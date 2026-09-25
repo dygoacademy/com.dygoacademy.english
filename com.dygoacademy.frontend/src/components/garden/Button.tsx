@@ -1,3 +1,5 @@
+'use client';
+
 import * as React from 'react';
 import { Slot } from '@radix-ui/react-slot';
 import { cva, type VariantProps } from 'class-variance-authority';
@@ -12,6 +14,9 @@ import { Spinner } from './Spinner';
  *   on a screen.
  * - secondary: h 52, surface + border, forest text.
  * - forest: h 60, forest bg, forest pressable shadow ("Show answer").
+ *
+ * A client component: its click handler swallows presses while loading,
+ * and server pages (the gallery, UI-4 screens) render it directly.
  *
  * Full width on iPhone, capped at 400px from `medium` up. Labels wrap
  * rather than truncate (§14.5: Vietnamese runs ~40% longer). Pressing

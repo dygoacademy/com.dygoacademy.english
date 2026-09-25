@@ -31,6 +31,8 @@ export const Switch = React.forwardRef<HTMLButtonElement, SwitchProps>(
       }}
       className={gcn(
         'relative inline-flex h-8 w-[52px] shrink-0 items-center rounded-full p-[3px]',
+        // 32px visual height, 44px tap target (§8): an invisible hit area.
+        "after:absolute after:inset-x-0 after:-inset-y-[6px] after:content-['']",
         'transition-colors duration-quick ease-garden disabled:opacity-50',
         checked ? 'bg-garden-success' : 'bg-garden-disabled',
         className,

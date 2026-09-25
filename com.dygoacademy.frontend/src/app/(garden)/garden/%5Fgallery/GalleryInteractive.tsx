@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useFormatter, useTranslations } from 'next-intl';
 
 import {
+  BottomSheet,
   Button,
   Chip,
   PlantGlyph,
@@ -12,6 +13,7 @@ import {
   ReviewCard,
   StageTile,
   Switch,
+  Toast,
   type PlantStage,
   type Rating,
 } from '@/components/garden';
@@ -199,5 +201,83 @@ export function GalleryStageTiles() {
         />
       ))}
     </div>
+  );
+}
+
+export function GallerySheets() {
+  const t = useTranslations('gallery.sample');
+  const [open, setOpen] = useState(false);
+  const [longOpen, setLongOpen] = useState(false);
+  return (
+    <div className="flex flex-col gap-3">
+      <Button variant="secondary" onClick={() => setOpen(true)}>
+        {t('openSheet')}
+      </Button>
+      <Button variant="secondary" onClick={() => setLongOpen(true)}>
+        {t('openLongSheet')}
+      </Button>
+      <BottomSheet
+        open={open}
+        onOpenChange={setOpen}
+        title={t('sheetTitle')}
+        description={t('sheetDescription')}
+        footer={<Button onClick={() => setOpen(false)}>{t('sheetAction')}</Button>}
+      >
+        <p className="text-body-m">{t('sheetBody')}</p>
+      </BottomSheet>
+      <BottomSheet open={longOpen} onOpenChange={setLongOpen} title={t('sheetTitle')}>
+        <div className="space-y-3">
+          {Array.from({ length: 30 }, (_, index) => (
+            <p key={index} className="text-body-m">
+              {t('sheetLongLine', { n: index + 1 })}
+            </p>
+          ))}
+        </div>
+      </BottomSheet>
+    </div>
+  );
+}
+
+export function GalleryToasts() {
+  const t = useTranslations('gallery.sample');
+  const [toast, setToast] = useState<{ variant: 'info' | 'success'; message: string } | null>(null);
+  return (
+    <div className="flex flex-col gap-3">
+      <Button
+        variant="secondary"
+        onClick={() => setToast({ variant: 'info', message: t('toastInfo') })}
+      >
+        {t('showInfoToast')}
+      </Button>
+      <Button
+        variant="secondary"
+        onClick={() => setToast({ variant: 'success', message: t('toastSuccess') })}
+      >
+        {t('showSuccessToast')}
+      </Button>
+      <Toast
+        open={toast !== null}
+        onOpenChange={(open) => {
+          if (!open) setToast(null);
+        }}
+        message={toast?.message ?? ''}
+        variant={toast?.variant}
+      />
+    </div>
+  );
+}
+
+/** A toast pinned open in the page flow, to compare with the mockup. */
+export function GalleryStaticToast({ variant }: { variant: 'info' | 'success' }) {
+  const t = useTranslations('gallery.sample');
+  return (
+    <Toast
+      position="inline"
+      open
+      duration={0}
+      variant={variant}
+      onOpenChange={() => {}}
+      message={variant === 'success' ? t('toastSuccess') : t('toastInfo')}
+    />
   );
 }

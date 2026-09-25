@@ -45,7 +45,7 @@
     "metaTitle": "Garden components",
     "title": "Garden components",
     "intro": "Every Word Garden component built so far, in every state. Compare against the mockups at 390px. Visible only with the garden flag on.",
-    "pending": "Still to build in UI-2: bottom tab bar, bottom sheet and toast.",
+    "pending": "Every UI-2 component is built. Gate G1 compares this page with the mockups side by side at 390px.",
     "sections": {
       "buttons": "Buttons",
       "iconButtons": "Icon buttons",
@@ -62,7 +62,10 @@
       "missionRow": "Mission rows",
       "hero": "Hero garden card",
       "stageTile": "Stage tiles",
-      "wordRow": "Word rows"
+      "wordRow": "Word rows",
+      "tabBar": "Bottom tab bar",
+      "sheet": "Bottom sheet",
+      "toast": "Toast"
     },
     "states": {
       "default": "Default",
@@ -97,7 +100,13 @@
       "comeback": "Comeback",
       "dueNow": "Due now",
       "wilting": "Wilting",
-      "link": "Whole row is a link"
+      "link": "Whole row is a link",
+      "activeGarden": "Garden active",
+      "activeTopics": "Topics active",
+      "sheetHint": "Opens as a bottom sheet on iPhone (drag the grabber down to close) and a centred sheet from 600px.",
+      "info": "Info",
+      "success": "Success",
+      "toastLive": "Live: shows for 3 seconds (bottom on iPhone, top from 600px)"
     },
     "sample": {
       "water": "Water 12 words",
@@ -179,7 +188,18 @@
       "word2": "commute",
       "word2Meaning": "to travel regularly between home and work",
       "word3": "notwithstanding",
-      "word3Meaning": "in spite of something; although this is true, the plan will still go ahead"
+      "word3Meaning": "in spite of something; although this is true, the plan will still go ahead",
+      "openSheet": "Open sheet",
+      "openLongSheet": "Open long sheet",
+      "sheetTitle": "Add a word",
+      "sheetDescription": "It's planted as a seed in Environment.",
+      "sheetBody": "Search for a word, or type your own with its meaning. You can move it to another topic later.",
+      "sheetLongLine": "Line {n} of a long sheet body that scrolls inside the sheet.",
+      "sheetAction": "Plant it",
+      "toastInfo": "Reminder set for 7:30 every morning",
+      "toastSuccess": "Planted in Environment",
+      "showInfoToast": "Show info toast",
+      "showSuccessToast": "Show success toast"
     }
   },
   "components": {
@@ -222,6 +242,16 @@
     },
     "hero": {
       "legend": "Your garden by stage"
+    },
+    "tabBar": {
+      "label": "Main",
+      "garden": "Garden",
+      "missions": "Missions",
+      "topics": "Topics",
+      "me": "Me"
+    },
+    "sheet": {
+      "close": "Close"
     }
   }
 }
