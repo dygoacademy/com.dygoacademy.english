@@ -13,6 +13,7 @@
     "lint": "next lint",
     "test": "vitest run",
     "test:watch": "vitest",
+    "typecheck:test": "tsc -p tsconfig.test.json --noEmit",
     "start:dev:local": "sh -c 'set -a; . ../env-profiles/local.env; set +a; next dev'",
     "start:dev:stg": "sh -c 'set -a; . ../env-profiles/stg.env; set +a; next dev'",
     "build:prod:domain": "sh -c 'set -a; . ../env-profiles/prod.env; set +a; next build'"

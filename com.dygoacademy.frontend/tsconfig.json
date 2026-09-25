@@ -19,5 +19,13 @@
     }
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
-  "exclude": ["node_modules", "_to_delete*/**", "**/_to_delete*/**"]
+  "exclude": [
+    "node_modules",
+    "_to_delete*/**",
+    "**/_to_delete*/**",
+    "vitest.config.ts",
+    "src/test/**",
+    "src/**/*.test.ts",
+    "src/**/*.test.tsx"
+  ]
 }
