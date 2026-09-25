@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useTranslations } from 'next-intl';
+import { useFormatter, useTranslations } from 'next-intl';
 
 import {
   Button,
@@ -10,7 +10,9 @@ import {
   ProgressVine,
   RatingBar,
   ReviewCard,
+  StageTile,
   Switch,
+  type PlantStage,
   type Rating,
 } from '@/components/garden';
 
@@ -168,6 +170,34 @@ export function GalleryReviewToggle() {
       <Button variant="forest" onClick={() => setRevealed((value) => !value)}>
         {revealed ? t('hideAnswer') : t('showAnswer')}
       </Button>
+    </div>
+  );
+}
+
+export function GalleryStageTiles() {
+  const t = useTranslations('gallery.sample');
+  const format = useFormatter();
+  const [selected, setSelected] = useState<PlantStage | null>('flower');
+  const tiles: Array<{ stage: PlantStage; count: number; label: string }> = [
+    { stage: 'seed', count: 24, label: t('stageSeeds') },
+    { stage: 'sprout', count: 37, label: t('stageSprouts') },
+    { stage: 'flower', count: 112, label: t('stageFlowers') },
+    { stage: 'tree', count: 1204, label: t('stageRipe') },
+    { stage: 'wilting', count: 3, label: t('stageWilting') },
+    { stage: 'thirsty', count: 18, label: t('stageThirsty') },
+  ];
+  return (
+    <div className="grid grid-cols-3 gap-2 medium:grid-cols-6">
+      {tiles.map((tile) => (
+        <StageTile
+          key={tile.stage}
+          stage={tile.stage}
+          count={format.number(tile.count)}
+          label={tile.label}
+          selected={selected === tile.stage}
+          onClick={() => setSelected((current) => (current === tile.stage ? null : tile.stage))}
+        />
+      ))}
     </div>
   );
 }

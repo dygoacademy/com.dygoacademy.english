@@ -97,6 +97,7 @@ const config: Config = {
           forest: 'var(--color-forest)',
           'forest-deep': 'var(--color-forest-deep)',
           'forest-shadow': 'var(--color-forest-shadow)',
+          'forest-muted': 'var(--color-forest-muted)',
           primary: 'var(--color-primary)',
           'primary-shadow': 'var(--color-primary-shadow)',
           'primary-text': 'var(--color-primary-text)',

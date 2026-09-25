@@ -5,7 +5,13 @@ import {
   AudioButton,
   Button,
   Card,
+  HeroGardenCard,
   IconButton,
+  MissionRow,
+  PlantIcon,
+  StarIcon,
+  WaterIcon,
+  WordRow,
   PLANT_GLYPH_SIZES,
   PLANT_STAGES,
   PlantGlyph,
@@ -23,6 +29,7 @@ import {
   GalleryChips,
   GalleryRatingBar,
   GalleryReviewToggle,
+  GalleryStageTiles,
   GallerySwitches,
   GalleryVine,
 } from './GalleryInteractive';
@@ -182,9 +189,7 @@ export default async function GardenGalleryPage() {
           <div className="space-y-3 overflow-x-auto">
             {PLANT_STAGES.map((stage) => (
               <div key={stage} className="flex items-end gap-3">
-                <span className="w-20 shrink-0 text-body-s text-garden-muted">
-                  {plant(stage)}
-                </span>
+                <span className="w-20 shrink-0 text-body-s text-garden-muted">{plant(stage)}</span>
                 {PLANT_GLYPH_SIZES.map((size) => (
                   <PlantGlyph key={size} stage={stage} size={size} />
                 ))}
@@ -228,7 +233,9 @@ export default async function GardenGalleryPage() {
                   return (
                     <tr key={index}>
                       <td className="px-3 py-2 font-mono">{row.state}</td>
-                      <td className="px-3 py-2">{row.mastered ? t('sample.set') : t('sample.null')}</td>
+                      <td className="px-3 py-2">
+                        {row.mastered ? t('sample.set') : t('sample.null')}
+                      </td>
                       <td className="px-3 py-2">{row.leech ? t('sample.yes') : t('sample.no')}</td>
                       <td className="px-3 py-2">
                         <span className="inline-flex items-center gap-2">
@@ -304,6 +311,136 @@ export default async function GardenGalleryPage() {
           />
           <StateLabel>{t('states.toggle')}</StateLabel>
           <GalleryReviewToggle />
+        </Section>
+
+        <Section title={t('sections.missionRow')}>
+          <ul className="divide-y divide-garden-border rounded-card border border-garden-border bg-garden-surface px-4">
+            <li>
+              <MissionRow
+                icon={<WaterIcon />}
+                title={t('sample.missionWater')}
+                value={0}
+                max={18}
+                valueLabel={`${format.number(0)}/${format.number(18)}`}
+                progressText={t('sample.missionWaterProgress', { done: 0, total: 18 })}
+                status="todo"
+              />
+            </li>
+            <li>
+              <MissionRow
+                icon={<StarIcon />}
+                title={t('sample.missionChallenge')}
+                value={1}
+                max={3}
+                valueLabel={`${format.number(1)}/${format.number(3)}`}
+                progressText={t('sample.missionChallengeProgress', { done: 1, total: 3 })}
+                status="inProgress"
+              />
+            </li>
+            <li>
+              <MissionRow
+                icon={<PlantIcon />}
+                title={t('sample.missionPlant')}
+                value={3}
+                max={3}
+                valueLabel={`${format.number(3)}/${format.number(3)}`}
+                progressText={t('sample.missionPlantProgress', { done: 3, total: 3 })}
+                status="done"
+              />
+            </li>
+          </ul>
+        </Section>
+
+        <Section title={t('sections.hero')}>
+          <StateLabel>{t('states.normal')}</StateLabel>
+          <HeroGardenCard
+            overline={t('sample.heroOverline')}
+            title={t('sample.heroTitle')}
+            subtitle={t('sample.heroSubtitle')}
+            plants={[
+              'tree',
+              'flower',
+              'sprout',
+              'thirsty',
+              'flower',
+              'seed',
+              'tree',
+              'sprout',
+              'wilting',
+              'flower',
+              'tree',
+              'seed',
+            ]}
+            legend={[
+              { stage: 'seed', count: format.number(24), label: t('sample.stageSeeds') },
+              { stage: 'sprout', count: format.number(37), label: t('sample.stageSprouts') },
+              { stage: 'flower', count: format.number(112), label: t('sample.stageFlowers') },
+              { stage: 'tree', count: format.number(1204), label: t('sample.stageRipe') },
+            ]}
+            action={<Button>{t('sample.heroAction')}</Button>}
+          />
+          <StateLabel>{t('states.comeback')}</StateLabel>
+          <HeroGardenCard
+            variant="comeback"
+            overline={t('sample.heroComebackOverline')}
+            title={t('sample.heroComebackTitle')}
+            subtitle={t('sample.heroComebackSubtitle')}
+            plants={[
+              'wilting',
+              'sprout',
+              'thirsty',
+              'flower',
+              'wilting',
+              'tree',
+              'seed',
+              'thirsty',
+            ]}
+            legend={[
+              { stage: 'wilting', count: format.number(3), label: t('sample.stageWilting') },
+              { stage: 'thirsty', count: format.number(46), label: t('sample.stageThirsty') },
+              { stage: 'tree', count: format.number(1204), label: t('sample.stageRipe') },
+            ]}
+            action={<Button>{t('sample.heroComebackAction')}</Button>}
+          />
+        </Section>
+
+        <Section title={t('sections.stageTile')}>
+          <GalleryStageTiles />
+        </Section>
+
+        <Section title={t('sections.wordRow')}>
+          <StateLabel>{t('states.normal')}</StateLabel>
+          <WordRow
+            word={t('sample.reviewWord')}
+            meaning={t('sample.wordMeaning')}
+            dueText={t('sample.wordInDays')}
+            stage="flower"
+          />
+          <StateLabel>{t('states.dueNow')}</StateLabel>
+          <WordRow
+            word={t('sample.word2')}
+            meaning={t('sample.word2Meaning')}
+            dueText={t('sample.wordDueNow')}
+            stage="sprout"
+            variant="due"
+          />
+          <StateLabel>{t('states.wilting')}</StateLabel>
+          <WordRow
+            word={t('sample.word3')}
+            meaning={t('sample.word3Meaning')}
+            dueText={t('sample.wordWilting')}
+            stage="wilting"
+            variant="wilting"
+          />
+          <StateLabel>{t('states.link')}</StateLabel>
+          <WordRow
+            href={GARDEN_ROUTES.tokens}
+            word={t('sample.reviewWord')}
+            meaning={t('sample.reviewTranslation')}
+            meaningLang="vi"
+            dueText={t('sample.wordInDays')}
+            stage="tree"
+          />
         </Section>
       </div>
     </main>

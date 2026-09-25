@@ -43,7 +43,9 @@ describe('ReviewCard', () => {
 
   it('shows a disabled "no audio" button when there is no clip', () => {
     renderWithIntl(<ReviewCard {...BASE} revealed={false} />);
-    const button = screen.getByRole('button', { name: 'No audio for this word' }) as HTMLButtonElement;
+    const button = screen.getByRole('button', {
+      name: 'No audio for this word',
+    }) as HTMLButtonElement;
     expect(button.disabled).toBe(true);
   });
 });

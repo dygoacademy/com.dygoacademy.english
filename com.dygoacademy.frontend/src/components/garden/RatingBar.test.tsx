@@ -76,7 +76,9 @@ describe('RatingBar', () => {
 
   it('re-enables the keys when saving finishes', () => {
     const onRate = vi.fn();
-    const { rerender } = renderWithIntl(<RatingBar intervals={INTERVALS} onRate={onRate} disabled />);
+    const { rerender } = renderWithIntl(
+      <RatingBar intervals={INTERVALS} onRate={onRate} disabled />,
+    );
     fireEvent.keyDown(window, { key: '1' });
     expect(onRate).not.toHaveBeenCalled();
     rerender(<RatingBar intervals={INTERVALS} onRate={onRate} />);
@@ -99,7 +101,9 @@ describe('RatingBar', () => {
     renderWithIntl(<RatingBar intervals={INTERVALS} onRate={onRate} keyboardShortcuts={false} />);
     fireEvent.keyDown(window, { key: '3' });
     expect(onRate).not.toHaveBeenCalled();
-    expect(screen.getByRole('button', { name: /Good/ }).getAttribute('aria-keyshortcuts')).toBeNull();
+    expect(
+      screen.getByRole('button', { name: /Good/ }).getAttribute('aria-keyshortcuts'),
+    ).toBeNull();
   });
 
   it('exposes aria-keyshortcuts 1–4', () => {

@@ -45,7 +45,7 @@
     "metaTitle": "Garden components",
     "title": "Garden components",
     "intro": "Every Word Garden component built so far, in every state. Compare against the mockups at 390px. Visible only with the garden flag on.",
-    "pending": "Still to build in UI-2: mission row, hero garden card, stage tile, word row, bottom tab bar, bottom sheet and toast.",
+    "pending": "Still to build in UI-2: bottom tab bar, bottom sheet and toast.",
     "sections": {
       "buttons": "Buttons",
       "iconButtons": "Icon buttons",
@@ -58,7 +58,11 @@
       "stageMapping": "SRS state to plant stage",
       "ratingBar": "Rating bar",
       "audio": "Audio button",
-      "reviewCard": "Review card"
+      "reviewCard": "Review card",
+      "missionRow": "Mission rows",
+      "hero": "Hero garden card",
+      "stageTile": "Stage tiles",
+      "wordRow": "Word rows"
     },
     "states": {
       "default": "Default",
@@ -85,7 +89,15 @@
       "hidden": "Answer hidden",
       "shown": "Answer shown",
       "toggle": "Interactive",
-      "longContent": "Long word, Vietnamese meaning line, no audio"
+      "longContent": "Long word, Vietnamese meaning line, no audio",
+      "todo": "To do",
+      "inProgress": "In progress",
+      "done": "Done",
+      "normal": "Normal",
+      "comeback": "Comeback",
+      "dueNow": "Due now",
+      "wilting": "Wilting",
+      "link": "Whole row is a link"
     },
     "sample": {
       "water": "Water 12 words",
@@ -139,7 +151,35 @@
       "longMeaning": "the process of planning a product so that it can be adapted to many languages and regions",
       "longTranslation": "quá trình quốc tế hoá sản phẩm để phù hợp với nhiều ngôn ngữ và khu vực",
       "longExample": "Internationalisation made it easy to launch the app in Vietnam and Singapore.",
-      "hideAnswer": "Hide answer"
+      "hideAnswer": "Hide answer",
+      "missionWater": "Water 18 thirsty words",
+      "missionPlant": "Plant 3 new words",
+      "missionChallenge": "Collocation challenge",
+      "missionWaterProgress": "{done} of {total} words watered",
+      "missionPlantProgress": "{done} of {total} words planted",
+      "missionChallengeProgress": "{done} of {total} challenges done",
+      "heroOverline": "Today's garden",
+      "heroTitle": "18 plants are thirsty",
+      "heroSubtitle": "About 6 minutes to water them all",
+      "heroComebackOverline": "Welcome back",
+      "heroComebackTitle": "Your garden missed you",
+      "heroComebackSubtitle": "It rained while you were away. Start with the 10 most at-risk words.",
+      "heroAction": "Water 18 words",
+      "heroComebackAction": "Water 10 words",
+      "stageSeeds": "Seeds",
+      "stageSprouts": "Sprouts",
+      "stageFlowers": "Flowers",
+      "stageRipe": "Ripe",
+      "stageWilting": "Wilting",
+      "stageThirsty": "Thirsty",
+      "wordMeaning": "able to continue for a long time",
+      "wordDueNow": "Due now",
+      "wordInDays": "in 3 days",
+      "wordWilting": "Needs help",
+      "word2": "commute",
+      "word2Meaning": "to travel regularly between home and work",
+      "word3": "notwithstanding",
+      "word3Meaning": "in spite of something; although this is true, the plan will still go ahead"
     }
   },
   "components": {
@@ -172,6 +212,16 @@
       "example": "Example",
       "collocations": "Collocations",
       "hiddenHint": "Think of the meaning, then show the answer."
+    },
+    "mission": {
+      "status": {
+        "todo": "Not started",
+        "inProgress": "In progress",
+        "done": "Done"
+      }
+    },
+    "hero": {
+      "legend": "Your garden by stage"
     }
   }
 }

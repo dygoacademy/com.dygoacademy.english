@@ -161,6 +161,8 @@
     --color-forest: #24463a;
     --color-forest-deep: #1b372d;
     --color-forest-shadow: #142a21;
+    /* Hero garden card, comeback variant (§11) */
+    --color-forest-muted: #34453d;
     --color-primary: #b4552e;
     --color-primary-shadow: #7e3719;
     --color-primary-text: #8a3e20;

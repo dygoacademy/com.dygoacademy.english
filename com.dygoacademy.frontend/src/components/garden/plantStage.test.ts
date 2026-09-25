@@ -47,7 +47,9 @@ describe('stageFromSrs', () => {
 
   // Every combination of state × mastered_at × is_leech (4 × 5 × 4 = 80).
   const combos = STATES.flatMap((state) =>
-    MASTERED_VALUES.flatMap((mastered) => LEECH_VALUES.map((leech) => ({ state, mastered, leech }))),
+    MASTERED_VALUES.flatMap((mastered) =>
+      LEECH_VALUES.map((leech) => ({ state, mastered, leech })),
+    ),
   );
   it.each(combos)('combination %o', ({ state, mastered, leech }) => {
     const isMastered = mastered !== null && mastered !== undefined && mastered !== '';

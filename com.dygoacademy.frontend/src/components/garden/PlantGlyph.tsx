@@ -41,9 +41,7 @@ export function PlantGlyph({
       height={size}
       focusable="false"
       data-stage={stage}
-      {...(labelled
-        ? { role: 'img', 'aria-label': ariaLabel }
-        : { 'aria-hidden': true as const })}
+      {...(labelled ? { role: 'img', 'aria-label': ariaLabel } : { 'aria-hidden': true as const })}
       className={gcn('shrink-0 overflow-visible', animate === 'bloom' && 'garden-bloom', className)}
     >
       {STAGE_ART[stage]}
@@ -61,14 +59,27 @@ export function PlantGlyph({
 }
 
 const soil = (
-  <path d="M7 34.5h26" stroke="var(--stage-seed)" strokeOpacity="0.35" strokeWidth="2.5" strokeLinecap="round" />
+  <path
+    d="M7 34.5h26"
+    stroke="var(--stage-seed)"
+    strokeOpacity="0.35"
+    strokeWidth="2.5"
+    strokeLinecap="round"
+  />
 );
 
 const STAGE_ART: Record<PlantStage, React.ReactNode> = {
   seed: (
     <>
       {soil}
-      <ellipse cx="20" cy="26" rx="6.5" ry="8.5" transform="rotate(-18 20 26)" fill="var(--stage-seed)" />
+      <ellipse
+        cx="20"
+        cy="26"
+        rx="6.5"
+        ry="8.5"
+        transform="rotate(-18 20 26)"
+        fill="var(--stage-seed)"
+      />
       <path
         d="M17.4 21.2c.9-1.6 2.3-2.6 3.8-2.9"
         stroke="var(--color-surface)"
@@ -82,7 +93,12 @@ const STAGE_ART: Record<PlantStage, React.ReactNode> = {
   sprout: (
     <>
       {soil}
-      <path d="M20 34V20" stroke="var(--stage-sprout-leaf)" strokeWidth="2.5" strokeLinecap="round" />
+      <path
+        d="M20 34V20"
+        stroke="var(--stage-sprout-leaf)"
+        strokeWidth="2.5"
+        strokeLinecap="round"
+      />
       <path
         d="M20 24c0-6-4.5-9.5-11-9.5 0 6 4.5 9.5 11 9.5z"
         fill="var(--stage-sprout)"
@@ -124,7 +140,12 @@ const STAGE_ART: Record<PlantStage, React.ReactNode> = {
     <>
       {soil}
       <path d="M20 34.5V22" stroke="var(--stage-seed)" strokeWidth="3.5" strokeLinecap="round" />
-      <path d="M20 26.5l-4-3.5" stroke="var(--stage-seed)" strokeWidth="2.2" strokeLinecap="round" />
+      <path
+        d="M20 26.5l-4-3.5"
+        stroke="var(--stage-seed)"
+        strokeWidth="2.2"
+        strokeLinecap="round"
+      />
       <path
         d="M20 3.5c6.8 0 11.5 4.4 11.5 9.9 0 5.7-4.9 9.6-11.5 9.6S8.5 19.1 8.5 13.4C8.5 7.9 13.2 3.5 20 3.5z"
         fill="var(--stage-tree-canopy)"
@@ -159,8 +180,22 @@ const STAGE_ART: Record<PlantStage, React.ReactNode> = {
       />
       <g fill="var(--stage-wilt)">
         <ellipse cx="29.2" cy="21.2" rx="3.1" ry="4.2" transform="rotate(-20 29.2 21.2)" />
-        <ellipse cx="32.8" cy="18.4" rx="2.6" ry="3.6" transform="rotate(-70 32.8 18.4)" fillOpacity="0.8" />
-        <ellipse cx="25.8" cy="18.2" rx="2.6" ry="3.6" transform="rotate(40 25.8 18.2)" fillOpacity="0.8" />
+        <ellipse
+          cx="32.8"
+          cy="18.4"
+          rx="2.6"
+          ry="3.6"
+          transform="rotate(-70 32.8 18.4)"
+          fillOpacity="0.8"
+        />
+        <ellipse
+          cx="25.8"
+          cy="18.2"
+          rx="2.6"
+          ry="3.6"
+          transform="rotate(40 25.8 18.2)"
+          fillOpacity="0.8"
+        />
       </g>
     </>
   ),
