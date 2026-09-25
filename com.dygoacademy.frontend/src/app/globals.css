@@ -368,3 +368,84 @@
     min-height: 100dvh;
   }
 }
+
+/*
+ * Word Garden motion (UI-2, design system §12). Keyframe names are
+ * prefixed `garden-` and the classes are only used by components in
+ * src/components/garden, so nothing classic changes. Durations come from
+ * the motion tokens above; under prefers-reduced-motion the ambient drip
+ * stops and bloom / rise become a 150ms fade.
+ */
+@keyframes garden-drip {
+  0% {
+    transform: translateY(-2px);
+    opacity: 0;
+  }
+  20% {
+    opacity: 1;
+  }
+  70% {
+    transform: translateY(6px);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(9px);
+    opacity: 0;
+  }
+}
+@keyframes garden-bloom {
+  0% {
+    transform: scale(0.6);
+    opacity: 0;
+  }
+  60% {
+    transform: scale(1.06);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+@keyframes garden-rise {
+  from {
+    transform: translateY(8px);
+    opacity: 0;
+  }
+  to {
+    transform: none;
+    opacity: 1;
+  }
+}
+@keyframes garden-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@layer utilities {
+  .garden-drip {
+    transform-box: fill-box;
+    animation: garden-drip var(--motion-ambient) var(--ease-ambient) infinite;
+  }
+  .garden-bloom {
+    transform-origin: 50% 100%;
+    animation: garden-bloom var(--motion-bloom) var(--ease-bloom) both;
+  }
+  .garden-rise {
+    animation: garden-rise var(--motion-quick) var(--ease-out) both;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .garden-drip {
+      animation: none;
+      opacity: 1;
+    }
+    .garden-bloom,
+    .garden-rise {
+      animation: garden-fade-in 150ms linear both;
+    }
+  }
+}

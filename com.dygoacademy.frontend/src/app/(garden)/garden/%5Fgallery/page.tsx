@@ -1,11 +1,39 @@
 import type { Metadata } from 'next';
 import { getFormatter, getTranslations } from 'next-intl/server';
 
-import { Button, Card, IconButton, StatTile } from '@/components/garden';
+import {
+  Button,
+  Card,
+  IconButton,
+  PLANT_GLYPH_SIZES,
+  PLANT_STAGES,
+  PlantGlyph,
+  StatTile,
+  stageFromSrs,
+  type GardenFsrsState,
+} from '@/components/garden';
 import { GARDEN_CONTENT_WIDTH } from '@/constants/layout';
 import { GARDEN_ROUTES } from '@/constants/garden';
 
-import { GalleryChips, GallerySwitches, GalleryVine } from './GalleryInteractive';
+import {
+  GalleryBloom,
+  GalleryChips,
+  GalleryRatingBar,
+  GallerySwitches,
+  GalleryVine,
+} from './GalleryInteractive';
+
+/** Rows for the stageFromSrs table: every state, plus mastered and leech overrides. */
+const STAGE_MAP_ROWS: Array<{ state: GardenFsrsState; mastered: boolean; leech: boolean }> = [
+  { state: 'New', mastered: false, leech: false },
+  { state: 'Learning', mastered: false, leech: false },
+  { state: 'Relearning', mastered: false, leech: false },
+  { state: 'Review', mastered: false, leech: false },
+  { state: 'Review', mastered: true, leech: false },
+  { state: 'Relearning', mastered: true, leech: false },
+  { state: 'Review', mastered: true, leech: true },
+  { state: 'Learning', mastered: false, leech: true },
+];
 
 /**
  * /garden/_gallery — flag-only component gallery (rebuild plan UI-2).
@@ -55,6 +83,7 @@ function Speaker() {
 
 export default async function GardenGalleryPage() {
   const t = await getTranslations('gallery');
+  const plant = await getTranslations('components.plant');
   const format = await getFormatter();
 
   return (
@@ -142,6 +171,77 @@ export default async function GardenGalleryPage() {
 
         <Section title={t('sections.vine')}>
           <GalleryVine />
+        </Section>
+
+        <Section title={t('sections.plants')}>
+          <StateLabel>{t('states.sizes')}</StateLabel>
+          <div className="space-y-3 overflow-x-auto">
+            {PLANT_STAGES.map((stage) => (
+              <div key={stage} className="flex items-end gap-3">
+                <span className="w-20 shrink-0 text-body-s text-garden-muted">
+                  {plant(stage)}
+                </span>
+                {PLANT_GLYPH_SIZES.map((size) => (
+                  <PlantGlyph key={size} stage={stage} size={size} />
+                ))}
+              </div>
+            ))}
+          </div>
+          <StateLabel>{t('states.labelled')}</StateLabel>
+          <div className="flex flex-wrap gap-4">
+            {PLANT_STAGES.map((stage) => (
+              <PlantGlyph key={stage} stage={stage} size={56} aria-label={plant(stage)} />
+            ))}
+          </div>
+          <StateLabel>{t('states.drip')}</StateLabel>
+          <div className="flex items-end gap-4">
+            <PlantGlyph stage="thirsty" size={56} animate="drip" />
+            <PlantGlyph stage="sprout" size={56} animate="drip" />
+            <PlantGlyph stage="wilting" size={56} animate="drip" />
+          </div>
+          <StateLabel>{t('states.bloom')}</StateLabel>
+          <GalleryBloom />
+        </Section>
+
+        <Section title={t('sections.stageMapping')}>
+          <div className="overflow-x-auto rounded-card border border-garden-border bg-garden-surface">
+            <table className="w-full text-left text-body-s">
+              <thead className="text-label text-garden-muted">
+                <tr>
+                  <th className="px-3 py-2 font-semibold">{t('sample.mapState')}</th>
+                  <th className="px-3 py-2 font-semibold">{t('sample.mapMastered')}</th>
+                  <th className="px-3 py-2 font-semibold">{t('sample.mapLeech')}</th>
+                  <th className="px-3 py-2 font-semibold">{t('sample.mapStage')}</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-garden-border">
+                {STAGE_MAP_ROWS.map((row, index) => {
+                  const stage = stageFromSrs(
+                    row.state,
+                    row.mastered ? '2026-09-01T00:00:00Z' : null,
+                    row.leech,
+                  );
+                  return (
+                    <tr key={index}>
+                      <td className="px-3 py-2 font-mono">{row.state}</td>
+                      <td className="px-3 py-2">{row.mastered ? t('sample.set') : t('sample.null')}</td>
+                      <td className="px-3 py-2">{row.leech ? t('sample.yes') : t('sample.no')}</td>
+                      <td className="px-3 py-2">
+                        <span className="inline-flex items-center gap-2">
+                          <PlantGlyph stage={stage} size={24} />
+                          {plant(stage)}
+                        </span>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </Section>
+
+        <Section title={t('sections.ratingBar')}>
+          <GalleryRatingBar />
         </Section>
       </div>
     </main>

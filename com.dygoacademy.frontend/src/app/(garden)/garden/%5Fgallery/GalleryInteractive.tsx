@@ -3,9 +3,9 @@
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 
-import { Chip, ProgressVine, Switch } from '@/components/garden';
+import { Button, Chip, PlantGlyph, ProgressVine, RatingBar, Switch, type Rating } from '@/components/garden';
 
-/** The stateful parts of the gallery: chips, switches and the vine. */
+/** The stateful parts of the gallery (chips, switches, vine, bloom, rating bar, …). */
 export function GalleryChips() {
   const t = useTranslations('gallery.sample');
   const [filter, setFilter] = useState<'all' | 'due' | 'wilting'>('all');
@@ -82,6 +82,56 @@ export function GalleryVine() {
         aria-label={t('vineText', { done, total })}
         className="w-full accent-garden-success"
       />
+    </div>
+  );
+}
+
+export function GalleryBloom() {
+  const t = useTranslations('gallery.sample');
+  const [run, setRun] = useState(0);
+  return (
+    <div className="flex flex-wrap items-end gap-4">
+      <div key={run} className="flex items-end gap-4">
+        <PlantGlyph stage="flower" size={72} animate="bloom" />
+        <PlantGlyph stage="tree" size={72} animate="bloom" />
+      </div>
+      <Button variant="secondary" className="w-auto" onClick={() => setRun((n) => n + 1)}>
+        {t('replayBloom')}
+      </Button>
+    </div>
+  );
+}
+
+export function GalleryRatingBar() {
+  const t = useTranslations('gallery');
+  const [last, setLast] = useState<Rating | null>(null);
+  const [saving, setSaving] = useState(false);
+  const intervals = {
+    again: t('sample.intervalAgain'),
+    hard: t('sample.intervalHard'),
+    good: t('sample.intervalGood'),
+    easy: t('sample.intervalEasy'),
+  };
+  const ratingNames = useTranslations('components.rating');
+  return (
+    <div>
+      <p className="overline-label mb-2 mt-5 text-label text-garden-muted">
+        {t('states.interactive')}
+      </p>
+      <RatingBar
+        intervals={intervals}
+        disabled={saving}
+        onRate={(rating) => {
+          setLast(rating);
+          setSaving(true);
+          window.setTimeout(() => setSaving(false), 800);
+        }}
+      />
+      <p className="mt-2 text-body-s text-garden-muted" aria-live="polite">
+        {last ? t('states.lastRating', { rating: ratingNames(last) }) : t('states.noRating')}
+      </p>
+      <p className="overline-label mb-2 mt-5 text-label text-garden-muted">{t('states.saving')}</p>
+      <RatingBar intervals={intervals} disabled keyboardShortcuts={false} onRate={() => {}} />
     </div>
   );
 }

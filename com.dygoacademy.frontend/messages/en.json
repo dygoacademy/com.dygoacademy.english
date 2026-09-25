@@ -45,7 +45,7 @@
     "metaTitle": "Garden components",
     "title": "Garden components",
     "intro": "Every Word Garden component built so far, in every state. Compare against the mockups at 390px. Visible only with the garden flag on.",
-    "pending": "Still to build in UI-2: plant glyph, stage tile, word row, mission row, hero garden card, review card, rating bar, bottom tab bar, bottom sheet, toast and the new audio button.",
+    "pending": "Still to build in UI-2: review card, audio button, mission row, hero garden card, stage tile, word row, bottom tab bar, bottom sheet and toast.",
     "sections": {
       "buttons": "Buttons",
       "iconButtons": "Icon buttons",
@@ -53,7 +53,10 @@
       "cards": "Cards",
       "stats": "Stat tiles",
       "switches": "Switches",
-      "vine": "Progress vine"
+      "vine": "Progress vine",
+      "plants": "Plant glyphs",
+      "stageMapping": "SRS state to plant stage",
+      "ratingBar": "Rating bar"
     },
     "states": {
       "default": "Default",
@@ -64,7 +67,15 @@
       "off": "Off",
       "on": "On",
       "tappable": "Tappable (link)",
-      "static": "Static"
+      "static": "Static",
+      "sizes": "Every stage at 24, 32, 40, 56 and 72",
+      "labelled": "Labelled (role img) at 56",
+      "drip": "Drip (ambient, stops with reduced motion)",
+      "bloom": "Bloom (plays once)",
+      "interactive": "Interactive: tap, or press 1–4 on a keyboard",
+      "saving": "Disabled while saving",
+      "lastRating": "Last rating: {rating}",
+      "noRating": "No rating yet"
     },
     "sample": {
       "water": "Water 12 words",
@@ -85,7 +96,37 @@
       "statMastered": "ripe",
       "reminders": "Daily reminder",
       "sound": "Sounds",
-      "vineText": "{done} of {total} words watered"
+      "vineText": "{done} of {total} words watered",
+      "replayBloom": "Replay bloom",
+      "mapState": "fsrs_state",
+      "mapMastered": "mastered_at",
+      "mapLeech": "is_leech",
+      "mapStage": "Stage",
+      "yes": "yes",
+      "no": "no",
+      "set": "set",
+      "null": "null",
+      "intervalAgain": "1 min",
+      "intervalHard": "8 min",
+      "intervalGood": "3 days",
+      "intervalEasy": "8 days"
+    }
+  },
+  "components": {
+    "plant": {
+      "seed": "Seed",
+      "sprout": "Sprout",
+      "flower": "Flower",
+      "tree": "Fruit tree",
+      "wilting": "Wilting",
+      "thirsty": "Thirsty"
+    },
+    "rating": {
+      "groupLabel": "How well did you remember it?",
+      "again": "Again",
+      "hard": "Hard",
+      "good": "Good",
+      "easy": "Easy"
     }
   }
 }
