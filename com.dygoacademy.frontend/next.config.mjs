@@ -1,3 +1,5 @@
+import createNextIntlPlugin from 'next-intl/plugin';
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
@@ -5,4 +7,8 @@ const nextConfig = {
   // http://localhost:3001/api/v1) — see src/lib/api-client.ts.
 };
 
-export default nextConfig;
+// next-intl (Word Garden rebuild, UI-1): points the library at
+// src/i18n/request.ts. Only the (garden) screens call it today.
+const withNextIntl = createNextIntlPlugin('./src/i18n/request.ts');
+
+export default withNextIntl(nextConfig);

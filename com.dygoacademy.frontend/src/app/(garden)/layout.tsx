@@ -1,3 +1,6 @@
+import type { Viewport } from 'next';
+import { NextIntlClientProvider } from 'next-intl';
+import { getLocale } from 'next-intl/server';
 import { cookies } from 'next/headers';
 import { notFound, redirect } from 'next/navigation';
 
@@ -5,18 +8,36 @@ import { ROUTES } from '@/constants/routes';
 import { GARDEN_UI_COOKIE, isGardenEnabled } from '@/lib/garden-ui';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 
+import { bodyFont, displayFont } from './fonts';
+
 /**
- * Word Garden route group (ui rebuild implementation plan.md, UI-0).
+ * Word Garden viewport (design system §3). Overrides the root layout's
+ * viewport for garden screens only: `viewport-fit=cover` lets the page
+ * draw under the notch / home indicator and pad back with the safe-area
+ * helpers in globals.css. Classic screens keep the root viewport, since
+ * they have no safe-area padding and would slide under the notch.
+ */
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  viewportFit: 'cover',
+  themeColor: '#24463A',
+};
+
+/**
+ * Word Garden route group (ui rebuild implementation plan.md, UI-0/UI-1).
  *
  * Built next to (dashboard), not inside it, so the new screens get their
  * own layout, fonts and theme while the classic UI stays untouched.
  *
- * Two gates, both server-side:
- *  1. Flag — without NEXT_PUBLIC_GARDEN_UI=true or the `?ui=garden`
- *     cookie, every /garden URL is a plain 404, exactly as before UI-0.
- *  2. Session — same defense-in-depth check as the (dashboard) layout.
- *     /garden isn't in PROTECTED_PATH_PREFIXES yet (routes.ts is left
- *     alone until UI-8), so this layout is the only auth guard for now.
+ * Gates, both server-side:
+ *  1. Flag — middleware.ts already 404s unflagged /garden requests; this
+ *     re-check is defense in depth, like the session check below.
+ *  2. Session — same check as the (dashboard) layout. /garden isn't in
+ *     PROTECTED_PATH_PREFIXES yet (routes.ts is left alone until UI-8).
+ *
+ * `data-ui="garden"` switches on the garden tokens (globals.css); the
+ * font classes expose --font-display / --font-body to them.
  */
 export default async function GardenLayout({ children }: { children: React.ReactNode }) {
   const cookieStore = await cookies();
@@ -33,5 +54,17 @@ export default async function GardenLayout({ children }: { children: React.React
     redirect(ROUTES.login);
   }
 
-  return <div data-ui="garden">{children}</div>;
+  const locale = await getLocale();
+
+  return (
+    <NextIntlClientProvider>
+      <div
+        data-ui="garden"
+        lang={locale}
+        className={`${displayFont.variable} ${bodyFont.variable} font-body antialiased`}
+      >
+        {children}
+      </div>
+    </NextIntlClientProvider>
+  );
 }

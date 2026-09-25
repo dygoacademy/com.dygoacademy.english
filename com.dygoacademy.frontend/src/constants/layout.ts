@@ -58,3 +58,25 @@ export const CONTENT_WIDTH = {
   wide: 'max-w-2xl', // 672px
   compact: 'max-w-sm', // 384px -- no current call site; kept for a single-popup exception if one's needed again (see WordCardModal.tsx's history)
 } as const;
+
+/**
+ * Word Garden content widths (design system §6.2, rebuild plan UI-1).
+ *
+ * Same tier names as CONTENT_WIDTH so call sites keep reading the same
+ * way, but the widths now differ per size class instead of one 672px for
+ * everything. Kept as a separate export while both UIs live side by side:
+ * rewriting CONTENT_WIDTH itself would resize every classic screen. UI-8
+ * replaces CONTENT_WIDTH with this object and deletes the old one.
+ *
+ *   tier     compact (<600)  medium (600–1023)  expanded (1024+)
+ *   narrow   full width      540                540    sheets, dialogs
+ *   default  full width      560                640    review card, single-item screens
+ *   wide     full width      720                1080   page content (excl. sidebar)
+ *
+ * `medium:` / `expanded:` are the garden screens in tailwind.config.ts.
+ */
+export const GARDEN_CONTENT_WIDTH = {
+  narrow: 'w-full medium:max-w-[540px]',
+  default: 'w-full medium:max-w-[560px] expanded:max-w-[640px]',
+  wide: 'w-full medium:max-w-[720px] expanded:max-w-[1080px]',
+} as const;

@@ -1,0 +1,44 @@
+{
+  "garden": {
+    "home": {
+      "title": "Word Garden",
+      "placeholder": "Your garden is being planted. Today's Garden arrives in a later phase."
+    }
+  },
+  "tokens": {
+    "metaTitle": "Garden tokens",
+    "title": "Garden tokens",
+    "intro": "Every colour, text style, radius, shadow and motion token in the Word Garden design system, with English, Chinese and Vietnamese test strings. Visible only with the garden flag on.",
+    "sizeClass": {
+      "label": "Size class",
+      "compact": "compact (under 600px)",
+      "medium": "medium (600–1023px)",
+      "expanded": "expanded (1024px and up)",
+      "short": "short (height under 500px)"
+    },
+    "sections": {
+      "colour": "Colour",
+      "stages": "Plant stages",
+      "ratings": "Rating buttons",
+      "type": "Type scale",
+      "overline": "Overline in Chinese",
+      "spacing": "Spacing",
+      "radius": "Corner radius",
+      "elevation": "Elevation",
+      "motion": "Motion",
+      "safeArea": "Safe area and full height",
+      "widths": "Content widths"
+    },
+    "notes": {
+      "swatch": "The swatch uses the CSS variable; the hex beside it is copied from the spec. If they look different, the token is wrong.",
+      "overline": "Label style with the overline class. English is uppercase with letter spacing; Chinese keeps normal case and no spacing.",
+      "motion": "Hover or focus the tiles to see each duration. With reduced motion on, bloom drops to a 150ms fade and ambient loops stop.",
+      "safeArea": "This page's frame is padded by the safe-area insets and is at least 100dvh tall. On a Face ID iPhone the tinted strips show the notch and home-indicator insets.",
+      "widths": "Each bar is one GARDEN_CONTENT_WIDTH tier: full width on iPhone, capped on iPad."
+    },
+    "sample": {
+      "button": "Water 12 words",
+      "pressMe": "Press me"
+    }
+  }
+}

@@ -135,3 +135,236 @@
     transform: rotateY(180deg);
   }
 }
+
+/*
+ * ---------------------------------------------------------------------
+ * Word Garden tokens (ui rebuild implementation plan.md, UI-1).
+ * Values from dygo_academy_ui_ux_design_system.md v0.2 §4–§7 and §12.
+ *
+ * Scoped to [data-ui="garden"] (set by src/app/(garden)/layout.tsx) so
+ * the classic screens above keep their colours until UI-8 swaps these
+ * onto :root and deletes the old palette. Tailwind names for every token
+ * live in tailwind.config.ts (colors.garden / stage / rating, fontSize
+ * display-* / body-* / label, borderRadius tile/control/card/hero,
+ * boxShadow press-*, screens medium / expanded / short).
+ * ---------------------------------------------------------------------
+ */
+@layer base {
+  [data-ui='garden'] {
+    /* §5.1 Colour — adult semantic tokens */
+    --color-bg: #f4f1ea;
+    --color-surface: #ffffff;
+    --color-surface-sunken: #f7f4ec;
+    --color-border: #e3ddd0;
+    --color-text: #1c2b24;
+    --color-text-muted: #5e6a62;
+    --color-forest: #24463a;
+    --color-forest-deep: #1b372d;
+    --color-forest-shadow: #142a21;
+    --color-primary: #b4552e;
+    --color-primary-shadow: #7e3719;
+    --color-primary-text: #8a3e20;
+    --color-water: #4a8fbf;
+    --color-water-soft: #e3f0f8;
+    --color-water-text: #1d4a68;
+    --color-gold: #c8962b;
+    --color-gold-text: #9a6e14;
+    --color-gold-soft: #fbf4e4;
+    --color-gold-soft-text: #6b5215;
+    --color-success: #3e7f5a;
+    /* Disabled button bg and switch "off" (§11) */
+    --color-disabled: #cfc8b8;
+    /* Review card lift (§7.2) */
+    --color-card-lift: #e8e1d2;
+
+    /* §5.2 Plant stage colours */
+    --stage-seed: #6b5040;
+    --stage-sprout: #b7d6ae;
+    --stage-sprout-leaf: #9cc39a;
+    --stage-flower: #e8a87c;
+    --stage-tree: #3e7f5a;
+    --stage-tree-canopy: #7fa487;
+    --stage-tree-fruit: #e0b04a;
+    --stage-wilt: #a89f6b;
+    --stage-due: #8ec5e8;
+
+    /* §5.2 Rating buttons (bg / text) */
+    --rating-again: #f6e3dc;
+    --rating-again-text: #8a3e20;
+    --rating-hard: #f3ebd6;
+    --rating-hard-text: #6b4e0e;
+    --rating-good: #dde7da;
+    --rating-good-text: #24463a;
+    --rating-easy: #24463a;
+    --rating-easy-text: #ffffff;
+
+    /* §6.1 Spacing — same 4px steps as Tailwind's default scale, so
+       p-1…p-10 already match; these are for hand-written CSS. */
+    --space-1: 0.25rem;
+    --space-2: 0.5rem;
+    --space-3: 0.75rem;
+    --space-4: 1rem;
+    --space-5: 1.25rem;
+    --space-6: 1.5rem;
+    --space-8: 2rem;
+    --space-10: 2.5rem;
+    /* §6.2 page margin per size class (compact here, see media queries) */
+    --page-margin: 1rem;
+
+    /* §7.1 Corner radius */
+    --radius-sm: 12px;
+    --radius-md: 16px;
+    --radius-lg: 20px;
+    --radius-xl: 26px;
+    --radius-full: 9999px;
+
+    /* §7.2 Elevation — borders, plus the pressable look */
+    --border-default: 1px solid var(--color-border);
+    --shadow-press-primary: 0 4px 0 var(--color-primary-shadow);
+    --shadow-press-primary-down: 0 2px 0 var(--color-primary-shadow);
+    --shadow-press-forest: 0 4px 0 var(--color-forest-shadow);
+    --shadow-press-forest-down: 0 2px 0 var(--color-forest-shadow);
+    --shadow-card-lift: 0 6px 0 var(--color-card-lift);
+
+    /* §12 Motion */
+    --motion-press: 80ms;
+    --motion-quick: 220ms;
+    --motion-bloom: 700ms;
+    --motion-ambient: 2s;
+    --ease-out: cubic-bezier(0.215, 0.61, 0.355, 1);
+    --ease-bloom: cubic-bezier(0.34, 1.56, 0.64, 1);
+    --ease-ambient: ease-in-out;
+
+    /* §4.2 Type scale, compact (iPhone) sizes; iPad sizes at 600px+ */
+    --text-display-xl: 2.5rem; /* 40 */
+    --text-display-l: 1.75rem; /* 28 */
+    --text-display-m: 1.375rem; /* 22 */
+    --text-display-s: 1.1875rem; /* 19 */
+    --text-body-l: 1.0625rem; /* 17 */
+    --text-body-m: 0.9375rem; /* 15 */
+    --text-body-s: 0.8125rem; /* 13 */
+    --text-label: 0.75rem; /* 12 */
+
+    /* §4.1 Font stacks. --font-display / --font-body come from next/font
+       in the (garden) layout. Chinese falls through to the system CJK
+       font (never downloaded), placed after the Latin font so English
+       words keep Fraunces / Be Vietnam Pro. */
+    --font-cjk: 'PingFang SC', 'Noto Sans SC', 'Microsoft YaHei';
+    --font-stack-display: var(--font-display), Georgia, var(--font-cjk), serif;
+    --font-stack-body: var(--font-body), -apple-system, system-ui, var(--font-cjk), sans-serif;
+
+    /* §3 Safe areas (viewport-fit=cover is set in the (garden) layout) */
+    --safe-top: env(safe-area-inset-top, 0px);
+    --safe-right: env(safe-area-inset-right, 0px);
+    --safe-bottom: env(safe-area-inset-bottom, 0px);
+    --safe-left: env(safe-area-inset-left, 0px);
+
+    min-height: 100vh; /* fallback for browsers without dvh */
+    min-height: 100dvh;
+    background-color: var(--color-bg);
+    color: var(--color-text);
+    font-family: var(--font-stack-body);
+    font-size: var(--text-body-m);
+    line-height: 1.4;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  @media (min-width: 600px) {
+    [data-ui='garden'] {
+      --page-margin: 1.5rem;
+      --text-display-xl: 3rem; /* 48 */
+      --text-display-l: 2.125rem; /* 34 */
+      --text-display-m: 1.625rem; /* 26 */
+      --text-display-s: 1.3125rem; /* 21 */
+      --text-body-l: 1.125rem; /* 18 */
+      --text-body-m: 1rem; /* 16 */
+      --text-body-s: 0.875rem; /* 14 */
+      --text-label: 0.8125rem; /* 13 */
+    }
+  }
+
+  @media (min-width: 1024px) {
+    [data-ui='garden'] {
+      --page-margin: 2rem;
+    }
+  }
+
+  /* §15 Visible focus ring */
+  [data-ui='garden'] :focus-visible {
+    outline: 2px solid var(--color-forest);
+    outline-offset: 2px;
+  }
+
+  /* §3 No double-tap zoom delay on anything tappable */
+  [data-ui='garden'] :is(a, button, [role='button'], label) {
+    touch-action: manipulation;
+  }
+
+  /* §4.3 Simplified Chinese: taller line height for body text, minimum
+     13px, and no uppercase / letter-spacing on the overline style. */
+  [data-ui='garden'] :is(.text-body-l, .text-body-m, .text-body-s):lang(zh) {
+    line-height: 1.5;
+  }
+  [data-ui='garden'] .text-label:lang(zh) {
+    font-size: max(0.8125rem, var(--text-label));
+  }
+  [data-ui='garden'] .overline-label:lang(zh) {
+    text-transform: none;
+    letter-spacing: 0;
+  }
+
+  /* §12 Reduced motion: drop loops and scale, keep short fades only */
+  @media (prefers-reduced-motion: reduce) {
+    [data-ui='garden'] {
+      --motion-bloom: 150ms;
+      --motion-ambient: 0s;
+      --ease-bloom: linear;
+    }
+  }
+}
+
+@layer utilities {
+  /* §4.2 overline: uppercase label (reset for Chinese above). Not named
+     .overline — Tailwind already uses that for text-decoration. */
+  .overline-label {
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+
+  /* §4.2 stats: counters don't jump */
+  .tabular-nums-stat {
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* §3 safe-area helpers. Page padding is max(page margin, inset). */
+  .pt-safe {
+    padding-top: var(--safe-top);
+  }
+  .pb-safe {
+    padding-bottom: var(--safe-bottom);
+  }
+  .pl-safe {
+    padding-left: var(--safe-left);
+  }
+  .pr-safe {
+    padding-right: var(--safe-right);
+  }
+  .px-page-safe {
+    padding-left: max(var(--page-margin), var(--safe-left));
+    padding-right: max(var(--page-margin), var(--safe-right));
+  }
+  /* Bottom tab bar: 8px + home indicator (§3) */
+  .pb-tabbar-safe {
+    padding-bottom: calc(8px + var(--safe-bottom));
+  }
+
+  /* §3 full-height screens: dvh, never plain vh */
+  .h-screen-dvh {
+    height: 100vh;
+    height: 100dvh;
+  }
+  .min-h-screen-dvh {
+    min-height: 100vh;
+    min-height: 100dvh;
+  }
+}
