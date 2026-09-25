@@ -15,7 +15,7 @@
 | `7a8be4e` | UI-2 (part 4) | `MissionRow`, `HeroGardenCard`, `StageTile`, `WordRow`, `--color-forest-muted` token; Prettier on the UI-2 files |
 | `1063de0` | UI-2 (part 5) | `BottomTabBar`, `BottomSheet`, `Toast`; `Button` made a client component (fix); 44px hit areas on `Chip` / `Switch` |
 
-Each commit staged exact paths only. `git status` showed 111 entries before and after the pass (the other work in the tree was not touched). Not committed on purpose: `phase 12 implementation plan.md` (it's untracked, so the whole file is uncommitted and not mine to commit), `dygo_academy_master_project_schedule.md` (has your own edits; changelog line 5.50 added), and this report (committed separately if the lock allowed; see the last line).
+Each commit staged exact paths only. `git status` showed 111 entries before and after the pass (the other work in the tree was not touched). Not committed on purpose: `phase 12 implementation plan.md` (it's untracked, so the whole file is uncommitted and not mine to commit), `dygo_academy_master_project_schedule.md` (has your own edits; changelog line 5.50 added). This report is committed on its own as a `docs:` commit.
 
 ### Components built (`src/components/garden/`)
 
