@@ -40,5 +40,52 @@
       "button": "Water 12 words",
       "pressMe": "Press me"
     }
+  },
+  "gallery": {
+    "metaTitle": "Garden components",
+    "title": "Garden components",
+    "intro": "Every Word Garden component built so far, in every state. Compare against the mockups at 390px. Visible only with the garden flag on.",
+    "pending": "Still to build in UI-2: plant glyph, stage tile, word row, mission row, hero garden card, review card, rating bar, bottom tab bar, bottom sheet, toast and the new audio button.",
+    "sections": {
+      "buttons": "Buttons",
+      "iconButtons": "Icon buttons",
+      "chips": "Chips",
+      "cards": "Cards",
+      "stats": "Stat tiles",
+      "switches": "Switches",
+      "vine": "Progress vine"
+    },
+    "states": {
+      "default": "Default",
+      "disabled": "Disabled",
+      "loading": "Loading",
+      "secondLine": "With second line",
+      "long": "Long label",
+      "off": "Off",
+      "on": "On",
+      "tappable": "Tappable (link)",
+      "static": "Static"
+    },
+    "sample": {
+      "water": "Water 12 words",
+      "waterSecond": "About 4 minutes",
+      "showAnswer": "Show answer",
+      "addWord": "Add a word",
+      "longLabel": "Continue with today's collocation challenge and water the thirsty words",
+      "back": "Back",
+      "close": "Close",
+      "play": "Play pronunciation",
+      "chipAll": "All",
+      "chipDue": "Due now",
+      "chipWilting": "Wilting",
+      "cardTitle": "Environment",
+      "cardBody": "48 words · 6 due today",
+      "statGrowing": "words growing",
+      "statStreak": "day streak",
+      "statMastered": "ripe",
+      "reminders": "Daily reminder",
+      "sound": "Sounds",
+      "vineText": "{done} of {total} words watered"
+    }
   }
 }

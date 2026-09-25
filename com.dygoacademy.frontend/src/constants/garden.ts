@@ -16,6 +16,8 @@ export const GARDEN_ROUTES = {
    * that really starts with `_`.
    */
   tokens: '/garden/_tokens',
+  /** Flag-only component gallery (UI-2); folder `%5Fgallery`, same reason. */
+  gallery: '/garden/_gallery',
 } as const;
 
 export const GARDEN_PATH_PREFIX = '/garden';
