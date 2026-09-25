@@ -24,6 +24,10 @@ const envSchema = z.object({
   NEXT_PUBLIC_SUPABASE_ANON_KEY: z
     .string()
     .min(1, 'NEXT_PUBLIC_SUPABASE_ANON_KEY is required — see com.dygoacademy.frontend/.env.example'),
+  // Word Garden UI rebuild flag (ui rebuild implementation plan.md, UI-0).
+  // Optional: unset or anything other than "true" means the classic UI.
+  // Per-browser override is the `?ui=garden` cookie — see lib/garden-ui.ts.
+  NEXT_PUBLIC_GARDEN_UI: z.string().optional(),
 });
 
 function loadEnv() {
@@ -31,6 +35,7 @@ function loadEnv() {
     NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL,
     NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,
     NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+    NEXT_PUBLIC_GARDEN_UI: process.env.NEXT_PUBLIC_GARDEN_UI,
   });
 
   if (!parsed.success) {
