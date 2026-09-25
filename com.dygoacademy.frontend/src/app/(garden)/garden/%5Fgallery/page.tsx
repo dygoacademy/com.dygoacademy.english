@@ -2,12 +2,14 @@ import type { Metadata } from 'next';
 import { getFormatter, getTranslations } from 'next-intl/server';
 
 import {
+  AudioButton,
   Button,
   Card,
   IconButton,
   PLANT_GLYPH_SIZES,
   PLANT_STAGES,
   PlantGlyph,
+  ReviewCard,
   StatTile,
   stageFromSrs,
   type GardenFsrsState,
@@ -15,10 +17,12 @@ import {
 import { GARDEN_CONTENT_WIDTH } from '@/constants/layout';
 import { GARDEN_ROUTES } from '@/constants/garden';
 
+import { BROKEN_AUDIO, TEST_TONE } from './galleryAudio';
 import {
   GalleryBloom,
   GalleryChips,
   GalleryRatingBar,
+  GalleryReviewToggle,
   GallerySwitches,
   GalleryVine,
 } from './GalleryInteractive';
@@ -242,6 +246,64 @@ export default async function GardenGalleryPage() {
 
         <Section title={t('sections.ratingBar')}>
           <GalleryRatingBar />
+        </Section>
+
+        <Section title={t('sections.audio')}>
+          <StateLabel>{t('states.idle')}</StateLabel>
+          <AudioButton src={TEST_TONE} />
+          <StateLabel>{t('states.audioError')}</StateLabel>
+          <AudioButton src={TEST_TONE} initialStatus="error" />
+          <StateLabel>{t('states.audioFails')}</StateLabel>
+          <AudioButton src={BROKEN_AUDIO} />
+          <StateLabel>{t('states.noAudio')}</StateLabel>
+          <AudioButton src={null} />
+        </Section>
+
+        <Section title={t('sections.reviewCard')}>
+          <StateLabel>{t('states.hidden')}</StateLabel>
+          <ReviewCard
+            word={t('sample.reviewWord')}
+            ipa={t('sample.reviewIpa')}
+            audioSrc={TEST_TONE}
+            level={t('sample.reviewLevel')}
+            topic={t('sample.reviewTopic')}
+            partOfSpeech={t('sample.reviewPos')}
+            revealed={false}
+            meaning={t('sample.reviewMeaning')}
+          />
+          <StateLabel>{t('states.shown')}</StateLabel>
+          <ReviewCard
+            word={t('sample.reviewWord')}
+            ipa={t('sample.reviewIpa')}
+            audioSrc={TEST_TONE}
+            level={t('sample.reviewLevel')}
+            topic={t('sample.reviewTopic')}
+            partOfSpeech={t('sample.reviewPos')}
+            revealed
+            meaning={t('sample.reviewMeaning')}
+            meaningTranslation={{ text: t('sample.reviewTranslation'), lang: 'vi' }}
+            example={t('sample.reviewExample')}
+            collocations={[
+              t('sample.reviewCollocation1'),
+              t('sample.reviewCollocation2'),
+              t('sample.reviewCollocation3'),
+            ]}
+          />
+          <StateLabel>{t('states.longContent')}</StateLabel>
+          <ReviewCard
+            word={t('sample.longWord')}
+            ipa={t('sample.longIpa')}
+            audioSrc={null}
+            level={t('sample.longLevel')}
+            topic={t('sample.longTopic')}
+            partOfSpeech={t('sample.longPos')}
+            revealed
+            meaning={t('sample.longMeaning')}
+            meaningTranslation={{ text: t('sample.longTranslation'), lang: 'vi' }}
+            example={t('sample.longExample')}
+          />
+          <StateLabel>{t('states.toggle')}</StateLabel>
+          <GalleryReviewToggle />
         </Section>
       </div>
     </main>

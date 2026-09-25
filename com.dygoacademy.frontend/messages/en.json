@@ -45,7 +45,7 @@
     "metaTitle": "Garden components",
     "title": "Garden components",
     "intro": "Every Word Garden component built so far, in every state. Compare against the mockups at 390px. Visible only with the garden flag on.",
-    "pending": "Still to build in UI-2: review card, audio button, mission row, hero garden card, stage tile, word row, bottom tab bar, bottom sheet and toast.",
+    "pending": "Still to build in UI-2: mission row, hero garden card, stage tile, word row, bottom tab bar, bottom sheet and toast.",
     "sections": {
       "buttons": "Buttons",
       "iconButtons": "Icon buttons",
@@ -56,7 +56,9 @@
       "vine": "Progress vine",
       "plants": "Plant glyphs",
       "stageMapping": "SRS state to plant stage",
-      "ratingBar": "Rating bar"
+      "ratingBar": "Rating bar",
+      "audio": "Audio button",
+      "reviewCard": "Review card"
     },
     "states": {
       "default": "Default",
@@ -75,7 +77,15 @@
       "interactive": "Interactive: tap, or press 1–4 on a keyboard",
       "saving": "Disabled while saving",
       "lastRating": "Last rating: {rating}",
-      "noRating": "No rating yet"
+      "noRating": "No rating yet",
+      "idle": "Ready (tap to play a short test tone)",
+      "audioError": "Audio unavailable (tap to retry)",
+      "audioFails": "Broken file: tap, and it switches to the unavailable state",
+      "noAudio": "No audio for this word",
+      "hidden": "Answer hidden",
+      "shown": "Answer shown",
+      "toggle": "Interactive",
+      "longContent": "Long word, Vietnamese meaning line, no audio"
     },
     "sample": {
       "water": "Water 12 words",
@@ -109,7 +119,27 @@
       "intervalAgain": "1 min",
       "intervalHard": "8 min",
       "intervalGood": "3 days",
-      "intervalEasy": "8 days"
+      "intervalEasy": "8 days",
+      "reviewWord": "sustainable",
+      "reviewIpa": "/səˈsteɪnəbl/",
+      "reviewLevel": "B2",
+      "reviewTopic": "Environment",
+      "reviewPos": "adjective",
+      "reviewMeaning": "able to continue for a long time without harming the environment",
+      "reviewTranslation": "bền vững",
+      "reviewExample": "The city wants a more sustainable transport system by 2030.",
+      "reviewCollocation1": "sustainable development",
+      "reviewCollocation2": "sustainable growth",
+      "reviewCollocation3": "environmentally sustainable",
+      "longWord": "internationalisation",
+      "longIpa": "/ˌɪntənæʃənəlaɪˈzeɪʃən/",
+      "longLevel": "C1",
+      "longTopic": "Business and global trade",
+      "longPos": "noun",
+      "longMeaning": "the process of planning a product so that it can be adapted to many languages and regions",
+      "longTranslation": "quá trình quốc tế hoá sản phẩm để phù hợp với nhiều ngôn ngữ và khu vực",
+      "longExample": "Internationalisation made it easy to launch the app in Vietnam and Singapore.",
+      "hideAnswer": "Hide answer"
     }
   },
   "components": {
@@ -127,6 +157,21 @@
       "hard": "Hard",
       "good": "Good",
       "easy": "Easy"
+    },
+    "audio": {
+      "play": "Play pronunciation",
+      "none": "No audio for this word",
+      "unavailable": "Audio unavailable",
+      "unavailableRetry": "Audio unavailable, tap to retry"
+    },
+    "review": {
+      "cardLabel": "Review card: {word}",
+      "tags": "Word details",
+      "play": "Play pronunciation of {word}",
+      "meaning": "Meaning",
+      "example": "Example",
+      "collocations": "Collocations",
+      "hiddenHint": "Think of the meaning, then show the answer."
     }
   }
 }

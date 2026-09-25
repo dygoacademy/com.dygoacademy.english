@@ -2,6 +2,7 @@
  * Word Garden components (Phase 12 plan UI-2, design system §11).
  * Every component is shown in every state on /garden/_gallery.
  */
+export { AudioButton, type AudioStatus, type GardenAudioButtonProps } from './AudioButton';
 export { Button, type GardenButtonProps } from './Button';
 export { Card, type CardProps } from './Card';
 export { Chip, type ChipProps } from './Chip';
@@ -23,6 +24,7 @@ export {
 } from './plantStage';
 export { ProgressVine } from './ProgressVine';
 export { RATING_GRADE, RATINGS, RatingBar, type Rating, type RatingBarProps } from './RatingBar';
+export { ReviewCard, type ReviewCardProps } from './ReviewCard';
 export { Spinner } from './Spinner';
 export { StatTile } from './StatTile';
 export { Switch, type SwitchProps } from './Switch';

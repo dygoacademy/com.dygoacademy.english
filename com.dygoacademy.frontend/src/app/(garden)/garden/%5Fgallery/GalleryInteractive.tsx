@@ -3,7 +3,18 @@
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 
-import { Button, Chip, PlantGlyph, ProgressVine, RatingBar, Switch, type Rating } from '@/components/garden';
+import {
+  Button,
+  Chip,
+  PlantGlyph,
+  ProgressVine,
+  RatingBar,
+  ReviewCard,
+  Switch,
+  type Rating,
+} from '@/components/garden';
+
+import { TEST_TONE } from './galleryAudio';
 
 /** The stateful parts of the gallery (chips, switches, vine, bloom, rating bar, …). */
 export function GalleryChips() {
@@ -132,6 +143,31 @@ export function GalleryRatingBar() {
       </p>
       <p className="overline-label mb-2 mt-5 text-label text-garden-muted">{t('states.saving')}</p>
       <RatingBar intervals={intervals} disabled keyboardShortcuts={false} onRate={() => {}} />
+    </div>
+  );
+}
+
+export function GalleryReviewToggle() {
+  const t = useTranslations('gallery.sample');
+  const [revealed, setRevealed] = useState(false);
+  return (
+    <div className="space-y-4">
+      <ReviewCard
+        word={t('reviewWord')}
+        ipa={t('reviewIpa')}
+        audioSrc={TEST_TONE}
+        level={t('reviewLevel')}
+        topic={t('reviewTopic')}
+        partOfSpeech={t('reviewPos')}
+        revealed={revealed}
+        meaning={t('reviewMeaning')}
+        meaningTranslation={{ text: t('reviewTranslation'), lang: 'vi' }}
+        example={t('reviewExample')}
+        collocations={[t('reviewCollocation1'), t('reviewCollocation2')]}
+      />
+      <Button variant="forest" onClick={() => setRevealed((value) => !value)}>
+        {revealed ? t('hideAnswer') : t('showAnswer')}
+      </Button>
     </div>
   );
 }
