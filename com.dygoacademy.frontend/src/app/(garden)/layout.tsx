@@ -1,5 +1,4 @@
 import type { Viewport } from 'next';
-import { NextIntlClientProvider } from 'next-intl';
 import { getLocale } from 'next-intl/server';
 import { cookies } from 'next/headers';
 import { notFound, redirect } from 'next/navigation';
@@ -8,7 +7,7 @@ import { ROUTES } from '@/constants/routes';
 import { GARDEN_UI_COOKIE, isGardenEnabled } from '@/lib/garden-ui';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 
-import { bodyFont, displayFont } from './fonts';
+import { GardenRoot } from './GardenRoot';
 
 /**
  * Word Garden viewport (design system §3). Overrides the root layout's
@@ -36,8 +35,8 @@ export const viewport: Viewport = {
  *  2. Session — same check as the (dashboard) layout. /garden isn't in
  *     PROTECTED_PATH_PREFIXES yet (routes.ts is left alone until UI-8).
  *
- * `data-ui="garden"` switches on the garden tokens (globals.css); the
- * font classes expose --font-display / --font-body to them.
+ * GardenRoot sets `data-ui="garden"` (the garden tokens in globals.css),
+ * the font variables and the next-intl provider.
  */
 export default async function GardenLayout({ children }: { children: React.ReactNode }) {
   const cookieStore = await cookies();
@@ -56,15 +55,5 @@ export default async function GardenLayout({ children }: { children: React.React
 
   const locale = await getLocale();
 
-  return (
-    <NextIntlClientProvider>
-      <div
-        data-ui="garden"
-        lang={locale}
-        className={`${displayFont.variable} ${bodyFont.variable} font-body antialiased`}
-      >
-        {children}
-      </div>
-    </NextIntlClientProvider>
-  );
+  return <GardenRoot locale={locale}>{children}</GardenRoot>;
 }

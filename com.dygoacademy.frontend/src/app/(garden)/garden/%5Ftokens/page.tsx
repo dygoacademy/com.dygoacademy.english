@@ -85,6 +85,26 @@ const TYPE_STYLES = [
   ['label', 'text-label'],
 ] as const;
 
+/** Font check: Fraunces opsz at the canvas sizes, DM Sans weights, the Vietnamese fallback. */
+const FONT_SAMPLES = [
+  [
+    'Fraunces 600 · 40px (opsz)',
+    'font-display font-semibold text-[40px] leading-[1.05]',
+    'mitigate',
+  ],
+  [
+    'Fraunces 600 · 28px (opsz)',
+    'font-display font-semibold text-[28px] leading-[1.1]',
+    'Good evening, Minh',
+  ],
+  ['Fraunces 500 · 22px (opsz)', 'font-display font-medium text-[22px]', '412 words growing'],
+  ['DM Sans 400 · 15px', 'text-[15px] font-normal', 'Say the meaning out loud, then check.'],
+  ['DM Sans 500 · 13px', 'text-[13px] font-medium', 'Friday, 25 September'],
+  ['DM Sans 600 · 14px', 'text-[14px] font-semibold', 'mitigate the impact'],
+  ['DM Sans 700 · 17px', 'text-[17px] font-bold', 'Continue mission'],
+  ['DM Sans + Be Vietnam Pro · 15px', 'text-[15px]', 'giảm nhẹ, làm dịu bớt · đa dạng sinh học'],
+] as const;
+
 const SPACING = [
   ['space-1', 'w-1'],
   ['space-2', 'w-2'],
@@ -180,6 +200,23 @@ export default async function GardenTokensPage() {
               </span>
             ))}
           </div>
+        </Section>
+
+        <Section title={t('sections.fonts')}>
+          <p className="text-body-s text-garden-muted">{t('notes.fonts')}</p>
+          <ul className="mt-3 space-y-3">
+            {FONT_SAMPLES.map(([name, cls, text]) => (
+              <li
+                key={name}
+                className="rounded-card border border-garden-border bg-garden-surface p-4"
+              >
+                <code className="text-body-s text-garden-muted">{name}</code>
+                <p lang={name.includes('Vietnam') ? 'vi' : 'en'} className={`mt-1 ${cls}`}>
+                  {text}
+                </p>
+              </li>
+            ))}
+          </ul>
         </Section>
 
         <Section title={t('sections.type')}>

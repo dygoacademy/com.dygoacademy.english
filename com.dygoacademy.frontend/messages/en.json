@@ -20,6 +20,7 @@
       "colour": "Colour",
       "stages": "Plant stages",
       "ratings": "Rating buttons",
+      "fonts": "Fonts",
       "type": "Type scale",
       "overline": "Overline in Chinese",
       "spacing": "Spacing",
@@ -34,7 +35,8 @@
       "overline": "Label style with the overline class. English is uppercase with letter spacing; Chinese keeps normal case and no spacing.",
       "motion": "Hover or focus the tiles to see each duration. With reduced motion on, bloom drops to a 150ms fade and ambient loops stop.",
       "safeArea": "This page's frame is padded by the safe-area insets and is at least 100dvh tall. On a Face ID iPhone the tinted strips show the notch and home-indicator insets.",
-      "widths": "Each bar is one GARDEN_CONTENT_WIDTH tier: full width on iPhone, capped on iPad."
+      "widths": "Each bar is one GARDEN_CONTENT_WIDTH tier: full width on iPhone, capped on iPad.",
+      "fonts": "DM Sans (body) with Be Vietnam Pro for Vietnamese letters DM Sans lacks, and Fraunces with the optical-size axis (display). All three are self-hosted woff2 files, the same ones the canvas references were rendered with."
     },
     "sample": {
       "button": "Water 12 words",
