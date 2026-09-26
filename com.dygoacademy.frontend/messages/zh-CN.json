@@ -286,6 +286,22 @@
     },
     "sheet": {
       "close": "关闭"
+    },
+    "language": {
+      "title": "语言",
+      "description": "应用的显示语言，以及复习卡片上额外显示的释义。",
+      "appLanguage": "应用语言",
+      "meaningLanguage": "释义语言",
+      "meaningHint": "始终显示英文释义。",
+      "names": {
+        "en": "English",
+        "zh-CN": "简体中文",
+        "vi": "Tiếng Việt"
+      },
+      "meaningWith": "{language} + English",
+      "meaningNone": "仅英文",
+      "saving": "正在保存…",
+      "error": "没能保存。请检查网络后重试。"
     }
   },
   "screens": {

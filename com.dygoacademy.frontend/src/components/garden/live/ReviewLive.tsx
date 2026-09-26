@@ -9,6 +9,7 @@ import { useStudySession } from '@/hooks/useStudySession';
 import { useTopics } from '@/hooks/useTopics';
 import type { DueCard, SrsRating } from '@/types';
 
+import { useGardenPreferences } from '../preferences';
 import type { Rating } from '../RatingBar';
 import { ReviewScreen } from '../screens/ReviewScreen';
 import { LiveError, LiveLoading } from './LiveState';
@@ -30,6 +31,7 @@ export function ReviewLive({ topicId }: { topicId?: string }) {
   const session = useStudySession(topicId, 'STANDARD', 20);
   const topics = useTopics();
   const rate = useRateWord();
+  const { meaningLocale } = useGardenPreferences();
 
   const [cards, setCards] = React.useState<DueCard[] | null>(null);
   const [index, setIndex] = React.useState(0);
@@ -83,7 +85,10 @@ export function ReviewLive({ topicId }: { topicId?: string }) {
               topic: topicTitle ?? null,
               partOfSpeech: card.part_of_speech,
               meaning: card.definition_en ?? '',
+              // No translations in the API yet; when they arrive, the line in
+              // the learner's meaning language goes first (UI-L decision).
               meaningTranslation: null,
+              meaningFirst: meaningLocale !== null,
               example: card.example_sentences?.[0]?.sentence ?? null,
               collocations: null,
             }

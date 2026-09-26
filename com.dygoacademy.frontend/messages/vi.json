@@ -282,6 +282,22 @@
     },
     "sheet": {
       "close": "Đóng"
+    },
+    "language": {
+      "title": "Ngôn ngữ",
+      "description": "Ngôn ngữ của ứng dụng và nghĩa hiển thị thêm trên thẻ ôn tập.",
+      "appLanguage": "Ngôn ngữ ứng dụng",
+      "meaningLanguage": "Nghĩa hiển thị",
+      "meaningHint": "Luôn hiện định nghĩa tiếng Anh.",
+      "names": {
+        "en": "English",
+        "zh-CN": "简体中文",
+        "vi": "Tiếng Việt"
+      },
+      "meaningWith": "{language} + English",
+      "meaningNone": "Chỉ tiếng Anh",
+      "saving": "Đang lưu…",
+      "error": "Chưa lưu được. Hãy kiểm tra kết nối và thử lại."
     }
   },
   "screens": {
