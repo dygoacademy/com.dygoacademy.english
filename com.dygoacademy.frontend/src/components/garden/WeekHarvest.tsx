@@ -81,7 +81,7 @@ export function WeekHarvest({
           </div>
           <span
             className={gcn(
-              'text-[12px]',
+              'whitespace-nowrap text-[12px]',
               day.today ? 'font-bold text-garden-gold-light' : 'font-medium text-stage-sprout',
             )}
           >

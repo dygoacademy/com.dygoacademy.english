@@ -8,7 +8,7 @@
  * (threshold 0.1). Pass = at most 0.5% of pixels differ.
  *
  * Usage (with `npm run dev` running):
- *   npm run garden:diff -- --base http://localhost:3000 --cookie dygo_ui=garden
+ *   npm run garden:diff -- --base http://localhost:3000 --cookie dygo_ui=garden --locale en,vi
  *
  * Options:
  *   --base <url>       app URL (default http://localhost:3000)
@@ -17,6 +17,10 @@
  *   --out <dir>        where actual + diff PNGs go (default .garden-diff, gitignored)
  *   --chrome <path>    Chrome/Chromium binary (or CHROME_PATH); default: installed Chrome
  *   --max <percent>    pass threshold (default 0.5)
+ *   --locale <l,…>     languages to check: en (default), vi, or "en,vi". UI-L:
+ *                      `vi` screenshots /garden/_reference/<name>?locale=vi and
+ *                      diffs it against reference/<name>-vi.png. (zh-CN has
+ *                      no canvas page; it's checked by screenshots instead.)
  *   --refs <dir>       reference PNGs (default ../docs/design/garden/reference)
  *
  * The reference pages exist only in development (they 404 in production)
@@ -58,6 +62,7 @@ function parseArgs(argv) {
     chrome: null,
     max: 0.5,
     refs: defaultReferenceDir,
+    locales: ['en'],
   };
   for (let i = 0; i < argv.length; i++) {
     const key = argv[i];
@@ -85,6 +90,10 @@ function parseArgs(argv) {
         break;
       case '--refs':
         args.refs = path.resolve(value);
+        i++;
+        break;
+      case '--locale':
+        args.locales = value.split(',').map((s) => s.trim());
         i++;
         break;
       case '--max':
@@ -136,19 +145,24 @@ async function main() {
   const page = await context.newPage();
 
   const rows = [];
-  for (const name of names) {
+  const jobs = args.locales.flatMap((locale) => names.map((name) => ({ locale, name })));
+  for (const { locale, name: screen } of jobs) {
+    const name = locale === 'en' ? screen : `${screen}-${locale}`;
     const refPath = path.join(args.refs, `${name}.png`);
     if (!fs.existsSync(refPath)) {
       rows.push({ name, error: 'no reference PNG' });
       continue;
     }
-    const response = await page.goto(`${args.base}/garden/_reference/${name}`, {
+    const response = await page.goto(`${args.base}/garden/_reference/${screen}?locale=${locale}`, {
       waitUntil: 'load',
     });
     if (!response || response.status() !== 200) {
       rows.push({ name, error: `HTTP ${response ? response.status() : 'no response'}` });
       continue;
     }
+    // The page streams in: wait until React has revealed the garden (its
+    // stylesheets are loaded) before freezing and shooting.
+    await page.waitForSelector('[data-ui="garden"]', { state: 'visible' });
     await page.addStyleTag({ content: FREEZE_CSS });
     await page.evaluate(async () => {
       await document.fonts.ready;

@@ -293,12 +293,18 @@
     /* Font stacks (canvas, decided 2026-09-26). Each subset is its own
        next/font family (src/app/(garden)/fonts.ts), chained here so a
        glyph DM Sans lacks falls through to Be Vietnam Pro, then to the
-       system CJK font (never downloaded). */
+       system CJK font (never downloaded).
+       UI-L: the order copies how the canvas renderer (docs/design/garden/
+       tools/render.js) resolves one family made of several subsets: the
+       subset declared last wins, and the plain latin file (no
+       unicode-range) catches the rest, including Vietnamese letters it
+       can build from a base letter and combining marks. That order is what
+       the Vietnamese references were drawn with. */
     --font-cjk: 'PingFang SC', 'Noto Sans SC', 'Microsoft YaHei';
-    --font-body: var(--font-dm-sans-latin), var(--font-dm-sans-latin-ext),
+    --font-body: var(--font-dm-sans-latin-ext), var(--font-dm-sans-latin),
       var(--font-be-vietnam-pro-vi), var(--font-be-vietnam-pro-latin-ext);
-    --font-display: var(--font-fraunces-latin), var(--font-fraunces-latin-ext),
-      var(--font-fraunces-vi);
+    --font-display: var(--font-fraunces-vi), var(--font-fraunces-latin-ext),
+      var(--font-fraunces-latin);
     --font-stack-display: var(--font-display), var(--font-body), var(--font-cjk), serif;
     --font-stack-body: var(--font-body), var(--font-cjk), sans-serif;
 

@@ -16,9 +16,9 @@ import localFont from 'next/font/local';
  * against docs/design/garden/reference needs the exact files the canvas
  * references were rendered with (@fontsource 5.3.0).
  *
- * Each unicode subset is its own family with its own `unicode-range`, and
- * the stack in globals.css chains them in order, which gives the per-glyph
- * fallback. `adjustFontFallback: false` keeps next/font from inserting a
+ * Each unicode subset is its own family with its own `unicode-range`
+ * (except the latin catch-alls), and the stack in globals.css chains them
+ * in the canvas renderer's order, which gives the per-glyph fallback. `adjustFontFallback: false` keeps next/font from inserting a
  * metric-adjusted Arial between them (it would catch every glyph first).
  * Chinese is never downloaded; see --font-cjk in globals.css.
  *
@@ -33,13 +33,8 @@ export const dmSansLatin = localFont({
     { path: './fonts/dm-sans-latin-600-normal.woff2', weight: '600', style: 'normal' },
     { path: './fonts/dm-sans-latin-700-normal.woff2', weight: '700', style: 'normal' },
   ],
-  declarations: [
-    {
-      prop: 'unicode-range',
-      value:
-        'U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD',
-    },
-  ],
+  // No unicode-range (UI-L): like the canvas renderer, the latin file is
+  // this family's catch-all, after latin-ext in the chain (globals.css).
   display: 'swap',
   adjustFontFallback: false,
   variable: '--font-dm-sans-latin',
@@ -107,13 +102,8 @@ export const beVietnamProLatinExt = localFont({
 
 export const frauncesLatin = localFont({
   src: [{ path: './fonts/fraunces-latin-opsz-normal.woff2', weight: '100 900', style: 'normal' }],
-  declarations: [
-    {
-      prop: 'unicode-range',
-      value:
-        'U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD',
-    },
-  ],
+  // No unicode-range (UI-L): like the canvas renderer, the latin file is
+  // this family's catch-all, after latin-ext in the chain (globals.css).
   display: 'swap',
   adjustFontFallback: false,
   variable: '--font-fraunces-latin',

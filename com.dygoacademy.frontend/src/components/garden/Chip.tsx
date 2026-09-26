@@ -22,7 +22,7 @@ export const Chip = React.forwardRef<HTMLButtonElement, ChipProps>(
       aria-pressed={selected}
       className={gcn(
         'relative inline-flex h-[38px] shrink-0 items-center gap-1 rounded-[19px] border px-[14px]',
-        'text-[14px] font-semibold',
+        'whitespace-nowrap text-[14px] font-semibold',
         "after:absolute after:inset-x-0 after:-inset-y-[3px] after:content-['']",
         'transition-colors duration-quick ease-garden disabled:opacity-50',
         selected

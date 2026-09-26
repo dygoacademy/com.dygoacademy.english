@@ -5,6 +5,8 @@
  * (names, words, meanings, dates), not UI copy: UI copy comes from
  * messages/en.json through t().
  */
+import type { AppLocale } from '@/i18n/config';
+
 import { calendarDay, weekDays } from '../format';
 import type { CalendarLevel } from '../GardenCalendar';
 import type { HeroPlant } from '../HeroGardenCard';
@@ -276,3 +278,105 @@ export const ME = {
   meanings: 'vi' as const,
   family: { name: 'Na' },
 };
+
+/**
+ * UI-L: the canvas sample data per language, for `?locale=`. English is
+ * the Adult page, Vietnamese the "Adult · Tiếng Việt" page (source/*Vi.dc.html);
+ * Chinese has no canvas page, so its sample data is a draft with the same
+ * shape (same numbers, Chinese topic names and meanings).
+ *
+ * Only sample data differs here (names of topics and groups, meanings,
+ * the meaning language). UI copy always comes from messages/<locale>.json.
+ *
+ * `meaningFirst`: the Vietnamese canvas puts the meaning-language line
+ * first (A2-review-answer-vi, the UI-L decision); the English canvas,
+ * drawn before that decision, shows the English definition first, and the
+ * English reference page reproduces it.
+ */
+const SAMPLE = {
+  en: {
+    topics: ['Environment', 'Education', 'Technology', 'Work & careers', 'IELTS Sprint · Week 3'],
+    shared: 'Shared',
+    academic: 'IELTS Academic',
+    collection: 'IELTS Academic',
+    group: 'IELTS Sprint group',
+    meaning: { text: 'giảm nhẹ, làm dịu bớt', lang: 'vi' },
+    meaningFirst: false,
+    meanings: 'vi',
+  },
+  vi: {
+    topics: ['Môi trường', 'Giáo dục', 'Công nghệ', 'Công việc', 'IELTS Sprint · Tuần 3'],
+    shared: 'Chung',
+    academic: 'IELTS',
+    collection: 'IELTS Academic',
+    group: 'Nhóm IELTS Sprint',
+    meaning: { text: 'giảm nhẹ, làm dịu bớt', lang: 'vi' },
+    meaningFirst: true,
+    meanings: 'vi',
+  },
+  'zh-CN': {
+    topics: ['环境', '教育', '科技', '工作与职业', 'IELTS 冲刺 · 第 3 周'],
+    shared: '共享',
+    academic: 'IELTS 学术',
+    collection: 'IELTS 学术',
+    group: 'IELTS 冲刺小组',
+    meaning: { text: '减轻，缓和', lang: 'zh-CN' },
+    meaningFirst: true,
+    meanings: 'zh-CN',
+  },
+} as const;
+
+/** A7's meanings in Chinese, in the order of `BED.words`. */
+const BED_MEANINGS_ZH = [
+  '干旱',
+  '恶化，变坏',
+  '减轻，缓和',
+  '保护，保存',
+  '生物多样性',
+  '碳足迹',
+  '森林砍伐',
+  '生态系统',
+  '可再生的',
+  '可持续的',
+  '排放物',
+];
+
+export function referenceFixtures(locale: AppLocale) {
+  const sample = SAMPLE[locale];
+  return {
+    HOME,
+    REVIEW: {
+      ...REVIEW,
+      card: {
+        ...REVIEW.card,
+        topic: sample.topics[0],
+        meaningTranslation: sample.meaning,
+        meaningFirst: sample.meaningFirst,
+      },
+    },
+    COMPLETE,
+    HARVEST: { ...HARVEST, group: { ...HARVEST.group, name: sample.group } },
+    COMEBACK,
+    TOPICS: TOPICS.map((topic, index) => ({
+      ...topic,
+      title: sample.topics[index],
+      level: topic.group === 'group' ? sample.shared : topic.level,
+    })),
+    TOPICS_ACADEMIC_FILTER: { ...TOPICS_ACADEMIC_FILTER, label: sample.academic },
+    TOPICS_LOCKED_PACK,
+    BED: {
+      ...BED,
+      title: sample.topics[0],
+      meta: { ...BED.meta, collection: sample.collection },
+      words:
+        locale === 'zh-CN'
+          ? BED.words.map((word, index) => ({
+              ...word,
+              meaning: BED_MEANINGS_ZH[index],
+              meaningLang: 'zh-CN',
+            }))
+          : BED.words,
+    },
+    ME: { ...ME, meanings: sample.meanings },
+  };
+}

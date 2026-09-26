@@ -61,8 +61,10 @@ The app ships in **English (`en`), Simplified Chinese (`zh-CN`) and Vietnamese (
 ```sh
 cd com.dygoacademy.frontend
 npm run dev                      # in one terminal
-npm run garden:diff -- --base http://localhost:3000 --cookie dygo_ui=garden
+npm run garden:diff -- --base http://localhost:3000 --cookie dygo_ui=garden --locale en,vi
 ```
+
+`--locale vi` loads `/garden/_reference/<name>?locale=vi` and diffs it against `<name>-vi.png` (UI-L); the default is English only.
 
 The fixture pages are `/garden/_reference/<name>` (dev only, garden flag or cookie; they 404 in production). The script uses your installed Chrome (or `--chrome` / `CHROME_PATH`), writes `actual` and `diff` PNGs to `com.dygoacademy.frontend/.garden-diff/` (gitignored) and prints the table. In a diff PNG, red pixels count; yellow ones are anti-aliasing that pixelmatch ignores.
 
@@ -85,6 +87,27 @@ Measured in headless Chromium 153 on Linux (the sandbox), against `next dev`. Th
 | A8-me | 0.271% | 0.236% | pass ("Tiếng Việt") |
 
 **The only remaining difference is decided, not a bug.** The canvas renders Vietnamese letters that DM Sans doesn't have (ạ, ả, ấ, ễ, ộ, ợ…) with the browser's system fallback; the app uses **Be Vietnam Pro** for them (Dylan's decision, 2026-09-26). A7 shows 11 Vietnamese meanings, so it goes over 0.5%. Proof: with the body stack cut to DM Sans only (scratch copy, not committed), A7 scores 0.263%, A7-sprouts 0.147%, A8 0.238% and A2-answer 0.131%, i.e. the noise floor.
+
+## Diff results, English and Vietnamese (2026-09-26, UI-L pass)
+
+Committed `garden-diff.mjs --locale en,vi`, run against a static snapshot of `next dev` in Playwright's Chromium 1194 (x86-64), the browser that renders the reference HTML pixel-identically (noise floor 0). The UI-L pass changed the font chain to the canvas renderer's order (`--font-body` / `--font-display` in globals.css; the latin files have no `unicode-range`), which is what the `-vi` references were drawn with.
+
+| Screen | English | Vietnamese |
+| --- | ---: | ---: |
+| A1-todays-garden | 0.000% | 0.000% |
+| A2-review-question | 0.001% | 0.001% |
+| A2-review-answer | 0.180% | 0.001% |
+| A2-review-finished | 0.001% | 0.001% |
+| A3-mission-complete | 0.001% | 0.001% |
+| A4-weekly-harvest | 0.000% | 0.000% |
+| A5-welcome-back | 0.000% | 0.088% |
+| A6-topics | 0.000% | 0.000% |
+| A7-topic-bed | **0.738%** | 0.001% |
+| A7-topic-bed-filter-sprouts | 0.262% | 0.001% |
+| A8-me | 0.050% | 0.000% |
+
+- English A7 (and the smaller A2-answer / A7-sprouts / A8 numbers) is the known font decision: the English references were drawn with DM Sans only, so their Vietnamese meaning lines use the system fallback; the app uses Be Vietnam Pro. The `-vi` references were drawn with the app's stack and match.
+- Vietnamese A5: the only difference is one letter, "Chủ Nhật" (the ICU weekday name) where the canvas wrote "Chủ nhật" in the rain-barrel sentence.
 
 ## Known differences (resolved 2026-09-26)
 

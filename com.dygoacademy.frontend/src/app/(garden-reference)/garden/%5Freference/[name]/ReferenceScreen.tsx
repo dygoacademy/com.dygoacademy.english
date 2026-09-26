@@ -2,19 +2,7 @@
 
 import { useTranslations } from 'next-intl';
 
-import {
-  BED,
-  COMEBACK,
-  COMPLETE,
-  HARVEST,
-  HOME,
-  ME,
-  REVIEW,
-  TOPICS,
-  TOPICS_ACADEMIC_FILTER,
-  TOPICS_LOCKED_PACK,
-  type ReferenceName,
-} from '@/components/garden/screens/fixtures';
+import { referenceFixtures, type ReferenceName } from '@/components/garden/screens/fixtures';
 import { MeScreen } from '@/components/garden/screens/MeScreen';
 import { MissionCompleteScreen } from '@/components/garden/screens/MissionCompleteScreen';
 import { ReviewScreen } from '@/components/garden/screens/ReviewScreen';
@@ -29,9 +17,22 @@ import type { AppLocale } from '@/i18n/config';
 /**
  * The screen for one reference page. A client component so every garden
  * screen below reads the provider's messages and formats (the page's
- * `?locale=`), not the request's language.
+ * `?locale=`), not the request's language, with that language's canvas
+ * sample data (`referenceFixtures`).
  */
-export function ReferenceScreen({ name }: { name: ReferenceName; locale: AppLocale }) {
+export function ReferenceScreen({ name, locale }: { name: ReferenceName; locale: AppLocale }) {
+  const {
+    BED,
+    COMEBACK,
+    COMPLETE,
+    HARVEST,
+    HOME,
+    ME,
+    REVIEW,
+    TOPICS,
+    TOPICS_ACADEMIC_FILTER,
+    TOPICS_LOCKED_PACK,
+  } = referenceFixtures(locale);
   const review = useTranslations('screens.review');
   const topics = useTranslations('screens.topics');
   const home = GARDEN_ROUTES.home;
