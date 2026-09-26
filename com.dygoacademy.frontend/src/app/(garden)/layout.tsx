@@ -2,6 +2,7 @@ import type { Viewport } from 'next';
 import { cookies } from 'next/headers';
 import { notFound, redirect } from 'next/navigation';
 
+import { GroupsTabLive } from '@/components/garden/live/GroupsTabLive';
 import { ROUTES } from '@/constants/routes';
 import { getGardenLocaleContext, getGardenUser } from '@/i18n/garden-locale';
 import { GARDEN_UI_COOKIE, isGardenEnabled } from '@/lib/garden-ui';
@@ -64,7 +65,7 @@ export default async function GardenLayout({ children }: { children: React.React
       meaningLocale={locale.meaningLocale}
       stored={locale.stored}
     >
-      {children}
+      <GroupsTabLive>{children}</GroupsTabLive>
     </GardenRoot>
   );
 }

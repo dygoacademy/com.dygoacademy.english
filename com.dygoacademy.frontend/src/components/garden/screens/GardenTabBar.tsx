@@ -4,6 +4,7 @@ import { GARDEN_ROUTES } from '@/constants/garden';
 
 import { BottomTabBar } from '../BottomTabBar';
 import { GroupsTabIcon } from '../groupArt';
+import { useGroupsTab } from '../groupsTab';
 import { GardenTabIcon, MeTabIcon, MissionsTabIcon, TopicsTabIcon } from '../icons';
 
 export type GardenTab = 'garden' | 'missions' | 'topics' | 'groups' | 'me';
@@ -16,8 +17,9 @@ export type GardenTab = 'garden' | 'missions' | 'topics' | 'groups' | 'me';
  * bottom edge, and the pixel diff should see exactly that).
  *
  * UI-G (plan decision 9): a fifth tab, "Groups", between Topics and Me,
- * only for learners in at least one shared garden. The GR-screens pass
- * `groups`; the A-screens keep four tabs until the live wiring (UI-G 3).
+ * only for learners in at least one shared garden. Screens get `groups`
+ * from `useGroupsTab()` (live) or pass it themselves (reference pages:
+ * the A-screens keep four tabs, the GR-screens show five).
  */
 export function GardenTabBar({
   active,
@@ -26,10 +28,11 @@ export function GardenTabBar({
 }: {
   active: GardenTab;
   sticky?: boolean;
-  /** Show the Groups tab. */
+  /** Show the Groups tab. Defaults to what `GroupsTabProvider` says (off without one). */
   groups?: boolean;
 }) {
-  const showGroups = groups ?? false;
+  const fromContext = useGroupsTab();
+  const showGroups = groups ?? fromContext;
   const t = useTranslations('components.tabBar');
   const items = [
     { key: 'garden', href: GARDEN_ROUTES.home, label: t('garden'), icon: <GardenTabIcon /> },
