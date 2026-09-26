@@ -182,3 +182,36 @@ Gate **G1** for you: run the diff on your Mac and look at `/garden/_reference/*`
 2. `npm run dev`, then open `/garden/_reference/A1-todays-garden?ui=garden` (and the other 10 names) next to `docs/design/garden/reference/*.png`; try the A6 chips, the A7 tiles and the A8 switch.
 3. `npm run garden:diff -- --base http://localhost:3000 --cookie dygo_ui=garden` and look at `.garden-diff/*.diff.png` (red counts, yellow is ignored anti-aliasing).
 4. Signed in: `/garden?ui=garden`, water a few words at `/garden/review`, then the tabs. `/?ui=classic` should look exactly as before.
+
+## Pass 3: verification of the canvas fidelity pass (automated, 2026-09-26 05:16 UTC)
+
+Scheduled task "Dygo Phase 12: build all garden screens to match the canvas (pass 2, continue)". Pass 1 had finished at 04:18 (`c058552`, steps 0–7 all committed, no garden work in progress), so this pass only verified it. No code, commits or reference changes. The untracked `docs/design/garden/A6-topics-completion-plan.md` (written 05:15, not by this task) was left alone.
+
+| Check (committed `HEAD` = `c058552`, via `git archive` into a scratch mirror, `npm ci`) | Result |
+| --- | --- |
+| `tsc --noEmit` (app and `tsconfig.test.json`) | Clean |
+| `next lint` | No warnings or errors |
+| `vitest run` | 150 passed, 12 files |
+| `next build` | Not re-run (pass 1 ran it on the same commit) |
+
+**Pixel diff.** The device shell can't download Chromium (network allowlist), so I ran `next dev` there (dummy env values, fixture pages need no backend), saved the 11 `/garden/_reference/*` pages with their CSS, JS and fonts as a static snapshot, and ran the committed `scripts/garden-diff.mjs` unchanged against that snapshot with Playwright's Chromium 1194 (x86-64) in the cloud workspace. That Chromium renders exactly like the one that made the reference PNGs (A1 scores 0 pixels), so there is no noise floor this time:
+
+| Reference | Diff |
+| --- | ---: |
+| A1-todays-garden | 0.000% |
+| A2-review-question | 0.001% |
+| A2-review-answer | 0.180% |
+| A2-review-finished | 0.001% |
+| A3-mission-complete | 0.001% |
+| A4-weekly-harvest | 0.000% |
+| A5-welcome-back | 0.000% |
+| A6-topics | 0.000% |
+| A7-topic-bed | **0.754%** |
+| A7-topic-bed-filter-sprouts | 0.278% |
+| A8-me | 0.056% |
+
+Every remaining red pixel sits on a Vietnamese text line (A7: the 8 meaning lines; A2-answer: the meaning; A8: "Tiếng Việt"), plus 9 pixels in the status bar. That confirms pass 1's finding: A7 is over 0.5% only because the app draws ạ/ả/ấ/ộ in Be Vietnam Pro where the canvas used the system fallback, as decided. Everything else is pixel-identical.
+
+Left behind (gitignored, safe to delete): `com.dygoacademy.frontend/.garden-diff/pass2-snap.tgz` (the snapshot).
+
+**Next open item:** unchanged — G1 on Dylan's Mac, then the UI-5 backend fields (see also the new A6 completion plan).
