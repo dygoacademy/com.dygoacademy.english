@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Start a Garden</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&amp;family=DM+Sans:wght@400;500;600;700&amp;display=swap">
+<style>
+body{margin:0;font-family:'DM Sans',sans-serif;background:#F4F1EA;color:#1C2B24}
+a{color:#B4552E}a:hover{color:#8A3E20}
+@keyframes rise{0%{transform:translateY(12px);opacity:0}100%{transform:translateY(0);opacity:1}}
+.rise{animation:rise .25s ease-out}
+@keyframes fall{0%{transform:translateY(-4px);opacity:0}40%{opacity:1}100%{transform:translateY(10px);opacity:0}}
+.fall{animation:fall 1.4s linear infinite}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; background: #F4F1EA; display: flex; flex-direction: column; gap: 14px; padding-top: 22px; font-family: 'DM Sans', sans-serif; color: #1C2B24; overflow: hidden; position: relative"><div style="position: absolute; inset: 0; padding-top: 22px; display: flex; flex-direction: column; gap: 14px" aria-hidden="true">
+<div style="display: flex; flex-direction: column; padding: 0 20px"><span style="font-size: 13px; color: #5E6A62">3 gardens · 25 gardeners</span><span style="font-family: 'Fraunces', serif; font-weight: 600; font-size: 28px">Shared gardens</span></div>
+<div style="margin: 0 16px; height: 150px; border-radius: 24px; background: #24463A"></div>
+<div style="margin: 0 16px; height: 80px; border-radius: 20px; background: #FFFFFF; border: 1px solid #E3DDD0"></div>
+<div style="margin: 0 16px; height: 80px; border-radius: 20px; background: #FFFFFF; border: 1px solid #E3DDD0"></div>
+</div>
+<div style="position: absolute; inset: 0; background: rgba(28, 43, 36, 0.45)"></div>
+<div class="rise" role="dialog" aria-modal="true" aria-labelledby="sheet-title" style="position: absolute; left: 0; right: 0; bottom: 0; background: #F4F1EA; border-radius: 26px 26px 0 0; padding: 10px 16px 34px; display: flex; flex-direction: column; gap: 14px">
+<span style="align-self: center; width: 36px; height: 5px; border-radius: 3px; background: #CFC8B8"></span>
+<div style="display: flex; align-items: center; gap: 12px">
+<div style="flex-grow: 1; display: flex; flex-direction: column"><span id="sheet-title" style="font-family: 'Fraunces', serif; font-weight: 600; font-size: 22px">Start a garden</span><span style="font-size: 13px; color: #5E6A62">A shared space for your class or friends</span></div>
+<a href="AdultGroups.dc.html" aria-label="Close" style="width: 44px; height: 44px; border-radius: 22px; background: #FFFFFF; border: 1px solid #E3DDD0; display: flex; align-items: center; justify-content: center; color: #1C2B24; flex-shrink: 0"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M6 6 L18 18"></path><path d="M18 6 L6 18"></path></svg></a>
+</div>
+<label style="display: flex; flex-direction: column; gap: 6px"><span style="font-size: 12px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: #5E6A62">Name</span><span style="min-height: 48px; box-sizing: border-box; background: #FFFFFF; border: 1px solid #24463A; border-radius: 14px; padding: 12px 14px; font-size: 16px; color: #1C2B24; line-height: 1.4">Band 7 Night Class</span></label>
+<label style="display: flex; flex-direction: column; gap: 6px"><span style="font-size: 12px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: #5E6A62">About (optional)</span><span style="min-height: 48px; box-sizing: border-box; background: #FFFFFF; border: 1px solid #E3DDD0; border-radius: 14px; padding: 12px 14px; font-size: 16px; color: #8A938C; line-height: 1.4">Writing Task 2 vocabulary, 3 evenings a week</span></label>
+<div style="background: #FFFFFF; border: 1px solid #E3DDD0; border-radius: 16px; padding: 12px 14px; display: flex; align-items: center; gap: 12px">
+<div style="flex-grow: 1; display: flex; flex-direction: column"><span style="font-weight: 700; font-size: 14px">Open garden</span><span style="font-size: 12px; color: #5E6A62">{{hint}}</span></div>
+<button onClick="{{toggle}}" role="switch" aria-checked="{{openAria}}" aria-label="Open garden" style="width: 52px; height: 32px; border-radius: 16px; border: none; background: {{track}}; position: relative; cursor: pointer; padding: 0; flex-shrink: 0"><span style="position: absolute; top: 3px; left: {{knob}}; width: 26px; height: 26px; border-radius: 13px; background: #FFFFFF; transition: left .2s"></span></button>
+</div>
+<span style="font-size: 13px; color: #5E6A62; padding: 0 4px">You'll be the garden's admin. Add shared beds and invite gardeners next.</span>
+<a href="AdultGroupGarden.dc.html" style="height: 56px; border-radius: 18px; background: #B4552E; color: #FFFFFF; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 17px; text-decoration: none; box-shadow: 0 4px 0 #7E3719">Create garden</a>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { open: false }; }
+  renderVals() {
+    const on = this.state.open;
+    return {
+      openAria: on ? 'true' : 'false',
+      track: on ? '#3E7F5A' : '#CFC8B8',
+      knob: on ? '23px' : '3px',
+      hint: on ? 'Anyone with the garden\'s name can ask to join' : 'Only people with an invite link can join',
+      toggle: () => this.setState({ open: !on })
+    };
+  }
+}
+</script>
+</body>
+</html>

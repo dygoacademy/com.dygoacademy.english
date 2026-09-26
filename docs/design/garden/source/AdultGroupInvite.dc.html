@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Invite Gardeners</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&amp;family=DM+Sans:wght@400;500;600;700&amp;display=swap">
+<style>
+body{margin:0;font-family:'DM Sans',sans-serif;background:#F4F1EA;color:#1C2B24}
+a{color:#B4552E}a:hover{color:#8A3E20}
+@keyframes rise{0%{transform:translateY(12px);opacity:0}100%{transform:translateY(0);opacity:1}}
+.rise{animation:rise .25s ease-out}
+@keyframes fall{0%{transform:translateY(-4px);opacity:0}40%{opacity:1}100%{transform:translateY(10px);opacity:0}}
+.fall{animation:fall 1.4s linear infinite}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; background: #F4F1EA; display: flex; flex-direction: column; gap: 14px; padding-top: 22px; font-family: 'DM Sans', sans-serif; color: #1C2B24; overflow: hidden; position: relative"><div style="position: absolute; inset: 0; padding-top: 22px; display: flex; flex-direction: column; gap: 14px" aria-hidden="true">
+<div style="display: flex; flex-direction: column; padding: 0 20px"><span style="font-size: 13px; color: #5E6A62">IELTS Sprint · Week 3</span><span style="font-family: 'Fraunces', serif; font-weight: 600; font-size: 28px">Gardeners</span></div>
+<div style="margin: 0 16px; height: 150px; border-radius: 24px; background: #24463A"></div>
+<div style="margin: 0 16px; height: 80px; border-radius: 20px; background: #FFFFFF; border: 1px solid #E3DDD0"></div>
+<div style="margin: 0 16px; height: 80px; border-radius: 20px; background: #FFFFFF; border: 1px solid #E3DDD0"></div>
+</div>
+<div style="position: absolute; inset: 0; background: rgba(28, 43, 36, 0.45)"></div>
+<div class="rise" role="dialog" aria-modal="true" aria-labelledby="sheet-title" style="position: absolute; left: 0; right: 0; bottom: 0; background: #F4F1EA; border-radius: 26px 26px 0 0; padding: 10px 16px 34px; display: flex; flex-direction: column; gap: 14px">
+<span style="align-self: center; width: 36px; height: 5px; border-radius: 3px; background: #CFC8B8"></span>
+<div style="display: flex; align-items: center; gap: 12px">
+<div style="flex-grow: 1; display: flex; flex-direction: column"><span id="sheet-title" style="font-family: 'Fraunces', serif; font-weight: 600; font-size: 22px">Invite gardeners</span><span style="font-size: 13px; color: #5E6A62">to IELTS Sprint · Week 3</span></div>
+<a href="AdultGroupRoster.dc.html" aria-label="Close" style="width: 44px; height: 44px; border-radius: 22px; background: #FFFFFF; border: 1px solid #E3DDD0; display: flex; align-items: center; justify-content: center; color: #1C2B24; flex-shrink: 0"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M6 6 L18 18"></path><path d="M18 6 L6 18"></path></svg></a>
+</div>
+<div style="display: flex; flex-direction: column; gap: 8px">
+<span style="font-size: 12px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: #5E6A62">They join as</span>
+<div role="radiogroup" aria-label="Role for new gardeners" style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4px; background: #EAE5DA; border-radius: 14px; padding: 4px">
+<sc-for list="{{roles}}" as="r" hint-placeholder-count="3">
+<button onClick="{{r.pick}}" role="radio" aria-checked="{{r.selected}}" style="height: 40px; border-radius: 11px; border: none; background: {{r.bg}}; color: {{r.fg}}; box-shadow: {{r.shadow}}; font-family: 'DM Sans', sans-serif; font-weight: 700; font-size: 14px; cursor: pointer">{{r.label}}</button>
+</sc-for>
+</div>
+<span style="font-size: 13px; color: #5E6A62">{{hint}}</span>
+</div>
+<div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px">
+<div style="background: #FFFFFF; border: 1px solid #E3DDD0; border-radius: 16px; padding: 10px 12px; display: flex; flex-direction: column"><span style="font-size: 12px; color: #5E6A62">Expires</span><span style="font-weight: 700; font-size: 15px">In 7 days</span></div>
+<div style="background: #FFFFFF; border: 1px solid #E3DDD0; border-radius: 16px; padding: 10px 12px; display: flex; flex-direction: column"><span style="font-size: 12px; color: #5E6A62">Can be used</span><span style="font-weight: 700; font-size: 15px">20 times</span></div>
+</div>
+<div style="background: #FFFFFF; border: 1px solid #E3DDD0; border-radius: 16px; padding: 12px; display: flex; align-items: center; gap: 10px">
+<span style="flex-grow: 1; font-size: 14px; font-weight: 600; color: #24463A; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">dygoacademy.com/join/7Hk2-qP9x-Lm4r</span>
+</div>
+<div style="display: flex; align-items: center; gap: 8px; background: #FBF4E4; border-radius: 12px; padding: 8px 10px; font-size: 12px; color: #6B5215"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="10" width="14" height="10" rx="2"></rect><path d="M8 10 V7 A4 4 0 0 1 16 7 V10"></path></svg><span>For safety this link is shown only once. Copy or share it now.</span></div>
+<div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px">
+<button onClick="{{copy}}" style="height: 54px; border-radius: 16px; border: none; background: {{copyBg}}; color: #FFFFFF; font-family: 'DM Sans', sans-serif; font-weight: 700; font-size: 16px; cursor: pointer; box-shadow: 0 4px 0 #142A21">{{copyLabel}}</button>
+<button style="height: 54px; border-radius: 16px; border: none; background: #B4552E; color: #FFFFFF; font-family: 'DM Sans', sans-serif; font-weight: 700; font-size: 16px; cursor: pointer; box-shadow: 0 4px 0 #7E3719">Share…</button>
+</div>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { role: 'Viewer', copied: false }; }
+  renderVals() {
+    const s = this.state;
+    const hints = { Viewer: 'Waters the shared beds', Editor: 'Also adds beds and words', Admin: 'Also manages gardeners and rain days' };
+    const roles = ['Viewer', 'Editor', 'Admin'].map((r) => ({
+      label: r,
+      bg: s.role === r ? '#FFFFFF' : 'transparent',
+      fg: s.role === r ? '#24463A' : '#5E6A62',
+      shadow: s.role === r ? '0 1px 0 #E3DDD0' : 'none',
+      selected: s.role === r ? 'true' : 'false',
+      pick: () => this.setState({ role: r, copied: false })
+    }));
+    return {
+      roles,
+      hint: hints[s.role],
+      copyLabel: s.copied ? 'Copied' : 'Copy link',
+      copyBg: s.copied ? '#3E7F5A' : '#24463A',
+      copy: () => this.setState({ copied: true })
+    };
+  }
+}
+</script>
+</body>
+</html>

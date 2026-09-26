@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<title>Bạn cùng vườn và vai trò</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&amp;family=DM+Sans:wght@400;500;600;700&amp;family=Be+Vietnam+Pro:wght@400;500;600;700&amp;display=swap">
+<style>
+body{margin:0;font-family:'DM Sans','Be Vietnam Pro',sans-serif;background:#F4F1EA;color:#1C2B24}
+a{color:#B4552E}a:hover{color:#8A3E20}
+@keyframes rise{0%{transform:translateY(12px);opacity:0}100%{transform:translateY(0);opacity:1}}
+.rise{animation:rise .25s ease-out}
+@keyframes fall{0%{transform:translateY(-4px);opacity:0}40%{opacity:1}100%{transform:translateY(10px);opacity:0}}
+.fall{animation:fall 1.4s linear infinite}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; background: #F4F1EA; display: flex; flex-direction: column; gap: 14px; padding-top: 22px; font-family: 'DM Sans', 'Be Vietnam Pro', sans-serif; color: #1C2B24; overflow: hidden; position: relative">
+<div style="display: flex; align-items: center; gap: 12px; padding: 0 16px">
+<a href="AdultGroupGardenVi.dc.html" aria-label="Quay lại vườn nhóm" style="width: 44px; height: 44px; border-radius: 22px; background: #FFFFFF; border: 1px solid #E3DDD0; display: flex; align-items: center; justify-content: center; color: #1C2B24; flex-shrink: 0"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5 L8 12 L15 19"></path></svg></a>
+<div style="flex-grow: 1; display: flex; flex-direction: column">
+<span style="font-family: 'Fraunces', serif; font-weight: 600; font-size: 24px; line-height: 1.1">Chăm vườn</span>
+<span style="font-size: 13px; color: #5E6A62">IELTS Sprint · Tuần 3</span>
+</div>
+</div>
+<div role="tablist" style="margin: 0 16px; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 4px; background: #EAE5DA; border-radius: 14px; padding: 4px">
+<a href="AdultGroupTrickyVi.dc.html" role="tab" aria-selected="false" style="height: 36px; border-radius: 11px; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; text-decoration: none; background: transparent; color: #5E6A62">Chỗ khó</a>
+<a href="AdultGroupRosterVi.dc.html" role="tab" aria-selected="true" style="height: 36px; border-radius: 11px; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; text-decoration: none; background: #FFFFFF; color: #24463A">Bạn cùng vườn</a>
+</div>
+<div style="margin: 0 16px; background: #FFFFFF; border: 1px solid #E3DDD0; border-radius: 22px; display: flex; flex-direction: column; overflow: hidden">
+<div style="display: flex; align-items: center; gap: 12px; padding: 10px 14px; border-bottom: 1px solid #EFEAE0">
+<span style="width: 40px; height: 40px; border-radius: 20px; background: #24463A; box-sizing: border-box; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; color: #F2D28B; flex-shrink: 0">M</span>
+<div style="flex-grow: 1; display: flex; flex-direction: column; min-width: 0"><span style="font-weight: 700; font-size: 15px">Minh <span style="font-size: 12px; font-weight: 600; color: #5E6A62">(bạn)</span></span><span style="font-size: 12px; color: #5E6A62">Tham gia 2/9</span></div>
+<button aria-label="Đổi vai trò của Minh" style="height: 36px; padding: 0 8px 0 10px; border-radius: 12px; border: 1px solid #E3DDD0; background: #FFFFFF; display: flex; align-items: center; gap: 4px; font-family: 'DM Sans', 'Be Vietnam Pro', sans-serif; font-weight: 700; font-size: 13px; color: #24463A; cursor: pointer">Quản trị<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9 L12 15 L18 9"></path></svg></button>
+</div>
+<div style="display: flex; align-items: center; gap: 12px; padding: 10px 14px; border-bottom: 1px solid #EFEAE0">
+<span style="width: 40px; height: 40px; border-radius: 20px; background: #E8A87C; box-sizing: border-box; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; color: #5A2E14; flex-shrink: 0">L</span>
+<div style="flex-grow: 1; display: flex; flex-direction: column; min-width: 0"><span style="font-weight: 700; font-size: 15px">Linh Tran</span><span style="font-size: 12px; color: #5E6A62">Tham gia 4/9</span></div>
+<button aria-label="Đổi vai trò của Linh Tran" style="height: 36px; padding: 0 8px 0 10px; border-radius: 12px; border: 1px solid #E3DDD0; background: #FFFFFF; display: flex; align-items: center; gap: 4px; font-family: 'DM Sans', 'Be Vietnam Pro', sans-serif; font-weight: 700; font-size: 13px; color: #24463A; cursor: pointer">Biên tập<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9 L12 15 L18 9"></path></svg></button>
+</div>
+<div style="display: flex; align-items: center; gap: 12px; padding: 10px 14px; border-bottom: 1px solid #EFEAE0">
+<span style="width: 40px; height: 40px; border-radius: 20px; background: #8EC5E8; box-sizing: border-box; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; color: #123A57; flex-shrink: 0">T</span>
+<div style="flex-grow: 1; display: flex; flex-direction: column; min-width: 0"><span style="font-weight: 700; font-size: 15px">Tom Walker</span><span style="font-size: 12px; color: #5E6A62">Tham gia 4/9</span></div>
+<button aria-label="Đổi vai trò của Tom Walker" style="height: 36px; padding: 0 8px 0 10px; border-radius: 12px; border: 1px solid #E3DDD0; background: #FFFFFF; display: flex; align-items: center; gap: 4px; font-family: 'DM Sans', 'Be Vietnam Pro', sans-serif; font-weight: 700; font-size: 13px; color: #24463A; cursor: pointer">Thành viên<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9 L12 15 L18 9"></path></svg></button>
+</div>
+<div style="display: flex; align-items: center; gap: 12px; padding: 10px 14px; border-bottom: 1px solid #EFEAE0">
+<span style="width: 40px; height: 40px; border-radius: 20px; background: #9CC39A; box-sizing: border-box; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; color: #1C3A22; flex-shrink: 0">H</span>
+<div style="flex-grow: 1; display: flex; flex-direction: column; min-width: 0"><span style="font-weight: 700; font-size: 15px">Hui Min</span><span style="font-size: 12px; color: #5E6A62">Tham gia 9/9</span></div>
+<button aria-label="Đổi vai trò của Hui Min" style="height: 36px; padding: 0 8px 0 10px; border-radius: 12px; border: 1px solid #E3DDD0; background: #FFFFFF; display: flex; align-items: center; gap: 4px; font-family: 'DM Sans', 'Be Vietnam Pro', sans-serif; font-weight: 700; font-size: 13px; color: #24463A; cursor: pointer">Thành viên<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9 L12 15 L18 9"></path></svg></button>
+</div>
+<div style="display: flex; align-items: center; gap: 12px; padding: 10px 14px; border-bottom: 0">
+<span style="width: 40px; height: 40px; border-radius: 20px; background: #F2D28B; box-sizing: border-box; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; color: #5A4410; flex-shrink: 0">A</span>
+<div style="flex-grow: 1; display: flex; flex-direction: column; min-width: 0"><span style="font-weight: 700; font-size: 15px">Arjun</span><span style="font-size: 12px; color: #5E6A62">Tham gia 21/9</span></div>
+<button aria-label="Đổi vai trò của Arjun" style="height: 36px; padding: 0 8px 0 10px; border-radius: 12px; border: 1px solid #E3DDD0; background: #FFFFFF; display: flex; align-items: center; gap: 4px; font-family: 'DM Sans', 'Be Vietnam Pro', sans-serif; font-weight: 700; font-size: 13px; color: #24463A; cursor: pointer">Thành viên<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9 L12 15 L18 9"></path></svg></button>
+</div>
+</div>
+<div style="margin: 0 16px; display: flex; flex-direction: column; gap: 6px; font-size: 12px; color: #5E6A62; padding: 0 4px">
+<span><b style="color: #1C2B24">Quản trị</b> quản lý thành viên, lời mời và ngày mưa · <b style="color: #1C2B24">Biên tập</b> thêm luống và từ · <b style="color: #1C2B24">Thành viên</b> tưới cây</span>
+</div>
+<div style="margin: 0 16px; background: #FFFFFF; border: 1px solid #E3DDD0; border-radius: 18px; padding: 12px 14px; display: flex; align-items: center; gap: 12px">
+<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#24463A" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 14 L14 10"></path><path d="M8 12 L6 14 A3 3 0 0 0 10 18 L12 16"></path><path d="M16 12 L18 10 A3 3 0 0 0 14 6 L12 8"></path></svg>
+<div style="flex-grow: 1; display: flex; flex-direction: column"><span style="font-weight: 700; font-size: 14px">2 link mời đang hoạt động</span><span style="font-size: 12px; color: #5E6A62">Thành viên · đã dùng 3/20 · hết hạn 3/10</span></div>
+<a href="AdultGroupInviteVi.dc.html" style="height: 40px; padding: 0 14px; border-radius: 14px; background: #B4552E; color: #FFFFFF; display: flex; align-items: center; font-weight: 700; font-size: 14px; text-decoration: none; box-shadow: 0 3px 0 #7E3719">Mời</a>
+</div>
+<nav style="margin-top: auto; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); background: #FFFFFF; border-top: 1px solid #E3DDD0; padding: 8px 4px 20px">
+<a href="AdultHomeVi.dc.html" style="display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 6px 0; text-decoration: none; color: #5E6A62"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21 V11"></path><path d="M12 14 C7 14 5 10 5 7 C9 7 12 9 12 14 Z"></path><path d="M12 12 C17 12 19 8 19 5 C15 5 12 7 12 12 Z"></path><path d="M5 21 H19"></path></svg><span style="font-size: 12px; font-weight: 500">Vườn</span></a>
+<a href="AdultMissionsVi.dc.html" style="display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 6px 0; text-decoration: none; color: #5E6A62"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><circle cx="12" cy="12" r="5"></circle><circle cx="12" cy="12" r="1.5"></circle></svg><span style="font-size: 12px; font-weight: 500">Nhiệm vụ</span></a>
+<a href="AdultTopicsVi.dc.html" style="display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 6px 0; text-decoration: none; color: #5E6A62"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5 C4 4 5 4 6 4 H11 V20 H6 C5 20 4 20 4 19 Z"></path><path d="M20 5 C20 4 19 4 18 4 H13 V20 H18 C19 20 20 20 20 19 Z"></path></svg><span style="font-size: 12px; font-weight: 500">Chủ đề</span></a>
+<a href="AdultGroupsVi.dc.html" style="display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 6px 0; text-decoration: none; color: #24463A"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3.5"></circle><circle cx="17" cy="10" r="2.5"></circle><path d="M3 20 C3 15 6 13 9 13 C12 13 15 15 15 20"></path><path d="M15 15 C16 14 21 14 21 19"></path></svg><span style="font-size: 12px; font-weight: 700">Nhóm</span></a>
+<a href="AdultMeVi.dc.html" style="display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 6px 0; text-decoration: none; color: #5E6A62"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"></circle><path d="M4 21 C4 16 8 14 12 14 C16 14 20 16 20 21"></path></svg><span style="font-size: 12px; font-weight: 500">Tôi</span></a>
+</nav>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<title>Hoàn thành nhiệm vụ</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&amp;family=DM+Sans:wght@400;500;600;700&amp;family=Be+Vietnam+Pro:wght@400;500;600;700&amp;display=swap">
+<style>
+body{margin:0;font-family:'DM Sans','Be Vietnam Pro',sans-serif;background:#F4F1EA;color:#1C2B24}
+a{color:#B4552E}a:hover{color:#8A3E20}
+@keyframes bloom{0%{transform:scale(.6);opacity:0}70%{transform:scale(1.06)}100%{transform:scale(1);opacity:1}}
+.bloom{animation:bloom .7s ease-out}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; background: #F4F1EA; display: flex; flex-direction: column; gap: 16px; padding: 20px 16px 24px; font-family: 'DM Sans', 'Be Vietnam Pro', sans-serif; color: #1C2B24; overflow: hidden">
+
+<div style="display: flex; justify-content: flex-end">
+<a href="AdultHomeVi.dc.html" aria-label="Đóng" style="width: 44px; height: 44px; border-radius: 22px; background: #FFFFFF; border: 1px solid #E3DDD0; display: flex; align-items: center; justify-content: center; color: #1C2B24"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M6 6 L18 18"></path><path d="M18 6 L6 18"></path></svg></a>
+</div>
+
+<div style="display: flex; flex-direction: column; align-items: center; gap: 6px; text-align: center">
+<div class="bloom" style="width: 168px; height: 168px; border-radius: 84px; background: #24463A; display: flex; align-items: center; justify-content: center">
+<svg width="130" height="130" viewBox="0 0 60 60" aria-label="Hoa đang nở"><path d="M30 56 V28" stroke="#9CC39A" stroke-width="2.6" stroke-linecap="round"></path><path d="M30 46 C22 45 18 40 20 35 C27 35 30 40 30 46 Z" fill="#9CC39A"></path><path d="M30 42 C38 41 42 36 40 31 C33 31 30 36 30 42 Z" fill="#B7D6AE"></path><circle cx="30" cy="12" r="7" fill="#E8A87C"></circle><circle cx="39" cy="18" r="7" fill="#E8A87C"></circle><circle cx="36" cy="28" r="7" fill="#E8A87C"></circle><circle cx="24" cy="28" r="7" fill="#E8A87C"></circle><circle cx="21" cy="18" r="7" fill="#E8A87C"></circle><circle cx="30" cy="21" r="6" fill="#F2D28B"></circle><circle cx="10" cy="10" r="1.5" fill="#F2D28B"></circle><circle cx="52" cy="14" r="1.5" fill="#F2D28B"></circle><circle cx="48" cy="40" r="1.2" fill="#F2D28B"></circle><circle cx="8" cy="38" r="1.2" fill="#F2D28B"></circle></svg>
+</div>
+<span style="font-size: 12px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: #3E7F5A; margin-top: 8px">Hoàn thành nhiệm vụ</span>
+<span style="font-family: 'Fraunces', serif; font-weight: 600; font-size: 30px; line-height: 1.1">Đã tưới 18 từ</span>
+<span style="font-size: 15px; color: #5E6A62">“mitigate” và 4 từ khác vừa nở hoa</span>
+</div>
+
+<div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px">
+<div style="background: #FFFFFF; border: 1px solid #E3DDD0; border-radius: 16px; padding: 12px; display: flex; flex-direction: column; gap: 2px"><span style="font-family: 'Fraunces', serif; font-weight: 600; font-size: 24px">92%</span><span style="font-size: 12px; color: #5E6A62">nhớ được</span></div>
+<div style="background: #FFFFFF; border: 1px solid #E3DDD0; border-radius: 16px; padding: 12px; display: flex; flex-direction: column; gap: 2px"><span style="font-family: 'Fraunces', serif; font-weight: 600; font-size: 24px">6 phút</span><span style="font-size: 12px; color: #5E6A62">hôm nay</span></div>
+<div style="background: #FFFFFF; border: 1px solid #E3DDD0; border-radius: 16px; padding: 12px; display: flex; flex-direction: column; gap: 2px"><span style="font-family: 'Fraunces', serif; font-weight: 600; font-size: 24px; color: #3E7F5A">24</span><span style="font-size: 12px; color: #5E6A62">ngày liên tiếp</span></div>
+</div>
+
+<div style="background: #FFFFFF; border: 1px solid #E3DDD0; border-radius: 18px; padding: 12px 14px; display: flex; justify-content: space-between">
+<sc-for list="{{week}}" as="d" hint-placeholder-count="7">
+<div style="display: flex; flex-direction: column; align-items: center; gap: 4px">
+<span style="width: 30px; height: 30px; border-radius: 15px; background: {{d.bg}}; border: 2px solid {{d.border}}; display: flex; align-items: center; justify-content: center; box-sizing: border-box">
+<sc-if value="{{d.done}}" hint-placeholder-val="{{true}}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12 L10 17 L19 7"></path></svg></sc-if>
+</span>
+<span style="font-size: 12px; font-weight: 600; color: {{d.text}}">{{d.label}}</span>
+</div>
+</sc-for>
+</div>
+
+<div style="background: #FBF4E4; border: 1px solid #EFD9A6; border-radius: 20px; padding: 14px; display: flex; flex-direction: column; gap: 12px">
+<div style="display: flex; align-items: center; gap: 12px">
+<svg width="40" height="40" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="4" r="3" fill="#F2D28B"></circle><circle cx="17" cy="8" r="3" fill="#F2D28B"></circle><circle cx="7" cy="8" r="3" fill="#F2D28B"></circle><circle cx="15" cy="13" r="3" fill="#F2D28B"></circle><circle cx="9" cy="13" r="3" fill="#F2D28B"></circle><circle cx="12" cy="9" r="3.5" fill="#E0B04A"></circle><path d="M12 14 V23" stroke="#7FA487" stroke-width="2"></path></svg>
+<div style="display: flex; flex-direction: column; flex-grow: 1">
+<span style="font-weight: 700; font-size: 16px">Xong 2/3 nhiệm vụ</span>
+<span style="font-size: 13px; color: #6B5215">Còn 1 nhiệm vụ nữa là nở Hoa Vàng</span>
+</div>
+</div>
+<a href="AdultReviewVi.dc.html" style="height: 54px; border-radius: 16px; background: #B4552E; color: #FFFFFF; display: flex; align-items: center; justify-content: center; gap: 8px; font-weight: 700; font-size: 16px; text-decoration: none; box-shadow: 0 4px 0 #7E3719">Thử thách cụm từ · 3 phút</a>
+</div>
+
+<div style="background: #FFFFFF; border: 1px solid #E3DDD0; border-radius: 18px; padding: 12px 14px; display: flex; align-items: center; gap: 12px">
+<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#24463A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 8 A6 6 0 0 1 18 8 C18 15 21 17 21 17 H3 C3 17 6 15 6 8"></path><path d="M10 21 H14"></path></svg>
+<div style="flex-grow: 1; display: flex; flex-direction: column">
+<span style="font-weight: 700; font-size: 14px">Ngày mai 14 từ sẽ chín</span>
+<span style="font-size: 12px; color: #5E6A62">Nhắc tôi lúc 7:30</span>
+</div>
+<button onClick="{{toggle}}" role="switch" aria-checked="{{remind}}" aria-label="Nhắc tôi lúc 7:30" style="width: 52px; height: 32px; border-radius: 16px; border: none; background: {{trackColor}}; position: relative; cursor: pointer; padding: 0; flex-shrink: 0">
+<span style="position: absolute; top: 3px; left: {{knobLeft}}; width: 26px; height: 26px; border-radius: 13px; background: #FFFFFF; transition: left .2s"></span>
+</button>
+</div>
+
+<a href="AdultHomeVi.dc.html" style="margin-top: auto; text-align: center; font-weight: 600; font-size: 15px; color: #24463A">Về vườn</a>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { remind: true };
+  }
+  renderVals() {
+    const labels = ['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'];
+    const week = labels.map((label, k) => {
+      const done = k <= 4;
+      const today = k === 4;
+      return {
+        label,
+        done,
+        bg: done ? (today ? '#B4552E' : '#3E7F5A') : '#FFFFFF',
+        border: done ? (today ? '#B4552E' : '#3E7F5A') : '#E3DDD0',
+        text: today ? '#B4552E' : '#5E6A62'
+      };
+    });
+    const on = this.state.remind;
+    return {
+      week,
+      remind: on ? 'true' : 'false',
+      trackColor: on ? '#3E7F5A' : '#CFC8B8',
+      knobLeft: on ? '23px' : '3px',
+      toggle: () => this.setState({ remind: !on })
+    };
+  }
+}
+</script>
+</body>
+</html>

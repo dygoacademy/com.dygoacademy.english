@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<title>Thu hoạch tuần</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&amp;family=DM+Sans:wght@400;500;600;700&amp;family=Be+Vietnam+Pro:wght@400;500;600;700&amp;display=swap">
+<style>
+body{margin:0;font-family:'DM Sans','Be Vietnam Pro',sans-serif;background:#F4F1EA;color:#1C2B24}
+a{color:#B4552E}a:hover{color:#8A3E20}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; background: #F4F1EA; display: flex; flex-direction: column; gap: 14px; padding-top: 22px; font-family: 'DM Sans', 'Be Vietnam Pro', sans-serif; color: #1C2B24; overflow: hidden">
+
+<div style="display: flex; flex-direction: column; padding: 0 20px">
+<span style="font-size: 13px; font-weight: 500; color: #5E6A62">Tuần từ 21 tháng 9</span>
+<span style="font-family: 'Fraunces', serif; font-weight: 600; font-size: 28px; line-height: 1.1">Thu hoạch tuần này</span>
+</div>
+
+<div style="margin: 0 16px; background: #24463A; color: #F4F1EA; border-radius: 24px; padding: 16px; display: flex; flex-direction: column; gap: 12px">
+<div style="display: flex; justify-content: space-between; align-items: baseline">
+<span style="font-weight: 700; font-size: 15px">11/21 nhiệm vụ</span>
+<span style="font-size: 12px; color: #B7D6AE">Nhiệm vụ giúp cây lớn</span>
+</div>
+<div style="display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 2px; align-items: end">
+<sc-for list="{{days}}" as="d" hint-placeholder-count="7">
+<div style="display: flex; flex-direction: column; align-items: center; gap: 4px">
+<div style="height: 56px; display: flex; align-items: flex-end">
+<sc-if value="{{d.s0}}" hint-placeholder-val="{{false}}"><svg width="40" height="40" viewBox="0 0 40 40" aria-label="chưa có nhiệm vụ"><ellipse cx="20" cy="36" rx="12" ry="3" fill="#3B5A48"></ellipse></svg></sc-if>
+<sc-if value="{{d.s1}}" hint-placeholder-val="{{false}}"><svg width="40" height="40" viewBox="0 0 40 40" aria-label="1 nhiệm vụ"><ellipse cx="20" cy="36" rx="12" ry="3" fill="#3B5A48"></ellipse><path d="M20 35 V22" stroke="#9CC39A" stroke-width="2.5"></path><path d="M20 28 C14 27 11 23 13 19 C18 19 20 23 20 28 Z" fill="#9CC39A"></path><path d="M20 25 C26 24 29 20 27 16 C22 16 20 20 20 25 Z" fill="#B7D6AE"></path></svg></sc-if>
+<sc-if value="{{d.s2}}" hint-placeholder-val="{{false}}"><svg width="40" height="52" viewBox="0 0 40 52" aria-label="2 nhiệm vụ"><ellipse cx="20" cy="48" rx="12" ry="3" fill="#3B5A48"></ellipse><path d="M20 47 V20" stroke="#9CC39A" stroke-width="2.5"></path><path d="M20 38 C14 37 11 33 13 29 C18 29 20 33 20 38 Z" fill="#9CC39A"></path><circle cx="20" cy="10" r="5" fill="#E8A87C"></circle><circle cx="26" cy="15" r="5" fill="#E8A87C"></circle><circle cx="24" cy="22" r="5" fill="#E8A87C"></circle><circle cx="16" cy="22" r="5" fill="#E8A87C"></circle><circle cx="14" cy="15" r="5" fill="#E8A87C"></circle><circle cx="20" cy="17" r="4" fill="#F2D28B"></circle></svg></sc-if>
+<sc-if value="{{d.s3}}" hint-placeholder-val="{{false}}"><svg width="44" height="56" viewBox="0 0 44 56" aria-label="3 nhiệm vụ"><ellipse cx="22" cy="52" rx="13" ry="3" fill="#3B5A48"></ellipse><rect x="20" y="30" width="4" height="22" fill="#8A6A4F"></rect><circle cx="22" cy="20" r="15" fill="#7FA487"></circle><circle cx="11" cy="29" r="9" fill="#7FA487"></circle><circle cx="33" cy="29" r="9" fill="#7FA487"></circle><circle cx="16" cy="18" r="3" fill="#F2D28B"></circle><circle cx="28" cy="22" r="3" fill="#F2D28B"></circle><circle cx="22" cy="30" r="3" fill="#F2D28B"></circle></svg></sc-if>
+</div>
+<span style="font-size: 12px; font-weight: {{d.weight}}; color: {{d.color}}; white-space: nowrap">{{d.label}}</span>
+</div>
+</sc-for>
+</div>
+<div style="display: flex; align-items: center; gap: 10px; background: #1B372D; border-radius: 14px; padding: 10px 12px">
+<svg width="28" height="28" viewBox="0 0 24 24" aria-hidden="true"><ellipse cx="12" cy="13" rx="6" ry="8" fill="#E0B04A"></ellipse><path d="M12 5 V21" stroke="#9A6E14" stroke-width="1.5"></path><path d="M9 3 C10 1 14 1 15 3" stroke="#9CC39A" stroke-width="2" fill="none" stroke-linecap="round"></path></svg>
+<span style="font-size: 13px; color: #DDE7DA; flex-grow: 1">3 Hoa Vàng trong tuần sẽ mở khóa gói hạt giống <b style="color: #F2D28B">Academic Word List</b> </span>
+<span style="font-size: 13px; font-weight: 700; color: #F2D28B">2/3</span>
+</div>
+</div>
+
+<div style="margin: 0 16px; background: #FFFFFF; border: 1px solid #E3DDD0; border-radius: 22px; padding: 16px; display: flex; flex-direction: column; gap: 10px">
+<div style="display: flex; justify-content: space-between; align-items: baseline">
+<span style="font-family: 'Fraunces', serif; font-weight: 600; font-size: 19px">Đường đến Band 7</span>
+<span style="font-size: 13px; color: #5E6A62">mục tiêu từ vựng</span>
+</div>
+<div style="display: flex; align-items: baseline; gap: 6px"><span style="font-family: 'Fraunces', serif; font-weight: 600; font-size: 32px; color: #24463A">412</span><span style="font-size: 14px; color: #5E6A62">/ 1.200 từ đã thuộc</span></div>
+<div style="height: 10px; border-radius: 5px; background: #EAE5DA; display: flex; overflow: hidden"><div style="width: 34%; background: #3E7F5A"></div><div style="width: 9%; background: #B7D6AE"></div></div>
+<div style="display: flex; gap: 14px; font-size: 12px; color: #5E6A62">
+<span style="display: flex; align-items: center; gap: 5px"><span style="width: 8px; height: 8px; border-radius: 4px; background: #3E7F5A"></span>Đã thuộc</span>
+<span style="display: flex; align-items: center; gap: 5px"><span style="width: 8px; height: 8px; border-radius: 4px; background: #B7D6AE"></span>Đang lớn (104)</span>
+<span style="margin-left: auto">Theo tốc độ này: [ETA]</span>
+</div>
+</div>
+
+<div style="margin: 0 16px; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px">
+<div style="background: #FFFFFF; border: 1px solid #E3DDD0; border-radius: 20px; padding: 14px; display: flex; flex-direction: column; gap: 6px">
+<svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#4A8FBF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 6 H19 L17.5 21 H6.5 Z"></path><path d="M4 6 H20"></path><path d="M6 11 H18"></path><path d="M6.5 16 H17.5"></path></svg>
+<span style="font-weight: 700; font-size: 15px">Thùng nước mưa · 2</span>
+<span style="font-size: 12px; color: #5E6A62; line-height: 1.35">Giữ chuỗi ngày học. Bận quá? Vườn vẫn được tưới.</span>
+</div>
+<div style="background: #FFFFFF; border: 1px solid #E3DDD0; border-radius: 20px; padding: 14px; display: flex; flex-direction: column; gap: 6px">
+<div style="display: flex">
+<span style="width: 28px; height: 28px; border-radius: 14px; background: #E8A87C; border: 2px solid #FFFFFF; font-size: 11px; font-weight: 700; display: flex; align-items: center; justify-content: center; color: #5A2E14">L</span>
+<span style="width: 28px; height: 28px; border-radius: 14px; background: #9CC39A; border: 2px solid #FFFFFF; margin-left: -8px; font-size: 11px; font-weight: 700; display: flex; align-items: center; justify-content: center; color: #1C3A22">M</span>
+<span style="width: 28px; height: 28px; border-radius: 14px; background: #8EC5E8; border: 2px solid #FFFFFF; margin-left: -8px; font-size: 11px; font-weight: 700; display: flex; align-items: center; justify-content: center; color: #123A57">T</span>
+<span style="width: 28px; height: 28px; border-radius: 14px; background: #EAE5DA; border: 2px solid #FFFFFF; margin-left: -8px; font-size: 11px; font-weight: 700; display: flex; align-items: center; justify-content: center; color: #5E6A62">+2</span>
+</div>
+<span style="font-weight: 700; font-size: 15px">Nhóm IELTS Sprint</span>
+<span style="font-size: 12px; color: #5E6A62; line-height: 1.35">Hôm nay 4/5 người đã tưới. Vườn nhóm: 1.930 từ.</span>
+</div>
+</div>
+
+<nav style="margin-top: auto; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); background: #FFFFFF; border-top: 1px solid #E3DDD0; padding: 8px 8px 20px">
+<a href="AdultHomeVi.dc.html" style="display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 6px 0; text-decoration: none; color: #5E6A62"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21 V11"></path><path d="M12 14 C7 14 5 10 5 7 C9 7 12 9 12 14 Z"></path><path d="M12 12 C17 12 19 8 19 5 C15 5 12 7 12 12 Z"></path><path d="M5 21 H19"></path></svg><span style="font-size: 12px; font-weight: 500">Vườn</span></a>
+<a href="AdultMissionsVi.dc.html" style="display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 6px 0; text-decoration: none; color: #24463A"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><circle cx="12" cy="12" r="5"></circle><circle cx="12" cy="12" r="1.5"></circle></svg><span style="font-size: 12px; font-weight: 700">Nhiệm vụ</span></a>
+<a href="AdultTopicsVi.dc.html" style="display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 6px 0; text-decoration: none; color: #5E6A62"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5 C4 4 5 4 6 4 H11 V20 H6 C5 20 4 20 4 19 Z"></path><path d="M20 5 C20 4 19 4 18 4 H13 V20 H18 C19 20 20 20 20 19 Z"></path></svg><span style="font-size: 12px; font-weight: 500">Chủ đề</span></a>
+<a href="AdultMeVi.dc.html" style="display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 6px 0; text-decoration: none; color: #5E6A62"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"></circle><path d="M4 21 C4 16 8 14 12 14 C16 14 20 16 20 21"></path></svg><span style="font-size: 12px; font-weight: 500">Tôi</span></a>
+</nav>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const data = [['T2', 3], ['T3', 2], ['T4', 3], ['T5', 1], ['T6', 2], ['T7', 0], ['CN', 0]];
+    const days = data.map(([label, n], k) => ({
+      label: k === 4 ? 'Hôm nay' : label,
+      s0: n === 0, s1: n === 1, s2: n === 2, s3: n === 3,
+      weight: k === 4 ? 700 : 500,
+      color: k === 4 ? '#F2D28B' : '#B7D6AE'
+    }));
+    return { days };
+  }
+}
+</script>
+</body>
+</html>

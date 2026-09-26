@@ -2,16 +2,19 @@
 
 **Rule: the adult garden UI must match the "Dygo Word Garden" design canvas 100%.** Same layout, spacing, sizes, colours, fonts, radii, shadows, icons, illustrations and copy, screen by screen. If the code and the canvas disagree, the canvas is right and the code changes.
 
-Exported from the canvas on 2026-09-26 (canvas version `1790379466-5563`, Adult page).
+Exported from the canvas on 2026-09-26:
+
+- Adult page (A1–A8, English): canvas version `1790379466-5563`.
+- **Adult · Groups** (GR1–GR7, English, approved by Dylan 2026-09-26), **Adult · Tiếng Việt** (A1–A8) and **Adult · Groups · Tiếng Việt** (GR1–GR7): canvas version `1790407846-001e`.
 
 ## What's in this folder
 
 | Folder | What | Use it for |
 | --- | --- | --- |
-| `reference/*.png` | Each adult screen at 390 × 844, rendered at 2× (780 × 1688 px), animations frozen | Side-by-side and pixel-diff checks (gate G1, and every screen in UI-4 to UI-7) |
+| `reference/*.png` | Each adult screen at 390 × 844, in English (`<name>.png`) and Vietnamese (`<name>-vi.png`), rendered at 2× (780 × 1688 px), animations frozen | Side-by-side and pixel-diff checks (gate G1, and every screen in UI-4 to UI-7) |
 | `reference/*.html` | The same screens as plain, static HTML with every inline style | **Exact values**: open in a browser and use DevTools to read any size, colour, padding or SVG path. Don't guess from the PNG. |
-| `source/*.dc.html` | The canvas artboard files as exported | Regenerating the references; the sample data behind each screen |
-| `tools/render.js` | Renders `source/` → `reference/` | Re-export after the canvas changes: `cd tools && npm install && node render.js` (uses Chrome; set `CHROME_PATH` to use another Chromium) |
+| `source/*.dc.html` | The canvas artboard files as exported (`…Vi.dc.html` = the Vietnamese pages) | Regenerating the references; the sample data behind each screen |
+| `tools/render.js` | Renders `source/` → `reference/` | Re-export after the canvas changes: `cd tools && npm install && node render.js ../reference [filter]` (filter e.g. `GR` or `-vi`; uses Chrome; set `CHROME_PATH` to use another Chromium). It loads DM Sans with **Be Vietnam Pro as the per-glyph fallback**, the same stack as the app. |
 
 ## Screens
 
@@ -25,10 +28,28 @@ Exported from the canvas on 2026-09-26 (canvas version `1790379466-5563`, Adult 
 | `A6-topics` | A6 · Topics (Beds) | `/garden/topics` | UI-5 |
 | `A7-topic-bed`, `A7-topic-bed-filter-sprouts` | A7 · Topic Bed, unfiltered and "Sprouts" selected | `/garden/topics/[id]` | UI-5 |
 | `A8-me` | A8 · Me | `/garden/me` | UI-6 |
+| `GR1-shared-gardens` | GR1 · Shared Gardens (group list) | `/garden/groups` | UI-G |
+| `GR2-group-garden` | GR2 · Group Garden | `/garden/groups/[id]` | UI-G |
+| `GR3-tricky-patches` | GR3 · Tricky Patches + Rain Day | `/garden/groups/[id]/manage` | UI-G |
+| `GR4-gardeners` | GR4 · Gardeners & Roles | `/garden/groups/[id]/manage` (second tab) | UI-G |
+| `GR5-invite` | GR5 · Invite Sheet | sheet on GR2 / GR4 | UI-G |
+| `GR6-join` | GR6 · Join a Garden | `/garden/join/[token]` | UI-G |
+| `GR7-create` | GR7 · Start a Garden | sheet on GR1 | UI-G |
+
+Every screen above also has a **Vietnamese reference**, `<name>-vi` (for example `A1-todays-garden-vi`, `GR3-tricky-patches-vi`): 18 English and 18 Vietnamese references in all.
+
+## Languages
+
+The app ships in **English (`en`), Simplified Chinese (`zh-CN`) and Vietnamese (`vi`)**; see `phase 12 implementation plan.md`, step UI-L.
+
+- **English and Vietnamese are the two reference languages.** Both must match their references (same pixel-diff rule). The Vietnamese references fix the translations, the shortened labels and the two layout tweaks the canvas made for Vietnamese (topic chips and the Weekly Harvest "Hôm nay" label don't wrap).
+- **The canvas copy is the message source.** `messages/en.json` must say exactly what the English references say, and `messages/vi.json` exactly what the `-vi` references say. The glossary is in the plan (UI-L).
+- **Chinese has no canvas page.** It uses the English layout; check it with the screenshot tests at every viewport (no text cut off, nothing wraps that doesn't wrap in English) instead of a pixel diff. A native speaker reviews `zh-CN.json` before release.
+- On the Vietnamese review card the **Vietnamese meaning comes first** and the English definition second (A2-review-answer-vi). That order follows the *meaning language*, not the app language.
 
 ## How a screen is checked against the canvas
 
-1. **Fixture page.** Each screen gets a flag-only route `/garden/_reference/<screen>` that renders the **real** garden components with the **same sample data** as the canvas ("Good evening, Minh", 412 words, "mitigate", and so on). That makes the comparison like for like; the real pages use live data.
+1. **Fixture page.** Each screen gets a flag-only route `/garden/_reference/<screen>` that renders the **real** garden components with the **same sample data** as the canvas, in the locale given by `?locale=en|vi` (default `en`; the `-vi` references use `?locale=vi`) ("Good evening, Minh", 412 words, "mitigate", and so on). That makes the comparison like for like; the real pages use live data.
 2. **Pixel diff.** Playwright screenshots the fixture page at 390 × 844 @2x with animations off, and diffs it against `reference/<screen>.png` (pixelmatch, threshold 0.1).
    - **Pass:** at most 0.5% of pixels differ, and every differing area is font anti-aliasing only.
    - **Anything else** (a shifted element, a different size, colour, radius or icon) is a bug: fix it, don't accept it.

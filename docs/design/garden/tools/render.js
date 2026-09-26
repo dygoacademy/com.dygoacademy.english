@@ -1,5 +1,4 @@
 // Renders Word Garden .dc.html artboards to static HTML + PNG at 390x844.
-// Usage: node render.js <outDir>
 const fs = require('fs');
 const path = require('path');
 const { chromium } = require('playwright-core');
@@ -8,27 +7,63 @@ const OUT = process.argv[2] || path.join(__dirname, '..', 'reference');
 fs.mkdirSync(OUT, { recursive: true });
 const fontDir = path.join(__dirname, 'node_modules/@fontsource');
 const f = (fam, file) => 'data:font/woff2;base64,' + fs.readFileSync(path.join(fontDir, fam, 'files', file)).toString('base64');
-const frVar = 'data:font/woff2;base64,' + fs.readFileSync(path.join(__dirname, 'node_modules/@fontsource-variable/fraunces/files/fraunces-latin-opsz-normal.woff2')).toString('base64');
-const fontCss = `@font-face{font-family:'Fraunces';font-weight:100 900;font-style:normal;src:url(${frVar}) format('woff2');}` + [
-  ['DM Sans', 'dm-sans', [400, 500, 600, 700]],
-].map(([name, pkg, ws]) => ws.map(w =>
-  `@font-face{font-family:'${name}';font-weight:${w};font-style:normal;src:url(${f(pkg, `${pkg}-latin-${w}-normal.woff2`)}) format('woff2');}`
-).join('')).join('');
+const fv = (file) => 'data:font/woff2;base64,' + fs.readFileSync(path.join(__dirname, 'node_modules/@fontsource-variable/fraunces/files', file)).toString('base64');
+// Unicode ranges as Google Fonts / next/font split them, so a Vietnamese letter
+// missing from DM Sans falls back to Be Vietnam Pro glyph by glyph (same as the app).
+const VI = 'U+0102-0103,U+0110-0111,U+0128-0129,U+0168-0169,U+01A0-01A1,U+01AF-01B0,U+0300-0301,U+0303-0304,U+0308-0309,U+0323,U+0329,U+1EA0-1EF9,U+20AB';
+const EXT = 'U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF';
+const face = (fam, w, src, range) => `@font-face{font-family:'${fam}';font-weight:${w};font-style:normal;${range ? `unicode-range:${range};` : ''}src:url(${src}) format('woff2');}`;
+const W4 = [400, 500, 600, 700];
+const fontCss =
+  face('Fraunces', '100 900', fv('fraunces-latin-opsz-normal.woff2')) +
+  face('Fraunces', '100 900', fv('fraunces-latin-ext-opsz-normal.woff2'), EXT) +
+  face('Fraunces', '100 900', fv('fraunces-vietnamese-opsz-normal.woff2'), VI) +
+  W4.map(w => face('DM Sans', w, f('dm-sans', `dm-sans-latin-${w}-normal.woff2`)) + face('DM Sans', w, f('dm-sans', `dm-sans-latin-ext-${w}-normal.woff2`), EXT)).join('') +
+  W4.map(w => ['latin', 'latin-ext', 'vietnamese'].map(sub => face('Be Vietnam Pro', w, f('be-vietnam-pro', `be-vietnam-pro-${sub}-${w}-normal.woff2`))).join('')).join('');
 
 // [file, output name, state overrides]
+// [source file, locale, output name, state overrides]
+// en = the English canvas pages, vi = "Adult · Tiếng Việt" and "Adult · Groups · Tiếng Việt".
+// Usage: node render.js [outDir] [filter]   e.g. node render.js ../reference GR   or   node render.js ../reference -vi
+const FILTER = process.argv[3] || '';
 const JOBS = [
-  ['AdultHome.dc.html', 'A1-todays-garden', {}],
-  ['AdultReview.dc.html', 'A2-review-question', {}],
-  ['AdultReview.dc.html', 'A2-review-answer', { shown: true }],
-  ['AdultReview.dc.html', 'A2-review-finished', { i: 3 }],
-  ['AdultBloom.dc.html', 'A3-mission-complete', {}],
-  ['AdultMissions.dc.html', 'A4-weekly-harvest', {}],
-  ['AdultComeback.dc.html', 'A5-welcome-back', {}],
-  ['AdultTopics.dc.html', 'A6-topics', {}],
-  ['AdultTopicDetail.dc.html', 'A7-topic-bed', {}],
-  ['AdultTopicDetail.dc.html', 'A7-topic-bed-filter-sprouts', { stage: 'sprout' }],
-  ['AdultMe.dc.html', 'A8-me', {}],
-];
+  ['AdultHome.dc.html', 'en', 'A1-todays-garden', {}],
+  ['AdultReview.dc.html', 'en', 'A2-review-question', {}],
+  ['AdultReview.dc.html', 'en', 'A2-review-answer', { shown: true }],
+  ['AdultReview.dc.html', 'en', 'A2-review-finished', { i: 3 }],
+  ['AdultBloom.dc.html', 'en', 'A3-mission-complete', {}],
+  ['AdultMissions.dc.html', 'en', 'A4-weekly-harvest', {}],
+  ['AdultComeback.dc.html', 'en', 'A5-welcome-back', {}],
+  ['AdultTopics.dc.html', 'en', 'A6-topics', {}],
+  ['AdultTopicDetail.dc.html', 'en', 'A7-topic-bed', {}],
+  ['AdultTopicDetail.dc.html', 'en', 'A7-topic-bed-filter-sprouts', { stage: 'sprout' }],
+  ['AdultMe.dc.html', 'en', 'A8-me', {}],
+  ['AdultGroups.dc.html', 'en', 'GR1-shared-gardens', {}],
+  ['AdultGroupGarden.dc.html', 'en', 'GR2-group-garden', {}],
+  ['AdultGroupTricky.dc.html', 'en', 'GR3-tricky-patches', {}],
+  ['AdultGroupRoster.dc.html', 'en', 'GR4-gardeners', {}],
+  ['AdultGroupInvite.dc.html', 'en', 'GR5-invite', {}],
+  ['AdultGroupJoin.dc.html', 'en', 'GR6-join', {}],
+  ['AdultGroupCreate.dc.html', 'en', 'GR7-create', {}],
+  ['AdultHomeVi.dc.html', 'vi', 'A1-todays-garden-vi', {}],
+  ['AdultReviewVi.dc.html', 'vi', 'A2-review-question-vi', {}],
+  ['AdultReviewVi.dc.html', 'vi', 'A2-review-answer-vi', { shown: true }],
+  ['AdultReviewVi.dc.html', 'vi', 'A2-review-finished-vi', { i: 3 }],
+  ['AdultBloomVi.dc.html', 'vi', 'A3-mission-complete-vi', {}],
+  ['AdultMissionsVi.dc.html', 'vi', 'A4-weekly-harvest-vi', {}],
+  ['AdultComebackVi.dc.html', 'vi', 'A5-welcome-back-vi', {}],
+  ['AdultTopicsVi.dc.html', 'vi', 'A6-topics-vi', {}],
+  ['AdultTopicDetailVi.dc.html', 'vi', 'A7-topic-bed-vi', {}],
+  ['AdultTopicDetailVi.dc.html', 'vi', 'A7-topic-bed-filter-sprouts-vi', { stage: 'sprout' }],
+  ['AdultMeVi.dc.html', 'vi', 'A8-me-vi', {}],
+  ['AdultGroupsVi.dc.html', 'vi', 'GR1-shared-gardens-vi', {}],
+  ['AdultGroupGardenVi.dc.html', 'vi', 'GR2-group-garden-vi', {}],
+  ['AdultGroupTrickyVi.dc.html', 'vi', 'GR3-tricky-patches-vi', {}],
+  ['AdultGroupRosterVi.dc.html', 'vi', 'GR4-gardeners-vi', {}],
+  ['AdultGroupInviteVi.dc.html', 'vi', 'GR5-invite-vi', {}],
+  ['AdultGroupJoinVi.dc.html', 'vi', 'GR6-join-vi', {}],
+  ['AdultGroupCreateVi.dc.html', 'vi', 'GR7-create-vi', {}],
+].filter(([, , name]) => !FILTER || name.includes(FILTER));
 
 const RUNTIME = String.raw`
 (function (overrides) {
@@ -77,7 +112,7 @@ const RUNTIME = String.raw`
 (async () => {
   const browser = await chromium.launch({ executablePath: process.env.CHROME_PATH || undefined, channel: process.env.CHROME_PATH ? undefined : 'chrome' });
   const page = await browser.newPage({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 2 });
-  for (const [file, name, overrides] of JOBS) {
+  for (const [file, , name, overrides] of JOBS) {
     let html = fs.readFileSync(path.join(__dirname, '..', 'source', file), 'utf8').replace('<script src="./support.js"></script>', '');
     await page.setContent(html, { waitUntil: 'domcontentloaded' });
     await page.evaluate(`${RUNTIME}(${JSON.stringify(overrides)})`);
