@@ -47,3 +47,28 @@ describe('live garden helpers', () => {
     expect(displayName(null)).toBeNull();
   });
 });
+
+describe('topics helpers', () => {
+  it('formats the CEFR range', async () => {
+    const { formatLevel } = await import('./data');
+    expect(formatLevel('B2', 'C1')).toBe('B2–C1');
+    expect(formatLevel('B2', 'B2')).toBe('B2');
+    expect(formatLevel(null, null)).toBeNull();
+  });
+
+  it('builds chips from the kinds present, collections first', async () => {
+    const { topicFilters } = await import('./data');
+    const labels = { mine: 'Mine', group: 'Group' };
+    expect(
+      topicFilters(
+        [{ group: 'group' }, { group: 'library:IELTS Academic' }, { group: 'mine' }],
+        labels,
+      ),
+    ).toEqual([
+      { id: 'library:IELTS Academic', label: 'IELTS Academic' },
+      { id: 'mine', label: 'Mine' },
+      { id: 'group', label: 'Group' },
+    ]);
+    expect(topicFilters([{ group: 'mine' }], labels)).toEqual([{ id: 'mine', label: 'Mine' }]);
+  });
+});

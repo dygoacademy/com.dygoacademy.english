@@ -31,7 +31,7 @@ export function TopicRow({ href, title, meta, stage, due, shares, className }: T
       href={href}
       className={gcn(
         'flex h-[76px] items-center gap-3 rounded-card border border-garden-border bg-garden-surface pl-2.5 pr-[14px] text-garden-text',
-        'transition-colors duration-quick ease-garden hover:border-garden-muted',
+        'transition-colors duration-quick ease-garden hover:border-garden-muted active:bg-garden-surface-sunken',
         className,
       )}
     >

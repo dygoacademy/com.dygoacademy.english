@@ -64,7 +64,7 @@ export function BottomTabBar({ items, activeKey, fixed = false, className }: Bot
                 </span>
                 <span
                   className={gcn(
-                    'max-w-full truncate text-[12px]',
+                    'max-w-full whitespace-nowrap text-[12px]',
                     active ? 'font-bold' : 'font-medium',
                   )}
                 >

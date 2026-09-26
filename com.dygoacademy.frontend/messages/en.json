@@ -403,7 +403,20 @@
       "newBed": "Plant a new bed",
       "mine": "Mine",
       "group": "Group",
-      "empty": "No beds yet. Plant your first one below."
+      "empty": "No beds yet. Plant your first one below.",
+      "library": "Library",
+      "searchTitle": "Find a bed",
+      "searchPlaceholder": "Topic name",
+      "searchEmpty": "No beds match “{query}”.",
+      "newBedTitle": "Plant a new bed",
+      "newBedDescription": "Name the topic. You can add words to it next.",
+      "newBedName": "Topic name",
+      "newBedGroup": "Plant it in",
+      "newBedSubmit": "Plant it",
+      "newBedNoGroup": "You need a group you can add topics to. Create one in Groups first.",
+      "newBedError": "The bed couldn’t be planted. Check your connection and try again.",
+      "shared": "Shared",
+      "searchBeds": "Search topics"
     },
     "bed": {
       "back": "Back to topics",

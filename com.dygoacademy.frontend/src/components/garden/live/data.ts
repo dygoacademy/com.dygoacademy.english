@@ -2,7 +2,11 @@
  * Pure helpers for the live garden routes (UI-fidelity 6). No React, no
  * fetching: the live components pass in what the existing hooks returned.
  */
+import type { TopicSummary } from '@/types';
+import { GARDEN_ROUTES } from '@/constants/garden';
+
 import type { HeroPlant } from '../HeroGardenCard';
+import type { TopicsScreenTopic } from '../screens/TopicsScreen';
 import type { Greeting } from '../screens/TodaysGardenScreen';
 
 /** Morning until noon, afternoon until 18:00, then evening. */
@@ -151,5 +155,90 @@ export function parseSessionResult(
     minutes: int('minutes'),
     word: one('word')?.slice(0, 80) ?? null,
     more: int('more') ?? 0,
+  };
+}
+
+/** "B2" or "B2–C1" from a CEFR range; null when unknown. */
+export function formatLevel(min: string | null, max: string | null): string | null {
+  if (!min && !max) return null;
+  if (!min || !max || min === max) return (min ?? max) as string;
+  return `${min}–${max}`;
+}
+
+/**
+ * The A6 filter chips after "All", from the beds actually present: each
+ * library collection (e.g. "IELTS Academic"), then Mine, then Group, as in
+ * the canvas. A kind with no beds gets no chip.
+ */
+export function topicFilters(
+  beds: ReadonlyArray<{ group: string }>,
+  labels: { mine: string; group: string },
+): Array<{ id: string; label: string }> {
+  const groups = new Set(beds.map((bed) => bed.group));
+  const collections = [...groups]
+    .filter((group) => group.startsWith('library:'))
+    .map((group) => ({ id: group, label: group.slice('library:'.length) }));
+  return [
+    ...collections,
+    ...(groups.has('mine') ? [{ id: 'mine', label: labels.mine }] : []),
+    ...(groups.has('group') ? [{ id: 'group', label: labels.group }] : []),
+  ];
+}
+
+/**
+ * Fields `GET /topics` gained for the garden (Phase 12 UI-5). Optional, so
+ * the page still works against an API that doesn't send them yet: the
+ * badge, level, chips and stage bar then just don't show.
+ */
+export type GardenTopicSummary = TopicSummary &
+  Partial<{
+    seed_count: string;
+    sprout_count: string;
+    flower_count: string;
+    due_count: string;
+    min_level: string | null;
+    max_level: string | null;
+    kind: 'mine' | 'group' | 'library';
+    collection_title: string | null;
+  }>;
+
+const num = (value: string | null | undefined) => {
+  const n = Number(value);
+  return Number.isFinite(n) ? n : 0;
+};
+
+/** Maps one `GET /topics` row to the screen's topic. */
+export function toScreenTopic(
+  topic: GardenTopicSummary,
+  libraryLabel: string,
+  sharedLabel = 'Shared',
+): TopicsScreenTopic {
+  const words = num(topic.word_count);
+  const hasStages = topic.sprout_count !== undefined && topic.flower_count !== undefined;
+  return {
+    id: topic.id,
+    href: GARDEN_ROUTES.topic(topic.id),
+    title: topic.title,
+    group:
+      topic.kind === 'library'
+        ? `library:${topic.collection_title ?? libraryLabel}`
+        : (topic.kind ?? 'all'),
+    // A shared group bed says "Shared" where the level goes, as in the canvas.
+    level:
+      topic.kind === 'group'
+        ? sharedLabel
+        : formatLevel(topic.min_level ?? null, topic.max_level ?? null),
+    words,
+    stages: hasStages
+      ? {
+          tree: num(topic.mastered_count),
+          flower: num(topic.flower_count),
+          sprout: num(topic.sprout_count),
+          seed: num(topic.seed_count),
+        }
+      : num(topic.mastered_count) > 0
+        ? { tree: num(topic.mastered_count), flower: 0, sprout: 0 }
+        : null,
+    due: topic.due_count === undefined ? null : num(topic.due_count),
   };
 }
