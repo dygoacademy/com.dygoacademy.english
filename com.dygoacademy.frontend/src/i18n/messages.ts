@@ -10,6 +10,8 @@ type Messages = typeof import('../../messages/en.json');
 
 const LOADERS: Partial<Record<AppLocale, () => Promise<{ default: Messages }>>> = {
   en: () => import('../../messages/en.json'),
+  vi: () => import('../../messages/vi.json'),
+  'zh-CN': () => import('../../messages/zh-CN.json'),
 };
 
 export async function loadMessages(locale: AppLocale): Promise<Messages> {
