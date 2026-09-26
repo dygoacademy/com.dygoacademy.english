@@ -1,7 +1,10 @@
-import { fireEvent, screen, within } from '@testing-library/react';
+import { fireEvent, render, screen, within } from '@testing-library/react';
+import { NextIntlClientProvider } from 'next-intl';
 import { describe, expect, it, vi } from 'vitest';
 
 import { renderWithIntl } from '@/test/render';
+
+import messages from '../../../../messages/en.json';
 
 import {
   BED,
@@ -186,5 +189,17 @@ describe('MeScreen', () => {
     );
     expect(screen.getAllByText('—')).toHaveLength(3);
     expect(screen.queryByRole('switch')).toBeNull();
+  });
+
+  it('always writes the IELTS band with one decimal point, never a locale comma', () => {
+    // vi-VN formats numbers with a comma decimal separator ("7,0"), but a
+    // band score is written "7.0" in every language (it's a score, not a
+    // quantity formatted for the reader's locale).
+    render(
+      <NextIntlClientProvider locale="vi" messages={messages}>
+        <MeScreen {...ME} dailyGoal={null} reminder={null} family={null} />
+      </NextIntlClientProvider>,
+    );
+    expect(screen.getByText('IELTS Academic · target band 7.0')).toBeTruthy();
   });
 });

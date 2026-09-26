@@ -501,7 +501,7 @@
       "meanings": "Meanings in",
       "family": "Family",
       "familyValue": "Open {name}'s garden",
-      "goal": "{exam} · target band {band, number, ::.0}",
+      "goal": "{exam} · target band {band}",
       "testDayUnset": "[add date]",
       "meaningsValue": {
         "none": "English",

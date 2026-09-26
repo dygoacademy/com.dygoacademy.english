@@ -63,6 +63,9 @@ export interface MeScreenProps {
   stickyNav?: boolean;
 }
 
+/** IELTS bands are written "7.0" in every language (a score, not a quantity). */
+const BAND_FORMAT = new Intl.NumberFormat('en', { minimumFractionDigits: 1 });
+
 const ICON = { width: 20, height: 20, stroke: 'var(--color-forest)' } as const;
 
 export function MeScreen({
@@ -99,7 +102,7 @@ export function MeScreen({
           <h1 className="font-display text-[24px] font-semibold leading-[1.1]">{name}</h1>
           {goal ? (
             <span className="text-[13px] text-garden-muted">
-              {t('goal', { exam: goal.exam, band: goal.band })}
+              {t('goal', { exam: goal.exam, band: BAND_FORMAT.format(goal.band) })}
             </span>
           ) : null}
           {testDay ? (
