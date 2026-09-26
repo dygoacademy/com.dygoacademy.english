@@ -9,7 +9,11 @@
       "missions": "Thu hoạch tuần",
       "topics": "Chủ đề",
       "me": "Tôi",
-      "topic": "Luống chủ đề"
+      "topic": "Luống chủ đề",
+      "groups": "Vườn chung",
+      "group": "Vườn chung",
+      "manage": "Chăm vườn",
+      "join": "Tham gia vườn"
     }
   },
   "tokens": {
@@ -74,7 +78,8 @@
       "wordRow": "Dòng từ",
       "tabBar": "Thanh tab dưới",
       "sheet": "Bảng trượt",
-      "toast": "Thông báo nhanh"
+      "toast": "Thông báo nhanh",
+      "groups": "Vườn chung (UI-G)"
     },
     "states": {
       "default": "Mặc định",
@@ -115,7 +120,14 @@
       "sheetHint": "Mở thành bảng trượt từ dưới lên trên iPhone (kéo tay nắm xuống để đóng) và bảng ở giữa từ 600px.",
       "info": "Thông tin",
       "success": "Thành công",
-      "toastLive": "Trực tiếp: hiện 3 giây (dưới cùng trên iPhone, trên cùng từ 600px)"
+      "toastLive": "Trực tiếp: hiện 3 giây (dưới cùng trên iPhone, trên cùng từ 600px)",
+      "groupCards": "Thẻ vườn: vai trò, bạn cùng vườn và từ bạn cần ôn",
+      "roles": "Nhãn vai trò",
+      "rainForest": "Ngày mưa trong danh sách vườn",
+      "rainWater": "Ngày mưa trong một vườn",
+      "tricky": "Chỗ khó (chỉ tổng số)",
+      "gardeners": "Bạn cùng vườn với bộ chọn vai trò (hàng của bạn bị khóa ở đây)",
+      "invite": "Bảng mời (tương tác; link chỉ là mẫu)"
     },
     "sample": {
       "water": "Tưới 12 từ",
@@ -278,7 +290,8 @@
       "garden": "Vườn",
       "missions": "Nhiệm vụ",
       "topics": "Chủ đề",
-      "me": "Tôi"
+      "me": "Tôi",
+      "groups": "Nhóm"
     },
     "sheet": {
       "close": "Đóng"
@@ -298,6 +311,25 @@
       "meaningNone": "Chỉ tiếng Anh",
       "saving": "Đang lưu…",
       "error": "Chưa lưu được. Hãy kiểm tra kết nối và thử lại."
+    },
+    "groups": {
+      "roles": {
+        "ADMIN": "Quản trị",
+        "WRITE": "Biên tập",
+        "READ": "Thành viên"
+      },
+      "roleHints": {
+        "ADMIN": "Quản lý thành viên, lời mời và ngày mưa",
+        "WRITE": "Thêm luống và từ",
+        "READ": "Tưới các luống chung"
+      },
+      "dueForYou": "{count} từ cần ôn",
+      "allWatered": "Đã tưới xong",
+      "water": "Tưới",
+      "rainDayToday": "Hôm nay là ngày mưa",
+      "you": "(bạn)",
+      "changeRole": "Đổi vai trò của {name}",
+      "remove": "Xóa khỏi vườn"
     }
   },
   "screens": {
@@ -534,6 +566,154 @@
       "retry": "Thử lại",
       "missionTitle": "Tưới {count} từ",
       "topicMeta": "{count} từ"
+    },
+    "groups": {
+      "list": {
+        "title": "Vườn chung",
+        "summary": "{gardens} khu vườn · {gardeners} người",
+        "create": "Tạo vườn mới",
+        "start": "Tạo vườn mới",
+        "join": "Tham gia bằng link",
+        "rainTitle": "{group} · tưới {count} từ",
+        "rainDetail": "{done}/{members} người đã xong · đến {time}",
+        "cardMeta": "{members} người · {beds} luống chung · {words} từ",
+        "emptyTitle": "Chưa có vườn chung nào",
+        "emptyBody": "Tạo một vườn cho lớp học hoặc nhóm bạn, hoặc tham gia bằng link mời.",
+        "joinTitle": "Tham gia bằng link",
+        "joinSubtitle": "Dán link mời bạn nhận được",
+        "joinField": "Link mời",
+        "joinPlaceholder": "dygoacademy.com/join/…",
+        "joinGo": "Mở lời mời",
+        "joinInvalid": "Đây không giống link mời."
+      },
+      "garden": {
+        "back": "Quay lại vườn chung",
+        "manage": "Quản lý vườn",
+        "subtitle": "{role, select, ADMIN {Bạn là quản trị} WRITE {Bạn là biên tập} other {Bạn là thành viên}} · {members} người",
+        "eyebrow": "Vườn chung",
+        "heroTitle": "{count} từ chung đang lớn",
+        "watered": "Hôm nay {watered}/{members} người đã tưới",
+        "ripe": "{ripe}/{total} cây đã chín",
+        "plotLabel": "Vườn chung có năm ô đất, mỗi người một ô",
+        "rainTitle": "Ngày mưa · tưới {count} từ",
+        "rainDetail": "{done}/{members} người đã xong · bạn: {mine}/{count}",
+        "beds": "Luống chung",
+        "sorted": "Xếp theo số từ bạn cần ôn",
+        "bedWords": "{count} từ",
+        "separator": " · ",
+        "noBeds": "Chưa có luống chung nào.",
+        "gardeners": "Bạn cùng vườn",
+        "gardenersLabel": "{count} người",
+        "more": "+{count}",
+        "invite": "Mời"
+      },
+      "tend": {
+        "title": "Chăm vườn",
+        "back": "Quay lại vườn nhóm",
+        "trickyTab": "Chỗ khó",
+        "gardenersTab": "Bạn cùng vườn",
+        "trickyTitle": "Chỗ khó",
+        "window": "7 ngày qua",
+        "trickyIntro": "Những từ cả vườn hay sai nhất. Chỉ hiện tổng số, không bao giờ hiện câu trả lời của riêng ai.",
+        "trickyMeta": "sai {misses} lần · {gardeners} người",
+        "trickyEmpty": "Tuần này không có chỗ khó nào.",
+        "rainTitle": "Gọi một ngày mưa",
+        "rainBody": "Gửi thông báo đến {count} người · ưu tiên từ khó",
+        "sizeLabel": "Số từ mỗi người",
+        "size": "{count} từ",
+        "start": "Bắt đầu ngày mưa · {count} từ mỗi người",
+        "last": "Ngày mưa gần nhất: {day} · {joined}/{members} người tham gia",
+        "pushMessage": "Ngày mưa ở {group}: hôm nay tưới {count} từ",
+        "sent": "Đã gửi ngày mưa đến {count} người.",
+        "sendFailed": "Chưa gửi được ngày mưa. Hãy thử lại.",
+        "legend": "<b>Quản trị</b> quản lý thành viên, lời mời và ngày mưa · <b>Biên tập</b> thêm luống và từ · <b>Thành viên</b> tưới cây",
+        "joined": "Tham gia {date}",
+        "invitesActive": "{count} link mời đang hoạt động",
+        "invitesNone": "Chưa có link mời",
+        "invitesNoneBody": "Tạo link để mời bạn cùng vườn",
+        "inviteUses": "đã dùng {used}/{max}",
+        "inviteUsesOpen": "đã dùng {used} lần",
+        "inviteExpires": "hết hạn {date}",
+        "inviteNoExpiry": "không hết hạn",
+        "invite": "Mời",
+        "linksTitle": "Link mời",
+        "linksSubtitle": "Các link còn dùng được",
+        "revoke": "Thu hồi",
+        "revokeLabel": "Thu hồi link {role}",
+        "newLink": "Tạo link mời mới",
+        "roleChanged": "{name} giờ là {role}.",
+        "removeConfirm": "Xóa {name} khỏi vườn này?",
+        "removed": "{name} đã rời vườn.",
+        "lastAdmin": "Vườn cần ít nhất một quản trị. Hãy chọn người khác làm quản trị trước.",
+        "actionFailed": "Chưa thực hiện được. Hãy thử lại.",
+        "settings": "Cài đặt vườn",
+        "settingsSubtitle": "Tên, giới thiệu và ai có thể tìm thấy",
+        "save": "Lưu thay đổi",
+        "saved": "Đã lưu.",
+        "delete": "Xóa vườn",
+        "deleteConfirm": "Xóa {name}? Các luống chung và từ trong đó cũng bị xóa. Không thể hoàn tác.",
+        "adminOnly": "Chỉ quản trị của vườn mới chăm vườn được.",
+        "backToGarden": "Quay lại vườn"
+      },
+      "invite": {
+        "title": "Mời bạn cùng vườn",
+        "subtitle": "vào {group}",
+        "joinAs": "Vai trò khi tham gia",
+        "roleLabel": "Vai trò cho người mới",
+        "expires": "Hết hạn",
+        "uses": "Số lần dùng",
+        "inDays": "Sau {count} ngày",
+        "never": "Không hết hạn",
+        "times": "{count} lần",
+        "unlimited": "Không giới hạn",
+        "stepLabel": "{label}: {value}. Chạm để đổi.",
+        "onceNotice": "Để an toàn, link này chỉ hiện một lần. Hãy sao chép hoặc chia sẻ ngay.",
+        "linkPlaceholder": "Link được tạo khi bạn sao chép hoặc chia sẻ",
+        "copy": "Sao chép link",
+        "share": "Chia sẻ…",
+        "copied": "Đã sao chép link",
+        "copyFailed": "Không sao chép được. Hãy tự chọn và sao chép link.",
+        "failed": "Chưa tạo được link. Hãy thử lại.",
+        "shareText": "Tham gia {group} trên Dygo Academy"
+      },
+      "join": {
+        "invitedBy": "{name} mời bạn tham gia",
+        "invited": "Bạn được mời tham gia",
+        "gardeners": "{count, plural, other {người}}",
+        "beds": "{count, plural, other {luống chung}}",
+        "words": "{count, plural, other {từ}}",
+        "benefitBeds": "Luống chung được trồng vào vườn của bạn",
+        "benefitRain": "Nhận ngày mưa từ quản trị vườn",
+        "benefitPrivate": "Tiến độ của riêng bạn luôn được giữ kín",
+        "joinAs": {
+          "ADMIN": "Bạn sẽ tham gia với vai trò <b>{role}</b>",
+          "WRITE": "Bạn sẽ tham gia với vai trò <b>{role}</b>",
+          "READ": "Bạn sẽ tham gia với vai trò <b>{role}</b>"
+        },
+        "join": "Tham gia vườn",
+        "joining": "Đang tham gia…",
+        "notNow": "Để sau",
+        "loading": "Đang mở lời mời…",
+        "already": "Bạn đã ở trong {group}.",
+        "open": "Mở vườn",
+        "notFound": "Link mời này không dùng được. Hãy xin link mới.",
+        "expired": "Lời mời này đã hết hạn hoặc hết lượt dùng. Hãy xin link mới.",
+        "failed": "Chưa tham gia được. Hãy thử lại."
+      },
+      "create": {
+        "title": "Tạo vườn mới",
+        "subtitle": "Không gian chung cho lớp học hoặc nhóm bạn",
+        "name": "Tên vườn",
+        "about": "Giới thiệu (không bắt buộc)",
+        "namePlaceholder": "Lớp tối Band 7",
+        "aboutPlaceholder": "Từ vựng Writing Task 2, 3 buổi tối mỗi tuần",
+        "openTitle": "Vườn mở",
+        "openOff": "Chỉ người có link mời mới tham gia được",
+        "openOn": "Ai cũng có thể tìm thấy vườn này",
+        "note": "Bạn sẽ là quản trị của vườn. Tiếp theo, hãy thêm luống chung và mời bạn cùng vườn.",
+        "submit": "Tạo vườn",
+        "failed": "Chưa tạo được vườn. Hãy thử lại."
+      }
     }
   }
 }

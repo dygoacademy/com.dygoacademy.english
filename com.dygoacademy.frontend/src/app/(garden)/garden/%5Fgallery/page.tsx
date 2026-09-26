@@ -42,6 +42,7 @@ import {
   GallerySwitches,
   GalleryVine,
 } from './GalleryInteractive';
+import { GroupsGallery } from './GroupsGallery';
 
 /** Rows for the stageFromSrs table: every state, plus mastered and leech overrides. */
 const STAGE_MAP_ROWS: Array<{ state: GardenFsrsState; mastered: boolean; leech: boolean }> = [
@@ -475,6 +476,10 @@ export default async function GardenGalleryPage() {
         <Section title={t('sections.sheet')}>
           <p className="mb-3 text-body-s text-garden-muted">{t('states.sheetHint')}</p>
           <GallerySheets />
+        </Section>
+
+        <Section title={t('sections.groups')}>
+          <GroupsGallery />
         </Section>
 
         <Section title={t('sections.toast')}>

@@ -19,6 +19,22 @@ export {
 export * from './icons';
 export { IconButton, iconButtonClasses, type IconButtonProps } from './IconButton';
 export { GardenCalendar, type CalendarLevel } from './GardenCalendar';
+export {
+  AvatarStack,
+  GardenerAvatar,
+  avatarTone,
+  initialOf,
+  type GardenerAvatarProps,
+  type GardenerTone,
+} from './GardenerAvatar';
+export { GROUP_ROLES, GardenerRow, type GardenerRowProps } from './GardenerRow';
+export { GroupCard, type GroupCardProps } from './GroupCard';
+export { GroupSheet, GroupSheetFrame, SheetBackdrop, type GroupSheetProps } from './GroupSheet';
+export { CreateGardenBody, type CreateGardenBodyProps } from './CreateGardenSheet';
+export { INVITE_ROLE_ORDER, InviteSheetBody, type InviteSheetBodyProps } from './InviteSheet';
+export { RainDayBanner, type RainDayBannerProps } from './RainDayBanner';
+export { RoleBadge } from './RoleBadge';
+export { TrickyPatchRow, type TrickyPatchRowProps } from './TrickyPatchRow';
 export { Keepsake } from './Keepsake';
 export {
   MissionRow,

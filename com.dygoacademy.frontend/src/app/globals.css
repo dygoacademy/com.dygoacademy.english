@@ -203,6 +203,11 @@
     --color-avatar-flower-text: #5a2e14;
     --color-avatar-sprout-text: #1c3a22;
     --color-avatar-due-text: #123a57;
+    /* Group screens (UI-G, canvas GR1–GR7) */
+    --color-avatar-gold-text: #5a4410; /* gardener avatar on gold */
+    --color-placeholder: #8a938c; /* empty text field (GR7) */
+    --color-scrim: rgba(28, 43, 36, 0.45); /* behind the group sheets */
+    --color-on-forest-line: rgba(244, 241, 234, 0.35); /* rain-day size chips */
 
     /* Canvas illustration colours */
     --stage-trunk: #8a6a4f;

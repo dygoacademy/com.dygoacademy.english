@@ -108,6 +108,14 @@ export function useGardenFormat() {
         format.dateTime(day, { ...UTC, weekday: 'long', day: 'numeric', month: 'long' }),
       /** "21 September" · "21 tháng 9". */
       dayMonth: (day: Date) => format.dateTime(day, { ...UTC, day: 'numeric', month: 'long' }),
+      /** "2 Sep" · "2/9" · "9月2日" (UI-G: joined, invite expiry). */
+      shortDay: (day: Date) =>
+        format.dateTime(
+          day,
+          locale.startsWith('vi')
+            ? { ...UTC, day: 'numeric', month: 'numeric' }
+            : { ...UTC, day: 'numeric', month: 'short' },
+        ),
       /** "Sunday" · "Chủ Nhật". */
       weekday: (day: Date) => format.dateTime(day, { ...UTC, weekday: 'long' }),
       /** "M" · "T2" · "一". */

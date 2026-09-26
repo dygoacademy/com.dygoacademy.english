@@ -13,7 +13,11 @@
       "missions": "本周收获",
       "topics": "主题",
       "me": "我的",
-      "topic": "主题花圃"
+      "topic": "主题花圃",
+      "groups": "共享花园",
+      "group": "共享花园",
+      "manage": "照料花园",
+      "join": "加入花园"
     }
   },
   "tokens": {
@@ -78,7 +82,8 @@
       "wordRow": "单词行",
       "tabBar": "底部标签栏",
       "sheet": "底部面板",
-      "toast": "轻提示"
+      "toast": "轻提示",
+      "groups": "共享花园（UI-G）"
     },
     "states": {
       "default": "默认",
@@ -119,7 +124,14 @@
       "sheetHint": "在 iPhone 上从底部弹出（向下拖动把手关闭），600px 起显示为居中面板。",
       "info": "信息",
       "success": "成功",
-      "toastLive": "实时：显示 3 秒（iPhone 在底部，600px 起在顶部）"
+      "toastLive": "实时：显示 3 秒（iPhone 在底部，600px 起在顶部）",
+      "groupCards": "花园卡片：你的角色、园丁和你的待复习单词",
+      "roles": "角色标签",
+      "rainForest": "花园列表中的雨天",
+      "rainWater": "花园内的雨天",
+      "tricky": "难点区（仅总数）",
+      "gardeners": "带角色选择的园丁（你自己的一行在此锁定）",
+      "invite": "邀请面板（可交互；链接为示例）"
     },
     "sample": {
       "water": "给 12 个单词浇水",
@@ -282,7 +294,8 @@
       "garden": "花园",
       "missions": "任务",
       "topics": "主题",
-      "me": "我的"
+      "me": "我的",
+      "groups": "小组"
     },
     "sheet": {
       "close": "关闭"
@@ -302,6 +315,25 @@
       "meaningNone": "仅英文",
       "saving": "正在保存…",
       "error": "没能保存。请检查网络后重试。"
+    },
+    "groups": {
+      "roles": {
+        "ADMIN": "管理员",
+        "WRITE": "编辑",
+        "READ": "成员"
+      },
+      "roleHints": {
+        "ADMIN": "管理园丁、邀请和雨天",
+        "WRITE": "添加花圃和单词",
+        "READ": "为共享花圃浇水"
+      },
+      "dueForYou": "{count} 个待复习",
+      "allWatered": "已浇完水",
+      "water": "浇水",
+      "rainDayToday": "今天是雨天",
+      "you": "（你）",
+      "changeRole": "更改{name}的角色",
+      "remove": "移出花园"
     }
   },
   "screens": {
@@ -538,6 +570,154 @@
       "retry": "重试",
       "missionTitle": "给 {count} 个单词浇水",
       "topicMeta": "{count} 个单词"
+    },
+    "groups": {
+      "list": {
+        "title": "共享花园",
+        "summary": "{gardens} 个花园 · {gardeners} 位园丁",
+        "create": "创建花园",
+        "start": "创建花园",
+        "join": "通过链接加入",
+        "rainTitle": "{group} · 浇水 {count} 个单词",
+        "rainDetail": "{done}/{members} 人已完成 · {time} 截止",
+        "cardMeta": "{members} 位园丁 · {beds} 个共享花圃 · {words} 个单词",
+        "emptyTitle": "还没有共享花园",
+        "emptyBody": "为你的班级或朋友创建一个，或通过邀请链接加入。",
+        "joinTitle": "通过链接加入",
+        "joinSubtitle": "粘贴你收到的邀请链接",
+        "joinField": "邀请链接",
+        "joinPlaceholder": "dygoacademy.com/join/…",
+        "joinGo": "打开邀请",
+        "joinInvalid": "这看起来不像邀请链接。"
+      },
+      "garden": {
+        "back": "返回共享花园",
+        "manage": "管理花园",
+        "subtitle": "{role, select, ADMIN {你是管理员} WRITE {你是编辑} other {你是成员}} · {members} 位园丁",
+        "eyebrow": "共享花园",
+        "heroTitle": "{count} 个共享单词正在生长",
+        "watered": "今天 {watered}/{members} 人已浇水",
+        "ripe": "{ripe}/{total} 株已成熟",
+        "plotLabel": "一个共享花园，每位园丁一块地",
+        "rainTitle": "雨天 · 浇水 {count} 个单词",
+        "rainDetail": "{done}/{members} 人已完成 · 你：{mine}/{count}",
+        "beds": "共享花圃",
+        "sorted": "按你的待复习单词排序",
+        "bedWords": "{count} 个单词",
+        "separator": " · ",
+        "noBeds": "还没有共享花圃。",
+        "gardeners": "园丁",
+        "gardenersLabel": "{count} 位园丁",
+        "more": "+{count}",
+        "invite": "邀请"
+      },
+      "tend": {
+        "title": "照料花园",
+        "back": "返回小组花园",
+        "trickyTab": "难点区",
+        "gardenersTab": "园丁",
+        "trickyTitle": "难点区",
+        "window": "最近 7 天",
+        "trickyIntro": "本花园错得最多的单词。只显示总数，从不显示个人的答案。",
+        "trickyMeta": "错 {misses} 次 · {gardeners} 人",
+        "trickyEmpty": "本周没有难点。",
+        "rainTitle": "发起雨天",
+        "rainBody": "向 {count} 位园丁推送 · 难词优先",
+        "sizeLabel": "每人单词数",
+        "size": "{count} 个词",
+        "start": "开始雨天 · 每人 {count} 个词",
+        "last": "上次雨天：{day} · {joined}/{members} 人参与",
+        "pushMessage": "{group} 雨天：今天浇水 {count} 个单词",
+        "sent": "雨天已发送给 {count} 位园丁。",
+        "sendFailed": "雨天发送失败，请重试。",
+        "legend": "<b>管理员</b>管理园丁、邀请和雨天 · <b>编辑</b>添加花圃和单词 · <b>成员</b>浇水",
+        "joined": "{date} 加入",
+        "invitesActive": "{count} 个邀请链接有效",
+        "invitesNone": "还没有邀请链接",
+        "invitesNoneBody": "创建链接来邀请园丁",
+        "inviteUses": "已用 {used}/{max}",
+        "inviteUsesOpen": "已用 {used} 次",
+        "inviteExpires": "{date} 过期",
+        "inviteNoExpiry": "永不过期",
+        "invite": "邀请",
+        "linksTitle": "邀请链接",
+        "linksSubtitle": "仍然有效的链接",
+        "revoke": "撤销",
+        "revokeLabel": "撤销{role}链接",
+        "newLink": "新建邀请链接",
+        "roleChanged": "{name} 现在是{role}。",
+        "removeConfirm": "将{name}移出这个花园？",
+        "removed": "{name} 已离开花园。",
+        "lastAdmin": "花园至少需要一位管理员。请先指定其他管理员。",
+        "actionFailed": "操作失败，请重试。",
+        "settings": "花园设置",
+        "settingsSubtitle": "名称、简介和可见范围",
+        "save": "保存更改",
+        "saved": "已保存。",
+        "delete": "删除花园",
+        "deleteConfirm": "删除{name}？其中的共享花圃和单词也会一并删除，且无法恢复。",
+        "adminOnly": "只有花园管理员可以照料花园。",
+        "backToGarden": "返回花园"
+      },
+      "invite": {
+        "title": "邀请园丁",
+        "subtitle": "加入{group}",
+        "joinAs": "加入身份",
+        "roleLabel": "新园丁的角色",
+        "expires": "有效期",
+        "uses": "可使用次数",
+        "inDays": "{count} 天后",
+        "never": "永不过期",
+        "times": "{count} 次",
+        "unlimited": "不限",
+        "stepLabel": "{label}：{value}。点按更改。",
+        "onceNotice": "为了安全，此链接只显示一次。请立即复制或分享。",
+        "linkPlaceholder": "复制或分享时生成链接",
+        "copy": "复制链接",
+        "share": "分享…",
+        "copied": "链接已复制",
+        "copyFailed": "无法复制，请手动选择并复制链接。",
+        "failed": "链接创建失败，请重试。",
+        "shareText": "加入 Dygo Academy 上的{group}"
+      },
+      "join": {
+        "invitedBy": "{name} 邀请你加入",
+        "invited": "你受邀加入",
+        "gardeners": "{count, plural, other {位园丁}}",
+        "beds": "{count, plural, other {个共享花圃}}",
+        "words": "{count, plural, other {个单词}}",
+        "benefitBeds": "共享花圃会种进你的花园",
+        "benefitRain": "接收花园管理员发起的雨天",
+        "benefitPrivate": "你自己的进度始终保密",
+        "joinAs": {
+          "ADMIN": "你将以<b>{role}</b>身份加入",
+          "WRITE": "你将以<b>{role}</b>身份加入",
+          "READ": "你将以<b>{role}</b>身份加入"
+        },
+        "join": "加入花园",
+        "joining": "正在加入…",
+        "notNow": "以后再说",
+        "loading": "正在打开邀请…",
+        "already": "你已经在{group}中。",
+        "open": "打开花园",
+        "notFound": "此邀请链接无效，请索取新的链接。",
+        "expired": "此邀请已过期或已用完，请索取新的链接。",
+        "failed": "加入失败，请重试。"
+      },
+      "create": {
+        "title": "创建花园",
+        "subtitle": "为你的班级或朋友准备的共享空间",
+        "name": "名称",
+        "about": "简介（可选）",
+        "namePlaceholder": "雅思 7 分夜班",
+        "aboutPlaceholder": "写作任务 2 词汇，每周 3 个晚上",
+        "openTitle": "开放花园",
+        "openOff": "只有持邀请链接的人可以加入",
+        "openOn": "任何人都能找到这个花园",
+        "note": "你将成为花园的管理员。接下来添加共享花圃并邀请园丁。",
+        "submit": "创建花园",
+        "failed": "花园创建失败，请重试。"
+      }
     }
   }
 }

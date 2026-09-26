@@ -133,6 +133,10 @@ const config: Config = {
           'avatar-flower-text': 'var(--color-avatar-flower-text)',
           'avatar-sprout-text': 'var(--color-avatar-sprout-text)',
           'avatar-due-text': 'var(--color-avatar-due-text)',
+          'avatar-gold-text': 'var(--color-avatar-gold-text)',
+          placeholder: 'var(--color-placeholder)',
+          scrim: 'var(--color-scrim)',
+          'on-forest-line': 'var(--color-on-forest-line)',
         },
         // §5.2 plant stages — one colour per SRS state.
         stage: {

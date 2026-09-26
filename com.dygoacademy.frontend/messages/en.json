@@ -9,7 +9,11 @@
       "missions": "Weekly harvest",
       "topics": "Topics",
       "me": "Me",
-      "topic": "Topic bed"
+      "topic": "Topic bed",
+      "groups": "Shared gardens",
+      "group": "Shared garden",
+      "manage": "Tend the garden",
+      "join": "Join a garden"
     }
   },
   "tokens": {
@@ -74,7 +78,8 @@
       "wordRow": "Word rows",
       "tabBar": "Bottom tab bar",
       "sheet": "Bottom sheet",
-      "toast": "Toast"
+      "toast": "Toast",
+      "groups": "Shared gardens (UI-G)"
     },
     "states": {
       "default": "Default",
@@ -115,7 +120,14 @@
       "sheetHint": "Opens as a bottom sheet on iPhone (drag the grabber down to close) and a centred sheet from 600px.",
       "info": "Info",
       "success": "Success",
-      "toastLive": "Live: shows for 3 seconds (bottom on iPhone, top from 600px)"
+      "toastLive": "Live: shows for 3 seconds (bottom on iPhone, top from 600px)",
+      "groupCards": "Group cards: your role, gardeners and your due words",
+      "roles": "Role badges",
+      "rainForest": "Rain day in the gardens list",
+      "rainWater": "Rain day inside a garden",
+      "tricky": "Tricky patches (totals only)",
+      "gardeners": "Gardeners with the role picker (your own row is locked here)",
+      "invite": "Invite sheet (interactive; the link is a sample)"
     },
     "sample": {
       "water": "Water 12 words",
@@ -278,7 +290,8 @@
       "garden": "Garden",
       "missions": "Missions",
       "topics": "Topics",
-      "me": "Me"
+      "me": "Me",
+      "groups": "Groups"
     },
     "sheet": {
       "close": "Close"
@@ -298,6 +311,25 @@
       "meaningNone": "English only",
       "saving": "Saving…",
       "error": "That didn’t save. Check your connection and try again."
+    },
+    "groups": {
+      "roles": {
+        "ADMIN": "Admin",
+        "WRITE": "Editor",
+        "READ": "Viewer"
+      },
+      "roleHints": {
+        "ADMIN": "Manages gardeners, invites and rain days",
+        "WRITE": "Adds beds and words",
+        "READ": "Waters the shared beds"
+      },
+      "dueForYou": "{count} due for you",
+      "allWatered": "All watered",
+      "water": "Water",
+      "rainDayToday": "Rain day today",
+      "you": "(you)",
+      "changeRole": "Change {name}'s role",
+      "remove": "Remove from garden"
     }
   },
   "screens": {
@@ -534,6 +566,154 @@
       "retry": "Try again",
       "missionTitle": "Water {count, plural, one {# word} other {# words}}",
       "topicMeta": "{count, plural, one {# word} other {# words}}"
+    },
+    "groups": {
+      "list": {
+        "title": "Shared gardens",
+        "summary": "{gardens, plural, one {# garden} other {# gardens}} · {gardeners, plural, one {# gardener} other {# gardeners}}",
+        "create": "Create a garden",
+        "start": "Start a garden",
+        "join": "Join with a link",
+        "rainTitle": "{group} · water {count, plural, one {# word} other {# words}}",
+        "rainDetail": "{done} of {members} done · ends {time}",
+        "cardMeta": "{members, plural, one {# gardener} other {# gardeners}} · {beds, plural, one {# shared bed} other {# shared beds}} · {words, plural, one {# word} other {# words}}",
+        "emptyTitle": "No shared gardens yet",
+        "emptyBody": "Start one for your class or friends, or join with an invite link.",
+        "joinTitle": "Join with a link",
+        "joinSubtitle": "Paste the invite link you were sent",
+        "joinField": "Invite link",
+        "joinPlaceholder": "dygoacademy.com/join/…",
+        "joinGo": "Open the invite",
+        "joinInvalid": "That doesn't look like an invite link."
+      },
+      "garden": {
+        "back": "Back to shared gardens",
+        "manage": "Manage garden",
+        "subtitle": "{role, select, ADMIN {You're the admin} WRITE {You're an editor} other {You're a viewer}} · {members, plural, one {# gardener} other {# gardeners}}",
+        "eyebrow": "Shared garden",
+        "heroTitle": "{count, plural, one {# shared word growing} other {# shared words growing}}",
+        "watered": "{watered} of {members} watered today",
+        "ripe": "{ripe} of {total} plants ripe",
+        "plotLabel": "A shared garden with five plots, one per gardener",
+        "rainTitle": "Rain day · water {count, plural, one {# word} other {# words}}",
+        "rainDetail": "{done} of {members} done · you: {mine} of {count}",
+        "beds": "Shared beds",
+        "sorted": "Sorted by your due words",
+        "bedWords": "{count, plural, one {# word} other {# words}}",
+        "separator": " · ",
+        "noBeds": "No shared beds yet.",
+        "gardeners": "Gardeners",
+        "gardenersLabel": "{count, plural, one {# gardener} other {# gardeners}}",
+        "more": "+{count}",
+        "invite": "Invite"
+      },
+      "tend": {
+        "title": "Tend the garden",
+        "back": "Back to the group garden",
+        "trickyTab": "Tricky patches",
+        "gardenersTab": "Gardeners",
+        "trickyTitle": "Tricky patches",
+        "window": "last 7 days",
+        "trickyIntro": "Words this garden missed most. Totals only, never one person's answers.",
+        "trickyMeta": "{misses, plural, one {# miss} other {# misses}} · {gardeners, plural, one {# gardener} other {# gardeners}}",
+        "trickyEmpty": "No tricky patches this week.",
+        "rainTitle": "Call a rain day",
+        "rainBody": "Sends a push to {count, plural, one {# gardener} other {# gardeners}} · tricky words first",
+        "sizeLabel": "Words per gardener",
+        "size": "{count, plural, one {# word} other {# words}}",
+        "start": "Start rain day · {count, plural, one {# word} other {# words}} each",
+        "last": "Last rain day: {day} · {joined} of {members} joined",
+        "pushMessage": "Rain day in {group}: water {count, plural, one {# word} other {# words}} today",
+        "sent": "Rain day sent to {count, plural, one {# gardener} other {# gardeners}}.",
+        "sendFailed": "The rain day couldn't be sent. Try again.",
+        "legend": "<b>Admin</b> manages gardeners, invites and rain days · <b>Editor</b> adds beds and words · <b>Viewer</b> waters",
+        "joined": "Joined {date}",
+        "invitesActive": "{count, plural, one {# invite link active} other {# invite links active}}",
+        "invitesNone": "No invite links yet",
+        "invitesNoneBody": "Make one to bring gardeners in",
+        "inviteUses": "{used} of {max} used",
+        "inviteUsesOpen": "used {used, plural, one {# time} other {# times}}",
+        "inviteExpires": "expires {date}",
+        "inviteNoExpiry": "never expires",
+        "invite": "Invite",
+        "linksTitle": "Invite links",
+        "linksSubtitle": "Links that still work",
+        "revoke": "Revoke",
+        "revokeLabel": "Revoke the {role} link",
+        "newLink": "New invite link",
+        "roleChanged": "{name} is now {role}.",
+        "removeConfirm": "Remove {name} from this garden?",
+        "removed": "{name} left the garden.",
+        "lastAdmin": "A garden needs at least one admin. Make someone else admin first.",
+        "actionFailed": "That didn't work. Try again.",
+        "settings": "Garden settings",
+        "settingsSubtitle": "Name, about and who can find it",
+        "save": "Save changes",
+        "saved": "Saved.",
+        "delete": "Delete garden",
+        "deleteConfirm": "Delete {name}? Its shared beds and words go with it. This can't be undone.",
+        "adminOnly": "Only the garden's admins can tend it.",
+        "backToGarden": "Back to the garden"
+      },
+      "invite": {
+        "title": "Invite gardeners",
+        "subtitle": "to {group}",
+        "joinAs": "They join as",
+        "roleLabel": "Role for new gardeners",
+        "expires": "Expires",
+        "uses": "Can be used",
+        "inDays": "In {count, plural, one {# day} other {# days}}",
+        "never": "Never",
+        "times": "{count, plural, one {# time} other {# times}}",
+        "unlimited": "No limit",
+        "stepLabel": "{label}: {value}. Tap to change.",
+        "onceNotice": "For safety this link is shown only once. Copy or share it now.",
+        "linkPlaceholder": "The link is made when you copy or share it",
+        "copy": "Copy link",
+        "share": "Share…",
+        "copied": "Link copied",
+        "copyFailed": "Couldn’t copy. Select the link and copy it yourself.",
+        "failed": "The link couldn't be made. Try again.",
+        "shareText": "Join {group} on Dygo Academy"
+      },
+      "join": {
+        "invitedBy": "{name} invited you to",
+        "invited": "You're invited to",
+        "gardeners": "{count, plural, one {gardener} other {gardeners}}",
+        "beds": "{count, plural, one {shared bed} other {shared beds}}",
+        "words": "{count, plural, one {word} other {words}}",
+        "benefitBeds": "The shared beds are planted in your garden",
+        "benefitRain": "Rain days from the garden's admin",
+        "benefitPrivate": "Your own progress stays private",
+        "joinAs": {
+          "ADMIN": "You'll join as an <b>{role}</b>",
+          "WRITE": "You'll join as an <b>{role}</b>",
+          "READ": "You'll join as a <b>{role}</b>"
+        },
+        "join": "Join the garden",
+        "joining": "Joining…",
+        "notNow": "Not now",
+        "loading": "Opening the invite…",
+        "already": "You're already in {group}.",
+        "open": "Open the garden",
+        "notFound": "This invite link doesn't work. Ask for a new one.",
+        "expired": "This invite has expired or been used up. Ask for a new one.",
+        "failed": "Couldn't join. Try again."
+      },
+      "create": {
+        "title": "Start a garden",
+        "subtitle": "A shared space for your class or friends",
+        "name": "Name",
+        "about": "About (optional)",
+        "namePlaceholder": "Band 7 Night Class",
+        "aboutPlaceholder": "Writing Task 2 vocabulary, 3 evenings a week",
+        "openTitle": "Open garden",
+        "openOff": "Only people with an invite link can join",
+        "openOn": "Anyone can find this garden",
+        "note": "You'll be the garden's admin. Add shared beds and invite gardeners next.",
+        "submit": "Create garden",
+        "failed": "The garden couldn't be created. Try again."
+      }
     }
   }
 }
