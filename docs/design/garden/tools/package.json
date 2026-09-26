@@ -1,0 +1,11 @@
+{
+  "name": "garden-reference-render",
+  "private": true,
+  "description": "Renders the Word Garden canvas artboards (../source) to ../reference. Run: npm install && node render.js ../reference",
+  "dependencies": {
+    "@fontsource-variable/fraunces": "^5.3.0",
+    "@fontsource/dm-sans": "^5.3.0",
+    "@fontsource/fraunces": "^5.3.0",
+    "playwright-core": "^1.63.0"
+  }
+}
