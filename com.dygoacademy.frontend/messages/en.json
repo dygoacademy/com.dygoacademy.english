@@ -258,5 +258,202 @@
     "sheet": {
       "close": "Close"
     }
+  },
+  "screens": {
+    "home": {
+      "greeting": {
+        "morning": "Good morning, {name}",
+        "afternoon": "Good afternoon, {name}",
+        "evening": "Good evening, {name}"
+      },
+      "streakUnit": "{count, plural, one {day} other {days}}",
+      "streakLabel": "{count, plural, one {# day} other {# days}} streak",
+      "heroOverline": "Your garden",
+      "heroTitle": "{count, plural, one {# word} other {# words}} growing",
+      "legend": {
+        "thirsty": "{count, number} thirsty",
+        "ripe": "{count, number} ripe",
+        "wilting": "{count, number} wilting"
+      },
+      "missions": {
+        "title": "Today's missions",
+        "progress": "{done} of {total} done",
+        "comingSoon": "Daily missions are coming soon. Until then, water what’s due below.",
+        "goldenBloom": "Finish all {total} to grow today's <b>Golden Bloom</b>",
+        "water": "Water {count, plural, one {# due word} other {# due words}}",
+        "plant": "Plant {count, plural, one {# new word} other {# new words}}",
+        "challenge": "Collocation challenge",
+        "valueDone": "Done",
+        "valueMinutes": "{count} min",
+        "valueCount": "{done}/{total}",
+        "progressWater": "{done} of {total} words watered",
+        "progressPlant": "{done} of {total} words planted",
+        "notStarted": "Not started"
+      },
+      "action": {
+        "continue": "Continue mission",
+        "start": "Water your garden",
+        "detail": "{count, plural, one {# word} other {# words}} left · about {minutes} min"
+      },
+      "ripens": "Tomorrow {time} · <b>{count, plural, one {# word} other {# words}} ripen</b>"
+    },
+    "review": {
+      "close": "Close",
+      "missionLabel": "Mission · {title}",
+      "count": "{done}/{total}",
+      "vineText": "{done} of {total} words watered",
+      "title": "Water {count, plural, one {# word} other {# words}}",
+      "showAnswer": "Show answer",
+      "finishedTitle": "All {count} watered",
+      "seeBloom": "See your garden bloom",
+      "replayDemo": "Replay demo",
+      "backToGarden": "Back to garden",
+      "empty": "Nothing is thirsty right now. Come back when your words ripen.",
+      "error": "This word couldn’t be saved. Check your connection and try again."
+    },
+    "complete": {
+      "unknown": "—",
+      "close": "Close",
+      "bloomLabel": "Blooming flower",
+      "overline": "Mission complete",
+      "title": "{count, plural, one {# word} other {# words}} watered",
+      "bloomed": "“{word}” and {count} more just bloomed",
+      "percent": "{value}%",
+      "minutes": "{count} min",
+      "recalled": "recalled",
+      "today": "today",
+      "streak": "day streak",
+      "missionsDone": "{done} of {total} missions done",
+      "missionsLeft": "{count, plural, =0 {Today's Golden Bloom is growing} one {One more for today's Golden Bloom} other {# more for today's Golden Bloom}}",
+      "nextMission": "{title} · {minutes} min",
+      "ripening": "{count, plural, one {# word} other {# words}} ripen tomorrow",
+      "remindAt": "Remind me at {time}",
+      "back": "Back to garden"
+    },
+    "harvest": {
+      "title": "Weekly harvest",
+      "missionsCount": "{done} of {total} missions",
+      "missionsHint": "Each mission grows that day's plant",
+      "today": "Today",
+      "dayPlant": "{count, plural, =0 {no missions} one {# mission} other {# missions}}",
+      "seedPack": "{need} Golden Blooms this week unlocks the <b>{name}</b> seed pack",
+      "seedPackCount": "{have}/{need}",
+      "missionsTitle": "This week’s missions",
+      "missionsComingSoon": "Daily missions are coming soon. Each one you finish will grow that day’s plant here.",
+      "goalHint": "vocabulary goal",
+      "number": "{value, number}",
+      "goalMastered": "of {target, number} words mastered",
+      "goalBar": "{mastered, number} mastered and {growing, number} growing of {target, number} words",
+      "legendMastered": "Mastered",
+      "legendGrowing": "Growing ({count, number})",
+      "eta": "At this pace: {eta}",
+      "goalTitle": "Vocabulary goal",
+      "goalComingSoon": "Set a word goal for your exam. Coming soon.",
+      "barrelTitle": "Rain barrel · {count}",
+      "barrelName": "Rain barrel",
+      "barrelBody": "Streak freezes. Busy day? Your garden stays watered.",
+      "comingSoon": "Coming soon.",
+      "groupBody": "{watered} of {members} watered today. Group plot: {words, number} words.",
+      "groupName": "Study group"
+    },
+    "comeback": {
+      "title": "Welcome back, {name}.<br></br>Your garden waited for you.",
+      "legend": {
+        "thirsty": "{count, number} thirsty",
+        "wilting": "{count, number} wilting",
+        "ripe": "{count, number} still ripe"
+      },
+      "streakSafe": "Your {count}-day streak is safe",
+      "streakBarrel": "Rain barrel covered {covered, plural, one {# day} other {# days}}. {left} left, refills {day}.",
+      "overline": "Start small",
+      "reviveTitle": "Revive the {count} wilting words first",
+      "reviveBody": "These are the words you're most likely to forget. The rest can wait until tomorrow.",
+      "revive": "Quick revive",
+      "reviveDetail": "{count, plural, one {# word} other {# words}} · about {minutes} min",
+      "waterAllInstead": "Water all {count} instead",
+      "waterAll": "Water all {count}"
+    },
+    "topics": {
+      "title": "Topics",
+      "all": "All",
+      "summary": "{beds, plural, one {# bed} other {# beds}} · {words, plural, one {# word} other {# words}}",
+      "search": "Search words and topics",
+      "filterLabel": "Filter topics",
+      "words": "{count, plural, one {# word} other {# words}}",
+      "fruiting": "{count} fruiting",
+      "separator": " · ",
+      "due": "{count} due",
+      "allWatered": "All watered",
+      "locked": "Locked",
+      "newBed": "Plant a new bed",
+      "mine": "Mine",
+      "group": "Group",
+      "empty": "No beds yet. Plant your first one below."
+    },
+    "bed": {
+      "back": "Back to topics",
+      "options": "Topic options",
+      "stagesLabel": "Filter by stage",
+      "unknown": "—",
+      "stage": {
+        "seed": "Seeds",
+        "sprout": "Sprouts",
+        "flower": "Flowers",
+        "tree": "Fruiting"
+      },
+      "stageTitle": {
+        "seed": "Seeds in this bed",
+        "sprout": "Sprouts in this bed",
+        "flower": "Flowers in this bed",
+        "tree": "Fruiting in this bed"
+      },
+      "water": "Water {count} due",
+      "nothingDue": "Nothing due",
+      "quiz": "Quiz",
+      "addWord": "Add word",
+      "allWords": "All words",
+      "sorted": "Sorted by next watering",
+      "empty": "No words at this stage yet.",
+      "dueNow": "Due now",
+      "new": "New",
+      "inDays": "in {count, plural, one {# day} other {# days}}",
+      "meta": "{parts}",
+      "wordsCount": "{count, plural, one {# word} other {# words}}",
+      "notFound": "This bed doesn’t exist, or it isn’t yours."
+    },
+    "me": {
+      "unknown": "—",
+      "number": "{value, number}",
+      "testDay": "Test day: {date}",
+      "stats": {
+        "fruiting": "words fruiting",
+        "bestStreak": "best streak",
+        "hours": "{count}h",
+        "inGarden": "in the garden",
+        "goldenBlooms": "Golden Blooms"
+      },
+      "calendarTitle": "Garden calendar",
+      "calendarRange": "last 16 weeks",
+      "calendarLabel": "Missions done each day over the last 16 weeks",
+      "calendarLegend": "Each square = one day's missions",
+      "comingSoon": "Coming soon with daily missions.",
+      "keepsakesTitle": "Keepsakes",
+      "keepsake": {
+        "firstHarvest": "First harvest",
+        "streak": "{count}-day streak",
+        "blooms": "{count} Golden Blooms",
+        "next": "{count} words · next"
+      },
+      "dailyGoal": "Daily goal",
+      "dailyGoalValue": "{missions} missions · {minutes} min",
+      "comingSoonShort": "Coming soon",
+      "reminder": "Ripening reminder",
+      "meanings": "Meanings in",
+      "family": "Family",
+      "familyValue": "Open {name}'s garden"
+    },
+    "reference": {
+      "metaTitle": "Garden reference: {name}"
+    }
   }
 }

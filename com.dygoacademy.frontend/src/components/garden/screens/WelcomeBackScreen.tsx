@@ -1,0 +1,114 @@
+import * as React from 'react';
+import Link from 'next/link';
+import { useTranslations } from 'next-intl';
+
+import { ButtonTwoLine, buttonClassName } from '../buttonStyles';
+import { gcn } from '../cn';
+import { HeroGardenCard, type HeroLegendItem, type HeroPlant } from '../HeroGardenCard';
+import { ArrowRightIcon, RainBarrelIcon } from '../icons';
+import { GardenTabBar, SCREEN_CLASSES } from './GardenTabBar';
+
+/**
+ * A5 · Welcome back (canvas `reference/A5-welcome-back`), shown on the
+ * Garden tab after 2+ missed days. Props only.
+ *
+ * Header → the faded garden with the rain cloud → "streak is safe" (only
+ * when streak freezes exist, UI-6) → "Start small": revive the wilting
+ * words first, or water everything → tab bar.
+ */
+export interface WelcomeBackScreenProps {
+  dateLabel: string;
+  name: string;
+  garden: { thirsty: number; wilting: number; ripe: number | null; plants: readonly HeroPlant[] };
+  /** Null until streak freezes exist (UI-6). */
+  streak: { days: number; covered: number; left: number; refills: string } | null;
+  revive: { count: number; minutes: number; href: string } | null;
+  waterAll: { count: number; href: string } | null;
+  stickyNav?: boolean;
+}
+
+export function WelcomeBackScreen({
+  dateLabel,
+  name,
+  garden,
+  streak,
+  revive,
+  waterAll,
+  stickyNav = true,
+}: WelcomeBackScreenProps) {
+  const t = useTranslations('screens.comeback');
+
+  const legend: HeroLegendItem[] = [
+    { stage: 'thirsty', label: t('legend.thirsty', { count: garden.thirsty }) },
+    { stage: 'wilting', label: t('legend.wilting', { count: garden.wilting }) },
+    ...(garden.ripe !== null
+      ? [{ stage: 'tree' as const, label: t('legend.ripe', { count: garden.ripe }) }]
+      : []),
+  ];
+
+  return (
+    <div className={gcn(SCREEN_CLASSES, 'gap-4 pt-[22px]')}>
+      <header className="flex flex-col gap-1 px-5">
+        <span className="text-[13px] font-medium text-garden-muted">{dateLabel}</span>
+        <h1 className="font-display text-[30px] font-semibold leading-[1.12]">
+          {t.rich('title', { name, br: () => <br /> })}
+        </h1>
+      </header>
+
+      <HeroGardenCard className="mx-4" variant="comeback" plants={garden.plants} legend={legend} />
+
+      {streak ? (
+        <div className="mx-4 flex items-center gap-3 rounded-[18px] border border-garden-water-border bg-garden-water-soft px-[14px] py-3">
+          <RainBarrelIcon width={30} height={30} stroke="var(--color-water-strong)" />
+          <div className="flex flex-col">
+            <span className="text-[15px] font-bold text-garden-water-text">
+              {t('streakSafe', { count: streak.days })}
+            </span>
+            <span className="text-[13px] text-garden-water-text-soft">
+              {t('streakBarrel', {
+                covered: streak.covered,
+                left: streak.left,
+                day: streak.refills,
+              })}
+            </span>
+          </div>
+        </div>
+      ) : null}
+
+      {revive || waterAll ? (
+        <section className="mx-4 flex flex-col gap-3 rounded-[22px] border border-garden-border bg-garden-surface p-4">
+          {revive ? (
+            <>
+              <div className="flex flex-col gap-0.5">
+                <span className="overline-label text-[12px] font-bold text-garden-success">
+                  {t('overline')}
+                </span>
+                <h2 className="font-display text-[21px] font-semibold">
+                  {t('reviveTitle', { count: revive.count })}
+                </h2>
+                <p className="text-[14px] text-garden-muted">{t('reviveBody')}</p>
+              </div>
+              <Link href={revive.href} className={buttonClassName('primary', { twoLine: true })}>
+                <ButtonTwoLine
+                  label={t('revive')}
+                  secondLine={t('reviveDetail', { count: revive.count, minutes: revive.minutes })}
+                />
+                <ArrowRightIcon width={24} height={24} stroke="var(--color-surface)" />
+              </Link>
+            </>
+          ) : null}
+          {waterAll ? (
+            <Link
+              href={waterAll.href}
+              className="text-center text-[14px] font-semibold text-garden-forest underline"
+            >
+              {t(revive ? 'waterAllInstead' : 'waterAll', { count: waterAll.count })}
+            </Link>
+          ) : null}
+        </section>
+      ) : null}
+
+      <GardenTabBar active="garden" sticky={stickyNav} />
+    </div>
+  );
+}
