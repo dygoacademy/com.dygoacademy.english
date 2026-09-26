@@ -1,11 +1,8 @@
 import type { Viewport } from 'next';
-import { getLocale } from 'next-intl/server';
 import { cookies } from 'next/headers';
 import { notFound } from 'next/navigation';
 
 import { GARDEN_UI_COOKIE, isGardenEnabled } from '@/lib/garden-ui';
-
-import { GardenRoot } from '../(garden)/GardenRoot';
 
 export const viewport: Viewport = {
   width: 'device-width',
@@ -27,12 +24,14 @@ export const viewport: Viewport = {
  *     check again.
  *  2. The garden flag or the `?ui=garden` cookie, like every garden page.
  * The pages show only fixture data, never a user's.
+ *
+ * UI-L: each page wraps itself in `GardenRoot` with the language from
+ * `?locale=en|vi|zh-CN` (not the learner's), so this layout only gates.
  */
 export default async function GardenReferenceLayout({ children }: { children: React.ReactNode }) {
   if (process.env.NODE_ENV === 'production') notFound();
   const cookieStore = await cookies();
   if (!isGardenEnabled(cookieStore.get(GARDEN_UI_COOKIE)?.value)) notFound();
 
-  const locale = await getLocale();
-  return <GardenRoot locale={locale}>{children}</GardenRoot>;
+  return children;
 }

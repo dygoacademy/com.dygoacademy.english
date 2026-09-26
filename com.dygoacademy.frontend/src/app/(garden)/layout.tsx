@@ -1,11 +1,10 @@
 import type { Viewport } from 'next';
-import { getLocale } from 'next-intl/server';
 import { cookies } from 'next/headers';
 import { notFound, redirect } from 'next/navigation';
 
 import { ROUTES } from '@/constants/routes';
+import { getGardenLocaleContext, getGardenUser } from '@/i18n/garden-locale';
 import { GARDEN_UI_COOKIE, isGardenEnabled } from '@/lib/garden-ui';
-import { createServerSupabaseClient } from '@/lib/supabase/server';
 
 import { GardenRoot } from './GardenRoot';
 
@@ -37,6 +36,11 @@ export const viewport: Viewport = {
  *
  * GardenRoot sets `data-ui="garden"` (the garden tokens in globals.css),
  * the font variables and the next-intl provider.
+ *
+ * UI-L: the language, formatting locale and time zone come from
+ * `getGardenLocaleContext()` (profile → `dygo_locale` cookie →
+ * Accept-Language → English), the same cached lookup `src/i18n/request.ts`
+ * uses, so the session and profile are read once per request.
  */
 export default async function GardenLayout({ children }: { children: React.ReactNode }) {
   const cookieStore = await cookies();
@@ -44,16 +48,23 @@ export default async function GardenLayout({ children }: { children: React.React
     notFound();
   }
 
-  const supabase = await createServerSupabaseClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const { user } = await getGardenUser();
 
   if (!user) {
     redirect(ROUTES.login);
   }
 
-  const locale = await getLocale();
+  const locale = await getGardenLocaleContext();
 
-  return <GardenRoot locale={locale}>{children}</GardenRoot>;
+  return (
+    <GardenRoot
+      appLocale={locale.appLocale}
+      formatLocale={locale.formatLocale}
+      timeZone={locale.timeZone}
+      meaningLocale={locale.meaningLocale}
+      stored={locale.stored}
+    >
+      {children}
+    </GardenRoot>
+  );
 }
