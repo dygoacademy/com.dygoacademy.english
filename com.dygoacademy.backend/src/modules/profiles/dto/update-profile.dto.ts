@@ -1,12 +1,15 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { IsIn, IsOptional, ValidateIf } from 'class-validator';
 
-/** App languages the garden ships in (phase 12 plan, UI-L). */
-export const UI_LOCALES = ['en', 'zh-CN', 'vi'] as const;
+/**
+ * App locales the garden ships in (phase 12 plan, UI-L), as full BCP 47
+ * codes since 2026-09-26 (migration 20260926_profile_locales_codes.sql).
+ */
+export const UI_LOCALES = ['en-SG', 'en-US', 'vi-VN', 'zh-CN'] as const;
 export type UiLocale = (typeof UI_LOCALES)[number];
 
 /** Languages the review card can add a meaning line in; null = English only. */
-export const MEANING_LOCALES = ['zh-CN', 'vi'] as const;
+export const MEANING_LOCALES = ['vi-VN', 'zh-CN'] as const;
 export type MeaningLocale = (typeof MEANING_LOCALES)[number];
 
 /**

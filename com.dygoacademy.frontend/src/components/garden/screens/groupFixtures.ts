@@ -24,17 +24,20 @@ export const GROUP_REFERENCE_NAMES = [
 ] as const;
 export type GroupReferenceName = (typeof GROUP_REFERENCE_NAMES)[number];
 
+const NAMES_EN = {
+  sprint: 'IELTS Sprint · Week 3',
+  sprintShort: 'IELTS Sprint',
+  writing: 'Saturday Writing Club',
+  courts: 'Courts English Circle',
+  beds: ['Environment', 'Education', 'Technology'],
+  about: 'A shared garden for Band 7 vocabulary',
+  newGarden: 'Band 7 Night Class',
+} as const;
+
 const NAMES = {
-  en: {
-    sprint: 'IELTS Sprint · Week 3',
-    sprintShort: 'IELTS Sprint',
-    writing: 'Saturday Writing Club',
-    courts: 'Courts English Circle',
-    beds: ['Environment', 'Education', 'Technology'],
-    about: 'A shared garden for Band 7 vocabulary',
-    newGarden: 'Band 7 Night Class',
-  },
-  vi: {
+  'en-SG': NAMES_EN,
+  'en-US': NAMES_EN,
+  'vi-VN': {
     sprint: 'IELTS Sprint · Tuần 3',
     sprintShort: 'IELTS Sprint',
     writing: 'CLB Viết Thứ Bảy',

@@ -3,7 +3,7 @@
  * copied from docs/design/garden/source/*.dc.html so each fixture page
  * renders exactly what the canvas renders. Content here is sample data
  * (names, words, meanings, dates), not UI copy: UI copy comes from
- * messages/en.json through t().
+ * messages/en-SG.json through t().
  */
 import type { AppLocale } from '@/i18n/config';
 
@@ -283,7 +283,7 @@ export const ME = {
   ] satisfies KeepsakeItem[],
   dailyGoal: { missions: 3, minutes: 15 },
   reminder: { time: { hour: 7, minute: 30 }, on: true },
-  meanings: 'vi' as const,
+  meanings: 'vi-VN' as const,
   family: { name: 'Na' },
 };
 
@@ -301,18 +301,21 @@ export const ME = {
  * drawn before that decision, shows the English definition first, and the
  * English reference page reproduces it.
  */
+const SAMPLE_EN = {
+  topics: ['Environment', 'Education', 'Technology', 'Work & careers', 'IELTS Sprint · Week 3'],
+  shared: 'Shared',
+  academic: 'IELTS Academic',
+  collection: 'IELTS Academic',
+  group: 'IELTS Sprint group',
+  meaning: { text: 'giảm nhẹ, làm dịu bớt', lang: 'vi' },
+  meaningFirst: false,
+  meanings: 'vi-VN',
+} as const;
+
 const SAMPLE = {
-  en: {
-    topics: ['Environment', 'Education', 'Technology', 'Work & careers', 'IELTS Sprint · Week 3'],
-    shared: 'Shared',
-    academic: 'IELTS Academic',
-    collection: 'IELTS Academic',
-    group: 'IELTS Sprint group',
-    meaning: { text: 'giảm nhẹ, làm dịu bớt', lang: 'vi' },
-    meaningFirst: false,
-    meanings: 'vi',
-  },
-  vi: {
+  'en-SG': SAMPLE_EN,
+  'en-US': SAMPLE_EN,
+  'vi-VN': {
     topics: ['Môi trường', 'Giáo dục', 'Công nghệ', 'Công việc', 'IELTS Sprint · Tuần 3'],
     shared: 'Chung',
     academic: 'IELTS',
@@ -320,7 +323,7 @@ const SAMPLE = {
     group: 'Nhóm IELTS Sprint',
     meaning: { text: 'giảm nhẹ, làm dịu bớt', lang: 'vi' },
     meaningFirst: true,
-    meanings: 'vi',
+    meanings: 'vi-VN',
   },
   'zh-CN': {
     topics: ['环境', '教育', '科技', '工作与职业', 'IELTS 冲刺 · 第 3 周'],

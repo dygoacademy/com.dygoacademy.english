@@ -4,27 +4,34 @@
  * Deliberately free of next/headers so the same helpers work in the
  * request config, server actions, client components and tests.
  *
- * Two kinds of locale live here:
- *  - the **app language** (`AppLocale`): which messages file the garden
- *    reads (`en`, `zh-CN`, `vi`). It's what the learner picks.
- *  - the **formatting locale**: what dates, times and numbers are
- *    formatted with. English is `en-SG` ("Friday, 25 September") unless
- *    the learner's time zone is in the Americas, then `en-US` (Sunday week
- *    start); Vietnamese is `vi-VN` ("Thứ Sáu, 25 tháng 9", "1.200");
- *    Chinese is `zh-CN`. The next-intl provider is given the formatting
- *    locale, so `useFormatter()` formats the right way; plural rules are
- *    the same as the bare language's.
+ * Locale codes are full BCP 47 tags (2026-09-26): `en-SG`, `en-US`,
+ * `vi-VN`, `zh-CN`. One code is both
+ *  - the **app language**: which messages file the garden reads
+ *    (`messages/<code>.json`), what the learner picks, what
+ *    `profiles.ui_locale` and the `dygo_locale` cookie store; and
+ *  - the **formatting locale**: dates, times and numbers ("Friday,
+ *    25 September" in en-SG, "Friday, September 25" and a Sunday week
+ *    start in en-US, "Thứ Sáu, 25 tháng 9" / "1.200" in vi-VN).
+ *
+ * English has two regions. With no stored choice, English means en-US
+ * for a learner whose time zone is in the Americas and en-SG otherwise
+ * (same rule as before the codes changed). Old short codes ('en', 'vi')
+ * from before the change are still understood when read
+ * (`normalizeLocale`), so existing cookies keep working.
  *
  * Only the (garden) and (garden-reference) layouts use any of this;
  * classic screens stay English (plan §10 rule 3).
  */
-export const LOCALES = ['en', 'zh-CN', 'vi'] as const;
+export const LOCALES = ['en-SG', 'en-US', 'vi-VN', 'zh-CN'] as const;
 export type AppLocale = (typeof LOCALES)[number];
-export const DEFAULT_LOCALE: AppLocale = 'en';
+export const DEFAULT_LOCALE: AppLocale = 'en-SG';
 
 /** Languages the review card can show a meaning line in (besides English). */
-export const MEANING_LOCALES = ['zh-CN', 'vi'] as const;
+export const MEANING_LOCALES = ['vi-VN', 'zh-CN'] as const;
 export type MeaningLocale = (typeof MEANING_LOCALES)[number];
+
+/** The language part of a locale ('en-SG' → 'en'), for rules shared by a language. */
+export type LanguageCode = 'en' | 'vi' | 'zh';
 
 /** Set by the language sheet (and before sign-in); read after the profile. */
 export const LOCALE_COOKIE = 'dygo_locale';
@@ -45,6 +52,39 @@ export function isMeaningLocale(value: unknown): value is MeaningLocale {
   return typeof value === 'string' && (MEANING_LOCALES as readonly string[]).includes(value);
 }
 
+/** English for a learner in this time zone: en-US in the Americas, else en-SG. */
+export function englishFor(timeZone?: string | null): AppLocale {
+  return timeZone?.startsWith('America/') ? 'en-US' : 'en-SG';
+}
+
+/**
+ * A stored or requested value as an app locale: the four codes (any
+ * case), the pre-2026-09-26 short codes ('en' → English for the zone,
+ * 'vi' → vi-VN), or null.
+ */
+export function normalizeLocale(value: unknown, timeZone?: string | null): AppLocale | null {
+  if (typeof value !== 'string') return null;
+  const match = LOCALES.find((code) => code.toLowerCase() === value.trim().toLowerCase());
+  if (match) return match;
+  if (value === 'en') return englishFor(timeZone);
+  if (value === 'vi') return 'vi-VN';
+  return null;
+}
+
+/** A stored meaning language, including the old 'vi', or null. */
+export function normalizeMeaningLocale(value: unknown): MeaningLocale | null {
+  if (value === 'vi') return 'vi-VN';
+  return isMeaningLocale(value) ? value : null;
+}
+
+/** 'en-SG' → 'en', 'vi-VN' → 'vi', 'zh-CN' → 'zh'. */
+export function languageOf(locale: string): LanguageCode {
+  const lower = locale.toLowerCase();
+  if (lower.startsWith('vi')) return 'vi';
+  if (lower.startsWith('zh')) return 'zh';
+  return 'en';
+}
+
 /** A stored time zone, or null for the 'UTC' "never set" value and junk. */
 export function storedTimeZone(value: unknown): string | null {
   if (typeof value !== 'string' || value === '' || value === 'UTC') return null;
@@ -57,22 +97,28 @@ export function storedTimeZone(value: unknown): string | null {
 }
 
 /**
- * Maps one language tag to an app language: `zh*` → zh-CN, `vi*` → vi,
- * `en*` → en, anything else → null.
+ * Maps one language tag to an app locale: `zh*` → zh-CN, `vi*` → vi-VN,
+ * `en-US` → en-US, `en-SG` / `en-GB` / … → en-SG, bare `en` → English for
+ * the zone, anything else → null.
  */
-export function appLocaleForTag(tag: string): AppLocale | null {
+export function appLocaleForTag(tag: string, timeZone?: string | null): AppLocale | null {
   const lower = tag.trim().toLowerCase();
   if (lower === 'zh' || lower.startsWith('zh-')) return 'zh-CN';
-  if (lower === 'vi' || lower.startsWith('vi-')) return 'vi';
-  if (lower === 'en' || lower.startsWith('en-')) return 'en';
+  if (lower === 'vi' || lower.startsWith('vi-')) return 'vi-VN';
+  if (lower === 'en-us') return 'en-US';
+  if (lower === 'en') return englishFor(timeZone);
+  if (lower.startsWith('en-')) return 'en-SG';
   return null;
 }
 
 /**
- * The best app language in an `Accept-Language` header, by q-value
- * (ties keep header order). Null when none of the three is listed.
+ * The best app locale in an `Accept-Language` header, by q-value
+ * (ties keep header order). Null when none of the languages is listed.
  */
-export function localeFromAcceptLanguage(header: string | null | undefined): AppLocale | null {
+export function localeFromAcceptLanguage(
+  header: string | null | undefined,
+  timeZone?: string | null,
+): AppLocale | null {
   if (!header) return null;
   const ranked = header
     .split(',')
@@ -88,41 +134,43 @@ export function localeFromAcceptLanguage(header: string | null | undefined): App
     .filter((entry) => entry.tag && entry.quality > 0)
     .sort((a, b) => b.quality - a.quality || a.index - b.index);
   for (const entry of ranked) {
-    const locale = appLocaleForTag(entry.tag);
+    const locale = appLocaleForTag(entry.tag, timeZone);
     if (locale) return locale;
   }
   return null;
 }
 
 /**
- * Which language the garden uses: 1) the profile's `ui_locale`, 2) the
- * `dygo_locale` cookie, 3) `Accept-Language`, 4) English.
+ * Which locale the garden uses: 1) the profile's `ui_locale`, 2) the
+ * `dygo_locale` cookie, 3) `Accept-Language`, 4) English for the zone.
  */
 export function resolveAppLocale(sources: {
   profile?: string | null;
   cookie?: string | null;
   acceptLanguage?: string | null;
+  timeZone?: string | null;
 }): AppLocale {
-  if (isAppLocale(sources.profile)) return sources.profile;
-  if (isAppLocale(sources.cookie)) return sources.cookie;
-  return localeFromAcceptLanguage(sources.acceptLanguage) ?? DEFAULT_LOCALE;
+  const zone = sources.timeZone;
+  return (
+    normalizeLocale(sources.profile, zone) ??
+    normalizeLocale(sources.cookie, zone) ??
+    localeFromAcceptLanguage(sources.acceptLanguage, zone) ??
+    englishFor(zone)
+  );
 }
 
-/** The formatting locale for an app language (see the file comment). */
-export function formattingLocale(locale: AppLocale, timeZone?: string | null): string {
-  switch (locale) {
-    case 'vi':
-      return 'vi-VN';
-    case 'zh-CN':
-      return 'zh-CN';
-    default:
-      return timeZone?.startsWith('America/') ? 'en-US' : 'en-SG';
-  }
+/**
+ * The formatting locale for an app locale. Since the codes carry the
+ * region, it's the code itself; kept as a function so callers don't
+ * depend on that.
+ */
+export function formattingLocale(locale: AppLocale): string {
+  return locale;
 }
 
-/** The app language a formatting locale belongs to ('en-SG' → 'en'). */
+/** The app locale a formatting locale belongs to (unknown → en-SG). */
 export function appLocaleOf(locale: string): AppLocale {
-  return appLocaleForTag(locale) ?? DEFAULT_LOCALE;
+  return normalizeLocale(locale) ?? appLocaleForTag(locale) ?? DEFAULT_LOCALE;
 }
 
 /** First day of the week, JS numbering (0 = Sunday, 1 = Monday). */
@@ -136,5 +184,5 @@ export function weekStartsOn(locale: string): 0 | 1 {
  * `-vi` reference), where the short form "Thứ 2" doesn't fit.
  */
 export function shortWeekdayStyle(locale: string): 'short' | 'narrow' {
-  return appLocaleOf(locale) === 'vi' ? 'narrow' : 'short';
+  return languageOf(locale) === 'vi' ? 'narrow' : 'short';
 }

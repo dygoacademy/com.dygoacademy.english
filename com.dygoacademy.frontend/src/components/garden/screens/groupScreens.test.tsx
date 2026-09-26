@@ -4,7 +4,7 @@ import { describe, expect, it, vi } from 'vitest';
 
 import { renderWithIntl } from '@/test/render';
 
-import vi_messages from '../../../../messages/vi.json';
+import vi_messages from '../../../../messages/vi-VN.json';
 
 import { groupFixtures } from './groupFixtures';
 import { JoinGardenScreen } from './JoinGardenScreen';
@@ -15,7 +15,7 @@ vi.mock('next/navigation', () => ({ useRouter: () => ({ push: vi.fn() }) }));
 
 /** UI-G screens GR1, GR3/GR4 and GR6 (props only). */
 
-const fx = groupFixtures('en');
+const fx = groupFixtures('en-SG');
 
 describe('SharedGardensScreen', () => {
   const props = {
@@ -49,7 +49,7 @@ describe('SharedGardensScreen', () => {
     expect(screen.getByText('No shared gardens yet')).toBeTruthy();
   });
 
-  it('speaks Vietnamese from vi.json', () => {
+  it('speaks Vietnamese from vi-VN.json', () => {
     render(
       <NextIntlClientProvider locale="vi-VN" messages={vi_messages}>
         <SharedGardensScreen {...props} />

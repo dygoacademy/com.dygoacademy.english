@@ -307,9 +307,10 @@
       "meaningLanguage": "释义语言",
       "meaningHint": "始终显示英文释义。",
       "names": {
-        "en": "English",
-        "zh-CN": "简体中文",
-        "vi": "Tiếng Việt"
+        "en-SG": "English (Singapore)",
+        "en-US": "English (United States)",
+        "vi-VN": "Tiếng Việt",
+        "zh-CN": "简体中文"
       },
       "meaningWith": "{language} + English",
       "meaningNone": "仅英文",
@@ -559,7 +560,7 @@
       "testDayUnset": "[添加日期]",
       "meaningsValue": {
         "none": "English",
-        "vi": "Tiếng Việt + English",
+        "vi-VN": "Tiếng Việt + English",
         "zh-CN": "简体中文 + English"
       }
     },

@@ -18,8 +18,8 @@ import {
   DEFAULT_TIME_ZONE,
   LOCALE_COOKIE,
   formattingLocale,
-  isAppLocale,
-  isMeaningLocale,
+  normalizeLocale,
+  normalizeMeaningLocale,
   resolveAppLocale,
   storedTimeZone,
   type AppLocale,
@@ -77,20 +77,22 @@ export const getGardenLocaleContext = cache(async (): Promise<GardenLocaleContex
     getProfileLocaleRow(),
     getGardenUser(),
   ]);
+  const storedZone = storedTimeZone(profile?.timezone);
   const appLocale = resolveAppLocale({
     profile: profile?.ui_locale,
     cookie: cookieStore.get(LOCALE_COOKIE)?.value,
     acceptLanguage: headerList.get('accept-language'),
+    timeZone: storedZone,
   });
-  const timeZone = storedTimeZone(profile?.timezone) ?? DEFAULT_TIME_ZONE;
-  const meaningLocale = isMeaningLocale(profile?.meaning_locale) ? profile?.meaning_locale : null;
+  const timeZone = storedZone ?? DEFAULT_TIME_ZONE;
+  const meaningLocale = normalizeMeaningLocale(profile?.meaning_locale);
   return {
     appLocale,
-    formatLocale: formattingLocale(appLocale, storedTimeZone(profile?.timezone)),
+    formatLocale: formattingLocale(appLocale),
     timeZone,
     meaningLocale,
     stored: {
-      uiLocale: isAppLocale(profile?.ui_locale) ? profile?.ui_locale : null,
+      uiLocale: normalizeLocale(profile?.ui_locale, storedZone),
       meaningLocale,
     },
     signedIn: Boolean(user),

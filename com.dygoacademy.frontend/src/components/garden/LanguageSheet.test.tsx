@@ -14,8 +14,8 @@ function renderSheet(
       <LanguageSheet
         open
         onOpenChange={() => {}}
-        uiLocale="en"
-        meaningLocale="vi"
+        uiLocale="en-SG"
+        meaningLocale="vi-VN"
         onChange={onChange}
         {...props}
       />
@@ -31,7 +31,7 @@ describe("LanguageSheet", () => {
     expect(screen.getByRole("group", { name: "App language" })).toBeTruthy();
     expect(screen.getByRole("group", { name: "Meanings in" })).toBeTruthy();
     expect(
-      (screen.getByRole("radio", { name: "English" }) as HTMLInputElement)
+      (screen.getByRole("radio", { name: "English (Singapore)" }) as HTMLInputElement)
         .checked,
     ).toBe(true);
     expect(
@@ -52,7 +52,7 @@ describe("LanguageSheet", () => {
   it("reports the app language and the meaning language separately", () => {
     const onChange = renderSheet();
     fireEvent.click(screen.getByRole("radio", { name: "Tiếng Việt" }));
-    expect(onChange).toHaveBeenLastCalledWith({ uiLocale: "vi" });
+    expect(onChange).toHaveBeenLastCalledWith({ uiLocale: "vi-VN" });
     fireEvent.click(screen.getByRole("radio", { name: "English only" }));
     expect(onChange).toHaveBeenLastCalledWith({ meaningLocale: null });
     fireEvent.click(screen.getByRole("radio", { name: "简体中文 + English" }));

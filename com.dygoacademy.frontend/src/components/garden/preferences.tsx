@@ -17,7 +17,7 @@ export interface GardenPreferences {
 }
 
 const GardenPreferencesContext = React.createContext<GardenPreferences>({
-  appLocale: 'en',
+  appLocale: 'en-SG',
   meaningLocale: null,
   storedUiLocale: null,
 });

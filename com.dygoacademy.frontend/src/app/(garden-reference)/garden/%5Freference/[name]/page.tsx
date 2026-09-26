@@ -3,20 +3,21 @@ import { getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 
 import { isReferenceName } from '@/components/garden/screens/fixtures';
-import { DEFAULT_LOCALE, formattingLocale, isAppLocale } from '@/i18n/config';
+import { DEFAULT_LOCALE, formattingLocale, isMeaningLocale, normalizeLocale } from '@/i18n/config';
 import { loadMessages } from '@/i18n/messages';
 
 import { GardenRoot } from '@/app/(garden)/GardenRoot';
 import { ReferenceScreen } from './ReferenceScreen';
 
 /**
- * /garden/_reference/<name>?locale=en|vi|zh-CN: one canvas screen with the
+ * /garden/_reference/<name>?locale=en-SG|en-US|vi-VN|zh-CN: one canvas screen with the
  * canvas sample data (screens/fixtures.ts), for `npm run garden:diff`.
  * Dev only; see the route group's layout for the gates. The tab bar sits
  * in the flow, as in the fixed-height canvas frame.
  *
  * UI-L: the language comes from `?locale=` (default English), not from the
- * learner; `-vi` references are diffed against `?locale=vi`. The canvas
+ * learner; `-vi` references are diffed against `?locale=vi-VN` (the old
+ * short codes `en` / `vi` still work). The canvas
  * sample data is dated in UTC, so the pages format in UTC.
  */
 const REFERENCE_TIME_ZONE = 'UTC';
@@ -42,7 +43,7 @@ export default async function GardenReferencePage({
   const { name } = await params;
   if (!isReferenceName(name)) notFound();
   const { locale: requested } = await searchParams;
-  const locale = isAppLocale(requested) ? requested : DEFAULT_LOCALE;
+  const locale = normalizeLocale(Array.isArray(requested) ? requested[0] : requested) ?? DEFAULT_LOCALE;
 
   return (
     <GardenRoot
@@ -50,7 +51,7 @@ export default async function GardenReferencePage({
       formatLocale={formattingLocale(locale)}
       timeZone={REFERENCE_TIME_ZONE}
       messages={await loadMessages(locale)}
-      meaningLocale={locale === 'en' ? null : locale}
+      meaningLocale={isMeaningLocale(locale) ? locale : null}
     >
       <ReferenceScreen name={name} locale={locale} />
     </GardenRoot>

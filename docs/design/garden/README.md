@@ -40,16 +40,16 @@ Every screen above also has a **Vietnamese reference**, `<name>-vi` (for example
 
 ## Languages
 
-The app ships in **English (`en`), Simplified Chinese (`zh-CN`) and Vietnamese (`vi`)**; see `phase 12 implementation plan.md`, step UI-L.
+The app ships in **English (`en-SG`, `en-US`), Simplified Chinese (`zh-CN`) and Vietnamese (`vi-VN`)** (full locale codes since 2026-09-26; the old `en` / `vi` still work in `?locale=` and `--locale`); see `phase 12 implementation plan.md`, step UI-L.
 
 - **English and Vietnamese are the two reference languages.** Both must match their references (same pixel-diff rule). The Vietnamese references fix the translations, the shortened labels and the two layout tweaks the canvas made for Vietnamese (topic chips and the Weekly Harvest "Hôm nay" label don't wrap).
-- **The canvas copy is the message source.** `messages/en.json` must say exactly what the English references say, and `messages/vi.json` exactly what the `-vi` references say. The glossary is in the plan (UI-L).
+- **The canvas copy is the message source.** `messages/en-SG.json` must say exactly what the English references say, and `messages/vi-VN.json` exactly what the `-vi` references say. `messages/en-US.json` is en-SG with US spelling (no canvas page; screenshot-checked like Chinese). The glossary is in the plan (UI-L).
 - **Chinese has no canvas page.** It uses the English layout; check it with the screenshot tests at every viewport (no text cut off, nothing wraps that doesn't wrap in English) instead of a pixel diff. A native speaker reviews `zh-CN.json` before release.
 - On the Vietnamese review card the **Vietnamese meaning comes first** and the English definition second (A2-review-answer-vi). That order follows the *meaning language*, not the app language.
 
 ## How a screen is checked against the canvas
 
-1. **Fixture page.** Each screen gets a flag-only route `/garden/_reference/<screen>` that renders the **real** garden components with the **same sample data** as the canvas, in the locale given by `?locale=en|vi` (default `en`; the `-vi` references use `?locale=vi`) ("Good evening, Minh", 412 words, "mitigate", and so on). That makes the comparison like for like; the real pages use live data.
+1. **Fixture page.** Each screen gets a flag-only route `/garden/_reference/<screen>` that renders the **real** garden components with the **same sample data** as the canvas, in the locale given by `?locale=en-SG|vi-VN|en-US|zh-CN` (default `en-SG`; the `-vi` references use `?locale=vi-VN`) ("Good evening, Minh", 412 words, "mitigate", and so on). That makes the comparison like for like; the real pages use live data.
 2. **Pixel diff.** Playwright screenshots the fixture page at 390 × 844 @2x with animations off, and diffs it against `reference/<screen>.png` (pixelmatch, threshold 0.1).
    - **Pass:** at most 0.5% of pixels differ, and every differing area is font anti-aliasing only.
    - **Anything else** (a shifted element, a different size, colour, radius or icon) is a bug: fix it, don't accept it.
@@ -61,10 +61,10 @@ The app ships in **English (`en`), Simplified Chinese (`zh-CN`) and Vietnamese (
 ```sh
 cd com.dygoacademy.frontend
 npm run dev                      # in one terminal
-npm run garden:diff -- --base http://localhost:3000 --cookie dygo_ui=garden --locale en,vi
+npm run garden:diff -- --base http://localhost:3000 --cookie dygo_ui=garden --locale en-SG,vi-VN
 ```
 
-`--locale vi` loads `/garden/_reference/<name>?locale=vi` and diffs it against `<name>-vi.png` (UI-L); the default is English only.
+`--locale vi-VN` loads `/garden/_reference/<name>?locale=vi-VN` and diffs it against `<name>-vi.png` (UI-L); the default is English only.
 
 The fixture pages are `/garden/_reference/<name>` (dev only, garden flag or cookie; they 404 in production). The script uses your installed Chrome (or `--chrome` / `CHROME_PATH`), writes `actual` and `diff` PNGs to `com.dygoacademy.frontend/.garden-diff/` (gitignored) and prints the table. In a diff PNG, red pixels count; yellow ones are anti-aliasing that pixelmatch ignores.
 

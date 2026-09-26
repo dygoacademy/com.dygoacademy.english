@@ -19,7 +19,7 @@
   "tokens": {
     "metaTitle": "Garden tokens",
     "title": "Garden tokens",
-    "intro": "Every colour, text style, radius, shadow and motion token in the Word Garden design system, with English, Chinese and Vietnamese test strings. Visible only with the garden flag on.",
+    "intro": "Every color, text style, radius, shadow and motion token in the Word Garden design system, with English, Chinese and Vietnamese test strings. Visible only with the garden flag on.",
     "sizeClass": {
       "label": "Size class:",
       "compact": "compact (under 600px)",
@@ -28,7 +28,7 @@
       "short": "short (height under 500px)"
     },
     "sections": {
-      "colour": "Colour",
+      "colour": "Color",
       "stages": "Plant stages",
       "ratings": "Rating buttons",
       "fonts": "Fonts",
@@ -92,7 +92,7 @@
       "tappable": "Tappable (link)",
       "static": "Static",
       "sizes": "Every stage at 24, 32, 40, 56 and 72",
-      "labelled": "Labelled (role img) at 56",
+      "labelled": "Labeled (role img) at 56",
       "drip": "Drip (ambient, stops with reduced motion)",
       "bloom": "Bloom (plays once)",
       "interactive": "Interactive: tap, or press 1–4 on a keyboard",
@@ -117,7 +117,7 @@
       "link": "Whole row is a link",
       "activeGarden": "Garden active",
       "activeTopics": "Topics active",
-      "sheetHint": "Opens as a bottom sheet on iPhone (drag the grabber down to close) and a centred sheet from 600px.",
+      "sheetHint": "Opens as a bottom sheet on iPhone (drag the grabber down to close) and a centered sheet from 600px.",
       "info": "Info",
       "success": "Success",
       "toastLive": "Live: shows for 3 seconds (bottom on iPhone, top from 600px)",
@@ -303,9 +303,10 @@
       "meaningLanguage": "Meanings in",
       "meaningHint": "The English definition is always shown.",
       "names": {
-        "en": "English",
-        "zh-CN": "简体中文",
-        "vi": "Tiếng Việt"
+        "en-SG": "English (Singapore)",
+        "en-US": "English (United States)",
+        "vi-VN": "Tiếng Việt",
+        "zh-CN": "简体中文"
       },
       "meaningWith": "{language} + English",
       "meaningNone": "English only",
@@ -555,7 +556,7 @@
       "testDayUnset": "[add date]",
       "meaningsValue": {
         "none": "English",
-        "vi": "Tiếng Việt + English",
+        "vi-VN": "Tiếng Việt + English",
         "zh-CN": "简体中文 + English"
       }
     },

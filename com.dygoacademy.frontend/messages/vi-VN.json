@@ -303,9 +303,10 @@
       "meaningLanguage": "Nghĩa hiển thị",
       "meaningHint": "Luôn hiện định nghĩa tiếng Anh.",
       "names": {
-        "en": "English",
-        "zh-CN": "简体中文",
-        "vi": "Tiếng Việt"
+        "en-SG": "English (Singapore)",
+        "en-US": "English (United States)",
+        "vi-VN": "Tiếng Việt",
+        "zh-CN": "简体中文"
       },
       "meaningWith": "{language} + English",
       "meaningNone": "Chỉ tiếng Anh",
@@ -555,7 +556,7 @@
       "testDayUnset": "[thêm ngày]",
       "meaningsValue": {
         "none": "English",
-        "vi": "Tiếng Việt + English",
+        "vi-VN": "Tiếng Việt + English",
         "zh-CN": "简体中文 + English"
       }
     },

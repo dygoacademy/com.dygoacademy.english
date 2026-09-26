@@ -4,7 +4,7 @@ import { describe, expect, it, vi } from 'vitest';
 
 import { renderWithIntl } from '@/test/render';
 
-import messages from '../../../../messages/en.json';
+import messages from '../../../../messages/en-SG.json';
 
 import {
   BED,

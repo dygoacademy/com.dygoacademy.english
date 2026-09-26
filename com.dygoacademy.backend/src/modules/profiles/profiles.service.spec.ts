@@ -14,7 +14,7 @@ async function makeService(queryAsMock: jest.Mock): Promise<ProfilesService> {
   return moduleRef.get(ProfilesService);
 }
 
-const ROW = { id: 'user-42', ui_locale: 'vi', meaning_locale: 'vi' };
+const ROW = { id: 'user-42', ui_locale: 'vi-VN', meaning_locale: 'vi-VN' };
 
 describe('ProfilesService.updateMine', () => {
   it('updates only the caller’s row, through queryAs (RLS: profiles_update_self)', async () => {
@@ -22,7 +22,7 @@ describe('ProfilesService.updateMine', () => {
     const service = await makeService(queryAs);
 
     await expect(
-      service.updateMine('user-42', { uiLocale: 'vi', meaningLocale: 'vi' }),
+      service.updateMine('user-42', { uiLocale: 'vi-VN', meaningLocale: 'vi-VN' }),
     ).resolves.toEqual(ROW);
 
     const [userId, sql, params] = queryAs.mock.calls[0];
@@ -30,7 +30,7 @@ describe('ProfilesService.updateMine', () => {
     expect(sql).toMatch(/update public\.profiles/);
     expect(sql).toMatch(/where id = \$1/);
     expect(sql).toMatch(/ui_locale = \$2, meaning_locale = \$3/);
-    expect(params).toEqual(['user-42', 'vi', 'vi']);
+    expect(params).toEqual(['user-42', 'vi-VN', 'vi-VN']);
   });
 
   it('leaves out fields that were not sent, and clears a field sent as null', async () => {
@@ -54,7 +54,7 @@ describe('ProfilesService.updateMine', () => {
 
   it('is a 404 when RLS hides the row (no profile)', async () => {
     const service = await makeService(jest.fn().mockResolvedValue([]));
-    await expect(service.updateMine('user-42', { uiLocale: 'en' })).rejects.toBeInstanceOf(
+    await expect(service.updateMine('user-42', { uiLocale: 'en-SG' })).rejects.toBeInstanceOf(
       NotFoundException,
     );
   });
@@ -64,11 +64,11 @@ describe('UpdateProfileDto', () => {
   const errorsFor = async (body: object) =>
     (await validate(plainToInstance(UpdateProfileDto, body))).map((e) => e.property);
 
-  it('accepts the three app languages and the two meaning languages', async () => {
-    for (const uiLocale of ['en', 'zh-CN', 'vi']) {
+  it('accepts the four app locales and the two meaning locales', async () => {
+    for (const uiLocale of ['en-SG', 'en-US', 'vi-VN', 'zh-CN']) {
       expect(await errorsFor({ uiLocale })).toEqual([]);
     }
-    for (const meaningLocale of ['zh-CN', 'vi']) {
+    for (const meaningLocale of ['vi-VN', 'zh-CN']) {
       expect(await errorsFor({ meaningLocale })).toEqual([]);
     }
   });
@@ -78,9 +78,12 @@ describe('UpdateProfileDto', () => {
     expect(await errorsFor({})).toEqual([]);
   });
 
-  it('rejects other codes', async () => {
+  it('rejects other codes, including the old short ones', async () => {
     expect(await errorsFor({ uiLocale: 'fr' })).toEqual(['uiLocale']);
+    expect(await errorsFor({ uiLocale: 'en' })).toEqual(['uiLocale']);
+    expect(await errorsFor({ uiLocale: 'vi' })).toEqual(['uiLocale']);
+    expect(await errorsFor({ meaningLocale: 'vi' })).toEqual(['meaningLocale']);
     expect(await errorsFor({ uiLocale: 'zh' })).toEqual(['uiLocale']);
-    expect(await errorsFor({ meaningLocale: 'en' })).toEqual(['meaningLocale']);
+    expect(await errorsFor({ meaningLocale: 'en-SG' })).toEqual(['meaningLocale']);
   });
 });

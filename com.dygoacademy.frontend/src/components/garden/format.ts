@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { useFormatter, useLocale, useTimeZone } from 'next-intl';
 
-import { appLocaleOf, shortWeekdayStyle, weekStartsOn } from '@/i18n/config';
+import { languageOf, shortWeekdayStyle, weekStartsOn } from '@/i18n/config';
 
 /**
  * Locale formatting for garden screens (UI-L). Every date, time, weekday
@@ -74,7 +74,7 @@ export function formatClock(time: ClockTime, locale: string): string {
     minute: '2-digit',
     timeZone: 'UTC',
   }).formatToParts(new Date(Date.UTC(2000, 0, 1, time.hour, time.minute)));
-  const upper = appLocaleOf(locale) === 'en';
+  const upper = languageOf(locale) === 'en';
   return (
     parts
       .map((part) => (part.type === 'dayPeriod' && upper ? part.value.toUpperCase() : part.value))

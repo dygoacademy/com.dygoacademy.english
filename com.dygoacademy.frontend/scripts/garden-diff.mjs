@@ -8,7 +8,7 @@
  * (threshold 0.1). Pass = at most 0.5% of pixels differ.
  *
  * Usage (with `npm run dev` running):
- *   npm run garden:diff -- --base http://localhost:3000 --cookie dygo_ui=garden --locale en,vi
+ *   npm run garden:diff -- --base http://localhost:3000 --cookie dygo_ui=garden --locale en-SG,vi-VN
  *
  * Options:
  *   --base <url>       app URL (default http://localhost:3000)
@@ -17,10 +17,12 @@
  *   --out <dir>        where actual + diff PNGs go (default .garden-diff, gitignored)
  *   --chrome <path>    Chrome/Chromium binary (or CHROME_PATH); default: installed Chrome
  *   --max <percent>    pass threshold (default 0.5)
- *   --locale <l,…>     languages to check: en (default), vi, or "en,vi". UI-L:
- *                      `vi` screenshots /garden/_reference/<name>?locale=vi and
- *                      diffs it against reference/<name>-vi.png. (zh-CN has
- *                      no canvas page; it's checked by screenshots instead.)
+ *   --locale <l,…>     locales to check: en-SG (default), vi-VN, or
+ *                      "en-SG,vi-VN" (the old `en` / `vi` still work).
+ *                      `vi-VN` screenshots /garden/_reference/<name>?locale=vi-VN
+ *                      and diffs it against reference/<name>-vi.png. (zh-CN
+ *                      and en-US have no canvas page; they're checked by
+ *                      screenshots instead.)
  *   --refs <dir>       reference PNGs (default ../docs/design/garden/reference)
  *
  * The reference pages exist only in development (they 404 in production)
@@ -61,6 +63,11 @@ const NAMES = [
   'GR7-create',
 ];
 
+/** Old short codes still accepted on the command line. */
+const LOCALE_ALIASES = { en: 'en-SG', vi: 'vi-VN' };
+/** Suffix of the reference PNGs per locale (the canvas pages are English and Vietnamese). */
+const REFERENCE_SUFFIX = { 'vi-VN': 'vi' };
+
 function parseArgs(argv) {
   const args = {
     base: 'http://localhost:3000',
@@ -70,7 +77,7 @@ function parseArgs(argv) {
     chrome: null,
     max: 0.5,
     refs: defaultReferenceDir,
-    locales: ['en'],
+    locales: ['en-SG'],
   };
   for (let i = 0; i < argv.length; i++) {
     const key = argv[i];
@@ -101,7 +108,7 @@ function parseArgs(argv) {
         i++;
         break;
       case '--locale':
-        args.locales = value.split(',').map((s) => s.trim());
+        args.locales = value.split(',').map((s) => LOCALE_ALIASES[s.trim()] ?? s.trim());
         i++;
         break;
       case '--max':
@@ -155,7 +162,8 @@ async function main() {
   const rows = [];
   const jobs = args.locales.flatMap((locale) => names.map((name) => ({ locale, name })));
   for (const { locale, name: screen } of jobs) {
-    const name = locale === 'en' ? screen : `${screen}-${locale}`;
+    // Reference PNGs: English is <name>.png (drawn in en-SG), Vietnamese <name>-vi.png.
+    const name = locale === 'en-SG' ? screen : `${screen}-${REFERENCE_SUFFIX[locale] ?? locale}`;
     const refPath = path.join(args.refs, `${name}.png`);
     if (!fs.existsSync(refPath)) {
       rows.push({ name, error: 'no reference PNG' });
