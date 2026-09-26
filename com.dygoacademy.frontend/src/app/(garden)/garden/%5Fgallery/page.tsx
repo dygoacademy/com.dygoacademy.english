@@ -12,6 +12,7 @@ import {
   MeTabIcon,
   MissionRow,
   MissionsTabIcon,
+  MoonIcon,
   PlantIcon,
   StarIcon,
   WaterIcon,
@@ -386,51 +387,42 @@ export default async function GardenGalleryPage() {
           <HeroGardenCard
             overline={t('sample.heroOverline')}
             title={t('sample.heroTitle')}
-            subtitle={t('sample.heroSubtitle')}
+            trailing={<MoonIcon width={30} height={30} />}
             plants={[
               'tree',
-              'flower',
+              { stage: 'flower', thirsty: true },
               'sprout',
-              'thirsty',
-              'flower',
-              'seed',
               'tree',
-              'sprout',
+              'flower',
+              { stage: 'sprout', thirsty: true },
               'wilting',
-              'flower',
-              'tree',
+              { stage: 'flower', thirsty: true },
               'seed',
             ]}
             legend={[
-              { stage: 'seed', count: format.number(24), label: t('sample.stageSeeds') },
-              { stage: 'sprout', count: format.number(37), label: t('sample.stageSprouts') },
-              { stage: 'flower', count: format.number(112), label: t('sample.stageFlowers') },
-              { stage: 'tree', count: format.number(1204), label: t('sample.stageRipe') },
+              { stage: 'thirsty', label: `${format.number(46)} ${t('sample.stageThirsty')}` },
+              { stage: 'tree', label: `${format.number(1204)} ${t('sample.stageRipe')}` },
+              { stage: 'wilting', label: `${format.number(3)} ${t('sample.stageWilting')}` },
             ]}
-            action={<Button>{t('sample.heroAction')}</Button>}
           />
           <StateLabel>{t('states.comeback')}</StateLabel>
           <HeroGardenCard
             variant="comeback"
-            overline={t('sample.heroComebackOverline')}
-            title={t('sample.heroComebackTitle')}
-            subtitle={t('sample.heroComebackSubtitle')}
             plants={[
+              'tree',
               'wilting',
-              'sprout',
-              'thirsty',
+              'wilting',
               'flower',
               'wilting',
               'tree',
-              'seed',
-              'thirsty',
+              'wilting',
+              'sprout',
             ]}
             legend={[
-              { stage: 'wilting', count: format.number(3), label: t('sample.stageWilting') },
-              { stage: 'thirsty', count: format.number(46), label: t('sample.stageThirsty') },
-              { stage: 'tree', count: format.number(1204), label: t('sample.stageRipe') },
+              { stage: 'thirsty', label: `${format.number(46)} ${t('sample.stageThirsty')}` },
+              { stage: 'wilting', label: `${format.number(3)} ${t('sample.stageWilting')}` },
+              { stage: 'tree', label: `${format.number(1204)} ${t('sample.stageRipe')}` },
             ]}
-            action={<Button>{t('sample.heroComebackAction')}</Button>}
           />
         </Section>
 

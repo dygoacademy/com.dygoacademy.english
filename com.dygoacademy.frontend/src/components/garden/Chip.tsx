@@ -3,10 +3,10 @@ import * as React from 'react';
 import { gcn } from './cn';
 
 /**
- * Chip / filter (design system §11): h 38, pill, `label` 600, with a
- * transparent hit area that makes the tap target 44px tall (§8).
- * Off = surface + border; on = forest with white text. It's a toggle
- * button, so the on state is exposed as `aria-pressed`.
+ * Filter chip (canvas A6). 38px tall (border included), 14px side
+ * padding, pill, 14px semibold. Off = white + border; on = forest with
+ * white text. It's a toggle button, so "on" is exposed as `aria-pressed`.
+ * An invisible hit area makes the tap target 44px tall.
  */
 export interface ChipProps extends Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, 'onChange'> {
   selected?: boolean;
@@ -21,8 +21,8 @@ export const Chip = React.forwardRef<HTMLButtonElement, ChipProps>(
       type={type ?? 'button'}
       aria-pressed={selected}
       className={gcn(
-        'relative inline-flex h-[38px] shrink-0 items-center gap-1 rounded-full border px-4 text-label',
-        // 38px visual height, 44px tap target (§8): an invisible hit area.
+        'relative inline-flex h-[38px] shrink-0 items-center gap-1 rounded-[19px] border px-[14px]',
+        'text-[14px] font-semibold',
         "after:absolute after:inset-x-0 after:-inset-y-[3px] after:content-['']",
         'transition-colors duration-quick ease-garden disabled:opacity-50',
         selected

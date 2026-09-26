@@ -233,7 +233,8 @@
       "meaning": "Meaning",
       "example": "Example",
       "collocations": "Collocations",
-      "hiddenHint": "Think of the meaning, then show the answer."
+      "hiddenHint": "Say the meaning out loud,<br></br>then check.",
+      "quoted": "“{text}”"
     },
     "mission": {
       "status": {
@@ -243,7 +244,9 @@
       }
     },
     "hero": {
-      "legend": "Your garden by stage"
+      "legend": "Your garden by stage",
+      "scene": "Garden with plants at different stages",
+      "comebackScene": "Garden with wilting plants and a rain cloud"
     },
     "tabBar": {
       "label": "Main",

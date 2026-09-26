@@ -31,7 +31,14 @@ describe('ReviewCard', () => {
     expect(screen.getByText(BASE.meaning).getAttribute('lang')).toBe('en');
     expect(screen.getByText('bền vững').getAttribute('lang')).toBe('vi');
     expect(screen.getByText('sustainable growth')).toBeTruthy();
-    expect(screen.getByText('sustainable', { selector: 'strong' })).toBeTruthy();
+    // The canvas shows the example in curly quotes, without bolding the word.
+    expect(screen.getByText('“A more sustainable city.”').getAttribute('lang')).toBe('en');
+  });
+
+  it('shows the canvas hint while the answer is hidden', () => {
+    const { container } = renderWithIntl(<ReviewCard {...BASE} revealed={false} />);
+    expect(container.textContent).toContain('Say the meaning out loud,then check.');
+    expect(container.querySelector('br')).not.toBeNull();
   });
 
   it('keeps word → IPA → meaning in reading order', () => {

@@ -7,7 +7,8 @@ import { gcn } from './cn';
 import { SpeakerIcon, SpeakerOffIcon } from './icons';
 
 /**
- * Garden audio button (design system §11, §14.6). Plays a word's
+ * Garden audio button (canvas A2: a 52px forest circle with the 24px
+ * speaker, design system §14.6). Plays a word's
  * pronunciation clip (`master_lexicon.audio_url`).
  *
  * Playback is the classic `flashcard/AudioButton.tsx` logic, which is left
@@ -91,8 +92,8 @@ export function AudioButton({
         disabled
         aria-label={t('none')}
         className={gcn(
-          'inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-garden-border',
-          'bg-garden-surface-sunken text-garden-muted [&_svg]:h-5 [&_svg]:w-5',
+          'inline-flex h-[52px] w-[52px] shrink-0 items-center justify-center rounded-full',
+          'bg-garden-surface-sunken text-garden-muted [&_svg]:h-6 [&_svg]:w-6',
           className,
         )}
       >
@@ -130,15 +131,14 @@ export function AudioButton({
       aria-label={label ?? t('play')}
       data-status={status}
       className={gcn(
-        'inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full border',
-        'transition-[transform,background-color,color] duration-press ease-garden active:scale-95 [&_svg]:h-5 [&_svg]:w-5',
-        status === 'playing'
-          ? 'border-garden-forest bg-garden-forest text-white'
-          : 'border-garden-border bg-garden-surface text-garden-forest hover:bg-garden-surface-sunken',
+        'inline-flex h-[52px] w-[52px] shrink-0 cursor-pointer items-center justify-center rounded-full',
+        'bg-garden-forest text-white',
+        'transition-[transform,background-color] duration-press ease-garden active:scale-95',
+        status === 'playing' && 'bg-garden-forest-deep',
         className,
       )}
     >
-      <SpeakerIcon />
+      <SpeakerIcon width={24} height={24} />
     </button>
   );
 }

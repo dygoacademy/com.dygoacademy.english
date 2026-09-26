@@ -6,8 +6,9 @@ import { useTranslations } from 'next-intl';
 import { gcn } from './cn';
 
 /**
- * Rating bar (design system §11, §8.1): four equal buttons, h 68, each
- * with its label and the interval that rating would schedule ("3 days").
+ * Rating bar (canvas A2): four equal buttons, 68px tall, radius 16, 8px
+ * apart, each with its label (15px bold) and the interval that rating would
+ * schedule (12px, "5 days").
  *
  * - Colours are the §5.2 `rating-*` pairs (all ≥ 4.5:1).
  * - `intervals` are passed in already formatted. In UI-4 they come from
@@ -41,8 +42,12 @@ const RATING_STYLE: Record<Rating, string> = {
 };
 
 export interface RatingBarProps {
-  /** Formatted interval per rating, e.g. { again: '1 min', …, easy: '8 days' }. */
-  intervals: Record<Rating, string>;
+  /**
+   * Formatted interval per rating, e.g. { again: '< 1 min', …, easy: '12 days' }.
+   * Null until the API returns interval previews (UI-4): the buttons then
+   * show only their labels.
+   */
+  intervals: Record<Rating, string> | null;
   onRate: (rating: Rating) => void;
   /** Disables every button and the 1–4 keys, e.g. while saving. */
   disabled?: boolean;
@@ -117,7 +122,7 @@ export function RatingBar({
             aria-keyshortcuts={keyboardShortcuts ? key : undefined}
             data-rating={rating}
             className={gcn(
-              'relative flex min-h-[68px] flex-col items-center justify-center gap-0.5 rounded-control px-1 py-2 text-center',
+              'relative flex h-[68px] flex-col items-center justify-center gap-0.5 rounded-control px-1.5 py-px text-center',
               'transition-[transform,filter,opacity] duration-press ease-garden',
               'hover:brightness-[0.97] active:translate-y-[2px] active:brightness-95',
               'disabled:cursor-not-allowed disabled:opacity-50 disabled:active:translate-y-0',
@@ -133,8 +138,8 @@ export function RatingBar({
                 {key}
               </kbd>
             ) : null}
-            <span className="text-body-m font-bold leading-tight">{t(rating)}</span>
-            <span className="tabular-nums-stat text-label font-normal">{intervals[rating]}</span>
+            <span className="text-[15px] font-bold">{t(rating)}</span>
+            {intervals ? <span className="text-[12px]">{intervals[rating]}</span> : null}
           </button>
         );
       })}

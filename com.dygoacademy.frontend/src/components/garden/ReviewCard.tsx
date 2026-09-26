@@ -5,17 +5,21 @@ import { AudioButton } from './AudioButton';
 import { gcn } from './cn';
 
 /**
- * Review card (design system §11, §15). Props only, no data fetching.
+ * Review card (canvas A2). Props only, no data fetching.
  *
- * Order, which is also the VoiceOver order: tags (level, topic, part of
- * speech) → word (`display-xl`) + IPA + audio → the answer: meaning, an
- * optional line in the learner's meaning language (with its own `lang`,
- * so VoiceOver switches voice, §4.3), example, collocations.
+ * White, 1px border, radius 26, 22px × 20px padding, a 6px "lift" under
+ * it, children 14px apart. Order, which is also the VoiceOver order: tags
+ * (level, topic, part of speech) → word (Fraunces 40) + IPA + the 52px
+ * audio button → the answer: meaning (17px), the line in the learner's
+ * meaning language (with its own `lang`, so VoiceOver switches voice),
+ * the example in quotes, collocation chips.
  *
- * While `revealed` is false the answer isn't rendered at all, so a screen
- * reader can't read ahead. It rises in (8px + fade, motion-quick) when
- * shown. English content carries `lang="en"` because the UI language may
- * be Chinese or Vietnamese. The iPad two-pane landscape layout is UI-7.
+ * While `revealed` is false the answer isn't rendered at all (a screen
+ * reader can't read ahead); the canvas shows a sprout with a drop and "Say
+ * the meaning out loud, then check." instead. The answer rises in (8px +
+ * fade, .25s). English content carries `lang="en"` because the UI
+ * language may be Chinese or Vietnamese. Pass `className="flex-grow"` to
+ * let the card fill the screen, as the canvas does.
  */
 export interface ReviewCardProps {
   word: string;
@@ -26,31 +30,31 @@ export interface ReviewCardProps {
   partOfSpeech?: string | null;
   revealed: boolean;
   meaning: string;
-  /** The meaning in the learner's meaning language, e.g. { text: 'môi trường', lang: 'vi' }. */
+  /** The meaning in the learner's meaning language, e.g. { text: 'giảm nhẹ', lang: 'vi' }. */
   meaningTranslation?: { text: string; lang: string } | null;
   example?: string | null;
   collocations?: readonly string[] | null;
   className?: string;
 }
 
-function escapeRegExp(value: string) {
-  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-}
-
-/** Bolds the word (and simple inflections of it) inside the example. */
-function highlight(sentence: string, word: string): React.ReactNode {
-  const stem = word.trim();
-  if (!stem) return sentence;
-  const pattern = new RegExp(`(\\b${escapeRegExp(stem)}\\w*)`, 'gi');
-  const parts = sentence.split(pattern);
-  return parts.map((part, index) =>
-    index % 2 === 1 ? (
-      <strong key={index} className="font-semibold text-garden-text">
-        {part}
-      </strong>
-    ) : (
-      <React.Fragment key={index}>{part}</React.Fragment>
-    ),
+/** The sprout-and-drop drawing on the hidden side of the card (72px). */
+function ThinkSprout() {
+  return (
+    <svg width="72" height="72" viewBox="0 0 60 60" aria-hidden="true" focusable="false">
+      <ellipse cx="30" cy="52" rx="20" ry="5" fill="var(--color-border)" />
+      <path
+        d="M30 50 V32"
+        stroke="var(--stage-tree-canopy)"
+        strokeWidth="3"
+        strokeLinecap="round"
+      />
+      <path d="M30 38 C22 37 17 31 19 26 C26 26 30 31 30 38 Z" fill="var(--stage-sprout-leaf)" />
+      <path d="M30 35 C38 34 43 28 41 23 C34 23 30 28 30 35 Z" fill="var(--stage-sprout)" />
+      <path
+        d="M44 10 C44 10 39 17 39 20 A5 5 0 0 0 49 20 C49 17 44 10 44 10 Z"
+        fill="var(--stage-due)"
+      />
+    </svg>
   );
 }
 
@@ -69,13 +73,17 @@ export function ReviewCard({
   className,
 }: ReviewCardProps) {
   const t = useTranslations('components.review');
-  const tags = [level, topic, partOfSpeech].filter((tag): tag is string => Boolean(tag));
+  const tags = [
+    level ? { text: level, strong: true } : null,
+    topic ? { text: topic, strong: false } : null,
+    partOfSpeech ? { text: partOfSpeech, strong: false } : null,
+  ].filter((tag): tag is { text: string; strong: boolean } => tag !== null);
 
   return (
     <article
       aria-label={t('cardLabel', { word })}
       className={gcn(
-        'rounded-hero border border-garden-border bg-garden-surface px-5 py-[22px] text-garden-text shadow-card-lift',
+        'flex flex-col gap-[14px] rounded-hero border border-garden-border bg-garden-surface px-5 py-[22px] shadow-card-lift',
         className,
       )}
     >
@@ -83,74 +91,82 @@ export function ReviewCard({
         <ul aria-label={t('tags')} className="flex flex-wrap gap-1.5">
           {tags.map((tag, index) => (
             <li
-              key={`${tag}-${index}`}
+              key={`${tag.text}-${index}`}
               className={gcn(
-                'inline-flex min-h-7 items-center rounded-full border border-garden-border bg-garden-surface-sunken px-3 text-label',
-                tag === partOfSpeech && 'italic text-garden-muted',
+                'rounded-[10px] px-2.5 py-1 text-[12px]',
+                tag.strong
+                  ? 'bg-rating-good font-bold text-garden-forest'
+                  : 'bg-garden-bg font-semibold text-garden-muted',
               )}
             >
-              {tag}
+              {tag.text}
             </li>
           ))}
         </ul>
       ) : null}
 
-      <div className="mt-4 flex items-start justify-between gap-3">
-        <div className="min-w-0">
-          <p lang="en" className="break-words font-display text-display-xl">
+      <div className="flex items-center justify-between gap-2.5">
+        <div className="flex min-w-0 flex-col">
+          <span
+            lang="en"
+            className="break-words font-display text-[40px] font-semibold leading-[1.05]"
+          >
             {word}
-          </p>
-          {ipa ? <p className="mt-1 text-body-m text-garden-muted">{ipa}</p> : null}
+          </span>
+          {ipa ? <span className="text-[16px] text-garden-muted">{ipa}</span> : null}
         </div>
-        <AudioButton src={audioSrc} label={t('play', { word })} className="mt-1" />
+        <AudioButton src={audioSrc} label={t('play', { word })} />
       </div>
 
       {revealed ? (
-        <div className="garden-rise mt-5 border-t border-garden-border pt-5">
-          <h3 className="overline-label text-label text-garden-muted">{t('meaning')}</h3>
-          <p lang="en" className="mt-1 text-body-l font-semibold">
-            {meaning}
-          </p>
-          {meaningTranslation?.text ? (
-            <p lang={meaningTranslation.lang} className="mt-1 text-body-m text-garden-muted">
-              {meaningTranslation.text}
-            </p>
-          ) : null}
+        <div className="garden-rise flex flex-col gap-[14px]">
+          <div className="flex flex-col gap-0.5">
+            <h3 className="sr-only">{t('meaning')}</h3>
+            <span lang="en" className="text-[17px] font-semibold leading-[1.35]">
+              {meaning}
+            </span>
+            {meaningTranslation?.text ? (
+              <span lang={meaningTranslation.lang} className="text-[15px] text-garden-muted">
+                {meaningTranslation.text}
+              </span>
+            ) : null}
+          </div>
 
           {example ? (
             <>
-              <h3 className="overline-label mt-4 text-label text-garden-muted">{t('example')}</h3>
+              <h3 className="sr-only">{t('example')}</h3>
               <p
                 lang="en"
-                className="mt-1 rounded-tile bg-garden-surface-sunken px-3 py-2.5 text-body-m text-garden-text"
+                className="rounded-[14px] bg-garden-surface-sunken px-[14px] py-3 font-display text-[16px] leading-[1.45] text-garden-example"
               >
-                {highlight(example, word)}
+                {t('quoted', { text: example })}
               </p>
             </>
           ) : null}
 
           {collocations && collocations.length > 0 ? (
-            <>
-              <h3 className="overline-label mt-4 text-label text-garden-muted">
+            <div className="flex flex-col gap-2">
+              <h3 className="overline-label text-[12px] font-bold text-garden-muted">
                 {t('collocations')}
               </h3>
-              <ul lang="en" className="mt-1.5 flex flex-wrap gap-1.5">
+              <ul lang="en" className="flex flex-wrap gap-1.5">
                 {collocations.map((collocation) => (
                   <li
                     key={collocation}
-                    className="inline-flex min-h-8 items-center rounded-full bg-stage-sprout px-3 text-body-s font-semibold text-garden-forest"
+                    className="rounded-control border border-garden-sprout-border px-3 py-1.5 text-[14px] font-semibold text-garden-forest"
                   >
                     {collocation}
                   </li>
                 ))}
               </ul>
-            </>
+            </div>
           ) : null}
         </div>
       ) : (
-        <p className="mt-5 rounded-tile border border-dashed border-garden-border px-3 py-4 text-center text-body-s text-garden-muted">
-          {t('hiddenHint')}
-        </p>
+        <div className="flex flex-grow flex-col items-center justify-center gap-2.5 text-center text-garden-muted">
+          <ThinkSprout />
+          <span className="text-[15px]">{t.rich('hiddenHint', { br: () => <br /> })}</span>
+        </div>
       )}
     </article>
   );

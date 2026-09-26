@@ -38,3 +38,21 @@ describe('PlantGlyph', () => {
     expect(container.querySelector('svg')!.getAttribute('class')).toContain('garden-bloom');
   });
 });
+
+describe('PlantGlyph variants', () => {
+  it('uses the canvas size for each variant when no size is given', () => {
+    const cases = [
+      ['row', 'flower', '30', '36'],
+      ['row', 'tree', '34', '38'],
+      ['tile', 'tree', '36', '44'],
+      ['topic', 'tree', '46', '50'],
+    ] as const;
+    for (const [variant, stage, width, height] of cases) {
+      const { container, unmount } = render(<PlantGlyph stage={stage} variant={variant} />);
+      const svg = container.querySelector('svg')!;
+      expect(svg.getAttribute('width')).toBe(width);
+      expect(svg.getAttribute('height')).toBe(height);
+      unmount();
+    }
+  });
+});

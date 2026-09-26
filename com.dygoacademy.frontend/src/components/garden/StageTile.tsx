@@ -5,10 +5,11 @@ import { PlantGlyph } from './PlantGlyph';
 import type { PlantStage } from './plantStage';
 
 /**
- * Stage tile (design system §11): h 92, a plant glyph, the count in
- * `display-s` and the stage label. It filters a list by stage, so it's a
- * toggle button: on = forest with white text, exposed as `aria-pressed`.
- * The glyph is decorative; the label names the stage.
+ * Stage tile (canvas A7): 92px tall (2px border included), radius 18, the plant on
+ * its soil, the count (Fraunces 18) and the label (12px semibold), all
+ * bottom-aligned. It filters a list by stage, so it's a toggle button:
+ * on = forest with white text, exposed as `aria-pressed`. The glyph is
+ * decorative; the label names the stage.
  */
 export interface StageTileProps extends Omit<
   React.ButtonHTMLAttributes<HTMLButtonElement>,
@@ -29,27 +30,18 @@ export const StageTile = React.forwardRef<HTMLButtonElement, StageTileProps>(
       aria-pressed={selected}
       data-stage={stage}
       className={gcn(
-        'flex h-[92px] min-w-0 flex-col items-start justify-between rounded-control border p-3 text-left',
+        'flex h-[92px] min-w-0 cursor-pointer flex-col items-center justify-end gap-0.5 rounded-[18px] border-2 pb-2',
         'transition-colors duration-quick ease-garden disabled:opacity-50',
         selected
           ? 'border-garden-forest bg-garden-forest text-white'
-          : 'border-garden-border bg-garden-surface text-garden-text hover:bg-garden-surface-sunken',
+          : 'border-garden-border bg-garden-surface text-garden-text',
         className,
       )}
       {...props}
     >
-      <PlantGlyph stage={stage} size={24} />
-      <span className="w-full">
-        <span className="tabular-nums-stat block font-display text-display-s">{count}</span>
-        <span
-          className={gcn(
-            'block truncate text-label',
-            selected ? 'text-white' : 'text-garden-muted',
-          )}
-        >
-          {label}
-        </span>
-      </span>
+      <PlantGlyph stage={stage} variant="tile" />
+      <span className="font-display text-[18px] font-semibold leading-none">{count}</span>
+      <span className="text-[12px] font-semibold">{label}</span>
     </button>
   ),
 );
