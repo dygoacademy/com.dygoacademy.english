@@ -94,3 +94,91 @@ All run in the Linux scratch copy (the working tree mirrored, including the othe
 2. `npm run dev`, open `/garden/_gallery?ui=garden` signed in, at iPhone width: plant glyphs, rating bar (press 1–4 on a keyboard; the key hints appear), audio (the first button plays a short tone; the "broken file" one turns into the retry pill), review card toggle, sheets (drag the grabber down), toasts.
 3. The same page at iPad width: the sheet is centred, the toast is at the top, the hero shows 12 plants.
 4. `/?ui=classic`: the app is exactly as before.
+
+## Pass 2: canvas fidelity, all 8 adult screens (automated, 2026-09-26 03:26 UTC)
+
+Scheduled task "Dygo Phase 12: build all garden screens to match the canvas (pass 1)". Goal: every adult Word Garden screen matches the design canvas at 390 × 844, proven by pixel diff against `docs/design/garden/reference/*.png`. An earlier firing had already committed `docs/design/garden/` and step 1 (fonts); I verified both and continued from step 2. Frontend only; nothing in the backend or `database/`.
+
+### Commits
+
+| Commit | Step |
+| --- | --- |
+| `01c3e8f` | docs: Word Garden canvas references (earlier firing; verified) |
+| `6917965` | UI-fidelity (1): DM Sans + Be Vietnam Pro fallback, Fraunces opsz, self-hosted with `next/font/local` (earlier firing; verified: the fixture pages render with exactly the reference fonts, see the noise-floor column below) |
+| `061a08d` | UI-fidelity (2): components match the canvas values and drawings (30 new colour tokens, canvas keyframes, `PlantGlyph` / `HeroGardenCard` / `icons.tsx` redrawn from the canvas paths, every component re-measured; new StreakPill, TopicRow, GardenCalendar, WeekDots, WeekHarvest, Keepsake, SettingsList) |
+| `afe8fd0` | UI-fidelity (3): the eight screens as presentational components in `src/components/garden/screens/` (A6 chips, A7 stage filter and A8 switch work) |
+| `4341851` | UI-fidelity (4): `/garden/_reference/<name>` for all 11 references + `npm run garden:diff` (`scripts/garden-diff.mjs`) |
+| `0d48161` | UI-fidelity (5): diff results; `docs/design/garden/README.md` gets how to run it, the table, and the two canvas quirks |
+| `c42b5b3` | UI-fidelity (6): the live routes `/garden`, `/garden/review`, `/garden/review/done`, `/garden/missions`, `/garden/topics`, `/garden/topics/[id]`, `/garden/me` on existing hooks only |
+| (this report) | UI-fidelity (7): session report |
+
+Each commit was checked on its own with `git archive <commit>` (committed files only, so nothing leans on the uncommitted Phase 10 work): `tsc --noEmit` clean and Vitest green every time.
+
+### Pixel diff, final
+
+`npm run garden:diff` against `next dev`, headless Chromium 153 (Linux, arm64), 390 × 844 @2x, animations off, pixelmatch threshold 0.1. **Noise floor** = the reference HTML itself rendered in the same browser with the same fonts (this Chromium anti-aliases text a little differently from the one that made the PNGs), i.e. what a pixel-perfect page scores here.
+
+| Reference | Diff | Noise floor | Result |
+| --- | ---: | ---: | --- |
+| A1-todays-garden | 0.153% | 0.153% | pass, at the floor |
+| A2-review-question | 0.074% | 0.074% | pass, at the floor |
+| A2-review-answer | 0.258% | 0.131% | pass (one Vietnamese line) |
+| A2-review-finished | 0.022% | 0.021% | pass, at the floor |
+| A3-mission-complete | 0.134% | 0.133% | pass, at the floor |
+| A4-weekly-harvest | 0.293% | 0.293% | pass, at the floor |
+| A5-welcome-back | 0.184% | 0.184% | pass, at the floor |
+| A6-topics | 0.221% | 0.221% | pass, at the floor |
+| A7-topic-bed | **0.741%** | 0.254% | **over 0.5%, Vietnamese glyphs only** |
+| A7-topic-bed-filter-sprouts | 0.324% | 0.139% | pass (Vietnamese lines) |
+| A8-me | 0.271% | 0.236% | pass ("Tiếng Việt") |
+
+**A7 is the one screen over 0.5%, and only because of the font decision.** The canvas draws Vietnamese letters that DM Sans lacks (ạ, ả, ấ, ộ…) in the system fallback font; the app uses Be Vietnam Pro for them, as decided. A7 has 11 Vietnamese meanings. With the body stack cut to DM Sans only (scratch copy, not committed) A7 scores 0.263%, A7-sprouts 0.147%, A8 0.238% and A2-answer 0.131%: the noise floor, so nothing else differs. I didn't change the decision or the references.
+
+What the iteration found and fixed (all folded into commits 2 and 4): links vs buttons (browsers size `<a>` content-box and `<button>` border-box, so the canvas's Close / Back are 46px while Search / Options are 44px; Quiz 54px next to Add 52px); the A8 settings rows are 52px + divider; the Fruiting stage tile's SVG shrinks slightly in the canvas; the TanStack Query devtools button and Next's dev indicator had to be hidden in the screenshots.
+
+### Live routes (step 6)
+
+Real data only where a committed hook already provides it: `useSrsStats` (streak, words, due, mastered, leeches), `useDailyActivity` (A5 after 2+ missed days; A3 week dots), `useStudySession` + `useRateWord` (the review session, offline queue included), `useTopics` / `useTopic` + the topic's due cards (A6, A7), `useNotificationSchedules` + `useUpsertSchedule` (A8 reminder). Everything else is "coming soon", "—" or left out. Rendered every route in headless Chromium against a mock API (auth bypass in the scratch mirror only), including A5 with a 4-day gap; no console errors.
+
+### Checks
+
+| Check | Result |
+| --- | --- |
+| `tsc --noEmit` (app and `tsconfig.test.json`) | Clean, on the working tree and on every commit's `git archive` |
+| `next lint` | No warnings or errors |
+| `vitest run` | 150 passed, 12 files (new: screens, fixtures, live helpers, PlantGlyph variants) |
+| `next build` (production, scratch mirror) | Passes with the self-hosted fonts, no Google Fonts needed |
+| Reference pages in production | `next start`: `/garden/_reference/*` returns 404 even with the garden cookie |
+| Classic UI | Unchanged: new CSS is under `[data-ui="garden"]` or `garden-` keyframes, Tailwind additions are `garden-*` colours, the middleware change only affects `/garden/_reference` in production |
+
+### Not verified here
+
+- The diff on your Mac: macOS Chrome renders text differently from Linux Chromium, so expect every screen to sit a bit higher than the table above. If a screen is well over 0.5% there, compare it with the noise floor by rendering the reference HTML in the same Chrome (`docs/design/garden/tools/render.js`).
+- Signed-in flows against the real API (the live routes were checked against a mock API), audio playback, VoiceOver, iPad widths, and animations (the diff freezes them).
+
+### Assumptions
+
+1. Where the canvas contradicts itself on sizes (content-box links vs border-box buttons), I reproduced the rendered result, since the PNG is the reference.
+2. The canvas's placeholder copy is fixture data, not UI copy: "[ETA]", "[add date]" and "Replay demo" appear only on the reference pages.
+3. The hero garden on live pages is drawn from the learner's real counts (share of trees, wilting, thirsty), not from individual words; the legend carries the numbers.
+4. "Missed 2+ days" = at least two whole days between the last day with reviews and today; a learner with no reviews in the last 30 days doesn't see Welcome back.
+5. On the live A7, new words are seeds and other due words sprouts until UI-5 adds per-word stages; words not due show no date.
+6. A5's "Quick revive" opens the existing leech drill (`/quiz?mode=leech`); "Plant a new bed", Add word, Quiz and Options open the classic pages.
+7. `/garden` is still not in `PROTECTED_PATH_PREFIXES` (`routes.ts` has someone else's edits). The (garden) layout redirects anonymous visitors server-side and the new pages fetch user data only client-side, so no user data renders on the server yet.
+
+### Things to know
+
+- `package.json` gains `garden:diff` and devDependencies `playwright-core`, `pixelmatch`, `pngjs` (lockfile: 3 additions). Your Mac's `node_modules` was not touched: run `npm install`. The diff uses your installed Chrome (`channel: 'chrome'`), or `--chrome` / `CHROME_PATH`.
+- git in this sandbox can't unlink its temp files: stale `index.lock` files were moved into `.git/stale-locks/`, and a few `tmp_obj_*` files are left in `.git/objects/`. Both are safe to delete (`git gc` removes the second kind).
+- `com.dygoacademy.frontend/.garden-diff/` holds the diff images and a few side-by-side PNGs from this pass (gitignored, safe to delete).
+
+### Next open item
+
+Gate **G1** for you: run the diff on your Mac and look at `/garden/_reference/*` next to the PNGs. After that, UI-4's backend additions (interval previews on each due card, plant-stage counts in `/srs/stats`), which turn the first "coming soon" states into real data, and adding `/garden` to `PROTECTED_PATH_PREFIXES` once `routes.ts` is committed.
+
+### What to check on your Mac
+
+1. `cd com.dygoacademy.frontend && npm install && npm test` (expect 150 passing), then `npx tsc --noEmit`.
+2. `npm run dev`, then open `/garden/_reference/A1-todays-garden?ui=garden` (and the other 10 names) next to `docs/design/garden/reference/*.png`; try the A6 chips, the A7 tiles and the A8 switch.
+3. `npm run garden:diff -- --base http://localhost:3000 --cookie dygo_ui=garden` and look at `.garden-diff/*.diff.png` (red counts, yellow is ignored anti-aliasing).
+4. Signed in: `/garden?ui=garden`, water a few words at `/garden/review`, then the tabs. `/?ui=classic` should look exactly as before.
