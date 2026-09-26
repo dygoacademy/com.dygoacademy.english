@@ -14,6 +14,7 @@ import { AnalyticsModule } from './modules/analytics/analytics.module';
 import { BillingModule } from './modules/billing/billing.module';
 import { GroupsModule } from './modules/groups/groups.module';
 import { NotificationsModule } from './modules/notifications/notifications.module';
+import { ProfilesModule } from './modules/profiles/profiles.module';
 import { QuizModule } from './modules/quiz/quiz.module';
 import { SrsModule } from './modules/srs/srs.module';
 import { TopicsModule } from './modules/topics/topics.module';
@@ -46,6 +47,7 @@ import { NotificationProcessor } from './workers/notification.processor';
     BillingModule,
     NotificationsModule,
     AnalyticsModule,
+    ProfilesModule,
   ],
   providers: [
     EnrichmentProcessor,
