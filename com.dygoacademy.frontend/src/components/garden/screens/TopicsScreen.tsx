@@ -39,7 +39,8 @@ export interface TopicsScreenProps {
   initialFilter?: string;
   /** Locked seed pack; `groups` lists the filters it shows under. */
   lockedPack: { name: string; hint: string; groups: readonly string[] } | null;
-  searchHref: string;
+  /** Omit to hide the search button. */
+  searchHref?: string;
   newBedHref: string;
   stickyNav?: boolean;
 }
@@ -80,9 +81,11 @@ export function TopicsScreen({
           </span>
           <h1 className="font-display text-[28px] font-semibold leading-[1.1]">{t('title')}</h1>
         </div>
-        <IconButton aria-label={t('search')} onClick={() => router.push(searchHref)}>
-          <SearchIcon width={20} height={20} />
-        </IconButton>
+        {searchHref ? (
+          <IconButton aria-label={t('search')} onClick={() => router.push(searchHref)}>
+            <SearchIcon width={20} height={20} />
+          </IconButton>
+        ) : null}
       </header>
 
       <div role="group" aria-label={t('filterLabel')} className="flex gap-2 px-4">

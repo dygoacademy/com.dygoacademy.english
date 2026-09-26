@@ -43,6 +43,8 @@ export interface ReviewScreenProps {
   rating?: boolean;
   bloomHref: string;
   secondaryAction?: { label: string; href?: string; onClick?: () => void } | null;
+  /** Shown instead of the card when there is nothing to water. */
+  emptyText?: string;
 }
 
 /** The finished flower (120px). */
@@ -80,6 +82,7 @@ export function ReviewScreen({
   rating = false,
   bloomHref,
   secondaryAction,
+  emptyText,
 }: ReviewScreenProps) {
   const t = useTranslations('screens.review');
   const [localState, setLocalState] = React.useState(state);
@@ -144,6 +147,10 @@ export function ReviewScreen({
             </div>
           )}
         </div>
+      ) : emptyText ? (
+        <p className="flex flex-grow items-center justify-center px-6 text-center text-[15px] text-garden-muted">
+          {emptyText}
+        </p>
       ) : null}
     </div>
   );

@@ -37,7 +37,8 @@ export interface TodaysGardenScreenProps {
   /** Already formatted, e.g. "Friday, 25 September". */
   dateLabel: string;
   greeting: Greeting;
-  name: string;
+  /** Null greets without a name. */
+  name: string | null;
   /** Current streak in days; null hides the pill. */
   streakDays: number | null;
   garden: {
@@ -50,7 +51,13 @@ export interface TodaysGardenScreenProps {
   /** Null until daily missions exist (UI-6): shows "coming soon". */
   missions: readonly MissionItem[] | null;
   /** The main action; null when nothing is due. */
-  action: { href: string; kind: 'continue' | 'start'; wordsLeft: number; minutes: number } | null;
+  /** `minutes` is an estimate; null leaves it out. */
+  action: {
+    href: string;
+    kind: 'continue' | 'start';
+    wordsLeft: number;
+    minutes: number | null;
+  } | null;
   /** "Tomorrow 7:30 AM · 14 words ripen"; null hides the line. */
   ripens: { time: string; count: number } | null;
   stickyNav?: boolean;
@@ -91,7 +98,7 @@ export function TodaysGardenScreen({
         <div className="flex flex-grow flex-col">
           <span className="text-[13px] font-medium text-garden-muted">{dateLabel}</span>
           <h1 className="font-display text-[28px] font-semibold leading-[1.1]">
-            {t(`greeting.${greeting}`, { name })}
+            {name ? t(`greeting.${greeting}`, { name }) : t(`greetingNoName.${greeting}`)}
           </h1>
         </div>
         {streakDays !== null ? (
@@ -147,7 +154,11 @@ export function TodaysGardenScreen({
           <Link href={action.href} className={buttonClassName('primary', { twoLine: true })}>
             <ButtonTwoLine
               label={t(`action.${action.kind}`)}
-              secondLine={t('action.detail', { count: action.wordsLeft, minutes: action.minutes })}
+              secondLine={
+                action.minutes === null
+                  ? t('action.detailNoTime', { count: action.wordsLeft })
+                  : t('action.detail', { count: action.wordsLeft, minutes: action.minutes })
+              }
             />
             <ArrowRightIcon width={24} height={24} stroke="var(--color-surface)" />
           </Link>

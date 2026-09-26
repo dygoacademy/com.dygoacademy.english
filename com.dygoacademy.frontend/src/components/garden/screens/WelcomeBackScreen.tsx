@@ -18,11 +18,13 @@ import { GardenTabBar, SCREEN_CLASSES } from './GardenTabBar';
  */
 export interface WelcomeBackScreenProps {
   dateLabel: string;
-  name: string;
+  /** Null welcomes without a name. */
+  name: string | null;
   garden: { thirsty: number; wilting: number; ripe: number | null; plants: readonly HeroPlant[] };
   /** Null until streak freezes exist (UI-6). */
   streak: { days: number; covered: number; left: number; refills: string } | null;
-  revive: { count: number; minutes: number; href: string } | null;
+  /** `minutes` is an estimate; null leaves it out. */
+  revive: { count: number; minutes: number | null; href: string } | null;
   waterAll: { count: number; href: string } | null;
   stickyNav?: boolean;
 }
@@ -51,7 +53,9 @@ export function WelcomeBackScreen({
       <header className="flex flex-col gap-1 px-5">
         <span className="text-[13px] font-medium text-garden-muted">{dateLabel}</span>
         <h1 className="font-display text-[30px] font-semibold leading-[1.12]">
-          {t.rich('title', { name, br: () => <br /> })}
+          {name
+            ? t.rich('title', { name, br: () => <br /> })
+            : t.rich('titleNoName', { br: () => <br /> })}
         </h1>
       </header>
 
@@ -91,7 +95,11 @@ export function WelcomeBackScreen({
               <Link href={revive.href} className={buttonClassName('primary', { twoLine: true })}>
                 <ButtonTwoLine
                   label={t('revive')}
-                  secondLine={t('reviveDetail', { count: revive.count, minutes: revive.minutes })}
+                  secondLine={
+                    revive.minutes === null
+                      ? t('reviveDetailNoTime', { count: revive.count })
+                      : t('reviveDetail', { count: revive.count, minutes: revive.minutes })
+                  }
                 />
                 <ArrowRightIcon width={24} height={24} stroke="var(--color-surface)" />
               </Link>

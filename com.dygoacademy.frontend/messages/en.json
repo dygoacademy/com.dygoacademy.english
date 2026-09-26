@@ -1,8 +1,15 @@
 {
   "garden": {
     "home": {
-      "title": "Word Garden",
-      "placeholder": "Your garden is being planted. Today's Garden arrives in a later phase."
+      "title": "Word Garden"
+    },
+    "pages": {
+      "review": "Watering",
+      "done": "Mission complete",
+      "missions": "Weekly harvest",
+      "topics": "Topics",
+      "me": "Me",
+      "topic": "Topic bed"
     }
   },
   "tokens": {
@@ -266,6 +273,11 @@
         "afternoon": "Good afternoon, {name}",
         "evening": "Good evening, {name}"
       },
+      "greetingNoName": {
+        "morning": "Good morning",
+        "afternoon": "Good afternoon",
+        "evening": "Good evening"
+      },
       "streakUnit": "{count, plural, one {day} other {days}}",
       "streakLabel": "{count, plural, one {# day} other {# days}} streak",
       "heroOverline": "Your garden",
@@ -293,7 +305,8 @@
       "action": {
         "continue": "Continue mission",
         "start": "Water your garden",
-        "detail": "{count, plural, one {# word} other {# words}} left · about {minutes} min"
+        "detail": "{count, plural, one {# word} other {# words}} left · about {minutes} min",
+        "detailNoTime": "{count, plural, one {# word} other {# words}} left"
       },
       "ripens": "Tomorrow {time} · <b>{count, plural, one {# word} other {# words}} ripen</b>"
     },
@@ -358,6 +371,7 @@
     },
     "comeback": {
       "title": "Welcome back, {name}.<br></br>Your garden waited for you.",
+      "titleNoName": "Welcome back.<br></br>Your garden waited for you.",
       "legend": {
         "thirsty": "{count, number} thirsty",
         "wilting": "{count, number} wilting",
@@ -371,7 +385,8 @@
       "revive": "Quick revive",
       "reviveDetail": "{count, plural, one {# word} other {# words}} · about {minutes} min",
       "waterAllInstead": "Water all {count} instead",
-      "waterAll": "Water all {count}"
+      "waterAll": "Water all {count}",
+      "reviveDetailNoTime": "{count, plural, one {# word} other {# words}}"
     },
     "topics": {
       "title": "Topics",
@@ -454,6 +469,15 @@
     },
     "reference": {
       "metaTitle": "Garden reference: {name}"
+    },
+    "live": {
+      "loading": "Loading your garden…",
+      "error": "Your garden couldn’t load. Check your connection and try again.",
+      "retry": "Try again",
+      "weekOf": "Week of {date}",
+      "missionTitle": "Water {count, plural, one {# word} other {# words}}",
+      "day": "{day}{done, select, true {, done} other {}}",
+      "topicMeta": "{count, plural, one {# word} other {# words}}"
     }
   }
 }
