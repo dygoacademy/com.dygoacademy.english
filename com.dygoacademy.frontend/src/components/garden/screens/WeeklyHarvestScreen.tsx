@@ -2,6 +2,7 @@ import * as React from 'react';
 import { useTranslations } from 'next-intl';
 
 import { gcn } from '../cn';
+import { useGardenFormat } from '../format';
 import { RainBarrelIcon, SeedPackIcon } from '../icons';
 import { WeekHarvest, type HarvestDay } from '../WeekHarvest';
 import { GardenTabBar, SCREEN_CLASSES } from './GardenTabBar';
@@ -17,21 +18,23 @@ import { GardenTabBar, SCREEN_CLASSES } from './GardenTabBar';
 export type AvatarTone = 'flower' | 'sprout' | 'due' | 'more';
 
 export interface WeeklyHarvestScreenProps {
-  /** e.g. "Week of 21 September". */
-  weekLabel: string;
+  /** First calendar day of the week (format.ts), shown as "Week of 21 September". */
+  weekStart: Date;
   harvest: {
     done: number;
     total: number;
-    days: ReadonlyArray<Omit<HarvestDay, 'plantLabel' | 'label'> & { name: string }>;
+    /** The week's calendar days in the locale's order. */
+    days: ReadonlyArray<Omit<HarvestDay, 'plantLabel' | 'label'> & { day: Date }>;
     seedPack: { name: string; need: number; have: number } | null;
   } | null;
   goal: {
-    title: string;
+    /** The target band ("Road to Band 7"). */
+    band: number;
     mastered: number;
     target: number;
     growing: number;
-    /** Formatted date or text; null hides "At this pace". */
-    eta: string | null;
+    /** The projected day, 'pending' while it can't be worked out yet; null hides "At this pace". */
+    eta: Date | 'pending' | null;
   } | null;
   freezes: number | null;
   group: {
@@ -56,7 +59,7 @@ function ComingSoon({ children }: { children: React.ReactNode }) {
 }
 
 export function WeeklyHarvestScreen({
-  weekLabel,
+  weekStart,
   harvest,
   goal,
   freezes,
@@ -64,6 +67,7 @@ export function WeeklyHarvestScreen({
   stickyNav = true,
 }: WeeklyHarvestScreenProps) {
   const t = useTranslations('screens.harvest');
+  const f = useGardenFormat();
 
   const masteredPct = goal && goal.target > 0 ? Math.round((goal.mastered / goal.target) * 100) : 0;
   const growingPct = goal && goal.target > 0 ? Math.round((goal.growing / goal.target) * 100) : 0;
@@ -71,7 +75,9 @@ export function WeeklyHarvestScreen({
   return (
     <div className={gcn(SCREEN_CLASSES, 'gap-[14px] pt-[22px]')}>
       <header className="flex flex-col px-5">
-        <span className="text-[13px] font-medium text-garden-muted">{weekLabel}</span>
+        <span className="text-[13px] font-medium text-garden-muted">
+          {t('weekOf', { date: f.dayMonth(weekStart) })}
+        </span>
         <h1 className="font-display text-[28px] font-semibold leading-[1.1]">{t('title')}</h1>
       </header>
 
@@ -87,7 +93,7 @@ export function WeeklyHarvestScreen({
             <WeekHarvest
               days={harvest.days.map((day) => ({
                 ...day,
-                label: day.today ? t('today') : day.name,
+                label: day.today ? t('today') : f.weekdayShort(day.day),
                 plantLabel: t('dayPlant', { count: day.missions }),
               }))}
             />
@@ -119,12 +125,14 @@ export function WeeklyHarvestScreen({
         {goal ? (
           <>
             <div className="flex items-baseline justify-between">
-              <h2 className="font-display text-[19px] font-semibold">{goal.title}</h2>
+              <h2 className="font-display text-[19px] font-semibold">
+                {t('goalBand', { band: goal.band })}
+              </h2>
               <span className="text-[13px] text-garden-muted">{t('goalHint')}</span>
             </div>
             <div className="flex items-baseline gap-1.5">
               <span className="font-display text-[32px] font-semibold text-garden-forest">
-                {t('number', { value: goal.mastered })}
+                {f.number(goal.mastered)}
               </span>
               <span className="text-[14px] text-garden-muted">
                 {t('goalMastered', { target: goal.target })}
@@ -151,7 +159,13 @@ export function WeeklyHarvestScreen({
                 <span aria-hidden="true" className="h-2 w-2 rounded-[4px] bg-stage-sprout" />
                 {t('legendGrowing', { count: goal.growing })}
               </span>
-              {goal.eta ? <span className="ml-auto">{t('eta', { eta: goal.eta })}</span> : null}
+              {goal.eta ? (
+                <span className="ml-auto">
+                  {t('eta', {
+                    eta: goal.eta === 'pending' ? t('etaPending') : f.dayMonth(goal.eta),
+                  })}
+                </span>
+              ) : null}
             </div>
           </>
         ) : (

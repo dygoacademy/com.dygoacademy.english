@@ -5,11 +5,12 @@ import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 
 import { buttonClassName } from '../buttonStyles';
+import { useGardenFormat, type ClockTime } from '../format';
 import { BellIcon, CloseIcon, GoldenBloomIcon } from '../icons';
 import { IconButton } from '../IconButton';
 import { StatTile } from '../StatTile';
 import { Switch } from '../Switch';
-import { WeekDots, type WeekDay } from '../WeekDots';
+import { WeekDots } from '../WeekDots';
 
 /**
  * A3 · Mission complete (canvas `reference/A3-mission-complete`).
@@ -26,15 +27,17 @@ export interface MissionCompleteScreenProps {
   /** "“mitigate” and 4 more just bloomed"; null hides the line. */
   bloomed: { word: string; more: number } | null;
   stats: { recalledPercent: number | null; minutesToday: number | null; streak: number | null };
-  week: readonly WeekDay[] | null;
+  /** This week's calendar days in the locale's order (format.ts `weekDays`). */
+  week: ReadonlyArray<{ day: Date; state: 'done' | 'today' | 'empty' }> | null;
   /** Null until daily missions exist (UI-6). */
   missions: {
     done: number;
     total: number;
-    next: { title: string; minutes: number; href: string } | null;
+    /** The next mission to do (only the collocation challenge so far). */
+    next: { mission: 'challenge'; minutes: number; href: string } | null;
   } | null;
   /** The reminder row; null hides it. */
-  reminder: { ripening: number; time: string; on: boolean } | null;
+  reminder: { ripening: number; time: ClockTime; on: boolean } | null;
   onReminderChange?: (on: boolean) => void;
 }
 
@@ -78,6 +81,8 @@ export function MissionCompleteScreen({
   onReminderChange,
 }: MissionCompleteScreenProps) {
   const t = useTranslations('screens.complete');
+  const f = useGardenFormat();
+  const missionNames = useTranslations('screens.home.missions');
   const [remindOn, setRemindOn] = React.useState(reminder?.on ?? false);
   const dash = t('unknown');
 
@@ -118,13 +123,25 @@ export function MissionCompleteScreen({
           label={t('today')}
         />
         <StatTile
-          value={stats.streak !== null ? String(stats.streak) : dash}
+          value={stats.streak !== null ? f.number(stats.streak) : dash}
           label={t('streak')}
           tone="success"
         />
       </div>
 
-      {week ? <WeekDots days={week} /> : null}
+      {week ? (
+        <WeekDots
+          days={week.map(({ day, state }) => ({
+            initial: f.weekdayInitial(day),
+            label: t('dayLabel', {
+              day: f.weekday(day),
+              today: String(state === 'today'),
+              done: String(state !== 'empty'),
+            }),
+            state,
+          }))}
+        />
+      ) : null}
 
       {missions ? (
         <div className="flex flex-col gap-3 rounded-card border border-garden-gold-border bg-garden-gold-soft p-[14px]">
@@ -146,7 +163,10 @@ export function MissionCompleteScreen({
                 className: 'h-[54px] rounded-control text-[16px]',
               })}
             >
-              {t('nextMission', { title: missions.next.title, minutes: missions.next.minutes })}
+              {t('nextMission', {
+                title: missionNames(missions.next.mission),
+                minutes: missions.next.minutes,
+              })}
             </Link>
           ) : null}
         </div>
@@ -160,12 +180,12 @@ export function MissionCompleteScreen({
               {t('ripening', { count: reminder.ripening })}
             </span>
             <span className="text-[12px] text-garden-muted">
-              {t('remindAt', { time: reminder.time })}
+              {t('remindAt', { time: f.clock(reminder.time) })}
             </span>
           </div>
           <Switch
             checked={remindOn}
-            aria-label={t('remindAt', { time: reminder.time })}
+            aria-label={t('remindAt', { time: f.clock(reminder.time) })}
             onCheckedChange={(on) => {
               setRemindOn(on);
               onReminderChange?.(on);

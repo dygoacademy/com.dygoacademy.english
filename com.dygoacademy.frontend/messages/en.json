@@ -17,7 +17,7 @@
     "title": "Garden tokens",
     "intro": "Every colour, text style, radius, shadow and motion token in the Word Garden design system, with English, Chinese and Vietnamese test strings. Visible only with the garden flag on.",
     "sizeClass": {
-      "label": "Size class",
+      "label": "Size class:",
       "compact": "compact (under 600px)",
       "medium": "medium (600–1023px)",
       "expanded": "expanded (1024px and up)",
@@ -146,10 +146,6 @@
       "no": "no",
       "set": "set",
       "null": "null",
-      "intervalAgain": "1 min",
-      "intervalHard": "8 min",
-      "intervalGood": "3 days",
-      "intervalEasy": "8 days",
       "reviewWord": "sustainable",
       "reviewIpa": "/səˈsteɪnəbl/",
       "reviewLevel": "B2",
@@ -225,7 +221,14 @@
       "again": "Again",
       "hard": "Hard",
       "good": "Good",
-      "easy": "Easy"
+      "easy": "Easy",
+      "interval": {
+        "lessThanMinute": "< 1 min",
+        "minutes": "{count} min",
+        "hours": "{count} h",
+        "days": "{count, plural, one {# day} other {# days}}",
+        "months": "{count, plural, one {# month} other {# months}}"
+      }
     },
     "audio": {
       "play": "Play pronunciation",
@@ -243,12 +246,27 @@
       "hiddenHint": "Say the meaning out loud,<br></br>then check.",
       "quoted": "“{text}”"
     },
+    "partOfSpeech": {
+      "noun": "noun",
+      "verb": "verb",
+      "adjective": "adjective",
+      "adverb": "adverb",
+      "pronoun": "pronoun",
+      "preposition": "preposition",
+      "conjunction": "conjunction",
+      "interjection": "interjection",
+      "determiner": "determiner",
+      "phrase": "phrase",
+      "phrasalVerb": "phrasal verb",
+      "idiom": "idiom"
+    },
     "mission": {
       "status": {
         "todo": "Not started",
         "inProgress": "In progress",
         "done": "Done"
-      }
+      },
+      "statusSuffix": ", {status}"
     },
     "hero": {
       "legend": "Your garden by stage",
@@ -341,7 +359,8 @@
       "nextMission": "{title} · {minutes} min",
       "ripening": "{count, plural, one {# word} other {# words}} ripen tomorrow",
       "remindAt": "Remind me at {time}",
-      "back": "Back to garden"
+      "back": "Back to garden",
+      "dayLabel": "{day}{today, select, true {, today} other {}}{done, select, true {, done} other {}}"
     },
     "harvest": {
       "title": "Weekly harvest",
@@ -354,7 +373,6 @@
       "missionsTitle": "This week’s missions",
       "missionsComingSoon": "Daily missions are coming soon. Each one you finish will grow that day’s plant here.",
       "goalHint": "vocabulary goal",
-      "number": "{value, number}",
       "goalMastered": "of {target, number} words mastered",
       "goalBar": "{mastered, number} mastered and {growing, number} growing of {target, number} words",
       "legendMastered": "Mastered",
@@ -367,7 +385,10 @@
       "barrelBody": "Streak freezes. Busy day? Your garden stays watered.",
       "comingSoon": "Coming soon.",
       "groupBody": "{watered} of {members} watered today. Group plot: {words, number} words.",
-      "groupName": "Study group"
+      "groupName": "Study group",
+      "weekOf": "Week of {date}",
+      "goalBand": "Road to Band {band}",
+      "etaPending": "[ETA]"
     },
     "comeback": {
       "title": "Welcome back, {name}.<br></br>Your garden waited for you.",
@@ -416,7 +437,8 @@
       "newBedNoGroup": "You need a group you can add topics to. Create one in Groups first.",
       "newBedError": "The bed couldn’t be planted. Check your connection and try again.",
       "shared": "Shared",
-      "searchBeds": "Search topics"
+      "searchBeds": "Search topics",
+      "lockedHint": "Seed pack · {count, plural, one {# more Golden Bloom} other {# more Golden Blooms}} this week"
     },
     "bed": {
       "back": "Back to topics",
@@ -447,11 +469,11 @@
       "inDays": "in {count, plural, one {# day} other {# days}}",
       "meta": "{parts}",
       "wordsCount": "{count, plural, one {# word} other {# words}}",
-      "notFound": "This bed doesn’t exist, or it isn’t yours."
+      "notFound": "This bed doesn’t exist, or it isn’t yours.",
+      "tricky": "{meaning} · tricky, {count, plural, one {# lapse} other {# lapses}}"
     },
     "me": {
       "unknown": "—",
-      "number": "{value, number}",
       "testDay": "Test day: {date}",
       "stats": {
         "fruiting": "words fruiting",
@@ -478,7 +500,14 @@
       "reminder": "Ripening reminder",
       "meanings": "Meanings in",
       "family": "Family",
-      "familyValue": "Open {name}'s garden"
+      "familyValue": "Open {name}'s garden",
+      "goal": "{exam} · target band {band, number, ::.0}",
+      "testDayUnset": "[add date]",
+      "meaningsValue": {
+        "none": "English",
+        "vi": "Tiếng Việt + English",
+        "zh-CN": "简体中文 + English"
+      }
     },
     "reference": {
       "metaTitle": "Garden reference: {name}"
@@ -487,9 +516,7 @@
       "loading": "Loading your garden…",
       "error": "Your garden couldn’t load. Check your connection and try again.",
       "retry": "Try again",
-      "weekOf": "Week of {date}",
       "missionTitle": "Water {count, plural, one {# word} other {# words}}",
-      "day": "{day}{done, select, true {, done} other {}}",
       "topicMeta": "{count, plural, one {# word} other {# words}}"
     }
   }

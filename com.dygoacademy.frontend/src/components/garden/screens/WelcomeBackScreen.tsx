@@ -4,6 +4,7 @@ import { useTranslations } from 'next-intl';
 
 import { ButtonTwoLine, buttonClassName } from '../buttonStyles';
 import { gcn } from '../cn';
+import { useGardenFormat } from '../format';
 import { HeroGardenCard, type HeroLegendItem, type HeroPlant } from '../HeroGardenCard';
 import { ArrowRightIcon, RainBarrelIcon } from '../icons';
 import { GardenTabBar, SCREEN_CLASSES } from './GardenTabBar';
@@ -17,12 +18,14 @@ import { GardenTabBar, SCREEN_CLASSES } from './GardenTabBar';
  * words first, or water everything → tab bar.
  */
 export interface WelcomeBackScreenProps {
-  dateLabel: string;
+  /** Today, as a calendar day (format.ts). */
+  date: Date;
   /** Null welcomes without a name. */
   name: string | null;
   garden: { thirsty: number; wilting: number; ripe: number | null; plants: readonly HeroPlant[] };
   /** Null until streak freezes exist (UI-6). */
-  streak: { days: number; covered: number; left: number; refills: string } | null;
+  /** `refills`: the calendar day the rain barrel refills. */
+  streak: { days: number; covered: number; left: number; refills: Date } | null;
   /** `minutes` is an estimate; null leaves it out. */
   revive: { count: number; minutes: number | null; href: string } | null;
   waterAll: { count: number; href: string } | null;
@@ -30,7 +33,7 @@ export interface WelcomeBackScreenProps {
 }
 
 export function WelcomeBackScreen({
-  dateLabel,
+  date,
   name,
   garden,
   streak,
@@ -39,6 +42,7 @@ export function WelcomeBackScreen({
   stickyNav = true,
 }: WelcomeBackScreenProps) {
   const t = useTranslations('screens.comeback');
+  const f = useGardenFormat();
 
   const legend: HeroLegendItem[] = [
     { stage: 'thirsty', label: t('legend.thirsty', { count: garden.thirsty }) },
@@ -51,7 +55,7 @@ export function WelcomeBackScreen({
   return (
     <div className={gcn(SCREEN_CLASSES, 'gap-4 pt-[22px]')}>
       <header className="flex flex-col gap-1 px-5">
-        <span className="text-[13px] font-medium text-garden-muted">{dateLabel}</span>
+        <span className="text-[13px] font-medium text-garden-muted">{f.longDay(date)}</span>
         <h1 className="font-display text-[30px] font-semibold leading-[1.12]">
           {name
             ? t.rich('title', { name, br: () => <br /> })
@@ -72,7 +76,7 @@ export function WelcomeBackScreen({
               {t('streakBarrel', {
                 covered: streak.covered,
                 left: streak.left,
-                day: streak.refills,
+                day: f.weekday(streak.refills),
               })}
             </span>
           </div>

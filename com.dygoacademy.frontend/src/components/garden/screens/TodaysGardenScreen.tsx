@@ -4,6 +4,7 @@ import { useTranslations } from 'next-intl';
 
 import { ButtonTwoLine, buttonClassName } from '../buttonStyles';
 import { gcn } from '../cn';
+import { useGardenFormat, type ClockTime } from '../format';
 import { HeroGardenCard, type HeroLegendItem, type HeroPlant } from '../HeroGardenCard';
 import {
   ArrowRightIcon,
@@ -34,8 +35,8 @@ export type MissionItem =
   | { kind: 'challenge'; minutes: number; done: boolean };
 
 export interface TodaysGardenScreenProps {
-  /** Already formatted, e.g. "Friday, 25 September". */
-  dateLabel: string;
+  /** Today, as a calendar day (format.ts `calendarDay` / `todayIn`). */
+  date: Date;
   greeting: Greeting;
   /** Null greets without a name. */
   name: string | null;
@@ -59,7 +60,7 @@ export interface TodaysGardenScreenProps {
     minutes: number | null;
   } | null;
   /** "Tomorrow 7:30 AM · 14 words ripen"; null hides the line. */
-  ripens: { time: string; count: number } | null;
+  ripens: { time: ClockTime; count: number } | null;
   stickyNav?: boolean;
 }
 
@@ -70,7 +71,7 @@ function missionStatus(item: MissionItem): MissionStatus {
 }
 
 export function TodaysGardenScreen({
-  dateLabel,
+  date,
   greeting,
   name,
   streakDays,
@@ -81,6 +82,7 @@ export function TodaysGardenScreen({
   stickyNav = true,
 }: TodaysGardenScreenProps) {
   const t = useTranslations('screens.home');
+  const f = useGardenFormat();
 
   const legend: HeroLegendItem[] = [
     { stage: 'thirsty', label: t('legend.thirsty', { count: garden.thirsty }) },
@@ -96,14 +98,14 @@ export function TodaysGardenScreen({
     <div className={gcn(SCREEN_CLASSES, 'gap-[14px] pt-[22px]')}>
       <header className="flex items-end gap-3 px-5">
         <div className="flex flex-grow flex-col">
-          <span className="text-[13px] font-medium text-garden-muted">{dateLabel}</span>
+          <span className="text-[13px] font-medium text-garden-muted">{f.longDay(date)}</span>
           <h1 className="font-display text-[28px] font-semibold leading-[1.1]">
             {name ? t(`greeting.${greeting}`, { name }) : t(`greetingNoName.${greeting}`)}
           </h1>
         </div>
         {streakDays !== null ? (
           <StreakPill
-            count={String(streakDays)}
+            count={f.number(streakDays)}
             unit={t('streakUnit', { count: streakDays })}
             label={t('streakLabel', { count: streakDays })}
           />
@@ -168,7 +170,7 @@ export function TodaysGardenScreen({
             <BellIcon width={16} height={16} />
             <span>
               {t.rich('ripens', {
-                time: ripens.time,
+                time: f.clock(ripens.time),
                 count: ripens.count,
                 b: (c) => <b className="text-garden-text">{c}</b>,
               })}

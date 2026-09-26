@@ -6,10 +6,11 @@ import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 
 import { buttonClassName } from '../buttonStyles';
+import { useGardenFormat } from '../format';
 import { BackIcon, MoreIcon, PlusIcon, WaterIcon } from '../icons';
 import { IconButton } from '../IconButton';
 import { StageTile } from '../StageTile';
-import { WordRow, type WordDueTone } from '../WordRow';
+import { WordRow } from '../WordRow';
 
 /**
  * A7 · Topic bed (canvas `reference/A7-topic-bed`, and
@@ -31,12 +32,16 @@ export interface TopicBedWord {
   meaningLang?: string;
   stage: BedStage;
   wilting?: boolean;
-  due: { tone: WordDueTone; text: string };
+  /** Times forgotten; shown after the meaning ("tricky, 5 lapses") when set. */
+  lapses?: number;
+  /** When it needs water: now, new (never reviewed), or in `days` (null = unknown). */
+  due: { tone: 'now' } | { tone: 'new' } | { tone: 'later'; days: number | null };
 }
 
 export interface TopicBedScreenProps {
   title: string;
-  meta: string;
+  /** "IELTS Academic · B2–C1 · 48 words": each part optional but the count. */
+  meta: { collection: string | null; level: string | null; words: number };
   backHref: string;
   stageCounts: Record<BedStage, number> | null;
   words: readonly TopicBedWord[];
@@ -61,9 +66,19 @@ export function TopicBedScreen({
   optionsHref,
 }: TopicBedScreenProps) {
   const t = useTranslations('screens.bed');
+  const topicsT = useTranslations('screens.topics');
+  const f = useGardenFormat();
   const router = useRouter();
   const [stage, setStage] = React.useState<BedStage | null>(initialStage);
   const shown = words.filter((word) => !stage || word.stage === stage);
+  const dueText = (due: TopicBedWord['due']) =>
+    due.tone === 'now'
+      ? t('dueNow')
+      : due.tone === 'new'
+        ? t('new')
+        : due.days === null
+          ? ''
+          : t('inDays', { count: due.days });
 
   return (
     <div className="mx-auto flex min-h-screen-dvh w-full max-w-[560px] flex-col gap-[14px] bg-garden-bg px-4 pt-5 text-garden-text">
@@ -75,7 +90,11 @@ export function TopicBedScreen({
         </IconButton>
         <div className="flex flex-grow flex-col">
           <h1 className="font-display text-[26px] font-semibold leading-[1.1]">{title}</h1>
-          <span className="text-[13px] text-garden-muted">{meta}</span>
+          <span className="text-[13px] text-garden-muted">
+            {[meta.collection, meta.level, t('wordsCount', { count: meta.words })]
+              .filter(Boolean)
+              .join(topicsT('separator'))}
+          </span>
         </div>
         <IconButton
           aria-label={t('options')}
@@ -92,7 +111,7 @@ export function TopicBedScreen({
           <StageTile
             key={id}
             stage={id}
-            count={stageCounts ? String(stageCounts[id]) : t('unknown')}
+            count={stageCounts ? f.number(stageCounts[id]) : t('unknown')}
             label={t(`stage.${id}`)}
             selected={stage === id}
             disabled={!stageCounts}
@@ -145,11 +164,15 @@ export function TopicBedScreen({
           <li key={word.id}>
             <WordRow
               word={word.word}
-              meaning={word.meaning}
+              meaning={
+                word.lapses
+                  ? t('tricky', { meaning: word.meaning, count: word.lapses })
+                  : word.meaning
+              }
               meaningLang={word.meaningLang}
               stage={word.wilting ? 'wilting' : word.stage}
               variant={word.wilting ? 'wilting' : 'normal'}
-              dueText={word.due.text}
+              dueText={dueText(word.due)}
               dueTone={word.due.tone}
             />
           </li>

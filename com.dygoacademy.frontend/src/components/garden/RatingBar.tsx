@@ -11,9 +11,9 @@ import { gcn } from './cn';
  * schedule (12px, "5 days").
  *
  * - Colours are the §5.2 `rating-*` pairs (all ≥ 4.5:1).
- * - `intervals` are passed in already formatted. In UI-4 they come from
- *   the server-side `ts-fsrs` preview on each due card, so the frontend
- *   never re-implements FSRS.
+ * - `intervals` are amounts ("5 days"), formatted here per language. In
+ *   UI-4 they come from the server-side `ts-fsrs` preview on each due
+ *   card, so the frontend never re-implements FSRS.
  * - `disabled` (e.g. while the rating is saving) disables all four
  *   buttons and ignores the keyboard.
  * - Keys 1–4 fire Again / Hard / Good / Easy. The key hints only appear
@@ -41,13 +41,18 @@ const RATING_STYLE: Record<Rating, string> = {
   easy: 'bg-rating-easy text-rating-easy-text',
 };
 
+/** The wait a rating would schedule: "< 1 min", "10 min", "5 days", "3 months". */
+export type RatingInterval =
+  | { unit: 'lessThanMinute' }
+  | { unit: 'minutes' | 'hours' | 'days' | 'months'; count: number };
+
 export interface RatingBarProps {
   /**
-   * Formatted interval per rating, e.g. { again: '< 1 min', …, easy: '12 days' }.
+   * Interval per rating, e.g. { again: { unit: 'lessThanMinute' }, …, easy: { unit: 'days', count: 12 } }.
    * Null until the API returns interval previews (UI-4): the buttons then
    * show only their labels.
    */
-  intervals: Record<Rating, string> | null;
+  intervals: Record<Rating, RatingInterval> | null;
   onRate: (rating: Rating) => void;
   /** Disables every button and the 1–4 keys, e.g. while saving. */
   disabled?: boolean;
@@ -71,6 +76,10 @@ export function RatingBar({
   className,
 }: RatingBarProps) {
   const t = useTranslations('components.rating');
+  const intervalText = (interval: RatingInterval) =>
+    interval.unit === 'lessThanMinute'
+      ? t('interval.lessThanMinute')
+      : t(`interval.${interval.unit}`, { count: interval.count });
   const [keyboardUsed, setKeyboardUsed] = React.useState(false);
 
   // Keep the latest props in refs so the window listener is attached once.
@@ -139,7 +148,9 @@ export function RatingBar({
               </kbd>
             ) : null}
             <span className="text-[15px] font-bold">{t(rating)}</span>
-            {intervals ? <span className="text-[12px]">{intervals[rating]}</span> : null}
+            {intervals ? (
+              <span className="text-[12px]">{intervalText(intervals[rating])}</span>
+            ) : null}
           </button>
         );
       })}

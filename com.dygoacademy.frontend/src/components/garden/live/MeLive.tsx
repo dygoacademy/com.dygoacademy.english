@@ -1,14 +1,14 @@
 'use client';
 
-import { useFormatter } from 'next-intl';
-
 import { useCurrentUser } from '@/hooks/useCurrentUser';
 import { useNotificationSchedules } from '@/hooks/useNotificationSchedules';
 import { useSrsStats } from '@/hooks/useSrsStats';
 import { useUpsertSchedule } from '@/hooks/useUpsertSchedule';
 
+import { parseClock } from '../format';
+import { useGardenPreferences } from '../preferences';
 import { MeScreen } from '../screens/MeScreen';
-import { displayName, timeOfDay } from './data';
+import { displayName } from './data';
 
 /**
  * /garden/me: Me (A8).
@@ -22,7 +22,7 @@ import { displayName, timeOfDay } from './data';
  * language and family, shown as "—" or "coming soon".
  */
 export function MeLive() {
-  const format = useFormatter();
+  const preferences = useGardenPreferences();
   const user = useCurrentUser();
   const stats = useSrsStats();
   const schedules = useNotificationSchedules();
@@ -39,7 +39,7 @@ export function MeLive() {
       // Remount when the schedule loads so the switch starts in its real state.
       key={schedule ? `${schedule.id}-${schedule.is_enabled}` : 'none'}
       name={name}
-      subtitle={null}
+      goal={null}
       testDay={null}
       stats={{
         fruiting: stats.data?.mastered_words ?? null,
@@ -53,10 +53,7 @@ export function MeLive() {
       reminder={
         schedule
           ? {
-              time: format.dateTime(timeOfDay(schedule.reminder_time), {
-                hour: 'numeric',
-                minute: '2-digit',
-              }),
+              time: parseClock(schedule.reminder_time),
               on: schedule.is_enabled,
             }
           : null
@@ -69,7 +66,7 @@ export function MeLive() {
           isEnabled: on,
         });
       }}
-      meanings={null}
+      meanings={preferences.meaningLocale ?? 'none'}
       family={null}
     />
   );

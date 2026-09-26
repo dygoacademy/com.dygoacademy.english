@@ -1,3 +1,27 @@
 {
-  "extends": "next/core-web-vitals"
+  "extends": "next/core-web-vitals",
+  "overrides": [
+    {
+      "files": ["src/components/garden/**/*.tsx", "src/app/(garden)/**/*.tsx", "src/app/(garden-reference)/**/*.tsx"],
+      "excludedFiles": ["**/*.test.tsx"],
+      "rules": {
+        "react/jsx-no-literals": ["error", { "noStrings": false, "allowedStrings": ["·", "/", "%", "+", "—", "×"], "ignoreProps": true }],
+        "no-restricted-syntax": [
+          "error",
+          {
+            "selector": "JSXAttribute[name.name=/^(aria-label|aria-description|aria-valuetext|title|alt|placeholder|label)$/] > Literal[value=/[A-Za-z]/]",
+            "message": "Garden copy goes through t() (plan UI-L): no raw strings in aria-label, title, alt, placeholder or label."
+          },
+          {
+            "selector": "JSXAttribute[name.name=/^(aria-label|aria-description|aria-valuetext|title|alt|placeholder|label)$/] > JSXExpressionContainer > Literal[value=/[A-Za-z]/]",
+            "message": "Garden copy goes through t() (plan UI-L): no raw strings in aria-label, title, alt, placeholder or label."
+          },
+          {
+            "selector": "JSXAttribute[name.name=/^(aria-label|aria-description|aria-valuetext|title|alt|placeholder|label)$/] > JSXExpressionContainer > TemplateLiteral",
+            "message": "Garden copy goes through t() (plan UI-L): no concatenated strings in aria-label, title, alt, placeholder or label."
+          }
+        ]
+      }
+    }
+  ]
 }

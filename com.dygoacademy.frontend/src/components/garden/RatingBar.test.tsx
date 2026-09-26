@@ -5,7 +5,12 @@ import { renderWithIntl } from '@/test/render';
 
 import { RatingBar } from './RatingBar';
 
-const INTERVALS = { again: '1 min', hard: '8 min', good: '3 days', easy: '8 days' };
+const INTERVALS = {
+  again: { unit: 'minutes', count: 1 },
+  hard: { unit: 'minutes', count: 8 },
+  good: { unit: 'days', count: 3 },
+  easy: { unit: 'days', count: 8 },
+} as const;
 
 describe('RatingBar', () => {
   it('renders four buttons with their label and interval', () => {

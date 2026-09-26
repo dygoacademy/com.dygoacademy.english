@@ -10,7 +10,7 @@ import { gcn } from '../cn';
 import { CloseIcon } from '../icons';
 import { IconButton } from '../IconButton';
 import { ProgressVine } from '../ProgressVine';
-import { RatingBar, type Rating } from '../RatingBar';
+import { RatingBar, type Rating, type RatingInterval } from '../RatingBar';
 import { ReviewCard, type ReviewCardProps } from '../ReviewCard';
 
 /**
@@ -36,8 +36,8 @@ export interface ReviewScreenProps {
   total: number;
   closeHref: string;
   card: Omit<ReviewCardProps, 'revealed' | 'className'> | null;
-  /** Formatted "next due" per rating; null until the API returns them (UI-4). */
-  intervals: Record<Rating, string> | null;
+  /** "Next due" per rating; null until the API returns them (UI-4). */
+  intervals: Record<Rating, RatingInterval> | null;
   onShowAnswer?: () => void;
   onRate?: (rating: Rating) => void;
   rating?: boolean;

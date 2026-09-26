@@ -73,7 +73,7 @@ export function MissionRow({
         <div className="flex justify-between">
           <span className={gcn('text-[15px] font-bold', done && 'text-garden-muted line-through')}>
             {title}
-            <span className="sr-only">, {t(`status.${status}`)}</span>
+            <span className="sr-only">{t('statusSuffix', { status: t(`status.${status}`) })}</span>
           </span>
           <span
             aria-hidden="true"

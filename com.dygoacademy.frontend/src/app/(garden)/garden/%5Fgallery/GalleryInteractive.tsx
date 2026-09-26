@@ -122,11 +122,11 @@ export function GalleryRatingBar() {
   const [last, setLast] = useState<Rating | null>(null);
   const [saving, setSaving] = useState(false);
   const intervals = {
-    again: t('sample.intervalAgain'),
-    hard: t('sample.intervalHard'),
-    good: t('sample.intervalGood'),
-    easy: t('sample.intervalEasy'),
-  };
+    again: { unit: 'minutes', count: 1 },
+    hard: { unit: 'minutes', count: 8 },
+    good: { unit: 'days', count: 3 },
+    easy: { unit: 'days', count: 8 },
+  } as const;
   const ratingNames = useTranslations('components.rating');
   return (
     <div>

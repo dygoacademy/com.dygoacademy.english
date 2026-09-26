@@ -38,8 +38,11 @@ export interface TopicsScreenProps {
   /** Filter chips after "All": id + label (e.g. { id: 'academic', label: 'IELTS Academic' }). */
   filters: ReadonlyArray<{ id: string; label: string }>;
   initialFilter?: string;
-  /** Locked seed pack; `groups` lists the filters it shows under. */
-  lockedPack: { name: string; hint: string; groups: readonly string[] } | null;
+  /**
+   * Locked seed pack: `bloomsNeeded` more Golden Blooms this week unlock
+   * it; `groups` lists the filters it shows under.
+   */
+  lockedPack: { name: string; bloomsNeeded: number; groups: readonly string[] } | null;
   /** Search: `onSearch` (e.g. open a sheet) wins over `searchHref`; omit both to hide it. */
   searchHref?: string;
   onSearch?: () => void;
@@ -159,7 +162,7 @@ export function TopicsScreen({
         {lockedPack && (filter === 'all' || lockedPack.groups.includes(filter)) ? (
           <LockedTopicRow
             title={lockedPack.name}
-            hint={lockedPack.hint}
+            hint={t('lockedHint', { count: lockedPack.bloomsNeeded })}
             lockedLabel={t('locked')}
           />
         ) : null}

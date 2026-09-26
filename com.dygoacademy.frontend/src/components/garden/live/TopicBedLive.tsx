@@ -43,9 +43,9 @@ export function TopicBedLive({ topicId }: { topicId: string }) {
         wilting: card?.is_leech ?? false,
         due: card
           ? isNew
-            ? { tone: 'new' as const, text: t('new') }
-            : { tone: 'now' as const, text: t('dueNow') }
-          : { tone: 'later' as const, text: '' },
+            ? ({ tone: 'new' } as const)
+            : ({ tone: 'now' } as const)
+          : ({ tone: 'later', days: null } as const),
       };
     })
     // Due first (wilting, then due, then new), like "Sorted by next watering".
@@ -55,7 +55,7 @@ export function TopicBedLive({ topicId }: { topicId: string }) {
   return (
     <TopicBedScreen
       title={topic.data.title}
-      meta={t('wordsCount', { count: topic.data.words.length })}
+      meta={{ collection: null, level: null, words: topic.data.words.length }}
       backHref={GARDEN_ROUTES.topics}
       stageCounts={null}
       words={words}

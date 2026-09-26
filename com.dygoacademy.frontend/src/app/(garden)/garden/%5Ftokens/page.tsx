@@ -28,6 +28,13 @@ const TEST_STRINGS = [
   { lang: 'zh-Hans', text: '简体中文 — 减轻，可持续的，干旱，生态系统' },
   { lang: 'vi', text: 'Tiếng Việt — giảm nhẹ, bền vững, hạn hán, nghiên cứu' },
 ] as const;
+/** The same overline in the three scripts (test strings, see above). */
+const OVERLINE_SAMPLES = [
+  { lang: 'en', text: "Today's missions" },
+  { lang: 'zh-Hans', text: '今日任务' },
+  { lang: 'vi', text: 'Nhiệm vụ hôm nay' },
+] as const;
+
 const MIXED_STRING = 'Colour / color · Friday, 25 September · 9月25日 星期五 · mitigate 减轻';
 
 const COLOURS = [
@@ -173,7 +180,7 @@ export default async function GardenTokensPage() {
         <p className="mt-2 text-body-m text-garden-muted">{t('intro')}</p>
 
         <p className="mt-4 inline-flex flex-wrap gap-2 rounded-full bg-garden-forest px-3 py-1 text-label text-white">
-          <span className="overline-label">{t('sizeClass.label')}:</span>
+          <span className="overline-label">{t('sizeClass.label')}</span>
           <span className="medium:hidden">{t('sizeClass.compact')}</span>
           <span className="hidden medium:inline expanded:hidden">{t('sizeClass.medium')}</span>
           <span className="hidden expanded:inline">{t('sizeClass.expanded')}</span>
@@ -242,15 +249,15 @@ export default async function GardenTokensPage() {
 
         <Section title={t('sections.overline')}>
           <p className="mb-3 text-body-s text-garden-muted">{t('notes.overline')}</p>
-          <p lang="en" className="overline-label text-label text-garden-muted">
-            Today&apos;s missions
-          </p>
-          <p lang="zh-Hans" className="overline-label mt-1 text-label text-garden-muted">
-            今日任务
-          </p>
-          <p lang="vi" className="overline-label mt-1 text-label text-garden-muted">
-            Nhiệm vụ hôm nay
-          </p>
+          {OVERLINE_SAMPLES.map((sample, index) => (
+            <p
+              key={sample.lang}
+              lang={sample.lang}
+              className={`overline-label text-label text-garden-muted${index > 0 ? ' mt-1' : ''}`}
+            >
+              {sample.text}
+            </p>
+          ))}
         </Section>
 
         <Section title={t('sections.spacing')}>

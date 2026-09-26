@@ -36,6 +36,7 @@ export function SettingsRow({
   control,
   chevron = false,
   labelId,
+  onClick,
 }: {
   icon: React.ReactNode;
   label: string;
@@ -48,6 +49,8 @@ export function SettingsRow({
   chevron?: boolean;
   /** id for the label, to name the control with aria-labelledby. */
   labelId?: string;
+  /** Makes the row a button (e.g. opens a sheet); same box as the div row. */
+  onClick?: () => void;
 }) {
   // Content-box, as in the canvas: 52px plus the 1px divider.
   const classes =
@@ -70,6 +73,18 @@ export function SettingsRow({
       <Link href={href} className={classes}>
         {content}
       </Link>
+    );
+  }
+  if (onClick) {
+    return (
+      <button
+        type="button"
+        onClick={onClick}
+        aria-haspopup="dialog"
+        className={gcn(classes, 'w-auto cursor-pointer bg-transparent text-left')}
+      >
+        {content}
+      </button>
     );
   }
   return <div className={classes}>{content}</div>;

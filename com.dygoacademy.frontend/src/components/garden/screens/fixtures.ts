@@ -5,9 +5,9 @@
  * (names, words, meanings, dates), not UI copy: UI copy comes from
  * messages/en.json through t().
  */
+import { calendarDay, weekDays } from '../format';
 import type { CalendarLevel } from '../GardenCalendar';
 import type { HeroPlant } from '../HeroGardenCard';
-import type { WeekDay } from '../WeekDots';
 import type { KeepsakeItem } from './MeScreen';
 import type { BedStage, TopicBedWord } from './TopicBedScreen';
 import type { TopicsScreenTopic } from './TopicsScreen';
@@ -35,7 +35,7 @@ export function isReferenceName(value: string): value is ReferenceName {
 
 /** AdultHome.dc.html */
 export const HOME = {
-  dateLabel: 'Friday, 25 September',
+  date: calendarDay(2026, 9, 25),
   greeting: 'evening' as const,
   name: 'Minh',
   streakDays: 23,
@@ -62,7 +62,7 @@ export const HOME = {
     { kind: 'challenge', minutes: 3, done: false },
   ] satisfies MissionItem[],
   action: { kind: 'continue' as const, wordsLeft: 3, minutes: 1 },
-  ripens: { time: '7:30 AM', count: 14 },
+  ripens: { time: { hour: 7, minute: 30 }, count: 14 },
 };
 
 /** AdultReview.dc.html */
@@ -83,7 +83,12 @@ export const REVIEW = {
     example: 'Planting more trees can help mitigate the effects of climate change.',
     collocations: ['mitigate the impact', 'mitigate risk', 'help to mitigate'],
   },
-  intervals: { again: '< 1 min', hard: '2 days', good: '5 days', easy: '12 days' },
+  intervals: {
+    again: { unit: 'lessThanMinute' },
+    hard: { unit: 'days', count: 2 },
+    good: { unit: 'days', count: 5 },
+    easy: { unit: 'days', count: 12 },
+  } as const,
 };
 
 /** AdultBloom.dc.html */
@@ -91,37 +96,29 @@ export const COMPLETE = {
   words: 18,
   bloomed: { word: 'mitigate', more: 4 },
   stats: { recalledPercent: 92, minutesToday: 6, streak: 24 },
-  week: [
-    { initial: 'M', label: 'Monday, done', state: 'done' },
-    { initial: 'T', label: 'Tuesday, done', state: 'done' },
-    { initial: 'W', label: 'Wednesday, done', state: 'done' },
-    { initial: 'T', label: 'Thursday, done', state: 'done' },
-    { initial: 'F', label: 'Friday, today, done', state: 'today' },
-    { initial: 'S', label: 'Saturday', state: 'empty' },
-    { initial: 'S', label: 'Sunday', state: 'empty' },
-  ] satisfies WeekDay[],
-  missions: { done: 2, total: 3, next: { title: 'Collocation challenge', minutes: 3 } },
-  reminder: { ripening: 14, time: '7:30 AM', on: true },
+  // The canvas week, Monday 21 – Sunday 27 September; today is Friday.
+  week: weekDays(calendarDay(2026, 9, 25), 1).map((day, index) => ({
+    day,
+    state: index < 4 ? ('done' as const) : index === 4 ? ('today' as const) : ('empty' as const),
+  })),
+  missions: { done: 2, total: 3, next: { mission: 'challenge' as const, minutes: 3 } },
+  reminder: { ripening: 14, time: { hour: 7, minute: 30 }, on: true },
 };
 
 /** AdultMissions.dc.html */
 export const HARVEST = {
-  weekLabel: 'Week of 21 September',
+  weekStart: calendarDay(2026, 9, 21),
   harvest: {
     done: 11,
     total: 21,
-    days: [
-      { name: 'Mon', missions: 3 },
-      { name: 'Tue', missions: 2 },
-      { name: 'Wed', missions: 3 },
-      { name: 'Thu', missions: 1 },
-      { name: 'Fri', missions: 2, today: true },
-      { name: 'Sat', missions: 0 },
-      { name: 'Sun', missions: 0 },
-    ] as Array<{ name: string; missions: 0 | 1 | 2 | 3; today?: boolean }>,
+    days: weekDays(calendarDay(2026, 9, 25), 1).map((day, index) => ({
+      day,
+      missions: ([3, 2, 3, 1, 2, 0, 0] as const)[index],
+      today: index === 4,
+    })),
     seedPack: { name: 'Academic Word List', need: 3, have: 2 },
   },
-  goal: { title: 'Road to Band 7', mastered: 412, target: 1200, growing: 104, eta: '[ETA]' },
+  goal: { band: 7, mastered: 412, target: 1200, growing: 104, eta: 'pending' as const },
   freezes: 2,
   group: {
     name: 'IELTS Sprint group',
@@ -139,7 +136,7 @@ export const HARVEST = {
 
 /** AdultComeback.dc.html */
 export const COMEBACK = {
-  dateLabel: 'Monday, 28 September',
+  date: calendarDay(2026, 9, 28),
   name: 'Minh',
   garden: {
     thirsty: 42,
@@ -156,7 +153,7 @@ export const COMEBACK = {
       'sprout',
     ] satisfies HeroPlant[],
   },
-  streak: { days: 23, covered: 2, left: 0, refills: 'Sunday' },
+  streak: { days: 23, covered: 2, left: 0, refills: calendarDay(2026, 10, 4) },
   revive: { count: 12, minutes: 5 },
   waterAll: { count: 42 },
 };
@@ -208,38 +205,39 @@ export const TOPICS: TopicsScreenTopic[] = [
 export const TOPICS_ACADEMIC_FILTER = { id: 'academic', label: 'IELTS Academic' };
 export const TOPICS_LOCKED_PACK = {
   name: 'Academic Word List',
-  hint: 'Seed pack · 1 more Golden Bloom this week',
+  bloomsNeeded: 1,
   groups: ['academic'],
 };
 
 /** AdultTopicDetail.dc.html */
 export const BED = {
   title: 'Environment',
-  meta: 'IELTS Academic · B2–C1 · 48 words',
+  meta: { collection: 'IELTS Academic', level: 'B2–C1', words: 48 },
   stageCounts: { seed: 12, sprout: 11, flower: 7, tree: 18 } satisfies Record<BedStage, number>,
   water: { count: 6 },
   words: (
     [
-      ['drought', 'hạn hán · tricky, 5 lapses', 'sprout', true, 'now', 'Due now'],
-      ['deteriorate', 'xấu đi, suy giảm', 'sprout', false, 'now', 'Due now'],
-      ['mitigate', 'giảm nhẹ, làm dịu bớt', 'flower', false, 'now', 'Due now'],
-      ['conservation', 'sự bảo tồn', 'sprout', false, 'now', 'Due now'],
-      ['biodiversity', 'đa dạng sinh học', 'seed', false, 'new', 'New'],
-      ['carbon footprint', 'lượng khí thải carbon', 'seed', false, 'new', 'New'],
-      ['deforestation', 'nạn phá rừng', 'flower', false, 'later', 'in 3 days'],
-      ['ecosystem', 'hệ sinh thái', 'flower', false, 'later', 'in 5 days'],
-      ['renewable', 'có thể tái tạo', 'tree', false, 'later', 'in 9 days'],
-      ['sustainable', 'bền vững', 'tree', false, 'later', 'in 12 days'],
-      ['emissions', 'khí thải', 'tree', false, 'later', 'in 20 days'],
+      ['drought', 'hạn hán', 'sprout', 5, 0],
+      ['deteriorate', 'xấu đi, suy giảm', 'sprout', 0, 0],
+      ['mitigate', 'giảm nhẹ, làm dịu bớt', 'flower', 0, 0],
+      ['conservation', 'sự bảo tồn', 'sprout', 0, 0],
+      ['biodiversity', 'đa dạng sinh học', 'seed', 0, 'new'],
+      ['carbon footprint', 'lượng khí thải carbon', 'seed', 0, 'new'],
+      ['deforestation', 'nạn phá rừng', 'flower', 0, 3],
+      ['ecosystem', 'hệ sinh thái', 'flower', 0, 5],
+      ['renewable', 'có thể tái tạo', 'tree', 0, 9],
+      ['sustainable', 'bền vững', 'tree', 0, 12],
+      ['emissions', 'khí thải', 'tree', 0, 20],
     ] as const
-  ).map(([word, meaning, stage, wilting, tone, text]): TopicBedWord => ({
+  ).map(([word, meaning, stage, lapses, due]): TopicBedWord => ({
     id: word,
     word,
     meaning,
     meaningLang: 'vi',
     stage,
-    wilting,
-    due: { tone, text },
+    wilting: lapses > 0,
+    lapses: lapses || undefined,
+    due: due === 'new' ? { tone: 'new' } : due === 0 ? { tone: 'now' } : { tone: 'later', days: due },
   })),
 };
 
@@ -263,8 +261,8 @@ function canvasCalendar(): Array<Array<CalendarLevel | null>> {
 
 export const ME = {
   name: 'Minh',
-  subtitle: 'IELTS Academic · target band 7.0',
-  testDay: '[add date]',
+  goal: { exam: 'IELTS Academic', band: 7 },
+  testDay: 'unset' as const,
   stats: { fruiting: 412, bestStreak: 41, hours: 38, goldenBlooms: 26 },
   calendar: canvasCalendar(),
   keepsakes: [
@@ -274,7 +272,7 @@ export const ME = {
     { type: 'nextWords', current: 412, target: 500 },
   ] satisfies KeepsakeItem[],
   dailyGoal: { missions: 3, minutes: 15 },
-  reminder: { time: '7:30 AM', on: true },
-  meanings: 'Tiếng Việt + English',
+  reminder: { time: { hour: 7, minute: 30 }, on: true },
+  meanings: 'vi' as const,
   family: { name: 'Na' },
 };

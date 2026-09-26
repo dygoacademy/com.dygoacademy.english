@@ -1,7 +1,7 @@
 'use client';
 
 import * as React from 'react';
-import { useFormatter } from 'next-intl';
+import { useTimeZone } from 'next-intl';
 
 import { GARDEN_ROUTES } from '@/constants/garden';
 import { ROUTES } from '@/constants/routes';
@@ -9,9 +9,10 @@ import { useCurrentUser } from '@/hooks/useCurrentUser';
 import { useDailyActivity } from '@/hooks/useDailyActivity';
 import { useSrsStats } from '@/hooks/useSrsStats';
 
+import { hourIn, isoDay, todayIn } from '../format';
 import { TodaysGardenScreen } from '../screens/TodaysGardenScreen';
 import { WelcomeBackScreen } from '../screens/WelcomeBackScreen';
-import { displayName, greetingFor, isoDate, missedDays, sampleGarden } from './data';
+import { displayName, greetingFor, missedDays, sampleGarden } from './data';
 import { LiveError, LiveLoading } from './LiveState';
 
 /**
@@ -25,7 +26,7 @@ import { LiveError, LiveLoading } from './LiveState';
  * freezes and time estimates.
  */
 export function HomeLive() {
-  const format = useFormatter();
+  const timeZone = useTimeZone();
   const stats = useSrsStats();
   const activity = useDailyActivity(30);
   const user = useCurrentUser();
@@ -38,19 +39,19 @@ export function HomeLive() {
   const now = new Date();
   const s = stats.data;
   const name = displayName(user.data);
-  const dateLabel = format.dateTime(now, { weekday: 'long', day: 'numeric', month: 'long' });
+  const today = todayIn(timeZone, now);
   const counts = {
     total: s.total_words,
     mastered: s.mastered_words,
     leeches: s.leech_count,
     due: s.due_now,
   };
-  const missed = activity.data ? missedDays(activity.data, isoDate(now)) : null;
+  const missed = activity.data ? missedDays(activity.data, isoDay(today)) : null;
 
   if (missed !== null && missed >= 2) {
     return (
       <WelcomeBackScreen
-        dateLabel={dateLabel}
+        date={today}
         name={name}
         garden={{
           thirsty: s.due_now,
@@ -71,8 +72,8 @@ export function HomeLive() {
 
   return (
     <TodaysGardenScreen
-      dateLabel={dateLabel}
-      greeting={greetingFor(now.getHours())}
+      date={today}
+      greeting={greetingFor(hourIn(timeZone, now))}
       name={name}
       streakDays={s.current_streak_days}
       garden={{

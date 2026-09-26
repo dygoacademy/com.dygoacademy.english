@@ -3,7 +3,10 @@
 import * as React from 'react';
 import { useTranslations } from 'next-intl';
 
+import type { MeaningLocale } from '@/i18n/config';
+
 import { gcn } from '../cn';
+import { useGardenFormat, type ClockTime } from '../format';
 import { GardenCalendar, type CalendarLevel } from '../GardenCalendar';
 import {
   BellIcon,
@@ -35,10 +38,10 @@ export type KeepsakeItem =
 
 export interface MeScreenProps {
   name: string;
-  /** e.g. "IELTS Academic · target band 7.0"; null hides the line. */
-  subtitle: string | null;
-  /** The test-day chip text after "Test day: "; null hides the chip. */
-  testDay: string | null;
+  /** "IELTS Academic · target band 7.0"; null hides the line. */
+  goal: { exam: string; band: number } | null;
+  /** The test day, 'unset' for the "add date" chip, null hides the chip. */
+  testDay: Date | 'unset' | null;
   stats: {
     fruiting: number | null;
     bestStreak: number | null;
@@ -48,9 +51,14 @@ export interface MeScreenProps {
   calendar: ReadonlyArray<ReadonlyArray<CalendarLevel | null>> | null;
   keepsakes: readonly KeepsakeItem[] | null;
   dailyGoal: { missions: number; minutes: number; href: string } | null;
-  reminder: { time: string; on: boolean } | null;
+  reminder: { time: ClockTime; on: boolean } | null;
   onReminderChange?: (on: boolean) => void;
-  meanings: string | null;
+  /**
+   * The review card's meaning language ('none' = English only); null
+   * while unknown. The row opens the language sheet (`onLanguageClick`).
+   */
+  meanings: MeaningLocale | 'none' | null;
+  onLanguageClick?: () => void;
   family: { name: string; href: string } | null;
   stickyNav?: boolean;
 }
@@ -59,7 +67,7 @@ const ICON = { width: 20, height: 20, stroke: 'var(--color-forest)' } as const;
 
 export function MeScreen({
   name,
-  subtitle,
+  goal,
   testDay,
   stats,
   calendar,
@@ -68,13 +76,15 @@ export function MeScreen({
   reminder,
   onReminderChange,
   meanings,
+  onLanguageClick,
   family,
   stickyNav = true,
 }: MeScreenProps) {
   const t = useTranslations('screens.me');
+  const f = useGardenFormat();
   const [remindOn, setRemindOn] = React.useState(reminder?.on ?? false);
   const dash = t('unknown');
-  const num = (value: number | null) => (value === null ? dash : t('number', { value }));
+  const num = (value: number | null) => (value === null ? dash : f.number(value));
 
   return (
     <div className={gcn(SCREEN_CLASSES, 'gap-3 pt-[22px]')}>
@@ -87,10 +97,16 @@ export function MeScreen({
         </div>
         <div className="flex flex-grow flex-col gap-1">
           <h1 className="font-display text-[24px] font-semibold leading-[1.1]">{name}</h1>
-          {subtitle ? <span className="text-[13px] text-garden-muted">{subtitle}</span> : null}
+          {goal ? (
+            <span className="text-[13px] text-garden-muted">
+              {t('goal', { exam: goal.exam, band: goal.band })}
+            </span>
+          ) : null}
           {testDay ? (
             <span className="self-start rounded-[10px] bg-rating-again px-2.5 py-[3px] text-[12px] font-bold text-garden-primary-shadow">
-              {t('testDay', { date: testDay })}
+              {t('testDay', {
+                date: testDay === 'unset' ? t('testDayUnset') : f.dayMonth(testDay),
+              })}
             </span>
           ) : null}
         </div>
@@ -149,7 +165,7 @@ export function MeScreen({
                     <Keepsake
                       key={index}
                       label={t('keepsake.streak', { count: item.days })}
-                      number={String(item.days)}
+                      number={f.number(item.days)}
                     />
                   );
                 case 'blooms':
@@ -174,7 +190,7 @@ export function MeScreen({
                       label={t('keepsake.next', { count: item.target })}
                       progress={{
                         percent: Math.round((item.current / item.target) * 100),
-                        value: String(item.current),
+                        value: f.number(item.current),
                       }}
                     />
                   );
@@ -202,7 +218,7 @@ export function MeScreen({
           icon={<BellIcon {...ICON} />}
           label={t('reminder')}
           labelId="garden-me-reminder"
-          value={reminder?.time}
+          value={reminder ? f.clock(reminder.time) : undefined}
           control={
             reminder ? (
               <Switch
@@ -220,7 +236,8 @@ export function MeScreen({
         <SettingsRow
           icon={<TranslateIcon {...ICON} />}
           label={t('meanings')}
-          value={meanings ?? t('comingSoonShort')}
+          value={meanings ? t(`meaningsValue.${meanings}`) : t('comingSoonShort')}
+          onClick={onLanguageClick}
           chevron
         />
         {family ? (

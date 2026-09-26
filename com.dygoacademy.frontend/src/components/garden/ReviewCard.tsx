@@ -32,6 +32,12 @@ export interface ReviewCardProps {
   meaning: string;
   /** The meaning in the learner's meaning language, e.g. { text: 'giảm nhẹ', lang: 'vi' }. */
   meaningTranslation?: { text: string; lang: string } | null;
+  /**
+   * Puts the meaning-language line first (17px) and the English definition
+   * second (15px, muted), as in A2-review-answer-vi. The garden sets it
+   * whenever the learner has a meaning language (UI-L decision).
+   */
+  meaningFirst?: boolean;
   example?: string | null;
   collocations?: readonly string[] | null;
   className?: string;
@@ -68,15 +74,17 @@ export function ReviewCard({
   revealed,
   meaning,
   meaningTranslation,
+  meaningFirst = false,
   example,
   collocations,
   className,
 }: ReviewCardProps) {
   const t = useTranslations('components.review');
+  const pos = useTranslations('components.partOfSpeech');
   const tags = [
     level ? { text: level, strong: true } : null,
     topic ? { text: topic, strong: false } : null,
-    partOfSpeech ? { text: partOfSpeech, strong: false } : null,
+    partOfSpeech ? { text: partOfSpeechLabel(partOfSpeech, pos), strong: false } : null,
   ].filter((tag): tag is { text: string; strong: boolean } => tag !== null);
 
   return (
@@ -122,14 +130,30 @@ export function ReviewCard({
         <div className="garden-rise flex flex-col gap-[14px]">
           <div className="flex flex-col gap-0.5">
             <h3 className="sr-only">{t('meaning')}</h3>
-            <span lang="en" className="text-[17px] font-semibold leading-[1.35]">
-              {meaning}
-            </span>
-            {meaningTranslation?.text ? (
-              <span lang={meaningTranslation.lang} className="text-[15px] text-garden-muted">
-                {meaningTranslation.text}
-              </span>
-            ) : null}
+            {meaningFirst && meaningTranslation?.text ? (
+              <>
+                <span
+                  lang={meaningTranslation.lang}
+                  className="text-[17px] font-semibold leading-[1.35]"
+                >
+                  {meaningTranslation.text}
+                </span>
+                <span lang="en" className="text-[15px] text-garden-muted">
+                  {meaning}
+                </span>
+              </>
+            ) : (
+              <>
+                <span lang="en" className="text-[17px] font-semibold leading-[1.35]">
+                  {meaning}
+                </span>
+                {meaningTranslation?.text ? (
+                  <span lang={meaningTranslation.lang} className="text-[15px] text-garden-muted">
+                    {meaningTranslation.text}
+                  </span>
+                ) : null}
+              </>
+            )}
           </div>
 
           {example ? (
@@ -170,4 +194,28 @@ export function ReviewCard({
       )}
     </article>
   );
+}
+
+/** Parts of speech the garden translates; anything else shows as stored. */
+const PARTS_OF_SPEECH = {
+  noun: 'noun',
+  verb: 'verb',
+  adjective: 'adjective',
+  adverb: 'adverb',
+  pronoun: 'pronoun',
+  preposition: 'preposition',
+  conjunction: 'conjunction',
+  interjection: 'interjection',
+  determiner: 'determiner',
+  phrase: 'phrase',
+  'phrasal verb': 'phrasalVerb',
+  idiom: 'idiom',
+} as const;
+
+function partOfSpeechLabel(
+  value: string,
+  t: (key: (typeof PARTS_OF_SPEECH)[keyof typeof PARTS_OF_SPEECH]) => string,
+): string {
+  const key = PARTS_OF_SPEECH[value.trim().toLowerCase() as keyof typeof PARTS_OF_SPEECH];
+  return key ? t(key) : value;
 }

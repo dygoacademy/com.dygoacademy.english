@@ -1,15 +1,15 @@
 'use client';
 
 import * as React from 'react';
-import { useFormatter, useTranslations } from 'next-intl';
+import { useTimeZone } from 'next-intl';
 
 import { GARDEN_ROUTES } from '@/constants/garden';
 import { useDailyActivity } from '@/hooks/useDailyActivity';
 import { useSrsStats } from '@/hooks/useSrsStats';
 
 import { MissionCompleteScreen } from '../screens/MissionCompleteScreen';
-import type { WeekDay } from '../WeekDots';
-import { isoDate, weekOf, type SessionResult } from './data';
+import { isoDay, todayIn, useGardenFormat, weekDays } from '../format';
+import type { SessionResult } from './data';
 
 /**
  * /garden/review/done: Mission complete (A3) for the session that just
@@ -19,25 +19,23 @@ import { isoDate, weekOf, type SessionResult } from './data';
  * done when it has reviews). Missions and the reminder row wait for UI-6.
  */
 export function DoneLive({ result }: { result: SessionResult }) {
-  const t = useTranslations('screens.live');
-  const format = useFormatter();
+  const timeZone = useTimeZone();
+  const { weekStart } = useGardenFormat();
   const stats = useSrsStats();
   const activity = useDailyActivity(7);
 
-  const today = new Date();
-  const todayIso = isoDate(today);
+  const today = todayIn(timeZone);
+  const todayIso = isoDay(today);
   const active = new Set(
     (activity.data ?? []).filter((d) => d.review_count > 0).map((d) => d.review_date.slice(0, 10)),
   );
-  const week: WeekDay[] | null = activity.data
-    ? weekOf(today).map((day) => {
-        const iso = isoDate(day);
+  const week = activity.data
+    ? weekDays(today, weekStart).map((day) => {
+        const iso = isoDay(day);
         const done = active.has(iso) || (iso === todayIso && result.watered > 0);
-        return {
-          initial: format.dateTime(day, { weekday: 'narrow' }),
-          label: t('day', { day: format.dateTime(day, { weekday: 'long' }), done: String(done) }),
-          state: iso === todayIso && done ? 'today' : done && iso < todayIso ? 'done' : 'empty',
-        };
+        const state: 'done' | 'today' | 'empty' =
+          iso === todayIso && done ? 'today' : done && iso < todayIso ? 'done' : 'empty';
+        return { day, state };
       })
     : null;
 

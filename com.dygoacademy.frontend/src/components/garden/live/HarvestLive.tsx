@@ -1,9 +1,9 @@
 'use client';
 
-import { useFormatter, useTranslations } from 'next-intl';
+import { useTimeZone } from 'next-intl';
 
 import { WeeklyHarvestScreen } from '../screens/WeeklyHarvestScreen';
-import { weekOf } from './data';
+import { todayIn, useGardenFormat, weekDays } from '../format';
 
 /**
  * /garden/missions: Weekly harvest (A4). Everything on this screen is
@@ -12,12 +12,12 @@ import { weekOf } from './data';
  * the week heading is real.
  */
 export function HarvestLive() {
-  const t = useTranslations('screens.live');
-  const format = useFormatter();
-  const monday = weekOf(new Date())[0];
+  const timeZone = useTimeZone();
+  const { weekStart } = useGardenFormat();
+  const firstDay = weekDays(todayIn(timeZone), weekStart)[0];
   return (
     <WeeklyHarvestScreen
-      weekLabel={t('weekOf', { date: format.dateTime(monday, { day: 'numeric', month: 'long' }) })}
+      weekStart={firstDay}
       harvest={null}
       goal={null}
       freezes={null}
