@@ -104,7 +104,7 @@ export function WeeklyHarvestScreen({
                   {t.rich('seedPack', {
                     need: harvest.seedPack.need,
                     name: harvest.seedPack.name,
-                    b: (c) => <b className="text-garden-gold-light">{c}</b>,
+                    b: (c) => <b className="whitespace-nowrap text-garden-gold-light">{c}</b>,
                   })}
                 </span>
                 <span className="text-[13px] font-bold text-garden-gold-light">

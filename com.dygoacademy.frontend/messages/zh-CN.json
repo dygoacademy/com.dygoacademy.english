@@ -372,7 +372,7 @@
       "missionsHint": "每完成一个任务，当天的植物就长大一点",
       "today": "今天",
       "dayPlant": "{count, plural, =0 {没有任务} other {# 个任务}}",
-      "seedPack": "本周收集 {need} 朵金色花开，解锁<b>{name}</b>种子包",
+      "seedPack": "本周 {need} 朵金色花开可解锁 <b>{name}</b> 种子包",
       "seedPackCount": "{have}/{need}",
       "missionsTitle": "本周任务",
       "missionsComingSoon": "每日任务即将上线。你完成的每个任务都会让当天的植物在这里长大。",
@@ -380,8 +380,8 @@
       "goalMastered": "/ {target, number} 个单词已掌握",
       "goalBar": "共 {target, number} 个单词：已掌握 {mastered, number}，生长中 {growing, number}",
       "legendMastered": "已掌握",
-      "legendGrowing": "生长中（{count, number}）",
-      "eta": "按这个速度：{eta}",
+      "legendGrowing": "生长中 ({count, number})",
+      "eta": "照此速度：{eta}",
       "goalTitle": "词汇目标",
       "goalComingSoon": "为你的考试设定单词目标。即将上线。",
       "barrelTitle": "雨水桶 · {count}",
@@ -403,7 +403,7 @@
         "ripe": "{count, number} 仍然成熟"
       },
       "streakSafe": "你的 {count} 天连续记录还在",
-      "streakBarrel": "雨水桶帮你补上了 {covered} 天。还剩 {left} 个，{day}补满。",
+      "streakBarrel": "雨水桶补了 {covered} 天，剩 {left} 个，{day}补满。",
       "overline": "从小处开始",
       "reviveTitle": "先救回 {count} 个枯萎的单词",
       "reviveBody": "这些是你最容易忘记的单词。其余的可以等到明天。",
@@ -482,7 +482,7 @@
       "stats": {
         "fruiting": "个单词结果",
         "bestStreak": "最长连续",
-        "hours": "{count} 小时",
+        "hours": "{count}h",
         "inGarden": "在花园里",
         "goldenBlooms": "金色花开"
       },
