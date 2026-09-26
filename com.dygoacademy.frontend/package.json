@@ -14,6 +14,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "typecheck:test": "tsc -p tsconfig.test.json --noEmit",
+    "garden:diff": "node scripts/garden-diff.mjs",
     "start:dev:local": "sh -c 'set -a; . ../env-profiles/local.env; set +a; next dev'",
     "start:dev:stg": "sh -c 'set -a; . ../env-profiles/stg.env; set +a; next dev'",
     "build:prod:domain": "sh -c 'set -a; . ../env-profiles/prod.env; set +a; next build'"
@@ -52,6 +53,9 @@
     "eslint": "^9.17.0",
     "eslint-config-next": "^15.1.3",
     "jsdom": "^26.1.0",
+    "pixelmatch": "^7.2.0",
+    "playwright-core": "^1.63.0",
+    "pngjs": "^7.0.0",
     "postcss": "^8.4.49",
     "tailwindcss": "^3.4.17",
     "tailwindcss-animate": "^1.0.7",

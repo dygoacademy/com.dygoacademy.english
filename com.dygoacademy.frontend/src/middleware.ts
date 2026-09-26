@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from 'next/server';
 
-import { GARDEN_PATH_PREFIX, GARDEN_ROUTES } from '@/constants/garden';
+import { GARDEN_PATH_PREFIX, GARDEN_REFERENCE_PREFIX, GARDEN_ROUTES } from '@/constants/garden';
 import { ROUTES } from '@/constants/routes';
 import {
   GARDEN_UI_COOKIE,
@@ -47,6 +47,18 @@ export async function middleware(request: NextRequest) {
   if (
     !gardenOn &&
     (pathname === GARDEN_PATH_PREFIX || pathname.startsWith(`${GARDEN_PATH_PREFIX}/`))
+  ) {
+    return rememberUiOverride(
+      NextResponse.rewrite(new URL('/__garden-ui-disabled', request.url)),
+      uiOverride,
+    );
+  }
+
+  // The canvas reference pages (UI-fidelity 4) are a development tool for
+  // the pixel diff: they don't exist in production builds at all.
+  if (
+    process.env.NODE_ENV === 'production' &&
+    (pathname === GARDEN_REFERENCE_PREFIX || pathname.startsWith(`${GARDEN_REFERENCE_PREFIX}/`))
   ) {
     return rememberUiOverride(
       NextResponse.rewrite(new URL('/__garden-ui-disabled', request.url)),

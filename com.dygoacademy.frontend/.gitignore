@@ -19,3 +19,5 @@
 npm-debug.log*
 *.tsbuildinfo
 R2.readme
+# Word Garden pixel diff output (npm run garden:diff)
+/.garden-diff/
