@@ -436,7 +436,8 @@
       "groupName": "Study group",
       "weekOf": "Week of {date}",
       "goalBand": "Road to Band {band}",
-      "etaPending": "[ETA]"
+      "etaPending": "[ETA]",
+      "openGroups": "Open shared gardens"
     },
     "comeback": {
       "title": "Welcome back, {name}.<br></br>Your garden waited for you.",
@@ -486,7 +487,8 @@
       "newBedError": "The bed couldn’t be planted. Check your connection and try again.",
       "shared": "Shared",
       "searchBeds": "Search topics",
-      "lockedHint": "Seed pack · {count, plural, one {# more Golden Bloom} other {# more Golden Blooms}} this week"
+      "lockedHint": "Seed pack · {count, plural, one {# more Golden Bloom} other {# more Golden Blooms}} this week",
+      "openGroups": "Open shared gardens"
     },
     "bed": {
       "back": "Back to topics",
@@ -605,7 +607,8 @@
         "gardeners": "Gardeners",
         "gardenersLabel": "{count, plural, one {# gardener} other {# gardeners}}",
         "more": "+{count}",
-        "invite": "Invite"
+        "invite": "Invite",
+        "notFound": "This garden isn't here, or you're not in it."
       },
       "tend": {
         "title": "Tend the garden",
@@ -653,7 +656,8 @@
         "delete": "Delete garden",
         "deleteConfirm": "Delete {name}? Its shared beds and words go with it. This can't be undone.",
         "adminOnly": "Only the garden's admins can tend it.",
-        "backToGarden": "Back to the garden"
+        "backToGarden": "Back to the garden",
+        "loadingTricky": "Finding the tricky patches…"
       },
       "invite": {
         "title": "Invite gardeners",

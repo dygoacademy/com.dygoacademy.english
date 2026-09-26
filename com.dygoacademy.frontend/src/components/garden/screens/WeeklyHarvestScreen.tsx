@@ -1,4 +1,5 @@
 import * as React from 'react';
+import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 
 import { gcn } from '../cn';
@@ -44,6 +45,8 @@ export interface WeeklyHarvestScreenProps {
     plotWords: number;
     avatars: ReadonlyArray<{ text: string; tone: AvatarTone }>;
   } | null;
+  /** UI-G: the group card links to the shared gardens (learners in a group). */
+  groupHref?: string;
   stickyNav?: boolean;
 }
 
@@ -53,6 +56,9 @@ const AVATAR: Record<AvatarTone, string> = {
   due: 'bg-stage-due text-garden-avatar-due-text',
   more: 'bg-garden-track text-garden-muted',
 };
+
+const GROUP_CARD =
+  'flex flex-col gap-1.5 rounded-card border border-garden-border bg-garden-surface p-[14px] text-garden-text';
 
 function ComingSoon({ children }: { children: React.ReactNode }) {
   return <p className="text-[13px] text-garden-muted">{children}</p>;
@@ -64,6 +70,7 @@ export function WeeklyHarvestScreen({
   goal,
   freezes,
   group,
+  groupHref,
   stickyNav = true,
 }: WeeklyHarvestScreenProps) {
   const t = useTranslations('screens.harvest');
@@ -71,6 +78,44 @@ export function WeeklyHarvestScreen({
 
   const masteredPct = goal && goal.target > 0 ? Math.round((goal.mastered / goal.target) * 100) : 0;
   const growingPct = goal && goal.target > 0 ? Math.round((goal.growing / goal.target) * 100) : 0;
+
+  const groupCard = (
+    <>
+      {group ? (
+        <>
+          <div aria-hidden="true" className="flex">
+            {group.avatars.map((avatar, index) => (
+              <span
+                key={index}
+                className={gcn(
+                  'box-content flex h-7 w-7 items-center justify-center rounded-[14px] border-2 border-garden-surface text-[11px] font-bold',
+                  index > 0 && '-ml-2',
+                  AVATAR[avatar.tone],
+                )}
+              >
+                {avatar.text}
+              </span>
+            ))}
+          </div>
+          <span className="text-[15px] font-bold">{group.name}</span>
+          <span className="text-[12px] leading-[1.35] text-garden-muted">
+            {t('groupBody', {
+              watered: group.watered,
+              members: group.members,
+              words: group.plotWords,
+            })}
+          </span>
+        </>
+      ) : (
+        <>
+          <span className="text-[15px] font-bold">{t('groupName')}</span>
+          <span className="text-[12px] leading-[1.35] text-garden-muted">
+            {groupHref ? t('openGroups') : t('comingSoon')}
+          </span>
+        </>
+      )}
+    </>
+  );
 
   return (
     <div className={gcn(SCREEN_CLASSES, 'gap-[14px] pt-[22px]')}>
@@ -86,7 +131,10 @@ export function WeeklyHarvestScreen({
           <>
             <div className="flex items-baseline justify-between">
               <h2 className="text-[15px] font-bold">
-                {t('missionsCount', { done: harvest.done, total: harvest.total })}
+                {t('missionsCount', {
+                  done: harvest.done,
+                  total: harvest.total,
+                })}
               </h2>
               <span className="text-[12px] text-stage-sprout">{t('missionsHint')}</span>
             </div>
@@ -108,7 +156,10 @@ export function WeeklyHarvestScreen({
                   })}
                 </span>
                 <span className="text-[13px] font-bold text-garden-gold-light">
-                  {t('seedPackCount', { have: harvest.seedPack.have, need: harvest.seedPack.need })}
+                  {t('seedPackCount', {
+                    have: harvest.seedPack.have,
+                    need: harvest.seedPack.need,
+                  })}
                 </span>
               </div>
             ) : null}
@@ -186,41 +237,13 @@ export function WeeklyHarvestScreen({
             {freezes !== null ? t('barrelBody') : t('comingSoon')}
           </span>
         </div>
-        <div className="flex flex-col gap-1.5 rounded-card border border-garden-border bg-garden-surface p-[14px]">
-          {group ? (
-            <>
-              <div aria-hidden="true" className="flex">
-                {group.avatars.map((avatar, index) => (
-                  <span
-                    key={index}
-                    className={gcn(
-                      'box-content flex h-7 w-7 items-center justify-center rounded-[14px] border-2 border-garden-surface text-[11px] font-bold',
-                      index > 0 && '-ml-2',
-                      AVATAR[avatar.tone],
-                    )}
-                  >
-                    {avatar.text}
-                  </span>
-                ))}
-              </div>
-              <span className="text-[15px] font-bold">{group.name}</span>
-              <span className="text-[12px] leading-[1.35] text-garden-muted">
-                {t('groupBody', {
-                  watered: group.watered,
-                  members: group.members,
-                  words: group.plotWords,
-                })}
-              </span>
-            </>
-          ) : (
-            <>
-              <span className="text-[15px] font-bold">{t('groupName')}</span>
-              <span className="text-[12px] leading-[1.35] text-garden-muted">
-                {t('comingSoon')}
-              </span>
-            </>
-          )}
-        </div>
+        {groupHref ? (
+          <Link href={groupHref} className={GROUP_CARD}>
+            {groupCard}
+          </Link>
+        ) : (
+          <div className={GROUP_CARD}>{groupCard}</div>
+        )}
       </div>
 
       <GardenTabBar active="missions" sticky={stickyNav} />

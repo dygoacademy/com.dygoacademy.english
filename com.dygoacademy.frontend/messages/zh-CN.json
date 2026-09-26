@@ -440,7 +440,8 @@
       "groupName": "学习小组",
       "weekOf": "{date} 这一周",
       "goalBand": "冲刺 {band} 分",
-      "etaPending": "[ETA]"
+      "etaPending": "[ETA]",
+      "openGroups": "打开共享花园"
     },
     "comeback": {
       "title": "欢迎回来，{name}。<br></br>你的花园一直在等你。",
@@ -490,7 +491,8 @@
       "newBedError": "花圃没能创建。请检查网络后重试。",
       "shared": "共享",
       "searchBeds": "搜索主题",
-      "lockedHint": "种子包 · 本周还差 {count} 朵金色花开"
+      "lockedHint": "种子包 · 本周还差 {count} 朵金色花开",
+      "openGroups": "打开共享花园"
     },
     "bed": {
       "back": "返回主题",
@@ -609,7 +611,8 @@
         "gardeners": "园丁",
         "gardenersLabel": "{count} 位园丁",
         "more": "+{count}",
-        "invite": "邀请"
+        "invite": "邀请",
+        "notFound": "找不到这个花园，或者你不在其中。"
       },
       "tend": {
         "title": "照料花园",
@@ -657,7 +660,8 @@
         "delete": "删除花园",
         "deleteConfirm": "删除{name}？其中的共享花圃和单词也会一并删除，且无法恢复。",
         "adminOnly": "只有花园管理员可以照料花园。",
-        "backToGarden": "返回花园"
+        "backToGarden": "返回花园",
+        "loadingTricky": "正在查找难点…"
       },
       "invite": {
         "title": "邀请园丁",

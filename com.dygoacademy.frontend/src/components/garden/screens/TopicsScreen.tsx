@@ -1,12 +1,13 @@
 'use client';
 
 import * as React from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 
 import { Chip } from '../Chip';
 import { gcn } from '../cn';
-import { PlusIcon, SearchIcon } from '../icons';
+import { ChevronRightIcon, PlusIcon, SearchIcon } from '../icons';
 import { IconButton } from '../IconButton';
 import type { PlantStage } from '../plantStage';
 import { LockedTopicRow, TopicRow } from '../TopicRow';
@@ -49,6 +50,8 @@ export interface TopicsScreenProps {
   /** "Plant a new bed": `onNewBed` (e.g. open a sheet) wins over `newBedHref`. */
   newBedHref?: string;
   onNewBed?: () => void;
+  /** UI-G: with the "Group" chip selected, a link to the shared gardens. */
+  groupsHref?: string;
   stickyNav?: boolean;
 }
 
@@ -84,6 +87,7 @@ export function TopicsScreen({
   onSearch,
   newBedHref,
   onNewBed,
+  groupsHref,
   stickyNav = true,
 }: TopicsScreenProps) {
   const t = useTranslations('screens.topics');
@@ -165,6 +169,15 @@ export function TopicsScreen({
             hint={t('lockedHint', { count: lockedPack.bloomsNeeded })}
             lockedLabel={t('locked')}
           />
+        ) : null}
+        {groupsHref && filter === 'group' ? (
+          <Link
+            href={groupsHref}
+            className="flex h-12 items-center justify-center gap-1 rounded-[18px] border border-garden-border bg-garden-surface text-[15px] font-bold text-garden-forest"
+          >
+            {t('openGroups')}
+            <ChevronRightIcon width={16} height={16} />
+          </Link>
         ) : null}
         <button
           type="button"

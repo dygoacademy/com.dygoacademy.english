@@ -81,6 +81,16 @@ export async function middleware(request: NextRequest) {
     response = redirect;
   }
 
+  // UI-G: invite links are the classic /join/<token> (they work for
+  // everyone). A signed-in, flagged user opens the garden's join screen
+  // (GR6) instead. Unflagged users get exactly what they got before.
+  const joinToken = pathname.match(/^\/join\/([^/]+)\/?$/)?.[1];
+  if (!isAuthRedirect && gardenOn && joinToken && !response.headers.has('location')) {
+    const redirect = NextResponse.redirect(new URL(GARDEN_ROUTES.join(joinToken), request.url));
+    response.cookies.getAll().forEach((cookie) => redirect.cookies.set(cookie));
+    response = redirect;
+  }
+
   return rememberUiOverride(response, uiOverride);
 }
 

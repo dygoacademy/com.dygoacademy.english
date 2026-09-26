@@ -10,6 +10,7 @@ import { useCreateTopic } from '@/hooks/useTopicMutations';
 import { useTopics } from '@/hooks/useTopics';
 
 import { BottomSheet } from '../BottomSheet';
+import { useGroupsTab } from '../groupsTab';
 import { Button } from '../Button';
 import { TopicsScreen, type TopicsScreenTopic } from '../screens/TopicsScreen';
 import { toScreenTopic, topicFilters, type GardenTopicSummary } from './data';
@@ -30,6 +31,7 @@ export function TopicsLive() {
   const topics = useTopics();
   const [searchOpen, setSearchOpen] = React.useState(false);
   const [newBedOpen, setNewBedOpen] = React.useState(false);
+  const inGroups = useGroupsTab();
 
   if (topics.isPending) return <LiveLoading />;
   if (topics.isError || !topics.data) return <LiveError onRetry={() => void topics.refetch()} />;
@@ -46,6 +48,7 @@ export function TopicsLive() {
         lockedPack={null}
         onSearch={() => setSearchOpen(true)}
         onNewBed={() => setNewBedOpen(true)}
+        groupsHref={inGroups ? GARDEN_ROUTES.groups : undefined}
       />
       <SearchSheet open={searchOpen} onOpenChange={setSearchOpen} beds={beds} />
       <NewBedSheet open={newBedOpen} onOpenChange={setNewBedOpen} />

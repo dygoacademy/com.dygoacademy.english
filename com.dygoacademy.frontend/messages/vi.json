@@ -436,7 +436,8 @@
       "groupName": "Nhóm học",
       "weekOf": "Tuần từ {date}",
       "goalBand": "Đường đến Band {band}",
-      "etaPending": "[ETA]"
+      "etaPending": "[ETA]",
+      "openGroups": "Mở vườn chung"
     },
     "comeback": {
       "title": "Chào {name}!<br></br>Vườn vẫn đợi bạn.",
@@ -486,7 +487,8 @@
       "newBedError": "Chưa tạo được luống. Hãy kiểm tra kết nối và thử lại.",
       "shared": "Chung",
       "searchBeds": "Tìm chủ đề",
-      "lockedHint": "Gói hạt giống · còn {count} Hoa Vàng"
+      "lockedHint": "Gói hạt giống · còn {count} Hoa Vàng",
+      "openGroups": "Mở vườn chung"
     },
     "bed": {
       "back": "Quay lại chủ đề",
@@ -605,7 +607,8 @@
         "gardeners": "Bạn cùng vườn",
         "gardenersLabel": "{count} người",
         "more": "+{count}",
-        "invite": "Mời"
+        "invite": "Mời",
+        "notFound": "Không tìm thấy vườn này, hoặc bạn không ở trong vườn."
       },
       "tend": {
         "title": "Chăm vườn",
@@ -653,7 +656,8 @@
         "delete": "Xóa vườn",
         "deleteConfirm": "Xóa {name}? Các luống chung và từ trong đó cũng bị xóa. Không thể hoàn tác.",
         "adminOnly": "Chỉ quản trị của vườn mới chăm vườn được.",
-        "backToGarden": "Quay lại vườn"
+        "backToGarden": "Quay lại vườn",
+        "loadingTricky": "Đang tìm chỗ khó…"
       },
       "invite": {
         "title": "Mời bạn cùng vườn",
