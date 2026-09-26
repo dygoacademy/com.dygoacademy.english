@@ -215,3 +215,105 @@ Every remaining red pixel sits on a Vietnamese text line (A7: the 8 meaning line
 Left behind (gitignored, safe to delete): `com.dygoacademy.frontend/.garden-diff/pass2-snap.tgz` (the snapshot).
 
 **Next open item:** unchanged — G1 on Dylan's Mac, then the UI-5 backend fields (see also the new A6 completion plan).
+
+## UI-L pass: the garden in English, 简体中文 and Tiếng Việt (automated, 2026-09-26 08:10–12:20 UTC)
+
+Scheduled task "UI-L — the app in three languages", continued by Dylan after the repo folder was connected. Spec: `phase 12 implementation plan.md` → UI-L. UI-G was not started. One interruption: the connection dropped during part 3 and the pass resumed from the same state.
+
+### Commits
+
+| Commit | Part |
+| --- | --- |
+| `33466be` | UI-L (1): locale plumbing. `src/i18n/config.ts` (en / zh-CN / vi, formatting locale en-SG, en-US for `America/*` zones, vi-VN, zh-CN; Sunday week start only for en-US), resolution profile `ui_locale` → `dygo_locale` cookie → Accept-Language → en (`garden-locale.ts`, one cached lookup per request), `lang` + time zone + formatting locale on the garden root, `?locale=` on the reference pages, `setGardenLocaleCookie` server action |
+| `d5bd675` | UI-L (2): every garden string, date and number through next-intl. `components/garden/format.ts` (calendar days in UTC, the learner's today in their zone, weekday names/initials, numbers, clock times, all Intl), screens take Dates / clock times / counts instead of formatted strings, rating intervals and parts of speech translated, the no-raw-strings lint on the garden folders |
+| `88fdefe` | UI-L (fix): IELTS band written "7.0" in every language. **Not from this pass** — committed by a Claude Sonnet session while this one was running (see "Things to know") |
+| `b2babd6` | UI-L (3): `messages/vi.json` (canvas copy word for word), `messages/zh-CN.json` (glossary draft, `_meta: "draft, needs native review"`), key-parity + ICU-argument/tag test |
+| `94119e3` | UI-L (4): per-language fixture data, `garden:diff --locale en,vi`, the two Vietnamese nowrap tweaks, font chain in the canvas renderer's order, README table |
+| `dab36e8` | UI-L (5): zh-CN screenshot check; shorter Chinese where it wrapped |
+| `0d3f098` | UI-L (6): migration `20260926_profile_locales.sql`, `PATCH /api/v1/profiles/me`, Jest, API surface row |
+| `4d6f4eb` | UI-L (7): Language sheet on A8, wired to the profile |
+| (this report) | UI-L (8) |
+
+### Pixel diff: 11 references, English and Vietnamese
+
+Committed `scripts/garden-diff.mjs --locale en,vi`, 390 × 844 @2x, pixelmatch 0.1, run against a static snapshot of `next dev` (device shell) in Playwright Chromium 1194 x86-64 (cloud), the browser that renders the reference HTML itself with 0 differing pixels (noise floor 0).
+
+| Reference | English | Vietnamese |
+| --- | ---: | ---: |
+| A1-todays-garden | 0.000% | 0.000% |
+| A2-review-question | 0.001% | 0.001% |
+| A2-review-answer | 0.180% | 0.001% |
+| A2-review-finished | 0.001% | 0.001% |
+| A3-mission-complete | 0.001% | 0.001% |
+| A4-weekly-harvest | 0.000% | 0.000% |
+| A5-welcome-back | 0.000% | 0.088% |
+| A6-topics | 0.000% | 0.000% |
+| A7-topic-bed | **0.738%** | 0.001% |
+| A7-topic-bed-filter-sprouts | 0.262% | 0.001% |
+| A8-me | 0.050% | 0.000% |
+
+- **All 11 Vietnamese references pass.** The one difference left is A5's rain-barrel line: ICU's weekday name is "Chủ Nhật", the canvas wrote "Chủ nhật" (one letter).
+- **English A7 is still over 0.5%, for the decided reason:** the English references were drawn with DM Sans only (Vietnamese meaning lines in the system fallback); the app uses Be Vietnam Pro. The `-vi` references were drawn with the app's stack, and match.
+- What the iteration found: the first Vietnamese run was 0.05–2.1%, all on Vietnamese letters. The canvas renderer (`tools/render.js`) resolves each font family as one family of subsets, where the subset declared last wins and the plain latin file (no `unicode-range`) builds some letters from base + combining marks. The app now chains its next/font families in that same order (`--font-body`, `--font-display` in globals.css; no `unicode-range` on the two latin files). That took Vietnamese to the table above and English A7 from 0.754% to 0.738%.
+
+### Chinese (zh-CN) screenshot check
+
+All 11 fixture pages at the 8 viewports of design system §16.1 (88 screenshots), compared element by element with English at the same size. Fonts: Noto Sans CJK SC as the system CJK font; Latin in DM Sans / Fraunces.
+
+- **No tofu:** every glyph came from DM Sans, Fraunces or Noto Sans CJK SC. (The IPA stress mark ˈ uses the system Latin font in every language, English included; the canvas does the same.)
+- **No clipped text and no sideways page scrolling** at any size.
+- **New wraps vs English, found and fixed (`dab36e8`):** A8 "38 小时" broke inside its stat tile (now "38h"); the A5 rain-barrel line and the A4 seed-pack line were too long (shorter Chinese, and the pack name never breaks); the A4 legend at 320px (ASCII parentheses, shorter "照此速度").
+- **Left as is:** on A2-answer the English definition can take two lines, because once a meaning language is set it is the second, smaller line (decided order, not a translation problem).
+- Screenshots + table: `com.dygoacademy.frontend/.garden-diff/uil-zh-CN/` (gitignored; `README.md` there lists every viewport × screen).
+
+### Backend (`0d3f098`)
+
+- `profiles.timezone` was never written through the API (only read by `resolveUserTimezone`), so the pass added `PATCH /api/v1/profiles/me` in a new `ProfilesModule`: `uiLocale` (en, zh-CN, vi) and `meaningLocale` (zh-CN, vi); omit to keep, `null` to clear, empty body 400, other codes 400, own row via an RLS-scoped `UPDATE` (`profiles_update_self`), 404 if no row. Timezone stays out until the WS1 setting exists.
+- Migration `database/migrations/20260926_profile_locales.sql`: two nullable text columns + check constraints; RLS and grants unchanged. Filed under the new `migrations/` convention, it also sorts after `017_…` in the old chain.
+- The frontend reads the profile with `select('*')`, so the garden keeps working (cookie / browser language) before the migration is applied.
+
+### Checks
+
+| Check | Result |
+| --- | --- |
+| `tsc --noEmit` (app + `tsconfig.test.json`) | Clean, on the working tree and on `git archive HEAD` (committed files only) |
+| `next lint` | No warnings or errors (includes the new no-raw-strings rule on the garden folders) |
+| `vitest run` | 182 passed, 17 files (new: i18n config, formatting, message parity, Language sheet) |
+| `next build` | Passes on `git archive HEAD` (Linux mirror, dummy env) |
+| Backend `jest` | 233 passed on the working tree; 177 passed on `git archive HEAD` (the difference is the uncommitted Phase 10 work). New: 7 profile tests |
+| Backend `tsc --noEmit` | Clean on `git archive HEAD` |
+| A8 row as a button | 0 pixels different from the canvas's div row |
+
+### Not verified here
+
+- The language switch signed in, end to end (no Supabase or API in the sandbox): PATCH → cookie → `router.refresh()` re-rendering in the new language, and the setting following the learner to a second device. The sheet itself is unit-tested and the server path is covered by the resolution tests.
+- The migration against a real database (`apply-migrations.sh --migrations`), and the RLS suite with the new columns.
+- macOS Chrome: expect every screen a little higher than the table (different anti-aliasing; the README's noise-floor rule applies).
+- Chinese with PingFang SC (the Mac's CJK font); here Noto Sans CJK SC was used. Wrap checks were done with Noto, which is slightly wider, so PingFang should only have more room.
+
+### Assumptions
+
+1. **Review-card order in English:** the decision says the meaning-language line goes first whenever one is set, but the approved English A2-answer artboard shows the English definition first. The live garden follows the decision; the English reference page passes `meaningFirst: false` to reproduce its artboard. Please confirm, or re-export the English artboard.
+2. **Time zone:** the garden formats in `profiles.timezone`; when it is the schema's "never set" value (`UTC`), it uses `Asia/Ho_Chi_Minh`, the backend's `DEFAULT_TIMEZONE`. (The backend prefers the browser's zone in that case; the frontend server can't know it before hydration.)
+3. **English clock:** en-SG CLDR writes "7:30 am"; the garden upper-cases the day period and uses a normal-width space, as the canvas does.
+4. **IELTS band** is written "7.0" in every language (a score, not a quantity) — the same as `88fdefe`.
+5. **Vietnamese strings the canvas doesn't show** (errors, empty states, the gallery and tokens dev pages) are Claude's translations using the glossary; Chinese is all draft.
+6. **Greeting in Vietnamese:** the canvas writes "Chào Minh" for the evening; the pass uses "Chào {name}" at every time of day.
+
+### Things to know
+
+- **Another agent was working in the repo at the same time.** `88fdefe` was committed by a Claude Sonnet session during this pass, and around 11:44 UTC `messages/vi.json` briefly held different, non-canvas Vietnamese copy before going back to the committed version. This pass only committed exact paths, and every commit was checked on `git archive HEAD`. If another UI-L task is scheduled, please stop it.
+- `dygo_academy_api_surface.md` has other people's uncommitted edits: only the new row was committed (staged as HEAD + that row); the working copy keeps both.
+- `package.json` / lockfile are unchanged. `@formatjs/icu-messageformat-parser` (used by the parity test) comes with next-intl.
+- Left behind (gitignored): `.garden-diff/uil-snap.tgz`, `.garden-diff/uil-zh-CN*`.
+
+### Next open item
+
+UI-G (Groups), built in all three languages from the start and diffed against the GR references in English and Vietnamese. Before it: apply `20260926_profile_locales.sql`, and a native review of `zh-CN.json`.
+
+### What to check on your Mac
+
+1. `cd com.dygoacademy.frontend && npm install && npm test` (expect 182 passing), `npx tsc --noEmit`.
+2. `./database/apply-migrations.sh --migrations`, then restart the backend.
+3. `npm run dev`, then `/garden/_reference/A1-todays-garden?locale=vi&ui=garden` (and `?locale=zh-CN`) next to `docs/design/garden/reference/A1-todays-garden-vi.png`; `npm run garden:diff -- --base http://localhost:3000 --cookie dygo_ui=garden --locale en,vi`.
+4. Signed in: `/garden?ui=garden` → Me → "Meanings in" → pick Tiếng Việt, then 简体中文: the garden should switch without a reload and stay switched on another device. `/?ui=classic` must look exactly as before (English).
