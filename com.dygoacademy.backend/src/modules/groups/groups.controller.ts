@@ -8,6 +8,7 @@ import {
   Param,
   Patch,
   Post,
+  Query,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 
@@ -16,6 +17,12 @@ import { CreateGroupDto } from './dto/create-group.dto';
 import { CreateInviteDto } from './dto/create-invite.dto';
 import { UpdateGroupDto } from './dto/update-group.dto';
 import { UpdateMemberRoleDto } from './dto/update-member-role.dto';
+import {
+  GroupGarden,
+  GroupGardenCounts,
+  GroupGardenService,
+  TrickyPatch,
+} from './group-garden.service';
 import {
   CreatedInvite,
   GroupInviteSummary,
@@ -29,7 +36,10 @@ import {
 @ApiTags('groups')
 @Controller({ path: 'groups', version: '1' })
 export class GroupsController {
-  constructor(private readonly groupsService: GroupsService) {}
+  constructor(
+    private readonly groupsService: GroupsService,
+    private readonly gardenService: GroupGardenService,
+  ) {}
 
   @Get()
   @ApiOperation({
@@ -38,6 +48,20 @@ export class GroupsController {
   })
   async findMine(@CurrentUser('id') userId: string): Promise<GroupSummary[]> {
     return this.groupsService.findMine(userId);
+  }
+
+  @Get('garden-counts')
+  @ApiOperation({
+    summary: 'Size of each garden the caller is in, and their own due words (UI-G, GR1)',
+    description:
+      'One row per group the caller belongs to: member_count, bed_count, ' +
+      'word_count (via public.group_garden_counts, SECURITY DEFINER, members ' +
+      "only, counts only) and my_due_count (the caller's own user_word_srs " +
+      'rows under RLS). Separate from GET /groups so the classic list never ' +
+      'depends on the UI-G migration.',
+  })
+  async gardenCounts(@CurrentUser('id') userId: string): Promise<GroupGardenCounts[]> {
+    return this.gardenService.countsForMine(userId);
   }
 
   @Post()
@@ -73,6 +97,41 @@ export class GroupsController {
   @ApiOperation({ summary: 'Delete a group', description: 'ADMIN only (groups_delete_admin).' })
   async remove(@CurrentUser('id') userId: string, @Param('id') groupId: string): Promise<void> {
     await this.groupsService.remove(userId, groupId);
+  }
+
+  @Get(':id/garden')
+  @ApiOperation({
+    summary: 'The group garden: aggregates and your own beds (UI-G, GR2)',
+    description:
+      'Members only (404 otherwise). Group totals (gardeners, words, how ' +
+      'many watered since the start of the day in `tz`, ripe plants) come ' +
+      'from SECURITY DEFINER functions that return numbers only; the shared ' +
+      "beds carry the caller's own due and stage counts (RLS). Never another " +
+      "learner's progress (FR-1.2).",
+  })
+  async garden(
+    @CurrentUser('id') userId: string,
+    @Param('id') groupId: string,
+    @Query('tz') tz?: string,
+  ): Promise<GroupGarden> {
+    return this.gardenService.garden(userId, groupId, tz);
+  }
+
+  @Get(':id/tricky-patches')
+  @ApiOperation({
+    summary: 'Words the group missed most (UI-G, GR3)',
+    description:
+      'ADMIN only (403). Last `days` days (default 7, max 90), top `limit` ' +
+      '(default 5): source_word, misses and how many gardeners missed it. ' +
+      'Totals only, never who.',
+  })
+  async trickyPatches(
+    @CurrentUser('id') userId: string,
+    @Param('id') groupId: string,
+    @Query('days') days?: string,
+    @Query('limit') limit?: string,
+  ): Promise<TrickyPatch[]> {
+    return this.gardenService.trickyPatches(userId, groupId, days, limit);
   }
 
   @Get(':id/members')
