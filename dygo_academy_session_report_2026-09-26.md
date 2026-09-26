@@ -435,3 +435,9 @@ Apply `20260926_group_garden.sql`, then the Mac checks below. After that: rain-d
 3. `npm run dev`, then `/garden/groups?ui=garden` in English, then switch Me → Language to Tiếng Việt and 简体中文: create a garden, open it, Tend the garden → Gardeners → Invite → Copy link; open the link in another browser signed in as someone else (with `?ui=garden`) → join → you land in the garden; back as admin, change their role, call a rain day.
 4. `npm run garden:diff -- --base http://localhost:3000 --cookie dygo_ui=garden --locale en,vi` (now includes GR1–GR7).
 5. `/?ui=classic` and the classic `/groups` pages must look exactly as before.
+
+## Rain days (RD passes)
+
+- **RD-1** (commit `UI-G RD-1: group rain days table, SQL functions and RLS tests`): `database/migrations/20260927_group_rain_days.sql` adds `group_rain_days` (RLS: members select, no write policies), `start_group_rain_day` (ADMIN; 42501 / 22023 bad count / 23505 one already running; `local_date` + `ends_at` = end of the local day in the caller's `profiles.timezone`), `cancel_group_rain_day` (ADMIN; returns `true` if one was cancelled, `false` if none — the plan left the return type open) and `group_rain_day_status` (READ; current + last finished; `gardeners`, `done`, `mine`; no user ids). Test: `database/tests/rls_group_rain_days_test.sql`.
+- Checks: ran in a scratch Postgres 16 (stub + schema + both 2026-09-26 migrations + this one + `seeds/01_core_fixtures.sql`): all 33 rain-day assertions pass, and `rls_group_garden_test.sql` still passes. Not run against real Supabase.
+- Note for RD-2: `p_words` is `smallint` as specified, so a raw `pg` call must cast (`$2::smallint`); PostgREST/`rpc()` coerces named JSON args. Apply with `./database/apply-migrations.sh --migrations`.
