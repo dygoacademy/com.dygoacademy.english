@@ -317,3 +317,121 @@ UI-G (Groups), built in all three languages from the start and diffed against th
 2. `./database/apply-migrations.sh --migrations`, then restart the backend.
 3. `npm run dev`, then `/garden/_reference/A1-todays-garden?locale=vi&ui=garden` (and `?locale=zh-CN`) next to `docs/design/garden/reference/A1-todays-garden-vi.png`; `npm run garden:diff -- --base http://localhost:3000 --cookie dygo_ui=garden --locale en,vi`.
 4. Signed in: `/garden?ui=garden` → Me → "Meanings in" → pick Tiếng Việt, then 简体中文: the garden should switch without a reload and stay switched on another device. `/?ui=classic` must look exactly as before (English).
+
+## UI-G pass: Groups, "shared gardens" (automated, 2026-09-26 12:41–22:10 UTC)
+
+Scheduled task "UI-G — Groups". UI-L was already finished (last commit `a64d74f` at 12:03, no unreported work under the garden or message folders), so the pass went straight to UI-G. Spec: `phase 12 implementation plan.md` → UI-G, decisions 9–11, §10. One interruption: the link to the Mac dropped during part 4 and the pass resumed from the same state when Dylan asked it to continue.
+
+### Commits
+
+| Commit | Part |
+| --- | --- |
+| `d9ab4d8` | UI-G (1): `GroupCard`, `GardenerRow`, `RoleBadge`, `InviteSheet` (body), `TrickyPatchRow`, `RainDayBanner`, plus `GardenerAvatar`/`AvatarStack`, the `GroupSheet` frame, the Start-a-garden body and the group drawings (`groupArt.tsx`), all from `reference/GR*.html`; shown on `/garden/_gallery` ("Shared gardens (UI-G)"). Every group string in `en.json`, `vi.json` (canvas copy) and `zh-CN.json` (draft). Four garden-only tokens; `format.ts` `shortDay` ("2 Sep" / "2/9") |
+| `f064042` | UI-G (2): GR1–GR7 presentational screens, `screens/groupFixtures.ts` (canvas sample data per language), `/garden/_reference/GR…?locale=en\|vi\|zh-CN`, `garden-diff.mjs` lists the GR names; the tab bar takes `groups` and uses the canvas's 4px side padding with five tabs |
+| `f061b5a` | UI-G (3): the fifth "Groups" tab only for learners in at least one group (`GroupsTabLive` in the (garden) layout, `GroupsTabProvider`/`useGroupsTab`); A1–A8 reference pages keep four tabs |
+| `4a4b2cc` | UI-G (4): migration `20260926_group_garden.sql`, `GroupGardenService` + four routes, Jest, `rls_group_garden_test.sql`, API surface rows |
+| `92e86bb` | UI-G (5): live routes, invite / create / join-with-link / invite-links / settings sheets, middleware `/join/<token>` → `/garden/join/<token>` for flagged users, A6 "Group" chip and A4 group card links |
+| (this report) | UI-G (6) |
+
+### Pixel diff: GR1–GR7, English and Vietnamese
+
+Same method as the UI-L pass: a static snapshot of `next dev` (device shell, Linux mirror) screenshotted in Playwright Chromium 1194 (cloud), 390 × 844 @2x, pixelmatch 0.1, against `reference/<name>.png` and `<name>-vi.png`. References untouched.
+
+| Reference | English | Vietnamese |
+| --- | ---: | ---: |
+| GR1-shared-gardens | 0.000% | 0.000% |
+| GR2-group-garden | 0.001% | 0.001% |
+| GR3-tricky-patches | 0.001% | 0.001% |
+| GR4-gardeners | 0.013% | 0.001% |
+| GR5-invite | 0.001% | 0.001% |
+| GR6-join | 0.001% | 0.001% |
+| GR7-create | 0.001% | 0.001% |
+
+- First run: every GR screen with the tab bar was at ~0.255%; the canvas pads a five-tab bar 4px at the sides (8px with four). Fixed in the tab bar; nothing else needed changing.
+- GR4 English 0.013% is a few anti-aliased pixels on the back button's circle.
+- The 11 A references are unchanged from the UI-L table (A1–A8 re-run after parts 2, 3 and 5: identical, e.g. A4 and A6 0.000% in both languages after the A4/A6 link changes).
+
+### Chinese (zh-CN) screenshot check
+
+All 7 GR fixture pages in `zh-CN` and English at the 8 viewports (320 × 568 … 1024 × 1366), Noto Sans CJK SC as the CJK font. No horizontal scrolling, no clipped text (the only "clipped" element is GR2's screen-reader-only gardener count, which is meant to be 1px), no tofu; the Chinese rain-day title fits on one line where the English wraps. Nothing to change.
+
+### Backend (`4a4b2cc`)
+
+`database/migrations/20260926_group_garden.sql`, four `SECURITY DEFINER` functions (`set search_path = public`, execute for `authenticated` only) that re-check membership themselves and return numbers only:
+
+| Function | For | Who |
+| --- | --- | --- |
+| `group_garden_counts(group)` | gardeners, shared beds, words | members (no row otherwise) |
+| `group_garden_activity(group, since)` | gardeners who watered since `since`, ripe plants | members (42501 otherwise) |
+| `group_tricky_patches(group, since, limit)` | misses and distinct gardeners per word | ADMIN |
+| `group_invite_preview(token)` | name, description, inviter display name (never email), role, counts, already_member | anyone signed in with a valid token; read-only, same errors as redeem |
+
+Routes (`GroupGardenService`): `GET /groups/garden-counts` (separate from `GET /groups`, so the classic list never depends on the migration), `GET /groups/:id/garden?tz=` (404 non-member; the beds carry the caller's own due and stage counts, read under their own RLS), `GET /groups/:id/tricky-patches` (403 non-admin, last 7 days, top 5), `GET /invites/:token/preview` (404 / 410). FR-1.2 holds: no response carries a user id, email or another learner's word-level data (Jest asserts that for every method).
+
+### RLS results
+
+Run in a throwaway Postgres 16 (cloud) built from the working tree's `tests/00_supabase_stub.sql`, `schema/*`, `migrations/*` and `seeds/01_core_fixtures.sql`:
+
+- **Main suite `tests/rls_test.sql`: 64 checks pass** with both migrations applied.
+- **New `tests/rls_group_garden_test.sql`: 30 checks pass.** Highlights: a Viewer (Alex) gets the real gardener count (4) while `group_members` still shows him one row and he still can't read Priya's `user_word_srs`; Dana (other tenant) gets no counts and errors from the activity and tricky functions; tricky patches raise for READ and WRITE; "my due words" counts only the caller's rows; the invite preview returns the inviter's display name, not the email, doesn't seat anyone or use up the invite, and fails on unknown and revoked tokens; `anon` can't call any of it.
+- `apply-migrations.sh --test` does not run the new file yet: the script has someone else's uncommitted edits. To run it: after `--test`'s schema + fixtures, `psql -f database/migrations/20260926_group_garden.sql` then `psql -f database/tests/rls_group_garden_test.sql` in the same scratch database (header of the test file).
+
+### Live routes (`92e86bb`)
+
+| Route | Screen | Endpoints |
+| --- | --- | --- |
+| `/garden/groups` | GR1 + GR7 sheet + "join with a link" sheet | `GET /groups`, `GET /groups/garden-counts`, `GET /groups/:id/members` (initials; a Viewer sees only themself), `POST /groups` |
+| `/garden/groups/[id]` | GR2 (+ GR5 for admins) | `GET /groups/:id/garden`, members, `POST /groups/:id/invites` |
+| `/garden/groups/[id]/manage[?tab=gardeners]` | GR3 / GR4, admins only | tricky patches, `POST /notifications/groups/:id/sprint`, `PATCH`/`DELETE` members, `GET /groups/:id/invites`, `DELETE /invites/:id`, `PATCH`/`DELETE /groups/:id` |
+| `/garden/join/[token]` | GR6 | `GET /invites/:token/preview`, `POST /invites/:token/redeem` |
+
+Everything the classic group pages do is there: create, rename / describe / visibility, delete, roster roles and removal (409 last admin), invite links with a role (mint, list, revoke), join by link, sprint push, the mistake data. The classic pages are unchanged and stay until UI-8.
+
+### Checks
+
+| Check | Result |
+| --- | --- |
+| Frontend `tsc --noEmit` (app + `tsconfig.test.json`) | Clean on the staged tree of every commit |
+| `next lint` (garden folders, hooks, middleware) | No warnings or errors |
+| `vitest run` | 205 passed, 21 files (new: group components, group screens, groups tab, live group data) |
+| `next build` | Passes on the staged tree of part 5 (Linux mirror, dummy env); the four new routes are dynamic |
+| Backend `tsc --noEmit` | Clean on the staged tree |
+| Backend `jest` | 188 passed on the staged tree (`git archive` of the index; new: 12 in `group-garden.service.spec.ts`) |
+| Backend `eslint src/modules/groups` | Clean |
+| RLS | 64 + 30 pass (above) |
+
+### Not verified here
+
+- Every signed-in flow end to end (no Supabase or API in the sandbox): create, invite → copy/share → open `/join/<token>` on another account → preview → join, role changes, sprint push, settings, delete.
+- The migration against the real database.
+- `navigator.share` / clipboard on iPhone Safari.
+- macOS Chrome pixel numbers (expect a little higher, per the README's noise-floor rule), and PingFang SC for Chinese.
+
+### Assumptions
+
+1. **Rain days aren't stored.** `POST …/sprint` sends a push and keeps no row, so there is nothing to show for "Rain day today" (GR1), the GR2 banner, progress counts, or "Last rain day" (GR3). Those blocks are hidden on live data; the reference pages show them. A `group_sprints` table (with done counts) is the next backend item if you want them live. The push text says "water N words today" with the size chosen on GR3.
+2. **Tricky patches** use a new aggregate (last 7 days, distinct gardeners) rather than the all-time heatmap, because GR3 shows both. Same ADMIN rule and privacy shape as the heatmap.
+3. **Invite links** are the classic `/join/<token>` (works for every user, and matches the canvas's `dygoacademy.com/join/…`); flagged users are redirected to `/garden/join/<token>`. The token is minted on the first Copy / Share (the raw token is returned only once); changing role or limits afterwards makes the next Copy mint a new link. Expiry and uses step through presets (7 / 1 / 30 days / never; 20 / 1 / 100 / no limit).
+4. **GR1 tile plant** comes from the garden's size (≥ 100 words tree, ≥ 30 flower, else sprout); **GR2 bed plant** from the stage most of your words are in. The header's gardener total is the sum over gardens (a person in two gardens counts twice).
+5. **Initials** show only the gardeners the roster endpoint lets you see (a Viewer sees themself), plus "+N" from the real count on GR2 (decision 10).
+6. The GR7 name field shows a forest border when filled (the canvas draws it filled and focused).
+7. `zh-CN` group copy is Claude's draft like the rest of `zh-CN.json`; the Vietnamese copy the canvas doesn't show (errors, empty states, the invite-links and settings sheets) is Claude's translation using the glossary.
+
+### Things to know
+
+- **`dygo_academy_api_surface.md` was briefly emptied by this pass and restored.** A script wrote the file before reading it. The pass restored it from git's object store (the uncommitted version from 25 Sep 14:06, blob `9ee0042`) plus the UI-L `PATCH /profiles/me` row; `git diff --stat` against HEAD is again exactly the 10 insertions / 5 deletions it showed at the start of the pass. Please skim that file's uncommitted diff once to confirm nothing newer than 25 Sep 14:06 was in it. The four new rows were committed as HEAD + rows; the working copy keeps both.
+- **git here can create files but not delete them**, so each commit leaves `.git/HEAD.lock` / `.git/index.lock` behind. The pass moved only the locks its own commits left (and the UI-L pass's stale `HEAD.lock` from 12:03, checked stale first) into `.git/stale-locks/`. An older `.git/next-index-19.lock` (12:03) is still there, and git left a few `tmp_obj_*` files under `.git/objects/` that it couldn't unlink; all harmless, safe to delete on the Mac.
+- Nothing else in the ~110 uncommitted changes was touched; only exact paths were staged. `package.json` / lockfiles unchanged.
+- Left behind (gitignored): `com.dygoacademy.frontend/.garden-diff/uig/` (snapshot and the messages script).
+
+### Next open item
+
+Apply `20260926_group_garden.sql`, then the Mac checks below. After that: rain-day storage (small backend item) if you want the banners live, and the open parts of UI-3 to UI-6 (plan §1). UI-G has no gate of its own; G2 (core loop live for beta users) is the next gate.
+
+### What to check on your Mac
+
+1. `cd com.dygoacademy.frontend && npm install && npm test` (expect 205 passing), `npx tsc --noEmit`; backend `npm test`.
+2. `./database/apply-migrations.sh --migrations`, restart the backend.
+3. `npm run dev`, then `/garden/groups?ui=garden` in English, then switch Me → Language to Tiếng Việt and 简体中文: create a garden, open it, Tend the garden → Gardeners → Invite → Copy link; open the link in another browser signed in as someone else (with `?ui=garden`) → join → you land in the garden; back as admin, change their role, call a rain day.
+4. `npm run garden:diff -- --base http://localhost:3000 --cookie dygo_ui=garden --locale en,vi` (now includes GR1–GR7).
+5. `/?ui=classic` and the classic `/groups` pages must look exactly as before.

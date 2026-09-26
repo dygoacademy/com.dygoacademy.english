@@ -109,6 +109,20 @@ Committed `garden-diff.mjs --locale en,vi`, run against a static snapshot of `ne
 - English A7 (and the smaller A2-answer / A7-sprouts / A8 numbers) is the known font decision: the English references were drawn with DM Sans only, so their Vietnamese meaning lines use the system fallback; the app uses Be Vietnam Pro. The `-vi` references were drawn with the app's stack and match.
 - Vietnamese A5: the only difference is one letter, "Chủ Nhật" (the ICU weekday name) where the canvas wrote "Chủ nhật" in the rain-barrel sentence.
 
+## Diff results, Groups (2026-09-26, UI-G pass)
+
+Same method as the UI-L table. The GR screens with a tab bar use the canvas's five-tab padding (4px at the sides).
+
+| Screen | English | Vietnamese |
+| --- | ---: | ---: |
+| GR1-shared-gardens | 0.000% | 0.000% |
+| GR2-group-garden | 0.001% | 0.001% |
+| GR3-tricky-patches | 0.001% | 0.001% |
+| GR4-gardeners | 0.013% | 0.001% |
+| GR5-invite | 0.001% | 0.001% |
+| GR6-join | 0.001% | 0.001% |
+| GR7-create | 0.001% | 0.001% |
+
 ## Known differences (resolved 2026-09-26)
 
 | # | Canvas | Resolution |
