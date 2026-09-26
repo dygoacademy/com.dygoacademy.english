@@ -28,6 +28,12 @@ export const GARDEN_ROUTES = {
   topic: (id: string) => `/garden/topics/${encodeURIComponent(id)}`,
   /** A8 Me. */
   me: '/garden/me',
+  /** UI-G shared gardens: GR1 list, GR2 a garden, GR3/GR4 tend (admins), GR6 join. */
+  groups: '/garden/groups',
+  group: (id: string) => `/garden/groups/${encodeURIComponent(id)}`,
+  groupManage: (id: string, tab: 'tricky' | 'gardeners' = 'tricky') =>
+    `/garden/groups/${encodeURIComponent(id)}/manage${tab === 'gardeners' ? '?tab=gardeners' : ''}`,
+  join: (token: string) => `/garden/join/${encodeURIComponent(token)}`,
   /**
    * Flag-only, dev-only canvas reference pages (UI-fidelity 4): each renders
    * one screen with the canvas sample data for the pixel diff. Folder

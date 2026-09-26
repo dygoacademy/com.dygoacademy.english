@@ -28,6 +28,14 @@ export const REFERENCE_NAMES = [
   'A7-topic-bed',
   'A7-topic-bed-filter-sprouts',
   'A8-me',
+  // UI-G: sample data in groupFixtures.ts
+  'GR1-shared-gardens',
+  'GR2-group-garden',
+  'GR3-tricky-patches',
+  'GR4-gardeners',
+  'GR5-invite',
+  'GR6-join',
+  'GR7-create',
 ] as const;
 export type ReferenceName = (typeof REFERENCE_NAMES)[number];
 

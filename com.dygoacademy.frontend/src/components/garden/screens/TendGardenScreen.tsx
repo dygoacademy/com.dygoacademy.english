@@ -1,0 +1,280 @@
+'use client';
+
+import * as React from 'react';
+import Link from 'next/link';
+import { useTranslations } from 'next-intl';
+
+import { gcn } from '../cn';
+import { GardenerRow, type GardenerRowProps } from '../GardenerRow';
+import { LinkIcon, RainCloud } from '../groupArt';
+import { BackIcon } from '../icons';
+import { IconButton } from '../IconButton';
+import { TrickyPatchRow } from '../TrickyPatchRow';
+import { GardenTabBar, SCREEN_CLASSES } from './GardenTabBar';
+
+/**
+ * GR3 / GR4 · Tend the garden (canvas `reference/GR3-tricky-patches`,
+ * `reference/GR4-gardeners`), admins only. Props only.
+ *
+ * Header (back, "Tend the garden", the garden's name) → two tabs:
+ * - **Tricky patches** (GR3): the words the garden missed most in the last
+ *   7 days, as totals (never one person's answers), then "Call a rain
+ *   day": words per gardener (5 / 10 / 20) and the push.
+ * - **Gardeners** (GR4): the roster with a role picker per gardener, what
+ *   each role can do, and the live invite links with Invite.
+ *
+ * The tabs are links (`trickyHref`, `gardenersHref`), so each tab has its
+ * own URL and the back button works. `children` is drawn last (sheets).
+ */
+export const RAIN_DAY_SIZES = [5, 10, 20] as const;
+export type RainDaySize = (typeof RAIN_DAY_SIZES)[number];
+
+export interface TendGardenScreenProps {
+  tab: 'tricky' | 'gardeners';
+  groupName: string;
+  backHref: string;
+  trickyHref: string;
+  gardenersHref: string;
+  tricky?: {
+    rows: ReadonlyArray<{ word: string; misses: number; gardeners: number }>;
+    rainDay: {
+      members: number;
+      size: RainDaySize;
+      onSize?: (size: RainDaySize) => void;
+      onStart?: () => void;
+      busy?: boolean;
+      /** The last rain day, if known: its weekday and how many joined. */
+      last: { day: string; joined: number } | null;
+      status?: string | null;
+    };
+    /** Shown instead of the rows while loading or on error. */
+    message?: string | null;
+  };
+  gardeners?: {
+    rows: ReadonlyArray<GardenerRowProps & { id: string }>;
+    invites: { count: number; detail: string | null };
+    /** The invite links card (live: opens the links sheet). */
+    onInvites?: () => void;
+    invite: { href?: string; onClick?: () => void };
+    /** Extra blocks under the invite card (live: settings, messages). */
+    footer?: React.ReactNode;
+  };
+  stickyNav?: boolean;
+  children?: React.ReactNode;
+}
+
+const WATER_BUTTON =
+  'flex h-10 shrink-0 items-center rounded-[14px] bg-garden-primary px-[14px] text-[14px] font-bold text-white shadow-[0_3px_0_var(--color-primary-shadow)] active:translate-y-px';
+
+export function TendGardenScreen({
+  tab,
+  groupName,
+  backHref,
+  trickyHref,
+  gardenersHref,
+  tricky,
+  gardeners,
+  stickyNav = true,
+  children,
+}: TendGardenScreenProps) {
+  const t = useTranslations('screens.groups.tend');
+
+  const tabs = [
+    { key: 'tricky', href: trickyHref, label: t('trickyTab') },
+    { key: 'gardeners', href: gardenersHref, label: t('gardenersTab') },
+  ] as const;
+
+  const topMisses = Math.max(1, ...(tricky?.rows ?? []).map((row) => row.misses));
+
+  return (
+    <div className={gcn(SCREEN_CLASSES, 'relative gap-[14px] pt-[22px]')}>
+      <header className="flex items-center gap-3 px-4">
+        <IconButton asChild aria-label={t('back')} className="box-content">
+          <Link href={backHref}>
+            <BackIcon width={20} height={20} />
+          </Link>
+        </IconButton>
+        <div className="flex flex-grow flex-col">
+          <h1 className="font-display text-[24px] font-semibold leading-[1.1]">{t('title')}</h1>
+          <span className="text-[13px] text-garden-muted">{groupName}</span>
+        </div>
+      </header>
+
+      <div
+        role="tablist"
+        aria-label={t('title')}
+        className="mx-4 grid grid-cols-2 gap-1 rounded-[14px] bg-garden-track p-1"
+      >
+        {tabs.map((item) => {
+          const selected = item.key === tab;
+          return (
+            <Link
+              key={item.key}
+              href={item.href}
+              role="tab"
+              aria-selected={selected}
+              replace
+              scroll={false}
+              className={gcn(
+                'flex h-9 items-center justify-center rounded-[11px] text-[14px] font-bold',
+                selected ? 'bg-garden-surface text-garden-forest' : 'bg-transparent text-garden-muted',
+              )}
+            >
+              {item.label}
+            </Link>
+          );
+        })}
+      </div>
+
+      {tab === 'tricky' && tricky ? (
+        <>
+          <section
+            role="tabpanel"
+            aria-label={t('trickyTab')}
+            className="mx-4 flex flex-col rounded-[22px] border border-garden-border bg-garden-surface px-4 pb-2 pt-[14px]"
+          >
+            <div className="mb-0.5 flex items-baseline justify-between">
+              <h2 className="font-display text-[18px] font-semibold">{t('trickyTitle')}</h2>
+              <span className="text-[12px] text-garden-muted">{t('window')}</span>
+            </div>
+            <span className="mb-1 text-[13px] text-garden-muted">{t('trickyIntro')}</span>
+            {tricky.message ? (
+              <p className="py-3 text-[13px] text-garden-muted">{tricky.message}</p>
+            ) : tricky.rows.length === 0 ? (
+              <p className="py-3 text-[13px] text-garden-muted">{t('trickyEmpty')}</p>
+            ) : (
+              <ul className="flex flex-col">
+                {tricky.rows.map((row) => (
+                  <TrickyPatchRow
+                    key={row.word}
+                    word={row.word}
+                    meta={t('trickyMeta', { misses: row.misses, gardeners: row.gardeners })}
+                    share={(row.misses / topMisses) * 100}
+                  />
+                ))}
+              </ul>
+            )}
+          </section>
+
+          <section className="mx-4 flex flex-col gap-3 rounded-[22px] bg-garden-forest p-4 text-garden-on-forest">
+            <div className="flex items-center gap-2.5">
+              <RainCloud width={40} height={30} />
+              <div className="flex flex-col">
+                <h2 className="text-[16px] font-bold">{t('rainTitle')}</h2>
+                <span className="text-[12px] text-garden-on-forest-muted">
+                  {t('rainBody', { count: tricky.rainDay.members })}
+                </span>
+              </div>
+            </div>
+            <div role="group" aria-label={t('sizeLabel')} className="grid grid-cols-3 gap-2">
+              {RAIN_DAY_SIZES.map((size) => {
+                const pressed = size === tricky.rainDay.size;
+                return (
+                  <button
+                    key={size}
+                    type="button"
+                    aria-pressed={pressed}
+                    onClick={() => tricky.rainDay.onSize?.(size)}
+                    className={gcn(
+                      'h-10 rounded-[13px] border text-[14px] font-bold',
+                      pressed
+                        ? 'border-garden-on-forest bg-garden-on-forest text-garden-forest'
+                        : 'border-garden-on-forest-line bg-transparent text-garden-on-forest',
+                    )}
+                  >
+                    {t('size', { count: size })}
+                  </button>
+                );
+              })}
+            </div>
+            <button
+              type="button"
+              onClick={tricky.rainDay.onStart}
+              disabled={tricky.rainDay.busy}
+              className="h-[52px] rounded-control bg-garden-primary text-[16px] font-bold text-white shadow-press-primary transition-transform duration-press ease-garden active:translate-y-[2px] disabled:opacity-60"
+            >
+              {t('start', { count: tricky.rainDay.size })}
+            </button>
+            {tricky.rainDay.status ? (
+              <span role="status" className="text-[12px] text-stage-sprout">
+                {tricky.rainDay.status}
+              </span>
+            ) : tricky.rainDay.last ? (
+              <span className="text-[12px] text-stage-sprout">
+                {t('last', {
+                  day: tricky.rainDay.last.day,
+                  joined: tricky.rainDay.last.joined,
+                  members: tricky.rainDay.members,
+                })}
+              </span>
+            ) : null}
+          </section>
+        </>
+      ) : null}
+
+      {tab === 'gardeners' && gardeners ? (
+        <>
+          <ul
+            role="tabpanel"
+            aria-label={t('gardenersTab')}
+            className="mx-4 flex flex-col overflow-hidden rounded-[22px] border border-garden-border bg-garden-surface"
+          >
+            {gardeners.rows.map(({ id, ...row }, index) => (
+              <GardenerRow key={id} {...row} last={index === gardeners.rows.length - 1} />
+            ))}
+          </ul>
+          <div className="mx-4 flex flex-col gap-1.5 px-1 text-[12px] text-garden-muted">
+            <span>
+              {t.rich('legend', {
+                b: (chunks) => <b className="text-garden-text">{chunks}</b>,
+              })}
+            </span>
+          </div>
+          <div className="mx-4 flex items-center gap-3 rounded-[18px] border border-garden-border bg-garden-surface px-[14px] py-3">
+            {gardeners.onInvites ? (
+              <button
+                type="button"
+                onClick={gardeners.onInvites}
+                className="flex min-w-0 flex-grow items-center gap-3 text-left"
+              >
+                <InviteSummary invites={gardeners.invites} />
+              </button>
+            ) : (
+              <InviteSummary invites={gardeners.invites} />
+            )}
+            {gardeners.invite.onClick || !gardeners.invite.href ? (
+              <button type="button" onClick={gardeners.invite.onClick} className={WATER_BUTTON}>
+                {t('invite')}
+              </button>
+            ) : (
+              <Link href={gardeners.invite.href} className={WATER_BUTTON}>
+                {t('invite')}
+              </Link>
+            )}
+          </div>
+          {gardeners.footer}
+        </>
+      ) : null}
+
+      <GardenTabBar active="groups" groups sticky={stickyNav} />
+      {children}
+    </div>
+  );
+}
+
+function InviteSummary({ invites }: { invites: { count: number; detail: string | null } }) {
+  const t = useTranslations('screens.groups.tend');
+  return (
+    <>
+      <LinkIcon width={22} height={22} className="shrink-0 text-garden-forest" />
+      <span className="flex flex-grow flex-col">
+        <span className="text-[14px] font-bold">
+          {invites.count > 0 ? t('invitesActive', { count: invites.count }) : t('invitesNone')}
+        </span>
+        <span className="text-[12px] text-garden-muted">
+          {invites.count > 0 ? invites.detail : t('invitesNoneBody')}
+        </span>
+      </span>
+    </>
+  );
+}

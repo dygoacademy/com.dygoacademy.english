@@ -14,6 +14,8 @@ import { WelcomeBackScreen } from '@/components/garden/screens/WelcomeBackScreen
 import { GARDEN_ROUTES } from '@/constants/garden';
 import type { AppLocale } from '@/i18n/config';
 
+import { GroupReferenceScreen } from './GroupReferenceScreen';
+
 /**
  * The screen for one reference page. A client component so every garden
  * screen below reads the provider's messages and formats (the page's
@@ -127,5 +129,13 @@ export function ReferenceScreen({ name, locale }: { name: ReferenceName; locale:
           stickyNav={false}
         />
       );
+    case 'GR1-shared-gardens':
+    case 'GR2-group-garden':
+    case 'GR3-tricky-patches':
+    case 'GR4-gardeners':
+    case 'GR5-invite':
+    case 'GR6-join':
+    case 'GR7-create':
+      return <GroupReferenceScreen name={name} locale={locale} />;
   }
 }

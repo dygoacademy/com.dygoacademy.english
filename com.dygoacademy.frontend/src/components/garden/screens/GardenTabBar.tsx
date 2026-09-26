@@ -3,9 +3,10 @@ import { useTranslations } from 'next-intl';
 import { GARDEN_ROUTES } from '@/constants/garden';
 
 import { BottomTabBar } from '../BottomTabBar';
+import { GroupsTabIcon } from '../groupArt';
 import { GardenTabIcon, MeTabIcon, MissionsTabIcon, TopicsTabIcon } from '../icons';
 
-export type GardenTab = 'garden' | 'missions' | 'topics' | 'me';
+export type GardenTab = 'garden' | 'missions' | 'topics' | 'groups' | 'me';
 
 /**
  * The garden's four tabs (canvas nav), last in the screen's column
@@ -13,8 +14,22 @@ export type GardenTab = 'garden' | 'missions' | 'topics' | 'me';
  * live routes want; the canvas frame is fixed-height, so the reference
  * pages render it in the flow (on A8 the canvas pushes it 3px past the
  * bottom edge, and the pixel diff should see exactly that).
+ *
+ * UI-G (plan decision 9): a fifth tab, "Groups", between Topics and Me,
+ * only for learners in at least one shared garden. The GR-screens pass
+ * `groups`; the A-screens keep four tabs until the live wiring (UI-G 3).
  */
-export function GardenTabBar({ active, sticky = true }: { active: GardenTab; sticky?: boolean }) {
+export function GardenTabBar({
+  active,
+  sticky = true,
+  groups,
+}: {
+  active: GardenTab;
+  sticky?: boolean;
+  /** Show the Groups tab. */
+  groups?: boolean;
+}) {
+  const showGroups = groups ?? false;
   const t = useTranslations('components.tabBar');
   const items = [
     { key: 'garden', href: GARDEN_ROUTES.home, label: t('garden'), icon: <GardenTabIcon /> },
@@ -25,6 +40,9 @@ export function GardenTabBar({ active, sticky = true }: { active: GardenTab; sti
       icon: <MissionsTabIcon />,
     },
     { key: 'topics', href: GARDEN_ROUTES.topics, label: t('topics'), icon: <TopicsTabIcon /> },
+    ...(showGroups || active === 'groups'
+      ? [{ key: 'groups', href: GARDEN_ROUTES.groups, label: t('groups'), icon: <GroupsTabIcon /> }]
+      : []),
     { key: 'me', href: GARDEN_ROUTES.me, label: t('me'), icon: <MeTabIcon /> },
   ];
   return (

@@ -27,8 +27,9 @@ const push = vi.fn();
 vi.mock('next/navigation', () => ({ useRouter: () => ({ push }) }));
 
 describe('reference fixtures', () => {
-  it('lists the 11 canvas references', () => {
-    expect(REFERENCE_NAMES).toHaveLength(11);
+  it('lists the 18 canvas references (11 adult screens, 7 group screens)', () => {
+    expect(REFERENCE_NAMES).toHaveLength(18);
+    expect(isReferenceName('GR5-invite')).toBe(true);
     expect(isReferenceName('A7-topic-bed-filter-sprouts')).toBe(true);
     expect(isReferenceName('A9-nope')).toBe(false);
   });

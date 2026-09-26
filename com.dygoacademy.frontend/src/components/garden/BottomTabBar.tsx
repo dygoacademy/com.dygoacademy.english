@@ -5,7 +5,7 @@ import { useTranslations } from 'next-intl';
 import { gcn } from './cn';
 
 /**
- * Bottom tab bar (canvas): four items, a 24px icon over a 12px label,
+ * Bottom tab bar (canvas): four items (five with Groups, UI-G), a 24px icon over a 12px label,
  * white with a top border, 8px padding and 20px at the bottom (or the
  * home-indicator inset, whichever is larger). The active tab is forest
  * with a bold label and `aria-current="page"`; the others are muted with
@@ -38,7 +38,11 @@ export function BottomTabBar({ items, activeKey, fixed = false, className }: Bot
       aria-label={t('label')}
       className={gcn(
         'z-40 border-t border-garden-border bg-garden-surface pt-2',
-        'pb-[max(20px,var(--safe-bottom))] pl-[max(8px,var(--safe-left))] pr-[max(8px,var(--safe-right))]',
+        'pb-[max(20px,var(--safe-bottom))]',
+        // Canvas: 8px at the sides with four tabs, 4px with five (UI-G, GR1–GR4).
+        items.length >= 5
+          ? 'pl-[max(4px,var(--safe-left))] pr-[max(4px,var(--safe-right))]'
+          : 'pl-[max(8px,var(--safe-left))] pr-[max(8px,var(--safe-right))]',
         fixed && 'fixed inset-x-0 bottom-0',
         className,
       )}

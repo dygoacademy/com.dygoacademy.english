@@ -51,6 +51,14 @@ const NAMES = [
   'A7-topic-bed',
   'A7-topic-bed-filter-sprouts',
   'A8-me',
+  // UI-G
+  'GR1-shared-gardens',
+  'GR2-group-garden',
+  'GR3-tricky-patches',
+  'GR4-gardeners',
+  'GR5-invite',
+  'GR6-join',
+  'GR7-create',
 ];
 
 function parseArgs(argv) {
