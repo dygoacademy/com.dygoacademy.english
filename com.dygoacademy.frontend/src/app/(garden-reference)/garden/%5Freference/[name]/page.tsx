@@ -5,6 +5,7 @@ import { notFound } from 'next/navigation';
 import { isReferenceName } from '@/components/garden/screens/fixtures';
 import { DEFAULT_LOCALE, formattingLocale, isMeaningLocale, normalizeLocale } from '@/i18n/config';
 import { loadMessages } from '@/i18n/messages';
+import { referencePagesAllowed } from '@/lib/garden-reference';
 
 import { GardenRoot } from '@/app/(garden)/GardenRoot';
 import { ReferenceScreen } from './ReferenceScreen';
@@ -39,7 +40,7 @@ export default async function GardenReferencePage({
   params: Promise<{ name: string }>;
   searchParams: Promise<{ locale?: string | string[] }>;
 }) {
-  if (process.env.NODE_ENV === 'production') notFound();
+  if (!referencePagesAllowed()) notFound();
   const { name } = await params;
   if (!isReferenceName(name)) notFound();
   const { locale: requested } = await searchParams;

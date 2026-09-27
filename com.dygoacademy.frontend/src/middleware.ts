@@ -10,6 +10,7 @@ import {
   parseUiQuery,
   type UiVariant,
 } from '@/lib/garden-ui';
+import { referencePagesAllowed } from '@/lib/garden-reference';
 import { updateSession } from '@/lib/supabase/middleware';
 
 /**
@@ -55,9 +56,10 @@ export async function middleware(request: NextRequest) {
   }
 
   // The canvas reference pages (UI-fidelity 4) are a development tool for
-  // the pixel diff: they don't exist in production builds at all.
+  // the pixel diff: they don't exist in production builds unless the build
+  // opted in with GARDEN_REFERENCE_PAGES=on (see lib/garden-reference.ts).
   if (
-    process.env.NODE_ENV === 'production' &&
+    !referencePagesAllowed() &&
     (pathname === GARDEN_REFERENCE_PREFIX || pathname.startsWith(`${GARDEN_REFERENCE_PREFIX}/`))
   ) {
     return rememberUiOverride(
