@@ -19,6 +19,18 @@ import type { GroupRole } from './groups.service';
  * All of these run through `queryAs` (the caller's JWT, RLS on).
  */
 
+/**
+ * GR1 (RD-3): the group's running rain day, as totals plus the caller's own
+ * count. Only the current one; `null` when none is running.
+ */
+export interface GardenRainDay {
+  wordsPerGardener: number;
+  gardeners: number;
+  done: number;
+  mine: number;
+  endsAt: string;
+}
+
 /** GR1: one row per garden the caller is in. */
 export interface GroupGardenCounts {
   group_id: string;
@@ -27,6 +39,8 @@ export interface GroupGardenCounts {
   word_count: number;
   /** The caller's own due words in this group's beds. */
   my_due_count: number;
+  /** Today's running rain day (`group_rain_day_status`), or null. */
+  rainDay: GardenRainDay | null;
 }
 
 /** GR2: one shared bed, with the caller's own numbers. */
@@ -110,6 +124,8 @@ function clampInt(value: string | number | undefined, fallback: number, min: num
 
 const num = (value: string | number | null | undefined) => Number(value ?? 0);
 
+const iso = (value: unknown) => (value instanceof Date ? value.toISOString() : String(value));
+
 @Injectable()
 export class GroupGardenService {
   constructor(private readonly db: DatabaseService) {}
@@ -118,9 +134,11 @@ export class GroupGardenService {
    * GR1: size of every garden the caller is in, and their own due words in
    * each. `group_garden_counts` is SECURITY DEFINER (a READ member can't
    * count the roster under RLS); the due count is the caller's own rows.
+   * RD-3: the running rain day comes from `group_rain_day_status` (SECURITY
+   * DEFINER, members only, totals + the caller's own count, no user ids).
    */
   async countsForMine(userId: string): Promise<GroupGardenCounts[]> {
-    const rows = await this.db.queryAs<Record<string, string | number>>(
+    const rows = await this.db.queryAs<Record<string, string | number | Date | null>>(
       userId,
       `select g.id as group_id,
               c.member_count,
@@ -132,19 +150,40 @@ export class GroupGardenService {
                  join public.topics t on t.id = tw.topic_id
                 where s.user_id = $1
                   and t.group_id = g.id
-                  and s.next_due_at <= now()) as my_due_count
+                  and s.next_due_at <= now()) as my_due_count,
+              rd.words_per_gardener as rain_words,
+              rd.gardeners as rain_gardeners,
+              rd.done as rain_done,
+              rd.mine as rain_mine,
+              rd.ends_at as rain_ends_at
          from public.groups g
          join public.group_members gm on gm.group_id = g.id and gm.user_id = $1
         cross join lateral public.group_garden_counts(g.id) c
+         left join lateral (
+               select r.words_per_gardener, r.gardeners, r.done, r.mine, r.ends_at
+                 from public.group_rain_day_status(g.id) r
+                where r.is_current
+                limit 1
+              ) rd on true
         order by g.created_at desc`,
       [userId],
     );
     return rows.map((row) => ({
       group_id: String(row.group_id),
-      member_count: num(row.member_count),
-      bed_count: num(row.bed_count),
-      word_count: num(row.word_count),
-      my_due_count: num(row.my_due_count),
+      member_count: num(row.member_count as string),
+      bed_count: num(row.bed_count as string),
+      word_count: num(row.word_count as string),
+      my_due_count: num(row.my_due_count as string),
+      rainDay:
+        row.rain_words == null
+          ? null
+          : {
+              wordsPerGardener: num(row.rain_words as string),
+              gardeners: num(row.rain_gardeners as string),
+              done: num(row.rain_done as string),
+              mine: num(row.rain_mine as string),
+              endsAt: iso(row.rain_ends_at),
+            },
     }));
   }
 

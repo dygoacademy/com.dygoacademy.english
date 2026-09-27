@@ -65,8 +65,61 @@ describe('GroupGardenService.countsForMine (GR1)', () => {
     expect(sql).toMatch(/where s\.user_id = \$1/);
     expect(params).toEqual(['user-1']);
     expect(result).toEqual([
-      { group_id: 'g1', member_count: 5, bed_count: 3, word_count: 126, my_due_count: 5 },
+      {
+        group_id: 'g1',
+        member_count: 5,
+        bed_count: 3,
+        word_count: 126,
+        my_due_count: 5,
+        rainDay: null,
+      },
     ]);
+    expectNoPersonalKeys(result);
+  });
+
+  it('RD-3: adds the running rain day from group_rain_day_status as totals plus my own count', async () => {
+    const endsAt = new Date('2026-09-27T16:59:59.999Z');
+    const queryAs = jest.fn().mockResolvedValue([
+      {
+        group_id: 'g1',
+        member_count: '5',
+        bed_count: '3',
+        word_count: '126',
+        my_due_count: '5',
+        rain_words: 10,
+        rain_gardeners: '5',
+        rain_done: '3',
+        rain_mine: '4',
+        rain_ends_at: endsAt,
+      },
+      {
+        group_id: 'g2',
+        member_count: '2',
+        bed_count: '1',
+        word_count: '20',
+        my_due_count: '0',
+        rain_words: null,
+        rain_gardeners: null,
+        rain_done: null,
+        rain_mine: null,
+        rain_ends_at: null,
+      },
+    ]);
+    const service = await makeService(queryAs);
+
+    const result = await service.countsForMine('user-1');
+
+    const [, sql] = queryAs.mock.calls[0];
+    expect(sql).toMatch(/left join lateral \(/);
+    expect(sql).toMatch(/public\.group_rain_day_status\(g\.id\) r\s+where r\.is_current/);
+    expect(result[0].rainDay).toEqual({
+      wordsPerGardener: 10,
+      gardeners: 5,
+      done: 3,
+      mine: 4,
+      endsAt: '2026-09-27T16:59:59.999Z',
+    });
+    expect(result[1].rainDay).toBeNull();
     expectNoPersonalKeys(result);
   });
 });
