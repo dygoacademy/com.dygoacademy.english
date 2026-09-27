@@ -10,12 +10,15 @@ import { QA_VIEWPORTS } from './viewports';
  * CHROME_PATH   optional Chrome/Chromium binary; default: the installed Google Chrome
  *
  * Every request carries the `dygo_ui=garden` cookie (see tests/fixtures.ts).
- * No sign-in yet: that is U3-4.
+ * Signed-in fixture user (U3-4): global-setup.ts signs in with E2E_EMAIL /
+ * E2E_PASSWORD from `.env.e2e` and saves `.auth/user.json`; without them the
+ * signed-in tests skip.
  */
 const executablePath = process.env.CHROME_PATH || undefined;
 
 export default defineConfig({
   testDir: './tests',
+  globalSetup: './global-setup.ts',
   outputDir: './test-results',
   snapshotPathTemplate: '{testDir}/__screenshots__/{projectName}/{arg}{ext}',
   fullyParallel: true,

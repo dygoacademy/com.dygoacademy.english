@@ -3,6 +3,10 @@ import path from 'node:path';
 
 import { test as base, expect, type Page } from '@playwright/test';
 
+import { AUTH_FILE, SIGN_IN_SKIP_REASON, hasSignedInSession } from '../auth';
+
+export { SIGN_IN_SKIP_REASON, hasSignedInSession };
+
 /** The two languages the canvas references exist in (plan §10 rule 10). */
 export const SCREENSHOT_LOCALES = ['en-SG', 'vi-VN'] as const;
 export type ScreenshotLocale = (typeof SCREENSHOT_LOCALES)[number];
@@ -37,10 +41,14 @@ export function referenceScreens(): { name: string; locales: ScreenshotLocale[] 
 /**
  * `test` with the garden opt-in cookie on every request. `gardenLocale`
  * also sets the `dygo_locale` cookie (the gallery reads the language from
- * it; the reference pages take `?locale=` instead).
+ * it; the reference pages take `?locale=` instead). When global-setup.ts
+ * signed the fixture user in (U3-4), every test starts with that session.
  */
 export const test = base.extend<{ gardenLocale: ScreenshotLocale | null }>({
   gardenLocale: [null, { option: true }],
+  storageState: async ({}, use) => {
+    await use(hasSignedInSession() ? AUTH_FILE : undefined);
+  },
   context: async ({ context, baseURL, gardenLocale }, use) => {
     const url = new URL(baseURL ?? 'http://localhost:3000');
     const cookies = [{ name: 'dygo_ui', value: 'garden', domain: url.hostname, path: '/' }];

@@ -11,6 +11,6 @@
     "types": ["node"],
     "noEmit": true
   },
-  "include": ["playwright.config.ts", "viewports.ts", "tests/**/*.ts"],
+  "include": ["playwright.config.ts", "global-setup.ts", "auth.ts", "viewports.ts", "tests/**/*.ts"],
   "exclude": ["node_modules"]
 }
