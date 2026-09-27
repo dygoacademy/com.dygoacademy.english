@@ -35,6 +35,12 @@ module.exports = {
       script: 'npm',
       args: 'run start',
     },
+        {
+      name: 'dygo-watch-deploy',
+      cwd: __dirname,
+      script: 'node',
+      args: 'watch-deploy.js',
+    },
     {
       name: 'dygo-tunnel',
       cwd: __dirname,

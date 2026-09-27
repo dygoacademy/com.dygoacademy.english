@@ -219,6 +219,20 @@ Frontend:
 
 **Done when:** everything the classic topics grid and topic detail can do, the garden can do.
 
+### UI-5 finish (U5-1 … U5-7), added 2026-09-27
+
+State on 2026-09-27: per-topic `new_count` / `learning_count` / `review_count` / `due_count` are already in `GET /topics` (committed in `3a74b95`); A6 chips are final after NAV-1 (All / IELTS Academic / Mine). What's left is below. Same rules as the RD and U3 passes: **one commit per pass, 75 minutes apart**, read only this section + §10 + the files for the step; check the previous step's commit first (`GIT_OPTIONAL_LOCKS=0 git log --oneline -25 | grep "U5-"`), and if it's missing do that step instead and stop. Commit message `UI-5 U5-n: …`. The A6/A7 fixture pages must keep passing `garden:diff --locale en,vi` (A6-topics, A7-topic-bed, A7-topic-bed-filter-sprouts).
+
+| Step | What | Files (expected) |
+| --- | --- | --- |
+| **U5-1** | Backend: `GET /topics/:id` words gain the caller's `fsrs_state`, `mastered_at`, `is_leech`, `next_due_at` (null when never studied), through the same RLS-scoped `user_word_srs` join style as the counts; never another learner's rows. Jest + API doc row. | `topics.service.ts` (+ spec), `dygo_academy_api_surface.md` | ✅ `6e86063`
+| **U5-2** | A6 live: stage-mix bar, due badge and "all watered" from the counts; beds sorted by due words; loading/empty states from U3-1. | `live/TopicsLive.tsx`, `live/data.ts` (+ tests) | ✅ `03a6962`
+| **U5-3** | A7 live: stage tiles with real counts that filter the list (`stageFromSrs`), words sorted by next due, "due now" / date labels via the i18n formatter, wilting rows for leeches. | `live/TopicBedLive.tsx`, `live/data.ts` (+ tests) | ✅ `57b441c`
+| **U5-4** | A7 actions: "Water N due" = review scoped to this topic (existing `POST /srs/sessions` with the topic / `GET /topics/:id/cards/due`); **Add word** as a garden `BottomSheet` reusing `AddWordModal`'s form logic (don't edit the classic file: extract a hook in a garden-owned file); Options → classic page for now. | `live/TopicBedLive.tsx`, new `AddWordSheet.tsx`, messages |
+| **U5-5** | Quiz, part 1: `/garden/quiz?topic=…` question screen with garden components for every question type `QuizQuestion` supports, feedback states (right/wrong, no red ✕ shaming), hint, audio; on `POST /quiz/generate` + `/:id/answer` + `/:id/hint`. **No canvas artboard exists for the adult quiz**: follow design system §11 and the A2 card style; save 390×844 screenshots (en + vi) to a gitignored folder for Dylan's review. | `src/app/(garden)/garden/quiz/**`, `screens/QuizScreen.tsx`, messages |
+| **U5-6** | Quiz, part 2: result screen (score, words that need water, "Back to bed"), A7 "Quiz" opens it, leech drill (`GET /quiz/leech-drill`) reachable from A7's wilting rows. Vitest. | same folder + `live/TopicBedLive.tsx` |
+| **U5-7** | Verify + wrap up: tsc/lint/vitest/`next build`, backend tsc/jest, `garden:diff --locale en,vi` A6/A7, Playwright (unsigned) if available; tick the UI-5 checklist; §1 UI-5 row; report; changelog line. Note: "collocation quiz becomes mission 3" moves to UI-6 (missions). | report, plan, master schedule (don't commit the last two) |
+
 ### UI-6 Retention: missions, streak freezes, reminders, Me (L, mostly backend)
 
 Backend (one migration in `database/schema/` + seed, following the post-squash baseline process in `database/README.md`):
