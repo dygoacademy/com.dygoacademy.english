@@ -763,6 +763,23 @@
         "DICTATION": "Nghe và viết",
         "MATCHING": "Đồng nghĩa hoặc trái nghĩa",
         "CONTEXTUAL_CHOICE": "Chọn từ đúng"
+      },
+      "emptyDrill": "Hiện chưa có từ khó nào cần luyện. Bạn chăm vườn tốt lắm!",
+      "drillTitle": "Từ khó",
+      "result": {
+        "close": "Đóng",
+        "overline": "Đã xong bài kiểm tra",
+        "overlineDrill": "Đã luyện xong",
+        "title": "Đúng {correct}/{total}",
+        "allRight": "Đúng hết rồi. Luống này đang xanh tốt.",
+        "someMissed": "{count, plural, other {# từ cần}} tưới thêm một chút",
+        "right": "Đúng",
+        "needWater": "Cần tưới",
+        "missedTitle": "Những từ cần tưới",
+        "missedNote": "Các từ này sẽ quay lại trong lần tưới tới, bạn sẽ sớm gặp lại.",
+        "drill": "Luyện từ khó",
+        "backToBed": "Về luống",
+        "backToTopics": "Về chủ đề"
       }
     }
   }

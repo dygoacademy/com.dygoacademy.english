@@ -53,6 +53,8 @@ export interface TopicBedScreenProps {
   /** Opens the Add word sheet in place; when omitted, + goes to `addWordHref`. */
   onAddWord?: () => void;
   optionsHref?: string;
+  /** Wilting rows link here (the leech drill, U5-6); omitted = static rows. */
+  wiltingHref?: string;
 }
 
 export function TopicBedScreen({
@@ -67,6 +69,7 @@ export function TopicBedScreen({
   addWordHref,
   onAddWord,
   optionsHref,
+  wiltingHref,
 }: TopicBedScreenProps) {
   const t = useTranslations('screens.bed');
   const topicsT = useTranslations('screens.topics');
@@ -177,6 +180,7 @@ export function TopicBedScreen({
               variant={word.wilting ? 'wilting' : 'normal'}
               dueText={dueText(word.due)}
               dueTone={word.due.tone}
+              {...(word.wilting && wiltingHref ? { href: wiltingHref } : {})}
             />
           </li>
         ))}

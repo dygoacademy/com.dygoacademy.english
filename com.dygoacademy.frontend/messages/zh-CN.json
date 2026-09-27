@@ -767,6 +767,23 @@
         "DICTATION": "听写",
         "MATCHING": "近义词或反义词",
         "CONTEXTUAL_CHOICE": "选词"
+      },
+      "emptyDrill": "现在没有需要强化的难词。照料得真好！",
+      "drillTitle": "难词",
+      "result": {
+        "close": "关闭",
+        "overline": "测验完成",
+        "overlineDrill": "强化练习完成",
+        "title": "答对 {correct}/{total}",
+        "allRight": "全部答对，这块花圃长势很好。",
+        "someMissed": "{count, plural, other {# 个词}}还需要多浇点水",
+        "right": "答对",
+        "needWater": "需要浇水",
+        "missedTitle": "需要浇水的词",
+        "missedNote": "它们会在下次浇水时再出现，你很快就会再见到。",
+        "drill": "强化难词",
+        "backToBed": "返回花圃",
+        "backToTopics": "返回主题"
       }
     }
   }

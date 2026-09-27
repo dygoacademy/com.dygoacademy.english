@@ -25,7 +25,11 @@ import { LiveError, LiveLoading } from './LiveState';
  * U5-4: "Water N due" opens watering scoped to this bed
  * (/garden/review?topic=…, i.e. POST /srs/sessions with the topic); +
  * opens the garden Add word sheet (POST /words, then the bed refetches).
- * Options and Quiz still open the classic topic pages (quiz: U5-5/6).
+ * Options still opens the classic topic page.
+ *
+ * U5-6: Quiz opens the garden quiz for this bed (/garden/quiz?topic=…),
+ * and wilting rows open the leech drill (…&mode=leech), which comes back
+ * to this bed.
  */
 export function TopicBedLive({ topicId }: { topicId: string }) {
   const t = useTranslations('screens.bed');
@@ -64,10 +68,11 @@ export function TopicBedLive({ topicId }: { topicId: string }) {
               }
             : null
         }
-        quizHref={`${ROUTES.quiz}?topicId=${encodeURIComponent(topicId)}`}
+        quizHref={GARDEN_ROUTES.quiz(topicId)}
         addWordHref={`${ROUTES.topics}/${encodeURIComponent(topicId)}`}
         onAddWord={() => setAdding(true)}
         optionsHref={`${ROUTES.topics}/${encodeURIComponent(topicId)}`}
+        wiltingHref={GARDEN_ROUTES.quiz(topicId, 'leech')}
       />
       <AddWordSheet
         topicId={topicId}

@@ -763,6 +763,23 @@
         "DICTATION": "Listen and spell",
         "MATCHING": "Synonym or antonym",
         "CONTEXTUAL_CHOICE": "Choose the word"
+      },
+      "emptyDrill": "No tricky words to drill right now. Nicely tended!",
+      "drillTitle": "Tricky words",
+      "result": {
+        "close": "Close",
+        "overline": "Quiz done",
+        "overlineDrill": "Drill done",
+        "title": "{correct} of {total} right",
+        "allRight": "Every answer right. This bed is thriving.",
+        "someMissed": "{count, plural, one {# word needs} other {# words need}} a little more water",
+        "right": "Right",
+        "needWater": "Need water",
+        "missedTitle": "Words that need water",
+        "missedNote": "They come back in your next watering, so you’ll see them again soon.",
+        "drill": "Drill tricky words",
+        "backToBed": "Back to bed",
+        "backToTopics": "Back to topics"
       }
     }
   }

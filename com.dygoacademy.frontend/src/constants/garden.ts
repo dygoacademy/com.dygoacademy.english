@@ -26,6 +26,14 @@ export const GARDEN_ROUTES = {
   /** A6 Topics and A7 Topic bed. */
   topics: '/garden/topics',
   topic: (id: string) => `/garden/topics/${encodeURIComponent(id)}`,
+  /** Garden quiz (U5-5/6): a bed's quiz, or the leech drill back to that bed. */
+  quiz: (topicId?: string, mode?: 'leech') => {
+    const params = new URLSearchParams();
+    if (topicId) params.set('topic', topicId);
+    if (mode) params.set('mode', mode);
+    const query = params.toString();
+    return query ? `/garden/quiz?${query}` : '/garden/quiz';
+  },
   /** A8 Me. */
   me: '/garden/me',
   /** UI-G shared gardens: GR1 list, GR2 a garden, GR3/GR4 tend (admins), GR6 join. */

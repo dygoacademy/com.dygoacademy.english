@@ -6,9 +6,11 @@ import { useLocale, useTranslations } from 'next-intl';
 
 import { buttonClassName } from '@/components/garden/buttonStyles';
 import { LiveError, LiveLoading } from '@/components/garden/live/LiveState';
+import { QuizResultScreen } from '@/components/garden/screens/QuizResultScreen';
 import { QuizScreen } from '@/components/garden/screens/QuizScreen';
 import { GARDEN_ROUTES } from '@/constants/garden';
 import { useGenerateQuiz } from '@/hooks/useGenerateQuiz';
+import { useLeechDrillQuiz } from '@/hooks/useLeechDrillQuiz';
 import { useQuizHint } from '@/hooks/useQuizHint';
 import { useSubmitQuizAnswer } from '@/hooks/useSubmitQuizAnswer';
 import { useTopics } from '@/hooks/useTopics';
@@ -16,6 +18,7 @@ import { formatIpa } from '@/lib/utils';
 import type { QuizAnswerResult, QuizItem } from '@/types';
 
 import { toFeedback } from './feedback';
+import { addMissed, type MissedWord } from './results';
 
 /**
  * /garden/quiz?topic=<id>: the garden quiz, part 1 (U5-5), on the same
@@ -25,13 +28,20 @@ import { toFeedback } from './feedback';
  * explanation comes back in it). The item list is taken once so a refetch can't reorder it
  * mid-quiz; the hint resets per question.
  *
- * The finished state here is a plain score line with "Back to bed"; the
- * real result screen (words that need water, leech drill) is U5-6.
+ * U5-6: when every item is answered, QuizResultScreen shows the score,
+ * the missed words ("need water") and "Back to bed". `mode="leech"`
+ * (`?mode=leech`, reached from A7's wilting rows) runs the leech drill
+ * instead: GET /quizzes/leech-drill (all of the learner's leeches, not
+ * scoped to the bed), same question and result screens; `topicId` then
+ * only decides where Close and Back go.
  */
-export function QuizLive({ topicId }: { topicId?: string }) {
+export function QuizLive({ topicId, mode }: { topicId?: string; mode?: 'leech' }) {
   const t = useTranslations('screens.quiz');
   const locale = useLocale();
-  const generated = useGenerateQuiz(topicId, undefined, undefined, 10);
+  const isDrill = mode === 'leech';
+  const generated = useGenerateQuiz(topicId, undefined, undefined, 10, !isDrill);
+  const drill = useLeechDrillQuiz(isDrill);
+  const source = isDrill ? drill : generated;
   const topics = useTopics();
   const submit = useSubmitQuizAnswer();
   const hint = useQuizHint();
@@ -40,26 +50,39 @@ export function QuizLive({ topicId }: { topicId?: string }) {
   const [index, setIndex] = React.useState(0);
   const [result, setResult] = React.useState<QuizAnswerResult | null>(null);
   const [correctCount, setCorrectCount] = React.useState(0);
+  const [missed, setMissed] = React.useState<MissedWord[]>([]);
   const [failed, setFailed] = React.useState(false);
 
-  if (items === null && generated.data) {
-    setItems(generated.data);
+  if (items === null && source.data) {
+    setItems(source.data);
   }
 
   const closeHref = topicId ? GARDEN_ROUTES.topic(topicId) : GARDEN_ROUTES.topics;
 
   if (items === null) {
-    if (generated.isError) return <LiveError onRetry={() => void generated.refetch()} />;
+    if (source.isError) return <LiveError onRetry={() => void source.refetch()} />;
     return <LiveLoading />;
   }
 
-  if (items.length === 0 || index >= items.length) {
+  if (items.length > 0 && index >= items.length) {
+    return (
+      <QuizResultScreen
+        closeHref={closeHref}
+        backHref={closeHref}
+        back={topicId ? 'bed' : 'topics'}
+        correct={correctCount}
+        total={items.length}
+        missed={missed}
+        drill={isDrill}
+      />
+    );
+  }
+
+  if (items.length === 0) {
     return (
       <div className="mx-auto flex min-h-screen-dvh w-full max-w-[560px] flex-col items-center justify-center gap-[18px] bg-garden-bg px-6 text-center text-garden-text">
         <p className="font-display text-[24px] font-semibold">
-          {items.length === 0
-            ? t('empty')
-            : t('doneTitle', { correct: correctCount, total: items.length })}
+          {isDrill ? t('emptyDrill') : t('empty')}
         </p>
         <Link href={closeHref} className={buttonClassName('primary', { className: 'w-full' })}>
           {topicId ? t('backToBed') : t('backToTopics')}
@@ -69,7 +92,9 @@ export function QuizLive({ topicId }: { topicId?: string }) {
   }
 
   const item = items[index];
-  const topicTitle = topics.data?.find((topic) => topic.id === item.topicId)?.title ?? null;
+  const topicTitle = isDrill
+    ? t('drillTitle')
+    : (topics.data?.find((topic) => topic.id === item.topicId)?.title ?? null);
   const hintState = hint.data
     ? {
         status: 'shown' as const,
@@ -86,6 +111,7 @@ export function QuizLive({ topicId }: { topicId?: string }) {
         onSuccess: (res) => {
           setResult(res);
           if (res.correct) setCorrectCount((c) => c + 1);
+          else setMissed((list) => addMissed(list, item.topicWordId, res.word));
         },
         onError: () => setFailed(true),
       },
