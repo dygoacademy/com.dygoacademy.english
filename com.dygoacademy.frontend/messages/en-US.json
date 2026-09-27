@@ -13,7 +13,8 @@
       "groups": "Shared gardens",
       "group": "Shared garden",
       "manage": "Tend the garden",
-      "join": "Join a garden"
+      "join": "Join a garden",
+      "quiz": "Quiz"
     }
   },
   "tokens": {
@@ -725,6 +726,43 @@
         "note": "You'll be the garden's admin. Add shared beds and invite gardeners next.",
         "submit": "Create garden",
         "failed": "The garden couldn't be created. Try again."
+      }
+    },
+    "quiz": {
+      "close": "Close",
+      "label": "Quiz · {topic}",
+      "labelAll": "Quiz",
+      "count": "{done}/{total}",
+      "vineText": "{done} of {total} questions answered",
+      "listen": "Play the word",
+      "hint": "Need a hint?",
+      "hintLoading": "Finding a hint…",
+      "hintTitle": "Hint",
+      "noIpa": "No pronunciation for this word yet.",
+      "noDefinition": "No definition for this word yet.",
+      "answerLabel": "Your answer",
+      "placeholder": "Type your answer…",
+      "check": "Check",
+      "optionsLabel": "Choose one",
+      "yourPick": "Your pick",
+      "right": "That’s right!",
+      "notQuite": "Not quite — it’s “{answer}”",
+      "wordIpa": "{word} · {ipa}",
+      "quote": "“{text}”",
+      "mastered": "Mastered — this word needs watering less often now.",
+      "comesBack": "This word comes back in your next watering.",
+      "next": "Next",
+      "finish": "See results",
+      "empty": "Not enough words are ready for a quiz yet.",
+      "doneTitle": "{correct} of {total} right",
+      "backToBed": "Back to bed",
+      "backToTopics": "Back to topics",
+      "error": "This answer couldn’t be checked. Check your connection and try again.",
+      "type": {
+        "CLOZE": "Fill in the blank",
+        "DICTATION": "Listen and spell",
+        "MATCHING": "Synonym or antonym",
+        "CONTEXTUAL_CHOICE": "Choose the word"
       }
     }
   }

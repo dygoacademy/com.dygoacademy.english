@@ -13,7 +13,8 @@
       "groups": "Vườn chung",
       "group": "Vườn chung",
       "manage": "Chăm vườn",
-      "join": "Tham gia vườn"
+      "join": "Tham gia vườn",
+      "quiz": "Kiểm tra"
     }
   },
   "tokens": {
@@ -725,6 +726,43 @@
         "note": "Bạn sẽ là quản trị của vườn. Tiếp theo, hãy thêm luống chung và mời bạn cùng vườn.",
         "submit": "Tạo vườn",
         "failed": "Chưa tạo được vườn. Hãy thử lại."
+      }
+    },
+    "quiz": {
+      "close": "Đóng",
+      "label": "Kiểm tra · {topic}",
+      "labelAll": "Kiểm tra",
+      "count": "{done}/{total}",
+      "vineText": "Đã trả lời {done}/{total} câu",
+      "listen": "Nghe từ",
+      "hint": "Cần gợi ý?",
+      "hintLoading": "Đang tìm gợi ý…",
+      "hintTitle": "Gợi ý",
+      "noIpa": "Từ này chưa có phiên âm.",
+      "noDefinition": "Từ này chưa có định nghĩa.",
+      "answerLabel": "Câu trả lời của bạn",
+      "placeholder": "Nhập câu trả lời…",
+      "check": "Kiểm tra",
+      "optionsLabel": "Chọn một đáp án",
+      "yourPick": "Bạn chọn",
+      "right": "Chính xác!",
+      "notQuite": "Chưa đúng — đáp án là “{answer}”",
+      "wordIpa": "{word} · {ipa}",
+      "quote": "“{text}”",
+      "mastered": "Đã thuộc — từ này sẽ ít cần tưới hơn.",
+      "comesBack": "Từ này sẽ quay lại ở lần tưới tới.",
+      "next": "Tiếp",
+      "finish": "Xem kết quả",
+      "empty": "Chưa đủ từ sẵn sàng để kiểm tra.",
+      "doneTitle": "Đúng {correct}/{total} câu",
+      "backToBed": "Về luống",
+      "backToTopics": "Về chủ đề",
+      "error": "Chưa kiểm tra được câu trả lời. Hãy kiểm tra kết nối và thử lại.",
+      "type": {
+        "CLOZE": "Điền vào chỗ trống",
+        "DICTATION": "Nghe và viết",
+        "MATCHING": "Đồng nghĩa hoặc trái nghĩa",
+        "CONTEXTUAL_CHOICE": "Chọn từ đúng"
       }
     }
   }
