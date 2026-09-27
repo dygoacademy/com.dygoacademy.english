@@ -178,7 +178,28 @@ describe('QuizService.answer', () => {
       'tough',
       'brave',
       expect.any(String),
+      null,
     );
+  });
+
+  it('asks for the explanation in the app language and strips Markdown from it', async () => {
+    const queryAsMock = jest.fn().mockResolvedValueOnce([wordRow()]);
+    const explainNuanceMock = jest.fn().mockResolvedValueOnce('"Brave" không giống **"tough"**.');
+    const service = await makeService({ queryAsMock, explainNuanceMock });
+
+    const result = await service.answer('user-1', 'tw-1:MATCHING', {
+      answer: 'brave',
+      locale: 'vi-VN',
+    });
+
+    expect(explainNuanceMock).toHaveBeenCalledWith(
+      'resilient',
+      'tough',
+      'brave',
+      expect.any(String),
+      'Vietnamese',
+    );
+    expect(result.nuanceExplanation).toBe('"Brave" không giống "tough".');
   });
 
   it('degrades to a generic message if the Gemini call itself throws, rather than failing the request', async () => {

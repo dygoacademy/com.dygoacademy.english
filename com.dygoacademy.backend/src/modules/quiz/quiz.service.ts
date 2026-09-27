@@ -1,6 +1,7 @@
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 
 import { GeminiEnrichmentService } from '../../ai/gemini-enrichment.service';
+import { nuanceLanguage, stripMarkdown } from '../../ai/nuance-text';
 import { DatabaseService } from '../../database/database.service';
 import { SrsService } from '../srs/srs.service';
 import { GenerateQuizDto } from './dto/generate-quiz.dto';
@@ -256,12 +257,16 @@ export class QuizService {
 
     if (!correct) {
       try {
-        result.nuanceExplanation = await this.gemini.explainNuance(
+        const explanation = await this.gemini.explainNuance(
           word.sourceWord,
           derived.answer,
           dto.answer,
           promptFor(word, parsed.type, derived),
+          nuanceLanguage(dto.locale),
         );
+        // Gemini sometimes answers in Markdown despite the prompt; both quiz
+        // screens show this as plain text.
+        result.nuanceExplanation = stripMarkdown(explanation);
       } catch (err) {
         this.logger.warn(
           `FR-5.5 nuance explanation failed for "${word.sourceWord}" (${parsed.type}): ${

@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 import Link from 'next/link';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 
 import { buttonClassName } from '@/components/garden/buttonStyles';
 import { LiveError, LiveLoading } from '@/components/garden/live/LiveState';
@@ -21,7 +21,8 @@ import { toFeedback } from './feedback';
  * /garden/quiz?topic=<id>: the garden quiz, part 1 (U5-5), on the same
  * endpoints as the classic quiz: POST /quizzes/generate (10 items, scoped
  * to the topic), POST /quizzes/:id/answer, GET /quizzes/:id/hint (TEXT
- * items only). The item list is taken once so a refetch can't reorder it
+ * items only; the answer carries the app language so a wrong answer's
+ * explanation comes back in it). The item list is taken once so a refetch can't reorder it
  * mid-quiz; the hint resets per question.
  *
  * The finished state here is a plain score line with "Back to bed"; the
@@ -29,6 +30,7 @@ import { toFeedback } from './feedback';
  */
 export function QuizLive({ topicId }: { topicId?: string }) {
   const t = useTranslations('screens.quiz');
+  const locale = useLocale();
   const generated = useGenerateQuiz(topicId, undefined, undefined, 10);
   const topics = useTopics();
   const submit = useSubmitQuizAnswer();
@@ -79,7 +81,7 @@ export function QuizLive({ topicId }: { topicId?: string }) {
   function handleSubmit(answer: string) {
     setFailed(false);
     submit.mutate(
-      { itemId: item.id, answer, hintUsed: hint.data != null },
+      { itemId: item.id, answer, hintUsed: hint.data != null, locale },
       {
         onSuccess: (res) => {
           setResult(res);

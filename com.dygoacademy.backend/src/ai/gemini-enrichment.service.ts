@@ -196,6 +196,11 @@ export class GeminiEnrichmentService {
     correctAnswer: string,
     submittedAnswer: string,
     context: string,
+    /**
+     * Language to write the explanation in (e.g. "Vietnamese"), from the
+     * garden's app language via `nuanceLanguage`; null/omitted = English.
+     */
+    language?: string | null,
   ): Promise<string> {
     const prompt = [
       `You are a friendly language-learning tutor giving one-sentence feedback on a quiz mistake.`,
@@ -207,6 +212,10 @@ export class GeminiEnrichmentService {
         : '',
       `In 1-2 short sentences, explain *why* the student's answer is wrong and clarify the nuance ` +
         `difference from the correct answer. Be encouraging, not scolding. Do not just restate the correct answer.`,
+      language
+        ? `Write the explanation in ${language}. Keep the English words and answers in English, inside quotation marks.`
+        : '',
+      `Write plain text only: no Markdown, no asterisks, no bold, no bullet points.`,
     ]
       .filter(Boolean)
       .join('\n');

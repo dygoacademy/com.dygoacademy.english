@@ -1,6 +1,6 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { IsBoolean, IsNotEmpty, IsOptional, IsString, Length, Min } from 'class-validator';
+import { IsBoolean, IsIn, IsNotEmpty, IsOptional, IsString, Length, Min } from 'class-validator';
 
 /** Body for `POST /api/v1/quizzes/:id/answer` (FR-5.1–5.5). */
 export class SubmitAnswerDto {
@@ -30,4 +30,15 @@ export class SubmitAnswerDto {
   @IsOptional()
   @IsBoolean()
   hintUsed?: boolean;
+
+  @ApiPropertyOptional({
+    description:
+      "The learner's app language (UI-L codes). On a wrong answer the nuance explanation is " +
+      'written in it (Vietnamese / Simplified Chinese); English or omitted = English. ' +
+      'The classic app never sends it.',
+    enum: ['en-SG', 'en-US', 'vi-VN', 'zh-CN', 'en', 'vi', 'zh'],
+  })
+  @IsOptional()
+  @IsIn(['en-SG', 'en-US', 'vi-VN', 'zh-CN', 'en', 'vi', 'zh'])
+  locale?: string;
 }

@@ -11,6 +11,11 @@ export interface SubmitQuizAnswerInput {
   responseMs?: number;
   /** Whether the student opened `useQuizHint` for this item before answering. */
   hintUsed?: boolean;
+  /**
+   * The garden's app language (UI-L code). A wrong answer's nuance
+   * explanation comes back in it; the classic quiz never sends it (English).
+   */
+  locale?: string;
 }
 
 /**
@@ -24,11 +29,12 @@ export function useSubmitQuizAnswer() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ itemId, answer, responseMs, hintUsed }: SubmitQuizAnswerInput) =>
+    mutationFn: ({ itemId, answer, responseMs, hintUsed, locale }: SubmitQuizAnswerInput) =>
       apiClient.post<QuizAnswerResult>(`/quizzes/${encodeURIComponent(itemId)}/answer`, {
         answer,
         responseMs,
         hintUsed,
+        locale,
       }),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ['srs'] });
