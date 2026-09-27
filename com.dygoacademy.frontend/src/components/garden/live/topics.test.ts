@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { leadingStage } from '../screens/TopicsScreen';
-import { toScreenTopic } from './data';
+import { sortBedsByDue, toScreenTopic } from './data';
 
 const base = {
   id: 't1',
@@ -60,5 +60,19 @@ describe('leadingStage', () => {
     expect(leadingStage({ tree: 0, flower: 0, sprout: 0, seed: 0 }, 3)).toBe('seed');
     expect(leadingStage({ tree: 0, flower: 0, sprout: 0 }, 6)).toBe('sprout');
     expect(leadingStage(null, 0)).toBe('seed');
+  });
+});
+
+describe('sortBedsByDue', () => {
+  it('puts the most due first and keeps API order for ties and unknowns', () => {
+    const beds = [
+      { id: 'a', due: 0 },
+      { id: 'b', due: null },
+      { id: 'c', due: 6 },
+      { id: 'd', due: 2 },
+      { id: 'e', due: 6 },
+    ];
+    expect(sortBedsByDue(beds).map((bed) => bed.id)).toEqual(['c', 'e', 'd', 'a', 'b']);
+    expect(beds[0].id).toBe('a');
   });
 });

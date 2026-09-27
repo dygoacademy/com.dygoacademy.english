@@ -12,7 +12,7 @@ import { useTopics } from '@/hooks/useTopics';
 import { BottomSheet } from '../BottomSheet';
 import { Button } from '../Button';
 import { TopicsScreen, type TopicsScreenTopic } from '../screens/TopicsScreen';
-import { toScreenTopic, topicFilters, type GardenTopicSummary } from './data';
+import { sortBedsByDue, toScreenTopic, topicFilters, type GardenTopicSummary } from './data';
 import { LiveError, LiveLoading } from './LiveState';
 
 /**
@@ -20,7 +20,8 @@ import { LiveError, LiveLoading } from './LiveState';
  *
  * Real: title, word count, CEFR range, fruiting / flowering / sprouting
  * shares, due badge and the filter chips (library collections, Mine)
- * from the UI-5 fields; shared beds show under All (NAV-1: no Group chip). Search opens a sheet that finds beds by
+ * from the UI-5 fields; shared beds show under All (NAV-1: no Group chip).
+ * Beds are sorted by due words, thirstiest first (U5-2). Search opens a sheet that finds beds by
  * name; "Plant a new bed" opens a sheet that creates the topic
  * (POST /topics, existing) and opens it. The locked seed pack waits for
  * UI-6 (Golden Blooms), so it isn't shown.
@@ -34,8 +35,11 @@ export function TopicsLive() {
   if (topics.isPending) return <LiveLoading />;
   if (topics.isError || !topics.data) return <LiveError onRetry={() => void topics.refetch()} />;
 
-  const beds = (topics.data as GardenTopicSummary[]).map((topic) =>
-    toScreenTopic(topic, t('library'), t('shared')),
+  // Beds with the most words due come first (U5-2).
+  const beds = sortBedsByDue(
+    (topics.data as GardenTopicSummary[]).map((topic) =>
+      toScreenTopic(topic, t('library'), t('shared')),
+    ),
   );
 
   return (

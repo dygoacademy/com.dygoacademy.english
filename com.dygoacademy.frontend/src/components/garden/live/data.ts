@@ -241,3 +241,15 @@ export function toScreenTopic(
     due: topic.due_count === undefined ? null : num(topic.due_count),
   };
 }
+
+/**
+ * A6 order (U5-2): thirstiest beds first, by due words; beds with nothing
+ * due or no due count (older API) keep the API's order after them. Stable,
+ * returns a new array.
+ */
+export function sortBedsByDue<T extends { due: number | null }>(beds: readonly T[]): T[] {
+  return beds
+    .map((bed, index) => ({ bed, index }))
+    .sort((a, b) => (b.bed.due ?? 0) - (a.bed.due ?? 0) || a.index - b.index)
+    .map(({ bed }) => bed);
+}
