@@ -80,3 +80,8 @@ docker-compose.yml.bak*
 *.swo
 Thumbs.db
 .SANDBOX_UNDELETABLE_JUNK_ignore/
+
+# --- Database backups ----------------------------------------------------
+# Full pg_dump files written by database/reset-db.sh. They contain every
+# account and password hash, so they never belong in git.
+database/backups/

@@ -66,6 +66,16 @@ type Stage = 'input' | 'card' | 'not-found';
  * matching the convention every other `CONTENT_WIDTH` call site in the
  * app already uses, instead of depending on this component always being
  * rendered inside a centering flex parent.
+ *
+ * Search input/button bumped from `h-10` (40px) to `h-11` (44px), and the
+ * flashcard's back face got its own `AudioButton` (`layout="corner"`,
+ * matching the front) -- fixed 2026-09-20 per a design-critique finding
+ * (Phase 8, master schedule): 40px is under Apple's 44x44pt HIG minimum
+ * touch target, and the back face -- the only side showing both US and UK
+ * IPA -- had no way to actually hear either accent once flipped. Both were
+ * local overrides here rather than changes to the shared `Button`/`Input`
+ * components those two elements otherwise use, so every other icon button
+ * and input in the app is unaffected by this pass.
  */
 export function GuestWordTrial() {
   const [word, setWord] = useState('');
@@ -137,13 +147,25 @@ export function GuestWordTrial() {
             </div>
           }
           back={
-            <div className="flex h-96 w-full flex-col gap-3 overflow-y-auto rounded-2xl border-2 border-primary bg-card p-6">
+            <div className="relative flex h-96 w-full flex-col rounded-2xl border-2 border-primary bg-card p-6">
               {/* Back side redesigned into labeled sections -- live-requested
                   2026-09-18 ("the data in the flash card is messy hard to
                   learn ... recommend to sort all data with UI/UX super easy
                   for user"), applied consistently with WordCardModal/study's
                   card. See WordCardModal.tsx's own comment on this block for
-                  the full before/after reasoning. */}
+                  the full before/after reasoning.
+
+                  Content wrapped in its own scrollable inner div (`pb-16
+                  pr-14` clearing the corner dock) and Play restored here via
+                  a fixed-position AudioButton -- fixed 2026-09-20 per a
+                  design-critique finding (Phase 8, master schedule): this
+                  back face had no way to hear either accent once flipped,
+                  even though it's the only side showing US/UK IPA side by
+                  side. WordCardModal's back face already used exactly this
+                  inner-scroll + corner-dock split (see its own comment on
+                  this block) for the same reason -- ported here instead of
+                  inventing a second pattern. */}
+              <div className="flex flex-1 flex-col gap-3 overflow-y-auto pb-16 pr-14">
               <div className="flex flex-wrap items-center gap-2">
                 {card.part_of_speech && (
                   <span className="rounded-full border px-2 py-0.5 text-[10px] uppercase tracking-wide text-muted-foreground">
@@ -201,6 +223,13 @@ export function GuestWordTrial() {
                   </p>
                 </div>
               )}
+              </div>
+              <AudioButton
+                src={card.audio_url}
+                label="Play pronunciation again"
+                layout="corner"
+                className="absolute bottom-4 right-4"
+              />
             </div>
           }
         />
@@ -272,14 +301,14 @@ export function GuestWordTrial() {
               onChange={(e) => setWord(e.target.value)}
               placeholder="e.g. resilient"
               maxLength={100}
-              className="min-w-0 flex-1 text-lg"
+              className="h-11 min-w-0 flex-1 text-lg"
             />
             <Button
               type="submit"
               size="icon"
               disabled={!word.trim() || isSearching}
               aria-label="Search"
-              className="h-10 w-10 shrink-0"
+              className="h-11 w-11 shrink-0"
             >
               {isSearching ? (
                 <span

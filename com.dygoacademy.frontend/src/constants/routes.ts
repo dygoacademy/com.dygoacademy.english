@@ -74,3 +74,18 @@ export function isProtectedPath(pathname: string): boolean {
 export function isAuthPath(pathname: string): boolean {
   return AUTH_PATHS.some((path) => pathname === path);
 }
+
+/**
+ * Phase 9, "Targeted Re-Quiz" — a one-shot `sessionStorage` handoff of the
+ * missed word ids from `study/page.tsx` to `quiz/page.tsx?mode=requiz`,
+ * instead of a query param (a comma-joined list of UUIDs in the URL is
+ * ugly and has a length edge case this doesn't). Lives here rather than
+ * in either page file, same reasoning as this file's own header on
+ * `ROUTES` — both the writer and the reader must agree on the exact key
+ * string, so it belongs in one shared place, not exported from one page
+ * file into another. `quiz/page.tsx` reads this once on mount and
+ * doesn't rely on it surviving past that — a stale value from an earlier
+ * session is harmless, since it's only ever read immediately after
+ * `study/page.tsx` just wrote it.
+ */
+export const REQUIZ_STORAGE_KEY = 'dygo:requiz-word-ids';

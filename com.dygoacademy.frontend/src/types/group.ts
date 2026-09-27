@@ -1,6 +1,6 @@
 import type { GroupRole } from './user';
 
-/** `public.groups`, database/migrations/001_initial_schema.sql line 141. */
+/** `public.groups`, database/schema/02_tables.sql. */
 export interface Group {
   id: string;
   tenant_id: string;

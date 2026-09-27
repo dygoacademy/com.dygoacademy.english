@@ -2,7 +2,13 @@
 **Document Version**: 1.0  
 **Generated**: introspected from a live PostgreSQL instance with migrations `001`–`004` applied  
 **Generated at**: 2026-08-30 15:07 UTC  
-**Target engine**: PostgreSQL 17 (`supabase/postgres:17.6.1.136`)
+**Target engine**: PostgreSQL 17 (`supabase/postgres:17.6.1.136`)  
+**Corrected**: 2026-09-25 — `user_word_srs` and `review_logs` hand-corrected against
+`database/schema/02_tables.sql`/`05_indexes.sql` (the 2026-09-25 FSRS schema squash;
+see `phase 10 implementation plan.md`) to remove stale SM-2 content. This was a
+targeted fix, not a full re-introspection — the rest of the document (including the
+"live PostgreSQL instance" provenance above) still reflects 2026-08-30 and should be
+regenerated against a live instance before being trusted for anything outside SRS.
 
 ---
 
@@ -15,9 +21,9 @@ Every column, constraint, index and policy below was read out of `pg_catalog` on
 | | |
 | :--- | ---: |
 | Base tables | 13 |
-| `review_logs` partitions | 8 |
+| `review_logs` partitions | 6 named + 1 default catch-all |
 | RLS policies | 33 |
-| Enumerated types | 5 |
+| Enumerated types | 6 |
 | Helper functions | 9 |
 | Tables without RLS | 0 — none |
 
@@ -80,6 +86,7 @@ erDiagram
 | `group_role` | `ADMIN` · `WRITE` · `READ` | `group_members.role`, `group_invites.grant_role` |
 | `seat_status` | `ACTIVE` · `REVOKED` | `tenant_seats.status` |
 | `srs_rating` | `AGAIN` · `HARD` · `GOOD` · `EASY` | `review_logs.rating` |
+| `fsrs_state` | `New` · `Learning` · `Review` · `Relearning` | `user_word_srs.fsrs_state` |
 | `word_status` | `ENRICHING` · `READY` · `FAILED` | `topic_words.status` |
 
 Adding a value is online (`ALTER TYPE ... ADD VALUE`); **removing or reordering one is not** — it requires recreating the type and rewriting every dependent column. Treat these as append-only.
@@ -549,7 +556,7 @@ Global, deduplicated linguistic cache. Not tenant-scoped.
 
 #### `user_word_srs`
 
-Per-user spaced-repetition scheduling state.
+Per-user FSRS-6 spaced-repetition scheduling state.
 
 > Per-user SRS state. RLS restricts every row to its owning user, so two students in the same class never see or affect each other's progress.
 
@@ -560,9 +567,14 @@ Per-user spaced-repetition scheduling state.
 | `id` | `uuid` | NO | `gen_random_uuid()` |
 | `user_id` | `uuid` | NO | — |
 | `topic_word_id` | `uuid` | NO | — |
-| `ease_factor` | `real` | NO | `2.5` |
-| `interval_days` | `integer` | NO | `0` |
-| `repetitions` | `integer` | NO | `0` |
+| `fsrs_state` | `fsrs_state` enum (`New`/`Learning`/`Review`/`Relearning`) | NO | `'New'` |
+| `stability` | `real` | yes | — |
+| `difficulty` | `real` | yes | — |
+| `reps` | `integer` | NO | `0` |
+| `lapses` | `integer` | NO | `0` |
+| `learning_steps` | `integer` | NO | `0` |
+| `scheduled_days` | `real` | NO | `0` |
+| `mastered_at` | `timestamp with time zone` | yes | — |
 | `total_mistakes` | `integer` | NO | `0` |
 | `recent_mistakes` | `integer` | NO | `0` |
 | `is_leech` | `boolean` | NO | `false` |
@@ -570,6 +582,8 @@ Per-user spaced-repetition scheduling state.
 | `next_due_at` | `timestamp with time zone` | NO | `now()` |
 | `created_at` | `timestamp with time zone` | NO | `now()` |
 | `updated_at` | `timestamp with time zone` | NO | `now()` |
+
+> **FSRS-6 native since the 2026-09-25 schema squash** (`database/schema/02_tables.sql`). `stability` (days, null for a New card), `difficulty` (1–10, null for a New card) and `mastered_at` (sticky: set once stability first reaches 21 days, cleared only by a graded AGAIN) are computed by `com.dygoacademy.backend/src/modules/srs/fsrs-scheduler.ts`. There is no `ease_factor`, `interval_days`, `repetitions` or `fsrs_backfilled` column — those only ever existed on the in-place SM-2→FSRS upgrade path (migrations `019`–`021`), which was superseded when the database was rebuilt from a clean, FSRS-native baseline. That upgrade history is preserved in `database/archive/2026-09-25_pre_squash/` and `phase 10 implementation plan.md`, not in this live table.
 
 **Keys**
 
@@ -580,10 +594,8 @@ Per-user spaced-repetition scheduling state.
 
 **Checks**
 
-- `user_word_srs_ease_factor_check` — `CHECK ((ease_factor >= (1.3)::double precision))`
-- `user_word_srs_interval_days_check` — `CHECK ((interval_days >= 0))`
+- `user_word_srs_fsrs_ranges` — `CHECK ((stability IS NULL OR stability > 0) AND (difficulty IS NULL OR difficulty BETWEEN 1 AND 10) AND reps >= 0 AND lapses >= 0 AND scheduled_days >= 0)`
 - `user_word_srs_recent_mistakes_check` — `CHECK ((recent_mistakes >= 0))`
-- `user_word_srs_repetitions_check` — `CHECK ((repetitions >= 0))`
 - `user_word_srs_total_mistakes_check` — `CHECK ((total_mistakes >= 0))`
 
 **Indexes** (beyond those backing keys)
@@ -591,6 +603,7 @@ Per-user spaced-repetition scheduling state.
 - `idx_user_word_srs_topic_word_id` — `btree (topic_word_id)`
 - `idx_user_word_srs_user_leech` — `btree (user_id) WHERE is_leech`
 - `idx_user_word_srs_user_next_due` — `btree (user_id, next_due_at)`
+- `user_word_srs_mastered_idx` — `btree (user_id) WHERE mastered_at IS NOT NULL`
 
 **RLS policies** — RLS enabled
 
@@ -601,8 +614,8 @@ Per-user spaced-repetition scheduling state.
 **Operational notes**
 
 - **Owner-only including from the group ADMIN.** A tutor cannot read or alter a student's scheduling state. This is FR-1.2's "strictly isolated" requirement, and it is verified by the RLS test suite.
-- `ease_factor >= 1.3` is the conventional SM-2 floor; below it, intervals collapse and the card is shown forever.
-- `recent_mistakes` is the `M_recent` term in FR-3.1's formula but is a plain counter with **no mechanism to age entries out of the 7-day window**. Unresolved — see §7.
+- `recent_mistakes` is recomputed on every graded review from `review_logs` (graded `AGAIN` rows in the last 7 days) and drives `is_leech` (FR-3.3). It does not feed FSRS scheduling — `difficulty` already reacts to mistakes on its own.
+- `mastered_at` is sticky by design: once a word's stability crosses `MASTERY_STABILITY_DAYS` (21) it stays mastered until a graded `AGAIN`, so "mastered" counts shown to the learner never drop without a mistake they actually saw.
 
 ---
 
@@ -620,9 +633,18 @@ Append-only review history, partitioned by month.
 | `rating` | `srs_rating` | NO | — |
 | `was_correct` | `boolean` | NO | — |
 | `response_ms` | `integer` | yes | — |
-| `ease_factor_after` | `real` | yes | — |
-| `interval_days_after` | `integer` | yes | — |
+| `source` | `text` | NO | `'flashcard'` |
+| `quiz_type` | `text` | yes | — |
+| `hint_used` | `boolean` | NO | `false` |
+| `graded` | `boolean` | NO | `true` |
+| `state_before` | `text` | yes | — |
+| `elapsed_days` | `real` | yes | — |
+| `scheduled_days` | `real` | yes | — |
+| `stability_after` | `real` | yes | — |
+| `difficulty_after` | `real` | yes | — |
 | `reviewed_at` | `timestamp with time zone` | NO | `now()` |
+
+> **FSRS-6 native since the 2026-09-25 schema squash** (`database/schema/02_tables.sql`). `source` (`flashcard`/`quiz`/`leech_drill`/`sync`), `quiz_type`, `hint_used`, `graded` (false = logged but did not move the schedule), `state_before`, `elapsed_days`, `scheduled_days`, `stability_after` and `difficulty_after` are original columns from day one, not a later add-on. There is no `ease_factor_after` or `interval_days_after` — those SM-2 history columns only existed on the in-place upgrade path (migration `019_review_log_signals.sql` onward) and were dropped along with everything else when the schema was rebuilt from a clean baseline; see `database/archive/2026-09-25_pre_squash/`.
 
 **Keys**
 
@@ -633,11 +655,13 @@ Append-only review history, partitioned by month.
 **Checks**
 
 - `review_logs_response_ms_check` — `CHECK (((response_ms IS NULL) OR (response_ms >= 0)))`
+- `review_logs_source_check` — `CHECK ((source IN ('flashcard', 'quiz', 'leech_drill', 'sync')))`
 
 **Indexes** (beyond those backing keys)
 
 - `idx_review_logs_topic_word_id` — `btree (topic_word_id, reviewed_at DESC)`
 - `idx_review_logs_user_reviewed_at` — `btree (user_id, reviewed_at DESC)`
+- `review_logs_leech_window_idx` — `btree (topic_word_id, reviewed_at) WHERE rating = 'AGAIN' AND graded`
 
 **RLS policies** — RLS enabled
 
@@ -925,3 +949,14 @@ An earlier draft of the introspection used delimited text parsing and reported
 35 policies against a true count of 33 — policy `USING` expressions contain
 newlines, which split into phantom rows. The generator now uses `json_agg`, and
 the totals in §1 reconcile with `select count(*) from pg_policies`.
+
+**2026-09-25 addendum**: the database was rebuilt from a clean, FSRS-native
+baseline (`database/schema/`, `database/seeds/`) instead of migrations
+`001`–`021`; the old migration files were moved to
+`database/archive/2026-09-25_pre_squash/`. This document's `user_word_srs`
+and `review_logs` sections were hand-corrected against the new schema files
+on that date to remove SM-2 columns that no longer exist (`ease_factor`,
+`interval_days`, `repetitions`, `ease_factor_after`, `interval_days_after`)
+and add what replaced them. The rest of this document was not re-verified
+and should be treated as reflecting 2026-08-30 until it is regenerated
+against a live instance.

@@ -1,12 +1,16 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { CreateTopicModal } from '@/components/groups/CreateTopicModal';
+import { TopicCollectionRow } from '@/components/topics/TopicCollectionRow';
 import { TopicGridCard } from '@/components/topics/TopicGridCard';
+import { TopicsViewToggle, type TopicsView } from '@/components/topics/TopicsViewToggle';
 import { useGroups } from '@/hooks/useGroups';
 import { useTopics } from '@/hooks/useTopics';
 import { CONTENT_WIDTH } from '@/constants/layout';
+
+const VIEW_STORAGE_KEY = 'dygo:topics-view';
 
 /**
  * Wireframe 1f — the topics grid, deliberately its own route rather than
@@ -32,30 +36,62 @@ import { CONTENT_WIDTH } from '@/constants/layout';
  * detail page, same pass) is shared here with a group picker, since this
  * page — unlike the group detail page — has no single group already in
  * scope.
+ *
+ * 2x2 grid (`TopicGridCard`) replaced 2026-09-20 with a vertical list of
+ * `TopicCollectionRow` (Phase 9, "Topics as Collections" —
+ * `phase 9 implementation plan.md`): leading with a larger mastery ring
+ * per row reframes "21 words" as "how much you've already earned"
+ * instead of "how much work is left."
+ *
+ * Made optional the same day, live-reported right after shipping as a
+ * hard replacement ("I think the list can let use choose vertical list
+ * or gridcard by them self rather than we give on option to the
+ * customer"): both layouts now coexist behind `TopicsViewToggle`, `list`
+ * still the default (the mastery-first reframing above is still the
+ * point), `grid` one click away. Preference persisted to `localStorage`
+ * (`VIEW_STORAGE_KEY`) -- read in a `useEffect`, not a `useState` lazy
+ * initializer, since the initializer runs during SSR where `localStorage`
+ * doesn't exist; reading it after mount means one render at the default
+ * before the stored preference (if any) applies, rather than a
+ * server/client hydration mismatch.
  */
 export default function TopicsBrowsePage() {
   const { data: topics, isPending, isError } = useTopics();
   const { data: groups } = useGroups();
   const [query, setQuery] = useState('');
   const [modalOpen, setModalOpen] = useState(false);
+  const [view, setView] = useState<TopicsView>('list');
+
+  useEffect(() => {
+    const stored = window.localStorage.getItem(VIEW_STORAGE_KEY);
+    if (stored === 'list' || stored === 'grid') setView(stored);
+  }, []);
+
+  function changeView(next: TopicsView) {
+    setView(next);
+    window.localStorage.setItem(VIEW_STORAGE_KEY, next);
+  }
 
   const filtered = topics?.filter((t) => t.title.toLowerCase().includes(query.toLowerCase()));
   const writableGroups = groups?.filter((g) => g.role === 'ADMIN' || g.role === 'WRITE') ?? [];
 
   return (
     <div className={`mx-auto flex ${CONTENT_WIDTH.wide} flex-col gap-4 p-6`}>
-      <input
-        value={query}
-        onChange={(e) => setQuery(e.target.value)}
-        placeholder="Search your topics"
-        aria-label="Search your topics"
-        className="rounded-full border px-4 py-2 text-sm outline-none focus:border-primary"
-      />
+      <div className="flex gap-2">
+        <input
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="Search your topics"
+          aria-label="Search your topics"
+          className="min-w-0 flex-1 rounded-full border px-4 py-2 text-sm outline-none focus:border-primary"
+        />
+        <TopicsViewToggle view={view} onChange={changeView} />
+      </div>
 
       {isPending && (
-        <div className="grid grid-cols-2 gap-3">
-          <div className="h-20 animate-pulse rounded-xl bg-muted" />
-          <div className="h-20 animate-pulse rounded-xl bg-muted" />
+        <div className={view === 'grid' ? 'grid grid-cols-2 gap-3' : 'flex flex-col gap-2'}>
+          <div className="h-16 animate-pulse rounded-xl bg-muted" />
+          <div className="h-16 animate-pulse rounded-xl bg-muted" />
         </div>
       )}
 
@@ -65,7 +101,26 @@ export default function TopicsBrowsePage() {
         </p>
       )}
 
-      {filtered && (
+      {filtered && view === 'list' && (
+        <div className="flex flex-col gap-2">
+          {filtered.map((topic) => (
+            <TopicCollectionRow key={topic.id} topic={topic} />
+          ))}
+          <button
+            type="button"
+            onClick={() => setModalOpen(true)}
+            disabled={writableGroups.length === 0}
+            className="flex items-center justify-center gap-1.5 rounded-xl border border-dashed p-3.5 text-center text-muted-foreground hover:bg-muted/40 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            <span className="text-lg leading-none">+</span>
+            <span className="text-xs">
+              {writableGroups.length === 0 ? 'New Topic · join a group first' : 'New Topic'}
+            </span>
+          </button>
+        </div>
+      )}
+
+      {filtered && view === 'grid' && (
         <div className="grid grid-cols-2 gap-3">
           {filtered.map((topic) => (
             <TopicGridCard key={topic.id} topic={topic} />

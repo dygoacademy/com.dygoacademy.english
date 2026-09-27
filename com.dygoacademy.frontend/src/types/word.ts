@@ -1,7 +1,7 @@
 import type { LexiconExampleSentence, LexiconRelatedWord } from './srs';
 
 /**
- * `word_status` enum, database/migrations/001_initial_schema.sql line 31.
+ * `word_status` enum, database/schema/01_extensions_types.sql.
  * FAILED exists for exhausted BullMQ retries — not in the ERD, added so a
  * permanently-failed word is distinguishable from one still enriching
  * (see the migration's own comment). The frontend's status polling
@@ -9,10 +9,10 @@ import type { LexiconExampleSentence, LexiconRelatedWord } from './srs';
  */
 export type WordStatus = 'ENRICHING' | 'READY' | 'FAILED';
 
-/** `cefr_level` enum, database/migrations/001_initial_schema.sql line 33. */
+/** `cefr_level` enum, database/schema/01_extensions_types.sql. */
 export type CefrLevel = 'A1' | 'A2' | 'B1' | 'B2' | 'C1' | 'C2';
 
-/** `public.topic_words`, database/migrations/001_initial_schema.sql line 209. */
+/** `public.topic_words`, database/schema/02_tables.sql. */
 export interface TopicWord {
   id: string;
   topic_id: string;

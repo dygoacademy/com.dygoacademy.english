@@ -276,8 +276,10 @@ erDiagram
         uuid id PK
         uuid user_id FK
         uuid topic_word_id FK
-        float ease_factor
-        int interval_days
+        fsrs_state fsrs_state "New | Learning | Review | Relearning"
+        float stability "FSRS-6; days"
+        float difficulty "FSRS-6; 1-10"
+        timestamp mastered_at "sticky; stability >= 21d"
         int total_mistakes
         boolean is_leech
         timestamp next_due_at

@@ -97,7 +97,9 @@ Conflating them is how a roadmap quietly turns into a status report.
 > code-complete — `SrsService`/`SrsController` plus `GET
 > /topics/:id/cards/due` on `TopicsController` (tech spec §3.4's exact route
 > shape; `TopicsModule` now imports `SrsModule` for it). The scoring math
-> lives in `src/modules/srs/srs-algorithm.ts` as pure, unit-tested functions
+> lived in `src/modules/srs/srs-algorithm.ts` as pure, unit-tested functions
+> (**superseded 2026-09-25 by Phase 10's FSRS scheduler**, `fsrs-scheduler.ts`
+> + `grading.ts`; the SM-2 notes below are historical)
 > — it also **settles §5.4's "Open question for Phase 2"** below:
 > `recent_mistakes` is recomputed from `review_logs` inside the same
 > transaction as `POST /srs/rate`, not decayed on a schedule, so no third
@@ -253,7 +255,7 @@ Conflating them is how a roadmap quietly turns into a status report.
 
 ## 2. Live today
 
-**40 operations · Phase 0 + Module 1 + Module 3 + Module 5 + Module 6 complete**
+**39 operations · Phase 0 + Module 1 + Module 3 + Module 5 + Module 6 complete**
 
 One other controller is registered — `billing` — but declares no routes, so
 it answers `404`, not `401`.
@@ -290,12 +292,12 @@ it answers `404`, not `401`.
 | `GET` | `/api/v1/srs/due` | bearer | Same as above, not scoped to a topic (FR-3.4). |
 | `GET` | `/api/v1/srs/leeches` | bearer | FR-3.3 — words with `is_leech = true` (≥ 4 failures in the trailing 7 days). Reads the stored flag, not a live aggregate. |
 | `GET` | `/api/v1/srs/stats` | bearer | FR-8.1 — total/mastered/due/leech counts plus a consecutive-day streak computed from `review_logs`. |
-| `POST` | `/api/v1/srs/rate` | bearer | FR-3.2 — submit `AGAIN`/`HARD`/`GOOD`/`EASY`. Updates ease factor, interval, and leech status per the FR-3.1 formula (`srs-algorithm.ts`); one transaction covering the state read, the `review_logs` insert, and the `user_word_srs` upsert. |
+| `POST` | `/api/v1/srs/rate` | bearer | FR-3.2 — submit `AGAIN`/`HARD`/`GOOD`/`EASY`. **Phase 10:** scheduled by FSRS-6 (`fsrs-scheduler.ts`), graded per `grading.ts`. One transaction covering the state read, the `review_logs` insert (always) and the `user_word_srs` upsert (only when `graded`). Response: `rating` (as applied), `graded`, `state`, `stability`, `difficulty`, `reps`, `lapses`, `scheduled_days`, `is_leech`, `is_mastered`, `was_correct`, `next_due_at`, `just_mastered`. `ease_factor`/`interval_days`/`repetitions` are gone. |
 | `POST` | `/api/v1/srs/sessions` | bearer | FR-4.3 — Standard/Reverse/Listening mode. Returns a due-card batch tagged with the mode; does not persist a session row (none exists in the schema). |
 | `POST` | `/api/v1/srs/sync` | bearer | Architecture §1 — replays offline-queued reviews in chronological order via the same rating logic as `/srs/rate`; a bad item in the batch is reported per-item, not a batch failure. **Has a real frontend caller as of the 11th pass** — `useOfflineReviewSync` (`lib/offline-review-queue.ts`'s IndexedDB queue, drained on the browser's `online` event) — this route existed and was unit-tested since Phase 2 but nothing on the frontend called it until now. |
 | `POST` | `/api/v1/quizzes/generate` | bearer | FR-5.1–5.4 — Cloze, Dictation, Matching, Contextual Choice, drawn from `READY` words the caller can read. Stateless: an item's id (`` `${topicWordId}:${type}` ``) encodes enough to grade it later without a persisted row — see note (6). |
 | `GET` | `/api/v1/quizzes/leech-drill` | bearer | FR-3.3's remedial queue, built on `SrsService.findLeeches`. Prefers the richest question type each leech word's data supports. |
-| `POST` | `/api/v1/quizzes/:id/answer` | bearer | FR-5.5 — grades against the item id, and only on a wrong answer asks Gemini (`GeminiEnrichmentService.explainNuance`) for a short nuance explanation. Degrades to a generic message if that call fails. |
+| `POST` | `/api/v1/quizzes/:id/answer` | bearer | **Phase 10:** also records the answer against the word's SRS schedule (`SrsService.recordQuizResult`) and returns `srs: { graded, justMastered, nextDueAt }` (omitted only if that recording failed; never fatal). FR-5.5 — grades against the item id, and only on a wrong answer asks Gemini (`GeminiEnrichmentService.explainNuance`) for a short nuance explanation. Degrades to a generic message if that call fails. |
 | `GET` | `/api/v1/notifications/vapid-public-key` | bearer | FR-6.5 — the value the frontend passes as `applicationServerKey` to `pushManager.subscribe()`. Not a secret; kept behind auth anyway since only a signed-in student needs it. |
 | `POST` | `/api/v1/notifications/subscribe` | bearer | FR-6.5 — registers a browser's `PushSubscriptionJSON` verbatim. `on conflict (endpoint)` — one browser is one row regardless of which account last registered it. |
 | `DELETE` | `/api/v1/notifications/subscribe` | bearer | Unregisters one browser's subscription by endpoint. |
@@ -479,7 +481,10 @@ to a read path rather than to a worker.
 > **Resolved (2026-09-01, see note (5) above).** `user_word_srs.recent_mistakes`
 > is recomputed from `review_logs` inside the same transaction as `POST
 > /srs/rate` — not decayed on a schedule. No third repeating job was added.
-> Detail and reasoning: `src/modules/srs/srs-algorithm.ts`'s header comment.
+> Detail and reasoning: leech bookkeeping (`LEECH_THRESHOLD`,
+> `LEECH_WINDOW_DAYS`) lives in `src/modules/srs/fsrs-scheduler.ts`; the
+> `recent_mistakes`/`total_mistakes` upsert is in `srs.service.ts`
+> (**Phase 10** — `srs-algorithm.ts` was deleted, see `Change Log.md`).
 
 ---
 

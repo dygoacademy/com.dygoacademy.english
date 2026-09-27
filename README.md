@@ -1,6 +1,6 @@
 # Dygo Academy
 
-AI-powered collaborative vocabulary platform — automated word enrichment (dual-accent IPA, neural audio, CEFR-graded synonyms and examples), error-adaptive spaced repetition, and multi-tenant classroom groups with granular RBAC.
+AI-powered collaborative vocabulary platform — automated word enrichment (dual-accent IPA, neural audio, CEFR-graded synonyms and examples), error-adaptive spaced repetition (FSRS-6, fed by both flashcards and quizzes), and multi-tenant classroom groups with granular RBAC.
 
 > **Project status — Phases 0–3 code-complete; Module 8 (analytics + the
 > class mistake heatmap) is code-complete too, a brand-new signup can
@@ -32,7 +32,7 @@ Already have Docker running and `.env` filled in? The whole loop is five command
 ```bash
 cp .env.example .env                      # then fill in the secrets — see step 1
 docker compose up -d                      # Postgres, Kong, Studio, Redis, MinIO
-./database/apply-migrations.sh --seed     # schema + RLS + indexes + fixtures
+./database/apply-migrations.sh            # schema + all seed data (empty database)
 cd com.dygoacademy.backend && npm install && npm run start:dev
 cd ../com.dygoacademy.frontend && npm install && npm run dev
 ```
@@ -40,7 +40,7 @@ cd ../com.dygoacademy.frontend && npm install && npm run dev
 Then open http://localhost:3001/api/docs and authorize with
 `npm run token alex` for API-level testing, or http://localhost:3000/login
 and sign in as `sarah@dygo.test` / `dygo-dev-2026` (marco/alex/priya/dana
-share the same password — see `database/migrations/004_seed_data.sql`'s
+share the same password — see `database/seeds/01_core_fixtures.sql`'s
 own header comment) for the actual frontend. Each step is expanded below.
 
 ---
@@ -65,7 +65,7 @@ cd DygoAcademy
 cp .env.example .env
 
 # The migration runner needs to be executable.
-chmod +x database/apply-migrations.sh
+chmod +x database/apply-migrations.sh database/reset-db.sh database/restore-db.sh
 ```
 
 > **Before your first commit:** `.env` is currently tracked by git. A
@@ -150,52 +150,37 @@ volume — see the reset note in step 3.
 
 ## 3. Migrate database
 
-```bash
-./database/apply-migrations.sh            # schema + RLS + indexes (001-003)
-./database/apply-migrations.sh --seed     # ...plus development fixtures (004)
-./database/apply-migrations.sh --test     # ...plus fixtures, then the RLS suite
-```
-
-On a database that is **already migrated**, use the `-only` flags instead —
-re-running `001-003` would fail on "already exists":
+The schema was squashed on 2026-09-25 into one ordered baseline (`database/schema/`),
+with test data in `database/seeds/`. Full detail: [`database/README.md`](database/README.md).
 
 ```bash
-./database/apply-migrations.sh --seed-only           # add fixtures to an existing schema
-./database/apply-migrations.sh --qa-seed-only        # add the optional 3rd-tenant QA fixture (011)
-./database/apply-migrations.sh --qa-words-seed-only  # add 100 sample words on top of 011 (012)
-./database/apply-migrations.sh --test-only           # run the RLS suite (needs fixtures)
-./database/apply-migrations.sh --verify              # report what is actually installed
+./database/apply-migrations.sh            # EMPTY database: schema + every seed pack
+./database/apply-migrations.sh --no-seed  # EMPTY database: schema only
+./database/reset-db.sh                    # EXISTING database: back up → wipe → rebuild (asks you to type RESET)
+./database/apply-migrations.sh --test     # RLS suite (64 checks) in a throwaway database
+./database/apply-migrations.sh --verify   # what is installed
 ```
 
-| File | Contents |
+| Folder | Contents |
 | :--- | :--- |
-| `001_initial_schema.sql` | 12 tables, 5 enums, `review_logs` partitioned monthly |
-| `002_rls_policies.sql` | Multi-tenant Row-Level Security, ADMIN > WRITE > READ |
-| `003_indexes.sql` | Performance and partial indexes |
-| `004_seed_data.sql` | Dev fixtures — **never run against production** |
-| `011_qa_test_tenant_seed.sql` | Optional 3rd-tenant QA fixture (independent of 004, `--qa-seed-only`) — see its own header |
-| `012_qa_bulk_words_seed.sql` | 100 real words across 5 topics inside 011's QA group (`--qa-words-seed-only`, needs 011 loaded first) |
+| `schema/` | `01_extensions_types` → `02_tables` → `03_functions_triggers` → `04_rls_policies` → `05_indexes` → `06_grants` |
+| `seeds/` | `01_core_fixtures` (**never on a real production database**), `02_tier_ladder`, `03_qa_tenant`, `04_qa_words`, `05_hello_world_word` |
+| `migrations/` | Changes after the baseline; `--migrations` applies pending ones, each once |
+| `archive/` | The original 001–021 migrations, history only |
 
-`--test` runs 47 assertions (was 45 as of the 9th pass; the 10th pass's own
-addition, section I, covers the roster-visibility fix — see
-`008_profiles_group_visibility.sql`) proving cross-tenant isolation, that a student's
-SRS progress is unreadable even by their teacher, that a `READ` member cannot
-add words or enumerate the class roster, that `WRITE` cannot delete a topic,
-and that self-promotion to `ADMIN` is blocked. Expect it to end with
-`ALL RLS CHECKS PASSED`.
+`--test` builds a scratch database from the stub auth schema, the baseline and
+the core fixtures, then runs 64 assertions: cross-tenant isolation, SRS
+progress unreadable even by a teacher, READ members unable to add words or
+enumerate the roster, WRITE unable to delete a topic, blocked self-promotion,
+invite redemption, heatmap gates, and group creation by a non-admin. It ends
+with `ALL RLS CHECKS PASSED`, then drops the scratch database.
 
-> **Migrations are not idempotent.** They use plain `CREATE`, so running them
-> twice fails on "already exists". Init scripts also only run on an empty data
-> directory. To start over:
->
-> ```bash
-> docker compose down -v && docker compose up -d
-> ./database/apply-migrations.sh --seed
-> ```
+To start over at any time, `./database/reset-db.sh` (backups land in
+`database/backups/`, git-ignored; `./database/restore-db.sh <file>` puts one back).
 
 ### Seeded logins
 
-`004_seed_data.sql` creates two tenants so isolation can be exercised by hand.
+`seeds/01_core_fixtures.sql` creates two tenants so isolation can be exercised by hand.
 All fixture accounts use `@dygo.test` addresses and fixed UUIDs.
 
 | User | Role | Tenant |
@@ -457,7 +442,7 @@ npm test
 the service layer mocked). This one hits a **running backend + seeded
 Postgres directly** over real HTTP — real guards, real RLS, no mocks — so it
 needs steps 3 and 4 above done first, against a freshly-seeded database
-(`apply-migrations.sh --seed`; several specs assume a one-time seed state,
+(`apply-migrations.sh` or `reset-db.sh`; several specs assume a one-time seed state,
 e.g. `words-enrichment.spec.ts`'s FAILED→ENRICHING re-enrich case, and note
 in a comment when they'll no-op instead of false-failing on a re-run without
 a re-seed). It mints its own JWTs for the seeded fixture users
@@ -562,9 +547,13 @@ DygoAcademy/
 ├── cloudflared-config.yml          # Cloudflare Tunnel ingress for production
 ├── ecosystem.config.js             # pm2 process file for production
 ├── database/
-│   ├── apply-migrations.sh         # Migration runner
+│   ├── apply-migrations.sh         # Build: schema → migrations → seeds (see database/README.md)
+│   ├── reset-db.sh / restore-db.sh # Back up + wipe + rebuild / put a backup back
 │   ├── init/                       # Container bootstrap (runs on empty volume only)
-│   ├── migrations/                 # 001–004 core, 005–015 incremental (see apply-migrations.sh)
+│   ├── schema/                     # Squashed baseline, 01–06
+│   ├── seeds/                      # Test/demo data packs, 01–05
+│   ├── migrations/                 # Changes after the baseline (empty today)
+│   ├── archive/                    # Original 001–021, history only
 │   └── tests/                      # RLS verification suite
 ├── supabase/
 │   ├── kong.yml                    # Gateway routes (a TEMPLATE — see above)
@@ -594,8 +583,34 @@ DygoAcademy/
 └── com.dygoacademy.automationtesting/  # Live-stack integration tests (see step 6) — no mocks
     └── api/
         ├── specs/                  # One file per built module
-        └── support/                # client.ts, token.ts, fixtures.ts (mirrors 004_seed_data.sql)
+        └── support/                # client.ts, token.ts, fixtures.ts (mirrors seeds/01_core_fixtures.sql)
 ```
+
+## Spaced repetition
+
+Word review scheduling lives in `com.dygoacademy.backend/src/modules/srs/`
+and uses **FSRS-6** via [`ts-fsrs`](https://github.com/open-spaced-repetition/ts-fsrs).
+**SM-2 has been removed** (Phase 10): the old `srs-algorithm.ts`, its
+ease factor and its fixed 1→3→7→16-day ladder are gone.
+
+| File | What it owns |
+| :--- | :--- |
+| `fsrs-config.ts` | Target retention (0.95), 180-day cap, 10-minute relearning step |
+| `fsrs-scheduler.ts` | Pure FSRS math: stability, difficulty, recall probability, sticky mastery (stability ≥ 21 days) |
+| `grading.ts` | What counts: flashcard and quiz grades, "successes only when due", at most one counted mistake per word per day |
+| `srs.service.ts` | The review transaction (`rate`, `recordQuizResult`) |
+
+Quiz answers feed the same schedule as flashcards. Those SM-2 columns no longer
+exist in the schema.
+
+**Rolling it out**: the FSRS schema is part of the squashed baseline, so a
+rebuild (`./database/reset-db.sh`) gives you FSRS directly. There is no
+SM-2 → FSRS conversion step. (The upgrade path with migrations 019–021 and
+`scripts/backfill-fsrs.js` was superseded on 2026-09-25 by the decision to
+wipe and rebuild; the migrations are kept in `database/archive/`.)
+
+See [`phase 10 implementation plan.md`](phase%2010%20implementation%20plan.md)
+for the design, the customer-experience decisions and the test plan.
 
 ## Documentation
 
@@ -607,3 +622,5 @@ DygoAcademy/
 | [Frontend Architecture](dygo_academy_frontend_architecture.md) | Request flow, auth guard, state ownership, performance strategy, extension checklist |
 | [Project Schedule](dygo_academy_master_project_schedule.md) | 12-week, 6-sprint phased plan |
 | [Competitive Analysis](dygo_academy_competitive_analysis.md) | Market positioning vs. Anki, Quizlet, Memrise |
+| [Phase 10 Plan — FSRS](phase%2010%20implementation%20plan.md) | FSRS scheduler (replaced SM-2); quiz answers feed the SRS; rollout steps |
+| [Phase 11 Plan — Locale, Household & i18n](phase%2011%20implementation%20plan.md) | Timezone/locale preferences, child profiles, internationalization |

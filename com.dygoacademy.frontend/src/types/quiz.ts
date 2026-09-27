@@ -46,11 +46,20 @@ export interface QuizAnswerResult {
   nuanceExplanation?: string;
   /**
    * Echo of whether `GET /quizzes/:id/hint` was opened before this answer
-   * was submitted -- live-requested 2026-09-16. Not (yet) used to change
-   * grading or SRS scheduling; see `AnswerResult.hintUsed`'s backend
-   * comment for why.
+   * was submitted -- live-requested 2026-09-16. Since Phase 10 a hint caps
+   * a correct answer's SRS grade at HARD.
    */
   hintUsed: boolean;
+  /**
+   * Phase 10 — what this answer did to the word's review schedule. Absent
+   * if recording it failed (the answer itself still grades normally).
+   */
+  srs?: {
+    /** false = logged only (correct on a word not yet due, or a repeat mistake today). */
+    graded: boolean;
+    justMastered: boolean;
+    nextDueAt: string;
+  };
 }
 
 /** `GET /api/v1/quizzes/:id/hint` response — QuizService.hint. */

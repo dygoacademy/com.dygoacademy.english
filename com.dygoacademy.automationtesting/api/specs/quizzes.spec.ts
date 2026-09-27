@@ -46,9 +46,19 @@ describe('Module 5 — Dynamic Quiz Engine', () => {
       .set(authHeader('alex'))
       .send({ answer: 'definitely-not-the-right-answer' });
     expect(wrong.status).toBe(200);
-    const wrongResult = (wrong.body as ApiEnvelope<{ correct: boolean; nuanceExplanation?: string }>)
-      .data;
+    const wrongResult = (
+      wrong.body as ApiEnvelope<{
+        correct: boolean;
+        nuanceExplanation?: string;
+        srs?: { graded: boolean; justMastered: boolean; nextDueAt: string };
+      }>
+    ).data;
     expect(wrongResult.correct).toBe(false);
+    // Phase 10 — the wrong answer was recorded against the word's review
+    // schedule. `graded` may be false on a re-run the same day (at most one
+    // counted mistake per word per day), but the srs block is always present.
+    expect(wrongResult.srs).toBeDefined();
+    expect(wrongResult.srs?.justMastered).toBe(false);
   }, 20000);
 
   it('POST /quizzes/:id/answer on a malformed item id is a clean 4xx, not a 500', async () => {

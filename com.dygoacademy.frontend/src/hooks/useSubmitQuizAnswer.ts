@@ -15,12 +15,10 @@ export interface SubmitQuizAnswerInput {
 
 /**
  * `POST /api/v1/quizzes/:id/answer` (FR-5.1–5.5). Invalidates the `srs`
- * query key on success — a quiz answer isn't an SRS rating (no
- * `review_logs` row, no `user_word_srs` change; see `QuizService.answer`),
- * but a leech word answered correctly enough times elsewhere in the app
- * could plausibly change what `/srs/leeches` returns next, so this errs
- * toward refetching rather than assuming quizzes and SRS state can never
- * affect each other's views.
+ * query key on success: since Phase 10 every quiz answer writes a
+ * `review_logs` row and can move the word's `user_word_srs` schedule
+ * (`SrsService.recordQuizResult`), so due counts, streak, mastery and the
+ * leech list can all change after a quiz.
  */
 export function useSubmitQuizAnswer() {
   const queryClient = useQueryClient();

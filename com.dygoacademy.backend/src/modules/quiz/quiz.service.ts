@@ -68,16 +68,24 @@ export interface AnswerResult {
   /** FR-5.5 — only populated on a wrong answer; see GeminiEnrichmentService.explainNuance. */
   nuanceExplanation?: string;
   /**
-   * Echoes `SubmitAnswerDto.hintUsed` back, same "accept now, analyze later"
-   * shape as `responseMs` above it in the DTO. Not yet wired into SRS
-   * scheduling: quiz answers of any kind don't touch `SrsService.rate`
-   * today (only `/study`'s flashcard ratings do) — this field exists so a
-   * hint-assisted answer is at least distinguishable in the response,
-   * ready for whichever of {quiz results feeding SRS at all, a leech-
-   * specific rule} gets built first, rather than silently losing the
-   * signal in the meantime.
+   * Echoes `SubmitAnswerDto.hintUsed` back. Since Phase 10 it also affects
+   * scheduling: a hint caps a correct answer's SRS grade at HARD
+   * (`srs/grading.ts`).
    */
   hintUsed: boolean;
+  /**
+   * Phase 10, Workstream 3 — what this answer did to the word's SRS
+   * schedule. Absent only if recording it failed (logged, never fatal: a
+   * broken SRS write must not turn a working quiz into a 500, the same rule
+   * the Gemini nuance call follows). `graded: false` means the answer was
+   * logged but didn't move the schedule (a correct answer on a word that
+   * wasn't due yet, or a repeat mistake the same day).
+   */
+  srs?: {
+    graded: boolean;
+    justMastered: boolean;
+    nextDueAt: string;
+  };
 }
 
 const WORD_COLUMNS = `
@@ -110,7 +118,7 @@ function mapRow(row: QuizWordRow): QuizSourceWord {
  * Module 5 — Dynamic Multi-Modal Quiz Engine (Phase 3). See
  * `quiz-generator.ts` for the generation/grading math (pure, unit tested in
  * isolation) — this class owns the DB reads and the one AI call FR-5.5
- * needs, same split as `SrsService`/`srs-algorithm.ts`.
+ * needs, same split as `SrsService`/`fsrs-scheduler.ts`.
  */
 @Injectable()
 export class QuizService {
@@ -134,16 +142,31 @@ export class QuizService {
     const limit = dto.limit ?? 10;
     const candidateLimit = Math.min(100, limit * 4);
 
+    // Phase 9, "Targeted Re-Quiz" -- a third scope alongside `topicId`
+    // (whole topic) and "neither" (every readable READY word): an exact
+    // set of topic_word ids, e.g. the words just missed in a session.
+    // `QuizController.generate` already rejects `topicId` + `topicWordIds`
+    // supplied together, so at most one of these is ever set here.
+    const scopeClause = dto.topicWordIds?.length
+      ? 'and tw.id = any($1::uuid[])'
+      : dto.topicId
+        ? 'and tw.topic_id = $1'
+        : '';
+    const scopeParam: string | string[] | undefined = dto.topicWordIds?.length
+      ? dto.topicWordIds
+      : dto.topicId;
+    const params = scopeParam !== undefined ? [scopeParam, candidateLimit] : [candidateLimit];
+
     const rows = await this.db.queryAs<QuizWordRow>(
       userId,
       `select ${WORD_COLUMNS}
          from public.topic_words tw
          join public.master_lexicon ml on ml.id = tw.lexicon_id
         where tw.status = 'READY'
-          ${dto.topicId ? 'and tw.topic_id = $1' : ''}
+          ${scopeClause}
         order by random()
-        limit ${dto.topicId ? '$2' : '$1'}`,
-      dto.topicId ? [dto.topicId, candidateLimit] : [candidateLimit],
+        limit ${scopeParam !== undefined ? '$2' : '$1'}`,
+      params,
     );
     if (rows.length === 0) return [];
 
@@ -209,6 +232,27 @@ export class QuizService {
       exampleSentence: word.exampleSentences[0]?.sentence,
       hintUsed: dto.hintUsed ?? false,
     };
+
+    try {
+      const srs = await this.srs.recordQuizResult(userId, {
+        topicWordId: parsed.topicWordId,
+        quizType: parsed.type,
+        correct,
+        hintUsed: dto.hintUsed ?? false,
+        responseMs: dto.responseMs,
+      });
+      result.srs = {
+        graded: srs.graded,
+        justMastered: srs.just_mastered,
+        nextDueAt: new Date(srs.next_due_at).toISOString(),
+      };
+    } catch (err) {
+      this.logger.warn(
+        `Phase 10 quiz→SRS recording failed for "${word.sourceWord}" (${parsed.type}): ${
+          err instanceof Error ? err.message : String(err)
+        }`,
+      );
+    }
 
     if (!correct) {
       try {

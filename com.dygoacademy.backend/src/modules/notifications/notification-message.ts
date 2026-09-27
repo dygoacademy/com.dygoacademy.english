@@ -1,6 +1,6 @@
 /**
  * Pure decision logic for the 15-minute habit tick (FR-6.1, FR-6.3, FR-6.4).
- * DB-free and unit-tested in isolation — same split `srs-algorithm.ts` and
+ * DB-free and unit-tested in isolation — same split `fsrs-scheduler.ts` and
  * `quiz-generator.ts` establish for their modules: NotificationProcessor
  * owns the Postgres reads and the actual web-push call, this file owns "what
  * does the notification say."

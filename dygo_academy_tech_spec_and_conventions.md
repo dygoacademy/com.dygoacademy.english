@@ -151,7 +151,7 @@ To maintain code consistency across engineers and AI subagents, all code must ad
 
 ### 3.1 Database & SQL Naming
 * **Tables & Views**: `snake_case`, plural nouns (e.g., `tenants`, `master_lexicon`, `topic_words`, `user_word_srs`, `review_logs`).
-* **Columns**: `snake_case`, descriptive nouns/adjectives (e.g., `purchased_seats`, `ease_factor`, `interval_days`, `is_leech`, `next_due_at`).
+* **Columns**: `snake_case`, descriptive nouns/adjectives (e.g., `purchased_seats`, `stability`, `difficulty`, `is_leech`, `next_due_at`).
 * **Primary Keys**: Always `id UUID PRIMARY KEY DEFAULT gen_random_uuid()`.
 * **Foreign Keys**: `[singular_table_name]_id` (e.g., `tenant_id`, `topic_id`, `user_id`, `lexicon_id`).
 * **Indexes**: `idx_[table]_[columns]_[condition]` (e.g., `idx_srs_due_fast`, `idx_master_lexicon_normalized_word`).

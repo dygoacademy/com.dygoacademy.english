@@ -6,7 +6,7 @@ import { Job } from 'bullmq';
 import { DatabaseService } from '../database/database.service';
 import { buildReminderPayload } from '../modules/notifications/notification-message';
 import { PushDispatchService } from '../modules/notifications/push-dispatch.service';
-import { computeSrsSummary } from '../modules/srs/srs.service';
+import { computeSrsSummary, resolveUserTimezone } from '../modules/srs/srs.service';
 import { NOTIFICATION_QUEUE, NotificationCronJob } from '../queues/queue.constants';
 
 interface DueScheduleRow {
@@ -100,7 +100,18 @@ export class NotificationProcessor extends WorkerHost {
    * this safe on that path.
    */
   private async buildPayload(userId: string) {
-    const summary = await computeSrsSummary((text, params) => this.db.query(text, params), userId);
+    const queryFn = <T extends Record<string, unknown> = Record<string, unknown>>(
+      text: string,
+      params: unknown[],
+    ) => this.db.query<T>(text, params);
+    // No `detectedTz` here -- a cron tick has no request/browser to detect
+    // one from, so this only ever resolves profiles.timezone (once a user
+    // has actually set it) or DEFAULT_TIMEZONE. Still closes the same bug
+    // class as the ribbon/stats fix: a streak/leech/due count computed on
+    // hardcoded UTC day boundaries, independent of whether it's read via
+    // GET /srs/stats or this worker.
+    const timezone = await resolveUserTimezone(queryFn, userId);
+    const summary = await computeSrsSummary(queryFn, userId, timezone);
 
     return buildReminderPayload({
       dueNow: summary.due_now,

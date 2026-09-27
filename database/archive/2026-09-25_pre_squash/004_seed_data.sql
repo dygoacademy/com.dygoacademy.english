@@ -237,18 +237,26 @@ update public.topic_words
 -- SRS state — Alex and Priya study the SAME words with DIFFERENT progress.
 -- This pair is what the isolation test in 002 asserts against.
 insert into public.user_word_srs
-  (user_id, topic_word_id, ease_factor, interval_days, repetitions,
+  (user_id, topic_word_id, fsrs_state, stability, difficulty, reps, lapses, scheduled_days,
+   mastered_at,
    total_mistakes, recent_mistakes, is_leech, last_reviewed_at, next_due_at) values
-  -- Alex: doing well on 'ephemeral', struggling badly on 'resilient' (a leech).
+  -- FSRS state (Phase 10). The legacy SM-2 columns (ease_factor/interval_days/
+  -- repetitions) are left at their defaults — nothing reads them any more and
+  -- 021_drop_sm2_columns.sql removes them.
+  -- Alex: doing well on 'ephemeral' (mastered), struggling badly on 'resilient' (a leech).
   ('33333333-3333-3333-3333-333333333333', 'eeeeeeee-0000-0000-0000-000000000001',
-   2.60, 7, 4, 1, 0, false, now() - interval '2 days', now() + interval '5 days'),
+   'Review', 9.0, 4.5, 4, 1, 7, now() - interval '2 days',
+   1, 0, false, now() - interval '2 days', now() + interval '5 days'),
   ('33333333-3333-3333-3333-333333333333', 'eeeeeeee-0000-0000-0000-000000000002',
-   1.40, 0, 0, 6, 5, true,  now() - interval '3 hours', now() - interval '1 hour'),
+   'Relearning', 0.6, 8.1, 6, 6, 0, null,
+   6, 5, true,  now() - interval '3 hours', now() - interval '1 hour'),
   -- Priya: the mirror image, on the same two words.
   ('44444444-4444-4444-4444-444444444444', 'eeeeeeee-0000-0000-0000-000000000001',
-   1.70, 1, 1, 3, 2, false, now() - interval '1 day', now() - interval '2 hours'),
+   'Review', 1.5, 6.3, 1, 3, 1, null,
+   3, 2, false, now() - interval '1 day', now() - interval '2 hours'),
   ('44444444-4444-4444-4444-444444444444', 'eeeeeeee-0000-0000-0000-000000000002',
-   2.80, 16, 6, 0, 0, false, now() - interval '4 days', now() + interval '12 days');
+   'Review', 40.0, 2.8, 6, 0, 16, now() - interval '4 days',
+   0, 0, false, now() - interval '4 days', now() + interval '12 days');
 
 -- Review history ------------------------------------------------------------
 insert into public.review_logs

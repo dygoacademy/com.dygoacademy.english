@@ -47,6 +47,31 @@ import { createServerSupabaseClient } from '@/lib/supabase/server';
  * dynamic viewport unit Tailwind 3.4+ exposes as min-h-dvh) tracks the
  * real visible height as the browser chrome shows/hides instead.
  *
+ * `<main>` no longer vertically centers (`justify-center` dropped for
+ * top-anchored padding) -- fixed 2026-09-20 per a design-critique finding
+ * (Phase 8, master schedule): centering short content in a full-height
+ * flex box is correct on a tall phone, but on an iPad (either orientation)
+ * or any short viewport it leaves the headline/input roughly a third of
+ * the way down the screen, well below the first visible fold. The
+ * dvh fix above solved *true* centering on mobile; it never addressed
+ * that centering itself creates dead space when content is much shorter
+ * than the viewport. Top-anchored spacing keeps the page usable across
+ * every device this content-height-vs-viewport-height problem hits.
+ *
+ * Hero headline/subcopy scaled up at `sm`/`md` (`text-3xl`/`text-4xl`,
+ * wider `max-w-md` subcopy, bigger gaps) -- fixed 2026-09-20, Phase 8
+ * priority #2 (design-critique finding, same as the two entries above):
+ * on iPad the page was rendering the exact same phone-sized hero text
+ * just surrounded by more margin, reading as an unfinished phone layout
+ * rather than a tablet-considered one. `GuestWordTrial`'s card itself is
+ * deliberately left at its current width -- it already reads from the
+ * shared `CONTENT_WIDTH` constant, which every page/popup in the app was
+ * consolidated onto after past per-page width drift (see
+ * `constants/layout.ts`'s own history); widening it here would reopen
+ * that. Scaling the hero text/spacing instead uses the extra tablet width
+ * without touching that settled decision or inventing new marketing copy
+ * (a second column of supporting content) that doesn't exist yet.
+ *
  * Outcome headline added 2026-09-20 (Phase 3 FR-17.2 -- "Dygo Learning
  * Path" concept's journey stage 1, "arrive with a promise"). This page
  * previously led with the mechanic ("try one word") and never named what
@@ -67,12 +92,12 @@ export default async function LandingPage() {
   return (
     <div className="flex min-h-dvh flex-col">
       <PublicNavbar />
-      <main className="flex flex-1 flex-col items-center justify-center gap-6 p-4">
-        <div className="flex flex-col items-center gap-2 text-center">
-          <h1 className="text-2xl font-semibold leading-snug">
+      <main className="flex flex-1 flex-col items-center gap-6 p-4 pt-12 sm:gap-8 sm:pt-20 md:pt-28">
+        <div className="flex flex-col items-center gap-2 text-center sm:gap-3">
+          <h1 className="text-2xl font-semibold leading-snug sm:text-3xl md:text-4xl">
             Learn the words that move your IELTS score
           </h1>
-          <p className="max-w-sm text-sm text-muted-foreground">
+          <p className="max-w-sm text-sm text-muted-foreground sm:max-w-md sm:text-base">
             Try one word below — real audio, IPA, and example sentences, no account needed.
           </p>
         </div>

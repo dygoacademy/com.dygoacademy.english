@@ -1,6 +1,7 @@
 import Link from 'next/link';
 
 import { MasteryRing } from '@/components/topics/MasteryRing';
+import { formatTopicWordCount } from '@/lib/utils';
 import type { TopicSummary } from '@/types';
 
 /**
@@ -24,7 +25,7 @@ export function TopicGridCard({ topic }: { topic: TopicSummary }) {
         <MasteryRing masteredCount={topic.mastered_count} wordCount={topic.word_count} />
       </div>
       <span className="text-xs text-muted-foreground">
-        {topic.word_count} {Number(topic.word_count) === 1 ? 'word' : 'words'}
+        {formatTopicWordCount(topic.word_count, topic.focus_word_count)}
       </span>
       {topic.is_public && (
         <span className="mt-1 self-start rounded-full border px-2 py-0.5 text-xs text-muted-foreground">

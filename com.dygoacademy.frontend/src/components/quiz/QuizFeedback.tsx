@@ -65,12 +65,40 @@ export function QuizFeedback({
         <p className="text-muted-foreground italic">&quot;{result.exampleSentence}&quot;</p>
       )}
       {result.nuanceExplanation && <p className="text-muted-foreground">{result.nuanceExplanation}</p>}
+      <SrsNote result={result} />
       <Button type="button" onClick={onNext} size="sm" className="mt-1 self-end gap-1.5">
         Next
         <ArrowRightIcon className="h-4 w-4" />
       </Button>
     </div>
   );
+}
+
+/**
+ * Phase 10 — since quiz answers now feed the review schedule, say so in one
+ * line, and only when it actually happened (`srs.graded`): a new mastery on
+ * the correct path, and on the wrong path a reassurance that the word will
+ * come back, so a mistake reads as a plan rather than a penalty. Nothing is
+ * shown for ungraded answers (a correct answer on a word that wasn't due, a
+ * repeat mistake the same day) -- there's nothing true to say about them.
+ */
+function SrsNote({ result }: { result: QuizAnswerResult }) {
+  if (!result.srs?.graded) return null;
+  if (result.correct && result.srs.justMastered) {
+    return (
+      <p className="w-fit rounded-full bg-emerald-500/15 px-2.5 py-0.5 text-xs font-medium text-emerald-700 dark:text-emerald-300">
+        Mastered — you&apos;ll see this word less often now.
+      </p>
+    );
+  }
+  if (!result.correct) {
+    return (
+      <p className="text-xs text-muted-foreground">
+        This word will come back in your next review.
+      </p>
+    );
+  }
+  return null;
 }
 
 function ArrowRightIcon(props: React.SVGProps<SVGSVGElement>) {

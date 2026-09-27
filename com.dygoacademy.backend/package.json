@@ -1,7 +1,7 @@
 {
   "name": "com.dygoacademy.backend",
   "version": "0.1.0",
-  "description": "Dygo Academy \u2014 NestJS modular monolith API",
+  "description": "Dygo Academy — NestJS modular monolith API",
   "private": true,
   "engines": {
     "node": ">=20"
@@ -18,6 +18,9 @@
     "test-push:local": "sh -c 'set -a; . ../env-profiles/local.env; set +a; node scripts/test-push.js \"$1\"' --",
     "test-push:stg": "sh -c 'set -a; . ../env-profiles/stg.env; set +a; node scripts/test-push.js \"$1\"' --",
     "test-push:prod": "sh -c 'set -a; . ../env-profiles/prod.env; set +a; node scripts/test-push.js \"$1\"' --",
+    "audio-backfill": "node scripts/audio-backfill.js",
+    "audio-backfill:local": "sh -c 'set -a; . ../env-profiles/local.env; set +a; node scripts/audio-backfill.js \"$@\"' --",
+    "audio-backfill:prod": "sh -c 'set -a; . ../env-profiles/prod.env; set +a; node scripts/audio-backfill.js \"$@\"' --",
     "start:dev:local": "sh -c 'set -a; . ../env-profiles/local.env; set +a; nest start --watch'",
     "start:dev:stg": "sh -c 'set -a; . ../env-profiles/stg.env; set +a; nest start --watch'",
     "start:prod:domain": "sh -c 'set -a; . ../env-profiles/prod.env; set +a; node dist/main'"
@@ -39,6 +42,7 @@
     "pg": "^8.13.1",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.1",
+    "ts-fsrs": "5.4.2",
     "web-push": "^3.6.7"
   },
   "devDependencies": {

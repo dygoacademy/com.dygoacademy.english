@@ -18,15 +18,22 @@ export interface TopicSummary {
   is_public: boolean;
   word_count: string;
   /**
-   * Count of this topic's words at `repetitions >= 4` for the caller
+   * Count of this topic's words at `mastered_at is not null` (Phase 10 sticky FSRS mastery; was `repetitions >= 4`) for the caller
    * (Phase 3 Module 19, FR-19.1) — same string-typed bigint reasoning as
    * `word_count` above.
    */
   mastered_count: string;
+  /**
+   * Count of this topic's words currently flagged `is_leech` for the
+   * caller (Phase 9, "Topics as Collections" subtext — "N words · M
+   * focus words"), added 2026-09-21 — same string-typed bigint reasoning
+   * as `word_count` above.
+   */
+  focus_word_count: string;
   created_at: string;
 }
 
-/** `public.topics`, database/migrations/001_initial_schema.sql line 196. */
+/** `public.topics`, database/schema/02_tables.sql. */
 export interface Topic {
   id: string;
   group_id: string;

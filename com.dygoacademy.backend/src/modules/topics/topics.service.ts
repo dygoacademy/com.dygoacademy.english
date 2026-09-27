@@ -12,12 +12,50 @@ export interface TopicSummary {
   is_public: boolean;
   word_count: string;
   /**
-   * Count of this topic's words with `user_word_srs.repetitions >= 4` for
+   * Count of this topic's words with `user_word_srs.mastered_at is not null` (Phase 10 sticky FSRS mastery, previously `repetitions >= 4`) for
    * the caller -- same threshold `computeSrsSummary` (srs.service.ts)
    * already uses for `mastered_words`, reused rather than a second
    * definition of "mastered" (Phase 3 Module 19, FR-19.1).
    */
   mastered_count: string;
+  /**
+   * Count of this topic's words currently flagged `user_word_srs.is_leech`
+   * for the caller -- Phase 9's "Topics as Collections" mockup subtext
+   * ("21 words · 3 focus words"), added 2026-09-21. Same `is_leech` flag
+   * `SrsService.findLeeches` already reads for the global Focus/Leech
+   * list, just aggregated per topic here instead of returned as rows --
+   * one more `filter` on the exact same `uws` join `mastered_count`
+   * above already uses, not a new join.
+   */
+  focus_word_count: string;
+  /**
+   * Word Garden A6 (Phase 12 UI-5, 2026-09-26): the caller's words in this
+   * topic by plant stage, on the same `uws` join. A word is a tree once
+   * mastered (`mastered_count`, sticky), otherwise its FSRS state picks the
+   * stage: never reviewed / New = seed, Learning / Relearning = sprout,
+   * Review = flower. Seeds count READY words only (an ENRICHING word isn't
+   * studyable yet). Leeches are still counted in their stage; the garden
+   * shows them separately through `focus_word_count`.
+   */
+  seed_count: string;
+  sprout_count: string;
+  flower_count: string;
+  /**
+   * Reviewed words due now (`next_due_at <= now()`), the "6 due" badge.
+   * Never-reviewed words are not counted here (they're seeds, "New").
+   */
+  due_count: string;
+  /** Lowest and highest CEFR level among the topic's words; null if none is known. */
+  min_level: string | null;
+  max_level: string | null;
+  /**
+   * Whose bed this is, for the garden's filter chips: `mine` (a group the
+   * caller owns), `group` (a group the caller belongs to but doesn't own),
+   * `library` (a public topic from a group the caller isn't in).
+   */
+  kind: 'mine' | 'group' | 'library';
+  /** For `library` topics, the owning group's name (e.g. "IELTS Academic") when visible. */
+  collection_title: string | null;
   created_at: Date;
 }
 
@@ -70,9 +108,15 @@ export class TopicsService {
    * a word has an SRS row, which in practice it's always at most one of,
    * but `count(tw.id)` un-distinct would silently overcount `word_count`
    * once a second join is in the query, so both counts are guarded rather
-   * than relying on that 1:1 assumption holding forever.
+   * than relying on that 1:1 assumption holding forever. `focus_word_count`
+   * (2026-09-21) is a third `count(distinct ...) filter` on that same
+   * `uws` join, guarded the same way.
    */
   async findAllVisible(userId: string): Promise<TopicSummary[]> {
+    // Phase 12 UI-5 (Word Garden A6): stage / due counts, CEFR range and
+    // the bed's kind. Still no tenant filter: `groups` and `group_members`
+    // are RLS-scoped like everything else, and the caller-specific joins
+    // are join conditions on $1 (the caller), not a WHERE clause.
     return this.db.queryAs<TopicSummary>(
       userId,
       `select t.id,
@@ -81,13 +125,41 @@ export class TopicsService {
               t.description,
               t.is_public,
               count(distinct tw.id) as word_count,
-              count(distinct uws.topic_word_id) filter (where uws.repetitions >= 4) as mastered_count,
+              count(distinct uws.topic_word_id) filter (where uws.mastered_at is not null) as mastered_count,
+              count(distinct uws.topic_word_id) filter (where uws.is_leech) as focus_word_count,
+              count(distinct tw.id) filter (
+                where tw.status = 'READY' and uws.mastered_at is null
+                  and (uws.id is null or uws.fsrs_state = 'New')
+              ) as seed_count,
+              count(distinct uws.topic_word_id) filter (
+                where uws.mastered_at is null and uws.fsrs_state in ('Learning', 'Relearning')
+              ) as sprout_count,
+              count(distinct uws.topic_word_id) filter (
+                where uws.mastered_at is null and uws.fsrs_state = 'Review'
+              ) as flower_count,
+              count(distinct uws.topic_word_id) filter (where uws.next_due_at <= now()) as due_count,
+              min(ml.cefr_level)::text as min_level,
+              max(ml.cefr_level)::text as max_level,
+              case
+                when g.owner_id = $1 then 'mine'
+                when bool_or(me.user_id is not null) then 'group'
+                when t.is_public then 'library'
+                else 'group'
+              end as kind,
+              case
+                when g.owner_id is distinct from $1 and not bool_or(me.user_id is not null) and t.is_public
+                then g.name
+              end as collection_title,
               t.created_at
          from public.topics t
+         left join public.groups g on g.id = t.group_id
+         left join public.group_members me on me.group_id = t.group_id and me.user_id = $1
          left join public.topic_words tw on tw.topic_id = t.id
+         left join public.master_lexicon ml on ml.id = tw.lexicon_id
          left join public.user_word_srs uws on uws.topic_word_id = tw.id
-        group by t.id
+        group by t.id, g.id
         order by t.created_at desc`,
+      [userId],
     );
   }
 

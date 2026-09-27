@@ -60,25 +60,46 @@ describe('Module 3 — Error-Adaptive SRS', () => {
   });
 
   describe('rating a card (FR-3.1/3.2)', () => {
-    it('POST /srs/rate with GOOD grows the interval per the SM-2-derived formula', async () => {
-      const before = await request.get('/srs/due').set(authHeader('priya'));
-      const beforeState = (
-        before.body as ApiEnvelope<Array<{ topic_word_id: string; interval_days: number }>>
-      ).data.find((r) => r.topic_word_id === WORDS.ephemeral);
-
+    it('POST /srs/rate with GOOD on a due word is graded by FSRS and pushes it into the future (Phase 10)', async () => {
+      // Priya's 'ephemeral' is seeded due (-2h), so a GOOD must grade.
       const res = await request
         .post('/srs/rate')
         .set(authHeader('priya'))
         .send({ topicWordId: WORDS.ephemeral, rating: 'GOOD' });
       expect(res.status).toBe(200);
       const after = (
-        res.body as ApiEnvelope<{ ease_factor: number; interval_days: number; next_due_at: string }>
+        res.body as ApiEnvelope<{
+          graded: boolean;
+          state: string;
+          stability: number | null;
+          next_due_at: string;
+        }>
       ).data;
 
       expect(after.next_due_at).toBeTruthy();
-      if (beforeState) {
-        expect(after.interval_days).toBeGreaterThanOrEqual(beforeState.interval_days);
+      if (after.graded) {
+        expect(after.state).toBe('Review');
+        expect(after.stability).toBeGreaterThan(0);
+        expect(new Date(after.next_due_at).getTime()).toBeGreaterThan(Date.now());
       }
+      // A re-run without a re-seed finds the word no longer due, so the
+      // same GOOD is logged but not graded -- also correct behavior.
+    });
+
+    it('a second GOOD on a word that is no longer due is logged but does not move the schedule (Phase 10)', async () => {
+      const first = await request
+        .post('/srs/rate')
+        .set(authHeader('priya'))
+        .send({ topicWordId: WORDS.ephemeral, rating: 'GOOD' });
+      const again = await request
+        .post('/srs/rate')
+        .set(authHeader('priya'))
+        .send({ topicWordId: WORDS.ephemeral, rating: 'GOOD' });
+      expect(again.status).toBe(200);
+      const a = (again.body as ApiEnvelope<{ graded: boolean; next_due_at: string }>).data;
+      const f = (first.body as ApiEnvelope<{ next_due_at: string }>).data;
+      expect(a.graded).toBe(false);
+      expect(a.next_due_at).toBe(f.next_due_at);
     });
 
     it('POST /srs/rate rejects an unknown rating value', async () => {

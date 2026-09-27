@@ -44,6 +44,7 @@ describe('TopicsService', () => {
         is_public: true,
         word_count: '3',
         mastered_count: '2',
+        focus_word_count: '1',
         created_at: new Date('2026-08-01T00:00:00Z'),
       },
     ]);
@@ -91,19 +92,71 @@ describe('TopicsService', () => {
    * join/field, or drifting the mastery threshold away from the one
    * `computeSrsSummary` already defines.
    */
-  it('joins user_word_srs and filters mastered_count on the same repetitions >= 4 threshold computeSrsSummary uses', async () => {
+  it('joins user_word_srs and filters mastered_count on the same sticky mastered_at rule computeSrsSummary uses (Phase 10)', async () => {
     await service.findAllVisible('user-42');
 
     const [, sql] = queryAsMock.mock.calls[0];
     expect(sql).toMatch(/left join public\.user_word_srs/i);
     expect(sql).toMatch(/mastered_count/i);
-    expect(sql).toMatch(/repetitions >= 4/i);
+    expect(sql).toMatch(/mastered_at is not null/i);
+  });
+
+  /**
+   * Phase 12 UI-5 (Word Garden A6, 2026-09-26): stage / due counts, CEFR
+   * range and the bed's kind. Same mocked-DB limitation as above; the SQL
+   * itself was run against a real Postgres (PGlite) with sample rows when
+   * it was written (see the 2026-09-26 session report).
+   */
+  it('adds the garden stage counts on the same uws join, using FSRS state and sticky mastery', async () => {
+    await service.findAllVisible('user-42');
+
+    const [, sql] = queryAsMock.mock.calls[0] as [string, string];
+    for (const field of ['seed_count', 'sprout_count', 'flower_count', 'due_count']) {
+      expect(sql).toMatch(new RegExp(`as ${field}`));
+    }
+    expect(sql).toMatch(/fsrs_state in \('Learning', 'Relearning'\)/);
+    expect(sql).toMatch(/fsrs_state = 'Review'/);
+    expect(sql).toMatch(/next_due_at <= now\(\)/);
+    expect(sql).toMatch(/min\(ml\.cefr_level\)/);
+    expect(sql).toMatch(/as kind/);
+  });
+
+  it("decides the bed's kind from the caller's own id, passed as a parameter", async () => {
+    await service.findAllVisible('user-42');
+
+    const [userId, sql, params] = queryAsMock.mock.calls[0] as [string, string, unknown[]];
+    expect(userId).toBe('user-42');
+    expect(params).toEqual(['user-42']);
+    expect(sql).toMatch(/g\.owner_id = \$1/);
+    expect(sql).toMatch(/me\.user_id = \$1/);
   });
 
   it('passes mastered_count through unchanged, alongside word_count', async () => {
     const result = await service.findAllVisible('user-42');
 
     expect(result).toEqual([expect.objectContaining({ word_count: '3', mastered_count: '2' })]);
+  });
+
+  /**
+   * Phase 9, "Topics as Collections" subtext (2026-09-21) — same
+   * reasoning/limitation as the mastered_count pair above: the DB layer
+   * is mocked, so this protects against the join/field or the `is_leech`
+   * filter silently getting dropped, not the real counting logic.
+   */
+  it('filters focus_word_count on the same is_leech flag findLeeches already reads', async () => {
+    await service.findAllVisible('user-42');
+
+    const [, sql] = queryAsMock.mock.calls[0];
+    expect(sql).toMatch(/focus_word_count/i);
+    expect(sql).toMatch(/filter\s*\(\s*where uws\.is_leech\s*\)/i);
+  });
+
+  it('passes focus_word_count through unchanged, alongside word_count and mastered_count', async () => {
+    const result = await service.findAllVisible('user-42');
+
+    expect(result).toEqual([
+      expect.objectContaining({ word_count: '3', mastered_count: '2', focus_word_count: '1' }),
+    ]);
   });
 });
 

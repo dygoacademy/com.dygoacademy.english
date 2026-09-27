@@ -1,142 +1,160 @@
 #!/usr/bin/env bash
 # =============================================================================
-# Apply Dygo Academy database migrations to the local Docker Postgres.
+# Dygo Academy — build the database from database/schema, migrations and seeds.
 #
-#   ./database/apply-migrations.sh              # schema + RLS + indexes (001-003)
-#   ./database/apply-migrations.sh --seed       # ...plus development fixtures (004)
-#   ./database/apply-migrations.sh --test       # ...plus fixtures, then RLS suite
+#   ./database/apply-migrations.sh                  # EMPTY db: schema + migrations/ + every seed
+#   ./database/apply-migrations.sh --no-seed        # EMPTY db: schema + migrations/ only
+#   ./database/apply-migrations.sh --migrations     # EXISTING db: apply pending migrations/ files only
+#   ./database/apply-migrations.sh --seed NAME...   # EXISTING db: load seeds by name, e.g. 03_qa_tenant
+#   ./database/apply-migrations.sh --test           # RLS suite in a throwaway database (never touches yours)
+#   ./database/apply-migrations.sh --verify         # report what is installed
 #
-#   ./database/apply-migrations.sh --seed-only           # ONLY 004, on an already-migrated db
-#   ./database/apply-migrations.sh --qa-seed-only        # ONLY 011 (3rd-tenant QA fixture)
-#   ./database/apply-migrations.sh --qa-words-seed-only  # ONLY 012 (100 QA words) -- needs 011 first
-#   ./database/apply-migrations.sh --hello-world-seed-only  # ONLY 013 (1 test word+audio) -- needs 011 first
-#   ./database/apply-migrations.sh --grants-only            # ONLY 014+015 (service_role table grants)
-#   ./database/apply-migrations.sh --invite-fix-only        # ONLY 016+017 (invite creation/redeem fixes)
-#   ./database/apply-migrations.sh --test-only           # ONLY the RLS suite
-#   ./database/apply-migrations.sh --verify              # report what is actually installed
+# To wipe and rebuild an existing database, use ./database/reset-db.sh
+# (it backs up first and then calls this script).
 #
-# 001-003 are NOT idempotent (plain CREATE, not CREATE IF NOT EXISTS), so
-# re-running them on a migrated database fails on "already exists". Use the
-# --*-only flags to add fixtures or run tests without touching the schema, or
-# reset entirely with:  docker compose down -v && docker compose up -d
+# Layout
+#   schema/      squashed baseline (2026-09-25): final state of old 001–021
+#   migrations/  changes made AFTER the baseline, applied once each, in name
+#                order, and recorded in dygo_meta.applied_migrations
+#   seeds/       test/demo data, loaded in name order
+#   archive/     the pre-squash migrations, for history only; never run
 #
-# 005-007, 009, and 010 (invite redemption, solo-tenant provisioning, the
-# FR-8.2 heatmap function, the tenant-admin read expansion, the tenant-wide
-# heatmap widening) all use CREATE OR REPLACE FUNCTION, so unlike 001-003
-# they ARE safe to re-run on an already-migrated database if you only need
-# to pick up a change to one of them. 009's one DROP POLICY/CREATE POLICY
-# pair (group_members_select) is also safe to re-run — CREATE POLICY errors
-# on a duplicate name, which is exactly why it's preceded by DROP POLICY IF
-# EXISTS.
+# psql runs inside the Supabase Postgres container as `postgres`. Override for
+# a non-Docker Postgres with DYGO_PSQL, e.g. DYGO_PSQL="psql -h localhost -U postgres".
 # =============================================================================
 set -euo pipefail
 
 CONTAINER="${DYGO_DB_CONTAINER:-dygo_supabase_db}"
 DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+BASELINE_TAG="00_baseline_2026-09-25"
+# Seed order matters: 02 needs 01; 04 and 05 need 03.
+SEEDS=(01_core_fixtures 02_tier_ladder 03_qa_tenant 04_qa_words 05_hello_world_word)
 
-psql_run() {
-  docker exec -i "$CONTAINER" psql -U postgres -d postgres -q -v ON_ERROR_STOP=1 "$@"
+# psql against database $1 (default: postgres), reading SQL from stdin.
+psql_db() {
+  local db="${1:-postgres}"; shift || true
+  if [ -n "${DYGO_PSQL:-}" ]; then
+    $DYGO_PSQL -d "$db" -q -v ON_ERROR_STOP=1 "$@"
+  else
+    docker exec -i "$CONTAINER" psql -U postgres -d "$db" -q -v ON_ERROR_STOP=1 "$@"
+  fi
+}
+psql_run() { psql_db postgres "$@"; }
+scalar()   { psql_run -tA -c "$1" | tr -d '[:space:]'; }
+
+run_file() {   # run_file <file> [db]
+  echo "  → ${1#$DIR/}"
+  psql_db "${2:-postgres}" < "$1"
 }
 
-run_file() {
-  echo "→ $(basename "$1")"
-  psql_run < "$1"
+require_db() {
+  if [ -z "${DYGO_PSQL:-}" ] && ! docker ps --format '{{.Names}}' | grep -qx "$CONTAINER"; then
+    echo "error: container '$CONTAINER' is not running. Start it with: docker compose up -d" >&2
+    exit 1
+  fi
 }
 
-verify() {
-  echo "→ verifying installed objects"
-  psql_run -t <<'SQL'
-select '  tables            : ' || count(*)
-  from pg_class where relnamespace='public'::regnamespace and relkind in ('r','p');
-select '  RLS policies      : ' || count(*) from pg_policies where schemaname='public';
-select '  indexes           : ' || count(*) from pg_indexes where schemaname='public';
-select '  tables without RLS: ' || coalesce(string_agg(relname, ', '), 'none  <-- good')
-  from pg_class
- where relnamespace='public'::regnamespace and relkind in ('r','p')
-   and not relrowsecurity and relname not like 'review_logs_%';
-select '  seeded tenants    : ' || count(*) from public.tenants;
-select '  seeded profiles   : ' || count(*) from public.profiles;
+is_empty() { [ "$(scalar "select to_regclass('public.tenants') is null")" = "t" ]; }
+
+ensure_meta() {
+  psql_run <<'SQL'
+set client_min_messages to warning;
+create schema if not exists dygo_meta;
+create table if not exists dygo_meta.applied_migrations (
+  name       text primary key,
+  applied_at timestamptz not null default now()
+);
+comment on schema dygo_meta is
+  'Bookkeeping for database/apply-migrations.sh: which baseline and migrations/ files are applied.';
 SQL
 }
 
-if ! docker ps --format '{{.Names}}' | grep -qx "$CONTAINER"; then
-  echo "error: container '$CONTAINER' is not running. Start it with: docker compose up -d" >&2
-  exit 1
-fi
+apply_schema() {
+  echo "Schema (baseline):"
+  for f in "$DIR"/schema/*.sql; do run_file "$f"; done
+  ensure_meta
+  psql_run -c "insert into dygo_meta.applied_migrations (name) values ('$BASELINE_TAG') on conflict do nothing"
+}
 
+apply_pending_migrations() {
+  ensure_meta
+  local any=0
+  shopt -s nullglob
+  for f in "$DIR"/migrations/*.sql; do
+    local name; name="$(basename "$f" .sql)"
+    if [ "$(scalar "select count(*) from dygo_meta.applied_migrations where name = '$name'")" = "0" ]; then
+      [ $any -eq 0 ] && echo "Migrations:"; any=1
+      # Apply and record in one transaction, so a failed file is never marked applied.
+      { echo "begin;"; cat "$f"; echo ";"; echo "insert into dygo_meta.applied_migrations (name) values ('$name');"; echo "commit;"; } | psql_run
+      echo "  → migrations/$name.sql"
+    fi
+  done
+  shopt -u nullglob
+  [ $any -eq 0 ] && echo "Migrations: none pending."
+  return 0
+}
+
+apply_seeds() {
+  echo "Seeds:"
+  for s in "$@"; do
+    local f="$DIR/seeds/$s.sql"
+    [ -f "$f" ] || { echo "error: no seed named '$s' (have: ${SEEDS[*]})" >&2; exit 1; }
+    run_file "$f"
+  done
+}
+
+verify() {
+  echo "Installed:"
+  psql_run -tA <<'SQL'
+select '  tables             : ' || count(*)
+  from pg_class where relnamespace='public'::regnamespace and relkind in ('r','p');
+select '  RLS policies       : ' || count(*) from pg_policies where schemaname='public';
+select '  indexes            : ' || count(*) from pg_indexes where schemaname='public';
+select '  tables without RLS : ' || coalesce(string_agg(relname, ', '), 'none  <-- good')
+  from pg_class
+ where relnamespace='public'::regnamespace and relkind in ('r','p')
+   and not relrowsecurity and relname not like 'review_logs_%';
+select '  accounts / tenants : ' || (select count(*) from public.profiles) || ' / ' || (select count(*) from public.tenants);
+select '  topics / words     : ' || (select count(*) from public.topics) || ' / ' || (select count(*) from public.topic_words);
+select '  applied            : ' || coalesce(string_agg(name, ', ' order by name), '(none)')
+  from dygo_meta.applied_migrations;
+SQL
+}
+
+# The RLS suite asserts exact row counts against ONLY the core fixtures, so it
+# runs in a scratch database built from scratch, then dropped — your real
+# database is never touched.
+run_rls_suite() {
+  local scratch="dygo_rls_scratch"
+  echo "RLS suite in throwaway database '$scratch':"
+  psql_run -c "drop database if exists $scratch" -c "create database $scratch"
+  trap 'psql_run -c "drop database if exists '"$scratch"'" >/dev/null 2>&1 || true' EXIT
+  run_file "$DIR/tests/00_supabase_stub.sql" "$scratch"
+  for f in "$DIR"/schema/*.sql; do run_file "$f" "$scratch"; done
+  run_file "$DIR/seeds/01_core_fixtures.sql" "$scratch"
+  run_file "$DIR/tests/rls_test.sql" "$scratch"
+}
+
+# -----------------------------------------------------------------------------
+require_db
 case "${1:-}" in
-  --verify)
-    verify; exit 0 ;;
-  --seed-only)
-    run_file "$DIR/migrations/004_seed_data.sql"; verify; echo "done."; exit 0 ;;
-  --qa-seed-only)
-    # Optional third-tenant QA fixture (011) — see that file's own header for
-    # why it's separate from --seed-only's core 004 fixtures. Independent of
-    # 004; either can be loaded without the other.
-    run_file "$DIR/migrations/011_qa_test_tenant_seed.sql"; verify; echo "done."; exit 0 ;;
-  --qa-words-seed-only)
-    # 100 words across 5 topics inside 011's QA group. Foreign-keys onto 011's
-    # group/admin, so 011 must already be loaded.
-    if [ "$(psql_run -t -c "select count(*) from public.groups where id='bbbbbbbb-0000-0000-0000-000000000004'" | tr -d '[:space:]')" = "0" ]; then
-      echo "error: 011's QA group isn't loaded yet — run --qa-seed-only first." >&2
-      exit 1
-    fi
-    run_file "$DIR/migrations/012_qa_bulk_words_seed.sql"; verify; echo "done."; exit 0 ;;
-  --hello-world-seed-only)
-    # One hand-seeded word + real (espeak-ng-synthesized) audio, faking
-    # GeminiEnrichmentService's output for UI testing without a real Gemini
-    # call. Foreign-keys onto 011's topic/admin, same as 012.
-    if [ "$(psql_run -t -c "select count(*) from public.groups where id='bbbbbbbb-0000-0000-0000-000000000004'" | tr -d '[:space:]')" = "0" ]; then
-      echo "error: 011's QA group isn't loaded yet — run --qa-seed-only first." >&2
-      exit 1
-    fi
-    run_file "$DIR/migrations/013_hello_world_test_word.sql"; verify; echo "done."; exit 0 ;;
-  --grants-only)
-    # Idempotent GRANTs (014, 015) — safe to run any time, no dependency on
-    # other fixtures being loaded first.
-    run_file "$DIR/migrations/014_service_role_grants.sql"
-    run_file "$DIR/migrations/015_push_notification_service_role_grant.sql"
-    verify; echo "done."; exit 0 ;;
-  --invite-fix-only)
-    # Idempotent CREATE OR REPLACE FUNCTION (016, 017) — safe to run any
-    # time. Fixes invite link creation ("function digest(text, unknown)
-    # does not exist") and redemption ("column reference \"group_id\" is
-    # ambiguous") on an already-migrated database.
-    run_file "$DIR/migrations/016_pgcrypto_search_path_fix.sql"
-    run_file "$DIR/migrations/017_redeem_invite_ambiguous_column_fix.sql"
-    verify; echo "done."; exit 0 ;;
-  --test-only)
-    # The suite asserts exact row counts, so it is meaningless without fixtures.
-    if [ "$(psql_run -t -c 'select count(*) from public.tenants' | tr -d '[:space:]')" = "0" ]; then
-      echo "error: no seed data present — run --seed-only first, or the assertions" >&2
-      echo "       will fail on empty tables rather than on a real policy bug." >&2
-      exit 1
-    fi
-    echo "→ rls_test.sql"
-    psql_run < "$DIR/tests/rls_test.sql"
-    echo "done."; exit 0 ;;
-esac
-
-run_file "$DIR/migrations/001_initial_schema.sql"
-run_file "$DIR/migrations/002_rls_policies.sql"
-run_file "$DIR/migrations/003_indexes.sql"
-run_file "$DIR/migrations/005_group_invites_redeem.sql"
-run_file "$DIR/migrations/006_solo_tenant_provisioning.sql"
-run_file "$DIR/migrations/007_group_word_heatmap.sql"
-run_file "$DIR/migrations/008_profiles_group_visibility.sql"
-run_file "$DIR/migrations/009_tenant_admin_read_expansion.sql"
-run_file "$DIR/migrations/010_tenant_word_heatmap.sql"
-run_file "$DIR/migrations/016_pgcrypto_search_path_fix.sql"
-run_file "$DIR/migrations/017_redeem_invite_ambiguous_column_fix.sql"
-
-case "${1:-}" in
+  "")
+    is_empty || { echo "error: the database already has a schema. Use ./database/reset-db.sh to wipe and rebuild, or --migrations to apply new changes." >&2; exit 1; }
+    apply_schema; apply_pending_migrations; apply_seeds "${SEEDS[@]}"; verify ;;
+  --no-seed)
+    is_empty || { echo "error: the database already has a schema. Use ./database/reset-db.sh --no-seed." >&2; exit 1; }
+    apply_schema; apply_pending_migrations; verify ;;
+  --migrations)
+    is_empty && { echo "error: empty database — run without flags to build it first." >&2; exit 1; }
+    apply_pending_migrations; verify ;;
   --seed)
-    run_file "$DIR/migrations/004_seed_data.sql" ;;
+    shift; [ $# -gt 0 ] || { echo "usage: --seed NAME... (have: ${SEEDS[*]})" >&2; exit 1; }
+    apply_seeds "$@"; verify ;;
   --test)
-    run_file "$DIR/migrations/004_seed_data.sql"
-    echo "→ rls_test.sql"
-    psql_run < "$DIR/tests/rls_test.sql" ;;
+    run_rls_suite ;;
+  --verify)
+    verify ;;
+  *)
+    sed -n '2,24p' "$0"; exit 1 ;;
 esac
-
-verify
 echo "done."

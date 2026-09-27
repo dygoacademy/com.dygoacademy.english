@@ -20,6 +20,19 @@ export class GenerateQuizDto {
   topicId?: string;
 
   @ApiPropertyOptional({
+    description:
+      'Phase 9, "Targeted Re-Quiz" — scope to this exact set of topic_word ids (e.g. the ' +
+      'words just missed in a session), instead of a whole topic. Mutually exclusive with ' +
+      'topicId — QuizController rejects a request supplying both, since the two scopes ' +
+      'disagree about what "this quiz" means.',
+    type: [String],
+  })
+  @IsOptional()
+  @IsArray()
+  @IsUUID('loose', { each: true })
+  topicWordIds?: string[];
+
+  @ApiPropertyOptional({
     description: 'Which question types to include. Defaults to all four.',
     enum: QUIZ_TYPES,
     isArray: true,

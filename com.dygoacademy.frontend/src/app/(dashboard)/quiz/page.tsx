@@ -2,8 +2,9 @@
 
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Suspense, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 
+import { QuizAwards } from '@/components/quiz/QuizAwards';
 import { QuizFeedback } from '@/components/quiz/QuizFeedback';
 import { QuizQuestion } from '@/components/quiz/QuizQuestion';
 import {
@@ -17,7 +18,7 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { CONTENT_WIDTH } from '@/constants/layout';
-import { ROUTES } from '@/constants/routes';
+import { REQUIZ_STORAGE_KEY, ROUTES } from '@/constants/routes';
 import { useGenerateQuiz } from '@/hooks/useGenerateQuiz';
 import { useLeechDrillQuiz } from '@/hooks/useLeechDrillQuiz';
 import { useSubmitQuizAnswer } from '@/hooks/useSubmitQuizAnswer';
@@ -29,12 +30,17 @@ import type { QuizAnswerResult } from '@/types';
  * Suspense boundary for Next's static rendering, so the outer component
  * only provides the fallback and the inner one holds the real logic.
  *
- * Two entry points share this one page: `?topicId=` (FR-5.1–5.4, a normal
- * quiz batch via `POST /quizzes/generate`) and `?mode=leech` (FR-3.3's
- * remedial drill via `GET /quizzes/leech-drill`). Both hooks are called
+ * Three entry points share this one page: `?topicId=` (FR-5.1–5.4, a normal
+ * quiz batch via `POST /quizzes/generate`), `?mode=leech` (FR-3.3's
+ * remedial drill via `GET /quizzes/leech-drill`), and `?mode=requiz`
+ * (Phase 9, "Targeted Re-Quiz" — the exact words just missed in a study
+ * session, via the same `POST /quizzes/generate` as topicId but with
+ * `topicWordIds` instead). Both quiz-generating hooks are called
  * unconditionally — see `useGenerateQuiz`'s comment — with `enabled`
  * deciding which one actually fetches, so only one network call happens
- * per visit regardless of which mode this is.
+ * per visit regardless of which mode this is. `requiz`'s word-id list
+ * arrives via `sessionStorage` (`study/page.tsx`'s `REQUIZ_STORAGE_KEY`),
+ * not the URL — read once on mount, see the `useEffect` below.
  *
  * `max-w-xs` -> `max-w-sm` on every screen state here -- live-reported
  * 2026-09-05 ("the quiz and flash card screen too small"), matching
@@ -69,8 +75,38 @@ function QuizScreen() {
   const searchParams = useSearchParams();
   const topicId = searchParams.get('topicId') ?? undefined;
   const isLeechDrill = searchParams.get('mode') === 'leech';
+  const isRequiz = searchParams.get('mode') === 'requiz';
 
-  const generated = useGenerateQuiz(topicId, undefined, 10, !isLeechDrill);
+  // Phase 9, "Targeted Re-Quiz" -- read once on mount, not during render
+  // (sessionStorage doesn't exist during SSR, same hydration-mismatch
+  // reasoning as Topics as Collections' `localStorage` read). `undefined`
+  // means "haven't read it yet"; `[]` means "read it, and it was empty or
+  // missing" -- the two are kept distinct so `enabled` below doesn't fire
+  // the query on a false-empty read before the effect has even run.
+  const [requizWordIds, setRequizWordIds] = useState<string[] | undefined>(undefined);
+  useEffect(() => {
+    if (!isRequiz) return;
+    const stored = window.sessionStorage.getItem(REQUIZ_STORAGE_KEY);
+    try {
+      const parsed = stored ? JSON.parse(stored) : [];
+      setRequizWordIds(Array.isArray(parsed) ? parsed : []);
+    } catch {
+      setRequizWordIds([]);
+    }
+  }, [isRequiz]);
+
+  const generated = useGenerateQuiz(
+    isRequiz ? undefined : topicId,
+    isRequiz ? requizWordIds : undefined,
+    undefined,
+    10,
+    // Don't fire while requiz's sessionStorage read is still pending, and
+    // don't fire at all if it resolved empty -- an empty `topicWordIds`
+    // isn't "no scope" server-side, it's "zero words," which would
+    // otherwise silently fall through to a full unscoped quiz instead of
+    // an honest "nothing to quiz" state.
+    !isLeechDrill && (!isRequiz || (requizWordIds?.length ?? 0) > 0),
+  );
   const leechDrill = useLeechDrillQuiz(isLeechDrill);
   const { data, isLoading, isError, refetch } = isLeechDrill ? leechDrill : generated;
 
@@ -78,6 +114,10 @@ function QuizScreen() {
   const [index, setIndex] = useState(0);
   const [result, setResult] = useState<QuizAnswerResult | null>(null);
   const [correctCount, setCorrectCount] = useState(0);
+  // Same pattern as `study/page.tsx`'s own `missedWordIds` -- a separate
+  // array, not folded into `correctCount`, since "Review N missed words"
+  // (QuizAwards) needs to know *which* words, not just how many.
+  const [missedWordIds, setMissedWordIds] = useState<string[]>([]);
   // FR-12.1 -- once true, stays true for the rest of the session; used only
   // to decide whether leaving needs a confirm, not anything scored.
   const [answeredAny, setAnsweredAny] = useState(false);
@@ -95,7 +135,11 @@ function QuizScreen() {
         onSuccess: (res) => {
           setResult(res);
           setAnsweredAny(true);
-          if (res.correct) setCorrectCount((c) => c + 1);
+          if (res.correct) {
+            setCorrectCount((c) => c + 1);
+          } else {
+            setMissedWordIds((ids) => [...ids, item.topicWordId]);
+          }
         },
       },
     );
@@ -116,6 +160,32 @@ function QuizScreen() {
     } else {
       router.push(ROUTES.home);
     }
+  }
+
+  // Requiz's query is deliberately `enabled: false` while its
+  // sessionStorage read is pending or resolves empty (see the comment on
+  // `generated` above) -- react-query's own `isLoading` never resolves
+  // for a disabled query, so both cases are handled explicitly here
+  // rather than falling into the generic isLoading/done checks below.
+  if (isRequiz && requizWordIds === undefined) {
+    return (
+      <main className={`mx-auto flex min-h-screen ${CONTENT_WIDTH.default} flex-col items-center justify-center gap-3 p-4 text-center`}>
+        <p className="text-sm text-muted-foreground">Building your quiz…</p>
+      </main>
+    );
+  }
+  if (isRequiz && requizWordIds?.length === 0) {
+    return (
+      <main className={`mx-auto flex min-h-screen ${CONTENT_WIDTH.default} flex-col items-center justify-center gap-3 p-4 text-center`}>
+        <p className="text-lg font-semibold">Nothing to quiz.</p>
+        <p className="text-sm text-muted-foreground">
+          No missed words came through from that session.
+        </p>
+        <Link href={ROUTES.home} className="text-sm underline underline-offset-4">
+          Back to topics
+        </Link>
+      </main>
+    );
   }
 
   if (isLoading) {
@@ -139,15 +209,18 @@ function QuizScreen() {
     );
   }
 
-  if (done) {
+  // A genuine completed quiz gets the awards screen (QuizAwards); the
+  // zero-item edge cases below stay plain text -- there's nothing to
+  // celebrate about a quiz that never had any questions.
+  if (done && items.length === 0) {
     return (
       <main className={`mx-auto flex min-h-screen ${CONTENT_WIDTH.default} flex-col items-center justify-center gap-3 p-4 text-center`}>
         <p className="text-lg font-semibold">
-          {items.length === 0
-            ? isLeechDrill
-              ? 'No leech words right now.'
-              : 'Not enough enriched words yet for a quiz.'
-            : `You got ${correctCount} of ${items.length} right.`}
+          {isLeechDrill
+            ? 'No leech words right now.'
+            : isRequiz
+              ? "Those words aren't quizzable right now."
+              : 'Not enough enriched words yet for a quiz.'}
         </p>
         <Link href={ROUTES.home} className="text-sm underline underline-offset-4">
           Back to topics
@@ -156,11 +229,20 @@ function QuizScreen() {
     );
   }
 
+  if (done) {
+    return (
+      <main className={`mx-auto flex min-h-screen ${CONTENT_WIDTH.default} flex-col items-center justify-center p-4`}>
+        <QuizAwards correctCount={correctCount} totalCount={items.length} missedWordIds={missedWordIds} />
+      </main>
+    );
+  }
+
   return (
     <main className={`mx-auto flex min-h-screen ${CONTENT_WIDTH.default} flex-col gap-5 p-4`}>
       <div className="flex items-center justify-between text-xs text-muted-foreground">
         <span>
-          {index + 1} of {items.length} · {isLeechDrill ? 'leech drill' : 'quiz'}
+          {index + 1} of {items.length} ·{' '}
+          {isLeechDrill ? 'leech drill' : isRequiz ? 're-quiz' : 'quiz'}
         </span>
         <button type="button" onClick={handleExitClick} aria-label="End quiz">
           ✕

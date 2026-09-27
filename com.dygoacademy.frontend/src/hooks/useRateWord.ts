@@ -30,8 +30,8 @@ export type RateWordOutcome = { status: 'applied'; result: RateWordResult } | { 
  * server was reached and said no) is rethrown unchanged rather than
  * queued: retrying the exact same request later would just fail the same
  * way, and silently swallowing a real error would hide it from
- * `rateWord.isError` for good. The rating's ease factor/interval is never
- * computed client-side either way — that math is `srs-algorithm.ts`'s
+ * `rateWord.isError` for good. The rating's FSRS schedule is never
+ * computed client-side either way — that math is `fsrs-scheduler.ts`'s
  * alone — so a queued rating shows no immediate stats update; the study
  * session doesn't wait on this promise regardless (see `study/page.tsx`'s
  * `handleRate`, which advances to the next card immediately).

@@ -47,8 +47,10 @@ describe('NotificationProcessor', () => {
   it('skips a matched user with nothing due and no leeches (buildReminderPayload -> null)', async () => {
     queryMock
       .mockResolvedValueOnce([{ user_id: 'user-1' }]) // due schedules
+      .mockResolvedValueOnce([{ timezone: 'UTC' }]) // timezone resolution (unset -> DEFAULT_TIMEZONE)
       .mockResolvedValueOnce([{ due_now: '0', leech_count: '0' }]) // stats
-      .mockResolvedValueOnce([]); // streak dates
+      .mockResolvedValueOnce([]) // streak dates
+      .mockResolvedValueOnce([{ display_name: null }]); // profile
 
     await processor.process(makeJob());
 
@@ -58,8 +60,10 @@ describe('NotificationProcessor', () => {
   it('dispatches a leech-priority push for a matched user with due leeches', async () => {
     queryMock
       .mockResolvedValueOnce([{ user_id: 'user-1' }])
+      .mockResolvedValueOnce([{ timezone: 'UTC' }]) // timezone resolution
       .mockResolvedValueOnce([{ due_now: '5', leech_count: '2' }])
-      .mockResolvedValueOnce([]);
+      .mockResolvedValueOnce([])
+      .mockResolvedValueOnce([{ display_name: null }]); // profile
 
     await processor.process(makeJob());
 
@@ -71,17 +75,22 @@ describe('NotificationProcessor', () => {
   });
 
   it('isolates a per-user failure — one bad stats query does not stop the tick', async () => {
-    // buildPayload fires its stats + streak queries together via
-    // Promise.all, so each user consumes two queue slots, not one — the
-    // failing user's *stats* query rejects; its streak query still gets
-    // called (and must resolve to something) before the rejection is
-    // observed by the caller.
+    // buildPayload resolves each user's timezone first (one query), then
+    // fires stats + streak + profile together via Promise.all — four
+    // queue slots per user, not one. The failing user's *stats* (totals)
+    // query rejects; its streak and profile queries still get called (and
+    // must resolve to something) before the rejection is observed by the
+    // caller.
     queryMock
       .mockResolvedValueOnce([{ user_id: 'user-1' }, { user_id: 'user-2' }]) // due schedules
+      .mockResolvedValueOnce([{ timezone: 'UTC' }]) // user-1 timezone resolution
       .mockRejectedValueOnce(new Error('db down')) // user-1 stats query fails
       .mockResolvedValueOnce([]) // user-1 streak query (result discarded — Promise.all already rejects)
+      .mockResolvedValueOnce([{ display_name: null }]) // user-1 profile query (discarded)
+      .mockResolvedValueOnce([{ timezone: 'UTC' }]) // user-2 timezone resolution
       .mockResolvedValueOnce([{ due_now: '3', leech_count: '0' }]) // user-2 stats
-      .mockResolvedValueOnce([]); // user-2 streak
+      .mockResolvedValueOnce([]) // user-2 streak
+      .mockResolvedValueOnce([{ display_name: null }]); // user-2 profile
 
     await processor.process(makeJob());
 
@@ -96,6 +105,7 @@ describe('NotificationProcessor / SrsService.stats — shared summary source (Wa
       { total_words: '20', mastered_words: '5', due_now: '4', leech_count: '2' },
     ];
     const fixtureStreak = [{ review_date: '2026-09-01' }, { review_date: '2026-08-31' }];
+    const fixtureProfile = [{ display_name: null }];
 
     const realNow = Date.now;
     Date.now = () => Date.parse('2026-09-01T18:00:00.000Z');
@@ -103,8 +113,10 @@ describe('NotificationProcessor / SrsService.stats — shared summary source (Wa
       // Path 1: GET /srs/stats — RLS-scoped via queryAs(userId, text, params).
       const queryAsMock = jest
         .fn()
+        .mockResolvedValueOnce([{ timezone: 'UTC' }]) // timezone resolution (unset -> DEFAULT_TIMEZONE)
         .mockResolvedValueOnce(fixtureTotals)
-        .mockResolvedValueOnce(fixtureStreak);
+        .mockResolvedValueOnce(fixtureStreak)
+        .mockResolvedValueOnce(fixtureProfile);
       const srsModuleRef = await Test.createTestingModule({
         providers: [
           SrsService,
@@ -117,7 +129,8 @@ describe('NotificationProcessor / SrsService.stats — shared summary source (Wa
       const workerQueryMock = jest
         .fn()
         .mockResolvedValueOnce(fixtureTotals)
-        .mockResolvedValueOnce(fixtureStreak);
+        .mockResolvedValueOnce(fixtureStreak)
+        .mockResolvedValueOnce(fixtureProfile);
       const summaryViaWorker = await computeSrsSummary(workerQueryMock, 'user-1');
 
       // Same fixture rows in, same numbers out — regardless of which
@@ -127,8 +140,11 @@ describe('NotificationProcessor / SrsService.stats — shared summary source (Wa
       // And it's not just coincidence: both paths execute the exact same
       // SQL string — the "single source of truth" property Wave 1b exists
       // to guarantee, not two independently hand-copied queries that
-      // happen to agree today.
-      const [, apiStatsSql] = queryAsMock.mock.calls[0];
+      // happen to agree today. queryAsMock.calls[0] is stats()'s own
+      // timezone-resolution query (a step computeSrsSummary itself doesn't
+      // do), so the totals query is calls[1] on that path but calls[0] on
+      // the direct-call path below.
+      const [, apiStatsSql] = queryAsMock.mock.calls[1];
       const [workerStatsSql] = workerQueryMock.mock.calls[0];
       expect(workerStatsSql).toBe(apiStatsSql);
     } finally {

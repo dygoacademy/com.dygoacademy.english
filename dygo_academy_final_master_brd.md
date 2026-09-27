@@ -107,14 +107,14 @@ graph TD
 ---
 
 ### 📈 Module 3: Error-Adaptive Spaced Repetition System (SRS)
-* **FR-3.1 (Mistake-Weighted Retention Formula)**: Dynamically reduces intervals for error-prone words:
-  $$EF' = EF + \Big(0.1 - (5 - q) \cdot (0.08 + (5 - q) \cdot 0.02)\Big) - (\lambda \cdot M_{\text{recent}})$$
-* **FR-3.2 (4 Standardized Rating Actions)**:
-  * `[Again]` (< 10 min, resets interval, increments mistake count $M$).
-  * `[Hard]` (Short interval multiplier $\times 1.2$).
-  * `[Good]` (Standard interval progression: 1d $\rightarrow$ 3d $\rightarrow$ 7d $\rightarrow$ 16d...).
-  * `[Easy]` (Bonus interval progression $\times 1.3$).
-* **FR-3.3 (Leech Word Diagnostic Queue)**: Words failed $\ge 4$ times in 7 days are automatically tagged as *Leeches* and routed to intensive remedial drills.
+* **FR-3.1 (FSRS-6 Memory Model)** *(amended 2026-09-25, Phase 10 — replaces the original SM-2 ease-factor formula)*: Each word carries an FSRS memory state (stability in days, difficulty 1–10, and a recall probability computed from both). Every graded review updates that state, and the next review is scheduled for when recall probability is predicted to fall to the **target retention of 95%**. Error-prone words get shorter intervals because every mistake raises difficulty and cuts stability. Intervals are capped at about 180 days. Mastery means stability ≥ 21 days, and it is sticky: it is lost only by a graded mistake.
+* **FR-3.2 (4 Standardized Rating Actions)** *(amended 2026-09-25, Phase 10)*: The four actions are FSRS grades.
+  * `[Again]` (10-minute relearning step; counts as a lapse and a mistake $M$).
+  * `[Hard]` (Shorter growth than Good; intervals still grow, e.g. 1d $\rightarrow$ 1d $\rightarrow$ 2d $\rightarrow$ 3d...).
+  * `[Good]` (Standard progression: 1d $\rightarrow$ 3d $\rightarrow$ 8d $\rightarrow$ 19d $\rightarrow$ 43d...).
+  * `[Easy]` (Bonus progression; on a word's first-ever review it counts as Good).
+  * Quiz answers are graded too: wrong = Again, recognition quizzes (Matching, Contextual Choice) = Hard, recall quizzes (Cloze, Dictation) = Good, and a hint caps the grade at Hard. A success only moves the schedule when the word is due (or new). At most one mistake per word per local day counts toward FR-3.3.
+* **FR-3.3 (Leech Word Diagnostic Queue)**: Words failed $\ge 4$ times in 7 days (graded mistakes only, from flashcards or quizzes) are automatically tagged as *Leeches* and routed to intensive remedial drills.
 * **FR-3.4 (Sub-15ms Review Queue)**: Daily due cards (`next_due_at <= NOW()`) retrieved instantly via Redis session cache and partial PostgreSQL indexes.
 
 ---

@@ -1,5 +1,5 @@
 /**
- * `group_role` enum, database/migrations/001_initial_schema.sql line 23.
+ * `group_role` enum, database/schema/01_extensions_types.sql.
  * ADMIN > WRITE > READ — full control, add/edit words, study & quiz only
  * (tech spec §3.2 enum example; permission matrix in
  * dygo_academy_api_surface.md §"Module 1").
@@ -7,7 +7,7 @@
 export type GroupRole = 'ADMIN' | 'WRITE' | 'READ';
 
 /**
- * `public.profiles`, database/migrations/001_initial_schema.sql line 61.
+ * `public.profiles`, database/schema/02_tables.sql.
  * Distinct from Supabase's own `auth.users`/session `User` type (from
  * @supabase/supabase-js) — this is our application row, keyed 1:1 on it.
  */

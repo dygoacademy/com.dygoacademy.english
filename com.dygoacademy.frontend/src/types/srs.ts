@@ -1,5 +1,5 @@
 /**
- * `srs_rating` enum, database/migrations/001_initial_schema.sql line 35 —
+ * `srs_rating` enum, database/schema/01_extensions_types.sql —
  * also the canonical enum example in the tech spec §3.2. Drives the
  * mistake-weighted retention formula (Phase 2, Module 3); the study
  * session UI (Phase 0 wireframe implementation) collects one of these
@@ -43,12 +43,24 @@ export interface DueCard {
   example_sentences: LexiconExampleSentence[];
   /** No user_word_srs row yet — never reviewed before. */
   is_new: boolean;
-  ease_factor: number;
-  interval_days: number;
-  repetitions: number;
+  /** Phase 10 — FSRS memory state (backend `fsrs-scheduler.ts`). */
+  state: FsrsState;
+  /** Days until recall probability falls to 90%. Null for a new card. */
+  stability: number | null;
+  /** 1 (easiest) – 10 (hardest). Null for a new card. */
+  difficulty: number | null;
+  reps: number;
+  lapses: number;
+  scheduled_days: number;
+  last_reviewed_at: string | null;
+  /** Recall probability right now, 0–1. Null for a new card. */
+  retrievability: number | null;
+  is_mastered: boolean;
   is_leech: boolean;
   next_due_at: string | null;
 }
+
+export type FsrsState = 'New' | 'Learning' | 'Review' | 'Relearning';
 
 /** `POST /api/v1/srs/sessions` response — SrsService.SessionResult. */
 export interface SrsSession {
@@ -59,12 +71,31 @@ export interface SrsSession {
 /** `POST /api/v1/srs/rate` response — SrsService.RateWordResult. */
 export interface RateWordResult {
   topic_word_id: string;
-  ease_factor: number;
-  interval_days: number;
-  repetitions: number;
+  /** The rating actually applied (a flashcard EASY on a never-seen word counts as GOOD). */
+  rating: SrsRating;
+  /**
+   * Phase 10 — false when the review was logged but didn't move the
+   * schedule (a success on a word that wasn't due, or a repeat mistake the
+   * same day).
+   */
+  graded: boolean;
+  state: FsrsState;
+  stability: number | null;
+  difficulty: number | null;
+  reps: number;
+  lapses: number;
+  scheduled_days: number;
   is_leech: boolean;
+  is_mastered: boolean;
   was_correct: boolean;
   next_due_at: string;
+  /**
+   * Phase 9, "Session Mastery Count" — true exactly when *this* rating
+   * crossed the mastery threshold, not merely whether the word is
+   * currently mastered. See `SrsService.RateWordResult`'s own doc comment
+   * (backend) for the full reasoning.
+   */
+  just_mastered: boolean;
 }
 
 /** `GET /api/v1/srs/stats` response — SrsService.SrsStats. */
@@ -74,12 +105,46 @@ export interface SrsStats {
   due_now: number;
   leech_count: number;
   current_streak_days: number;
+  /**
+   * `public.profiles.display_name` for the caller, added 2026-09-21 for
+   * Home's greeting personalization — null for the common case (real
+   * registrations never collect one; only hand-seeded fixture accounts
+   * like Sarah's have one).
+   */
+  display_name: string | null;
+}
+
+/**
+ * `GET /api/v1/srs/tier-progress` response — SrsService.TierProgress
+ * (Phase 9, "Vocabulary Mastery Tier Ladder"). camelCase, not snake_case
+ * like `SrsStats`/`LeechCard` above — this isn't a raw SQL row passthrough
+ * (this file's own header comment on why those two ARE snake_case doesn't
+ * apply here), it's hand-constructed by `SrsService.getTierProgress()`,
+ * same precedent as `SyncItemResult`'s `topicWordId` below.
+ */
+export interface TierProgress {
+  tier: number;
+  tierName: string;
+  masteredInTier: number;
+  wordsInTier: number;
+  nextTierName: string | null;
+  wordsToNextTier: number | null;
 }
 
 /** `GET /api/v1/srs/activity` row shape — SrsService.DailyActivity (Phase 3 Module 18, FR-18.1). */
 export interface DailyActivity {
   review_date: string;
   review_count: number;
+}
+
+/**
+ * `GET /api/v1/srs/activity/upcoming` row shape — SrsService.UpcomingActivity
+ * (Phase 9, "Upcoming Path"). `due_count` is a projection, not a
+ * commitment — see the backend's own doc comment on `getUpcomingActivity`.
+ */
+export interface UpcomingActivity {
+  due_date: string;
+  due_count: number;
 }
 
 /** `GET /api/v1/srs/leeches` row shape — SrsService.LeechCard. */

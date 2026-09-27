@@ -1,6 +1,6 @@
 /**
  * The test dataset. Every id here is copied from
- * `database/migrations/004_seed_data.sql`, which is the single source of
+ * `database/seeds/01_core_fixtures.sql`, which is the single source of
  * truth — if a migration changes an id or a seeded value, update it there
  * first and mirror the change here, not the other way around.
  *

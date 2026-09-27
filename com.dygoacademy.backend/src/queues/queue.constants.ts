@@ -4,6 +4,9 @@ export const NOTIFICATION_QUEUE = 'notification-queue';
 export const MAINTENANCE_QUEUE = 'maintenance-queue';
 
 /** Job names. */
+export const ENRICH_WORD_JOB = 'enrich-word';
+/** Fill in master_lexicon.audio_url for a word that already has its text fields. */
+export const AUDIO_BACKFILL_JOB = 'audio-backfill';
 export const NOTIFICATION_TICK_JOB = 'notification-tick';
 export const PARTITION_MAINTENANCE_JOB = 'partition-maintenance';
 
@@ -18,6 +21,12 @@ export interface WordEnrichmentJob {
   languageCode: string;
   targetCEFR?: 'A2' | 'B1' | 'B2' | 'C1';
   triggeredByUserId: string;
+}
+
+export interface AudioBackfillJob {
+  lexiconId: string;
+  word: string;
+  languageCode: string;
 }
 
 export interface NotificationCronJob {

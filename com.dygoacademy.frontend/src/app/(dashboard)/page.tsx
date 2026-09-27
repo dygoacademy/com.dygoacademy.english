@@ -1,13 +1,15 @@
 'use client';
 
-import { ActivityTrail } from '@/components/topics/ActivityTrail';
-import { DueNowCard } from '@/components/topics/DueNowCard';
+import { LearningPath } from '@/components/topics/LearningPath';
 import { LeechNudge } from '@/components/topics/LeechNudge';
+import { TierProgressCard } from '@/components/topics/TierProgressCard';
 import { TopicCard } from '@/components/topics/TopicCard';
 import { useLeeches } from '@/hooks/useLeeches';
 import { useSrsStats } from '@/hooks/useSrsStats';
+import { useTierProgress } from '@/hooks/useTierProgress';
 import { useTopics } from '@/hooks/useTopics';
 import { CONTENT_WIDTH } from '@/constants/layout';
+import { formatGreeting } from '@/lib/utils';
 
 /**
  * Wireframe 1d — "one decision on open." Chosen over 1e (today-as-a-
@@ -43,19 +45,50 @@ import { CONTENT_WIDTH } from '@/constants/layout';
  * remediation. Adding a word from a specific topic already works today,
  * on that topic's own page.
  *
- * `ActivityTrail` added below `DueNowCard` 2026-09-20 (Phase 3 Module 18,
- * FR-18.1) — "how have I been doing" as a 5-day sequence, alongside (not
- * instead of) the due-count card's "what do I do right now."
+ * `ActivityTrail` (past, added Phase 3 Module 18), `DueNowCard` (today),
+ * and `UpcomingPath` (future, added Phase 9) were three separate boxes
+ * here through most of Phase 9 -- each answering its own question ("how
+ * have I been doing," "what do I do right now," "what's coming"), each
+ * reading its own hook. Merged into one `LearningPath` 2026-09-20, live-
+ * requested ("follow the UI/UX design with same with mock design with
+ * light mode not dark mode"): the mockup's own Home screen was never
+ * three stacked boxes, it was one connected vertical sequence of day-rows
+ * with a single CTA at the bottom -- matching that structurally (while
+ * keeping this app's existing light color tokens, not the mockup's dark
+ * navy palette) meant combining what `ActivityTrail`/`DueNowCard`/
+ * `UpcomingPath` each did into the one component, not three. All three
+ * were deleted outright rather than left unused -- confirmed via grep
+ * that nothing else in the app referenced them, unlike `TopicGridCard`
+ * (Topics as Collections), which stayed because that one *is* a real,
+ * user-facing toggle between two views, not a straight replacement.
+ *
+ * `TierProgressCard` added above `LearningPath` 2026-09-20 (Phase 9,
+ * "Vocabulary Mastery Tier Ladder" — `phase 9 implementation plan.md`) —
+ * replaces the mockup's invented "Band trend: 6.4" hero metric with a
+ * checkable one. Shared with `analytics/page.tsx`, both reading the same
+ * `useTierProgress()` hook so they can't disagree, same reasoning as the
+ * `useSrsStats()`/`useLeeches()` reuse two paragraphs up.
+ *
+ * Greeting became "Good evening, Sarah" (`formatGreeting`) 2026-09-21,
+ * matching the mockup's own "GOOD EVENING, SARAH" -- another Phase 9
+ * detail this page had missed. Stays the static "Welcome back" while
+ * `stats` is still loading, same "don't guess ahead of real data" rule
+ * the streak callout below already followed -- `stats.display_name` is
+ * the one new field this needed, folded into the existing `useSrsStats()`
+ * call rather than a second request.
  */
 export default function TopicsHomePage() {
   const { data: topics, isPending, isError } = useTopics();
   const { data: stats, isPending: statsPending, isError: statsError } = useSrsStats();
   const { data: leeches } = useLeeches();
+  const { data: tierProgress } = useTierProgress();
 
   return (
     <div className={`mx-auto flex ${CONTENT_WIDTH.default} flex-col gap-4 p-6`}>
       <div className="flex items-center justify-between">
-        <h1 className="text-lg font-semibold">Welcome back</h1>
+        <h1 className="text-lg font-semibold">
+          {stats ? formatGreeting(stats.display_name) : 'Welcome back'}
+        </h1>
         {stats && (
           <span className="rounded-full border px-2.5 py-1 text-xs">
             {stats.current_streak_days}-day streak
@@ -63,15 +96,15 @@ export default function TopicsHomePage() {
         )}
       </div>
 
-      {statsPending && <div className="h-32 w-full animate-pulse rounded-xl bg-muted" />}
+      {tierProgress && <TierProgressCard progress={tierProgress} />}
+
+      {statsPending && <div className="h-64 w-full animate-pulse rounded-xl bg-muted" />}
       {statsError && (
         <p className="text-sm text-muted-foreground">
           Couldn&apos;t load your due count right now. Check that the API is running.
         </p>
       )}
-      {stats && <DueNowCard dueCount={stats.due_now} />}
-
-      <ActivityTrail />
+      {stats && <LearningPath dueCount={stats.due_now} />}
 
       <div className="flex flex-col gap-2">
         <p className="font-mono text-xs uppercase tracking-wide text-muted-foreground">

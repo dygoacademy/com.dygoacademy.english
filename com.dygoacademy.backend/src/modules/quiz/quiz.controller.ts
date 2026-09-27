@@ -1,4 +1,13 @@
-import { Body, Controller, Get, HttpCode, HttpStatus, Param, Post } from '@nestjs/common';
+import {
+  BadRequestException,
+  Body,
+  Controller,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Param,
+  Post,
+} from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
@@ -27,6 +36,13 @@ export class QuizController {
     @CurrentUser('id') userId: string,
     @Body() dto: GenerateQuizDto,
   ): Promise<QuizItem[]> {
+    // Phase 9, "Targeted Re-Quiz" -- topicId (whole topic) and
+    // topicWordIds (an exact set) are two different, incompatible ideas
+    // of what "this quiz" scopes to; rejecting both at once here means
+    // QuizService.generate never has to guess which one the caller meant.
+    if (dto.topicId && dto.topicWordIds?.length) {
+      throw new BadRequestException('Supply topicId or topicWordIds, not both.');
+    }
     return this.quizService.generate(userId, dto);
   }
 

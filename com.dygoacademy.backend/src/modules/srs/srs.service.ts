@@ -4,7 +4,24 @@ import { DatabaseService } from '../../database/database.service';
 import { RateWordDto } from './dto/rate-word.dto';
 import { SessionMode, StartSessionDto } from './dto/start-session.dto';
 import { SyncReviewItemDto, SyncReviewsDto } from './dto/sync-reviews.dto';
-import { LEECH_THRESHOLD, SrsCardState, applyRating } from './srs-algorithm';
+import {
+  FsrsCardState,
+  FsrsStateName,
+  LEECH_THRESHOLD,
+  LEECH_WINDOW_DAYS,
+  SrsRating,
+  newCard,
+  nextMasteredAt,
+  retrievability,
+  schedule,
+} from './fsrs-scheduler';
+import {
+  GradedQuizType,
+  ReviewSource,
+  decideGrading,
+  gradeFlashcard,
+  gradeQuizAnswer,
+} from './grading';
 
 /** A due (or new) card, joined with its enriched lexicon content for study. */
 export interface DueCard {
@@ -21,21 +38,58 @@ export interface DueCard {
   example_sentences: unknown;
   /** True if this word has never been reviewed — no `user_word_srs` row yet (FR-4.2's "new card"). */
   is_new: boolean;
-  ease_factor: number;
-  interval_days: number;
-  repetitions: number;
+  /** Phase 10 — FSRS memory state. See fsrs-scheduler.ts. */
+  state: FsrsStateName;
+  stability: number | null;
+  difficulty: number | null;
+  reps: number;
+  lapses: number;
+  scheduled_days: number;
+  last_reviewed_at: Date | null;
+  /** Recall probability right now (0–1); null for a new card. Computed at read time. */
+  retrievability: number | null;
+  is_mastered: boolean;
   is_leech: boolean;
   next_due_at: Date | null;
 }
 
 export interface RateWordResult {
   topic_word_id: string;
-  ease_factor: number;
-  interval_days: number;
-  repetitions: number;
+  /**
+   * The rating actually applied — can differ from what was submitted: a
+   * correct quiz answer is graded by quiz type (grading.ts), and a flashcard
+   * EASY on a never-seen word counts as GOOD.
+   */
+  rating: SrsRating;
+  /**
+   * Phase 10 — false when this review was logged but did not move the
+   * schedule (a success on a word that wasn't due, or a second mistake on
+   * the same word in the same local day). The fields below then describe
+   * the word's unchanged state.
+   */
+  graded: boolean;
+  state: FsrsStateName;
+  stability: number | null;
+  difficulty: number | null;
+  reps: number;
+  lapses: number;
+  scheduled_days: number;
   is_leech: boolean;
+  is_mastered: boolean;
   was_correct: boolean;
   next_due_at: Date;
+  /**
+   * Phase 9, "Session Mastery Count" (`phase 9 implementation plan.md`) --
+   * true exactly when *this* rating made the word mastered (Phase 10:
+   * `mastered_at` went from null to set, see fsrs-scheduler.ts's
+   * `nextMasteredAt`), not merely whether the word is currently
+   * mastered -- a word already at or above the threshold, rated again,
+   * is not "just" mastered. The frontend accumulates this into a
+   * per-session count for the reward-hero's "+N mastered" line; no new
+   * endpoint or persisted aggregate needed, the information already
+   * passes through this existing per-card round trip.
+   */
+  just_mastered: boolean;
 }
 
 export interface LeechCard {
@@ -53,7 +107,62 @@ export interface SrsStats {
   due_now: number;
   leech_count: number;
   current_streak_days: number;
+  /**
+   * Phase 9, Home greeting personalization ("check the topic design
+   * mockup, that look like haven't implement the indicate yet" ->
+   * mockup's "GOOD EVENING, SARAH") -- `public.profiles.display_name`
+   * for the caller, null for the common case (real registrations never
+   * collect one; only hand-seeded fixture accounts like Sarah's have
+   * one). Folded into this existing per-load query rather than a new
+   * endpoint, since Home already calls `useSrsStats()` on every visit.
+   */
+  display_name: string | null;
 }
+
+/**
+ * Phase 9, "Vocabulary Mastery Tier Ladder" (`phase 9 implementation
+ * plan.md`) -- replaces an invented decimal "estimated IELTS band" (the
+ * exact thing Phase 7's Module 20 was shelved over for lacking a credible
+ * methodology) with a checkable claim: "you've mastered N of M words in
+ * this tier's collection." `tier`/`tierName` describe the tier the caller
+ * is *currently progressing through* (the first not-yet-cleared tier, or
+ * the last tier if every tier is cleared) -- not the last tier they
+ * finished. `nextTierName`/`wordsToNextTier` are both null once every tier
+ * is cleared; there is nothing further to progress toward.
+ */
+export interface TierProgress {
+  tier: number;
+  tierName: string;
+  masteredInTier: number;
+  wordsInTier: number;
+  nextTierName: string | null;
+  wordsToNextTier: number | null;
+}
+
+/**
+ * The tier→topic mapping is server-side config, not something the client
+ * should hardcode (Home and Analytics both read `GET /srs/tier-progress`
+ * so they can't disagree -- same rule Phase 6 FR-9.1/9.2/9.3 already
+ * fixed once for streak/due-count, not something to re-break with a third
+ * source of truth).
+ *
+ * These 4 topic ids are `database/seeds/02_tier_ladder.sql`'s
+ * test dataset, live-directed 2026-09-20 ("Let's map tiers to topics
+ * ourselves for now" / "You can build test dataset by yourself") to
+ * unblock this feature rather than wait on a real curriculum decision --
+ * see that migration's own header. **Swap these for real production topic
+ * ids once an actual curriculum decision is made; don't ship this array
+ * as the permanent mapping.** A `tier` column on `topics` (via migration)
+ * is the cleaner long-term answer if more than 4 tiers, or per-group
+ * customization, ever comes up -- a hardcoded array is enough for one
+ * global ladder against a known, fixed set of ids.
+ */
+const TIER_TOPICS: { tier: number; tierName: string; topicId: string }[] = [
+  { tier: 1, tierName: 'Foundation', topicId: 'c9c9c9c9-0000-0000-0000-000000000001' },
+  { tier: 2, tierName: 'Core Vocabulary', topicId: 'c9c9c9c9-0000-0000-0000-000000000002' },
+  { tier: 3, tierName: 'Band 6.5 Ready', topicId: 'c9c9c9c9-0000-0000-0000-000000000003' },
+  { tier: 4, tierName: 'Band 7.5 Ready', topicId: 'c9c9c9c9-0000-0000-0000-000000000004' },
+];
 
 export interface SessionResult {
   mode: SessionMode;
@@ -73,6 +182,20 @@ export interface DailyActivity {
   review_count: number;
 }
 
+/**
+ * Phase 9, "Upcoming Path" -- the forward-looking counterpart to
+ * `DailyActivity` above. Deliberately a separate interface, not a shared
+ * `direction` param on the same route/shape: the fields mean different
+ * things (a count of *already-happened* reviews vs. a count of words
+ * *currently scheduled* to come due), and `due_count` is explicitly a
+ * projection, not a commitment -- see `getUpcomingActivity`'s own
+ * comment for why.
+ */
+export interface UpcomingActivity {
+  due_date: string;
+  due_count: number;
+}
+
 const DUE_CARD_COLUMNS = `
   tw.id as topic_word_id,
   tw.topic_id,
@@ -89,7 +212,7 @@ const DUE_CARD_COLUMNS = `
 
 /**
  * Module 3 — Error-adaptive spaced repetition (Phase 2). See
- * `srs-algorithm.ts` for the scoring math; this class owns the DB
+ * `fsrs-scheduler.ts` (FSRS math) and `grading.ts` (what counts) for the scoring rules; this class owns the DB
  * transactions and RLS scoping (same split, and the same `queryAs`/`withUser`
  * pattern, as `TopicsService`).
  */
@@ -114,7 +237,9 @@ export class SrsService {
       userId,
       `select ${DUE_CARD_COLUMNS},
               false as is_new,
-              uws.ease_factor, uws.interval_days, uws.repetitions,
+              uws.fsrs_state as state, uws.stability, uws.difficulty,
+              uws.reps, uws.lapses, uws.scheduled_days, uws.last_reviewed_at,
+              (uws.mastered_at is not null) as is_mastered,
               uws.is_leech, uws.next_due_at
          from public.user_word_srs uws
          join public.topic_words tw on tw.id = uws.topic_word_id
@@ -126,9 +251,10 @@ export class SrsService {
       topicId ? [topicId, limit] : [limit],
     );
 
+    const now = new Date();
     const remaining = Math.max(0, limit - dueExisting.length);
     if (remaining === 0) {
-      return dueExisting;
+      return withRetrievability(dueExisting, now);
     }
 
     // "not exists" against user_word_srs is still RLS-scoped to this caller
@@ -139,11 +265,11 @@ export class SrsService {
       userId,
       `select ${DUE_CARD_COLUMNS},
               true as is_new,
-              -- Cast explicitly: an un-cast numeric literal (2.5) comes back
-              -- from pg as a string (its default NUMERIC parser), unlike the
-              -- "existing due" query's real ease_factor column above — this
-              -- keeps both branches' rows the same JS shape.
-              2.5::real as ease_factor, 0 as interval_days, 0 as repetitions,
+              -- Cast explicitly so both branches' rows have the same JS shape
+              -- (an un-cast numeric literal comes back from pg as a string).
+              'New'::text as state, null::real as stability, null::real as difficulty,
+              0 as reps, 0 as lapses, 0::real as scheduled_days,
+              null::timestamptz as last_reviewed_at, false as is_mastered,
               false as is_leech, null::timestamptz as next_due_at
          from public.topic_words tw
          left join public.master_lexicon ml on ml.id = tw.lexicon_id
@@ -157,131 +283,275 @@ export class SrsService {
       topicId ? [topicId, remaining] : [remaining],
     );
 
-    return [...dueExisting, ...newCards];
+    return withRetrievability([...dueExisting, ...newCards], now);
   }
 
   /**
-   * Applies one FR-3.2 rating. Runs as a single transaction: read current
-   * state → count recent mistakes → insert the `review_logs` row → upsert
-   * `user_word_srs`. All four steps need to see the same snapshot and land
-   * atomically, which `queryAs` (single-statement) can't guarantee.
+   * FR-3.2 — a flashcard rating from `/study` (or an offline replay via
+   * `sync()`). Self-ratings count at face value except EASY on a
+   * never-seen word, which counts as GOOD (grading.ts).
    */
-  async rate(userId: string, dto: RateWordDto, now: Date = new Date()): Promise<RateWordResult> {
+  async rate(
+    userId: string,
+    dto: RateWordDto,
+    now: Date = new Date(),
+    source: ReviewSource = 'flashcard',
+  ): Promise<RateWordResult> {
+    return this.applyReview(
+      userId,
+      {
+        topicWordId: dto.topicWordId,
+        responseMs: dto.responseMs,
+        source,
+        quizType: null,
+        hintUsed: false,
+        gradeFor: (isNewCard) => gradeFlashcard(dto.rating, isNewCard),
+      },
+      now,
+    );
+  }
+
+  /**
+   * Phase 10, Workstream 3 — a graded quiz answer feeds the same schedule
+   * flashcards do. Wrong = AGAIN; correct recognition (MATCHING,
+   * CONTEXTUAL_CHOICE) = HARD; correct recall (CLOZE, DICTATION) = GOOD; a
+   * hint caps at HARD. Whether it actually moves the schedule is decided by
+   * the shared rules in `applyReview` (grading.ts's `decideGrading`).
+   */
+  async recordQuizResult(
+    userId: string,
+    input: {
+      topicWordId: string;
+      quizType: GradedQuizType;
+      correct: boolean;
+      hintUsed: boolean;
+      responseMs?: number;
+      source?: 'quiz' | 'leech_drill';
+    },
+    now: Date = new Date(),
+  ): Promise<RateWordResult> {
+    const rating = gradeQuizAnswer(input);
+    return this.applyReview(
+      userId,
+      {
+        topicWordId: input.topicWordId,
+        responseMs: input.responseMs,
+        source: input.source ?? 'quiz',
+        quizType: input.quizType,
+        hintUsed: input.hintUsed,
+        gradeFor: () => rating,
+      },
+      now,
+    );
+  }
+
+  /**
+   * One review, one transaction: read current state → resolve the learner's
+   * day → count graded mistakes → decide whether this review grades →
+   * insert the `review_logs` row (always, graded or not) → upsert
+   * `user_word_srs` (only when graded). All steps need the same snapshot and
+   * must land atomically, which `queryAs` (single-statement) can't give.
+   */
+  private async applyReview(
+    userId: string,
+    input: {
+      topicWordId: string;
+      responseMs?: number;
+      source: ReviewSource;
+      quizType: GradedQuizType | null;
+      hintUsed: boolean;
+      gradeFor: (isNewCard: boolean) => SrsRating;
+    },
+    now: Date,
+  ): Promise<RateWordResult> {
     return this.db.withUser(userId, async (client) => {
       // Confirms the word exists and is readable (topic_words_select via
       // can_read_topic) before doing anything else — a bad/foreign
       // topicWordId should 404, not silently no-op through the upsert below.
       const wordRows = await client.query<{ id: string }>(
         `select id from public.topic_words where id = $1`,
-        [dto.topicWordId],
+        [input.topicWordId],
       );
       if (wordRows.rows.length === 0) {
         throw new NotFoundException('Word not found.');
       }
 
-      const stateRows = await client.query<{
-        ease_factor: number;
-        interval_days: number;
-        repetitions: number;
-      }>(
-        `select ease_factor, interval_days, repetitions
+      const stateRows = await client.query<SrsStateRow>(
+        `select fsrs_state, stability, difficulty, reps, lapses, learning_steps,
+                scheduled_days, last_reviewed_at, next_due_at, mastered_at, is_leech
            from public.user_word_srs
           where topic_word_id = $1`,
-        [dto.topicWordId],
+        [input.topicWordId],
       );
-      // pg returns snake_case columns; normalize to the camelCase shape the
-      // pure algorithm expects. No existing row means a never-reviewed
-      // ("new") card — SM-2's conventional starting state.
-      const currentState: SrsCardState = stateRows.rows[0]
-        ? {
-            easeFactor: stateRows.rows[0].ease_factor,
-            intervalDays: stateRows.rows[0].interval_days,
-            repetitions: stateRows.rows[0].repetitions,
-          }
-        : { easeFactor: 2.5, intervalDays: 0, repetitions: 0 };
+      const existing = stateRows.rows[0];
+      const isNewCard = !existing;
+      const current: FsrsCardState = existing ? rowToCard(existing) : newCard(now);
+      const masteredBefore = existing?.mastered_at ? new Date(existing.mastered_at) : null;
 
-      // M_recent — see srs-algorithm.ts's decay-strategy note. Counted
-      // *before* inserting this review's own log row.
-      const recentRows = await client.query<{ count: string }>(
-        `select count(*) as count
+      // "Today" is the learner's local day, same resolver the streak uses.
+      const timezone = await resolveUserTimezone(
+        async <T extends Record<string, unknown>>(text: string, params: unknown[]) =>
+          (await client.query<T>(text, params)).rows,
+        userId,
+      );
+
+      // Graded mistakes only: an ungraded repeat mistake (same word, same
+      // day) never counts toward the FR-3.3 leech window.
+      const mistakeRows = await client.query<{ recent: string; today: string }>(
+        `select count(*) as recent,
+                count(*) filter (
+                  where (reviewed_at at time zone $3)::date = ($2::timestamptz at time zone $3)::date
+                ) as today
            from public.review_logs
           where topic_word_id = $1
             and rating = 'AGAIN'
-            and reviewed_at >= $2::timestamptz - interval '7 days'`,
-        [dto.topicWordId, now.toISOString()],
+            and graded
+            and reviewed_at >= $2::timestamptz - ($4 || ' days')::interval`,
+        [input.topicWordId, now.toISOString(), timezone, LEECH_WINDOW_DAYS],
       );
-      const recentMistakesBefore = Number(recentRows.rows[0]?.count ?? 0);
+      const recentMistakesBefore = Number(mistakeRows.rows[0]?.recent ?? 0);
+      const lapseAlreadyCountedToday = Number(mistakeRows.rows[0]?.today ?? 0) > 0;
 
-      const outcome = applyRating(currentState, dto.rating, recentMistakesBefore, now);
-      const recentMistakesAfter = recentMistakesBefore + outcome.mistakeIncrement;
-      const isLeech = recentMistakesAfter >= LEECH_THRESHOLD;
+      const rating = input.gradeFor(isNewCard);
+      const decision = decideGrading({
+        rating,
+        isNewCard,
+        isDue: current.dueAt.getTime() <= now.getTime(),
+        lapseAlreadyCountedToday,
+      });
+
+      const outcome = decision.graded ? schedule(current, rating, now) : null;
+      const after = outcome?.card ?? current;
+      const elapsedDays =
+        outcome?.elapsedDays ??
+        (current.lastReviewAt
+          ? Math.max(0, (now.getTime() - current.lastReviewAt.getTime()) / 86_400_000)
+          : null);
 
       await client.query(
         `insert into public.review_logs
-           (user_id, topic_word_id, rating, was_correct, response_ms, ease_factor_after, interval_days_after, reviewed_at)
-         values ($1, $2, $3, $4, $5, $6, $7, $8)`,
+           (user_id, topic_word_id, rating, was_correct, response_ms, reviewed_at,
+            source, quiz_type, hint_used, graded, state_before, elapsed_days,
+            scheduled_days, stability_after, difficulty_after)
+         values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)`,
         [
           userId,
-          dto.topicWordId,
-          dto.rating,
-          outcome.wasCorrect,
-          dto.responseMs ?? null,
-          outcome.easeFactor,
-          outcome.intervalDays,
+          input.topicWordId,
+          rating,
+          rating !== 'AGAIN',
+          input.responseMs ?? null,
           now.toISOString(),
+          input.source,
+          input.quizType,
+          input.hintUsed,
+          decision.graded,
+          current.state,
+          elapsedDays,
+          current.scheduledDays,
+          after.stability,
+          after.difficulty,
         ],
       );
 
+      if (!outcome) {
+        // Logged only — the schedule is untouched. `existing` is always set
+        // here: a new card always grades (grading.ts).
+        return {
+          topic_word_id: input.topicWordId,
+          rating,
+          graded: false,
+          state: current.state,
+          stability: current.stability,
+          difficulty: current.difficulty,
+          reps: current.reps,
+          lapses: current.lapses,
+          scheduled_days: current.scheduledDays,
+          is_leech: existing?.is_leech ?? false,
+          is_mastered: masteredBefore !== null,
+          was_correct: rating !== 'AGAIN',
+          next_due_at: current.dueAt,
+          just_mastered: false,
+        };
+      }
+
+      const mistakeIncrement = rating === 'AGAIN' ? 1 : 0;
+      const recentMistakesAfter = recentMistakesBefore + mistakeIncrement;
+      const isLeech = recentMistakesAfter >= LEECH_THRESHOLD;
+      const masteredAfter = nextMasteredAt(masteredBefore, after, rating, now);
+
       const upserted = await client.query<{
-        ease_factor: number;
-        interval_days: number;
-        repetitions: number;
+        fsrs_state: FsrsStateName;
+        stability: number | null;
+        difficulty: number | null;
+        reps: number;
+        lapses: number;
+        scheduled_days: number;
         is_leech: boolean;
         next_due_at: Date;
+        mastered_at: Date | null;
       }>(
         `insert into public.user_word_srs
-           (user_id, topic_word_id, ease_factor, interval_days, repetitions,
-            total_mistakes, recent_mistakes, is_leech, last_reviewed_at, next_due_at)
-         values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+           (user_id, topic_word_id, fsrs_state, stability, difficulty, reps, lapses,
+            learning_steps, scheduled_days, total_mistakes, recent_mistakes, is_leech,
+            last_reviewed_at, next_due_at, mastered_at)
+         values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)
          on conflict (user_id, topic_word_id) do update set
-           ease_factor      = excluded.ease_factor,
-           interval_days    = excluded.interval_days,
-           repetitions      = excluded.repetitions,
+           fsrs_state       = excluded.fsrs_state,
+           stability        = excluded.stability,
+           difficulty       = excluded.difficulty,
+           reps             = excluded.reps,
+           lapses           = excluded.lapses,
+           learning_steps   = excluded.learning_steps,
+           scheduled_days   = excluded.scheduled_days,
            total_mistakes   = public.user_word_srs.total_mistakes + excluded.total_mistakes,
            recent_mistakes  = excluded.recent_mistakes,
            is_leech         = excluded.is_leech,
            last_reviewed_at = excluded.last_reviewed_at,
            next_due_at      = excluded.next_due_at,
+           mastered_at      = excluded.mastered_at,
            updated_at       = now()
-         returning ease_factor, interval_days, repetitions, is_leech, next_due_at`,
+         returning fsrs_state, stability, difficulty, reps, lapses, scheduled_days,
+                   is_leech, next_due_at, mastered_at`,
         [
           userId,
-          dto.topicWordId,
-          outcome.easeFactor,
-          outcome.intervalDays,
-          outcome.repetitions,
-          outcome.mistakeIncrement,
+          input.topicWordId,
+          after.state,
+          after.stability,
+          after.difficulty,
+          after.reps,
+          after.lapses,
+          after.learningSteps,
+          after.scheduledDays,
+          mistakeIncrement,
           recentMistakesAfter,
           isLeech,
           now.toISOString(),
-          outcome.nextDueAt.toISOString(),
+          after.dueAt.toISOString(),
+          masteredAfter ? masteredAfter.toISOString() : null,
         ],
       );
 
       const row = upserted.rows[0];
       return {
-        topic_word_id: dto.topicWordId,
-        ease_factor: row.ease_factor,
-        interval_days: row.interval_days,
-        repetitions: row.repetitions,
+        topic_word_id: input.topicWordId,
+        rating,
+        graded: true,
+        state: row.fsrs_state,
+        stability: row.stability,
+        difficulty: row.difficulty,
+        reps: row.reps,
+        lapses: row.lapses,
+        scheduled_days: row.scheduled_days,
         is_leech: row.is_leech,
-        was_correct: outcome.wasCorrect,
+        is_mastered: row.mastered_at !== null,
+        was_correct: rating !== 'AGAIN',
         next_due_at: row.next_due_at,
+        just_mastered: masteredBefore === null && row.mastered_at !== null,
       };
     });
   }
 
-  /** FR-3.3 — the remedial queue. Reads the stored `is_leech` flag, not a live aggregate (see srs-algorithm.ts). */
+  /** FR-3.3 — the remedial queue. Reads the stored `is_leech` flag, not a live aggregate (set in `applyReview`). */
   async findLeeches(userId: string): Promise<LeechCard[]> {
     return this.db.queryAs<LeechCard>(
       userId,
@@ -297,10 +567,16 @@ export class SrsService {
   /**
    * FR-8.1's per-student view. Delegates to `computeSrsSummary` (below) --
    * see that function's own comment for why this stopped being its own
-   * hand-written pair of queries.
+   * hand-written pair of queries. `detectedTz` is only ever used as a
+   * fallback -- see `resolveUserTimezone`'s own comment.
    */
-  async stats(userId: string): Promise<SrsStats> {
-    return computeSrsSummary((text, params) => this.db.queryAs(userId, text, params), userId);
+  async stats(userId: string, detectedTz?: string): Promise<SrsStats> {
+    const queryFn = <T extends Record<string, unknown> = Record<string, unknown>>(
+      text: string,
+      params: unknown[],
+    ) => this.db.queryAs<T>(userId, text, params);
+    const timezone = await resolveUserTimezone(queryFn, userId, detectedTz);
+    return computeSrsSummary(queryFn, userId, timezone);
   }
 
   /**
@@ -321,7 +597,12 @@ export class SrsService {
    * Postgres `interval '$2 days'` (which isn't valid syntax; intervals
    * don't accept a bound parameter directly inside the literal).
    */
-  async getDailyActivity(userId: string, days = 7): Promise<DailyActivity[]> {
+  async getDailyActivity(userId: string, days = 7, detectedTz?: string): Promise<DailyActivity[]> {
+    const timezone = await resolveUserTimezone(
+      (text, params) => this.db.queryAs(userId, text, params),
+      userId,
+      detectedTz,
+    );
     // count(*) comes back as a string (Postgres bigint) -- converted to a
     // real number here, same as computeSrsSummary does for due_now/
     // mastered_words/leech_count below, rather than the string-passthrough
@@ -330,16 +611,137 @@ export class SrsService {
     // the time they leave this file.
     const rows = await this.db.queryAs<{ review_date: string; review_count: string }>(
       userId,
-      `select (reviewed_at at time zone 'utc')::date::text as review_date,
+      `select (reviewed_at at time zone $3)::date::text as review_date,
               count(*) as review_count
          from public.review_logs
         where user_id = $1
           and reviewed_at >= now() - ($2 || ' days')::interval
         group by review_date
         order by review_date desc`,
-      [userId, days],
+      [userId, days, timezone],
     );
     return rows.map((r) => ({ review_date: r.review_date, review_count: Number(r.review_count) }));
+  }
+
+  /**
+   * Phase 9, "Upcoming Path" -- the forward-looking sibling to
+   * `getDailyActivity` immediately above: same shape (grouped calendar-day
+   * counts over a window, RLS-scoped via `queryAs`, gap days left for the
+   * frontend to zero-fill -- `ActivityTrail.tsx`'s own comment on why that
+   * fill happens client-side, not here, applies equally to
+   * `UpcomingPath.tsx`), but grouping `user_word_srs.next_due_at` instead
+   * of `review_logs.reviewed_at`, and looking forward instead of back.
+   * `user_word_srs.next_due_at` already exists (the SRS engine has always
+   * needed it, for `findDue`/`rate` above) -- this is a new query against
+   * existing data, not a new "planned curriculum" concept, correcting an
+   * earlier overestimate of this feature's scope in the master schedule.
+   *
+   * Filters on `(next_due_at at time zone 'utc')::date > (now() at time
+   * zone 'utc')::date` -- a strict future *calendar day*, not `next_due_at
+   * > now()` -- so a word due later today (already counted by `SrsStats.
+   * due_now`'s own `next_due_at <= now()` check once it actually comes
+   * due) is never double-counted here. "Today" stays `DueNowCard`'s job;
+   * this method only ever answers for days after it.
+   *
+   * The result is a projection, not a commitment: `next_due_at` moves
+   * whenever a word is actually reviewed (early, late, or not at all,
+   * per fsrs-scheduler.ts), so "Friday: 4 words" describes what's
+   * currently scheduled, not a guarantee — the frontend's copy needs to
+   * read that way too, not as a fixed plan.
+   */
+  async getUpcomingActivity(
+    userId: string,
+    days = 7,
+    detectedTz?: string,
+  ): Promise<UpcomingActivity[]> {
+    const timezone = await resolveUserTimezone(
+      (text, params) => this.db.queryAs(userId, text, params),
+      userId,
+      detectedTz,
+    );
+    const rows = await this.db.queryAs<{ due_date: string; due_count: string }>(
+      userId,
+      `select (next_due_at at time zone $3)::date::text as due_date,
+              count(*) as due_count
+         from public.user_word_srs
+        where user_id = $1
+          and (next_due_at at time zone $3)::date > (now() at time zone $3)::date
+          and next_due_at < now() + ($2 || ' days')::interval
+        group by due_date
+        order by due_date asc`,
+      [userId, days, timezone],
+    );
+    return rows.map((r) => ({ due_date: r.due_date, due_count: Number(r.due_count) }));
+  }
+
+  /**
+   * Phase 9, "Vocabulary Mastery Tier Ladder". Same query shape
+   * `TopicsService.findAllVisible`'s `mastered_count` already uses
+   * (`topics.service.ts:83-84`) -- `count(distinct ...) filter (where
+   * uws.mastered_at is not null)` since Phase 10's sticky mastery -- scoped to `TIER_TOPICS`' 4 fixed topic ids
+   * instead of every topic the caller can see. RLS-scoped via `queryAs`
+   * like everywhere else in this class: `topic_words_select`'s
+   * `can_read_topic()` already grants any authenticated caller read access
+   * to these 4 topics (seeded `is_public = true`), and
+   * `user_word_srs_all_own` already narrows the left join to the caller's
+   * own mastery state, so no explicit `user_id` predicate is needed here
+   * either.
+   *
+   * "Current tier" is the first tier in ladder order that isn't fully
+   * cleared (`masteredCount < wordCount`), not the last one that *is*
+   * cleared -- the ladder is sequential by construction (`TIER_TOPICS`'
+   * own array order), so the first incomplete tier is always the one
+   * actively being worked toward. A topic with zero words (shouldn't
+   * happen with the seeded dataset, but a config edit could produce one)
+   * is never treated as "cleared" -- `wordCount > 0` is required, the same
+   * divide-by-zero guard `MasteryRing`'s frontend already uses for the
+   * same reason.
+   */
+  async getTierProgress(userId: string): Promise<TierProgress> {
+    const rows = await this.db.queryAs<{
+      topic_id: string;
+      word_count: string;
+      mastered_count: string;
+    }>(
+      userId,
+      `select tw.topic_id,
+              count(distinct tw.id) as word_count,
+              count(distinct uws.topic_word_id) filter (where uws.mastered_at is not null) as mastered_count
+         from public.topic_words tw
+         left join public.user_word_srs uws on uws.topic_word_id = tw.id
+        where tw.topic_id = any($1::uuid[])
+        group by tw.topic_id`,
+      [TIER_TOPICS.map((t) => t.topicId)],
+    );
+
+    const byTopicId = new Map(
+      rows.map((r) => [
+        r.topic_id,
+        { wordCount: Number(r.word_count), masteredCount: Number(r.mastered_count) },
+      ]),
+    );
+
+    let clearedThrough = -1;
+    for (let i = 0; i < TIER_TOPICS.length; i++) {
+      const stats = byTopicId.get(TIER_TOPICS[i].topicId);
+      const cleared = !!stats && stats.wordCount > 0 && stats.masteredCount >= stats.wordCount;
+      if (!cleared) break;
+      clearedThrough = i;
+    }
+
+    const activeIndex = Math.min(clearedThrough + 1, TIER_TOPICS.length - 1);
+    const active = TIER_TOPICS[activeIndex];
+    const activeStats = byTopicId.get(active.topicId) ?? { wordCount: 0, masteredCount: 0 };
+    const next = activeIndex + 1 < TIER_TOPICS.length ? TIER_TOPICS[activeIndex + 1] : null;
+
+    return {
+      tier: active.tier,
+      tierName: active.tierName,
+      masteredInTier: activeStats.masteredCount,
+      wordsInTier: activeStats.wordCount,
+      nextTierName: next?.tierName ?? null,
+      wordsToNextTier: next ? activeStats.wordCount - activeStats.masteredCount : null,
+    };
   }
 
   /** FR-4.3 — see StartSessionDto's header comment for why this has no persisted "session" row. */
@@ -367,7 +769,7 @@ export class SrsService {
     const results: SyncItemResult[] = [];
     for (const item of ordered) {
       try {
-        const result = await this.rate(userId, toRateDto(item), new Date(item.reviewedAt));
+        const result = await this.rate(userId, toRateDto(item), new Date(item.reviewedAt), 'sync');
         results.push({ topicWordId: item.topicWordId, status: 'applied', result });
       } catch (err) {
         results.push({
@@ -397,12 +799,19 @@ function toRateDto(item: SyncReviewItemDto): RateWordDto {
  * `QuizService.leechDrill` reuses `SrsService.findLeeches`: one definition
  * of "what counts as a streak."
  */
-export function computeStreak(descendingDates: string[]): number {
+export function computeStreak(descendingDates: string[], todayDateString?: string): number {
   if (descendingDates.length === 0) return 0;
 
   const toUtcDay = (d: string): number => Date.parse(`${d}T00:00:00.000Z`) / 86_400_000;
   const days = descendingDates.map(toUtcDay);
-  const todayUtcDay = Math.floor(Date.now() / 86_400_000);
+  // `todayDateString` (a YYYY-MM-DD calendar date, resolved in the user's
+  // timezone by `computeSrsSummary` below) is what makes this respect a
+  // non-UTC user's actual "today" -- omitting it falls back to the UTC
+  // calendar day of the current instant, this function's original
+  // (and still UTC-only) behavior.
+  const todayUtcDay = todayDateString
+    ? toUtcDay(todayDateString)
+    : Math.floor(Date.now() / 86_400_000);
 
   let cursor = todayUtcDay;
   // A streak "counts" today only if studied already; otherwise it starts checking from yesterday.
@@ -435,6 +844,81 @@ type SummaryQueryFn = <T extends Record<string, unknown> = Record<string, unknow
 ) => Promise<T[]>;
 
 /**
+ * Fallback default for `resolveUserTimezone` below, when neither a stored
+ * preference nor a detected zone is available -- matches Dygo's core
+ * Vietnamese-market audience (see phase 2.md's target-user framing), not
+ * a neutral choice like UTC, since a wrong-but-plausible default here
+ * beats one that's wrong for (almost) everyone.
+ */
+export const DEFAULT_TIMEZONE = 'Asia/Ho_Chi_Minh';
+
+function isValidTimezone(tz: string | undefined | null): tz is string {
+  if (!tz) return false;
+  try {
+    // Throws RangeError on an unrecognized IANA zone name -- the cheapest
+    // validation available without a bundled tz-data lookup table, and
+    // exactly what Postgres's own `at time zone $1` would otherwise reject
+    // less gracefully (a raw SQL error rather than a clean fallback).
+    Intl.DateTimeFormat(undefined, { timeZone: tz });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Single definition of "what timezone is this user's day measured in,"
+ * mirroring the frontend's `lib/timezone.ts` (added the same pass, after
+ * a UTC+8 user saw Home's ribbon and streak stuck on the previous day
+ * for the first ~8 hours of their local day -- both sides of this bug
+ * shared one root cause: hardcoded UTC day-truncation).
+ *
+ * Resolution order: `profiles.timezone` once it's actually been set by
+ * the user (the column defaults to the literal 'UTC', which is this
+ * schema's "never configured" sentinel, not a real preference -- see
+ * 001_initial_schema.sql's own comment on the column) -> the caller's
+ * detected browser zone (`detectedTz`, e.g. from
+ * `Intl.DateTimeFormat().resolvedOptions().timeZone`, threaded through
+ * from the frontend as a query param since there is no user-facing
+ * timezone setting yet to have stored a preference in the first place)
+ * -> `DEFAULT_TIMEZONE`. Takes the same `queryFn` shape `computeSrsSummary`
+ * does, for the same reason: `SrsService`'s callers pass an RLS-scoped
+ * closure, `NotificationProcessor`'s pass an unscoped one with no
+ * per-request JWT to scope by.
+ */
+export async function resolveUserTimezone(
+  queryFn: SummaryQueryFn,
+  userId: string,
+  detectedTz?: string,
+): Promise<string> {
+  const rows = await queryFn<{ timezone: string }>(
+    `select timezone from public.profiles where id = $1`,
+    [userId],
+  );
+  const stored = rows[0]?.timezone;
+  if (stored && stored !== 'UTC') return stored;
+  if (isValidTimezone(detectedTz)) return detectedTz;
+  return DEFAULT_TIMEZONE;
+}
+
+/**
+ * Today's calendar date (YYYY-MM-DD) in `timezone` -- mirrors the
+ * frontend's `lib/timezone.ts#toLocalDateString`. Reads the current
+ * instant via `Date.now()` rather than `new Date()` so a test that mocks
+ * `Date.now` (as several in srs.service.spec.ts already do) still
+ * controls "now" here -- `new Date()`'s no-arg form does not consult a
+ * reassigned `Date.now` in V8, only `new Date(explicitMillis)` does.
+ */
+function todayInTimezone(timezone: string): string {
+  return new Intl.DateTimeFormat('en-CA', {
+    timeZone: timezone,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).format(new Date(Date.now()));
+}
+
+/**
  * The single definition of "this user's streak/due/leech/mastery numbers"
  * -- extracted 2026-09-19 (Phase 2 FR-9.1/9.2/9.3's deeper fix, per
  * `phase 2 implementation plan.md` §4 steps 5-6) out of what used to be
@@ -463,8 +947,9 @@ type SummaryQueryFn = <T extends Record<string, unknown> = Record<string, unknow
 export async function computeSrsSummary(
   queryFn: SummaryQueryFn,
   userId: string,
+  timezone: string = DEFAULT_TIMEZONE,
 ): Promise<SrsStats> {
-  const [totals, streakRows] = await Promise.all([
+  const [totals, streakRows, profileRows] = await Promise.all([
     queryFn<{
       total_words: string;
       mastered_words: string;
@@ -473,7 +958,7 @@ export async function computeSrsSummary(
     }>(
       `select
          count(*) as total_words,
-         count(*) filter (where repetitions >= 4) as mastered_words,
+         count(*) filter (where mastered_at is not null) as mastered_words,
          count(*) filter (where next_due_at <= now()) as due_now,
          count(*) filter (where is_leech) as leech_count
        from public.user_word_srs
@@ -485,11 +970,25 @@ export async function computeSrsSummary(
       // ::date column back into a JS Date object, which would just have to
       // be re-serialized below. review_date is never sent to a client, so
       // asking Postgres for text directly is simpler than fighting that.
-      `select distinct (reviewed_at at time zone 'utc')::date::text as review_date
+      // `timezone` (resolved by the caller via `resolveUserTimezone`) is
+      // what a "day" means for this streak -- was hardcoded 'utc', which
+      // held a UTC+N user's streak on the previous day for the first N
+      // hours of their local day.
+      `select distinct (reviewed_at at time zone $2)::date::text as review_date
          from public.review_logs
         where user_id = $1
         order by review_date desc
         limit 366`,
+      [userId, timezone],
+    ),
+    // Deliberately its own query rather than a join onto `user_word_srs`
+    // above: a fresh account has zero `user_word_srs` rows, and joining
+    // would either drop the whole result (inner join) or force
+    // `display_name` into the aggregate's GROUP BY for no reason (left
+    // join). `profiles` is a one-row-per-user lookup by primary key --
+    // cheap regardless.
+    queryFn<{ display_name: string | null }>(
+      `select display_name from public.profiles where id = $1`,
       [userId],
     ),
   ]);
@@ -500,6 +999,63 @@ export async function computeSrsSummary(
     mastered_words: Number(t?.mastered_words ?? 0),
     due_now: Number(t?.due_now ?? 0),
     leech_count: Number(t?.leech_count ?? 0),
-    current_streak_days: computeStreak(streakRows.map((r) => r.review_date)),
+    current_streak_days: computeStreak(
+      streakRows.map((r) => r.review_date),
+      todayInTimezone(timezone),
+    ),
+    display_name: profileRows[0]?.display_name ?? null,
   };
+}
+
+/** Columns `applyReview` reads from `user_word_srs`. */
+interface SrsStateRow {
+  fsrs_state: FsrsStateName;
+  stability: number | null;
+  difficulty: number | null;
+  reps: number;
+  lapses: number;
+  learning_steps: number;
+  scheduled_days: number;
+  last_reviewed_at: Date | string | null;
+  next_due_at: Date | string;
+  mastered_at: Date | string | null;
+  is_leech: boolean;
+}
+
+function rowToCard(row: SrsStateRow): FsrsCardState {
+  return {
+    state: row.fsrs_state,
+    stability: row.stability,
+    difficulty: row.difficulty,
+    reps: row.reps,
+    lapses: row.lapses,
+    learningSteps: row.learning_steps ?? 0,
+    scheduledDays: Number(row.scheduled_days ?? 0),
+    lastReviewAt: row.last_reviewed_at ? new Date(row.last_reviewed_at) : null,
+    dueAt: new Date(row.next_due_at),
+  };
+}
+
+/** Adds read-time recall probability to due cards (null for new cards). */
+function withRetrievability(cards: DueCard[], now: Date): DueCard[] {
+  return cards.map((c) => ({
+    ...c,
+    retrievability:
+      c.is_new || c.next_due_at == null
+        ? null
+        : retrievability(
+            {
+              state: c.state,
+              stability: c.stability,
+              difficulty: c.difficulty,
+              reps: c.reps,
+              lapses: c.lapses,
+              learningSteps: 0,
+              scheduledDays: Number(c.scheduled_days ?? 0),
+              lastReviewAt: c.last_reviewed_at ? new Date(c.last_reviewed_at) : null,
+              dueAt: new Date(c.next_due_at),
+            },
+            now,
+          ),
+  }));
 }

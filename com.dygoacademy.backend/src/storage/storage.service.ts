@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
+import { HeadObjectCommand, PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
+import { createHash } from 'node:crypto';
 
 /**
  * S3-compatible object storage — Cloudflare R2, always (tech spec §3,
@@ -30,6 +31,40 @@ export class StorageService {
   }
 
   /**
+   * The one place a word's audio object key is built (tech spec §4.2:
+   * `audio/[lang]/[accent]/[normalized_word_md5].ext`). Deterministic, so the
+   * same word always maps to the same object — which is what lets
+   * `hasObject` find audio generated before a database reset.
+   */
+  static audioKeyFor(normalizedWord: string, languageCode: string): string {
+    const hash = createHash('md5').update(normalizedWord).digest('hex');
+    return `audio/${languageCode}/us/${hash}.wav`;
+  }
+
+  /** True if `key` already exists in the bucket (HEAD, no download). */
+  async hasObject(key: string): Promise<boolean> {
+    try {
+      await this.client.send(new HeadObjectCommand({ Bucket: this.bucket, Key: key }));
+      return true;
+    } catch (err) {
+      const status = (err as { $metadata?: { httpStatusCode?: number } }).$metadata?.httpStatusCode;
+      if (status === 404 || (err as { name?: string }).name === 'NotFound') return false;
+      throw err;
+    }
+  }
+
+  /** Public, browser-playable URL for `key` (see `upload`). */
+  publicUrlFor(key: string): string {
+    const base = this.publicUrl.replace(/\/+$/, '');
+    // R2's public bucket domain already resolves to bucket root — no
+    // bucket segment needed (forcePathStyle is always false now; see
+    // configuration.ts).
+    return this.config.get<boolean>('storage.forcePathStyle', false)
+      ? `${base}/${this.bucket}/${key}`
+      : `${base}/${key}`;
+  }
+
+  /**
    * Uploads `body` to `key` and returns the permanent public CDN URL,
    * matching the `master_lexicon.audio_url` contract (tech spec §4.2 —
    * `/audio/[lang]/[accent]/[normalized_word_md5].ext`, caller builds `key`).
@@ -47,14 +82,7 @@ export class StorageService {
       }),
     );
 
-    const base = this.publicUrl.replace(/\/+$/, '');
-    // R2's public bucket domain already resolves to bucket root — no
-    // bucket segment needed (forcePathStyle is always false now; see
-    // configuration.ts).
-    const url = this.config.get<boolean>('storage.forcePathStyle', false)
-      ? `${base}/${this.bucket}/${key}`
-      : `${base}/${key}`;
-
+    const url = this.publicUrlFor(key);
     this.logger.debug(`uploaded ${key} -> ${url}`);
     return url;
   }

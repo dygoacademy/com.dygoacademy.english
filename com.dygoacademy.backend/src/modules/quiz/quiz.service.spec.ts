@@ -23,16 +23,26 @@ function wordRow(overrides: Record<string, unknown> = {}) {
   };
 }
 
+const SRS_NEXT_DUE = new Date('2026-10-04T09:00:00.000Z');
+const SRS_RESULT = { graded: true, just_mastered: false, next_due_at: SRS_NEXT_DUE };
+
 async function makeService(opts: {
   queryAsMock: jest.Mock;
   findLeechesMock?: jest.Mock;
   explainNuanceMock?: jest.Mock;
+  recordQuizResultMock?: jest.Mock;
 }): Promise<QuizService> {
   const moduleRef = await Test.createTestingModule({
     providers: [
       QuizService,
       { provide: DatabaseService, useValue: { queryAs: opts.queryAsMock } },
-      { provide: SrsService, useValue: { findLeeches: opts.findLeechesMock ?? jest.fn() } },
+      {
+        provide: SrsService,
+        useValue: {
+          findLeeches: opts.findLeechesMock ?? jest.fn(),
+          recordQuizResult: opts.recordQuizResultMock ?? jest.fn().mockResolvedValue(SRS_RESULT),
+        },
+      },
       {
         provide: GeminiEnrichmentService,
         useValue: { explainNuance: opts.explainNuanceMock ?? jest.fn() },
@@ -75,6 +85,28 @@ describe('QuizService.generate', () => {
     const [, sql, params] = queryAsMock.mock.calls[0];
     expect(sql).toMatch(/tw\.topic_id = \$1/);
     expect(params).toEqual(['topic-9', 40]); // limit defaults to 10, candidateLimit = 10*4
+  });
+
+  it('scopes the candidate query to an exact word-id set when topicWordIds is given (Phase 9, Targeted Re-Quiz)', async () => {
+    const queryAsMock = jest.fn().mockResolvedValueOnce([]);
+    const service = await makeService({ queryAsMock });
+
+    await service.generate('user-1', { topicWordIds: ['tw-a', 'tw-b'] });
+
+    const [, sql, params] = queryAsMock.mock.calls[0];
+    expect(sql).toMatch(/tw\.id = any\(\$1::uuid\[\]\)/);
+    expect(params).toEqual([['tw-a', 'tw-b'], 40]); // limit defaults to 10, candidateLimit = 10*4
+  });
+
+  it('prefers topicWordIds over topicId if a caller somehow supplies both (QuizController is the real guard, but the service stays deterministic too)', async () => {
+    const queryAsMock = jest.fn().mockResolvedValueOnce([]);
+    const service = await makeService({ queryAsMock });
+
+    await service.generate('user-1', { topicId: 'topic-9', topicWordIds: ['tw-a'] });
+
+    const [, sql, params] = queryAsMock.mock.calls[0];
+    expect(sql).toMatch(/tw\.id = any\(\$1::uuid\[\]\)/);
+    expect(params).toEqual([['tw-a'], 40]);
   });
 
   it('stops requesting new items once `limit` is reached', async () => {
@@ -124,6 +156,7 @@ describe('QuizService.answer', () => {
       ipaUs: '/rɪˈzɪljənt/',
       exampleSentence: 'She remained resilient after the setback.',
       hintUsed: false,
+      srs: { graded: true, justMastered: false, nextDueAt: SRS_NEXT_DUE.toISOString() },
     });
     expect(explainNuanceMock).not.toHaveBeenCalled();
   });
@@ -180,6 +213,55 @@ describe('QuizService.answer', () => {
     });
 
     expect(result.hintUsed).toBe(true);
+  });
+
+  // Phase 10, Workstream 3 — quiz answers feed the SRS schedule.
+  it('records a wrong answer with the SRS as an incorrect result for that quiz type', async () => {
+    const queryAsMock = jest.fn().mockResolvedValueOnce([wordRow()]);
+    const recordQuizResultMock = jest.fn().mockResolvedValue(SRS_RESULT);
+    const service = await makeService({
+      queryAsMock,
+      recordQuizResultMock,
+      explainNuanceMock: jest.fn().mockResolvedValue('nuance'),
+    });
+
+    await service.answer('user-1', 'tw-1:MATCHING', { answer: 'brave', responseMs: 900 });
+
+    expect(recordQuizResultMock).toHaveBeenCalledWith('user-1', {
+      topicWordId: 'tw-1',
+      quizType: 'MATCHING',
+      correct: false,
+      hintUsed: false,
+      responseMs: 900,
+    });
+  });
+
+  it('passes hintUsed through to the SRS so a hinted answer can be capped at HARD', async () => {
+    const queryAsMock = jest.fn().mockResolvedValueOnce([wordRow()]);
+    const recordQuizResultMock = jest.fn().mockResolvedValue(SRS_RESULT);
+    const service = await makeService({ queryAsMock, recordQuizResultMock });
+
+    await service.answer('user-1', 'tw-1:CLOZE', {
+      answer: 'resilient',
+      hintUsed: true,
+    });
+
+    expect(recordQuizResultMock.mock.calls[0][1]).toMatchObject({
+      quizType: 'CLOZE',
+      correct: true,
+      hintUsed: true,
+    });
+  });
+
+  it('still returns the graded answer if recording it with the SRS fails', async () => {
+    const queryAsMock = jest.fn().mockResolvedValueOnce([wordRow()]);
+    const recordQuizResultMock = jest.fn().mockRejectedValue(new Error('db down'));
+    const service = await makeService({ queryAsMock, recordQuizResultMock });
+
+    const result = await service.answer('user-1', 'tw-1:DICTATION', { answer: 'resilient' });
+
+    expect(result.correct).toBe(true);
+    expect(result.srs).toBeUndefined();
   });
 });
 

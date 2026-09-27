@@ -8,7 +8,7 @@ import { InjectQueue } from '@nestjs/bullmq';
 import { Queue } from 'bullmq';
 
 import { DatabaseService } from '../../database/database.service';
-import { ENRICHMENT_QUEUE, WordEnrichmentJob } from '../../queues/queue.constants';
+import { ENRICHMENT_QUEUE, ENRICH_WORD_JOB, WordEnrichmentJob } from '../../queues/queue.constants';
 import { CreateWordDto } from './dto/create-word.dto';
 
 export interface TopicWord {
@@ -108,7 +108,7 @@ export class WordsService {
     // exists and stays ENRICHING; MaintenanceProcessor / a manual re-enrich
     // (POST /words/:id/re-enrich, see below) can recover it later rather
     // than the caller seeing a 500 for a queue hiccup.
-    await this.enrichmentQueue.add('enrich-word', {
+    await this.enrichmentQueue.add(ENRICH_WORD_JOB, {
       topicWordId: row.id,
       word: row.source_word,
       languageCode: row.language_code,
@@ -157,7 +157,7 @@ export class WordsService {
     // ingest, there's no INSERT to leave orphaned if this add() throws —
     // worst case the row sits at ENRICHING until the next manual retry or
     // MaintenanceProcessor sweep, same as any other stuck-ENRICHING row.
-    await this.enrichmentQueue.add('enrich-word', {
+    await this.enrichmentQueue.add(ENRICH_WORD_JOB, {
       topicWordId: row.id,
       word: row.source_word,
       languageCode: row.language_code,

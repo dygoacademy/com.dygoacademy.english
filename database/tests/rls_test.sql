@@ -93,9 +93,9 @@ select login_as('44444444-4444-4444-4444-444444444444');   -- Priya
 select assert_eq((select count(*) from user_word_srs), 2,
   'Priya sees exactly her own 2 SRS rows');
 -- Compare in hundredths so the assertion is exact rather than rounded.
-select assert_eq((select round(ease_factor::numeric * 100) from user_word_srs
+select assert_eq((select round(difficulty::numeric * 100) from user_word_srs
                   where topic_word_id='eeeeeeee-0000-0000-0000-000000000002')::bigint, 280,
-  'Priya''s ease_factor on ''resilient'' is hers (2.80), not Alex''s (1.40)');
+  'Priya''s FSRS difficulty on ''resilient'' is hers (2.80), not Alex''s (8.10)');
 
 reset role;
 set role authenticated;
@@ -194,17 +194,40 @@ select assert_denied(
 reset role;
 set role authenticated;
 select login_as('33333333-3333-3333-3333-333333333333');   -- Alex, READ everywhere else
-with g as (
-  insert into groups (owner_id, tenant_id, name, is_public)
-  values ('33333333-3333-3333-3333-333333333333',
-          public.current_user_tenant_id(), 'Alex''s Study Group', false)
-  returning id
-)
+-- Two statements, not one data-modifying CTE: every part of a single
+-- statement runs against the same snapshot, so a `with g as (insert ...)`
+-- could never see the group_members row the AFTER INSERT trigger adds, and
+-- this assertion used to fail even though the trigger works.
+insert into groups (owner_id, tenant_id, name, is_public)
+values ('33333333-3333-3333-3333-333333333333',
+        public.current_user_tenant_id(), 'Alex''s Study Group', false);
 select assert_eq(
-  (select count(*) from group_members gm join g on g.id = gm.group_id
-    where gm.user_id = '33333333-3333-3333-3333-333333333333' and gm.role = 'ADMIN'),
+  (select count(*) from group_members gm join groups g on g.id = gm.group_id
+    where g.name = 'Alex''s Study Group'
+      and gm.user_id = '33333333-3333-3333-3333-333333333333' and gm.role = 'ADMIN'),
   1,
   'Creating a group immediately seats the owner as ADMIN (trg_group_owner_membership)');
+-- Regression (2026-09-25): GroupsService.create uses INSERT ... RETURNING, and
+-- Postgres checks groups_select against the returned row BEFORE
+-- trg_group_owner_membership seats the owner. Priya is READ-only and not a
+-- tenant admin, so before groups_select's owner_id clause this raised "new
+-- row violates row-level security policy" — group creation via the API was
+-- broken for any non-admin, including every brand-new signup.
+reset role;
+set role authenticated;
+select login_as('44444444-4444-4444-4444-444444444444');   -- Priya, READ only
+with g as (
+  insert into groups (owner_id, tenant_id, name, is_public)
+  values ('44444444-4444-4444-4444-444444444444',
+          public.current_user_tenant_id(), 'Priya''s Group', false)
+  returning id
+)
+select assert_eq((select count(*) from g), 1,
+  'A non-admin can create a group via INSERT ... RETURNING (GroupsService.create)');
+reset role;
+set role authenticated;
+select login_as('33333333-3333-3333-3333-333333333333');   -- back to Alex for the checks below
+
 -- ADMIN outranks WRITE (group_role_rank), so the newly-seated owner should be
 -- able to add a topic to their own brand-new group in the same session —
 -- proof the deadlock is actually broken, not just that a row exists.
@@ -222,7 +245,7 @@ select assert_eq(
   'Owner of a self-created group can add a topic to it without any other setup');
 
 \echo ''
-\echo '=== F. Invite redemption (redeem_group_invite, 005) ========================='
+\echo '=== F. Invite redemption (redeem_group_invite, 005/017) ========================='
 -- Dana (Rival tenant) holds no membership in Sarah's Oxford group — the
 -- cross-tenant boundary from §A. She is exactly the caller the function
 -- exists for: someone RLS would otherwise hide the group from entirely.
@@ -237,7 +260,7 @@ select assert_eq(
 
 select assert_eq(
   (select count(*) from public.redeem_group_invite('dygo-dev-invite-token')
-    where group_id = 'bbbbbbbb-0000-0000-0000-000000000001'
+    where joined_group_id = 'bbbbbbbb-0000-0000-0000-000000000001'
       and granted_role = 'READ' and already_member = false),
   1, 'Dana redeems the seeded invite and is seated READ, not already a member');
 select assert_eq(
@@ -245,10 +268,16 @@ select assert_eq(
     where group_id = 'bbbbbbbb-0000-0000-0000-000000000001'
       and user_id  = '55555555-5555-5555-5555-555555555555' and role = 'READ'),
   1, 'Redemption actually wrote the group_members row RLS was hiding the group behind');
+-- Read use_count as the table owner: group_invites is ADMIN-only under RLS,
+-- so Dana herself can't see the row. The seed starts use_count at 0
+-- (max_uses is 20), so one real redemption makes it 1.
+reset role;
 select assert_eq(
   (select use_count from group_invites
     where token_hash = public.hash_invite_token('dygo-dev-invite-token')),
-  21, 'use_count incremented from the seeded 20');
+  1, 'use_count incremented from the seeded 0');
+set role authenticated;
+select login_as('55555555-5555-5555-5555-555555555555');   -- back to Dana
 
 -- Replaying the same token must not double-count or error — a learner who
 -- clicks the link twice (double-tap, page refresh) should not burn a
@@ -257,10 +286,13 @@ select assert_eq(
   (select count(*) from public.redeem_group_invite('dygo-dev-invite-token')
     where already_member = true),
   1, 'Replaying an already-redeemed invite reports already_member, not an error');
+reset role;   -- owner read again, same reason as above
 select assert_eq(
   (select use_count from group_invites
     where token_hash = public.hash_invite_token('dygo-dev-invite-token')),
-  21, 'Replaying a redeemed invite does not increment use_count a second time');
+  1, 'Replaying a redeemed invite does not increment use_count a second time');
+set role authenticated;
+select login_as('55555555-5555-5555-5555-555555555555');   -- back to Dana
 
 select assert_raises(
   $$select * from public.redeem_group_invite('this-token-does-not-exist')$$,
@@ -318,15 +350,14 @@ select assert_eq(
 -- to make impossible: create their first group at all.
 set role authenticated;
 select login_as('99999999-9999-9999-9999-999999999999');
-with g as (
-  insert into groups (owner_id, tenant_id, name, is_public)
-  values ('99999999-9999-9999-9999-999999999999',
-          public.current_user_tenant_id(), 'New Kid''s First Group', false)
-  returning id
-)
+-- Two statements, not a data-modifying CTE (same snapshot reason as §E).
+insert into groups (owner_id, tenant_id, name, is_public)
+values ('99999999-9999-9999-9999-999999999999',
+        public.current_user_tenant_id(), 'New Kid''s First Group', false);
 select assert_eq(
-  (select count(*) from group_members gm join g on g.id = gm.group_id
-    where gm.user_id = '99999999-9999-9999-9999-999999999999' and gm.role = 'ADMIN'),
+  (select count(*) from group_members gm join groups g on g.id = gm.group_id
+    where g.name = 'New Kid''s First Group'
+      and gm.user_id = '99999999-9999-9999-9999-999999999999' and gm.role = 'ADMIN'),
   1,
   'A brand-new solo signup can now create a group and gets seated ADMIN — the original bug, fixed');
 
@@ -387,7 +418,7 @@ set role authenticated;
 select login_as('99999999-9999-9999-9999-999999999999');   -- new kid, own personal tenant
 select assert_eq(
   (select count(*) from public.redeem_group_invite('newkid-test-token')
-    where group_id = 'bbbbbbbb-0000-0000-0000-000000000001'),
+    where joined_group_id = 'bbbbbbbb-0000-0000-0000-000000000001'),
   1, 'New kid redeems Sarah''s invite and joins her group despite having a different tenant');
 
 reset role;
@@ -404,9 +435,16 @@ select assert_eq(
   'filtered out by tenant mismatch) even though the group_members row existed — '
   'GroupsService''s left join rendered a blank name. Now Sarah sees the real email.');
 
+-- Dana redeemed Sarah's invite back in §F, so right now she IS the new kid's
+-- groupmate in 0001, and seeing a groupmate's name is correct (008). Remove
+-- that membership first so this checks genuine isolation: no shared group,
+-- no shared tenant.
 reset role;
+delete from public.group_members
+ where group_id = 'bbbbbbbb-0000-0000-0000-000000000001'
+   and user_id  = '55555555-5555-5555-5555-555555555555';
 set role authenticated;
-select login_as('55555555-5555-5555-5555-555555555555');   -- Dana, Rival Academy ADMIN — shares no group
+select login_as('55555555-5555-5555-5555-555555555555');   -- Dana, Rival Academy ADMIN — now shares no group
 select assert_eq(
   (select count(*) from public.profiles where id = '99999999-9999-9999-9999-999999999999'),
   0,
@@ -523,18 +561,23 @@ select assert_eq(
 select assert_eq(
   (select sum(attempts) from public.tenant_word_heatmap('aaaaaaaa-0000-0000-0000-000000000001'))::bigint,
   4, 'Total attempts: the 3 seeded ieltsClass rows plus this section''s 1 new row');
+-- assert_eq compares bigints, so check the attribution as a count.
 select assert_eq(
-  (select group_id from public.tenant_word_heatmap('aaaaaaaa-0000-0000-0000-000000000001')
-    where source_word = 'tenacious'),
-  'bbbbbbbb-0000-0000-0000-00000000000a',
+  (select count(*) from public.tenant_word_heatmap('aaaaaaaa-0000-0000-0000-000000000001')
+    where source_word = 'tenacious' and group_id = 'bbbbbbbb-0000-0000-0000-00000000000a'),
+  1,
   'Each row is attributed to the group it actually happened in, not to whichever group the caller is ADMIN of first — the exact thing a multi-class rollup needs and a single-group function cannot express');
 select assert_eq(
-  (select group_name from public.tenant_word_heatmap('aaaaaaaa-0000-0000-0000-000000000001')
-    where source_word = 'resilient'),
-  'IELTS Band 8.0 Masterclass',
+  (select count(*) from public.tenant_word_heatmap('aaaaaaaa-0000-0000-0000-000000000001')
+    where source_word = 'resilient' and group_name = 'IELTS Band 8.0 Masterclass'),
+  1,
   'The pre-existing ieltsClass row still carries its own group''s name, unaffected by the new group being added');
 
+-- Marco created (and so became ADMIN of) his own Oxford group in §J, which
+-- legitimately makes him a tenant admin. Remove it so he is back to WRITE
+-- in ieltsClass only, which is what this check is about.
 reset role;
+delete from public.groups where id = 'bbbbbbbb-0000-0000-0000-000000000009';
 set role authenticated;
 select login_as('22222222-2222-2222-2222-222222222222');   -- Marco, WRITE in ieltsClass only, ADMIN nowhere
 select assert_raises(

@@ -1,0 +1,174 @@
+#!/usr/bin/env bash
+# =============================================================================
+# Apply Dygo Academy database migrations to the local Docker Postgres.
+#
+#   ./database/apply-migrations.sh              # schema + RLS + indexes (001-003)
+#   ./database/apply-migrations.sh --seed       # ...plus development fixtures (004)
+#   ./database/apply-migrations.sh --test       # ...plus fixtures, then RLS suite
+#
+#   ./database/apply-migrations.sh --seed-only           # ONLY 004, on an already-migrated db
+#   ./database/apply-migrations.sh --qa-seed-only        # ONLY 011 (3rd-tenant QA fixture)
+#   ./database/apply-migrations.sh --qa-words-seed-only  # ONLY 012 (100 QA words) -- needs 011 first
+#   ./database/apply-migrations.sh --hello-world-seed-only  # ONLY 013 (1 test word+audio) -- needs 011 first
+#   ./database/apply-migrations.sh --tier-ladder-seed-only  # ONLY 018 (Phase 9 tier-ladder test topics) -- needs 004 first
+#   ./database/apply-migrations.sh --grants-only            # ONLY 014+015 (service_role table grants)
+#   ./database/apply-migrations.sh --invite-fix-only        # ONLY 016+017 (invite creation/redeem fixes)
+#   ./database/apply-migrations.sh --fsrs-only              # ONLY 019+020 (Phase 10 FSRS columns + backfill)
+#   ./database/apply-migrations.sh --drop-sm2-only          # ONLY 021 — IRREVERSIBLE, see that file's header
+#   ./database/apply-migrations.sh --test-only           # ONLY the RLS suite
+#   ./database/apply-migrations.sh --verify              # report what is actually installed
+#
+# 001-003 are NOT idempotent (plain CREATE, not CREATE IF NOT EXISTS), so
+# re-running them on a migrated database fails on "already exists". Use the
+# --*-only flags to add fixtures or run tests without touching the schema, or
+# reset entirely with:  docker compose down -v && docker compose up -d
+#
+# 005-007, 009, and 010 (invite redemption, solo-tenant provisioning, the
+# FR-8.2 heatmap function, the tenant-admin read expansion, the tenant-wide
+# heatmap widening) all use CREATE OR REPLACE FUNCTION, so unlike 001-003
+# they ARE safe to re-run on an already-migrated database if you only need
+# to pick up a change to one of them. 009's one DROP POLICY/CREATE POLICY
+# pair (group_members_select) is also safe to re-run — CREATE POLICY errors
+# on a duplicate name, which is exactly why it's preceded by DROP POLICY IF
+# EXISTS.
+# =============================================================================
+set -euo pipefail
+
+CONTAINER="${DYGO_DB_CONTAINER:-dygo_supabase_db}"
+DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+psql_run() {
+  docker exec -i "$CONTAINER" psql -U postgres -d postgres -q -v ON_ERROR_STOP=1 "$@"
+}
+
+run_file() {
+  echo "→ $(basename "$1")"
+  psql_run < "$1"
+}
+
+verify() {
+  echo "→ verifying installed objects"
+  psql_run -t <<'SQL'
+select '  tables            : ' || count(*)
+  from pg_class where relnamespace='public'::regnamespace and relkind in ('r','p');
+select '  RLS policies      : ' || count(*) from pg_policies where schemaname='public';
+select '  indexes           : ' || count(*) from pg_indexes where schemaname='public';
+select '  tables without RLS: ' || coalesce(string_agg(relname, ', '), 'none  <-- good')
+  from pg_class
+ where relnamespace='public'::regnamespace and relkind in ('r','p')
+   and not relrowsecurity and relname not like 'review_logs_%';
+select '  seeded tenants    : ' || count(*) from public.tenants;
+select '  seeded profiles   : ' || count(*) from public.profiles;
+SQL
+}
+
+if ! docker ps --format '{{.Names}}' | grep -qx "$CONTAINER"; then
+  echo "error: container '$CONTAINER' is not running. Start it with: docker compose up -d" >&2
+  exit 1
+fi
+
+case "${1:-}" in
+  --verify)
+    verify; exit 0 ;;
+  --seed-only)
+    run_file "$DIR/migrations/004_seed_data.sql"; verify; echo "done."; exit 0 ;;
+  --qa-seed-only)
+    # Optional third-tenant QA fixture (011) — see that file's own header for
+    # why it's separate from --seed-only's core 004 fixtures. Independent of
+    # 004; either can be loaded without the other.
+    run_file "$DIR/migrations/011_qa_test_tenant_seed.sql"; verify; echo "done."; exit 0 ;;
+  --qa-words-seed-only)
+    # 100 words across 5 topics inside 011's QA group. Foreign-keys onto 011's
+    # group/admin, so 011 must already be loaded.
+    if [ "$(psql_run -t -c "select count(*) from public.groups where id='bbbbbbbb-0000-0000-0000-000000000004'" | tr -d '[:space:]')" = "0" ]; then
+      echo "error: 011's QA group isn't loaded yet — run --qa-seed-only first." >&2
+      exit 1
+    fi
+    run_file "$DIR/migrations/012_qa_bulk_words_seed.sql"; verify; echo "done."; exit 0 ;;
+  --hello-world-seed-only)
+    # One hand-seeded word + real (espeak-ng-synthesized) audio, faking
+    # GeminiEnrichmentService's output for UI testing without a real Gemini
+    # call. Foreign-keys onto 011's topic/admin, same as 012.
+    if [ "$(psql_run -t -c "select count(*) from public.groups where id='bbbbbbbb-0000-0000-0000-000000000004'" | tr -d '[:space:]')" = "0" ]; then
+      echo "error: 011's QA group isn't loaded yet — run --qa-seed-only first." >&2
+      exit 1
+    fi
+    run_file "$DIR/migrations/013_hello_world_test_word.sql"; verify; echo "done."; exit 0 ;;
+  --tier-ladder-seed-only)
+    # 4 topics (24 real words) backing Phase 9's "Vocabulary Mastery Tier
+    # Ladder" feature -- a test dataset standing in for the real
+    # curriculum-content decision, per that feature's own note in
+    # phase 9 implementation plan.md. Foreign-keys onto 004's group/Sarah,
+    # not 011's QA fixture, so 004 (not 011) must already be loaded.
+    if [ "$(psql_run -t -c "select count(*) from public.groups where id='bbbbbbbb-0000-0000-0000-000000000001'" | tr -d '[:space:]')" = "0" ]; then
+      echo "error: 004's seed data isn't loaded yet — run --seed-only first." >&2
+      exit 1
+    fi
+    run_file "$DIR/migrations/018_tier_ladder_seed.sql"; verify; echo "done."; exit 0 ;;
+  --grants-only)
+    # Idempotent GRANTs (014, 015) — safe to run any time, no dependency on
+    # other fixtures being loaded first.
+    run_file "$DIR/migrations/014_service_role_grants.sql"
+    run_file "$DIR/migrations/015_push_notification_service_role_grant.sql"
+    verify; echo "done."; exit 0 ;;
+  --invite-fix-only)
+    # Idempotent CREATE OR REPLACE FUNCTION (016, 017) — safe to run any
+    # time. Fixes invite link creation ("function digest(text, unknown)
+    # does not exist") and redemption ("column reference \"group_id\" is
+    # ambiguous") on an already-migrated database.
+    run_file "$DIR/migrations/016_pgcrypto_search_path_fix.sql"
+    run_file "$DIR/migrations/017_redeem_invite_ambiguous_column_fix.sql"
+    verify; echo "done."; exit 0 ;;
+  --fsrs-only)
+    # Idempotent (add column if not exists + a backfill that only touches
+    # never-converted rows) -- safe to re-run. Adds FSRS state next to the
+    # legacy SM-2 columns without changing anyone's next_due_at.
+    run_file "$DIR/migrations/019_review_log_signals.sql"
+    run_file "$DIR/migrations/020_fsrs_card_state.sql"
+    verify; echo "done."; exit 0 ;;
+  --drop-sm2-only)
+    # IRREVERSIBLE. Only after the FSRS scheduler has been live and verified
+    # for at least a week -- see 021_drop_sm2_columns.sql's header.
+    read -r -p "Drop ease_factor/interval_days/repetitions from user_word_srs permanently? Type DROP to continue: " answer
+    if [ "$answer" != "DROP" ]; then echo "aborted."; exit 1; fi
+    run_file "$DIR/migrations/021_drop_sm2_columns.sql"
+    verify; echo "done."; exit 0 ;;
+  --test-only)
+    # The suite asserts exact row counts, so it is meaningless without fixtures.
+    if [ "$(psql_run -t -c 'select count(*) from public.tenants' | tr -d '[:space:]')" = "0" ]; then
+      echo "error: no seed data present — run --seed-only first, or the assertions" >&2
+      echo "       will fail on empty tables rather than on a real policy bug." >&2
+      exit 1
+    fi
+    echo "→ rls_test.sql"
+    psql_run < "$DIR/tests/rls_test.sql"
+    echo "done."; exit 0 ;;
+esac
+
+run_file "$DIR/migrations/001_initial_schema.sql"
+run_file "$DIR/migrations/002_rls_policies.sql"
+run_file "$DIR/migrations/003_indexes.sql"
+run_file "$DIR/migrations/005_group_invites_redeem.sql"
+run_file "$DIR/migrations/006_solo_tenant_provisioning.sql"
+run_file "$DIR/migrations/007_group_word_heatmap.sql"
+run_file "$DIR/migrations/008_profiles_group_visibility.sql"
+run_file "$DIR/migrations/009_tenant_admin_read_expansion.sql"
+run_file "$DIR/migrations/010_tenant_word_heatmap.sql"
+run_file "$DIR/migrations/016_pgcrypto_search_path_fix.sql"
+run_file "$DIR/migrations/017_redeem_invite_ambiguous_column_fix.sql"
+run_file "$DIR/migrations/019_review_log_signals.sql"
+run_file "$DIR/migrations/020_fsrs_card_state.sql"
+
+case "${1:-}" in
+  --seed)
+    run_file "$DIR/migrations/004_seed_data.sql"
+    run_file "$DIR/migrations/018_tier_ladder_seed.sql" ;;
+  --test)
+    run_file "$DIR/migrations/004_seed_data.sql"
+    run_file "$DIR/migrations/018_tier_ladder_seed.sql"
+    echo "→ rls_test.sql"
+    psql_run < "$DIR/tests/rls_test.sql" ;;
+esac
+
+verify
+echo "done."

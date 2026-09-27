@@ -2,9 +2,9 @@
  * Module 8 (Phase 4), FR-8.2 — pure ranking logic for the class-wide
  * mistake heatmap. No DB access here on purpose: `AnalyticsService` owns
  * I/O (via `public.group_word_heatmap()`, see
- * `database/migrations/007_group_word_heatmap.sql` for why that function
+ * `database/archive/2026-09-25_pre_squash/007_group_word_heatmap.sql`'s header (the function itself now lives in `database/schema/03_functions_triggers.sql`) for why that function
  * exists at all), this file owns "given raw per-word counts, what's the
- * worst N words" — same split as `srs-algorithm.ts` and `quiz-generator.ts`.
+ * worst N words" — same split as `fsrs-scheduler.ts` and `quiz-generator.ts`.
  *
  * Deliberately NOT done inside the SQL function itself (no `ORDER BY` /
  * `LIMIT` there): failure-rate computation, the sort order, and the top-N

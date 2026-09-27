@@ -1,10 +1,12 @@
 'use client';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { TierProgressCard } from '@/components/topics/TierProgressCard';
 import { useGroupHeatmap } from '@/hooks/useGroupHeatmap';
 import { useGroups } from '@/hooks/useGroups';
 import { useLeeches } from '@/hooks/useLeeches';
 import { useSrsStats } from '@/hooks/useSrsStats';
+import { useTierProgress } from '@/hooks/useTierProgress';
 import type { GroupSummary, SrsStats } from '@/types';
 import { CONTENT_WIDTH } from '@/constants/layout';
 
@@ -23,17 +25,26 @@ import { CONTENT_WIDTH } from '@/constants/layout';
  * every user administers a group, so that section only renders when
  * `adminGroups` is non-empty — a student-only account sees just their own
  * stats and leech list, which is the entire FR-8.1 half of this page.
+ *
+ * `TierProgressCard` added above "Your progress" 2026-09-20 (Phase 9,
+ * "Vocabulary Mastery Tier Ladder" — `phase 9 implementation plan.md`) --
+ * replaces the mockup's invented "Estimated band: On track for 7.0" gauge
+ * with a checkable one. Shared with `(dashboard)/page.tsx` (Home), both
+ * reading the same `useTierProgress()` hook so they can't disagree.
  */
 export default function AnalyticsPage() {
   const { data: stats, isPending: statsPending, isError: statsError } = useSrsStats();
   const { data: leeches, isPending: leechesPending, isError: leechesError } = useLeeches();
   const { data: groups } = useGroups();
+  const { data: tierProgress } = useTierProgress();
 
   const adminGroups = (groups ?? []).filter((g) => g.role === 'ADMIN');
 
   return (
     <main className={`mx-auto flex ${CONTENT_WIDTH.wide} flex-col gap-6 p-6`}>
       <h1 className="text-lg font-semibold">Analytics</h1>
+
+      {tierProgress && <TierProgressCard progress={tierProgress} />}
 
       <section className="flex flex-col gap-2">
         <p className="font-mono text-xs uppercase tracking-wide text-muted-foreground">
@@ -45,6 +56,48 @@ export default function AnalyticsPage() {
         )}
         {stats && <StatsGrid stats={stats} />}
       </section>
+
+      {/* Phase 9, "Ranked Focus List" (`phase 9 implementation plan.md`) --
+          a ranked top-3 summary, worst-first (the same order `useLeeches()`
+          already returns -- `srs.service.ts`'s query is already
+          `order by recent_mistakes desc, next_due_at asc`, no client sort
+          needed), each with a mistake-scaled bar instead of a text count.
+          Deliberately additive, not a cap on the section below: capping
+          the existing "Leech words" list to 3 (the original plan) was
+          reconsidered after the Topics-as-Collections feature shipped as a
+          hard replacement the same day and got live feedback preferring a
+          choice over having one made for the viewer -- this section adds
+          a prioritized view on top rather than hiding anything the
+          existing list already showed. Bar width reuses `leechPillClass`'s
+          existing 3-step bucket thresholds (`leechBarWidth`, same
+          boundaries) rather than a new continuous scale, so the two visual
+          treatments (this bar, that pill) stay consistent with each
+          other. */}
+      {leeches && leeches.length > 0 && (
+        <section className="flex flex-col gap-2">
+          <p className="font-mono text-xs uppercase tracking-wide text-muted-foreground">
+            Focus words ({Math.min(3, leeches.length)})
+          </p>
+          <div className="flex flex-col gap-1.5">
+            {leeches.slice(0, 3).map((leech) => (
+              <div key={leech.topic_word_id} className="rounded-xl border px-3 py-2">
+                <div className="mb-1.5 flex items-center justify-between text-sm">
+                  <span>{leech.source_word}</span>
+                  <span className="font-mono text-xs text-muted-foreground">
+                    {leech.recent_mistakes} recent {leech.recent_mistakes === 1 ? 'miss' : 'misses'}
+                  </span>
+                </div>
+                <div className="h-1.5 w-full overflow-hidden rounded-full bg-muted">
+                  <div
+                    className="h-full rounded-full bg-destructive"
+                    style={{ width: `${leechBarWidth(leech.recent_mistakes)}%` }}
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* id targeted by Home's LeechNudge "Fix →" link (Phase 2 FR-9.3) --
           both now read the exact same `useLeeches()` query, so the nudge
@@ -58,7 +111,12 @@ export default function AnalyticsPage() {
           personal one. `phase 3.md`'s original framing of Module 22 as "no
           personal focus view exists yet" was wrong -- this section already
           was one; the actual gap was only its flat coloring, corrected here
-          rather than adding a second, redundant list next to it. */}
+          rather than adding a second, redundant list next to it.
+
+          Kept showing the full, uncapped list here (not just the top 3
+          above) -- Phase 9's "Focus words" section is a ranked summary
+          layered on top, not a replacement for this one, same reasoning
+          as its own comment above. */}
       <section id="leech-words" className="flex flex-col gap-2 scroll-mt-20">
         <p className="font-mono text-xs uppercase tracking-wide text-muted-foreground">
           Leech words
@@ -142,7 +200,7 @@ function heatmapPillClass(rate: number): string {
  * Same three-step idea as `heatmapPillClass`, but keyed on an absolute
  * `recent_mistakes` count rather than a 0..1 rate -- `LeechCard` has no
  * `failure_rate` field, and every row here already cleared
- * `srs-algorithm.ts`'s `LEECH_THRESHOLD` (4) by definition (that's what
+ * `fsrs-scheduler.ts`'s `LEECH_THRESHOLD` (4) by definition (that's what
  * makes it a leech), so the floor for "low" starts there rather than at 0.
  * Thresholds picked relative to that real value, not a guessed number
  * (Phase 3 Module 22, FR-22.1).
@@ -151,6 +209,19 @@ function leechPillClass(recentMistakes: number): string {
   if (recentMistakes >= 8) return 'border-destructive bg-destructive/25 text-destructive';
   if (recentMistakes >= 6) return 'border-destructive/50 bg-destructive/10 text-destructive';
   return 'border-destructive/25 bg-destructive/5 text-destructive/70';
+}
+
+/**
+ * Phase 9, "Ranked Focus List" -- same 3-step bucket boundaries as
+ * `leechPillClass` immediately above, translated to a fill percentage
+ * instead of a pill-tint class, so the "Focus words" bar and this
+ * section's own pill coloring read as one consistent severity scale
+ * rather than two different ones for the same underlying number.
+ */
+function leechBarWidth(recentMistakes: number): number {
+  if (recentMistakes >= 8) return 100;
+  if (recentMistakes >= 6) return 66;
+  return 33;
 }
 
 /**

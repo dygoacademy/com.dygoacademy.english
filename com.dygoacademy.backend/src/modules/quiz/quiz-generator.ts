@@ -1,6 +1,6 @@
 /**
  * Module 5 — Dynamic Multi-Modal Quiz Engine (FR-5.1–5.4), pure functions
- * only. Same split as `srs-algorithm.ts` and `GeminiEnrichmentService.pcmToWav`:
+ * only. Same split as `fsrs-scheduler.ts` and `GeminiEnrichmentService.pcmToWav`:
  * no DB/AI access here, so the generation and grading logic can be unit
  * tested without a database or a Gemini call. `QuizService` owns I/O.
  *

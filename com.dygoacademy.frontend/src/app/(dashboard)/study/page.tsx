@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useSearchParams } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Suspense, useEffect, useState } from 'react';
 
 import { AudioButton } from '@/components/flashcard/AudioButton';
@@ -9,7 +9,7 @@ import { Flashcard } from '@/components/flashcard/Flashcard';
 import { ProgressiveClues, type ClueLevel } from '@/components/flashcard/ProgressiveClues';
 import { RatingButtons } from '@/components/flashcard/RatingButtons';
 import { CONTENT_WIDTH } from '@/constants/layout';
-import { ROUTES } from '@/constants/routes';
+import { REQUIZ_STORAGE_KEY, ROUTES } from '@/constants/routes';
 import { useRateWord } from '@/hooks/useRateWord';
 import { useSrsStats } from '@/hooks/useSrsStats';
 import { useStudySession } from '@/hooks/useStudySession';
@@ -57,6 +57,7 @@ export default function StudyPage() {
 }
 
 function StudySessionScreen() {
+  const router = useRouter();
   const searchParams = useSearchParams();
   const topicId = searchParams.get('topicId') ?? undefined;
   const modeParam = searchParams.get('mode')?.toUpperCase();
@@ -78,7 +79,20 @@ function StudySessionScreen() {
   // (AGAIN/HARD are both "Didn't know", held or not; GOOD/EASY are both
   // "Knew it"), matching the UI's own two-button framing rather than the
   // four-value SRS rating underneath it.
-  const [tally, setTally] = useState({ knew: 0, missed: 0 });
+  //
+  // `mastered` added 2026-09-20 (Phase 9, "Session Mastery Count" --
+  // `phase 9 implementation plan.md`) -- incremented from `useRateWord`'s
+  // own per-call `onSuccess` in `handleRate` below, reading the new
+  // `just_mastered` field `POST /srs/rate` now returns. This is the
+  // before/after repetitions comparison the reward-hero's own comment
+  // (further down) previously said this page didn't have -- it does now,
+  // computed server-side per rating rather than diffed client-side.
+  const [tally, setTally] = useState({ knew: 0, missed: 0, mastered: 0 });
+  // Phase 9, "Targeted Re-Quiz" -- the specific topic_word ids behind
+  // `tally.missed`'s count, not just the number. Kept as a separate array
+  // rather than folded into `tally` since nothing about `tally` itself
+  // needs to know *which* words, only how many.
+  const [missedWordIds, setMissedWordIds] = useState<string[]>([]);
 
   // Snapshot the due-card batch once per session (keyed by topicId+mode),
   // instead of reading `data.cards` live on every render -- live-reported
@@ -124,13 +138,34 @@ function StudySessionScreen() {
 
   function handleRate(rating: SrsRating) {
     if (!card) return;
-    rateWord.mutate({ topicWordId: card.topic_word_id, rating });
-    setTally((t) =>
-      rating === 'AGAIN' || rating === 'HARD'
-        ? { ...t, missed: t.missed + 1 }
-        : { ...t, knew: t.knew + 1 },
+    rateWord.mutate(
+      { topicWordId: card.topic_word_id, rating },
+      {
+        // Per-call, alongside (not instead of) useRateWord's own
+        // hook-level onSuccess (query invalidation) -- a queued (offline)
+        // outcome has no `result`, so `just_mastered` simply isn't known
+        // yet for that card, same as every other immediate-stats gap the
+        // offline queue already has (see that hook's own comment).
+        onSuccess: (outcome) => {
+          if (outcome.status === 'applied' && outcome.result.just_mastered) {
+            setTally((t) => ({ ...t, mastered: t.mastered + 1 }));
+          }
+        },
+      },
     );
+    const missed = rating === 'AGAIN' || rating === 'HARD';
+    setTally((t) => (missed ? { ...t, missed: t.missed + 1 } : { ...t, knew: t.knew + 1 }));
+    if (missed) {
+      setMissedWordIds((ids) => [...ids, card.topic_word_id]);
+    }
     setIndex((i) => i + 1);
+  }
+
+  // Phase 9, "Targeted Re-Quiz" -- one-shot handoff, see
+  // `REQUIZ_STORAGE_KEY`'s own comment above.
+  function startRequiz() {
+    window.sessionStorage.setItem(REQUIZ_STORAGE_KEY, JSON.stringify(missedWordIds));
+    router.push('/quiz?mode=requiz');
   }
 
   if (isLoading) {
@@ -170,14 +205,27 @@ function StudySessionScreen() {
     // Phase 3 Module 21 (FR-21.1) — restyles FR-13.1's plain knew/missed
     // line into the "Dygo Learning Path" concept's reward-hero treatment.
     // The underlying data is identical to FR-13.1's (tally.knew/missed,
-    // the same topicId-gated CTA) -- this is presentation only. No mastery
-    // claim ("+N words mastered") is made here: that would need a
-    // before/after repetitions comparison this page doesn't have, and the
-    // implementation plan is explicit that this screen shouldn't promise a
-    // number it can't back up. `stats?.current_streak_days` is the one
-    // real number available beyond the session's own tally, so it's the
-    // one used for the streak callout -- omitted entirely while stats is
-    // still loading rather than guessed at.
+    // the same topicId-gated CTA) -- this is presentation only.
+    // `stats?.current_streak_days` is the one real number available
+    // beyond the session's own tally for the streak callout -- omitted
+    // entirely while stats is still loading rather than guessed at.
+    //
+    // A mastery claim ("+N mastered") was deliberately left out when this
+    // block was first built, since it would have needed a before/after
+    // repetitions comparison this page didn't have -- promising a number
+    // it couldn't back up. That gap is closed 2026-09-20 (Phase 9,
+    // "Session Mastery Count"): `tally.mastered` is real now, driven by
+    // `POST /srs/rate`'s new `just_mastered` field (see `handleRate`
+    // above), so the third chip below only ever shows a number this
+    // session's own ratings actually produced.
+    //
+    // Narrative line ("N words just moved from shaky to solid") added
+    // 2026-09-20, live-requested ("follow the UI/UX design with same
+    // with mock design with light mode not dark mode") — the mockup's
+    // own reward screen led with a sentence like this, not just chips.
+    // Stays honest the same way the chip above it already is: only
+    // rendered when `tally.mastered > 0`, using the exact same real
+    // count, not a separate/looser claim.
     return (
       <main className={`mx-auto flex min-h-screen ${CONTENT_WIDTH.default} flex-col items-center justify-center gap-4 p-4 text-center`}>
         <div className="flex w-full flex-col items-center gap-3 rounded-2xl border-2 border-primary/30 bg-gradient-to-b from-primary/10 to-transparent p-6">
@@ -189,9 +237,15 @@ function StudySessionScreen() {
               ? `${stats.current_streak_days}-day streak protected`
               : "That's every card for now."}
           </p>
-          <p className="text-sm text-muted-foreground">
-            You reviewed {cards.length} card{cards.length === 1 ? '' : 's'} this session.
-          </p>
+          {tally.mastered > 0 ? (
+            <p className="text-sm text-muted-foreground">
+              You just moved {tally.mastered} word{tally.mastered === 1 ? '' : 's'} from shaky to solid.
+            </p>
+          ) : (
+            <p className="text-sm text-muted-foreground">
+              You reviewed {cards.length} card{cards.length === 1 ? '' : 's'} this session.
+            </p>
+          )}
           <div className="flex gap-3">
             <div className="rounded-xl border bg-card px-4 py-2">
               <div className="text-lg font-semibold text-emerald-600 dark:text-emerald-400">
@@ -209,13 +263,42 @@ function StudySessionScreen() {
                 Didn&apos;t know
               </div>
             </div>
+            {tally.mastered > 0 && (
+              <div className="rounded-xl border bg-card px-4 py-2">
+                <div className="text-lg font-semibold text-primary">
+                  +{tally.mastered}
+                </div>
+                <div className="text-[10px] uppercase tracking-wide text-muted-foreground">
+                  Mastered
+                </div>
+              </div>
+            )}
           </div>
         </div>
         <div className="flex flex-col items-center gap-2">
+          {/* Phase 9, "Targeted Re-Quiz" -- the specific missed words, not
+              the whole topic, are the higher-value next action (momentum
+              at the exact point it's highest), so this takes the primary
+              button style when available. "Quiz this topic" steps down to
+              a plain link in that case rather than competing with it --
+              still there, just not fighting for the same visual weight. */}
+          {missedWordIds.length > 0 && (
+            <button
+              type="button"
+              onClick={startRequiz}
+              className="rounded-lg bg-primary px-4 py-2 text-sm text-primary-foreground"
+            >
+              Quiz these {missedWordIds.length} now
+            </button>
+          )}
           {topicId && (
             <Link
               href={`/quiz?topicId=${topicId}`}
-              className="rounded-lg bg-primary px-4 py-2 text-sm text-primary-foreground"
+              className={
+                missedWordIds.length > 0
+                  ? 'text-sm underline underline-offset-4'
+                  : 'rounded-lg bg-primary px-4 py-2 text-sm text-primary-foreground'
+              }
             >
               Quiz this topic
             </Link>
