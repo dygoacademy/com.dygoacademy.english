@@ -71,10 +71,14 @@ function LoginForm() {
       <Card className={`w-full ${CONTENT_WIDTH.narrow}`}>
         <CardHeader>
           <CardTitle>Sign in</CardTitle>
-          <CardDescription>
-            Local dev fixtures: sarah / marco / alex / priya / dana @dygo.test, password{' '}
-            <code>dygo-dev-2026</code>.
-          </CardDescription>
+          {/* Seeded local test accounts: a dev-only hint, never shown by a
+              production build (UAT / www.dygoacademy.com). */}
+          {process.env.NODE_ENV !== 'production' ? (
+            <CardDescription>
+              Local dev fixtures: sarah / marco / alex / priya / dana @dygo.test, password{' '}
+              <code>dygo-dev-2026</code>.
+            </CardDescription>
+          ) : null}
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="flex flex-col gap-3">
