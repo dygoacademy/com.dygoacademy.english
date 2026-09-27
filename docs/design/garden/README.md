@@ -107,6 +107,7 @@ Committed `garden-diff.mjs --locale en,vi`, run against a static snapshot of `ne
 | A8-me | 0.050% | 0.000% |
 
 - English A7 (and the smaller A2-answer / A7-sprouts / A8 numbers) is the known font decision: the English references were drawn with DM Sans only, so their Vietnamese meaning lines use the system fallback; the app uses Be Vietnam Pro. The `-vi` references were drawn with the app's stack and match.
+- **2026-09-27: English `A7-topic-bed` redrawn with the app's font stack** (Dylan's request): `tools/render.js` now renders the screens in `APP_FONT_STACK` with `'DM Sans', 'Be Vietnam Pro', sans-serif`, like the `-vi` sources, instead of the English canvas's `'DM Sans', sans-serif`. The exported canvas source is unchanged. Rendered in Playwright's Chromium 1194 (x86-64); against the UAT screenshot it scores 0.327% (was 0.787%), level with `A7-topic-bed-vi` (0.316%). A2-answer, A7-sprouts and A8 English still use the canvas stack (under 0.5%).
 - Vietnamese A5: the only difference is one letter, "Chủ Nhật" (the ICU weekday name) where the canvas wrote "Chủ nhật" in the rain-barrel sentence.
 
 ## Diff results, Groups (2026-09-26, UI-G pass)
