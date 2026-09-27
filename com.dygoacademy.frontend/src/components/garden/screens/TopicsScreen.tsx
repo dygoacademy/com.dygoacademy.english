@@ -6,6 +6,7 @@ import { useTranslations } from 'next-intl';
 
 import { Chip } from '../Chip';
 import { gcn } from '../cn';
+import { EmptyState } from '../EmptyState';
 import { PlusIcon, SearchIcon } from '../icons';
 import { IconButton } from '../IconButton';
 import type { PlantStage } from '../plantStage';
@@ -156,9 +157,7 @@ export function TopicsScreen({
             />
           );
         })}
-        {topics.length === 0 ? (
-          <p className="py-6 text-center text-[13px] text-garden-muted">{t('empty')}</p>
-        ) : null}
+        {topics.length === 0 ? <EmptyState as="p" body={t('empty')} /> : null}
         {lockedPack && (filter === 'all' || lockedPack.groups.includes(filter)) ? (
           <LockedTopicRow
             title={lockedPack.name}

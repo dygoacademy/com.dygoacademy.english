@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 
 import { buttonClassName } from '../buttonStyles';
+import { EmptyState } from '../EmptyState';
 import { useGardenFormat } from '../format';
 import { BackIcon, MoreIcon, PlusIcon, WaterIcon } from '../icons';
 import { IconButton } from '../IconButton';
@@ -185,7 +186,7 @@ export function TopicBedScreen({
           </li>
         ))}
         {shown.length === 0 ? (
-          <li className="py-6 text-center text-[13px] text-garden-muted">{t('empty')}</li>
+          <EmptyState as="li" body={words.length === 0 ? t('emptyBed') : t('empty')} />
         ) : null}
       </ul>
     </div>

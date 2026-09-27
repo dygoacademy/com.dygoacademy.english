@@ -513,6 +513,7 @@
       "allWords": "Tất cả từ",
       "sorted": "Xếp theo lần tưới tiếp theo",
       "empty": "Chưa có từ nào ở giai đoạn này.",
+      "emptyBed": "Luống này còn trống. Thêm từ đầu tiên để bắt đầu gieo.",
       "dueNow": "Cần tưới",
       "new": "Mới",
       "inDays": "{count} ngày nữa",
@@ -575,6 +576,10 @@
       "loading": "Đang tải vườn của bạn…",
       "error": "Chưa tải được vườn. Hãy kiểm tra kết nối và thử lại.",
       "retry": "Thử lại",
+      "errorTitle": "Có gì đó bị héo",
+      "notFoundTitle": "Lối này không có trong vườn",
+      "notFoundBody": "Trang có thể đã chuyển đi, hoặc đường dẫn đã cũ.",
+      "backHome": "Về vườn của tôi",
       "missionTitle": "Tưới {count} từ",
       "topicMeta": "{count} từ"
     },

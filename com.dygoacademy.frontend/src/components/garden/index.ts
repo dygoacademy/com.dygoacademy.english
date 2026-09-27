@@ -10,6 +10,7 @@ export { ButtonTwoLine, buttonClassName } from './buttonStyles';
 export { Card, type CardProps } from './Card';
 export { Chip, type ChipProps } from './Chip';
 export { gcn } from './cn';
+export { EmptyState, type EmptyStateProps } from './EmptyState';
 export {
   HeroGardenCard,
   type HeroGardenCardProps,

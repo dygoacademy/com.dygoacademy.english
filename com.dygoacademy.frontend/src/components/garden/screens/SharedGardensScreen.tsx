@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 
 import { gcn } from '../cn';
+import { EmptyState } from '../EmptyState';
 import { GroupCard, type GroupCardProps } from '../GroupCard';
 import { LinkIcon } from '../groupArt';
 import { PlusIcon } from '../icons';
@@ -103,10 +104,7 @@ export function SharedGardensScreen({
           <GroupCard key={id} {...card} />
         ))}
         {gardens.length === 0 ? (
-          <div className="flex flex-col gap-1 rounded-[20px] border border-garden-border bg-garden-surface px-4 py-5 text-center">
-            <span className="text-[16px] font-bold">{t('emptyTitle')}</span>
-            <span className="text-[13px] text-garden-muted">{t('emptyBody')}</span>
-          </div>
+          <EmptyState title={t('emptyTitle')} body={t('emptyBody')} />
         ) : null}
         <div className="grid grid-cols-2 gap-2">
           <Action action={start} className={gcn(SECONDARY, 'border border-dashed border-garden-dashed')}>

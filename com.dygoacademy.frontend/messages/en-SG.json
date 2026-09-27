@@ -513,6 +513,7 @@
       "allWords": "All words",
       "sorted": "Sorted by next watering",
       "empty": "No words at this stage yet.",
+      "emptyBed": "This bed is empty. Add your first word to plant it.",
       "dueNow": "Due now",
       "new": "New",
       "inDays": "in {count, plural, one {# day} other {# days}}",
@@ -575,6 +576,10 @@
       "loading": "Loading your garden…",
       "error": "Your garden couldn’t load. Check your connection and try again.",
       "retry": "Try again",
+      "errorTitle": "Something wilted",
+      "notFoundTitle": "This path isn’t in the garden",
+      "notFoundBody": "The page may have moved, or the link is out of date.",
+      "backHome": "Back to my garden",
       "missionTitle": "Water {count, plural, one {# word} other {# words}}",
       "topicMeta": "{count, plural, one {# word} other {# words}}"
     },

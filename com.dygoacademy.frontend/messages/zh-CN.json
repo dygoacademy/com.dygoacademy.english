@@ -517,6 +517,7 @@
       "allWords": "全部单词",
       "sorted": "按下次浇水时间排序",
       "empty": "这个阶段还没有单词。",
+      "emptyBed": "这块苗圃还是空的。添加第一个单词来种下它吧。",
       "dueNow": "现在复习",
       "new": "新词",
       "inDays": "{count} 天后",
@@ -579,6 +580,10 @@
       "loading": "正在加载你的花园…",
       "error": "花园没能加载。请检查网络后重试。",
       "retry": "重试",
+      "errorTitle": "出了点小问题",
+      "notFoundTitle": "花园里没有这条小路",
+      "notFoundBody": "页面可能已移动，或者链接已经过期。",
+      "backHome": "回到我的花园",
       "missionTitle": "给 {count} 个单词浇水",
       "topicMeta": "{count} 个单词"
     },
