@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 
 import { SprintRateLimitGuard } from '../../common/guards/sprint-rate-limit.guard';
+import { GroupsModule } from '../groups/groups.module';
 import { NotificationsController } from './notifications.controller';
 import { NotificationsService } from './notifications.service';
 import { PushDispatchService } from './push-dispatch.service';
@@ -20,6 +21,8 @@ import { PushDispatchService } from './push-dispatch.service';
  * turn the whole guard into a no-op.
  */
 @Module({
+  // GroupsModule for RainDayService: every sprint stores a rain day (UI-G RD-2).
+  imports: [GroupsModule],
   controllers: [NotificationsController],
   providers: [NotificationsService, PushDispatchService, SprintRateLimitGuard],
   exports: [NotificationsService, PushDispatchService],

@@ -31,6 +31,7 @@ import {
   GroupsService,
   GroupSummary,
 } from './groups.service';
+import { RainDayService, RainDayStatus } from './rain-day.service';
 
 @ApiBearerAuth()
 @ApiTags('groups')
@@ -39,6 +40,7 @@ export class GroupsController {
   constructor(
     private readonly groupsService: GroupsService,
     private readonly gardenService: GroupGardenService,
+    private readonly rainDayService: RainDayService,
   ) {}
 
   @Get()
@@ -115,6 +117,35 @@ export class GroupsController {
     @Query('tz') tz?: string,
   ): Promise<GroupGarden> {
     return this.gardenService.garden(userId, groupId, tz);
+  }
+
+  @Get(':id/rain-day')
+  @ApiOperation({
+    summary: 'The current and last finished rain day (UI-G, GR1–GR3)',
+    description:
+      'Members only (403). `{ current, last }`, each null if none: words ' +
+      'per gardener, start/end, gardeners, how many reached the goal and ' +
+      "the caller's own count (group_rain_day_status). Never who (FR-1.2). " +
+      'Rain days are started by POST /notifications/groups/:groupId/sprint.',
+  })
+  async rainDay(
+    @CurrentUser('id') userId: string,
+    @Param('id') groupId: string,
+  ): Promise<RainDayStatus> {
+    return this.rainDayService.status(userId, groupId);
+  }
+
+  @Delete(':id/rain-day')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiOperation({
+    summary: "Cancel today's rain day (UI-G)",
+    description: 'ADMIN only (403). 404 if none is running. Frees the day for a new one.',
+  })
+  async cancelRainDay(
+    @CurrentUser('id') userId: string,
+    @Param('id') groupId: string,
+  ): Promise<void> {
+    await this.rainDayService.cancel(userId, groupId);
   }
 
   @Get(':id/tricky-patches')

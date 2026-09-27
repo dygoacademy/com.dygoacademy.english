@@ -7,6 +7,7 @@ import {
 import { ConfigService } from '@nestjs/config';
 
 import { DatabaseService } from '../../database/database.service';
+import { RAIN_DAY_DEFAULT_WORDS, RainDayService, StartedRainDay } from '../groups/rain-day.service';
 import { SubscribePushDto } from './dto/subscribe-push.dto';
 import { TriggerSprintDto } from './dto/trigger-sprint.dto';
 import { UpsertScheduleDto } from './dto/upsert-schedule.dto';
@@ -23,6 +24,8 @@ export interface SprintResult {
   recipients: number;
   sent: number;
   pruned: number;
+  /** UI-G RD-2: the rain day this sprint started. */
+  rainDay: StartedRainDay;
 }
 
 /** Module 6 — Web Push subscriptions & habit scheduling (Phase 3). */
@@ -32,6 +35,7 @@ export class NotificationsService {
     protected readonly db: DatabaseService,
     private readonly pushDispatch: PushDispatchService,
     private readonly config: ConfigService,
+    private readonly rainDays: RainDayService,
   ) {}
 
   vapidPublicKey(): { publicKey: string } {
@@ -149,6 +153,15 @@ export class NotificationsService {
       throw new ConflictException('This group has no other members to notify.');
     }
 
+    // UI-G RD-2: store today's rain day before any push goes out. A second
+    // one the same local day is a 409 from RainDayService and nothing is sent.
+    const rainDay = await this.rainDays.start(
+      userId,
+      groupId,
+      dto.wordsPerGardener ?? RAIN_DAY_DEFAULT_WORDS,
+      dto.message,
+    );
+
     const frontendUrl = this.config.get<string>('frontendUrl', 'http://localhost:3000');
     const payload = {
       title: 'Message from your teacher',
@@ -161,7 +174,7 @@ export class NotificationsService {
       members.map((m) => this.pushDispatch.sendToUser(m.user_id, payload, frontendUrl)),
     );
 
-    return results.reduce<SprintResult>(
+    const totals = results.reduce(
       (acc, r) => ({
         recipients: acc.recipients + 1,
         sent: acc.sent + r.sent,
@@ -169,5 +182,6 @@ export class NotificationsService {
       }),
       { recipients: 0, sent: 0, pruned: 0 },
     );
+    return { ...totals, rainDay };
   }
 }

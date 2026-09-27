@@ -1,5 +1,7 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { IsOptional, IsString, IsUUID, MaxLength } from 'class-validator';
+import { IsIn, IsOptional, IsString, IsUUID, MaxLength } from 'class-validator';
+
+import { RAIN_DAY_WORDS } from '../../groups/rain-day.service';
 
 /**
  * Body for `POST /api/v1/notifications/groups/:groupId/sprint` (FR-6.2).
@@ -23,4 +25,15 @@ export class TriggerSprintDto {
   @IsOptional()
   @IsUUID('loose')
   topicId?: string;
+
+  @ApiPropertyOptional({
+    enum: RAIN_DAY_WORDS,
+    default: 10,
+    description:
+      'UI-G rain day goal: words from the shared beds each gardener waters today (5, 10 or 20). ' +
+      'Every sprint now also stores a rain day; classic callers omit this and get 10.',
+  })
+  @IsOptional()
+  @IsIn(RAIN_DAY_WORDS)
+  wordsPerGardener?: number;
 }

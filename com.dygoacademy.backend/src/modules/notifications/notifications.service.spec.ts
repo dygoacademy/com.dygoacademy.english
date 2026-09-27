@@ -4,12 +4,16 @@ import { Test } from '@nestjs/testing';
 
 import { DatabaseService } from '../../database/database.service';
 import { NotificationsService } from './notifications.service';
+import { RainDayService } from '../groups/rain-day.service';
 import { PushDispatchService } from './push-dispatch.service';
+
+const RAIN_DAY = { id: 'rd-1', endsAt: '2026-09-27T16:59:59.999Z', wordsPerGardener: 10 };
 
 async function makeService(opts: {
   queryAsMock: jest.Mock;
   sendToUserMock?: jest.Mock;
   vapidPublicKeyMock?: jest.Mock;
+  startRainDayMock?: jest.Mock;
 }) {
   const moduleRef = await Test.createTestingModule({
     providers: [
@@ -21,6 +25,10 @@ async function makeService(opts: {
           sendToUser: opts.sendToUserMock ?? jest.fn(),
           vapidPublicKey: opts.vapidPublicKeyMock ?? jest.fn().mockReturnValue('pub'),
         },
+      },
+      {
+        provide: RainDayService,
+        useValue: { start: opts.startRainDayMock ?? jest.fn().mockResolvedValue(RAIN_DAY) },
       },
       {
         provide: ConfigService,
@@ -107,15 +115,49 @@ describe('NotificationsService', () => {
         .fn()
         .mockResolvedValueOnce({ sent: 1, pruned: 0, failed: 0 })
         .mockResolvedValueOnce({ sent: 0, pruned: 1, failed: 0 });
-      const service = await makeService({ queryAsMock, sendToUserMock });
+      const startRainDayMock = jest.fn().mockResolvedValue(RAIN_DAY);
+      const service = await makeService({ queryAsMock, sendToUserMock, startRainDayMock });
 
       const result = await service.triggerSprint('user-1', 'group-1', {
         message: 'Quiz tomorrow!',
       });
 
-      expect(result).toEqual({ recipients: 2, sent: 1, pruned: 1 });
+      expect(result).toEqual({ recipients: 2, sent: 1, pruned: 1, rainDay: RAIN_DAY });
+      expect(startRainDayMock).toHaveBeenCalledWith('user-1', 'group-1', 10, 'Quiz tomorrow!');
       expect(sendToUserMock).toHaveBeenCalledTimes(2);
       expect(sendToUserMock.mock.calls[0][1].body).toBe('Quiz tomorrow!');
+    });
+
+    it('passes wordsPerGardener through to the rain day', async () => {
+      const queryAsMock = jest
+        .fn()
+        .mockResolvedValueOnce([{ allowed: true }])
+        .mockResolvedValueOnce([{ user_id: 'member-1' }]);
+      const sendToUserMock = jest.fn().mockResolvedValue({ sent: 1, pruned: 0, failed: 0 });
+      const startRainDayMock = jest.fn().mockResolvedValue({ ...RAIN_DAY, wordsPerGardener: 20 });
+      const service = await makeService({ queryAsMock, sendToUserMock, startRainDayMock });
+
+      const result = await service.triggerSprint('user-1', 'group-1', { wordsPerGardener: 20 });
+
+      expect(startRainDayMock).toHaveBeenCalledWith('user-1', 'group-1', 20, undefined);
+      expect(result.rainDay.wordsPerGardener).toBe(20);
+    });
+
+    it('sends no push when a rain day is already running today (409)', async () => {
+      const queryAsMock = jest
+        .fn()
+        .mockResolvedValueOnce([{ allowed: true }])
+        .mockResolvedValueOnce([{ user_id: 'member-1' }]);
+      const sendToUserMock = jest.fn();
+      const startRainDayMock = jest
+        .fn()
+        .mockRejectedValue(new ConflictException('A rain day is already running today'));
+      const service = await makeService({ queryAsMock, sendToUserMock, startRainDayMock });
+
+      await expect(service.triggerSprint('user-1', 'group-1', {})).rejects.toBeInstanceOf(
+        ConflictException,
+      );
+      expect(sendToUserMock).not.toHaveBeenCalled();
     });
   });
 });

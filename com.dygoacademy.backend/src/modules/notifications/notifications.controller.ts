@@ -90,6 +90,8 @@ export class NotificationsController {
     summary: 'Trigger an immediate class-wide reminder (FR-6.2)',
     description:
       'ADMIN-only. Pushes to every other member’s registered devices right now, not on the next tick. ' +
+      'Also stores today’s rain day (UI-G; optional `wordsPerGardener` 5/10/20, default 10) and returns it as `rainDay`; ' +
+      'a second one the same local day is 409 and nothing is sent. ' +
       `Rate-limited to one sprint per group per ${SprintRateLimitGuard.COOLDOWN_MS / 1000}s (429 Too Many Requests otherwise).`,
   })
   async triggerSprint(
