@@ -517,7 +517,17 @@
       "meta": "{parts}",
       "wordsCount": "{count} từ",
       "notFound": "Luống này không tồn tại hoặc không phải của bạn.",
-      "tricky": "{meaning} · từ khó, quên {count} lần"
+      "tricky": "{meaning} · từ khó, quên {count} lần",
+      "addSheet": {
+        "title": "Thêm từ",
+        "description": "Vào {topic}",
+        "label": "Từ",
+        "placeholder": "ví dụ: resilient",
+        "hint": "Phát âm, âm thanh và ví dụ sẽ tự được bổ sung.",
+        "submit": "Gieo từ",
+        "adding": "Đang gieo…",
+        "error": "Không thêm được từ này. Hãy thử lại."
+      }
     },
     "me": {
       "unknown": "—",

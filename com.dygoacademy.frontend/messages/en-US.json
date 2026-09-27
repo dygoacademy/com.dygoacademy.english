@@ -517,7 +517,17 @@
       "meta": "{parts}",
       "wordsCount": "{count, plural, one {# word} other {# words}}",
       "notFound": "This bed doesn’t exist, or it isn’t yours.",
-      "tricky": "{meaning} · tricky, {count, plural, one {# lapse} other {# lapses}}"
+      "tricky": "{meaning} · tricky, {count, plural, one {# lapse} other {# lapses}}",
+      "addSheet": {
+        "title": "Add a word",
+        "description": "To {topic}",
+        "label": "Word",
+        "placeholder": "e.g. resilient",
+        "hint": "Pronunciation, audio and examples fill in on their own.",
+        "submit": "Plant word",
+        "adding": "Planting…",
+        "error": "Couldn’t add this word. Try again."
+      }
     },
     "me": {
       "unknown": "—",

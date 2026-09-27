@@ -521,7 +521,17 @@
       "meta": "{parts}",
       "wordsCount": "{count} 个单词",
       "notFound": "这个花圃不存在，或者不属于你。",
-      "tricky": "{meaning} · 难词，忘记 {count} 次"
+      "tricky": "{meaning} · 难词，忘记 {count} 次",
+      "addSheet": {
+        "title": "添加单词",
+        "description": "添加到{topic}",
+        "label": "单词",
+        "placeholder": "例如：resilient",
+        "hint": "发音、音频和例句会自动补全。",
+        "submit": "种下单词",
+        "adding": "正在种下…",
+        "error": "无法添加这个单词，请重试。"
+      }
     },
     "me": {
       "unknown": "—",

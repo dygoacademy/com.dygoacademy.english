@@ -50,6 +50,8 @@ export interface TopicBedScreenProps {
   water: { count: number; href: string } | null;
   quizHref: string;
   addWordHref: string;
+  /** Opens the Add word sheet in place; when omitted, + goes to `addWordHref`. */
+  onAddWord?: () => void;
   optionsHref?: string;
 }
 
@@ -63,6 +65,7 @@ export function TopicBedScreen({
   water,
   quizHref,
   addWordHref,
+  onAddWord,
   optionsHref,
 }: TopicBedScreenProps) {
   const t = useTranslations('screens.bed');
@@ -145,7 +148,7 @@ export function TopicBedScreen({
         </Link>
         <IconButton
           aria-label={t('addWord')}
-          onClick={() => router.push(addWordHref)}
+          onClick={onAddWord ?? (() => router.push(addWordHref))}
           className="h-[52px] w-[52px] rounded-control text-garden-forest"
         >
           <PlusIcon width={20} height={20} />
