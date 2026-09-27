@@ -76,6 +76,17 @@ export interface TopicWordRow {
   custom_note: string | null;
   failure_reason: string | null;
   created_at: Date;
+  /**
+   * Word Garden A7 (Phase 12 UI-5 U5-1, 2026-09-27): the caller's own
+   * scheduling state for this word, from `user_word_srs`. All four are null
+   * when the caller has never studied the word (no SRS row), so the garden
+   * shows it as a seed. Never another learner's state: the join is on the
+   * caller's id and `user_word_srs_all_own` is owner-only anyway.
+   */
+  fsrs_state: 'New' | 'Learning' | 'Review' | 'Relearning' | null;
+  mastered_at: Date | null;
+  is_leech: boolean | null;
+  next_due_at: Date | null;
 }
 
 export interface TopicDetail extends TopicRow {
@@ -211,13 +222,27 @@ export class TopicsService {
     // of WordStatusRow's list, off-screen on a topic with any real amount
     // of content -- `desc` puts what the caller just added right where
     // they're already looking.
+    //
+    // Phase 12 UI-5 U5-1: the caller's per-word SRS state rides along on a
+    // left join to `user_word_srs`, the same RLS-scoped join the counts in
+    // findAllVisible use. The extra `uws.user_id = $2` join condition is
+    // belt and braces on top of `user_word_srs_all_own`: even if this ever
+    // ran outside RLS it could only pick up the caller's own row, and
+    // (user_id, topic_word_id) is unique, so the join can't multiply words.
     const words = await this.db.queryAs<TopicWordRow>(
       userId,
-      `select id, source_word, language_code, status, custom_note, failure_reason, created_at
-         from public.topic_words
-        where topic_id = $1
-        order by created_at desc`,
-      [topicId],
+      `select tw.id, tw.source_word, tw.language_code, tw.status, tw.custom_note,
+              tw.failure_reason, tw.created_at,
+              uws.fsrs_state::text as fsrs_state,
+              uws.mastered_at,
+              uws.is_leech,
+              uws.next_due_at
+         from public.topic_words tw
+         left join public.user_word_srs uws
+           on uws.topic_word_id = tw.id and uws.user_id = $2
+        where tw.topic_id = $1
+        order by tw.created_at desc`,
+      [topicId, userId],
     );
 
     return { ...topicRows[0], words };

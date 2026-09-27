@@ -229,6 +229,47 @@ describe('TopicsService — findById', () => {
     expect(result.words).toHaveLength(1);
     expect(result.words[0].source_word).toBe('resilient');
   });
+
+  it("joins the caller's own user_word_srs row onto each word, by the caller's id (U5-1)", async () => {
+    const queryAsMock = jest
+      .fn()
+      .mockResolvedValueOnce([{ id: 'topic-1', group_id: 'g', title: 'T', description: null, is_public: false, created_at: new Date() }])
+      .mockResolvedValueOnce([]);
+    const service = await makeService(queryAsMock);
+
+    await service.findById('user-1', 'topic-1');
+
+    const [callerId, sql, params] = queryAsMock.mock.calls[1];
+    expect(callerId).toBe('user-1');
+    expect(sql).toMatch(/left join public\.user_word_srs uws\s+on uws\.topic_word_id = tw\.id and uws\.user_id = \$2/);
+    expect(sql).toMatch(/uws\.fsrs_state::text as fsrs_state/);
+    expect(sql).toMatch(/uws\.mastered_at/);
+    expect(sql).toMatch(/uws\.is_leech/);
+    expect(sql).toMatch(/uws\.next_due_at/);
+    expect(params).toEqual(['topic-1', 'user-1']);
+    // Still a left join: never-studied words must stay in the list.
+    expect(sql).not.toMatch(/\binner join public\.user_word_srs/);
+    expect(sql).not.toMatch(/where[^]*uws\./);
+  });
+
+  it('passes per-word SRS state through, null for a never-studied word', async () => {
+    const due = new Date('2026-09-27T08:00:00Z');
+    const queryAsMock = jest
+      .fn()
+      .mockResolvedValueOnce([{ id: 'topic-1', group_id: 'g', title: 'T', description: null, is_public: false, created_at: new Date() }])
+      .mockResolvedValueOnce([
+        { id: 'w1', source_word: 'resilient', language_code: 'en', status: 'READY', custom_note: null, failure_reason: null, created_at: new Date(),
+          fsrs_state: 'Review', mastered_at: null, is_leech: true, next_due_at: due },
+        { id: 'w2', source_word: 'novel', language_code: 'en', status: 'READY', custom_note: null, failure_reason: null, created_at: new Date(),
+          fsrs_state: null, mastered_at: null, is_leech: null, next_due_at: null },
+      ]);
+    const service = await makeService(queryAsMock);
+
+    const { words } = await service.findById('user-1', 'topic-1');
+
+    expect(words[0]).toMatchObject({ fsrs_state: 'Review', is_leech: true, next_due_at: due, mastered_at: null });
+    expect(words[1]).toMatchObject({ fsrs_state: null, is_leech: null, next_due_at: null, mastered_at: null });
+  });
 });
 
 describe('TopicsService — update', () => {
