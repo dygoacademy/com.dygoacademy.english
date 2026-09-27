@@ -1,0 +1,10 @@
+node_modules/
+test-results/
+playwright-report/
+blob-report/
+# Screenshot baselines are made on Dylan's Mac (`npm run test:update`); they
+# differ per OS/font stack, so they're not committed until a baseline is agreed.
+tests/__screenshots__/
+# Sign-in secrets and saved sessions (U3-4) never go in git.
+.env.e2e
+.auth/
