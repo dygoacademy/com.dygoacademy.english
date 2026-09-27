@@ -43,8 +43,11 @@ export interface TendGardenScreenProps {
       onSize?: (size: RainDaySize) => void;
       onStart?: () => void;
       busy?: boolean;
-      /** The last rain day, if known: its weekday and how many joined. */
-      last: { day: string; joined: number } | null;
+      /**
+       * The last rain day, if known: its weekday and how many joined, out
+       * of `members` (default: `rainDay.members`).
+       */
+      last: { day: string; joined: number; members?: number } | null;
       status?: string | null;
     };
     /** Shown instead of the rows while loading or on error. */
@@ -204,7 +207,7 @@ export function TendGardenScreen({
                 {t('last', {
                   day: tricky.rainDay.last.day,
                   joined: tricky.rainDay.last.joined,
-                  members: tricky.rainDay.members,
+                  members: tricky.rainDay.last.members ?? tricky.rainDay.members,
                 })}
               </span>
             ) : null}

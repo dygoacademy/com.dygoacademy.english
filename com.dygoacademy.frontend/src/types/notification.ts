@@ -17,4 +17,6 @@ export interface SprintResult {
   recipients: number;
   sent: number;
   pruned: number;
+  /** UI-G RD-2: the rain day the sprint stored (absent on older backends). */
+  rainDay?: { id: string; endsAt: string; wordsPerGardener: number };
 }

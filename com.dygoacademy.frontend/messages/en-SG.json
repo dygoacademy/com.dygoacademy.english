@@ -630,6 +630,7 @@
         "pushMessage": "Rain day in {group}: water {count, plural, one {# word} other {# words}} today",
         "sent": "Rain day sent to {count, plural, one {# gardener} other {# gardeners}}.",
         "sendFailed": "The rain day couldn't be sent. Try again.",
+        "alreadyRunning": "A rain day is already running today.",
         "legend": "<b>Admin</b> manages gardeners, invites and rain days · <b>Editor</b> adds beds and words · <b>Viewer</b> waters",
         "joined": "Joined {date}",
         "invitesActive": "{count, plural, one {# invite link active} other {# invite links active}}",

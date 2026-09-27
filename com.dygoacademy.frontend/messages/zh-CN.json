@@ -634,6 +634,7 @@
         "pushMessage": "{group} 雨天：今天浇水 {count} 个单词",
         "sent": "雨天已发送给 {count} 位园丁。",
         "sendFailed": "雨天发送失败，请重试。",
+        "alreadyRunning": "今天已经有一个雨天了。",
         "legend": "<b>管理员</b>管理园丁、邀请和雨天 · <b>编辑</b>添加花圃和单词 · <b>成员</b>浇水",
         "joined": "{date} 加入",
         "invitesActive": "{count} 个邀请链接有效",

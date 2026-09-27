@@ -3,18 +3,19 @@
 import * as React from 'react';
 import { useQueries } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
-import { useTranslations } from 'next-intl';
+import { useTimeZone, useTranslations } from 'next-intl';
 
 import { GARDEN_ROUTES } from '@/constants/garden';
-import { useGroupGardenCounts } from '@/hooks/useGroupGarden';
+import { useGroupGarden, useGroupGardenCounts } from '@/hooks/useGroupGarden';
 import { useCreateGroup, useGroups } from '@/hooks/useGroups';
 import { apiClient } from '@/lib/api-client';
 import type { GroupRosterMember } from '@/types';
 
 import { CreateGardenBody } from '../CreateGardenSheet';
+import { useGardenFormat } from '../format';
 import { GroupSheet } from '../GroupSheet';
 import { SharedGardensScreen } from '../screens/SharedGardensScreen';
-import { avatarRow, gardenPlant, tokenFromLink } from './groupData';
+import { avatarRow, firstRainDay, gardenPlant, rainDayEnds, tokenFromLink, wettestBed } from './groupData';
 import { LiveError, LiveLoading } from './LiveState';
 
 /**
@@ -25,13 +26,17 @@ import { LiveError, LiveLoading } from './LiveState';
  * (POST /groups, then the new garden); "Join with a link" takes a pasted
  * invite link to GR6.
  *
- * Rain days aren't stored by the backend yet, so the rain-day banner
- * doesn't show on live data.
+ * Rain day (UI-G RD-4): the first garden with one running gets the banner
+ * (totals only, from garden-counts); its end is shown in your time zone.
+ * "Water" opens that garden's shared bed with the most of your due words
+ * (one GET /groups/:id/garden for that garden), else the garden itself.
  */
 export function GroupsLive() {
   const t = useTranslations('screens.groups.list');
   const groups = useGroups();
   const counts = useGroupGardenCounts();
+  const timeZone = useTimeZone();
+  const f = useGardenFormat();
   const [createOpen, setCreateOpen] = React.useState(false);
   const [joinOpen, setJoinOpen] = React.useState(false);
 
@@ -41,6 +46,9 @@ export function GroupsLive() {
       queryFn: () => apiClient.get<GroupRosterMember[]>(`/groups/${group.id}/members`),
     })),
   });
+
+  const rain = firstRainDay((groups.data ?? []).map((group) => group.id), counts.data ?? []);
+  const rainGarden = useGroupGarden(rain?.groupId ?? '', timeZone);
 
   if (groups.isPending) return <LiveLoading />;
   if (groups.isError || !groups.data) return <LiveError onRetry={() => void groups.refetch()} />;
@@ -64,12 +72,25 @@ export function GroupsLive() {
     };
   });
   const gardeners = (counts.data ?? []).reduce((sum, row) => sum + row.member_count, 0);
+  const rainGroup = rain ? groups.data.find((group) => group.id === rain.groupId) : undefined;
+  const rainBed = rainGarden.data ? wettestBed(rainGarden.data.beds) : null;
+  const rainDay =
+    rain && rainGroup
+      ? {
+          group: rainGroup.name,
+          words: rain.rainDay.wordsPerGardener,
+          done: rain.rainDay.done,
+          members: rain.rainDay.gardeners,
+          ends: f.clock(rainDayEnds(rain.rainDay.endsAt, timeZone)),
+          href: rainBed ? GARDEN_ROUTES.topic(rainBed) : GARDEN_ROUTES.group(rain.groupId),
+        }
+      : null;
 
   return (
     <SharedGardensScreen
       gardens={gardens}
       gardeners={gardeners}
-      rainDay={null}
+      rainDay={rainDay}
       start={{ onClick: () => setCreateOpen(true) }}
       join={{ onClick: () => setJoinOpen(true) }}
     >

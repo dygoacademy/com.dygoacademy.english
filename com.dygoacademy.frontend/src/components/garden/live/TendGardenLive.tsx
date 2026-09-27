@@ -6,7 +6,7 @@ import { useTimeZone, useTranslations } from 'next-intl';
 
 import { GARDEN_ROUTES } from '@/constants/garden';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
-import { useTrickyPatches } from '@/hooks/useGroupGarden';
+import { useGroupRainDay, useTrickyPatches } from '@/hooks/useGroupGarden';
 import { useGroupMembers, useRemoveMember, useUpdateMemberRole } from '@/hooks/useGroupMembers';
 import { useDeleteGroup, useGroups, useUpdateGroup } from '@/hooks/useGroups';
 import { useInvites, useRevokeInvite } from '@/hooks/useInvites';
@@ -28,8 +28,11 @@ import { LiveError, LiveLoading } from './LiveState';
  * Everything the classic group pages do, on the existing endpoints:
  * - Tricky patches: GET /groups/:id/tricky-patches (UI-G; last 7 days,
  *   totals only), and "Call a rain day" = POST /notifications/groups/:id/
- *   sprint with the chosen words-per-gardener in the push text (one per
- *   group per minute; 429 shows "couldn't be sent").
+ *   sprint with `wordsPerGardener` (UI-G RD-4; the backend stores the rain
+ *   day, one per group per local day: 409 "already running"; 429 and
+ *   other errors show "couldn't be sent"). "Last rain day" is the running
+ *   one, else the last finished one (GET /groups/:id/rain-day), done of
+ *   gardeners.
  * - Gardeners: the roster with a role picker (PATCH members/:userId) and
  *   remove (DELETE, 409 on the last admin); invite links: list + revoke
  *   (GET /groups/:id/invites, DELETE /invites/:id) and a new link (GR5);
@@ -49,6 +52,7 @@ export function TendGardenLive({ groupId, tab }: { groupId: string; tab: 'tricky
   const invites = useInvites(admin ? groupId : '');
   const tricky = useTrickyPatches(groupId, admin && tab === 'tricky');
   const sprint = useTriggerSprint(groupId);
+  const rain = useGroupRainDay(groupId, admin && tab === 'tricky');
   const updateRole = useUpdateMemberRole(groupId);
   const removeMember = useRemoveMember(groupId);
 
@@ -101,15 +105,21 @@ export function TendGardenLive({ groupId, tab }: { groupId: string; tab: 'tricky
   function startRainDay() {
     setRainStatus(null);
     sprint.mutate(
-      { message: t('pushMessage', { group: group!.name, count: size }) },
+      { message: t('pushMessage', { group: group!.name, count: size }), wordsPerGardener: size },
       {
         onSuccess: (result) => setRainStatus(t('sent', { count: result.recipients })),
-        onError: () => setRainStatus(t('sendFailed')),
+        onError: (error) =>
+          setRainStatus(
+            error instanceof ApiError && error.status === 409 && /rain day/i.test(error.message)
+              ? t('alreadyRunning')
+              : t('sendFailed'),
+          ),
       },
     );
   }
 
   const manage = GARDEN_ROUTES.groupManage;
+  const lastRain = rain.data?.current ?? rain.data?.last ?? null;
 
   return (
     <TendGardenScreen
@@ -131,7 +141,13 @@ export function TendGardenLive({ groupId, tab }: { groupId: string; tab: 'tricky
           onSize: setSize,
           onStart: startRainDay,
           busy: sprint.isPending,
-          last: null,
+          last: lastRain
+            ? {
+                day: f.weekday(todayIn(timeZone, new Date(lastRain.startsAt))),
+                joined: lastRain.done,
+                members: lastRain.gardeners,
+              }
+            : null,
           status: rainStatus,
         },
       }}

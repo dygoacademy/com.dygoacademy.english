@@ -5,10 +5,13 @@ import {
   bedPlant,
   bedShares,
   displayLink,
+  firstRainDay,
   gardenerName,
   gardenPlant,
   inviteUrl,
+  rainDayEnds,
   tokenFromLink,
+  wettestBed,
 } from './groupData';
 
 const member = (id: string, display: string | null, email: string | null = null) => ({
@@ -63,5 +66,34 @@ describe('group live data', () => {
     const url = inviteUrl('https://dygoacademy.com/', 'tok');
     expect(url).toBe('https://dygoacademy.com/join/tok');
     expect(displayLink(url)).toBe('dygoacademy.com/join/tok');
+  });
+});
+
+describe('rain days (UI-G RD-4)', () => {
+  it('waters the bed with the most due words, first on a tie, none when nothing is due', () => {
+    const bed = (topic_id: string, due_count: number) => ({ topic_id, due_count });
+    expect(wettestBed([bed('a', 2), bed('b', 5), bed('c', 5)])).toBe('b');
+    expect(wettestBed([bed('a', 0), bed('b', 0)])).toBeNull();
+    expect(wettestBed([])).toBeNull();
+  });
+
+  it('shows the first garden in list order with a running rain day', () => {
+    const rain = { wordsPerGardener: 10, gardeners: 5, done: 3, mine: 4, endsAt: '2026-09-27T16:00:00Z' };
+    const counts = [
+      { group_id: 'b', rainDay: rain },
+      { group_id: 'a', rainDay: null },
+      { group_id: 'c', rainDay: { ...rain, done: 1 } },
+    ];
+    expect(firstRainDay(['a', 'c', 'b'], counts)).toEqual({ groupId: 'c', rainDay: { ...rain, done: 1 } });
+    expect(firstRainDay(['a'], counts)).toBeNull();
+    expect(firstRainDay(['a', 'b'], [{ group_id: 'a' }, { group_id: 'b' }])).toBeNull();
+  });
+
+  it("ends at 23:59 of the admin's day, shown in the viewer's zone", () => {
+    // Next midnight in Singapore (UTC+8) = 16:00 UTC.
+    expect(rainDayEnds('2026-09-27T16:00:00Z', 'Asia/Singapore')).toEqual({ hour: 23, minute: 59 });
+    // The same moment for a viewer in Ho Chi Minh City (UTC+7).
+    expect(rainDayEnds('2026-09-27T16:00:00Z', 'Asia/Ho_Chi_Minh')).toEqual({ hour: 22, minute: 59 });
+    expect(rainDayEnds('2026-09-28T00:00:00.000Z', 'UTC')).toEqual({ hour: 23, minute: 59 });
   });
 });

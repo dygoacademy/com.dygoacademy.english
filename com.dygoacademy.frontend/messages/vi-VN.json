@@ -630,6 +630,7 @@
         "pushMessage": "Ngày mưa ở {group}: hôm nay tưới {count} từ",
         "sent": "Đã gửi ngày mưa đến {count} người.",
         "sendFailed": "Chưa gửi được ngày mưa. Hãy thử lại.",
+        "alreadyRunning": "Hôm nay đã có một ngày mưa rồi.",
         "legend": "<b>Quản trị</b> quản lý thành viên, lời mời và ngày mưa · <b>Biên tập</b> thêm luống và từ · <b>Thành viên</b> tưới cây",
         "joined": "Tham gia {date}",
         "invitesActive": "{count} link mời đang hoạt động",

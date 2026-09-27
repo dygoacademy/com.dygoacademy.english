@@ -77,3 +77,46 @@ export function inviteUrl(origin: string, token: string): string {
 export function displayLink(url: string): string {
   return url.replace(/^https?:\/\//, '');
 }
+
+/**
+ * The shared bed a rain day's "Water" opens: the one with the most of the
+ * caller's due words (ties: the first, which is the garden's own order).
+ * Null when no bed has anything due.
+ */
+export function wettestBed<T extends { topic_id: string; due_count: number }>(beds: readonly T[]): string | null {
+  let best: T | null = null;
+  for (const bed of beds) {
+    if (bed.due_count > 0 && (!best || bed.due_count > best.due_count)) best = bed;
+  }
+  return best?.topic_id ?? null;
+}
+
+/** GR1 shows one rain day: the first garden (in the list's order) with one running. */
+export function firstRainDay<R extends { group_id: string; rainDay?: unknown }>(
+  groupIds: readonly string[],
+  counts: readonly R[],
+): { groupId: string; rainDay: NonNullable<R['rainDay']> } | null {
+  const byId = new Map(counts.map((row) => [row.group_id, row]));
+  for (const id of groupIds) {
+    const rainDay = byId.get(id)?.rainDay;
+    if (rainDay) return { groupId: id, rainDay: rainDay as NonNullable<R['rainDay']> };
+  }
+  return null;
+}
+
+/**
+ * When a rain day ends, as a wall-clock time in `timeZone`. `endsAt` is
+ * the next midnight in the admin's zone, so one minute earlier gives the
+ * canvas's "ends 11:59 PM" (in the viewer's own zone).
+ */
+export function rainDayEnds(endsAt: string, timeZone: string | undefined): { hour: number; minute: number } {
+  const last = new Date(new Date(endsAt).getTime() - 60_000);
+  const parts = new Intl.DateTimeFormat('en-US', {
+    timeZone,
+    hour: 'numeric',
+    minute: 'numeric',
+    hourCycle: 'h23',
+  }).formatToParts(last);
+  const get = (type: string) => Number(parts.find((p) => p.type === type)?.value);
+  return { hour: get('hour') % 24, minute: get('minute') };
+}

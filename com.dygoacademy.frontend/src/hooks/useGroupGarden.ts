@@ -12,6 +12,19 @@ import type { GroupRole } from '@/types';
  * types/group.ts until that file's other uncommitted edits land.
  */
 
+/**
+ * A group's running rain day on GR1 (UI-G RD-3): totals plus the caller's
+ * own count, never who. `endsAt` is the end of the starting admin's local
+ * day (the next midnight there).
+ */
+export interface GardenRainDay {
+  wordsPerGardener: number;
+  gardeners: number;
+  done: number;
+  mine: number;
+  endsAt: string;
+}
+
 /** GET /groups/garden-counts: one row per group the caller is in (GR1). */
 export interface GroupGardenCounts {
   group_id: string;
@@ -19,6 +32,20 @@ export interface GroupGardenCounts {
   bed_count: number;
   word_count: number;
   my_due_count: number;
+  /** Absent on a backend from before RD-3. */
+  rainDay?: GardenRainDay | null;
+}
+
+/** One rain day from GET /groups/:id/rain-day (UI-G RD-2). */
+export interface RainDaySummary extends GardenRainDay {
+  id: string;
+  startsAt: string;
+}
+
+/** GET /groups/:id/rain-day: the running rain day and the last finished one. */
+export interface RainDayStatus {
+  current: RainDaySummary | null;
+  last: RainDaySummary | null;
 }
 
 /** A shared bed with the caller's own numbers (GR2). */
@@ -86,6 +113,14 @@ export function useGroupGarden(groupId: string, timeZone: string | undefined) {
         `/groups/${encodeURIComponent(groupId)}/garden${timeZone ? `?tz=${encodeURIComponent(timeZone)}` : ''}`,
       ),
     enabled: Boolean(groupId),
+  });
+}
+
+export function useGroupRainDay(groupId: string, enabled = true) {
+  return useQuery({
+    queryKey: ['groups', groupId, 'rain-day'],
+    queryFn: () => apiClient.get<RainDayStatus>(`/groups/${encodeURIComponent(groupId)}/rain-day`),
+    enabled: enabled && Boolean(groupId),
   });
 }
 
