@@ -7,18 +7,19 @@ import { ROUTES } from '@/constants/routes';
 import { useStudySession } from '@/hooks/useStudySession';
 import { useTopic } from '@/hooks/useTopic';
 
-import { TopicBedScreen, type TopicBedWord } from '../screens/TopicBedScreen';
+import { TopicBedScreen } from '../screens/TopicBedScreen';
+import { toBedWords, type GardenTopicWord } from './data';
 import { LiveError, LiveLoading } from './LiveState';
 
 /**
  * /garden/topics/[id]: a topic bed (A7) from GET /topics/:id and the
  * topic's due cards (POST /srs/sessions with the topic).
  *
- * Real: the words, which are due now or new, and their meanings when the
- * due card carries one. Not available yet (UI-5): each word's plant stage
- * and next watering date, so the stage tiles show "—" and can't filter,
- * new words are seeds, due words sprouts, and the others show no date.
- * Quiz, Add word and Options open the classic topic pages.
+ * U5-3: each word's plant stage, wilting and next watering come from the
+ * caller's SRS state on GET /topics/:id (U5-1) via `toBedWords`, so the
+ * stage tiles show real counts and filter the list, and words are sorted
+ * by next watering. Meanings come from the due cards when they carry one.
+ * Quiz, Add word and Options still open the classic topic pages (U5-4).
  */
 export function TopicBedLive({ topicId }: { topicId: string }) {
   const t = useTranslations('screens.bed');
@@ -31,25 +32,13 @@ export function TopicBedLive({ topicId }: { topicId: string }) {
   }
 
   const dueById = new Map((due.data?.cards ?? []).map((card) => [card.topic_word_id, card]));
-  const words: TopicBedWord[] = topic.data.words
-    .map((word) => {
-      const card = dueById.get(word.id);
-      const isNew = card?.is_new ?? false;
-      return {
-        id: word.id,
-        word: word.source_word,
-        meaning: card?.definition_en ?? word.custom_note ?? '',
-        stage: isNew ? ('seed' as const) : ('sprout' as const),
-        wilting: card?.is_leech ?? false,
-        due: card
-          ? isNew
-            ? ({ tone: 'new' } as const)
-            : ({ tone: 'now' } as const)
-          : ({ tone: 'later', days: null } as const),
-      };
-    })
-    // Due first (wilting, then due, then new), like "Sorted by next watering".
-    .sort((a, b) => rank(a) - rank(b));
+  const meanings = new Map<string, string>();
+  for (const [id, card] of dueById) if (card.definition_en) meanings.set(id, card.definition_en);
+  const { words, stageCounts } = toBedWords(
+    topic.data.words as GardenTopicWord[],
+    meanings,
+    new Date(),
+  );
   const dueCount = [...dueById.values()].length;
 
   return (
@@ -57,7 +46,7 @@ export function TopicBedLive({ topicId }: { topicId: string }) {
       title={topic.data.title}
       meta={{ collection: null, level: null, words: topic.data.words.length }}
       backHref={GARDEN_ROUTES.topics}
-      stageCounts={null}
+      stageCounts={stageCounts}
       words={words}
       water={
         dueCount > 0
@@ -74,9 +63,3 @@ export function TopicBedLive({ topicId }: { topicId: string }) {
   );
 }
 
-function rank(word: TopicBedWord): number {
-  if (word.wilting) return 0;
-  if (word.due.tone === 'now') return 1;
-  if (word.due.tone === 'new') return 2;
-  return 3;
-}

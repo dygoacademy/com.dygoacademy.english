@@ -2,10 +2,12 @@
  * Pure helpers for the live garden routes (UI-fidelity 6). No React, no
  * fetching: the live components pass in what the existing hooks returned.
  */
-import type { TopicSummary } from '@/types';
+import type { TopicSummary, TopicWordSummary } from '@/types';
 import { GARDEN_ROUTES } from '@/constants/garden';
 
 import type { HeroPlant } from '../HeroGardenCard';
+import { stageFromSrs, type GardenFsrsState } from '../plantStage';
+import type { BedStage, TopicBedWord } from '../screens/TopicBedScreen';
 import type { TopicsScreenTopic } from '../screens/TopicsScreen';
 import type { Greeting } from '../screens/TodaysGardenScreen';
 
@@ -252,4 +254,72 @@ export function sortBedsByDue<T extends { due: number | null }>(beds: readonly T
     .map((bed, index) => ({ bed, index }))
     .sort((a, b) => (b.bed.due ?? 0) - (a.bed.due ?? 0) || a.index - b.index)
     .map(({ bed }) => bed);
+}
+
+/**
+ * Fields `GET /topics/:id` words gained for the garden (Phase 12 U5-1): the
+ * caller's own SRS state, all null for a word they never studied. Optional,
+ * so A7 still works against an API that doesn't send them yet.
+ */
+export type GardenTopicWord = TopicWordSummary &
+  Partial<{
+    fsrs_state: GardenFsrsState | null;
+    mastered_at: string | null;
+    is_leech: boolean | null;
+    next_due_at: string | null;
+  }>;
+
+/**
+ * A7 live (U5-3): the bed's words with real stages, due labels and stage
+ * counts, sorted by next watering as in the canvas: due now (wilting
+ * first, then longest overdue), then never-studied seeds, then the rest
+ * soonest first. Stages come from `stageFromSrs`; a leech keeps its
+ * underlying stage for the tiles and filter and is drawn wilting, so the
+ * four tiles always add up to the word count. `stageCounts` is null when
+ * the API doesn't send the U5-1 fields (tiles then show "—").
+ */
+export function toBedWords(
+  words: readonly GardenTopicWord[],
+  meanings: ReadonlyMap<string, string>,
+  now: Date,
+): { words: TopicBedWord[]; stageCounts: Record<BedStage, number> | null } {
+  const hasSrs = words.every((word) => word.fsrs_state !== undefined);
+  const today = dayNumber(isoDate(now));
+  const rows = words.map((word) => {
+    const studied = Boolean(word.fsrs_state) && word.fsrs_state !== 'New';
+    const dueAt = word.next_due_at ? new Date(word.next_due_at) : null;
+    const stage: BedStage = word.fsrs_state
+      ? (stageFromSrs(word.fsrs_state, word.mastered_at, false) as BedStage)
+      : 'seed';
+    const due: TopicBedWord['due'] =
+      !studied || !dueAt
+        ? { tone: 'new' }
+        : dueAt.getTime() <= now.getTime()
+          ? { tone: 'now' }
+          : { tone: 'later', days: Math.max(1, dayNumber(isoDate(dueAt)) - today) };
+    const bedWord: TopicBedWord = {
+      id: word.id,
+      word: word.source_word,
+      meaning: meanings.get(word.id) ?? word.custom_note ?? '',
+      stage,
+      wilting: word.is_leech === true,
+      due,
+    };
+    return { bedWord, dueAt: dueAt?.getTime() ?? null };
+  });
+  const rank = ({ bedWord }: (typeof rows)[number]) =>
+    bedWord.due.tone === 'now' ? (bedWord.wilting ? 0 : 1) : bedWord.due.tone === 'new' ? 2 : 3;
+  const sorted = rows
+    .map((row, index) => ({ row, index }))
+    .sort(
+      (a, b) =>
+        rank(a.row) - rank(b.row) ||
+        (a.row.dueAt ?? 0) - (b.row.dueAt ?? 0) ||
+        a.index - b.index,
+    )
+    .map(({ row }) => row.bedWord);
+  if (!hasSrs) return { words: sorted, stageCounts: null };
+  const stageCounts: Record<BedStage, number> = { seed: 0, sprout: 0, flower: 0, tree: 0 };
+  for (const word of sorted) stageCounts[word.stage] += 1;
+  return { words: sorted, stageCounts };
 }
