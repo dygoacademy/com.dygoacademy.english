@@ -54,3 +54,15 @@ export const GARDEN_ROUTES = {
 export const GARDEN_REFERENCE_PREFIX = '/garden/_reference';
 
 export const GARDEN_PATH_PREFIX = '/garden';
+
+/**
+ * iPad navigation (UI-3 U3-2): the side rail at `medium` (600–1023px) and the
+ * sidebar at `expanded` (≥ 1024px) in place of the bottom tab bar. Off unless
+ * NEXT_PUBLIC_GARDEN_IPAD_NAV is the literal "true"; UI-7 turns it on with
+ * the iPad layouts. Below 600px the tab bar is unchanged either way.
+ */
+export function isGardenIpadNavOn(
+  value: string | undefined = process.env.NEXT_PUBLIC_GARDEN_IPAD_NAV,
+): boolean {
+  return value === 'true';
+}

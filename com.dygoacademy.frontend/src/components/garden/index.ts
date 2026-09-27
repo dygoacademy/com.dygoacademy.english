@@ -5,6 +5,8 @@
 export { AudioButton, type AudioStatus, type GardenAudioButtonProps } from './AudioButton';
 export { BottomSheet, type BottomSheetProps } from './BottomSheet';
 export { BottomTabBar, type BottomTabBarProps, type TabItem } from './BottomTabBar';
+export { GardenRail, type GardenRailProps } from './GardenRail';
+export { GardenSidebar, type GardenSidebarProps } from './GardenSidebar';
 export { Button, type GardenButtonProps } from './Button';
 export { ButtonTwoLine, buttonClassName } from './buttonStyles';
 export { Card, type CardProps } from './Card';

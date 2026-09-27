@@ -78,6 +78,7 @@
       "stageTile": "Ô giai đoạn",
       "wordRow": "Dòng từ",
       "tabBar": "Thanh tab dưới",
+      "ipadNav": "Điều hướng iPad (thanh bên hẹp và thanh bên)",
       "sheet": "Bảng trượt",
       "toast": "Thông báo nhanh",
       "groups": "Vườn chung (UI-G)"
@@ -128,7 +129,9 @@
       "rainWater": "Ngày mưa trong một vườn",
       "tricky": "Chỗ khó (chỉ tổng số)",
       "gardeners": "Bạn cùng vườn với bộ chọn vai trò (hàng của bạn bị khóa ở đây)",
-      "invite": "Bảng mời (tương tác; link chỉ là mẫu)"
+      "invite": "Bảng mời (tương tác; link chỉ là mẫu)",
+      "rail": "Thanh bên hẹp, 600–1023px",
+      "sidebar": "Thanh bên, từ 1024px"
     },
     "sample": {
       "water": "Tưới 12 từ",

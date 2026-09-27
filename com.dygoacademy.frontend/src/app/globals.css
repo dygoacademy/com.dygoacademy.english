@@ -523,3 +523,21 @@
     }
   }
 }
+
+/*
+ * UI-3 U3-2 iPad navigation (NEXT_PUBLIC_GARDEN_IPAD_NAV, off by default):
+ * the fixed rail (80px, 600–1023px) and sidebar (240px, ≥ 1024px) sit on
+ * the left edge, so the garden root makes room for them. Only matches when
+ * GardenTabBar rendered them (`data-garden-nav`), so nothing changes with
+ * the flag off, below 600px, or on classic screens.
+ */
+@media (min-width: 600px) {
+  [data-ui='garden']:has([data-garden-nav]) {
+    padding-left: 80px;
+  }
+}
+@media (min-width: 1024px) {
+  [data-ui='garden']:has([data-garden-nav]) {
+    padding-left: 240px;
+  }
+}

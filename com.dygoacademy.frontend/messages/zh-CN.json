@@ -82,6 +82,7 @@
       "stageTile": "阶段方块",
       "wordRow": "单词行",
       "tabBar": "底部标签栏",
+      "ipadNav": "iPad 导航（窄侧边栏与侧边栏）",
       "sheet": "底部面板",
       "toast": "轻提示",
       "groups": "共享花园（UI-G）"
@@ -132,7 +133,9 @@
       "rainWater": "花园内的雨天",
       "tricky": "难点区（仅总数）",
       "gardeners": "带角色选择的园丁（你自己的一行在此锁定）",
-      "invite": "邀请面板（可交互；链接为示例）"
+      "invite": "邀请面板（可交互；链接为示例）",
+      "rail": "窄侧边栏，600–1023px",
+      "sidebar": "侧边栏，1024px 及以上"
     },
     "sample": {
       "water": "给 12 个单词浇水",

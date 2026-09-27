@@ -6,6 +6,8 @@ import {
   BottomTabBar,
   Button,
   Card,
+  GardenRail,
+  GardenSidebar,
   GardenTabIcon,
   HeroGardenCard,
   IconButton,
@@ -471,6 +473,19 @@ export default async function GardenGalleryPage() {
           <BottomTabBar fixed={false} items={tabs} activeKey="garden" />
           <StateLabel>{t('states.activeTopics')}</StateLabel>
           <BottomTabBar fixed={false} items={tabs} activeKey="topics" />
+        </Section>
+
+        <Section title={t('sections.ipadNav')}>
+          <div className="flex flex-wrap items-start gap-6">
+            <div>
+              <StateLabel>{t('states.rail')}</StateLabel>
+              <GardenRail inline items={tabs} activeKey="garden" />
+            </div>
+            <div>
+              <StateLabel>{t('states.sidebar')}</StateLabel>
+              <GardenSidebar inline items={tabs} activeKey="topics" />
+            </div>
+          </div>
         </Section>
 
         <Section title={t('sections.sheet')}>

@@ -78,6 +78,7 @@
       "stageTile": "Stage tiles",
       "wordRow": "Word rows",
       "tabBar": "Bottom tab bar",
+      "ipadNav": "iPad navigation (rail and sidebar)",
       "sheet": "Bottom sheet",
       "toast": "Toast",
       "groups": "Shared gardens (UI-G)"
@@ -128,7 +129,9 @@
       "rainWater": "Rain day inside a garden",
       "tricky": "Tricky patches (totals only)",
       "gardeners": "Gardeners with the role picker (your own row is locked here)",
-      "invite": "Invite sheet (interactive; the link is a sample)"
+      "invite": "Invite sheet (interactive; the link is a sample)",
+      "rail": "Side rail, 600–1023px",
+      "sidebar": "Sidebar, 1024px and up"
     },
     "sample": {
       "water": "Water 12 words",
