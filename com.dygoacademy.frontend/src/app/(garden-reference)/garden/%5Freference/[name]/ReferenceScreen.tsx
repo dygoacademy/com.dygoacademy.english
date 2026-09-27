@@ -2,6 +2,7 @@
 
 import { useTranslations } from 'next-intl';
 
+import { GroupsTabProvider } from '@/components/garden/groupsTab';
 import { referenceFixtures, type ReferenceName } from '@/components/garden/screens/fixtures';
 import { MeScreen } from '@/components/garden/screens/MeScreen';
 import { MissionCompleteScreen } from '@/components/garden/screens/MissionCompleteScreen';
@@ -21,8 +22,16 @@ import { GroupReferenceScreen } from './GroupReferenceScreen';
  * screen below reads the provider's messages and formats (the page's
  * `?locale=`), not the request's language, with that language's canvas
  * sample data (`referenceFixtures`).
+ *
+ * NAV-1 (canvas 1790485425-11d4): the A-screens with a tab bar show the
+ * sample learner in a group, so five tabs like the GR-screens.
  */
 export function ReferenceScreen({ name, locale }: { name: ReferenceName; locale: AppLocale }) {
+  const screen = <ReferenceScreenBody name={name} locale={locale} />;
+  return name.startsWith('GR') ? screen : <GroupsTabProvider value>{screen}</GroupsTabProvider>;
+}
+
+function ReferenceScreenBody({ name, locale }: { name: ReferenceName; locale: AppLocale }) {
   const {
     BED,
     COMEBACK,
@@ -82,7 +91,13 @@ export function ReferenceScreen({ name, locale }: { name: ReferenceName; locale:
         />
       );
     case 'A4-weekly-harvest':
-      return <WeeklyHarvestScreen {...HARVEST} stickyNav={false} />;
+      return (
+        <WeeklyHarvestScreen
+          {...HARVEST}
+          group={{ ...HARVEST.group, href: GARDEN_ROUTES.reference('GR2-group-garden') }}
+          stickyNav={false}
+        />
+      );
     case 'A5-welcome-back':
       return (
         <WelcomeBackScreen
@@ -99,7 +114,6 @@ export function ReferenceScreen({ name, locale }: { name: ReferenceName; locale:
           filters={[
             TOPICS_ACADEMIC_FILTER,
             { id: 'mine', label: topics('mine') },
-            { id: 'group', label: topics('group') },
           ]}
           lockedPack={TOPICS_LOCKED_PACK}
           searchHref="/search"

@@ -433,12 +433,10 @@
       "barrelName": "Rain barrel",
       "barrelBody": "Streak freezes. Busy day? Your garden stays watered.",
       "comingSoon": "Coming soon.",
-      "groupBody": "{watered} of {members} watered today. Group plot: {words, number} words.",
-      "groupName": "Study group",
+      "groupBody": "{watered} of {members} watered today · {words, number} shared words",
       "weekOf": "Week of {date}",
       "goalBand": "Road to Band {band}",
-      "etaPending": "[ETA]",
-      "openGroups": "Open shared gardens"
+      "etaPending": "[ETA]"
     },
     "comeback": {
       "title": "Welcome back, {name}.<br></br>Your garden waited for you.",
@@ -473,7 +471,6 @@
       "locked": "Locked",
       "newBed": "Plant a new bed",
       "mine": "Mine",
-      "group": "Group",
       "empty": "No beds yet. Plant your first one below.",
       "library": "Library",
       "searchTitle": "Find a bed",
@@ -488,8 +485,7 @@
       "newBedError": "The bed couldn’t be planted. Check your connection and try again.",
       "shared": "Shared",
       "searchBeds": "Search topics",
-      "lockedHint": "Seed pack · {count, plural, one {# more Golden Bloom} other {# more Golden Blooms}} this week",
-      "openGroups": "Open shared gardens"
+      "lockedHint": "Seed pack · {count, plural, one {# more Golden Bloom} other {# more Golden Blooms}} this week"
     },
     "bed": {
       "back": "Back to topics",

@@ -433,12 +433,10 @@
       "barrelName": "Thùng nước mưa",
       "barrelBody": "Giữ chuỗi ngày học. Bận quá? Vườn vẫn được tưới.",
       "comingSoon": "Sắp có.",
-      "groupBody": "Hôm nay {watered}/{members} người đã tưới. Vườn nhóm: {words, number} từ.",
-      "groupName": "Nhóm học",
+      "groupBody": "Hôm nay {watered}/{members} người đã tưới · {words, number} từ chung",
       "weekOf": "Tuần từ {date}",
       "goalBand": "Đường đến Band {band}",
-      "etaPending": "[ETA]",
-      "openGroups": "Mở vườn chung"
+      "etaPending": "[ETA]"
     },
     "comeback": {
       "title": "Chào {name}!<br></br>Vườn vẫn đợi bạn.",
@@ -473,7 +471,6 @@
       "locked": "Đã khóa",
       "newBed": "Tạo luống mới",
       "mine": "Của tôi",
-      "group": "Nhóm",
       "empty": "Chưa có luống nào. Tạo luống đầu tiên ở bên dưới.",
       "library": "Thư viện",
       "searchTitle": "Tìm luống",
@@ -488,8 +485,7 @@
       "newBedError": "Chưa tạo được luống. Hãy kiểm tra kết nối và thử lại.",
       "shared": "Chung",
       "searchBeds": "Tìm chủ đề",
-      "lockedHint": "Gói hạt giống · còn {count} Hoa Vàng",
-      "openGroups": "Mở vườn chung"
+      "lockedHint": "Gói hạt giống · còn {count} Hoa Vàng"
     },
     "bed": {
       "back": "Quay lại chủ đề",

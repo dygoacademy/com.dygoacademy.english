@@ -56,9 +56,9 @@ describe('topics helpers', () => {
     expect(formatLevel(null, null)).toBeNull();
   });
 
-  it('builds chips from the kinds present, collections first', async () => {
+  it('builds chips from the kinds present, collections first, no Group chip', async () => {
     const { topicFilters } = await import('./data');
-    const labels = { mine: 'Mine', group: 'Group' };
+    const labels = { mine: 'Mine' };
     expect(
       topicFilters(
         [{ group: 'group' }, { group: 'library:IELTS Academic' }, { group: 'mine' }],
@@ -67,7 +67,6 @@ describe('topics helpers', () => {
     ).toEqual([
       { id: 'library:IELTS Academic', label: 'IELTS Academic' },
       { id: 'mine', label: 'Mine' },
-      { id: 'group', label: 'Group' },
     ]);
     expect(topicFilters([{ group: 'mine' }], labels)).toEqual([{ id: 'mine', label: 'Mine' }]);
   });

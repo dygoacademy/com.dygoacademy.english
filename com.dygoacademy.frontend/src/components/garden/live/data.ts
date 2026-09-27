@@ -172,7 +172,7 @@ export function formatLevel(min: string | null, max: string | null): string | nu
  */
 export function topicFilters(
   beds: ReadonlyArray<{ group: string }>,
-  labels: { mine: string; group: string },
+  labels: { mine: string },
 ): Array<{ id: string; label: string }> {
   const groups = new Set(beds.map((bed) => bed.group));
   const collections = [...groups]
@@ -181,7 +181,6 @@ export function topicFilters(
   return [
     ...collections,
     ...(groups.has('mine') ? [{ id: 'mine', label: labels.mine }] : []),
-    ...(groups.has('group') ? [{ id: 'group', label: labels.group }] : []),
   ];
 }
 

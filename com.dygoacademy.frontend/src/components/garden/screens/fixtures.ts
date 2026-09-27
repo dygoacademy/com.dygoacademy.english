@@ -134,7 +134,7 @@ export const HARVEST = {
     name: 'IELTS Sprint group',
     watered: 4,
     members: 5,
-    plotWords: 1930,
+    sharedWords: 126,
     avatars: [
       { text: 'L', tone: 'flower' },
       { text: 'M', tone: 'sprout' },

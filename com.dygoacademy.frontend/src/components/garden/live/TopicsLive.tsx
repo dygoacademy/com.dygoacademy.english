@@ -10,7 +10,6 @@ import { useCreateTopic } from '@/hooks/useTopicMutations';
 import { useTopics } from '@/hooks/useTopics';
 
 import { BottomSheet } from '../BottomSheet';
-import { useGroupsTab } from '../groupsTab';
 import { Button } from '../Button';
 import { TopicsScreen, type TopicsScreenTopic } from '../screens/TopicsScreen';
 import { toScreenTopic, topicFilters, type GardenTopicSummary } from './data';
@@ -20,8 +19,8 @@ import { LiveError, LiveLoading } from './LiveState';
  * /garden/topics: the beds (A6) from GET /topics.
  *
  * Real: title, word count, CEFR range, fruiting / flowering / sprouting
- * shares, due badge and the filter chips (library collections, Mine,
- * Group) from the UI-5 fields. Search opens a sheet that finds beds by
+ * shares, due badge and the filter chips (library collections, Mine)
+ * from the UI-5 fields; shared beds show under All (NAV-1: no Group chip). Search opens a sheet that finds beds by
  * name; "Plant a new bed" opens a sheet that creates the topic
  * (POST /topics, existing) and opens it. The locked seed pack waits for
  * UI-6 (Golden Blooms), so it isn't shown.
@@ -31,7 +30,6 @@ export function TopicsLive() {
   const topics = useTopics();
   const [searchOpen, setSearchOpen] = React.useState(false);
   const [newBedOpen, setNewBedOpen] = React.useState(false);
-  const inGroups = useGroupsTab();
 
   if (topics.isPending) return <LiveLoading />;
   if (topics.isError || !topics.data) return <LiveError onRetry={() => void topics.refetch()} />;
@@ -44,11 +42,10 @@ export function TopicsLive() {
     <>
       <TopicsScreen
         topics={beds}
-        filters={topicFilters(beds, { mine: t('mine'), group: t('group') })}
+        filters={topicFilters(beds, { mine: t('mine') })}
         lockedPack={null}
         onSearch={() => setSearchOpen(true)}
         onNewBed={() => setNewBedOpen(true)}
-        groupsHref={inGroups ? GARDEN_ROUTES.groups : undefined}
       />
       <SearchSheet open={searchOpen} onOpenChange={setSearchOpen} beds={beds} />
       <NewBedSheet open={newBedOpen} onOpenChange={setNewBedOpen} />

@@ -8,6 +8,7 @@ import messages from '../../../../messages/en-SG.json';
 
 import {
   BED,
+  HARVEST,
   HOME,
   ME,
   REFERENCE_NAMES,
@@ -22,6 +23,7 @@ import { ReviewScreen } from './ReviewScreen';
 import { TodaysGardenScreen } from './TodaysGardenScreen';
 import { TopicBedScreen } from './TopicBedScreen';
 import { TopicsScreen } from './TopicsScreen';
+import { WeeklyHarvestScreen } from './WeeklyHarvestScreen';
 
 const push = vi.fn();
 vi.mock('next/navigation', () => ({ useRouter: () => ({ push }) }));
@@ -89,6 +91,25 @@ describe('ReviewScreen', () => {
   });
 });
 
+describe('WeeklyHarvestScreen', () => {
+  const base = HARVEST;
+
+  it("links the group card to that group's garden", () => {
+    renderWithIntl(
+      <WeeklyHarvestScreen {...base} group={{ ...HARVEST.group, href: '/garden/groups/g1' }} />,
+    );
+    const card = screen.getByRole('link', { name: /IELTS Sprint group/ });
+    expect(card.getAttribute('href')).toBe('/garden/groups/g1');
+    expect(card.textContent).toContain('4 of 5 watered today · 126 shared words');
+  });
+
+  it('has no group card without a group', () => {
+    renderWithIntl(<WeeklyHarvestScreen {...base} group={null} />);
+    expect(screen.queryByText(/watered today/)).toBeNull();
+    expect(screen.queryByText('IELTS Sprint group')).toBeNull();
+  });
+});
+
 describe('TopicsScreen', () => {
   function renderTopics() {
     return renderWithIntl(
@@ -97,7 +118,6 @@ describe('TopicsScreen', () => {
         filters={[
           TOPICS_ACADEMIC_FILTER,
           { id: 'mine', label: 'Mine' },
-          { id: 'group', label: 'Group' },
         ]}
         lockedPack={TOPICS_LOCKED_PACK}
         searchHref="/search"

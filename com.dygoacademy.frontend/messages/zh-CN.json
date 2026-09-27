@@ -437,12 +437,10 @@
       "barrelName": "雨水桶",
       "barrelBody": "保护连续天数。今天太忙？花园照样有水。",
       "comingSoon": "即将上线。",
-      "groupBody": "今天 {watered}/{members} 人已浇水。小组花园：{words, number} 个单词。",
-      "groupName": "学习小组",
+      "groupBody": "今天 {watered}/{members} 人已浇水 · {words, number} 个共享单词",
       "weekOf": "{date} 这一周",
       "goalBand": "冲刺 {band} 分",
-      "etaPending": "[ETA]",
-      "openGroups": "打开共享花园"
+      "etaPending": "[ETA]"
     },
     "comeback": {
       "title": "欢迎回来，{name}。<br></br>你的花园一直在等你。",
@@ -477,7 +475,6 @@
       "locked": "未解锁",
       "newBed": "开辟新花圃",
       "mine": "我的",
-      "group": "小组",
       "empty": "还没有花圃。在下面开辟第一个吧。",
       "library": "词库",
       "searchTitle": "查找花圃",
@@ -492,8 +489,7 @@
       "newBedError": "花圃没能创建。请检查网络后重试。",
       "shared": "共享",
       "searchBeds": "搜索主题",
-      "lockedHint": "种子包 · 本周还差 {count} 朵金色花开",
-      "openGroups": "打开共享花园"
+      "lockedHint": "种子包 · 本周还差 {count} 朵金色花开"
     },
     "bed": {
       "back": "返回主题",
