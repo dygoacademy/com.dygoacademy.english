@@ -34,7 +34,9 @@ import { LiveError, LiveLoading } from './LiveState';
 export function TopicBedLive({ topicId }: { topicId: string }) {
   const t = useTranslations('screens.bed');
   const topic = useTopic(topicId);
-  const due = useStudySession(topicId, 'STANDARD', 200);
+  // 100 is the API's cap (StartSessionDto @Max(100)); 200 was a 400, so the
+  // bed never showed "Water N due".
+  const due = useStudySession(topicId, 'STANDARD', 100);
   const [adding, setAdding] = useState(false);
 
   if (topic.isPending) return <LiveLoading />;
