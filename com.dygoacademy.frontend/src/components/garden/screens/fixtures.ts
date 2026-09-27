@@ -91,7 +91,7 @@ export const REVIEW = {
     meaning: 'to make something bad less harmful or serious',
     meaningTranslation: { text: 'giảm nhẹ, làm dịu bớt', lang: 'vi' },
     example: 'Planting more trees can help mitigate the effects of climate change.',
-    collocations: ['mitigate the impact', 'mitigate risk', 'help to mitigate'],
+    synonyms: ['reduce', 'lessen', 'ease'],
   },
   intervals: {
     again: { unit: 'lessThanMinute' },

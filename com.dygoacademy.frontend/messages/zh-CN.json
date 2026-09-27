@@ -260,6 +260,7 @@
       "meaning": "释义",
       "example": "例句",
       "collocations": "常用搭配",
+      "synonyms": "近义词",
       "hiddenHint": "先大声说出意思，<br></br>再核对答案。",
       "quoted": "“{text}”"
     },

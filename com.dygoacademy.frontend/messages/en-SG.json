@@ -256,6 +256,7 @@
       "meaning": "Meaning",
       "example": "Example",
       "collocations": "Collocations",
+      "synonyms": "Synonyms",
       "hiddenHint": "Say the meaning out loud,<br></br>then check.",
       "quoted": "“{text}”"
     },

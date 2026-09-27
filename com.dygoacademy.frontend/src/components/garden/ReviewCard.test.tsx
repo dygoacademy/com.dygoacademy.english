@@ -35,6 +35,17 @@ describe('ReviewCard', () => {
     expect(screen.getByText('“A more sustainable city.”').getAttribute('lang')).toBe('en');
   });
 
+  it('shows synonyms under their own heading, in English', () => {
+    renderWithIntl(<ReviewCard {...BASE} synonyms={['lasting', 'green']} revealed />);
+    expect(screen.getByRole('heading', { name: 'Synonyms' })).toBeTruthy();
+    expect(screen.getByText('lasting').closest('ul')?.getAttribute('lang')).toBe('en');
+  });
+
+  it('shows no synonyms heading when there are none', () => {
+    renderWithIntl(<ReviewCard {...BASE} synonyms={[]} revealed />);
+    expect(screen.queryByRole('heading', { name: 'Synonyms' })).toBeNull();
+  });
+
   it('shows the canvas hint while the answer is hidden', () => {
     const { container } = renderWithIntl(<ReviewCard {...BASE} revealed={false} />);
     expect(container.textContent).toContain('Say the meaning out loud,then check.');

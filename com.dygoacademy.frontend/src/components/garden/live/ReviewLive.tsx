@@ -22,7 +22,8 @@ import { LiveError, LiveLoading } from './LiveState';
  * The card list is taken once, so a background refetch can't reorder it
  * mid-session. Not available yet: interval previews (the rating buttons
  * show labels only, UI-4), CEFR level tags and meanings in the learner's
- * language. At the end, "See your garden bloom" carries this session's
+ * language (no per-language meaning is stored yet). Synonyms come from
+ * the card's `synonyms`. At the end, "See your garden bloom" carries this session's
  * results to /garden/review/done in the URL.
  */
 export function ReviewLive({ topicId }: { topicId?: string }) {
@@ -91,6 +92,7 @@ export function ReviewLive({ topicId }: { topicId?: string }) {
               meaningFirst: meaningLocale !== null,
               example: card.example_sentences?.[0]?.sentence ?? null,
               collocations: null,
+              synonyms: card.synonyms?.map((synonym) => synonym.word).filter(Boolean) ?? null,
             }
           : null
       }

@@ -12,7 +12,7 @@ import { gcn } from './cn';
  * (level, topic, part of speech) → word (Fraunces 40) + IPA + the 52px
  * audio button → the answer: meaning (17px), the line in the learner's
  * meaning language (with its own `lang`, so VoiceOver switches voice),
- * the example in quotes, collocation chips.
+ * the example in quotes, synonym and collocation chips.
  *
  * While `revealed` is false the answer isn't rendered at all (a screen
  * reader can't read ahead); the canvas shows a sprout with a drop and "Say
@@ -40,6 +40,8 @@ export interface ReviewCardProps {
   meaningFirst?: boolean;
   example?: string | null;
   collocations?: readonly string[] | null;
+  /** Synonym chips under "Synonyms" (canvas A2), from `master_lexicon.synonyms`. */
+  synonyms?: readonly string[] | null;
   className?: string;
 }
 
@@ -77,6 +79,7 @@ export function ReviewCard({
   meaningFirst = false,
   example,
   collocations,
+  synonyms,
   className,
 }: ReviewCardProps) {
   const t = useTranslations('components.review');
@@ -168,23 +171,8 @@ export function ReviewCard({
             </>
           ) : null}
 
-          {collocations && collocations.length > 0 ? (
-            <div className="flex flex-col gap-2">
-              <h3 className="overline-label text-[12px] font-bold text-garden-muted">
-                {t('collocations')}
-              </h3>
-              <ul lang="en" className="flex flex-wrap gap-1.5">
-                {collocations.map((collocation) => (
-                  <li
-                    key={collocation}
-                    className="rounded-control border border-garden-sprout-border px-3 py-1.5 text-[14px] font-semibold text-garden-forest"
-                  >
-                    {collocation}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ) : null}
+          <ChipList title={t('synonyms')} items={synonyms} />
+          <ChipList title={t('collocations')} items={collocations} />
         </div>
       ) : (
         <div className="flex flex-grow flex-col items-center justify-center gap-2.5 text-center text-garden-muted">
@@ -193,6 +181,26 @@ export function ReviewCard({
         </div>
       )}
     </article>
+  );
+}
+
+/** A small uppercase heading over English word chips (synonyms, collocations). */
+function ChipList({ title, items }: { title: string; items?: readonly string[] | null }) {
+  if (!items || items.length === 0) return null;
+  return (
+    <div className="flex flex-col gap-2">
+      <h3 className="overline-label text-[12px] font-bold text-garden-muted">{title}</h3>
+      <ul lang="en" className="flex flex-wrap gap-1.5">
+        {items.map((item) => (
+          <li
+            key={item}
+            className="rounded-control border border-garden-sprout-border px-3 py-1.5 text-[14px] font-semibold text-garden-forest"
+          >
+            {item}
+          </li>
+        ))}
+      </ul>
+    </div>
   );
 }
 
