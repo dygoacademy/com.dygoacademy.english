@@ -36,9 +36,11 @@ export const REFERENCE_NAMES = [
   'GR5-invite',
   'GR6-join',
   'GR7-create',
-  // UI-A: sample data in SIGN_IN below
+  // UI-A: sample data in SIGN_IN and REGISTER below
   'AU1-sign-in',
   'AU1-sign-in-error',
+  'AU2-create-account',
+  'AU3-create-account-invite',
 ] as const;
 export type ReferenceName = (typeof REFERENCE_NAMES)[number];
 
@@ -52,6 +54,19 @@ export const SIGN_IN = {
   // Ten characters: the canvas draws ten password dots.
   password: 'gardenpass',
 };
+
+/**
+ * AdultRegister.dc.html / AdultRegisterInvite.dc.html (and the Vi pages):
+ * the name is filled in, email and password show their placeholders.
+ */
+export const REGISTER = {
+  name: 'Minh',
+  invite: {
+    'en-US': { inviterName: 'Minh', groupName: 'IELTS Sprint · Week 3' },
+    'vi-VN': { inviterName: 'Minh', groupName: 'IELTS Sprint · Tuần 3' },
+    'zh-CN': { inviterName: 'Minh', groupName: 'IELTS Sprint · 第 3 周' },
+  },
+} as const;
 
 /** AdultHome.dc.html */
 export const HOME = {

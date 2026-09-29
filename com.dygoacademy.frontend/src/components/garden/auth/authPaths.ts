@@ -18,3 +18,17 @@ export function safeNextPath(value: string | null | undefined): string | null {
   }
   return value;
 }
+
+/**
+ * The invite token when `next` is a join link (`/join/<token>` or the
+ * garden's `/garden/join/<token>`): the register page then reads as AU3.
+ */
+export function inviteTokenFromNext(next: string | null | undefined): string | null {
+  const match = next?.match(/^\/(?:garden\/)?join\/([^/?#]+)/);
+  return match ? decodeURIComponent(match[1]) : null;
+}
+
+/** An auth page link that keeps the `?next=` path (sign in ↔ create account). */
+export function authHrefWithNext(href: string, next: string | null | undefined): string {
+  return next ? `${href}?next=${encodeURIComponent(next)}` : href;
+}

@@ -813,6 +813,31 @@
           "mismatch": "邮箱和密码不匹配。请重试或重置密码。",
           "network": "暂时无法登录。请检查网络后重试。"
         }
+      },
+      "back": "返回",
+      "register": {
+        "metaTitle": "创建账户",
+        "title": "种下第一颗种子",
+        "subtitle": "创建你的花园，完全免费。",
+        "name": "你的名字",
+        "emailPlaceholder": "you@example.com",
+        "passwordPlaceholder": "至少 6 个字符",
+        "submit": "创建账户",
+        "submitting": "正在创建账户…",
+        "terms": "继续即表示你同意条款和隐私政策。",
+        "haveAccount": "已有账户？<link>登录</link>",
+        "invite": {
+          "invitedBy": "{name} 邀请你加入",
+          "title": "创建你的账户",
+          "subtitle": "创建后马上进入花园。",
+          "submit": "创建账户并加入",
+          "haveAccount": "已有账户？<link>登录并加入</link>"
+        },
+        "errors": {
+          "failed": "无法用这些信息创建账户。如果你已有账户，请直接登录。",
+          "network": "暂时无法创建账户。请检查网络后重试。",
+          "confirmEmail": "请查收邮件确认账户，然后登录。"
+        }
       }
     }
   }

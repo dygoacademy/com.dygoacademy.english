@@ -809,6 +809,31 @@
           "mismatch": "Email hoặc mật khẩu không đúng. Hãy thử lại hoặc đặt lại mật khẩu.",
           "network": "Chưa đăng nhập được. Hãy kiểm tra kết nối và thử lại."
         }
+      },
+      "back": "Quay lại",
+      "register": {
+        "metaTitle": "Tạo tài khoản",
+        "title": "Gieo hạt giống đầu tiên",
+        "subtitle": "Tạo khu vườn của bạn. Miễn phí.",
+        "name": "Tên của bạn",
+        "emailPlaceholder": "ban@example.com",
+        "passwordPlaceholder": "Ít nhất 6 ký tự",
+        "submit": "Tạo tài khoản",
+        "submitting": "Đang tạo tài khoản…",
+        "terms": "Khi tiếp tục, bạn đồng ý với Điều khoản và Chính sách quyền riêng tư.",
+        "haveAccount": "Đã có tài khoản? <link>Đăng nhập</link>",
+        "invite": {
+          "invitedBy": "{name} mời bạn tham gia",
+          "title": "Tạo tài khoản của bạn",
+          "subtitle": "Sau đó bạn sẽ vào vườn ngay.",
+          "submit": "Tạo tài khoản và tham gia",
+          "haveAccount": "Đã có tài khoản? <link>Đăng nhập để tham gia</link>"
+        },
+        "errors": {
+          "failed": "Không tạo được tài khoản với thông tin này. Nếu bạn đã có tài khoản, hãy đăng nhập.",
+          "network": "Chưa tạo được tài khoản. Hãy kiểm tra kết nối và thử lại.",
+          "confirmEmail": "Hãy kiểm tra email để xác nhận tài khoản, rồi đăng nhập."
+        }
       }
     }
   }

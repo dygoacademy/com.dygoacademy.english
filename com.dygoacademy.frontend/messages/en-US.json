@@ -809,6 +809,31 @@
           "mismatch": "That email and password don't match. Try again or reset your password.",
           "network": "We couldn't sign you in. Check your connection and try again."
         }
+      },
+      "back": "Back",
+      "register": {
+        "metaTitle": "Create account",
+        "title": "Plant your first seed",
+        "subtitle": "Create your garden. It's free.",
+        "name": "Your name",
+        "emailPlaceholder": "you@example.com",
+        "passwordPlaceholder": "At least 6 characters",
+        "submit": "Create account",
+        "submitting": "Creating account…",
+        "terms": "By continuing you agree to the Terms and Privacy Policy.",
+        "haveAccount": "Already have an account? <link>Sign in</link>",
+        "invite": {
+          "invitedBy": "{name} invited you to",
+          "title": "Create your account",
+          "subtitle": "Then you'll join the garden right away.",
+          "submit": "Create account and join",
+          "haveAccount": "Already have an account? <link>Sign in to join</link>"
+        },
+        "errors": {
+          "failed": "We couldn't create an account with these details. If you already have one, sign in instead.",
+          "network": "We couldn't create your account. Check your connection and try again.",
+          "confirmEmail": "Check your email to confirm your account, then sign in."
+        }
       }
     }
   }

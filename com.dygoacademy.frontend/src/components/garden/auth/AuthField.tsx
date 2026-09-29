@@ -18,6 +18,7 @@ export function AuthField({
   onChange,
   required = true,
   minLength,
+  placeholder,
 }: {
   label: string;
   type: 'email' | 'password' | 'text';
@@ -27,6 +28,8 @@ export function AuthField({
   onChange: (value: string) => void;
   required?: boolean;
   minLength?: number;
+  /** Hint in the empty box (AU2: "you@example.com", "At least 6 characters"). */
+  placeholder?: string;
 }) {
   const t = useTranslations('screens.auth');
   const [visible, setVisible] = React.useState(false);
@@ -49,9 +52,10 @@ export function AuthField({
           autoComplete={autoComplete}
           required={required}
           minLength={minLength}
+          placeholder={placeholder}
           value={value}
           onChange={(event) => onChange(event.target.value)}
-          className="min-w-0 flex-1 border-0 bg-transparent p-0 text-[16px] leading-[1.4] text-garden-text outline-none"
+          className="min-w-0 flex-1 border-0 bg-transparent p-0 text-[16px] leading-[1.4] text-garden-text outline-none placeholder:text-garden-placeholder"
         />
         {isPassword ? (
           <button

@@ -9,7 +9,7 @@ import type { AppLocale } from '@/i18n/config';
 import { createClient } from '@/lib/supabase/client';
 
 import { useGardenPreferences } from '../preferences';
-import { AUTH_HREFS, safeNextPath } from './authPaths';
+import { authHrefWithNext, AUTH_HREFS, safeNextPath } from './authPaths';
 import { SignInScreen, type SignInError } from './SignInScreen';
 
 /**
@@ -63,7 +63,7 @@ export function SignInLive() {
       error={error}
       busy={busy}
       forgotHref={AUTH_HREFS.forgotPassword}
-      registerHref={AUTH_HREFS.register}
+      registerHref={authHrefWithNext(AUTH_HREFS.register, safeNextPath(searchParams.get('next')))}
     />
   );
 }

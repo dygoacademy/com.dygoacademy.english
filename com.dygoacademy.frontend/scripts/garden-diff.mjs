@@ -64,6 +64,8 @@ const NAMES = [
   // UI-A
   'AU1-sign-in',
   'AU1-sign-in-error',
+  'AU2-create-account',
+  'AU3-create-account-invite',
 ];
 
 /** Old short codes still accepted on the command line. */
