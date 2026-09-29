@@ -28,7 +28,7 @@ Exported from the canvas on 2026-09-26:
 | `A5-welcome-back` | A5 · Welcome Back | `/garden` after 2+ missed days | UI-6 |
 | `A6-topics` | A6 · Topics (Beds) | `/garden/topics` | UI-5 |
 | `A7-topic-bed`, `A7-topic-bed-filter-sprouts` | A7 · Topic Bed, unfiltered and "Sprouts" selected | `/garden/topics/[id]` | UI-5 |
-| `A8-me` | A8 · Me | `/garden/me` | UI-6 |
+| `A8-me`, `A8-me-account` | A8 · Me, and with the Account sheet open (gear → Sign out, added 2026-09-30) | `/garden/me` | UI-6 |
 | `GR1-shared-gardens` | GR1 · Shared Gardens (group list) | `/garden/groups` | UI-G |
 | `GR2-group-garden` | GR2 · Group Garden | `/garden/groups/[id]` | UI-G |
 | `GR3-tricky-patches` | GR3 · Tricky Patches + Rain Day | `/garden/groups/[id]/manage` | UI-G |
