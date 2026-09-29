@@ -39,7 +39,9 @@ describe('SrsService.findDue', () => {
 
     expect(queryAsMock).toHaveBeenCalledTimes(1); // no second (new-cards) query needed
     // Phase 10 adds read-time recall probability; null when there is no FSRS state.
-    expect(result).toEqual([{ ...existingRow, retrievability: null }]);
+    expect(result).toEqual([
+      { ...existingRow, retrievability: null, interval_preview: expect.any(Object) },
+    ]);
   });
 
   it('tops up with new (never-reviewed) cards when existing due cards do not fill the limit', async () => {
@@ -55,8 +57,8 @@ describe('SrsService.findDue', () => {
 
     expect(queryAsMock).toHaveBeenCalledTimes(2);
     expect(result).toEqual([
-      { ...existingRow, retrievability: null },
-      { ...newRow, retrievability: null },
+      { ...existingRow, retrievability: null, interval_preview: expect.any(Object) },
+      { ...newRow, retrievability: null, interval_preview: expect.any(Object) },
     ]);
     // second call requested the remaining count (5 - 1 = 4)
     const [, , secondParams] = queryAsMock.mock.calls[1];

@@ -1043,6 +1043,35 @@ export async function computeSrsSummary(
   };
 }
 
+/** Columns `applyReview` reads from `user_word_srs`. */
+interface SrsStateRow {
+  fsrs_state: FsrsStateName;
+  stability: number | null;
+  difficulty: number | null;
+  reps: number;
+  lapses: number;
+  learning_steps: number;
+  scheduled_days: number;
+  last_reviewed_at: Date | string | null;
+  next_due_at: Date | string;
+  mastered_at: Date | string | null;
+  is_leech: boolean;
+}
+
+function rowToCard(row: SrsStateRow): FsrsCardState {
+  return {
+    state: row.fsrs_state,
+    stability: row.stability,
+    difficulty: row.difficulty,
+    reps: row.reps,
+    lapses: row.lapses,
+    learningSteps: row.learning_steps ?? 0,
+    scheduledDays: Number(row.scheduled_days ?? 0),
+    lastReviewAt: row.last_reviewed_at ? new Date(row.last_reviewed_at) : null,
+    dueAt: new Date(row.next_due_at),
+  };
+}
+
 /**
  * Adds read-time recall probability and interval previews to due cards.
  * Retrievability is null for new cards; interval_preview shows the next-due
