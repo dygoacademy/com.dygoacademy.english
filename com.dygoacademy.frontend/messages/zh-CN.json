@@ -793,6 +793,27 @@
         "backToBed": "返回花圃",
         "backToTopics": "返回主题"
       }
+    },
+    "auth": {
+      "email": "邮箱",
+      "password": "密码",
+      "show": "显示",
+      "hide": "隐藏",
+      "showPassword": "显示密码",
+      "hidePassword": "隐藏密码",
+      "signIn": {
+        "metaTitle": "登录",
+        "title": "欢迎回来",
+        "subtitle": "登录后给今天的单词浇水。",
+        "forgot": "忘记密码？",
+        "submit": "登录",
+        "submitting": "正在登录…",
+        "newHere": "第一次用 Dygo？<link>创建账户</link>",
+        "errors": {
+          "mismatch": "邮箱和密码不匹配。请重试或重置密码。",
+          "network": "暂时无法登录。请检查网络后重试。"
+        }
+      }
     }
   }
 }

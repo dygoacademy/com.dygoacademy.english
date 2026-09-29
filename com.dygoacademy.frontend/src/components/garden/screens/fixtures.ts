@@ -36,12 +36,22 @@ export const REFERENCE_NAMES = [
   'GR5-invite',
   'GR6-join',
   'GR7-create',
+  // UI-A: sample data in SIGN_IN below
+  'AU1-sign-in',
+  'AU1-sign-in-error',
 ] as const;
 export type ReferenceName = (typeof REFERENCE_NAMES)[number];
 
 export function isReferenceName(value: string): value is ReferenceName {
   return (REFERENCE_NAMES as readonly string[]).includes(value);
 }
+
+/** AdultLogin.dc.html / AdultLoginVi.dc.html (same sample in both). */
+export const SIGN_IN = {
+  email: 'minh@example.com',
+  // Ten characters: the canvas draws ten password dots.
+  password: 'gardenpass',
+};
 
 /** AdultHome.dc.html */
 export const HOME = {

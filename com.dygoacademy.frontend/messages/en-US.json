@@ -789,6 +789,27 @@
         "backToBed": "Back to bed",
         "backToTopics": "Back to topics"
       }
+    },
+    "auth": {
+      "email": "Email",
+      "password": "Password",
+      "show": "Show",
+      "hide": "Hide",
+      "showPassword": "Show password",
+      "hidePassword": "Hide password",
+      "signIn": {
+        "metaTitle": "Sign in",
+        "title": "Welcome back",
+        "subtitle": "Sign in to water today's words.",
+        "forgot": "Forgot password?",
+        "submit": "Sign in",
+        "submitting": "Signing in…",
+        "newHere": "New to Dygo? <link>Create an account</link>",
+        "errors": {
+          "mismatch": "That email and password don't match. Try again or reset your password.",
+          "network": "We couldn't sign you in. Check your connection and try again."
+        }
+      }
     }
   }
 }

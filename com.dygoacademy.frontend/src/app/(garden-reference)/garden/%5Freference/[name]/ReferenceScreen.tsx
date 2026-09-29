@@ -2,8 +2,10 @@
 
 import { useTranslations } from 'next-intl';
 
+import { AUTH_HREFS } from '@/components/garden/auth/authPaths';
+import { SignInScreen } from '@/components/garden/auth/SignInScreen';
 import { GroupsTabProvider } from '@/components/garden/groupsTab';
-import { referenceFixtures, type ReferenceName } from '@/components/garden/screens/fixtures';
+import { SIGN_IN, referenceFixtures, type ReferenceName } from '@/components/garden/screens/fixtures';
 import { MeScreen } from '@/components/garden/screens/MeScreen';
 import { MissionCompleteScreen } from '@/components/garden/screens/MissionCompleteScreen';
 import { ReviewScreen } from '@/components/garden/screens/ReviewScreen';
@@ -151,5 +153,19 @@ function ReferenceScreenBody({ name, locale }: { name: ReferenceName; locale: Ap
     case 'GR6-join':
     case 'GR7-create':
       return <GroupReferenceScreen name={name} locale={locale} />;
+    case 'AU1-sign-in':
+    case 'AU1-sign-in-error':
+      return (
+        <SignInScreen
+          locale={locale}
+          onLanguageChange={() => {}}
+          onSubmit={() => {}}
+          error={name === 'AU1-sign-in-error' ? 'mismatch' : null}
+          forgotHref={AUTH_HREFS.forgotPassword}
+          registerHref={AUTH_HREFS.register}
+          initialEmail={SIGN_IN.email}
+          initialPassword={SIGN_IN.password}
+        />
+      );
   }
 }

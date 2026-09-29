@@ -1,7 +1,9 @@
+import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 
 import { PublicNavbar } from '@/components/layout/PublicNavbar';
 import { ROUTES } from '@/constants/routes';
+import { GARDEN_UI_COOKIE, isGardenEnabled } from '@/lib/garden-ui';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 
 /**
@@ -35,6 +37,13 @@ export default async function AuthLayout({ children }: { children: React.ReactNo
 
   if (user) {
     redirect(ROUTES.home);
+  }
+
+  // UI-A: with the garden on, the auth pages draw their own garden shell
+  // (language chip, hero), so no classic navbar. Classic users are unchanged.
+  const cookieStore = await cookies();
+  if (isGardenEnabled(cookieStore.get(GARDEN_UI_COOKIE)?.value)) {
+    return <>{children}</>;
   }
 
   return (

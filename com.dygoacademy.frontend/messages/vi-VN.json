@@ -789,6 +789,27 @@
         "backToBed": "Về luống",
         "backToTopics": "Về chủ đề"
       }
+    },
+    "auth": {
+      "email": "Email",
+      "password": "Mật khẩu",
+      "show": "Hiện",
+      "hide": "Ẩn",
+      "showPassword": "Hiện mật khẩu",
+      "hidePassword": "Ẩn mật khẩu",
+      "signIn": {
+        "metaTitle": "Đăng nhập",
+        "title": "Chào mừng trở lại",
+        "subtitle": "Đăng nhập để tưới các từ hôm nay.",
+        "forgot": "Quên mật khẩu?",
+        "submit": "Đăng nhập",
+        "submitting": "Đang đăng nhập…",
+        "newHere": "Mới dùng Dygo? <link>Tạo tài khoản</link>",
+        "errors": {
+          "mismatch": "Email hoặc mật khẩu không đúng. Hãy thử lại hoặc đặt lại mật khẩu.",
+          "network": "Chưa đăng nhập được. Hãy kiểm tra kết nối và thử lại."
+        }
+      }
     }
   }
 }

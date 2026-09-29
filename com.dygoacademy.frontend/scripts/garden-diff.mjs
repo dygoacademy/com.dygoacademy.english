@@ -61,6 +61,9 @@ const NAMES = [
   'GR5-invite',
   'GR6-join',
   'GR7-create',
+  // UI-A
+  'AU1-sign-in',
+  'AU1-sign-in-error',
 ];
 
 /** Old short codes still accepted on the command line. */
