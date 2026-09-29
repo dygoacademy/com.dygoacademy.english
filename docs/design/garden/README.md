@@ -6,6 +6,7 @@ Exported from the canvas on 2026-09-26:
 
 - Adult page (A1–A8, English): canvas version `1790379466-5563`.
 - **Adult · Groups** (GR1–GR7, English, approved by Dylan 2026-09-26), **Adult · Tiếng Việt** (A1–A8) and **Adult · Groups · Tiếng Việt** (GR1–GR7): canvas version `1790407846-001e`.
+- **Adult · Sign in** (AU1–AU4, English + Vietnamese): exported 2026-09-29 (step UI-A, A-1).
 
 ## What's in this folder
 
@@ -35,8 +36,12 @@ Exported from the canvas on 2026-09-26:
 | `GR5-invite` | GR5 · Invite Sheet | sheet on GR2 / GR4 | UI-G |
 | `GR6-join` | GR6 · Join a Garden | `/garden/join/[token]` | UI-G |
 | `GR7-create` | GR7 · Start a Garden | sheet on GR1 | UI-G |
+| `AU1-sign-in`, `AU1-sign-in-error` | AU1 · Sign in, default and error banner | `/login` (garden look behind the flag or cookie) | UI-A |
+| `AU2-create-account` | AU2 · Create account | `/register` | UI-A |
+| `AU3-create-account-invite` | AU3 · Create account from a group invite | `/register?next=/join/<token>` | UI-A |
+| `AU4-reset-password`, `AU4-reset-password-sent` | AU4 · Reset password, email form and "Check your inbox" | `/forgot-password` (and `/reset-password` in the same style) | UI-A |
 
-Every screen above also has a **Vietnamese reference**, `<name>-vi` (for example `A1-todays-garden-vi`, `GR3-tricky-patches-vi`): 18 English and 18 Vietnamese references in all.
+Every screen above also has a **Vietnamese reference**, `<name>-vi` (for example `A1-todays-garden-vi`, `GR3-tricky-patches-vi`): 24 English and 24 Vietnamese references in all (AU added 2026-09-29).
 
 ## Languages
 

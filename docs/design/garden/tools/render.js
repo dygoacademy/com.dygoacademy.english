@@ -23,7 +23,8 @@ const fontCss =
 
 // [file, output name, state overrides]
 // [source file, locale, output name, state overrides]
-// en = the English canvas pages, vi = "Adult · Tiếng Việt" and "Adult · Groups · Tiếng Việt".
+// en = the English canvas pages, vi = "Adult · Tiếng Việt" and "Adult · Groups · Tiếng Việt";
+// AU* (en + vi) come from the canvas page "Adult · Sign in".
 // Usage: node render.js [outDir] [filter]   e.g. node render.js ../reference GR   or   node render.js ../reference -vi
 const FILTER = process.argv[3] || '';
 const JOBS = [
@@ -45,6 +46,12 @@ const JOBS = [
   ['AdultGroupInvite.dc.html', 'en', 'GR5-invite', {}],
   ['AdultGroupJoin.dc.html', 'en', 'GR6-join', {}],
   ['AdultGroupCreate.dc.html', 'en', 'GR7-create', {}],
+  ['AdultLogin.dc.html', 'en', 'AU1-sign-in', {}],
+  ['AdultLogin.dc.html', 'en', 'AU1-sign-in-error', { error: true }],
+  ['AdultRegister.dc.html', 'en', 'AU2-create-account', {}],
+  ['AdultRegisterInvite.dc.html', 'en', 'AU3-create-account-invite', {}],
+  ['AdultForgot.dc.html', 'en', 'AU4-reset-password', {}],
+  ['AdultForgot.dc.html', 'en', 'AU4-reset-password-sent', { sent: true }],
   ['AdultHomeVi.dc.html', 'vi', 'A1-todays-garden-vi', {}],
   ['AdultReviewVi.dc.html', 'vi', 'A2-review-question-vi', {}],
   ['AdultReviewVi.dc.html', 'vi', 'A2-review-answer-vi', { shown: true }],
@@ -63,6 +70,12 @@ const JOBS = [
   ['AdultGroupInviteVi.dc.html', 'vi', 'GR5-invite-vi', {}],
   ['AdultGroupJoinVi.dc.html', 'vi', 'GR6-join-vi', {}],
   ['AdultGroupCreateVi.dc.html', 'vi', 'GR7-create-vi', {}],
+  ['AdultLoginVi.dc.html', 'vi', 'AU1-sign-in-vi', {}],
+  ['AdultLoginVi.dc.html', 'vi', 'AU1-sign-in-error-vi', { error: true }],
+  ['AdultRegisterVi.dc.html', 'vi', 'AU2-create-account-vi', {}],
+  ['AdultRegisterInviteVi.dc.html', 'vi', 'AU3-create-account-invite-vi', {}],
+  ['AdultForgotVi.dc.html', 'vi', 'AU4-reset-password-vi', {}],
+  ['AdultForgotVi.dc.html', 'vi', 'AU4-reset-password-sent-vi', { sent: true }],
 ].filter(([, , name]) => !FILTER || name.includes(FILTER));
 
 // English pages redrawn with the app's body stack (DM Sans, then Be Vietnam
