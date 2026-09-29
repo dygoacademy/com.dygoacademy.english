@@ -66,6 +66,8 @@ const NAMES = [
   'AU1-sign-in-error',
   'AU2-create-account',
   'AU3-create-account-invite',
+  'AU4-reset-password',
+  'AU4-reset-password-sent',
 ];
 
 /** Old short codes still accepted on the command line. */

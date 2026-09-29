@@ -14,12 +14,14 @@ import { SCREEN_CLASSES } from '../screens/GardenTabBar';
  * subtitle, then the screen's own form. Props only; no tab bar.
  * AU2 / AU3 (A-3) add a Back button on the left, their own hero (`hero`,
  * or null for none) and the 28px title (`titleSize="small"`).
+ * AU4 (A-4) has no hero and 8px more room above the title (`titleGap`).
  */
 export function AuthShell({
   languageChip,
   back,
   hero,
   titleSize = 'large',
+  titleGap = false,
   title,
   subtitle,
   children,
@@ -29,6 +31,8 @@ export function AuthShell({
   /** Replaces the sign-in hero; null draws none. */
   hero?: React.ReactNode;
   titleSize?: 'large' | 'small';
+  /** AU4: `margin-top: 8px` on the title block, as the canvas draws it. */
+  titleGap?: boolean;
   title: string;
   subtitle: string;
   children: React.ReactNode;
@@ -48,7 +52,7 @@ export function AuthShell({
         <div className="flex justify-end">{languageChip}</div>
       )}
       {hero === undefined ? <SignInHero /> : hero}
-      <div className="flex flex-col gap-1">
+      <div className={gcn('flex flex-col gap-1', titleGap && 'mt-2')}>
         <h1
           className={gcn(
             'font-display font-semibold leading-[1.1]',
@@ -108,9 +112,12 @@ export function AuthError({ children }: { children: React.ReactNode }) {
   );
 }
 
+/** The big primary button (AU4 puts it straight under the form). */
+export const AUTH_BUTTON_CLASSES =
+  'flex h-[58px] w-full shrink-0 items-center justify-center rounded-[18px] bg-garden-primary text-[17px] font-bold text-white shadow-press-primary transition-transform duration-press ease-garden active:translate-y-[2px] disabled:opacity-60';
+
 /** The big primary button at the bottom of an auth form. */
-export const AUTH_SUBMIT_CLASSES =
-  'mt-auto flex h-[58px] w-full shrink-0 items-center justify-center rounded-[18px] bg-garden-primary text-[17px] font-bold text-white shadow-press-primary transition-transform duration-press ease-garden active:translate-y-[2px] disabled:opacity-60';
+export const AUTH_SUBMIT_CLASSES = `mt-auto ${AUTH_BUTTON_CLASSES}`;
 
 /** Links on auth screens are underlined forest text, like the canvas. */
 export const AUTH_LINK_CLASSES = 'text-garden-forest underline';

@@ -834,6 +834,41 @@
           "network": "Chưa tạo được tài khoản. Hãy kiểm tra kết nối và thử lại.",
           "confirmEmail": "Hãy kiểm tra email để xác nhận tài khoản, rồi đăng nhập."
         }
+      },
+      "forgot": {
+        "metaTitle": "Đặt lại mật khẩu",
+        "title": "Đặt lại mật khẩu",
+        "subtitle": "Chúng tôi sẽ gửi email kèm link để bạn đặt mật khẩu mới.",
+        "submit": "Gửi link đặt lại",
+        "submitting": "Đang gửi…",
+        "sent": {
+          "title": "Kiểm tra hộp thư",
+          "body": "Chúng tôi đã gửi link đến {email}. Link có hiệu lực trong 1 giờ.",
+          "backToSignIn": "Quay lại đăng nhập",
+          "resend": "Chưa nhận được? Gửi lại"
+        },
+        "errors": {
+          "rateLimited": "Bạn đã thử quá nhiều lần. Hãy đợi một phút rồi thử lại.",
+          "network": "Chưa gửi được link. Hãy kiểm tra kết nối và thử lại."
+        }
+      },
+      "reset": {
+        "metaTitle": "Chọn mật khẩu mới",
+        "title": "Chọn mật khẩu mới",
+        "subtitle": "Bạn sẽ dùng mật khẩu này ở lần đăng nhập sau.",
+        "newPassword": "Mật khẩu mới",
+        "submit": "Lưu mật khẩu mới",
+        "submitting": "Đang lưu…",
+        "expired": {
+          "title": "Link này đã hết hạn",
+          "subtitle": "Link đặt lại chỉ dùng được một lần, trong 1 giờ. Hãy yêu cầu link mới.",
+          "newLink": "Gửi link mới"
+        },
+        "errors": {
+          "samePassword": "Hãy chọn mật khẩu khác với mật khẩu cũ.",
+          "failed": "Chưa lưu được mật khẩu này. Hãy dùng ít nhất 6 ký tự và thử lại.",
+          "network": "Chưa lưu được mật khẩu. Hãy kiểm tra kết nối và thử lại."
+        }
       }
     }
   }

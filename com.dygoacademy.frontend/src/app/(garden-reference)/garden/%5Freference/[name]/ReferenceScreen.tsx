@@ -3,10 +3,11 @@
 import { useTranslations } from 'next-intl';
 
 import { AUTH_HREFS } from '@/components/garden/auth/authPaths';
+import { ForgotPasswordScreen } from '@/components/garden/auth/ForgotPasswordScreen';
 import { RegisterScreen } from '@/components/garden/auth/RegisterScreen';
 import { SignInScreen } from '@/components/garden/auth/SignInScreen';
 import { GroupsTabProvider } from '@/components/garden/groupsTab';
-import { REGISTER, SIGN_IN, referenceFixtures, type ReferenceName } from '@/components/garden/screens/fixtures';
+import { FORGOT_PASSWORD, REGISTER, SIGN_IN, referenceFixtures, type ReferenceName } from '@/components/garden/screens/fixtures';
 import { MeScreen } from '@/components/garden/screens/MeScreen';
 import { MissionCompleteScreen } from '@/components/garden/screens/MissionCompleteScreen';
 import { ReviewScreen } from '@/components/garden/screens/ReviewScreen';
@@ -180,6 +181,20 @@ function ReferenceScreenBody({ name, locale }: { name: ReferenceName; locale: Ap
           joining={name === 'AU3-create-account-invite'}
           invite={name === 'AU3-create-account-invite' ? REGISTER.invite[locale] : null}
           initialName={REGISTER.name}
+        />
+      );
+    case 'AU4-reset-password':
+    case 'AU4-reset-password-sent':
+      return (
+        <ForgotPasswordScreen
+          locale={locale}
+          onLanguageChange={() => {}}
+          onSubmit={() => {}}
+          onResend={() => {}}
+          sentTo={name === 'AU4-reset-password-sent' ? FORGOT_PASSWORD.email : null}
+          backHref={AUTH_HREFS.login}
+          signInHref={AUTH_HREFS.login}
+          initialEmail={FORGOT_PASSWORD.email}
         />
       );
   }

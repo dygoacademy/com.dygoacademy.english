@@ -1,11 +1,13 @@
 /**
- * UI-A auth paths. `/forgot-password` arrives with A-4; `routes.ts` is
- * left alone until UI-8, so the auth screens keep their links here.
+ * UI-A auth paths. `/forgot-password` and `/reset-password` (A-4) are
+ * garden-only pages; `routes.ts` is left alone until UI-8, so the auth
+ * screens keep their links here.
  */
 export const AUTH_HREFS = {
   login: '/login',
   register: '/register',
   forgotPassword: '/forgot-password',
+  resetPassword: '/reset-password',
 } as const;
 
 /**

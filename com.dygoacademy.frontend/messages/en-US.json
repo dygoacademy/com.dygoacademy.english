@@ -834,6 +834,41 @@
           "network": "We couldn't create your account. Check your connection and try again.",
           "confirmEmail": "Check your email to confirm your account, then sign in."
         }
+      },
+      "forgot": {
+        "metaTitle": "Reset password",
+        "title": "Reset your password",
+        "subtitle": "We'll email you a link to choose a new one.",
+        "submit": "Send reset link",
+        "submitting": "Sending…",
+        "sent": {
+          "title": "Check your inbox",
+          "body": "We sent a link to {email}. It works for 1 hour.",
+          "backToSignIn": "Back to sign in",
+          "resend": "Didn't get it? Send again"
+        },
+        "errors": {
+          "rateLimited": "Too many tries. Wait a minute, then try again.",
+          "network": "We couldn't send the link. Check your connection and try again."
+        }
+      },
+      "reset": {
+        "metaTitle": "Choose a new password",
+        "title": "Choose a new password",
+        "subtitle": "You'll use it the next time you sign in.",
+        "newPassword": "New password",
+        "submit": "Save new password",
+        "submitting": "Saving…",
+        "expired": {
+          "title": "This link has expired",
+          "subtitle": "Reset links work once, for 1 hour. Ask for a new one.",
+          "newLink": "Send a new link"
+        },
+        "errors": {
+          "samePassword": "Choose a password that is different from your old one.",
+          "failed": "We couldn't save that password. Use at least 6 characters and try again.",
+          "network": "We couldn't save your password. Check your connection and try again."
+        }
       }
     }
   }

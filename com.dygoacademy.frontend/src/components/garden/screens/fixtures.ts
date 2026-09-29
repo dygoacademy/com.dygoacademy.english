@@ -36,11 +36,13 @@ export const REFERENCE_NAMES = [
   'GR5-invite',
   'GR6-join',
   'GR7-create',
-  // UI-A: sample data in SIGN_IN and REGISTER below
+  // UI-A: sample data in SIGN_IN, REGISTER and FORGOT_PASSWORD below
   'AU1-sign-in',
   'AU1-sign-in-error',
   'AU2-create-account',
   'AU3-create-account-invite',
+  'AU4-reset-password',
+  'AU4-reset-password-sent',
 ] as const;
 export type ReferenceName = (typeof REFERENCE_NAMES)[number];
 
@@ -67,6 +69,11 @@ export const REGISTER = {
     'zh-CN': { inviterName: 'Minh', groupName: 'IELTS Sprint · 第 3 周' },
   },
 } as const;
+
+/** AdultForgot.dc.html / AdultForgotVi.dc.html (same address in both). */
+export const FORGOT_PASSWORD = {
+  email: 'minh@example.com',
+};
 
 /** AdultHome.dc.html */
 export const HOME = {
