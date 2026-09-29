@@ -86,10 +86,19 @@ describe('A7 live mapping (U5-3)', () => {
   it('takes meanings from the due cards, else the custom note', () => {
     const { words } = toBedWords(
       [word('a'), word('b', { custom_note: 'note' } as Partial<GardenTopicWord>)],
-      new Map([['a', 'meaning a']]),
+      new Map([['a', { text: 'meaning a', lang: 'en' }]]),
       NOW,
     );
     expect(words.map((w) => w.meaning)).toEqual(['meaning a', 'note']);
+  });
+
+  it('carries the meaning\'s lang through to meaningLang, for a translated meaning', () => {
+    const { words } = toBedWords(
+      [word('a')],
+      new Map([['a', { text: 'buổi sáng', lang: 'vi' }]]),
+      NOW,
+    );
+    expect(words[0].meaningLang).toBe('vi');
   });
 
   it('leaves the tiles at "—" when the API has no per-word SRS fields', () => {

@@ -35,7 +35,6 @@ const NAMES_EN = {
 } as const;
 
 const NAMES = {
-  'en-SG': NAMES_EN,
   'en-US': NAMES_EN,
   'vi-VN': {
     sprint: 'IELTS Sprint · Tuần 3',

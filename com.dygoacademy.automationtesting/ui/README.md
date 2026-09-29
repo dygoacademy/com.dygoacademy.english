@@ -8,9 +8,9 @@ of the design system (§16.1): `iphone-se`, `iphone-16`, `iphone-16-pro-max`,
 What's covered:
 
 - `tests/reference.spec.ts`: every canvas reference page `/garden/_reference/<name>`,
-  one per PNG in `docs/design/garden/reference/`, in `en-SG` and (where a
+  one per PNG in `docs/design/garden/reference/`, in `en-US` and (where a
   `-vi.png` exists) `vi-VN`. Dev-only pages, no sign-in needed.
-- `tests/gallery.spec.ts`: `/garden/_gallery` in `en-SG` and `vi-VN`. Needs
+- `tests/gallery.spec.ts`: `/garden/_gallery` in `en-US` and `vi-VN`. Needs
   the signed-in fixture user (below); skips without one.
 - `tests/navigation.spec.ts` (signed in): every tab of the tab bar opens and
   becomes current, and the tab bar keeps the same position and size on every

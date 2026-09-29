@@ -14,7 +14,7 @@ function renderSheet(
       <LanguageSheet
         open
         onOpenChange={() => {}}
-        uiLocale="en-SG"
+        uiLocale="en-US"
         meaningLocale="vi-VN"
         onChange={onChange}
         {...props}

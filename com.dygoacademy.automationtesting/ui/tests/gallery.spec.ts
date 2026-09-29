@@ -8,7 +8,7 @@ import {
 } from './fixtures';
 
 /**
- * The component gallery (/garden/_gallery) in en-SG and vi-VN at every
+ * The component gallery (/garden/_gallery) in en-US and vi-VN at every
  * viewport. The gallery sits inside the signed-in (garden) layout, so it
  * needs the fixture user (U3-4, `.env.e2e`); without one these tests skip.
  */

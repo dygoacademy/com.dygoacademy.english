@@ -27,7 +27,7 @@ export const viewport: Viewport = {
  * The pages show only fixture data, never a user's.
  *
  * UI-L: each page wraps itself in `GardenRoot` with the language from
- * `?locale=en-SG|en-US|vi-VN|zh-CN` (not the learner's), so this layout only gates.
+ * `?locale=en-US|vi-VN|zh-CN` (not the learner's), so this layout only gates.
  */
 export default async function GardenReferenceLayout({ children }: { children: React.ReactNode }) {
   if (!referencePagesAllowed()) notFound();

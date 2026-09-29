@@ -14,7 +14,7 @@ import { TrickyPatchRow } from './TrickyPatchRow';
 
 /** UI-G components (canvas GR1–GR7). */
 
-const fx = groupFixtures('en-SG');
+const fx = groupFixtures('en-US');
 
 describe('avatars', () => {
   it('gives a user the same tone every time and takes the first letter', () => {

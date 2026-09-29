@@ -427,7 +427,7 @@ IELTS accepts both British and American English, but a learner should see one co
 
 ### 14.4 Formatting rules (never hand-format)
 
-* Dates, times, numbers and plurals always go through `Intl` (`Intl.DateTimeFormat`, `Intl.NumberFormat`, `Intl.PluralRules`) with the app language's locale **and** region (`en-US`, `en-SG`, `zh-CN`, `vi-VN`).
+* Dates, times, numbers and plurals always go through `Intl` (`Intl.DateTimeFormat`, `Intl.NumberFormat`, `Intl.PluralRules`) with the app language's locale **and** region (`en-US`, `zh-CN`, `vi-VN`). English shipped as two regions (`en-US`, `en-SG`) from 2026-09-26; `en-SG` was removed 2026-09-29 — English is `en-US` only now.
 * "Ripens tomorrow at 7:30 AM" is built from a message template plus a formatted time, never string-concatenated in English order. Chinese and Vietnamese put time and date words in a different order.
 * **Week start matters for the design**: the Weekly Harvest (A4), the Mission Complete week strip (A3) and the Garden calendar (A8) start on Sunday in `en-US` and Monday everywhere else.
 * Time zones are already handled per user (`lib/timezone.ts`); keep using the learner's resolved time zone for "today" and reminders.
@@ -455,7 +455,7 @@ Kids' profiles are covered by different rules in each market: COPPA (US), PDPA (
 
 ### 14.8 Implementation
 
-* Library: `next-intl` (works with the App Router and Server Components). Messages live in `messages/en-SG.json` (source), `messages/en-US.json`, `messages/vi-VN.json`, `messages/zh-CN.json`: one file per full locale code (2026-09-26).
+* Library: `next-intl` (works with the App Router and Server Components). Messages live in `messages/en-US.json` (source), `messages/vi-VN.json`, `messages/zh-CN.json`: one file per full locale code (2026-09-26; `en-SG` removed 2026-09-29).
 * Every user-facing string goes through `t('key')`. No raw strings in components; the mockups' English copy becomes the `en` source.
 * Locale is stored on the profile (`ui_locale`, `meaning_locale`, `english_variety`), not only in a cookie, so it follows the learner between devices.
 * Word translations are content, not UI messages. They live in the database per word and per meaning language (`word_translations`: `word_id`, `locale`, `meaning`, `example_translation`).
@@ -507,7 +507,7 @@ Each screen gets a screenshot at every viewport. Compare it to the mockup at `ip
 
 ### 16.2 QA locales
 
-Run the viewport set above in each locale: `en-US`, `en-SG`, `zh-CN`, `vi-VN`. The minimum per release is `iphone-se` and `ipad-portrait` in all four. `vi-VN` on `iphone-se` catches the longest text on the smallest screen; `en-US` catches the Sunday week start.
+Run the viewport set above in each locale: `en-US`, `zh-CN`, `vi-VN`. The minimum per release is `iphone-se` and `ipad-portrait` in all three. `vi-VN` on `iphone-se` catches the longest text on the smallest screen; `en-US` catches the Sunday week start.
 
 ---
 

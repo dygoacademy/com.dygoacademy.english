@@ -1,16 +1,15 @@
 import { TYPE, parse, type MessageFormatElement } from '@formatjs/icu-messageformat-parser';
 import { describe, expect, it } from 'vitest';
 
-import enSG from '../../messages/en-SG.json';
 import enUS from '../../messages/en-US.json';
 import viVN from '../../messages/vi-VN.json';
 import zhCN from '../../messages/zh-CN.json';
 
 /**
- * UI-L key parity: every key in en-SG.json (the source) exists in
- * en-US.json, vi-VN.json and zh-CN.json (and nothing else does), and each
- * message uses the same ICU arguments and rich-text tags, so
- * t('key', values) works in every locale.
+ * UI-L key parity: every key in en-US.json (the source — en-SG was
+ * removed 2026-09-29) exists in vi-VN.json and zh-CN.json (and nothing
+ * else does), and each message uses the same ICU arguments and
+ * rich-text tags, so t('key', values) works in every locale.
  * `_meta` (the zh-CN "draft, needs native review" header) is ignored.
  */
 type Tree = { [key: string]: string | Tree };
@@ -46,16 +45,15 @@ function signature(message: string): string[] {
   return [...found].sort();
 }
 
-const source = flatten(enSG as Tree);
+const source = flatten(enUS as Tree);
 
 describe.each([
-  ['en-US', enUS as Tree],
   ['vi-VN', viVN as Tree],
   ['zh-CN', zhCN as Tree],
 ])('messages/%s.json', (_name, messages) => {
   const target = flatten(messages);
 
-  it('has exactly the keys of en-SG.json', () => {
+  it('has exactly the keys of en-US.json', () => {
     expect([...target.keys()].sort()).toEqual([...source.keys()].sort());
   });
 
@@ -73,15 +71,5 @@ describe('messages/zh-CN.json', () => {
     expect((zhCN as { _meta?: { status?: string } })._meta?.status).toBe(
       'draft, needs native review',
     );
-  });
-});
-
-describe('messages/en-US.json', () => {
-  it('is en-SG with US spelling only', () => {
-    const us = flatten(enUS as Tree);
-    const changed = [...source].filter(([key, message]) => us.get(key) !== message);
-    for (const [key, message] of changed) {
-      expect(us.get(key)!.replace(/color/g, 'colour').replace(/Color/g, 'Colour').replace(/Labeled/g, 'Labelled').replace(/labeled/g, 'labelled').replace(/centered/g, 'centred')).toBe(message);
-    }
   });
 });

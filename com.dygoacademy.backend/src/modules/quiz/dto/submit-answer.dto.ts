@@ -36,9 +36,9 @@ export class SubmitAnswerDto {
       "The learner's app language (UI-L codes). On a wrong answer the nuance explanation is " +
       'written in it (Vietnamese / Simplified Chinese); English or omitted = English. ' +
       'The classic app never sends it.',
-    enum: ['en-SG', 'en-US', 'vi-VN', 'zh-CN', 'en', 'vi', 'zh'],
+    enum: ['en-US', 'vi-VN', 'zh-CN', 'en', 'vi', 'zh'],
   })
   @IsOptional()
-  @IsIn(['en-SG', 'en-US', 'vi-VN', 'zh-CN', 'en', 'vi', 'zh'])
+  @IsIn(['en-US', 'vi-VN', 'zh-CN', 'en', 'vi', 'zh'])
   locale?: string;
 }

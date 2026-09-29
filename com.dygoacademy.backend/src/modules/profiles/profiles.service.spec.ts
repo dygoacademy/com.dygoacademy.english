@@ -54,7 +54,7 @@ describe('ProfilesService.updateMine', () => {
 
   it('is a 404 when RLS hides the row (no profile)', async () => {
     const service = await makeService(jest.fn().mockResolvedValue([]));
-    await expect(service.updateMine('user-42', { uiLocale: 'en-SG' })).rejects.toBeInstanceOf(
+    await expect(service.updateMine('user-42', { uiLocale: 'en-US' })).rejects.toBeInstanceOf(
       NotFoundException,
     );
   });
@@ -64,8 +64,8 @@ describe('UpdateProfileDto', () => {
   const errorsFor = async (body: object) =>
     (await validate(plainToInstance(UpdateProfileDto, body))).map((e) => e.property);
 
-  it('accepts the four app locales and the two meaning locales', async () => {
-    for (const uiLocale of ['en-SG', 'en-US', 'vi-VN', 'zh-CN']) {
+  it('accepts the three app locales and the two meaning locales', async () => {
+    for (const uiLocale of ['en-US', 'vi-VN', 'zh-CN']) {
       expect(await errorsFor({ uiLocale })).toEqual([]);
     }
     for (const meaningLocale of ['vi-VN', 'zh-CN']) {
@@ -84,6 +84,6 @@ describe('UpdateProfileDto', () => {
     expect(await errorsFor({ uiLocale: 'vi' })).toEqual(['uiLocale']);
     expect(await errorsFor({ meaningLocale: 'vi' })).toEqual(['meaningLocale']);
     expect(await errorsFor({ uiLocale: 'zh' })).toEqual(['uiLocale']);
-    expect(await errorsFor({ meaningLocale: 'en-SG' })).toEqual(['meaningLocale']);
+    expect(await errorsFor({ meaningLocale: 'en-SG' })).toEqual(['meaningLocale']); // en-SG is not even a valid app locale any more, let alone a meaning one
   });
 });

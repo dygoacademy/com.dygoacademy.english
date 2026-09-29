@@ -3,7 +3,7 @@ import { NextIntlClientProvider } from 'next-intl';
 import type { ReactElement } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 
-import en from '../../../../messages/en-SG.json';
+import en from '../../../../messages/en-US.json';
 import vi_messages from '../../../../messages/vi-VN.json';
 import zh from '../../../../messages/zh-CN.json';
 
@@ -13,7 +13,7 @@ import GardenNotFound from './not-found';
 
 /** UI-3 U3-1: loading, error and not-found for /garden, in every language. */
 const LOCALES = [
-  ['en-SG', en],
+  ['en-US', en],
   ['vi-VN', vi_messages],
   ['zh-CN', zh],
 ] as const;

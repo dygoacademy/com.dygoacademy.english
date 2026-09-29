@@ -7,8 +7,10 @@ import { GARDEN_ROUTES } from '@/constants/garden';
 import { ROUTES } from '@/constants/routes';
 import { useStudySession } from '@/hooks/useStudySession';
 import { useTopic } from '@/hooks/useTopic';
+import { languageOf } from '@/i18n/config';
 
 import { AddWordSheet } from '../AddWordSheet';
+import { useGardenPreferences } from '../preferences';
 import { TopicBedScreen } from '../screens/TopicBedScreen';
 import { toBedWords, type GardenTopicWord } from './data';
 import { LiveError, LiveLoading } from './LiveState';
@@ -20,7 +22,11 @@ import { LiveError, LiveLoading } from './LiveState';
  * U5-3: each word's plant stage, wilting and next watering come from the
  * caller's SRS state on GET /topics/:id (U5-1) via `toBedWords`, so the
  * stage tiles show real counts and filter the list, and words are sorted
- * by next watering. Meanings come from the due cards when they carry one.
+ * by next watering. Meanings come from the due cards when they carry one:
+ * the learner's meaning-language translation when `meaningLocale` is set
+ * and that card has one (same source as the review card, design system
+ * §14.8), English `definition_en` otherwise (2026-09-29 — previously
+ * always English, ignoring the meaning-language preference).
  *
  * U5-4: "Water N due" opens watering scoped to this bed
  * (/garden/review?topic=…, i.e. POST /srs/sessions with the topic); +
@@ -34,6 +40,7 @@ import { LiveError, LiveLoading } from './LiveState';
 export function TopicBedLive({ topicId }: { topicId: string }) {
   const t = useTranslations('screens.bed');
   const topic = useTopic(topicId);
+  const { meaningLocale } = useGardenPreferences();
   // 100 is the API's cap (StartSessionDto @Max(100)); 200 was a 400, so the
   // bed never showed "Water N due".
   const due = useStudySession(topicId, 'STANDARD', 100);
@@ -45,8 +52,14 @@ export function TopicBedLive({ topicId }: { topicId: string }) {
   }
 
   const dueById = new Map((due.data?.cards ?? []).map((card) => [card.topic_word_id, card]));
-  const meanings = new Map<string, string>();
-  for (const [id, card] of dueById) if (card.definition_en) meanings.set(id, card.definition_en);
+  const meanings = new Map<string, { text: string; lang?: string }>();
+  for (const [id, card] of dueById) {
+    if (meaningLocale && card.meaning_translation) {
+      meanings.set(id, { text: card.meaning_translation, lang: languageOf(card.meaning_locale ?? meaningLocale) });
+    } else if (card.definition_en) {
+      meanings.set(id, { text: card.definition_en, lang: 'en' });
+    }
+  }
   const { words, stageCounts } = toBedWords(
     topic.data.words as GardenTopicWord[],
     meanings,

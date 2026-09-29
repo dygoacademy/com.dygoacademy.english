@@ -187,7 +187,7 @@ Each phase is checked the same way before it is called done. Automated checks ru
 | --- | --- | --- |
 | Matches the mockup | Playwright screenshot at 390 × 844 next to the reference PNG from UI-0; small differences listed and fixed or accepted | UI-2 |
 | Screen sizes | The 8 viewports in design system §16.1 (iPhone SE to iPad 13") | UI-3 (iPhone), UI-7 (iPad) |
-| Languages | `en-US`, `en-SG`, `zh-CN`, `vi-VN` on iPhone SE and iPad portrait; Sunday week start in `en-US` | UI-7 |
+| Languages | `en-US`, `zh-CN`, `vi-VN` on iPhone SE and iPad portrait; Sunday week start in `en-US` | UI-7 |
 | Same data in both UIs | For beta users, due count, streak and topic counts compared between old and new screens | UI-4 to UI-8 |
 | Accessibility | Contrast, labels, keyboard, VoiceOver order, 200% text, reduced motion (design system §15) | UI-2, full pass in UI-7 |
 | Real devices | Safari on one real iPhone and one real iPad, plus a Home Screen install | Every gate |

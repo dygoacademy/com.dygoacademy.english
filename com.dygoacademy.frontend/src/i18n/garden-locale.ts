@@ -29,7 +29,7 @@ import {
 export interface GardenLocaleContext {
   /** Which messages file the garden reads. */
   appLocale: AppLocale;
-  /** What next-intl formats dates and numbers with (e.g. en-SG, vi-VN). */
+  /** What next-intl formats dates and numbers with (e.g. en-US, vi-VN). */
   formatLocale: string;
   /** IANA zone the learner's day is measured in. */
   timeZone: string;

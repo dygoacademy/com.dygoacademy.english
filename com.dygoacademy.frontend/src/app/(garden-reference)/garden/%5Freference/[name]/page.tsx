@@ -11,7 +11,7 @@ import { GardenRoot } from '@/app/(garden)/GardenRoot';
 import { ReferenceScreen } from './ReferenceScreen';
 
 /**
- * /garden/_reference/<name>?locale=en-SG|en-US|vi-VN|zh-CN: one canvas screen with the
+ * /garden/_reference/<name>?locale=en-US|vi-VN|zh-CN: one canvas screen with the
  * canvas sample data (screens/fixtures.ts), for `npm run garden:diff`.
  * Dev only; see the route group's layout for the gates. The tab bar sits
  * in the flow, as in the fixed-height canvas frame.

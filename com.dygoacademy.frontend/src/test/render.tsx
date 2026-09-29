@@ -2,11 +2,11 @@ import { render, type RenderOptions } from '@testing-library/react';
 import { NextIntlClientProvider } from 'next-intl';
 import type { ReactElement, ReactNode } from 'react';
 
-import messages from '../../messages/en-SG.json';
+import messages from '../../messages/en-US.json';
 
 function IntlWrapper({ children }: { children: ReactNode }) {
   return (
-    <NextIntlClientProvider locale="en-SG" messages={messages}>
+    <NextIntlClientProvider locale="en-US" messages={messages}>
       {children}
     </NextIntlClientProvider>
   );

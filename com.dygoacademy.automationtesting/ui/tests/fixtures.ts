@@ -8,7 +8,7 @@ import { AUTH_FILE, SIGN_IN_SKIP_REASON, hasSignedInSession } from '../auth';
 export { SIGN_IN_SKIP_REASON, hasSignedInSession };
 
 /** The two languages the canvas references exist in (plan §10 rule 10). */
-export const SCREENSHOT_LOCALES = ['en-SG', 'vi-VN'] as const;
+export const SCREENSHOT_LOCALES = ['en-US', 'vi-VN'] as const;
 export type ScreenshotLocale = (typeof SCREENSHOT_LOCALES)[number];
 
 /** Same freeze as `garden:diff`: no animations, no Next.js dev overlay. */
@@ -34,7 +34,7 @@ export function referenceScreens(): { name: string; locales: ScreenshotLocale[] 
     .sort()
     .map((name) => ({
       name,
-      locales: files.has(`${name}-vi.png`) ? ['en-SG', 'vi-VN'] : ['en-SG'],
+      locales: files.has(`${name}-vi.png`) ? ['en-US', 'vi-VN'] : ['en-US'],
     }));
 }
 

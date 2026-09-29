@@ -7,6 +7,8 @@ export const MAINTENANCE_QUEUE = 'maintenance-queue';
 export const ENRICH_WORD_JOB = 'enrich-word';
 /** Fill in master_lexicon.audio_url for a word that already has its text fields. */
 export const AUDIO_BACKFILL_JOB = 'audio-backfill';
+/** Fill in word_translations for a master_lexicon word missing a meaning-locale row (scripts/translations-backfill.js). */
+export const TRANSLATIONS_BACKFILL_JOB = 'translations-backfill';
 export const NOTIFICATION_TICK_JOB = 'notification-tick';
 export const PARTITION_MAINTENANCE_JOB = 'partition-maintenance';
 
@@ -27,6 +29,14 @@ export interface AudioBackfillJob {
   lexiconId: string;
   word: string;
   languageCode: string;
+}
+
+export interface TranslationsBackfillJob {
+  lexiconId: string;
+  /** Which meaning locales are missing for this word — only these are (re)written. */
+  missingLocales: Array<'vi-VN' | 'zh-CN'>;
+  definitionEn: string;
+  exampleSentence: string;
 }
 
 export interface NotificationCronJob {

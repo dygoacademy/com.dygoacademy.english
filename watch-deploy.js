@@ -5,10 +5,14 @@
  * Simple, dependency-free watcher for a "deploy by file" workflow:
  *
  *   1. Watches deploy/ for deploy/request.md to appear.
- *   2. Only deploys if request.md's text (trimmed) is MORE THAN
+ *   2. Only reacts if request.md's text (trimmed) is MORE THAN
  *      MIN_REQUEST_LENGTH characters (default 3) — a stray empty file
- *      or a file with just a newline/whitespace is ignored, not deployed.
- *   3. When it qualifies: copies its text into deploy/deploy.md.
+ *      or a file with just whitespace/a newline is ignored, not deployed.
+ *   3. When it qualifies: APPENDS a line to deploy/deploy.md in the
+ *      format `Date Time - Text`, e.g.
+ *        2026-09-27 23:44:10 - bump homepage copy
+ *      deploy.md is therefore a running history of every request ever
+ *      made, one line per deploy, oldest at the top.
  *   4. Runs the deploy pipeline below as an ORDERED SEQUENCE OF STEPS —
  *      each step must finish with no error before the next one starts:
  *        Step 1: build backend    (no error) ->
@@ -86,14 +90,34 @@ const DEPLOY_STEPS = [
 
 let deploying = false;
 
-function timestamp() {
+// ISO timestamp for deploy/log.md (unambiguous, sortable).
+function isoTimestamp() {
   return new Date().toISOString();
 }
 
+// Human "Date Time" for deploy/deploy.md entries, in local (server) time —
+// e.g. "2026-09-27 23:44:10".
+function localDateTime(date) {
+  const pad = (n) => String(n).padStart(2, '0');
+  return (
+    `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}` +
+    ` ${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`
+  );
+}
+
 function appendLog(message) {
-  const line = `[${timestamp()}] ${message}\n`;
+  const line = `[${isoTimestamp()}] ${message}\n`;
   process.stdout.write(line);
   fs.appendFileSync(LOG_FILE, line, 'utf8');
+}
+
+// Appends one line to deploy.md in the format: `Date Time - Text`.
+// Collapses the request text to a single line (newlines -> spaces) so
+// each deploy.md entry stays one line per request.
+function appendDeployRecord(text) {
+  const singleLine = text.replace(/\s+/g, ' ').trim();
+  const entry = `${localDateTime(new Date())} - ${singleLine}\n`;
+  fs.appendFileSync(DEPLOY_RECORD_FILE, entry, 'utf8');
 }
 
 function runShellCommand(command, cwd) {
@@ -147,9 +171,9 @@ async function handleRequest() {
   try {
     appendLog('== request.md found — starting deploy ==');
 
-    // Copy request.md's text into deploy.md as a record of the request
-    fs.writeFileSync(DEPLOY_RECORD_FILE, requestText, 'utf8');
-    appendLog(`Copied request.md -> ${path.basename(DEPLOY_RECORD_FILE)}`);
+    // Append "Date Time - Text" to deploy.md as a running history of requests
+    appendDeployRecord(requestText);
+    appendLog(`Appended request to ${path.basename(DEPLOY_RECORD_FILE)}`);
 
     // Run the ordered sequence: backend build -> frontend build -> UAT deploy -> status
     await runDeploySequence();
@@ -176,6 +200,9 @@ function main() {
   }
   if (!fs.existsSync(LOG_FILE)) {
     fs.writeFileSync(LOG_FILE, '', 'utf8');
+  }
+  if (!fs.existsSync(DEPLOY_RECORD_FILE)) {
+    fs.writeFileSync(DEPLOY_RECORD_FILE, '', 'utf8');
   }
 
   appendLog(`Watching ${DEPLOY_DIR} for request.md ...`);

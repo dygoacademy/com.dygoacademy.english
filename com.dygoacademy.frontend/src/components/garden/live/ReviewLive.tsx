@@ -7,6 +7,7 @@ import { GARDEN_ROUTES } from '@/constants/garden';
 import { useRateWord } from '@/hooks/useRateWord';
 import { useStudySession } from '@/hooks/useStudySession';
 import { useTopics } from '@/hooks/useTopics';
+import { languageOf } from '@/i18n/config';
 import type { DueCard, SrsRating } from '@/types';
 
 import { useGardenPreferences } from '../preferences';
@@ -21,10 +22,12 @@ import { LiveError, LiveLoading } from './LiveState';
  * topic) and POST /srs/rate through useRateWord (which queues offline).
  * The card list is taken once, so a background refetch can't reorder it
  * mid-session. Not available yet: interval previews (the rating buttons
- * show labels only, UI-4), CEFR level tags and meanings in the learner's
- * language (no per-language meaning is stored yet). Synonyms come from
- * the card's `synonyms`. At the end, "See your garden bloom" carries this session's
- * results to /garden/review/done in the URL.
+ * show labels only, UI-4) and CEFR level tags. The meaning-language line
+ * (design system §14.8) now comes from `card.meaning_translation`
+ * (`word_translations`, joined server-side by `profiles.meaning_locale`);
+ * it's simply absent for a word Gemini hasn't translated yet. Synonyms
+ * come from the card's `synonyms`. At the end, "See your garden bloom"
+ * carries this session's results to /garden/review/done in the URL.
  */
 export function ReviewLive({ topicId }: { topicId?: string }) {
   const t = useTranslations('screens.review');
@@ -86,9 +89,9 @@ export function ReviewLive({ topicId }: { topicId?: string }) {
               topic: topicTitle ?? null,
               partOfSpeech: card.part_of_speech,
               meaning: card.definition_en ?? '',
-              // No translations in the API yet; when they arrive, the line in
-              // the learner's meaning language goes first (UI-L decision).
-              meaningTranslation: null,
+              meaningTranslation: card.meaning_translation
+                ? { text: card.meaning_translation, lang: languageOf(card.meaning_locale ?? 'en') }
+                : null,
               meaningFirst: meaningLocale !== null,
               example: card.example_sentences?.[0]?.sentence ?? null,
               collocations: null,

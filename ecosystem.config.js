@@ -21,6 +21,25 @@
 // Requires `cloudflared tunnel create` to have been run once already and
 // cloudflared-config.yml's placeholders filled in (see README "Production
 // — public domain").
+//
+// Logging (added 2026-09-27): every process gets its own out/error files
+// under logs/, timestamped lines, and a shared date format instead of
+// pm2's default ~/.pm2/logs/<name>-out.log / -error.log. Apply with
+// `pm2 startOrReload ecosystem.config.js` (or `pm2 restart ecosystem.config.js
+// --update-env` if all four are already running) — pm2 only picks up
+// out_file/error_file changes on a start/reload, not a plain `pm2 restart
+// <name>`. Raw log files aren't rotated or size-capped by pm2 itself; run
+// `pm2 install pm2-logrotate` once so they don't grow unbounded (defaults:
+// rotate at 10M, keep 30, compress old ones — tune with `pm2 set
+// pm2-logrotate:<key> <value>`).
+const LOG_OPTS = (name) => ({
+  out_file: __dirname + `/logs/${name}-out.log`,
+  error_file: __dirname + `/logs/${name}-error.log`,
+  time: true,
+  log_date_format: 'YYYY-MM-DD HH:mm:ss Z',
+  merge_logs: true,
+});
+
 module.exports = {
   apps: [
     {
@@ -28,24 +47,28 @@ module.exports = {
       cwd: __dirname + '/com.dygoacademy.backend',
       script: 'npm',
       args: 'run start:prod:domain',
+      ...LOG_OPTS('dygo-backend'),
     },
     {
       name: 'dygo-frontend',
       cwd: __dirname + '/com.dygoacademy.frontend',
       script: 'npm',
       args: 'run start',
+      ...LOG_OPTS('dygo-frontend'),
     },
-        {
+    {
       name: 'dygo-watch-deploy',
       cwd: __dirname,
       script: 'node',
       args: 'watch-deploy.js',
+      ...LOG_OPTS('dygo-watch-deploy'),
     },
     {
       name: 'dygo-tunnel',
       cwd: __dirname,
       script: 'cloudflared',
       args: 'tunnel --config ' + __dirname + '/cloudflared-config.yml run dygo-academy',
+      ...LOG_OPTS('dygo-tunnel'),
     },
   ],
 };

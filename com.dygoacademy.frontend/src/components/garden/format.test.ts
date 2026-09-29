@@ -12,7 +12,7 @@ import {
 
 describe('formatClock', () => {
   it('writes English times with an upper-case day period (canvas: "7:30 AM")', () => {
-    expect(formatClock({ hour: 7, minute: 30 }, 'en-SG')).toBe('7:30\u00a0AM');
+    expect(formatClock({ hour: 7, minute: 30 }, 'en-US')).toBe('7:30\u00a0AM');
     expect(formatClock({ hour: 19, minute: 5 }, 'en-US')).toBe('7:05\u00a0PM');
   });
   it('uses the 24-hour clock in Vietnamese and Chinese', () => {

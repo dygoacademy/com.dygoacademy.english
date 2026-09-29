@@ -183,3 +183,82 @@ export function nextMasteredAt(
   if (masteredAtBefore) return masteredAtBefore;
   return (after.stability ?? 0) >= MASTERY_STABILITY_DAYS ? now : null;
 }
+
+/**
+ * UI-4: Rating interval for display on the Watering Page rating buttons.
+ * The interval shows what date each rating would schedule: "< 1 min", "5 days", etc.
+ */
+export type RatingInterval =
+  | { unit: 'lessThanMinute' }
+  | { unit: 'minutes' | 'hours' | 'days' | 'months'; count: number };
+
+/**
+ * UI-4: Format a future date into a human-readable interval.
+ * Used to display "< 1 min", "5 days", "3 months" etc. under each rating button.
+ *
+ * Rounding strategy (same as Anki):
+ * - < 60s: "< 1 min"
+ * - < 60m: round to nearest minute
+ * - < 24h: round to nearest hour
+ * - < 30d: round to nearest day
+ * - ≥ 30d: round to nearest month
+ */
+export function formatInterval(futureDate: Date, now: Date = new Date()): RatingInterval {
+  const msUntil = futureDate.getTime() - now.getTime();
+  const secondsUntil = Math.round(msUntil / 1000);
+
+  // Less than a minute
+  if (secondsUntil < 60) {
+    return { unit: 'lessThanMinute' };
+  }
+
+  const minutesUntil = Math.round(secondsUntil / 60);
+  if (minutesUntil < 60) {
+    return { unit: 'minutes', count: minutesUntil };
+  }
+
+  const hoursUntil = Math.round(minutesUntil / 60);
+  if (hoursUntil < 24) {
+    return { unit: 'hours', count: hoursUntil };
+  }
+
+  const daysUntil = Math.round(hoursUntil / 24);
+  if (daysUntil < 30) {
+    return { unit: 'days', count: daysUntil };
+  }
+
+  const monthsUntil = Math.round(daysUntil / 30);
+  return { unit: 'months', count: monthsUntil };
+}
+
+/**
+ * UI-4: Calculate the next-due interval for each rating (Again/Hard/Good/Easy).
+ *
+ * For each grade (1–4), we ask ts-fsrs: "If I rate this card with this grade,
+ * when would it next be due?" Then we format that date as a human-readable
+ * interval.
+ *
+ * The frontend displays these intervals under the rating buttons on the Watering
+ * Page (A2), so the learner sees something like:
+ * ```
+ * [Again]    [Hard]     [Good]     [Easy]
+ * < 1 min    10 min     2 days     12 days
+ * ```
+ *
+ * Computation: for the current card state, call scheduler.next() for each grade.
+ * The resulting card has a `due` field (Date) which we format.
+ */
+export function computeRatingIntervals(
+  card: FsrsCardState,
+  now: Date,
+  scheduler: FSRS = defaultScheduler,
+): Record<SrsRating, RatingInterval> {
+  const libCard = toLibCard(card);
+
+  return {
+    AGAIN: formatInterval(scheduler.next(libCard, now, Rating.Again).card.due, now),
+    HARD: formatInterval(scheduler.next(libCard, now, Rating.Hard).card.due, now),
+    GOOD: formatInterval(scheduler.next(libCard, now, Rating.Good).card.due, now),
+    EASY: formatInterval(scheduler.next(libCard, now, Rating.Easy).card.due, now),
+  };
+}

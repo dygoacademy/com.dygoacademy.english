@@ -3,7 +3,7 @@
  * copied from docs/design/garden/source/*.dc.html so each fixture page
  * renders exactly what the canvas renders. Content here is sample data
  * (names, words, meanings, dates), not UI copy: UI copy comes from
- * messages/en-SG.json through t().
+ * messages/en-US.json through t().
  */
 import type { AppLocale } from '@/i18n/config';
 
@@ -313,7 +313,6 @@ const SAMPLE_EN = {
 } as const;
 
 const SAMPLE = {
-  'en-SG': SAMPLE_EN,
   'en-US': SAMPLE_EN,
   'vi-VN': {
     topics: ['Môi trường', 'Giáo dục', 'Công nghệ', 'Công việc', 'IELTS Sprint · Tuần 3'],

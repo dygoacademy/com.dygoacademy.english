@@ -308,8 +308,7 @@
       "meaningLanguage": "Nghĩa hiển thị",
       "meaningHint": "Luôn hiện định nghĩa tiếng Anh.",
       "names": {
-        "en-SG": "English (Singapore)",
-        "en-US": "English (United States)",
+        "en-US": "English",
         "vi-VN": "Tiếng Việt",
         "zh-CN": "简体中文"
       },

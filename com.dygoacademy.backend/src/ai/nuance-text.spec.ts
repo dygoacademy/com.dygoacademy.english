@@ -28,8 +28,8 @@ describe('nuanceLanguage', () => {
   });
 
   it('is null (English) for English, unknown or missing locales', () => {
-    expect(nuanceLanguage('en-SG')).toBeNull();
     expect(nuanceLanguage('en-US')).toBeNull();
+    expect(nuanceLanguage('en-GB')).toBeNull();
     expect(nuanceLanguage('fr-FR')).toBeNull();
     expect(nuanceLanguage(undefined)).toBeNull();
   });

@@ -312,8 +312,7 @@
       "meaningLanguage": "释义语言",
       "meaningHint": "始终显示英文释义。",
       "names": {
-        "en-SG": "English (Singapore)",
-        "en-US": "English (United States)",
+        "en-US": "English",
         "vi-VN": "Tiếng Việt",
         "zh-CN": "简体中文"
       },

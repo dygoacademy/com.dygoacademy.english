@@ -1,4 +1,4 @@
-import type messages from '../../messages/en-SG.json';
+import type messages from '../../messages/en-US.json';
 
 /**
  * Type-checks every t('key') against the English source messages, so a

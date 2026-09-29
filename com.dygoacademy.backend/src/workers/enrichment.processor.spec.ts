@@ -3,7 +3,7 @@ import { Job } from 'bullmq';
 
 import { GeminiEnrichmentService, LexiconEntry } from '../ai/gemini-enrichment.service';
 import { DatabaseService } from '../database/database.service';
-import { AudioBackfillJob, WordEnrichmentJob } from '../queues/queue.constants';
+import { AudioBackfillJob, TranslationsBackfillJob, WordEnrichmentJob } from '../queues/queue.constants';
 import { StorageService } from '../storage/storage.service';
 import { EnrichmentProcessor } from './enrichment.processor';
 
@@ -18,6 +18,7 @@ describe('EnrichmentProcessor', () => {
   let processor: EnrichmentProcessor;
   let queryMock: jest.Mock;
   let enrichWordMock: jest.Mock;
+  let translateMeaningMock: jest.Mock;
   let synthesizeSpeechMock: jest.Mock;
   let uploadMock: jest.Mock;
   let hasObjectMock: jest.Mock;
@@ -33,6 +34,10 @@ describe('EnrichmentProcessor', () => {
     example_sentences: [
       { sentence: 'Fame is often ephemeral.', level: 'B2', translation_hint: 'short-lived' },
     ],
+    translations: {
+      'vi-VN': { meaning: 'chỉ tồn tại trong thời gian ngắn', example_translation: 'Danh vọng thường chỉ tồn tại trong thời gian ngắn.' },
+      'zh-CN': { meaning: '短暂的', example_translation: '名声往往是短暂的。' },
+    },
   };
 
   function makeJob(
@@ -56,6 +61,10 @@ describe('EnrichmentProcessor', () => {
   beforeEach(async () => {
     queryMock = jest.fn();
     enrichWordMock = jest.fn().mockResolvedValue(entry);
+    translateMeaningMock = jest.fn().mockResolvedValue({
+      'vi-VN': { meaning: 'lịch sự', example_translation: 'Cô ấy luôn lịch sự.' },
+      'zh-CN': { meaning: '礼貌的', example_translation: '她总是很礼貌。' },
+    });
     synthesizeSpeechMock = jest
       .fn()
       .mockResolvedValue({ pcm: Buffer.from('x'), sampleRateHz: 24000 });
@@ -77,7 +86,11 @@ describe('EnrichmentProcessor', () => {
         { provide: DatabaseService, useValue: { queryAsService: queryMock } },
         {
           provide: GeminiEnrichmentService,
-          useValue: { enrichWord: enrichWordMock, synthesizeSpeech: synthesizeSpeechMock },
+          useValue: {
+            enrichWord: enrichWordMock,
+            translateMeaning: translateMeaningMock,
+            synthesizeSpeech: synthesizeSpeechMock,
+          },
         },
         {
           provide: StorageService,
@@ -109,6 +122,7 @@ describe('EnrichmentProcessor', () => {
   it('cache miss: calls Gemini + TTS + storage, upserts master_lexicon, marks READY', async () => {
     queryMock.mockResolvedValueOnce([]); // dedup lookup — miss
     queryMock.mockResolvedValueOnce([{ id: 'lex-2' }]); // master_lexicon upsert
+    queryMock.mockResolvedValueOnce([]); // word_translations upsert
     queryMock.mockResolvedValueOnce([]); // topic_words update
 
     await processor.process(makeJob());
@@ -125,7 +139,15 @@ describe('EnrichmentProcessor', () => {
     expect(upsertCall[0]).toMatch(/insert into public\.master_lexicon/i);
     expect(upsertCall[0]).toMatch(/on conflict/i);
 
-    const updateCall = queryMock.mock.calls[2];
+    const translationsCall = queryMock.mock.calls[2];
+    expect(translationsCall[0]).toMatch(/insert into public\.word_translations/i);
+    expect(translationsCall[0]).toMatch(/on conflict/i);
+    expect(translationsCall[1]).toEqual([
+      'lex-2', 'vi-VN', 'chỉ tồn tại trong thời gian ngắn', 'Danh vọng thường chỉ tồn tại trong thời gian ngắn.',
+      'lex-2', 'zh-CN', '短暂的', '名声往往是短暂的。',
+    ]);
+
+    const updateCall = queryMock.mock.calls[3];
     expect(updateCall[1]).toEqual(['lex-2', 'tw-1']);
   });
 
@@ -133,6 +155,7 @@ describe('EnrichmentProcessor', () => {
     queryMock.mockResolvedValueOnce([]); // dedup lookup — miss
     synthesizeSpeechMock.mockRejectedValue(new Error('TTS quota exceeded'));
     queryMock.mockResolvedValueOnce([{ id: 'lex-3' }]); // master_lexicon upsert
+    queryMock.mockResolvedValueOnce([]); // word_translations upsert
     queryMock.mockResolvedValueOnce([]); // topic_words update
 
     await processor.process(makeJob());
@@ -261,5 +284,62 @@ describe('EnrichmentProcessor', () => {
     synthesizeSpeechMock.mockRejectedValue(new Error('TTS quota exceeded'));
 
     await expect(processor.process(backfillJob())).rejects.toThrow('TTS quota exceeded');
+  });
+
+  // ---------------------------------------------------------------------------
+  // translations-backfill (2026-09-29): repairs word_translations rows left
+  // incomplete by the pre-fix array-based Gemini schema (vi-VN written,
+  // zh-CN silently dropped) — queued by scripts/translations-backfill.js.
+  // ---------------------------------------------------------------------------
+
+  function translationsBackfillJob(
+    overrides: Partial<TranslationsBackfillJob> = {},
+  ): Job<TranslationsBackfillJob> {
+    return {
+      name: 'translations-backfill',
+      data: {
+        lexiconId: 'lex-9',
+        missingLocales: ['zh-CN'],
+        definitionEn: 'Having or showing good manners.',
+        exampleSentence: 'She is always polite.',
+        ...overrides,
+      },
+      attemptsMade: 0,
+      opts: { attempts: 3 },
+    } as unknown as Job<TranslationsBackfillJob>;
+  }
+
+  it('translations-backfill job: writes only the missing locale, not the one already present', async () => {
+    queryMock.mockResolvedValueOnce([]); // word_translations upsert
+
+    await processor.process(translationsBackfillJob());
+
+    expect(translateMeaningMock).toHaveBeenCalledWith(
+      'Having or showing good manners.',
+      'She is always polite.',
+    );
+    expect(queryMock).toHaveBeenCalledTimes(1);
+    const [sql, params] = queryMock.mock.calls[0];
+    expect(sql).toMatch(/insert into public\.word_translations/i);
+    expect(params).toEqual(['lex-9', 'zh-CN', '礼貌的', '她总是很礼貌。']);
+  });
+
+  it('translations-backfill job: writes both locales when both are missing', async () => {
+    queryMock.mockResolvedValueOnce([]); // word_translations upsert
+
+    await processor.process(translationsBackfillJob({ missingLocales: ['vi-VN', 'zh-CN'] }));
+
+    const [, params] = queryMock.mock.calls[0];
+    expect(params).toEqual([
+      'lex-9', 'vi-VN', 'lịch sự', 'Cô ấy luôn lịch sự.',
+      'lex-9', 'zh-CN', '礼貌的', '她总是很礼貌。',
+    ]);
+  });
+
+  it('translations-backfill job: no missing locales is a no-op (no Gemini call, no query)', async () => {
+    await processor.process(translationsBackfillJob({ missingLocales: [] }));
+
+    expect(translateMeaningMock).not.toHaveBeenCalled();
+    expect(queryMock).not.toHaveBeenCalled();
   });
 });

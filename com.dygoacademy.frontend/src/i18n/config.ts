@@ -4,33 +4,34 @@
  * Deliberately free of next/headers so the same helpers work in the
  * request config, server actions, client components and tests.
  *
- * Locale codes are full BCP 47 tags (2026-09-26): `en-SG`, `en-US`,
- * `vi-VN`, `zh-CN`. One code is both
+ * Locale codes are full BCP 47 tags. English shipped as two regional
+ * variants (`en-SG` and `en-US`) from 2026-09-26; `en-SG` was removed
+ * (2026-09-29) — English is `en-US` only now, everywhere: this file,
+ * the DB check constraint, the message files and every caller. One
+ * code is both
  *  - the **app language**: which messages file the garden reads
  *    (`messages/<code>.json`), what the learner picks, what
  *    `profiles.ui_locale` and the `dygo_locale` cookie store; and
  *  - the **formatting locale**: dates, times and numbers ("Friday,
- *    25 September" in en-SG, "Friday, September 25" and a Sunday week
- *    start in en-US, "Thứ Sáu, 25 tháng 9" / "1.200" in vi-VN).
+ *    September 25" and a Sunday week start in en-US, "Thứ Sáu,
+ *    25 tháng 9" / "1.200" in vi-VN).
  *
- * English has two regions. With no stored choice, English means en-US
- * for a learner whose time zone is in the Americas and en-SG otherwise
- * (same rule as before the codes changed). Old short codes ('en', 'vi')
- * from before the change are still understood when read
- * (`normalizeLocale`), so existing cookies keep working.
+ * Old short codes ('en', 'vi') from before locales became full BCP 47
+ * tags are still understood when read (`normalizeLocale`), so existing
+ * cookies keep working.
  *
  * Only the (garden) and (garden-reference) layouts use any of this;
  * classic screens stay English (plan §10 rule 3).
  */
-export const LOCALES = ['en-SG', 'en-US', 'vi-VN', 'zh-CN'] as const;
+export const LOCALES = ['en-US', 'vi-VN', 'zh-CN'] as const;
 export type AppLocale = (typeof LOCALES)[number];
-export const DEFAULT_LOCALE: AppLocale = 'en-SG';
+export const DEFAULT_LOCALE: AppLocale = 'en-US';
 
 /** Languages the review card can show a meaning line in (besides English). */
 export const MEANING_LOCALES = ['vi-VN', 'zh-CN'] as const;
 export type MeaningLocale = (typeof MEANING_LOCALES)[number];
 
-/** The language part of a locale ('en-SG' → 'en'), for rules shared by a language. */
+/** The language part of a locale ('en-US' → 'en'), for rules shared by a language. */
 export type LanguageCode = 'en' | 'vi' | 'zh';
 
 /** Set by the language sheet (and before sign-in); read after the profile. */
@@ -52,13 +53,17 @@ export function isMeaningLocale(value: unknown): value is MeaningLocale {
   return typeof value === 'string' && (MEANING_LOCALES as readonly string[]).includes(value);
 }
 
-/** English for a learner in this time zone: en-US in the Americas, else en-SG. */
-export function englishFor(timeZone?: string | null): AppLocale {
-  return timeZone?.startsWith('America/') ? 'en-US' : 'en-SG';
+/**
+ * English is en-US only now (en-SG removed 2026-09-29). `timeZone` is kept
+ * as a parameter — unused here — so callers that still pass one (they
+ * pass it for the other locales too) don't need to change.
+ */
+export function englishFor(_timeZone?: string | null): AppLocale {
+  return 'en-US';
 }
 
 /**
- * A stored or requested value as an app locale: the four codes (any
+ * A stored or requested value as an app locale: the three codes (any
  * case), the pre-2026-09-26 short codes ('en' → English for the zone,
  * 'vi' → vi-VN), or null.
  */
@@ -77,7 +82,7 @@ export function normalizeMeaningLocale(value: unknown): MeaningLocale | null {
   return isMeaningLocale(value) ? value : null;
 }
 
-/** 'en-SG' → 'en', 'vi-VN' → 'vi', 'zh-CN' → 'zh'. */
+/** 'en-US' → 'en', 'vi-VN' → 'vi', 'zh-CN' → 'zh'. */
 export function languageOf(locale: string): LanguageCode {
   const lower = locale.toLowerCase();
   if (lower.startsWith('vi')) return 'vi';
@@ -98,16 +103,14 @@ export function storedTimeZone(value: unknown): string | null {
 
 /**
  * Maps one language tag to an app locale: `zh*` → zh-CN, `vi*` → vi-VN,
- * `en-US` → en-US, `en-SG` / `en-GB` / … → en-SG, bare `en` → English for
- * the zone, anything else → null.
+ * any `en*` (`en-US`, `en-GB`, bare `en`, …) → en-US, anything else →
+ * null.
  */
 export function appLocaleForTag(tag: string, timeZone?: string | null): AppLocale | null {
   const lower = tag.trim().toLowerCase();
   if (lower === 'zh' || lower.startsWith('zh-')) return 'zh-CN';
   if (lower === 'vi' || lower.startsWith('vi-')) return 'vi-VN';
-  if (lower === 'en-us') return 'en-US';
-  if (lower === 'en') return englishFor(timeZone);
-  if (lower.startsWith('en-')) return 'en-SG';
+  if (lower === 'en' || lower.startsWith('en-')) return englishFor(timeZone);
   return null;
 }
 
@@ -168,7 +171,7 @@ export function formattingLocale(locale: AppLocale): string {
   return locale;
 }
 
-/** The app locale a formatting locale belongs to (unknown → en-SG). */
+/** The app locale a formatting locale belongs to (unknown → en-US). */
 export function appLocaleOf(locale: string): AppLocale {
   return normalizeLocale(locale) ?? appLocaleForTag(locale) ?? DEFAULT_LOCALE;
 }

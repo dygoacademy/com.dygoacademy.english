@@ -41,6 +41,17 @@ export interface DueCard {
   synonyms: LexiconRelatedWord[];
   antonyms: LexiconRelatedWord[];
   example_sentences: LexiconExampleSentence[];
+  /**
+   * The review card's meaning-language line (design system §14.8),
+   * translated from `definition_en` (and `meaning_example_translation`
+   * from the first example sentence) by the enrichment pipeline into
+   * whichever locale `profiles.meaning_locale` is set to. Both null when
+   * meaning_locale is unset (English only) or this word hasn't been
+   * translated into it yet.
+   */
+  meaning_locale: 'vi-VN' | 'zh-CN' | null;
+  meaning_translation: string | null;
+  meaning_example_translation: string | null;
   /** No user_word_srs row yet — never reviewed before. */
   is_new: boolean;
   /** Phase 10 — FSRS memory state (backend `fsrs-scheduler.ts`). */

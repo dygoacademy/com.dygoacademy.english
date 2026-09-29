@@ -308,8 +308,7 @@
       "meaningLanguage": "Meanings in",
       "meaningHint": "The English definition is always shown.",
       "names": {
-        "en-SG": "English (Singapore)",
-        "en-US": "English (United States)",
+        "en-US": "English",
         "vi-VN": "Tiếng Việt",
         "zh-CN": "简体中文"
       },

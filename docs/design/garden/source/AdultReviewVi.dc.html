@@ -62,9 +62,9 @@ a{color:#B4552E}a:hover{color:#8A3E20}
 </div>
 <div style="border-left: 0; background: #F7F4EC; border-radius: 14px; padding: 12px 14px; font-family: 'Fraunces', serif; font-size: 16px; line-height: 1.45; color: #2E3A33">“{{card.example}}”</div>
 <div style="display: flex; flex-direction: column; gap: 8px">
-<span style="font-size: 12px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: #5E6A62">Cụm từ đi kèm</span>
+<span style="font-size: 12px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: #5E6A62">Từ đồng nghĩa</span>
 <div style="display: flex; flex-wrap: wrap; gap: 6px">
-<sc-for list="{{card.collocations}}" as="c" hint-placeholder-count="3">
+<sc-for list="{{card.synonyms}}" as="c" hint-placeholder-count="3">
 <span style="font-size: 14px; font-weight: 600; border: 1px solid #C9D8C4; color: #24463A; padding: 6px 12px; border-radius: 16px">{{c}}</span>
 </sc-for>
 </div>
@@ -110,15 +110,15 @@ class Component extends DCLogic {
       { word: 'mitigate', ipa: '/ˈmɪt.ɪ.ɡeɪt/', pos: 'động từ', level: 'B2', topic: 'Môi trường',
         vi: 'to make something bad less harmful or serious', meaning: 'giảm nhẹ, làm dịu bớt',
         example: 'Planting more trees can help mitigate the effects of climate change.',
-        collocations: ['mitigate the impact', 'mitigate risk', 'help to mitigate'] },
+        synonyms: ['reduce', 'lessen', 'ease'] },
       { word: 'sustainable', ipa: '/səˈsteɪ.nə.bəl/', pos: 'tính từ', level: 'B2', topic: 'Môi trường',
         vi: 'able to continue for a long time without harming the environment', meaning: 'bền vững',
         example: 'Cities need more sustainable forms of public transport.',
-        collocations: ['sustainable development', 'sustainable growth', 'environmentally sustainable'] },
+        synonyms: ['lasting', 'long-term', 'green'] },
       { word: 'deteriorate', ipa: '/dɪˈtɪə.ri.ə.reɪt/', pos: 'động từ', level: 'C1', topic: 'Sức khỏe',
         vi: 'to become worse over time', meaning: 'xấu đi, suy giảm',
         example: 'Air quality has deteriorated sharply in many large cities.',
-        collocations: ['deteriorate rapidly', 'health deteriorates', 'continue to deteriorate'] }
+        synonyms: ['worsen', 'decline', 'weaken'] }
     ];
     const s = this.state;
     const finished = s.i >= cards.length;

@@ -8,6 +8,8 @@ import {
   AUDIO_BACKFILL_JOB,
   AudioBackfillJob,
   ENRICHMENT_QUEUE,
+  TRANSLATIONS_BACKFILL_JOB,
+  TranslationsBackfillJob,
   WordEnrichmentJob,
 } from '../queues/queue.constants';
 import { StorageService } from '../storage/storage.service';
@@ -52,7 +54,7 @@ export class EnrichmentProcessor extends WorkerHost {
     super();
   }
 
-  async process(job: Job<WordEnrichmentJob | AudioBackfillJob>): Promise<void> {
+  async process(job: Job<WordEnrichmentJob | AudioBackfillJob | TranslationsBackfillJob>): Promise<void> {
     if (job.name === AUDIO_BACKFILL_JOB) {
       // Fatal on failure (rethrows), so BullMQ retries with backoff. There is
       // no topic_word to mark FAILED: the word is already READY and usable,
@@ -61,7 +63,33 @@ export class EnrichmentProcessor extends WorkerHost {
       await this.ensureAudio(lexiconId, word.trim().toLowerCase(), languageCode);
       return;
     }
+    if (job.name === TRANSLATIONS_BACKFILL_JOB) {
+      // Also fatal on failure, same reasoning as audio-backfill: the word is
+      // already READY, this just fills in a meaning-locale gap.
+      await this.backfillTranslations(job.data as TranslationsBackfillJob);
+      return;
+    }
     return this.enrichWordJob(job as Job<WordEnrichmentJob>);
+  }
+
+  /**
+   * `translations-backfill` job body (queued by
+   * scripts/translations-backfill.js for words that already have
+   * definition_en but are missing a word_translations row for one or more
+   * meaning locales — see the 2026-09-29 array→object schema fix in
+   * gemini-enrichment.service.ts for why that gap existed). Cheaper than
+   * `enrichAndCache`: `GeminiEnrichmentService.translateMeaning` only asks
+   * for the translation, not the whole lexicon entry.
+   */
+  private async backfillTranslations(data: TranslationsBackfillJob): Promise<void> {
+    const { lexiconId, missingLocales, definitionEn, exampleSentence } = data;
+    if (missingLocales.length === 0) return;
+
+    const translations = await this.gemini.translateMeaning(definitionEn, exampleSentence);
+    const rows = missingLocales
+      .filter((locale) => translations[locale])
+      .map((locale) => ({ locale, ...translations[locale] }));
+    await this.upsertTranslations(lexiconId, rows);
   }
 
   private async enrichWordJob(job: Job<WordEnrichmentJob>): Promise<void> {
@@ -189,7 +217,51 @@ export class EnrichmentProcessor extends WorkerHost {
       ],
     );
 
+    const translationsRows = (['vi-VN', 'zh-CN'] as const)
+      .filter((locale) => entry.translations?.[locale])
+      .map((locale) => ({ locale, ...entry.translations[locale] }));
+    await this.upsertTranslations(row.id, translationsRows);
+
     return row.id;
+  }
+
+  /**
+   * `word_translations` upsert (design system §14.8): one row per
+   * (word_id, locale). Called from two places: `enrichAndCache` on a fresh
+   * word (a normal cache miss never skips this — the response schema now
+   * requires both locales, see gemini-enrichment.service.ts), and
+   * `backfillTranslations` repairing an already-cached word that was
+   * enriched before that schema fix and is missing one or more locale rows.
+   *
+   * One multi-row INSERT rather than one query per language (mirrors the
+   * single master_lexicon upsert above) — the number of meaning languages
+   * shouldn't multiply the query count, and a partial write (one language's
+   * row written, the next failing) would leave the pair inconsistent.
+   * No-ops without a query when there's nothing to write.
+   */
+  private async upsertTranslations(
+    lexiconId: string,
+    translations: Array<{ locale: string; meaning: string; example_translation: string }>,
+  ): Promise<void> {
+    if (translations.length === 0) return;
+
+    const values: string[] = [];
+    const params: unknown[] = [];
+    translations.forEach((t, i) => {
+      const base = i * 4;
+      values.push(`($${base + 1}, $${base + 2}, $${base + 3}, $${base + 4})`);
+      params.push(lexiconId, t.locale, t.meaning, t.example_translation);
+    });
+
+    await this.db.queryAsService(
+      `insert into public.word_translations (word_id, locale, meaning, example_translation)
+       values ${values.join(', ')}
+       on conflict (word_id, locale) do update
+         set meaning = excluded.meaning,
+             example_translation = excluded.example_translation,
+             updated_at = now()`,
+      params,
+    );
   }
 
   /**

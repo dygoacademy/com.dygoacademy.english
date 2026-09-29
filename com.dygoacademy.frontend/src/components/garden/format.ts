@@ -66,7 +66,7 @@ export function weekDays(day: Date, firstDay: 0 | 1): Date[] {
 
 /**
  * "7:30 AM" / "7:30" in the locale's clock. English day periods are
- * upper case, as in the canvas (en-SG's CLDR data says "am").
+ * upper case, as in the canvas (en-US's CLDR data says "am").
  */
 export function formatClock(time: ClockTime, locale: string): string {
   const parts = new Intl.DateTimeFormat(locale, {

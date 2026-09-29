@@ -21,6 +21,9 @@
     "audio-backfill": "node scripts/audio-backfill.js",
     "audio-backfill:local": "sh -c 'set -a; . ../env-profiles/local.env; set +a; node scripts/audio-backfill.js \"$@\"' --",
     "audio-backfill:prod": "sh -c 'set -a; . ../env-profiles/prod.env; set +a; node scripts/audio-backfill.js \"$@\"' --",
+    "translations-backfill": "node scripts/translations-backfill.js",
+    "translations-backfill:local": "sh -c 'set -a; . ../env-profiles/local.env; set +a; node scripts/translations-backfill.js \"$@\"' --",
+    "translations-backfill:prod": "sh -c 'set -a; . ../env-profiles/prod.env; set +a; node scripts/translations-backfill.js \"$@\"' --",
     "start:dev:local": "sh -c 'set -a; . ../env-profiles/local.env; set +a; nest start --watch'",
     "start:dev:stg": "sh -c 'set -a; . ../env-profiles/stg.env; set +a; nest start --watch'",
     "start:prod:domain": "sh -c 'set -a; . ../env-profiles/prod.env; set +a; node dist/main'"

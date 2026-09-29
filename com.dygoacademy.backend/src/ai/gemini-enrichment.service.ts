@@ -12,6 +12,29 @@ export interface LexiconEntry {
   synonyms: Array<{ word: string; level: string }>;
   antonyms: Array<{ word: string; level: string }>;
   example_sentences: Array<{ sentence: string; level: string; translation_hint: string }>;
+  /**
+   * The review card's meaning-language line (design system §14.8), one
+   * entry per app meaning language (i18n/config.ts MEANING_LOCALES: 'vi-VN',
+   * 'zh-CN'). `meaning` translates `definition_en`; `example_translation`
+   * translates `example_sentences[0]`. Filled in the same call as
+   * everything else above — one Gemini call per word, not one per
+   * language, to keep the >85% cache-hit KPI's cost saving (BRD §2) rather
+   * than multiplying it by the number of meaning languages.
+   *
+   * Keyed by locale (2026-09-29), not an array: an array's `items` schema
+   * only constrains each element's shape, not how many elements come back
+   * or which locales they cover, so Gemini was structurally free to return
+   * one entry (observed: vi-VN reliably, zh-CN dropped). Naming both
+   * locales as required object properties makes an incomplete response a
+   * schema violation instead of a silent gap — see
+   * `20260929_translations_backfill.md` for the data repair this required.
+   */
+  translations: TranslationsByLocale;
+}
+
+export interface TranslationsByLocale {
+  'vi-VN': { meaning: string; example_translation: string };
+  'zh-CN': { meaning: string; example_translation: string };
 }
 
 export interface SynthesizedAudio {
@@ -39,6 +62,16 @@ const TEXT_MODEL = 'gemini-3.5-flash-lite';
 // provisioned in .env (no separate TTS credential exists).
 const TTS_MODEL = 'gemini-2.5-flash-preview-tts';
 const TTS_VOICE = 'Kore'; // Gemini prebuilt voice — closest to "crisp US female" (tech spec §4.2 audio pipeline note).
+
+/** One meaning-language entry, shared by both keys of `translations` below. */
+const TRANSLATION_ENTRY_SCHEMA = {
+  type: Type.OBJECT,
+  properties: {
+    meaning: { type: Type.STRING },
+    example_translation: { type: Type.STRING },
+  },
+  required: ['meaning', 'example_translation'],
+};
 
 const RESPONSE_SCHEMA = {
   type: Type.OBJECT,
@@ -76,6 +109,14 @@ const RESPONSE_SCHEMA = {
         required: ['sentence', 'level', 'translation_hint'],
       },
     },
+    translations: {
+      type: Type.OBJECT,
+      properties: {
+        'vi-VN': TRANSLATION_ENTRY_SCHEMA,
+        'zh-CN': TRANSLATION_ENTRY_SCHEMA,
+      },
+      required: ['vi-VN', 'zh-CN'],
+    },
   },
   required: [
     'part_of_speech',
@@ -86,6 +127,7 @@ const RESPONSE_SCHEMA = {
     'synonyms',
     'antonyms',
     'example_sentences',
+    'translations',
   ],
 };
 
@@ -129,6 +171,10 @@ export class GeminiEnrichmentService {
       `Provide exactly 5 synonyms and exactly 5 antonyms (fewer only if the word truly has none — do not pad with unrelated words), and 2 example sentences at different CEFR levels.`,
       `Dual-accent IPA: ipa_us for General American, ipa_uk for Received Pronunciation.`,
       `If the word has no clean antonym (e.g. most nouns), return an empty array rather than forcing unrelated words.`,
+      `Also provide "translations", an object with exactly two keys, "vi-VN" and "zh-CN" — both are required, ` +
+        `neither may be omitted. Each key's "meaning" is a natural, idiomatic translation of definition_en into ` +
+        `that language for a language learner (not a literal word-for-word gloss), and "example_translation" ` +
+        `translates the first example sentence into that language.`,
     ].join('\n');
 
     const response = await this.getClient().models.generateContent({
@@ -155,6 +201,54 @@ export class GeminiEnrichmentService {
       });
     }
     return parsed;
+  }
+
+  /**
+   * Translations-only re-run for a word master_lexicon already has fields
+   * for (definition_en, an example sentence) but `word_translations` is
+   * missing a locale for — the 2026-09-29 backfill after the array→object
+   * schema fix above (see `scripts/translations-backfill.js`). Much
+   * cheaper than `enrichWord`: no IPA/synonyms/antonyms/audio round trip,
+   * just the two-locale translation object, reusing the schema's own
+   * both-required guarantee.
+   */
+  async translateMeaning(definitionEn: string, exampleSentence: string): Promise<TranslationsByLocale> {
+    const prompt = [
+      `You are a professional lexicographer localizing an English dictionary entry.`,
+      `English definition: "${definitionEn}"`,
+      `English example sentence: "${exampleSentence}"`,
+      `Provide "vi-VN" and "zh-CN" — both are required, neither may be omitted. Each key's "meaning" is a ` +
+        `natural, idiomatic translation of the definition into that language for a language learner (not a ` +
+        `literal word-for-word gloss), and "example_translation" translates the example sentence into that ` +
+        `language.`,
+    ].join('\n');
+
+    const response = await this.getClient().models.generateContent({
+      model: TEXT_MODEL,
+      contents: prompt,
+      config: {
+        responseMimeType: 'application/json',
+        responseSchema: {
+          type: Type.OBJECT,
+          properties: { 'vi-VN': TRANSLATION_ENTRY_SCHEMA, 'zh-CN': TRANSLATION_ENTRY_SCHEMA },
+          required: ['vi-VN', 'zh-CN'],
+        },
+        temperature: 0.2,
+      },
+    });
+
+    const text = response.text;
+    if (!text) {
+      throw new Error(`Gemini returned no content translating "${definitionEn}"`);
+    }
+    try {
+      return JSON.parse(text) as TranslationsByLocale;
+    } catch (err) {
+      throw new Error(
+        `Gemini returned unparseable JSON translating "${definitionEn}": ${(err as Error).message}`,
+        { cause: err },
+      );
+    }
   }
 
   async synthesizeSpeech(word: string): Promise<SynthesizedAudio> {

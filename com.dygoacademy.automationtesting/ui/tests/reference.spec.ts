@@ -1,7 +1,7 @@
 import { expect, referenceScreens, settleGarden, test } from './fixtures';
 
 /**
- * Every canvas reference page (/garden/_reference/<name>), en-SG and vi-VN
+ * Every canvas reference page (/garden/_reference/<name>), en-US and vi-VN
  * where the canvas has a Vietnamese version, at every viewport. These pages
  * are dev-only fixtures and need no sign-in.
  */

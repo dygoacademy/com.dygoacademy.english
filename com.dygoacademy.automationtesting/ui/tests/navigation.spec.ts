@@ -9,10 +9,10 @@ import { SIGN_IN_SKIP_REASON, expect, hasSignedInSession, test } from './fixture
  * - the back button of a Topic bed and of a Group garden returns to the list.
  * Uses the fixture user from `.env.e2e`; skips without one. English UI.
  */
-test.use({ gardenLocale: 'en-SG' });
+test.use({ gardenLocale: 'en-US' });
 test.skip(() => !hasSignedInSession(), SIGN_IN_SKIP_REASON);
 
-/** components.tabBar.label in en-SG.json. */
+/** components.tabBar.label in en-US.json. */
 const TAB_BAR_LABEL = 'Main';
 /** Allowed tab-bar drift between screens, in CSS px (sub-pixel rounding). */
 const JUMP_TOLERANCE = 1;

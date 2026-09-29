@@ -10,6 +10,8 @@ import {
   LEECH_THRESHOLD,
   LEECH_WINDOW_DAYS,
   SrsRating,
+  RatingInterval,
+  computeRatingIntervals,
   newCard,
   nextMasteredAt,
   retrievability,
@@ -36,6 +38,17 @@ export interface DueCard {
   synonyms: unknown;
   antonyms: unknown;
   example_sentences: unknown;
+  /**
+   * The review card's meaning-language line (design system §14.8),
+   * translated from `definition_en`/the first `example_sentences` entry by
+   * the same enrichment pass that fills `definition_en` (`word_translations`,
+   * joined to whichever locale the caller's `profiles.meaning_locale` is
+   * set to). Null when meaning_locale is unset (English only) or Gemini
+   * hasn't translated this particular word into it yet.
+   */
+  meaning_locale: 'vi-VN' | 'zh-CN' | null;
+  meaning_translation: string | null;
+  meaning_example_translation: string | null;
   /** True if this word has never been reviewed — no `user_word_srs` row yet (FR-4.2's "new card"). */
   is_new: boolean;
   /** Phase 10 — FSRS memory state. See fsrs-scheduler.ts. */
@@ -51,6 +64,13 @@ export interface DueCard {
   is_mastered: boolean;
   is_leech: boolean;
   next_due_at: Date | null;
+  /**
+   * UI-4 — Next-due interval per rating. Shows "< 1 min", "5 days", etc.
+   * under each rating button on the Watering Page (A2 · Review). Computed
+   * by ts-fsrs's repeat() for each grade (Again/Hard/Good/Easy); null when
+   * the intervals cannot be computed.
+   */
+  interval_preview: Record<SrsRating, RatingInterval> | null;
 }
 
 export interface RateWordResult {
@@ -207,7 +227,21 @@ const DUE_CARD_COLUMNS = `
   ml.audio_url,
   ml.synonyms,
   ml.antonyms,
-  ml.example_sentences
+  ml.example_sentences,
+  wt.locale as meaning_locale,
+  wt.meaning as meaning_translation,
+  wt.example_translation as meaning_example_translation
+`;
+
+// Joined by auth.uid() rather than a bound $userId param: findDue's own
+// SQL never took a userId parameter (RLS already scopes every row via
+// queryAs's JWT claims), so this keeps that shape instead of threading a
+// new param through both queries' positional $1/$2 lists. One indexed
+// profiles lookup by primary key, same cost class as resolveUserTimezone's.
+const MEANING_TRANSLATION_JOIN = `
+  left join public.word_translations wt
+         on wt.word_id = ml.id
+        and wt.locale = (select p.meaning_locale from public.profiles p where p.id = auth.uid())
 `;
 
 /**
@@ -244,6 +278,7 @@ export class SrsService {
          from public.user_word_srs uws
          join public.topic_words tw on tw.id = uws.topic_word_id
          left join public.master_lexicon ml on ml.id = tw.lexicon_id
+         ${MEANING_TRANSLATION_JOIN}
         where uws.next_due_at <= now()
           ${topicId ? 'and tw.topic_id = $1' : ''}
         order by uws.next_due_at asc
@@ -273,6 +308,7 @@ export class SrsService {
               false as is_leech, null::timestamptz as next_due_at
          from public.topic_words tw
          left join public.master_lexicon ml on ml.id = tw.lexicon_id
+         ${MEANING_TRANSLATION_JOIN}
         where tw.status = 'READY'
           and not exists (
             select 1 from public.user_word_srs uws where uws.topic_word_id = tw.id
@@ -1007,55 +1043,34 @@ export async function computeSrsSummary(
   };
 }
 
-/** Columns `applyReview` reads from `user_word_srs`. */
-interface SrsStateRow {
-  fsrs_state: FsrsStateName;
-  stability: number | null;
-  difficulty: number | null;
-  reps: number;
-  lapses: number;
-  learning_steps: number;
-  scheduled_days: number;
-  last_reviewed_at: Date | string | null;
-  next_due_at: Date | string;
-  mastered_at: Date | string | null;
-  is_leech: boolean;
-}
-
-function rowToCard(row: SrsStateRow): FsrsCardState {
-  return {
-    state: row.fsrs_state,
-    stability: row.stability,
-    difficulty: row.difficulty,
-    reps: row.reps,
-    lapses: row.lapses,
-    learningSteps: row.learning_steps ?? 0,
-    scheduledDays: Number(row.scheduled_days ?? 0),
-    lastReviewAt: row.last_reviewed_at ? new Date(row.last_reviewed_at) : null,
-    dueAt: new Date(row.next_due_at),
-  };
-}
-
-/** Adds read-time recall probability to due cards (null for new cards). */
+/**
+ * Adds read-time recall probability and interval previews to due cards.
+ * Retrievability is null for new cards; interval_preview shows the next-due
+ * date for each rating (Again/Hard/Good/Easy) computed via ts-fsrs.
+ */
 function withRetrievability(cards: DueCard[], now: Date): DueCard[] {
-  return cards.map((c) => ({
-    ...c,
-    retrievability:
-      c.is_new || c.next_due_at == null
-        ? null
-        : retrievability(
-            {
-              state: c.state,
-              stability: c.stability,
-              difficulty: c.difficulty,
-              reps: c.reps,
-              lapses: c.lapses,
-              learningSteps: 0,
-              scheduledDays: Number(c.scheduled_days ?? 0),
-              lastReviewAt: c.last_reviewed_at ? new Date(c.last_reviewed_at) : null,
-              dueAt: new Date(c.next_due_at),
-            },
-            now,
-          ),
-  }));
+  return cards.map((c) => {
+    // Build the card state once so both retrievability and intervals use the
+    // same shape (FSRS expects FsrsCardState).
+    const cardState = {
+      state: c.state,
+      stability: c.stability,
+      difficulty: c.difficulty,
+      reps: c.reps,
+      lapses: c.lapses,
+      learningSteps: 0,
+      scheduledDays: Number(c.scheduled_days ?? 0),
+      lastReviewAt: c.last_reviewed_at ? new Date(c.last_reviewed_at) : null,
+      dueAt: new Date(c.next_due_at ?? now),
+    } as const;
+
+    return {
+      ...c,
+      // UI-4: Compute retrievability (existing logic)
+      retrievability:
+        c.is_new || c.next_due_at == null ? null : retrievability(cardState, now),
+      // UI-4: Compute interval previews for the Watering Page rating buttons
+      interval_preview: computeRatingIntervals(cardState, now),
+    };
+  });
 }

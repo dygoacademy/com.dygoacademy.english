@@ -15,7 +15,7 @@ vi.mock('next/navigation', () => ({ useRouter: () => ({ push: vi.fn() }) }));
 
 /** UI-G screens GR1, GR3/GR4 and GR6 (props only). */
 
-const fx = groupFixtures('en-SG');
+const fx = groupFixtures('en-US');
 
 describe('SharedGardensScreen', () => {
   const props = {

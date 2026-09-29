@@ -277,10 +277,15 @@ export type GardenTopicWord = TopicWordSummary &
  * underlying stage for the tiles and filter and is drawn wilting, so the
  * four tiles always add up to the word count. `stageCounts` is null when
  * the API doesn't send the U5-1 fields (tiles then show "—").
+ *
+ * `meanings` carries a `lang` alongside each word's text (2026-09-29) so
+ * a translated meaning gets the review card's own treatment — `WordRow`
+ * renders it with that `lang` (falls through to `TopicBedWord.meaningLang`)
+ * instead of always being read as English.
  */
 export function toBedWords(
   words: readonly GardenTopicWord[],
-  meanings: ReadonlyMap<string, string>,
+  meanings: ReadonlyMap<string, { text: string; lang?: string }>,
   now: Date,
 ): { words: TopicBedWord[]; stageCounts: Record<BedStage, number> | null } {
   const hasSrs = words.every((word) => word.fsrs_state !== undefined);
@@ -297,10 +302,12 @@ export function toBedWords(
         : dueAt.getTime() <= now.getTime()
           ? { tone: 'now' }
           : { tone: 'later', days: Math.max(1, dayNumber(isoDate(dueAt)) - today) };
+    const meaningEntry = meanings.get(word.id);
     const bedWord: TopicBedWord = {
       id: word.id,
       word: word.source_word,
-      meaning: meanings.get(word.id) ?? word.custom_note ?? '',
+      meaning: meaningEntry?.text ?? word.custom_note ?? '',
+      meaningLang: meaningEntry?.lang,
       stage,
       wilting: word.is_leech === true,
       due,
