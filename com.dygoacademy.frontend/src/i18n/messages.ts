@@ -2,7 +2,7 @@ import type { AppLocale } from './config';
 
 /**
  * The garden's message files, one per locale (`messages/<code>.json`:
- * en-US, vi-VN, zh-CN — en-SG was removed 2026-09-29). Imported lazily
+ * en-US, vi-VN, zh-CN). Imported lazily
  * so a request only loads its own language. `messages/en-US.json` is
  * the source: `src/types/next-intl.d.ts` types every key from it, and
  * the key-parity test (messages.test.ts) checks the other files

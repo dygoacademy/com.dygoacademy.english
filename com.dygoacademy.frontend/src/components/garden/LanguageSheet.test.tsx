@@ -31,7 +31,7 @@ describe("LanguageSheet", () => {
     expect(screen.getByRole("group", { name: "App language" })).toBeTruthy();
     expect(screen.getByRole("group", { name: "Meanings in" })).toBeTruthy();
     expect(
-      (screen.getByRole("radio", { name: "English (Singapore)" }) as HTMLInputElement)
+      (screen.getByRole("radio", { name: "English" }) as HTMLInputElement)
         .checked,
     ).toBe(true);
     expect(

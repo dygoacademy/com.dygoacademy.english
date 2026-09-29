@@ -4,11 +4,8 @@
  * Deliberately free of next/headers so the same helpers work in the
  * request config, server actions, client components and tests.
  *
- * Locale codes are full BCP 47 tags. English shipped as two regional
- * variants (`en-SG` and `en-US`) from 2026-09-26; `en-SG` was removed
- * (2026-09-29) — English is `en-US` only now, everywhere: this file,
- * the DB check constraint, the message files and every caller. One
- * code is both
+ * Locale codes are full BCP 47 tags; English is `en-US`. One code is
+ * both
  *  - the **app language**: which messages file the garden reads
  *    (`messages/<code>.json`), what the learner picks, what
  *    `profiles.ui_locale` and the `dygo_locale` cookie store; and
@@ -54,24 +51,15 @@ export function isMeaningLocale(value: unknown): value is MeaningLocale {
 }
 
 /**
- * English is en-US only now (en-SG removed 2026-09-29). `timeZone` is kept
- * as a parameter — unused here — so callers that still pass one (they
- * pass it for the other locales too) don't need to change.
- */
-export function englishFor(_timeZone?: string | null): AppLocale {
-  return 'en-US';
-}
-
-/**
  * A stored or requested value as an app locale: the three codes (any
- * case), the pre-2026-09-26 short codes ('en' → English for the zone,
+ * case), the pre-2026-09-26 short codes ('en' → en-US,
  * 'vi' → vi-VN), or null.
  */
-export function normalizeLocale(value: unknown, timeZone?: string | null): AppLocale | null {
+export function normalizeLocale(value: unknown): AppLocale | null {
   if (typeof value !== 'string') return null;
   const match = LOCALES.find((code) => code.toLowerCase() === value.trim().toLowerCase());
   if (match) return match;
-  if (value === 'en') return englishFor(timeZone);
+  if (value === 'en') return 'en-US';
   if (value === 'vi') return 'vi-VN';
   return null;
 }
@@ -106,11 +94,11 @@ export function storedTimeZone(value: unknown): string | null {
  * any `en*` (`en-US`, `en-GB`, bare `en`, …) → en-US, anything else →
  * null.
  */
-export function appLocaleForTag(tag: string, timeZone?: string | null): AppLocale | null {
+export function appLocaleForTag(tag: string): AppLocale | null {
   const lower = tag.trim().toLowerCase();
   if (lower === 'zh' || lower.startsWith('zh-')) return 'zh-CN';
   if (lower === 'vi' || lower.startsWith('vi-')) return 'vi-VN';
-  if (lower === 'en' || lower.startsWith('en-')) return englishFor(timeZone);
+  if (lower === 'en' || lower.startsWith('en-')) return 'en-US';
   return null;
 }
 
@@ -118,10 +106,7 @@ export function appLocaleForTag(tag: string, timeZone?: string | null): AppLocal
  * The best app locale in an `Accept-Language` header, by q-value
  * (ties keep header order). Null when none of the languages is listed.
  */
-export function localeFromAcceptLanguage(
-  header: string | null | undefined,
-  timeZone?: string | null,
-): AppLocale | null {
+export function localeFromAcceptLanguage(header: string | null | undefined): AppLocale | null {
   if (!header) return null;
   const ranked = header
     .split(',')
@@ -137,7 +122,7 @@ export function localeFromAcceptLanguage(
     .filter((entry) => entry.tag && entry.quality > 0)
     .sort((a, b) => b.quality - a.quality || a.index - b.index);
   for (const entry of ranked) {
-    const locale = appLocaleForTag(entry.tag, timeZone);
+    const locale = appLocaleForTag(entry.tag);
     if (locale) return locale;
   }
   return null;
@@ -145,20 +130,18 @@ export function localeFromAcceptLanguage(
 
 /**
  * Which locale the garden uses: 1) the profile's `ui_locale`, 2) the
- * `dygo_locale` cookie, 3) `Accept-Language`, 4) English for the zone.
+ * `dygo_locale` cookie, 3) `Accept-Language`, 4) English (en-US).
  */
 export function resolveAppLocale(sources: {
   profile?: string | null;
   cookie?: string | null;
   acceptLanguage?: string | null;
-  timeZone?: string | null;
 }): AppLocale {
-  const zone = sources.timeZone;
   return (
-    normalizeLocale(sources.profile, zone) ??
-    normalizeLocale(sources.cookie, zone) ??
-    localeFromAcceptLanguage(sources.acceptLanguage, zone) ??
-    englishFor(zone)
+    normalizeLocale(sources.profile) ??
+    normalizeLocale(sources.cookie) ??
+    localeFromAcceptLanguage(sources.acceptLanguage) ??
+    'en-US'
   );
 }
 

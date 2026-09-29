@@ -2,7 +2,6 @@ import { describe, expect, it } from 'vitest';
 
 import {
   appLocaleOf,
-  englishFor,
   formattingLocale,
   languageOf,
   localeFromAcceptLanguage,
@@ -14,7 +13,7 @@ import {
   weekStartsOn,
 } from './config';
 
-describe('resolveAppLocale (profile → cookie → Accept-Language → English for the zone)', () => {
+describe('resolveAppLocale (profile → cookie → Accept-Language → English)', () => {
   it('prefers the profile', () => {
     expect(resolveAppLocale({ profile: 'vi-VN', cookie: 'zh-CN', acceptLanguage: 'en' })).toBe('vi-VN');
   });
@@ -29,14 +28,11 @@ describe('resolveAppLocale (profile → cookie → Accept-Language → English f
   it('defaults to English (en-US, the only English variant)', () => {
     expect(resolveAppLocale({})).toBe('en-US');
     expect(resolveAppLocale({ acceptLanguage: 'fr-FR,de;q=0.8' })).toBe('en-US');
-    expect(resolveAppLocale({ timeZone: 'America/Los_Angeles' })).toBe('en-US');
-    expect(resolveAppLocale({ timeZone: 'Asia/Singapore' })).toBe('en-US');
   });
 
   it('still reads the short codes stored before the change', () => {
     expect(resolveAppLocale({ cookie: 'vi' })).toBe('vi-VN');
-    expect(resolveAppLocale({ profile: 'en', timeZone: 'America/New_York' })).toBe('en-US');
-    expect(resolveAppLocale({ profile: 'en', timeZone: 'Asia/Singapore' })).toBe('en-US');
+    expect(resolveAppLocale({ profile: 'en' })).toBe('en-US');
   });
 });
 
@@ -45,7 +41,6 @@ describe('normalizeLocale / normalizeMeaningLocale', () => {
     expect(normalizeLocale('en-us')).toBe('en-US');
     expect(normalizeLocale('ZH-cn')).toBe('zh-CN');
     expect(normalizeLocale('fr-FR')).toBeNull();
-    expect(normalizeLocale('en-SG')).toBeNull();
     expect(normalizeLocale(42)).toBeNull();
   });
 
@@ -78,16 +73,12 @@ describe('formats', () => {
     expect(formattingLocale('en-US')).toBe('en-US');
     expect(formattingLocale('vi-VN')).toBe('vi-VN');
     expect(formattingLocale('zh-CN')).toBe('zh-CN');
-    expect(englishFor('America/New_York')).toBe('en-US');
-    expect(englishFor('Asia/Singapore')).toBe('en-US');
-    expect(englishFor(null)).toBe('en-US');
   });
 
   it('finds the app locale and language of a formatting locale', () => {
     expect(appLocaleOf('en-US')).toBe('en-US');
     expect(appLocaleOf('vi-VN')).toBe('vi-VN');
     expect(appLocaleOf('en-GB')).toBe('en-US');
-    expect(appLocaleOf('en-SG')).toBe('en-US');
     expect(languageOf('zh-CN')).toBe('zh');
     expect(languageOf('en-US')).toBe('en');
   });

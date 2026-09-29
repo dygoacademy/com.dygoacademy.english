@@ -45,7 +45,7 @@ Every screen above also has a **Vietnamese reference**, `<name>-vi` (for example
 
 ## Languages
 
-The app ships in **English (`en-US`), Simplified Chinese (`zh-CN`) and Vietnamese (`vi-VN`)** (full locale codes since 2026-09-26; the old `en` / `vi` still work in `?locale=` and `--locale`; English's second region, `en-SG`, was removed 2026-09-29); see `phase 12 implementation plan.md`, step UI-L.
+The app ships in **English (`en-US`), Simplified Chinese (`zh-CN`) and Vietnamese (`vi-VN`)** (full locale codes since 2026-09-26; the old `en` / `vi` still work in `?locale=` and `--locale`); see `phase 12 implementation plan.md`, step UI-L.
 
 - **English and Vietnamese are the two reference languages.** Both must match their references (same pixel-diff rule). The Vietnamese references fix the translations, the shortened labels and the two layout tweaks the canvas made for Vietnamese (topic chips and the Weekly Harvest "Hôm nay" label don't wrap).
 - **The canvas copy is the message source.** `messages/en-US.json` must say exactly what the English references say, and `messages/vi-VN.json` exactly what the `-vi` references say. The glossary is in the plan (UI-L).

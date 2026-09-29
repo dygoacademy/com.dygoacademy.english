@@ -6,8 +6,8 @@ import viVN from '../../messages/vi-VN.json';
 import zhCN from '../../messages/zh-CN.json';
 
 /**
- * UI-L key parity: every key in en-US.json (the source — en-SG was
- * removed 2026-09-29) exists in vi-VN.json and zh-CN.json (and nothing
+ * UI-L key parity: every key in en-US.json (the source) exists in
+ * vi-VN.json and zh-CN.json (and nothing
  * else does), and each message uses the same ICU arguments and
  * rich-text tags, so t('key', values) works in every locale.
  * `_meta` (the zh-CN "draft, needs native review" header) is ignored.

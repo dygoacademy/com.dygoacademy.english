@@ -3,9 +3,8 @@ import { IsIn, IsOptional, ValidateIf } from 'class-validator';
 
 /**
  * App locales the garden ships in (phase 12 plan, UI-L), as full BCP 47
- * codes since 2026-09-26 (migration 20260926_profile_locales_codes.sql).
- * `en-SG` was removed 2026-09-29 (migration
- * 20260929_remove_en_sg_locale.sql) — English is en-US only.
+ * codes (migrations 20260926_profile_locales_codes.sql and
+ * 20260929_remove_en_sg_locale.sql). English is en-US.
  */
 export const UI_LOCALES = ['en-US', 'vi-VN', 'zh-CN'] as const;
 export type UiLocale = (typeof UI_LOCALES)[number];

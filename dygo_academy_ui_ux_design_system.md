@@ -409,9 +409,9 @@ In the mockups, "Meanings in: Tiếng Việt + English" (A8 · Me) becomes **"Me
 | Default app language | English | English | 简体中文 | Tiếng Việt |
 | Default meaning language | None | None (Chinese optional) | 简体中文 | Tiếng Việt |
 | Default English variety (§14.3) | US | UK | UK (IELTS) | UK (IELTS); US for kids optional |
-| Date example | Friday, September 25 | Friday, 25 September | 9月25日 星期五 | Thứ Sáu, 25 tháng 9 |
-| Clock | 12-hour (7:30 AM) | 12-hour (7:30 am) | 24-hour (07:30) | 24-hour (07:30) |
-| Week starts | Sunday | Monday | Monday | Monday |
+| Date example | Friday, September 25 | Friday, September 25 | 9月25日 星期五 | Thứ Sáu, 25 tháng 9 |
+| Clock | 12-hour (7:30 AM) | 12-hour (7:30 AM) | 24-hour (07:30) | 24-hour (07:30) |
+| Week starts | Sunday | Sunday | Monday | Monday |
 | Number | 1,200 | 1,200 | 1,200 | 1.200 |
 
 Future locales to keep in mind for Singapore: Malay and Tamil (the layout must not assume three languages only).
@@ -427,7 +427,7 @@ IELTS accepts both British and American English, but a learner should see one co
 
 ### 14.4 Formatting rules (never hand-format)
 
-* Dates, times, numbers and plurals always go through `Intl` (`Intl.DateTimeFormat`, `Intl.NumberFormat`, `Intl.PluralRules`) with the app language's locale **and** region (`en-US`, `zh-CN`, `vi-VN`). English shipped as two regions (`en-US`, `en-SG`) from 2026-09-26; `en-SG` was removed 2026-09-29 — English is `en-US` only now.
+* Dates, times, numbers and plurals always go through `Intl` (`Intl.DateTimeFormat`, `Intl.NumberFormat`, `Intl.PluralRules`) with the app language's locale **and** region (`en-US`, `zh-CN`, `vi-VN`). English is always `en-US`, in every market.
 * "Ripens tomorrow at 7:30 AM" is built from a message template plus a formatted time, never string-concatenated in English order. Chinese and Vietnamese put time and date words in a different order.
 * **Week start matters for the design**: the Weekly Harvest (A4), the Mission Complete week strip (A3) and the Garden calendar (A8) start on Sunday in `en-US` and Monday everywhere else.
 * Time zones are already handled per user (`lib/timezone.ts`); keep using the learner's resolved time zone for "today" and reminders.
@@ -455,7 +455,7 @@ Kids' profiles are covered by different rules in each market: COPPA (US), PDPA (
 
 ### 14.8 Implementation
 
-* Library: `next-intl` (works with the App Router and Server Components). Messages live in `messages/en-US.json` (source), `messages/vi-VN.json`, `messages/zh-CN.json`: one file per full locale code (2026-09-26; `en-SG` removed 2026-09-29).
+* Library: `next-intl` (works with the App Router and Server Components). Messages live in `messages/en-US.json` (source), `messages/vi-VN.json`, `messages/zh-CN.json`: one file per full locale code.
 * Every user-facing string goes through `t('key')`. No raw strings in components; the mockups' English copy becomes the `en` source.
 * Locale is stored on the profile (`ui_locale`, `meaning_locale`, `english_variety`), not only in a cookie, so it follows the learner between devices.
 * Word translations are content, not UI messages. They live in the database per word and per meaning language (`word_translations`: `word_id`, `locale`, `meaning`, `example_translation`).

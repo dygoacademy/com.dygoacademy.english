@@ -84,6 +84,6 @@ describe('UpdateProfileDto', () => {
     expect(await errorsFor({ uiLocale: 'vi' })).toEqual(['uiLocale']);
     expect(await errorsFor({ meaningLocale: 'vi' })).toEqual(['meaningLocale']);
     expect(await errorsFor({ uiLocale: 'zh' })).toEqual(['uiLocale']);
-    expect(await errorsFor({ meaningLocale: 'en-SG' })).toEqual(['meaningLocale']); // en-SG is not even a valid app locale any more, let alone a meaning one
+    expect(await errorsFor({ meaningLocale: 'en-US' })).toEqual(['meaningLocale']); // an app locale, not a meaning one
   });
 });

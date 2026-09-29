@@ -82,7 +82,6 @@ export const getGardenLocaleContext = cache(async (): Promise<GardenLocaleContex
     profile: profile?.ui_locale,
     cookie: cookieStore.get(LOCALE_COOKIE)?.value,
     acceptLanguage: headerList.get('accept-language'),
-    timeZone: storedZone,
   });
   const timeZone = storedZone ?? DEFAULT_TIME_ZONE;
   const meaningLocale = normalizeMeaningLocale(profile?.meaning_locale);
@@ -92,7 +91,7 @@ export const getGardenLocaleContext = cache(async (): Promise<GardenLocaleContex
     timeZone,
     meaningLocale,
     stored: {
-      uiLocale: normalizeLocale(profile?.ui_locale, storedZone),
+      uiLocale: normalizeLocale(profile?.ui_locale),
       meaningLocale,
     },
     signedIn: Boolean(user),
