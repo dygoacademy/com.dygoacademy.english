@@ -8,7 +8,7 @@ import { useRateWord } from '@/hooks/useRateWord';
 import { useStudySession } from '@/hooks/useStudySession';
 import { useTopics } from '@/hooks/useTopics';
 import { languageOf } from '@/i18n/config';
-import type { DueCard, SrsRating } from '@/types';
+import type { DueCard, RatingInterval, SrsRating } from '@/types';
 
 import { useGardenPreferences } from '../preferences';
 import type { Rating } from '../RatingBar';
@@ -21,8 +21,7 @@ import { LiveError, LiveLoading } from './LiveState';
  * Real data: POST /srs/sessions (up to 20 due cards, optionally for one
  * topic) and POST /srs/rate through useRateWord (which queues offline).
  * The card list is taken once, so a background refetch can't reorder it
- * mid-session. Not available yet: interval previews (the rating buttons
- * show labels only, UI-4) and CEFR level tags. The meaning-language line
+ * mid-session. CEFR level tags not yet available. The meaning-language line
  * (design system §14.8) now comes from `card.meaning_translation`
  * (`word_translations`, joined server-side by `profiles.meaning_locale`);
  * it's simply absent for a word Gemini hasn't translated yet. Synonyms
@@ -99,7 +98,16 @@ export function ReviewLive({ topicId }: { topicId?: string }) {
             }
           : null
       }
-      intervals={null}
+      intervals={
+        card && card.interval_preview
+          ? {
+              again: card.interval_preview.AGAIN,
+              hard: card.interval_preview.HARD,
+              good: card.interval_preview.GOOD,
+              easy: card.interval_preview.EASY,
+            }
+          : null
+      }
       onShowAnswer={() => setRevealed(true)}
       onRate={(rating) => {
         if (!card) return;

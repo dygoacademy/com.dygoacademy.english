@@ -7,6 +7,14 @@
  * components/flashcard/RatingButtons.tsx.
  */
 export type SrsRating = 'AGAIN' | 'HARD' | 'GOOD' | 'EASY';
+/**
+ * UI-4 — Interval preview for rating buttons. Shows what date each rating would
+ * schedule on the Watering Page (A2 · Review).
+ */
+export type RatingInterval =
+  | { unit: 'lessThanMinute' }
+  | { unit: 'minutes' | 'hours' | 'days' | 'months'; count: number };
+
 
 /** FR-4.3's three study modes — StartSessionDto on the backend. */
 export type SessionMode = 'STANDARD' | 'REVERSE' | 'LISTENING';
@@ -69,6 +77,13 @@ export interface DueCard {
   is_mastered: boolean;
   is_leech: boolean;
   next_due_at: string | null;
+  /**
+   * UI-4 — Next-due interval per rating. Shows "< 1 min", "5 days", etc.
+   * under each rating button on the Watering Page (A2 · Review).
+   * Computed by ts-fsrs's repeat() for each grade (Again/Hard/Good/Easy);
+   * null when intervals cannot be computed.
+   */
+  interval_preview: Record<SrsRating, RatingInterval> | null;
 }
 
 export type FsrsState = 'New' | 'Learning' | 'Review' | 'Relearning';
