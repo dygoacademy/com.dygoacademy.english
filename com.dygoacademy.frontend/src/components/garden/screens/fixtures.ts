@@ -28,6 +28,7 @@ export const REFERENCE_NAMES = [
   'A7-topic-bed',
   'A7-topic-bed-filter-sprouts',
   'A8-me',
+  'A8-me-account',
   // UI-G: sample data in groupFixtures.ts
   'GR1-shared-gardens',
   'GR2-group-garden',
@@ -300,6 +301,9 @@ function canvasCalendar(): Array<Array<CalendarLevel | null>> {
   }
   return weeks;
 }
+
+/** SO-1: the Account sheet's "Signed in as" (A8-me-account). */
+export const ACCOUNT = { email: 'minh@example.com' };
 
 export const ME = {
   name: 'Minh',

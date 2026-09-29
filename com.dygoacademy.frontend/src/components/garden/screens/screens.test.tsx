@@ -29,8 +29,8 @@ const push = vi.fn();
 vi.mock('next/navigation', () => ({ useRouter: () => ({ push }) }));
 
 describe('reference fixtures', () => {
-  it('lists the 24 canvas references (11 adult screens, 7 group screens, 6 sign-in)', () => {
-    expect(REFERENCE_NAMES).toHaveLength(24);
+  it('lists the 25 canvas references (12 adult screens, 7 group screens, 6 sign-in)', () => {
+    expect(REFERENCE_NAMES).toHaveLength(25);
     expect(isReferenceName('AU3-create-account-invite')).toBe(true);
     expect(isReferenceName('AU1-sign-in-error')).toBe(true);
     expect(isReferenceName('AU4-reset-password-sent')).toBe(true);

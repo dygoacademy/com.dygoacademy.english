@@ -11,6 +11,7 @@ import { parseClock } from "../format";
 import { LanguageSheet } from "../LanguageSheet";
 import { useGardenPreferences } from "../preferences";
 import { MeScreen } from "../screens/MeScreen";
+import { AccountSheetLive } from "./AccountSheetLive";
 import { displayName } from "./data";
 import { useLanguageSettings } from "./useLanguageSettings";
 
@@ -25,11 +26,13 @@ import { useLanguageSettings } from "./useLanguageSettings";
  * Golden Blooms, the missions calendar, keepsakes, daily goal and family,
  * shown as "—" or "coming soon". UI-L: "Meanings in" shows the profile's
  * meaning language and opens the language sheet (app + meaning language).
+ * SO-1: the gear opens the Account sheet (who's signed in, Sign out).
  */
 export function MeLive() {
   const preferences = useGardenPreferences();
   const language = useLanguageSettings();
   const [languageOpen, setLanguageOpen] = React.useState(false);
+  const [accountOpen, setAccountOpen] = React.useState(false);
   const user = useCurrentUser();
   const stats = useSrsStats();
   const schedules = useNotificationSchedules();
@@ -77,6 +80,13 @@ export function MeLive() {
         meanings={preferences.meaningLocale ?? "none"}
         onLanguageClick={() => setLanguageOpen(true)}
         family={null}
+        onAccountClick={() => setAccountOpen(true)}
+      />
+      <AccountSheetLive
+        open={accountOpen}
+        onOpenChange={setAccountOpen}
+        name={name}
+        email={email}
       />
       <LanguageSheet
         open={languageOpen}

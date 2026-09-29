@@ -3,11 +3,12 @@
 import { useTranslations } from 'next-intl';
 
 import { AUTH_HREFS } from '@/components/garden/auth/authPaths';
+import { AccountSheet } from '@/components/garden/AccountSheet';
 import { ForgotPasswordScreen } from '@/components/garden/auth/ForgotPasswordScreen';
 import { RegisterScreen } from '@/components/garden/auth/RegisterScreen';
 import { SignInScreen } from '@/components/garden/auth/SignInScreen';
 import { GroupsTabProvider } from '@/components/garden/groupsTab';
-import { FORGOT_PASSWORD, REGISTER, SIGN_IN, referenceFixtures, type ReferenceName } from '@/components/garden/screens/fixtures';
+import { ACCOUNT, FORGOT_PASSWORD, REGISTER, SIGN_IN, referenceFixtures, type ReferenceName } from '@/components/garden/screens/fixtures';
 import { MeScreen } from '@/components/garden/screens/MeScreen';
 import { MissionCompleteScreen } from '@/components/garden/screens/MissionCompleteScreen';
 import { ReviewScreen } from '@/components/garden/screens/ReviewScreen';
@@ -139,13 +140,25 @@ function ReferenceScreenBody({ name, locale }: { name: ReferenceName; locale: Ap
         />
       );
     case 'A8-me':
+    case 'A8-me-account':
       return (
-        <MeScreen
-          {...ME}
-          dailyGoal={{ ...ME.dailyGoal, href: GARDEN_ROUTES.missions }}
-          family={{ ...ME.family, href: '/' }}
-          stickyNav={false}
-        />
+        <>
+          <MeScreen
+            {...ME}
+            dailyGoal={{ ...ME.dailyGoal, href: GARDEN_ROUTES.missions }}
+            family={{ ...ME.family, href: '/' }}
+            stickyNav={false}
+          />
+          {name === 'A8-me-account' ? (
+            <AccountSheet
+              open
+              onOpenChange={() => {}}
+              name={ME.name}
+              email={ACCOUNT.email}
+              onSignOut={() => {}}
+            />
+          ) : null}
+        </>
       );
     case 'GR1-shared-gardens':
     case 'GR2-group-garden':

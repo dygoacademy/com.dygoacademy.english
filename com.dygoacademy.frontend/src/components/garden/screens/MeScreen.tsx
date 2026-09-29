@@ -11,6 +11,7 @@ import { GardenCalendar, type CalendarLevel } from '../GardenCalendar';
 import {
   BellIcon,
   FamilyIcon,
+  GearIcon,
   GoldenBloomIcon,
   HarvestFruitIcon,
   MissionsTabIcon,
@@ -20,6 +21,7 @@ import { Keepsake } from '../Keepsake';
 import { SettingsList, SettingsRow } from '../SettingsList';
 import { StatTile } from '../StatTile';
 import { Switch } from '../Switch';
+import { IconButton } from '../IconButton';
 import { GardenTabBar, SCREEN_CLASSES } from './GardenTabBar';
 
 /**
@@ -29,6 +31,9 @@ import { GardenTabBar, SCREEN_CLASSES } from './GardenTabBar';
  * settings (daily goal, the ripening reminder switch, meaning language,
  * family) → tab bar. Unknown numbers show "—"; blocks whose data doesn't
  * exist yet (calendar of missions, keepsakes) say so instead.
+ *
+ * SO-1: a gear at the top right of the profile opens the Account sheet
+ * (`onAccountClick`; the caller renders the sheet).
  */
 export type KeepsakeItem =
   | { type: 'firstHarvest' }
@@ -60,6 +65,8 @@ export interface MeScreenProps {
   meanings: MeaningLocale | 'none' | null;
   onLanguageClick?: () => void;
   family: { name: string; href: string } | null;
+  /** The gear (aria-label "Account"): opens the Account sheet. */
+  onAccountClick?: () => void;
   stickyNav?: boolean;
 }
 
@@ -81,6 +88,7 @@ export function MeScreen({
   meanings,
   onLanguageClick,
   family,
+  onAccountClick,
   stickyNav = true,
 }: MeScreenProps) {
   const t = useTranslations('screens.me');
@@ -113,6 +121,14 @@ export function MeScreen({
             </span>
           ) : null}
         </div>
+        <IconButton
+          aria-label={t('account')}
+          aria-haspopup="dialog"
+          onClick={onAccountClick}
+          className="self-start text-garden-forest"
+        >
+          <GearIcon width={22} height={22} />
+        </IconButton>
       </header>
 
       <div className="mx-4 grid grid-cols-4 gap-2">

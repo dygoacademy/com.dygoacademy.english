@@ -383,3 +383,24 @@ export function HarvestFruitIcon(props: IconProps) {
     </FillIcon>
   );
 }
+
+/** A8 gear (profile header → Account sheet, SO-1). */
+export function GearIcon(props: IconProps) {
+  return (
+    <StrokeIcon {...props}>
+      <circle cx="12" cy="12" r="3" />
+      <path d="M12 2 V5 M12 19 V22 M2 12 H5 M19 12 H22 M4.9 4.9 L7 7 M17 17 L19.1 19.1 M4.9 19.1 L7 17 M17 7 L19.1 4.9" />
+    </StrokeIcon>
+  );
+}
+
+/** Account sheet "Sign out" (SO-1): a door with an arrow leaving it. */
+export function SignOutIcon(props: IconProps) {
+  return (
+    <StrokeIcon strokeWidth="2.2" {...props}>
+      <path d="M15 4 H19 V20 H15" />
+      <path d="M10 8 L6 12 L10 16" />
+      <path d="M6 12 H15" />
+    </StrokeIcon>
+  );
+}

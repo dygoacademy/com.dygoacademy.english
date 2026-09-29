@@ -53,6 +53,7 @@ const NAMES = [
   'A7-topic-bed',
   'A7-topic-bed-filter-sprouts',
   'A8-me',
+  'A8-me-account',
   // UI-G
   'GR1-shared-gardens',
   'GR2-group-garden',

@@ -317,6 +317,14 @@
       "saving": "Đang lưu…",
       "error": "Chưa lưu được. Hãy kiểm tra kết nối và thử lại."
     },
+    "account": {
+      "title": "Tài khoản",
+      "signedInAs": "Đang đăng nhập: {email}",
+      "signOut": "Đăng xuất",
+      "signingOut": "Đang đăng xuất…",
+      "cancel": "Hủy",
+      "error": "Chưa đăng xuất được. Kiểm tra kết nối rồi thử lại."
+    },
     "groups": {
       "roles": {
         "ADMIN": "Quản trị",
@@ -569,7 +577,8 @@
         "none": "English",
         "vi-VN": "Tiếng Việt + English",
         "zh-CN": "简体中文 + English"
-      }
+      },
+      "account": "Tài khoản"
     },
     "reference": {
       "metaTitle": "Mẫu vườn: {name}"

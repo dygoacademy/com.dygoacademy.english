@@ -32,6 +32,11 @@ export interface BottomSheetProps {
   children?: React.ReactNode;
   /** Actions pinned under the scrolling body, e.g. a primary Button. */
   footer?: React.ReactNode;
+  /**
+   * The ✕ in the header (default on). Off for a sheet whose own buttons
+   * close it, as the A8 Account sheet's Cancel (canvas: no ✕).
+   */
+  closeButton?: boolean;
   className?: string;
 }
 
@@ -44,6 +49,7 @@ export function BottomSheet({
   description,
   children,
   footer,
+  closeButton = true,
   className,
 }: BottomSheetProps) {
   const t = useTranslations('components.sheet');
@@ -117,11 +123,13 @@ export function BottomSheet({
                 </DialogPrimitive.Description>
               ) : null}
             </div>
-            <DialogPrimitive.Close asChild>
-              <IconButton aria-label={t('close')} className="-mr-1 -mt-1">
-                <CloseIcon />
-              </IconButton>
-            </DialogPrimitive.Close>
+            {closeButton ? (
+              <DialogPrimitive.Close asChild>
+                <IconButton aria-label={t('close')} className="-mr-1 -mt-1">
+                  <CloseIcon />
+                </IconButton>
+              </DialogPrimitive.Close>
+            ) : null}
           </div>
 
           <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-5 pb-4">

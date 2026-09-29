@@ -317,6 +317,14 @@
       "saving": "Saving…",
       "error": "That didn’t save. Check your connection and try again."
     },
+    "account": {
+      "title": "Account",
+      "signedInAs": "Signed in as {email}",
+      "signOut": "Sign out",
+      "signingOut": "Signing out…",
+      "cancel": "Cancel",
+      "error": "Couldn't sign out. Check your connection and try again."
+    },
     "groups": {
       "roles": {
         "ADMIN": "Admin",
@@ -569,7 +577,8 @@
         "none": "English",
         "vi-VN": "Tiếng Việt + English",
         "zh-CN": "简体中文 + English"
-      }
+      },
+      "account": "Account"
     },
     "reference": {
       "metaTitle": "Garden reference: {name}"
