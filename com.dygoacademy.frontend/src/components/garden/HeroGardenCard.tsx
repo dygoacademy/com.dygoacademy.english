@@ -56,6 +56,21 @@ const DOT: Record<PlantStage, string> = {
 const NORMAL_SLOTS = [6, 46, 86, 124, 166, 204, 242, 280, 316] as const;
 const COMEBACK_SLOTS = [10, 56, 98, 142, 186, 228, 272, 312] as const;
 
+/** The canvas draws the scene 358 wide (a 390 iPhone). */
+const SCENE_WIDTH = 358;
+
+/**
+ * A spot's x as a share of the scene width: at 358 it lands on the canvas
+ * pixel, on a wider card (iPad, max 560 column) the spots and the soil
+ * spread across the whole card instead of bunching up on the left.
+ */
+function spotX(x: number): string {
+  return `${(x / SCENE_WIDTH) * 100}%`;
+}
+
+/** Full card width (the scene bleeds over the card's 16px padding). */
+const SCENE_CLASSES = 'mx-[-16px] w-[calc(100%+32px)] max-w-none';
+
 const LEAF = 'var(--stage-sprout-leaf)';
 const LEAF_LIGHT = 'var(--stage-sprout)';
 const WILT = 'var(--stage-wilt)';
@@ -274,23 +289,16 @@ function normalize(plant: HeroPlant): { stage: PlantStage; thirsty: boolean } {
 
 function NormalScene({ plants, label }: { plants: readonly HeroPlant[]; label: string }) {
   return (
-    <svg
-      width="358"
-      height="132"
-      viewBox="0 0 358 132"
-      aria-label={label}
-      role="img"
-      className="mx-[-16px] mt-1 max-w-none"
-    >
-      <rect x="0" y="118" width="358" height="14" fill="var(--color-forest-deep)" />
+    <svg height="132" aria-label={label} role="img" className={gcn(SCENE_CLASSES, 'mt-1')}>
+      <rect x="0" y="118" width="100%" height="14" fill="var(--color-forest-deep)" />
       {plants.slice(0, NORMAL_SLOTS.length).map((plant, slot) => {
         const { stage, thirsty } = normalize(plant);
         const { art, dripY } = normalPlant(stage, slot);
         return (
-          <g key={slot} transform={`translate(${NORMAL_SLOTS[slot]},-10)`}>
+          <svg key={slot} x={spotX(NORMAL_SLOTS[slot])} y="-10" width="40" height="142" overflow="visible">
             {art}
             {thirsty ? <DripDrop y={dripY} className="garden-drip" /> : null}
-          </g>
+          </svg>
         );
       })}
     </svg>
@@ -299,15 +307,8 @@ function NormalScene({ plants, label }: { plants: readonly HeroPlant[]; label: s
 
 function ComebackScene({ plants, label }: { plants: readonly HeroPlant[]; label: string }) {
   return (
-    <svg
-      width="358"
-      height="150"
-      viewBox="0 0 358 150"
-      aria-label={label}
-      role="img"
-      className="mx-[-16px] max-w-none"
-    >
-      <g transform="translate(250,6)">
+    <svg height="150" aria-label={label} role="img" className={SCENE_CLASSES}>
+      <svg x={spotX(250)} y="6" width="80" height="50" overflow="visible">
         <path
           d="M14 30 C4 30 4 16 14 16 C14 6 30 2 36 12 C42 4 60 6 60 18 C72 16 74 30 64 30 Z"
           fill="var(--comeback-cloud)"
@@ -327,12 +328,12 @@ function ComebackScene({ plants, label }: { plants: readonly HeroPlant[]; label:
             style={{ animationDelay: delay }}
           />
         ))}
-      </g>
-      <rect x="0" y="136" width="358" height="14" fill="var(--comeback-soil)" />
+      </svg>
+      <rect x="0" y="136" width="100%" height="14" fill="var(--comeback-soil)" />
       {plants.slice(0, COMEBACK_SLOTS.length).map((plant, slot) => (
-        <g key={slot} transform={`translate(${COMEBACK_SLOTS[slot]},8)`}>
+        <svg key={slot} x={spotX(COMEBACK_SLOTS[slot])} y="8" width="40" height="142" overflow="visible">
           {comebackPlant(normalize(plant).stage, slot)}
-        </g>
+        </svg>
       ))}
     </svg>
   );

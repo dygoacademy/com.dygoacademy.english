@@ -96,7 +96,7 @@ export function WelcomeBackScreen({
                 </h2>
                 <p className="text-[14px] text-garden-muted">{t('reviveBody')}</p>
               </div>
-              <Link href={revive.href} className={buttonClassName('primary', { twoLine: true })}>
+              <Link href={revive.href} className={buttonClassName('primary', { twoLine: true, className: 'medium:max-w-none' })}>
                 <ButtonTwoLine
                   label={t('revive')}
                   secondLine={

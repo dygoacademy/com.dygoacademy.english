@@ -158,7 +158,7 @@ export function TodaysGardenScreen({
 
       <div className="flex flex-col gap-2.5 px-4">
         {action ? (
-          <Link href={action.href} className={buttonClassName('primary', { twoLine: true })}>
+          <Link href={action.href} className={buttonClassName('primary', { twoLine: true, className: 'medium:max-w-none' })}>
             <ButtonTwoLine
               label={t(`action.${action.kind}`)}
               secondLine={
