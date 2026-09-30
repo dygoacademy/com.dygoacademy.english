@@ -55,8 +55,11 @@ export function AuthShell({
       <div className={gcn('flex flex-col gap-1', titleGap && 'mt-2')}>
         <h1
           className={gcn(
-            'font-display font-semibold leading-[1.1]',
+            'font-display font-semibold',
             titleSize === 'small' ? 'text-[28px]' : 'text-[30px]',
+            // After the size: tailwind-merge drops a leading-* that comes
+            // before a text-[size] class (it treats size as setting line height).
+            'leading-[1.1]',
           )}
         >
           {title}
