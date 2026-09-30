@@ -139,6 +139,22 @@ export interface SrsStats {
    * endpoint, since Home already calls `useSrsStats()` on every visit.
    */
   display_name: string | null;
+  /**
+   * UI-4 U4-2: the garden's per-stage word counts, same rule as the
+   * frontend's `stageFromSrs` (mastered wins; leeches stay in their stage).
+   * `new` = READY words visible to the caller with no `user_word_srs` row,
+   * plus rows still in `fsrs_state = 'New'`; `learning` = Learning +
+   * Relearning; `review` = Review with `mastered_at is null`; `mastered` =
+   * `mastered_at is not null` (equals `mastered_words`).
+   */
+  stage_counts: SrsStageCounts;
+}
+
+export interface SrsStageCounts {
+  new: number;
+  learning: number;
+  review: number;
+  mastered: number;
 }
 
 /**
@@ -993,12 +1009,32 @@ export async function computeSrsSummary(
       mastered_words: string;
       due_now: string;
       leech_count: string;
+      new_rows?: string;
+      learning_words?: string;
+      review_words?: string;
+      unseen_words?: string;
     }>(
+      // UI-4 U4-2: stage counts ride on this same query (no extra round
+      // trip, so callers' positional mocks/ordering stay unchanged).
+      // `unseen_words` mirrors `findDue`'s new-card rule (READY words with
+      // no `user_word_srs` row): on the RLS-scoped path topic_words is
+      // narrowed to topics the caller can read; the unscoped
+      // NotificationProcessor path ignores stage_counts.
       `select
          count(*) as total_words,
          count(*) filter (where mastered_at is not null) as mastered_words,
          count(*) filter (where next_due_at <= now()) as due_now,
-         count(*) filter (where is_leech) as leech_count
+         count(*) filter (where is_leech) as leech_count,
+         count(*) filter (where mastered_at is null and fsrs_state = 'New') as new_rows,
+         count(*) filter (where mastered_at is null and fsrs_state in ('Learning', 'Relearning')) as learning_words,
+         count(*) filter (where mastered_at is null and fsrs_state = 'Review') as review_words,
+         (select count(*)
+            from public.topic_words tw
+           where tw.status = 'READY'
+             and not exists (
+               select 1 from public.user_word_srs u2
+                where u2.topic_word_id = tw.id and u2.user_id = $1
+             )) as unseen_words
        from public.user_word_srs
       where user_id = $1`,
       [userId],
@@ -1042,6 +1078,12 @@ export async function computeSrsSummary(
       todayInTimezone(timezone),
     ),
     display_name: profileRows[0]?.display_name ?? null,
+    stage_counts: {
+      new: Number(t?.new_rows ?? 0) + Number(t?.unseen_words ?? 0),
+      learning: Number(t?.learning_words ?? 0),
+      review: Number(t?.review_words ?? 0),
+      mastered: Number(t?.mastered_words ?? 0),
+    },
   };
 }
 

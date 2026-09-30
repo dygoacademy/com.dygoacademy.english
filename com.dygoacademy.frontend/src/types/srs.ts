@@ -138,6 +138,24 @@ export interface SrsStats {
    * like Sarah's have one).
    */
   display_name: string | null;
+  /**
+   * UI-4 U4-2: garden stage counts (same rule as `stageFromSrs`; leeches
+   * stay in their stage). Optional so callers fall back to an estimate
+   * against an older backend.
+   */
+  stage_counts?: SrsStageCounts;
+}
+
+/** `SrsStats.stage_counts` — words per garden stage. */
+export interface SrsStageCounts {
+  /** Never studied (no `user_word_srs` row) or still `fsrs_state = 'New'`. */
+  new: number;
+  /** Learning + Relearning, not mastered. */
+  learning: number;
+  /** Review, `mastered_at is null`. */
+  review: number;
+  /** `mastered_at is not null` (= `mastered_words`). */
+  mastered: number;
 }
 
 /**

@@ -722,6 +722,7 @@ describe('computeSrsSummary (extracted — also used by NotificationProcessor)',
         leech_count: 0,
         current_streak_days: 1,
         display_name: null,
+        stage_counts: { new: 0, learning: 0, review: 0, mastered: 1 },
       });
       // All three queries filter explicitly by the passed userId, regardless
       // of whether the caller's queryFn is RLS-scoped or not (see the
@@ -735,6 +736,51 @@ describe('computeSrsSummary (extracted — also used by NotificationProcessor)',
     } finally {
       Date.now = realNow;
     }
+  });
+});
+
+describe('computeSrsSummary stage_counts (UI-4 U4-2)', () => {
+  it('splits words into new/learning/review/mastered like stageFromSrs', async () => {
+    const queryFn = jest
+      .fn()
+      .mockResolvedValueOnce([
+        {
+          total_words: '9',
+          mastered_words: '2',
+          due_now: '3',
+          leech_count: '1',
+          new_rows: '1',
+          learning_words: '4',
+          review_words: '2',
+          unseen_words: '5',
+        },
+      ])
+      .mockResolvedValueOnce([])
+      .mockResolvedValueOnce([{ display_name: null }]);
+
+    const summary = await computeSrsSummary(queryFn, 'user-9');
+
+    // new = 1 row still in 'New' + 5 READY words never studied (seeds).
+    expect(summary.stage_counts).toEqual({ new: 6, learning: 4, review: 2, mastered: 2 });
+    const sql: string = queryFn.mock.calls[0][0];
+    expect(sql).toContain("mastered_at is null and fsrs_state in ('Learning', 'Relearning')");
+    expect(sql).toContain("mastered_at is null and fsrs_state = 'Review'");
+    expect(sql).toContain("tw.status = 'READY'");
+    expect(sql).toContain('u2.user_id = $1');
+    // Leeches are not subtracted from any stage (A7 rule).
+    expect(sql).not.toContain('not is_leech');
+  });
+
+  it('defaults every stage to 0 when the aggregate row lacks the fields', async () => {
+    const queryFn = jest
+      .fn()
+      .mockResolvedValueOnce([{ due_now: '0', leech_count: '0' }])
+      .mockResolvedValueOnce([])
+      .mockResolvedValueOnce([{ display_name: null }]);
+
+    const summary = await computeSrsSummary(queryFn, 'user-9');
+
+    expect(summary.stage_counts).toEqual({ new: 0, learning: 0, review: 0, mastered: 0 });
   });
 });
 
