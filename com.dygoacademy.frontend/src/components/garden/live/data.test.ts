@@ -7,9 +7,11 @@ import {
   gardenPlants,
   greetingFor,
   missedDays,
+  missionsSummary,
   ripensTomorrow,
   sampleGarden,
   stageGarden,
+  thirstyMission,
   weekOf,
 } from './data';
 
@@ -153,5 +155,33 @@ describe('topics helpers', () => {
     expect(ripensTomorrow(upcoming, '2026-10-01', undefined)).toBeNull();
     expect(ripensTomorrow(upcoming, '2026-10-02', [schedule('07:30:00')])).toBeNull();
     expect(ripensTomorrow(undefined, '2026-10-01', [schedule('07:30:00')])).toBeNull();
+  });
+});
+
+describe('thirstyMission (U4-4)', () => {
+  const activity = [
+    { review_date: '2026-09-29', review_count: 9 },
+    { review_date: '2026-09-30T00:00:00.000Z', review_count: 6 },
+  ];
+
+  it('progress = reviewed today, target = reviewed today + still due', () => {
+    expect(thirstyMission(activity, '2026-09-30', 4)).toEqual({ kind: 'thirsty', done: 6, total: 10 });
+  });
+
+  it('is done when nothing is due, even with no reviews today', () => {
+    expect(thirstyMission(activity, '2026-10-01', 0)).toEqual({ kind: 'thirsty', done: 0, total: 0 });
+    expect(thirstyMission([], '2026-09-30', 3)).toEqual({ kind: 'thirsty', done: 0, total: 3 });
+  });
+
+  it('uses the session just finished when activity is behind', () => {
+    expect(thirstyMission(activity, '2026-09-30', 0, 12)).toEqual({ kind: 'thirsty', done: 12, total: 12 });
+  });
+});
+
+describe('missionsSummary (U4-4)', () => {
+  it('counts the one mission as done only when nothing is due', () => {
+    expect(missionsSummary({ done: 5, total: 5 })).toEqual({ done: 1, total: 1, next: null });
+    expect(missionsSummary({ done: 0, total: 0 })).toEqual({ done: 1, total: 1, next: null });
+    expect(missionsSummary({ done: 5, total: 8 })).toEqual({ done: 0, total: 1, next: null });
   });
 });

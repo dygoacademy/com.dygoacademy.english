@@ -31,6 +31,8 @@ export type Greeting = 'morning' | 'afternoon' | 'evening';
 
 export type MissionItem =
   | { kind: 'water'; done: number; total: number }
+  /** Missions v0 (U4-4): "Water today's thirsty words", done = reviewed today. */
+  | { kind: 'thirsty'; done: number; total: number }
   | { kind: 'plant'; done: number; total: number }
   | { kind: 'challenge'; minutes: number; done: boolean };
 
@@ -142,7 +144,10 @@ export function TodaysGardenScreen({
             <p className="flex items-center gap-2 rounded-tile bg-garden-gold-soft px-2.5 py-2 text-[13px] text-garden-gold-soft-text">
               <GoldenBloomIcon width={18} height={18} centreFirst />
               <span>
-                {t.rich('missions.goldenBloom', { total: missions.length, b: (c) => <b>{c}</b> })}
+                {t.rich(missions.length === 1 ? 'missions.goldenBloomOne' : 'missions.goldenBloom', {
+                  total: missions.length,
+                  b: (c) => <b>{c}</b>,
+                })}
               </span>
             </p>
           </>
@@ -201,7 +206,7 @@ function Mission({ item }: { item: MissionItem }) {
       />
     );
   }
-  const water = item.kind === 'water';
+  const water = item.kind === 'water' || item.kind === 'thirsty';
   return (
     <MissionRow
       tone={water ? 'water' : 'plant'}
@@ -212,7 +217,7 @@ function Mission({ item }: { item: MissionItem }) {
           <PlantIcon width={20} height={20} stroke="var(--color-forest)" />
         )
       }
-      title={t(item.kind, { count: item.total })}
+      title={item.kind === 'thirsty' ? t('thirsty') : t(item.kind, { count: item.total })}
       value={item.done}
       max={item.total}
       valueLabel={

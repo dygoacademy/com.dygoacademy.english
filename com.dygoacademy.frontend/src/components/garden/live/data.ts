@@ -17,7 +17,7 @@ import type { HeroPlant } from '../HeroGardenCard';
 import { stageFromSrs, type GardenFsrsState } from '../plantStage';
 import type { BedStage, TopicBedWord } from '../screens/TopicBedScreen';
 import type { TopicsScreenTopic } from '../screens/TopicsScreen';
-import type { Greeting } from '../screens/TodaysGardenScreen';
+import type { Greeting, MissionItem } from '../screens/TodaysGardenScreen';
 
 /** Morning until noon, afternoon until 18:00, then evening. */
 export function greetingFor(hour: number): Greeting {
@@ -66,6 +66,33 @@ export function missedDays(
   if (active.length === 0) return null;
   const last = Math.max(...active);
   return Math.max(0, dayNumber(today) - last - 1);
+}
+
+/**
+ * Missions v0 (U4-4), mission 1 "Water today's thirsty words" from data
+ * the app already has: progress = reviews today (`GET /srs/activity`
+ * today's row, or the session just finished if that's higher), target =
+ * that + what is still due (`GET /srs/stats` `due_now`). Done when nothing
+ * is due. Missions 2-3 aren't shown until they have real data.
+ */
+export function thirstyMission(
+  activity: ReadonlyArray<{ review_date: string; review_count: number }>,
+  today: string,
+  dueNow: number,
+  wateredNow = 0,
+): Extract<MissionItem, { kind: 'thirsty' }> {
+  const row = activity.find((day) => day.review_date.slice(0, 10) === today);
+  const done = Math.max(row?.review_count ?? 0, wateredNow, 0);
+  return { kind: 'thirsty', done, total: done + Math.max(0, dueNow) };
+}
+
+/** The A3 Golden Bloom card for Missions v0: one mission, no next one. */
+export function missionsSummary(mission: { done: number; total: number }): {
+  done: number;
+  total: number;
+  next: null;
+} {
+  return { done: mission.done >= mission.total ? 1 : 0, total: 1, next: null };
 }
 
 /**

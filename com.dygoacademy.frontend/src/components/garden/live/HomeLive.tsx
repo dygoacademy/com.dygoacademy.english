@@ -14,7 +14,14 @@ import { useUpcomingActivity } from '@/hooks/useUpcomingActivity';
 import { addDays, hourIn, isoDay, todayIn } from '../format';
 import { TodaysGardenScreen } from '../screens/TodaysGardenScreen';
 import { WelcomeBackScreen } from '../screens/WelcomeBackScreen';
-import { displayName, gardenPlants, greetingFor, missedDays, ripensTomorrow } from './data';
+import {
+  displayName,
+  gardenPlants,
+  greetingFor,
+  missedDays,
+  ripensTomorrow,
+  thirstyMission,
+} from './data';
 import { LiveError, LiveLoading } from './LiveState';
 
 /**
@@ -26,8 +33,10 @@ import { LiveError, LiveLoading } from './LiveState';
  * stays as the fallback when the field is missing), GET /srs/activity
  * (last 30 days) and "ripens tomorrow" from GET /srs/activity/upcoming at
  * the learner's earliest enabled reminder time (hidden without one).
- * Not available yet, so not shown: daily missions (UI-6, "coming soon"),
- * streak freezes and time estimates. A5's streak card stays hidden: it is
+ * Missions v0 (U4-4): only mission 1, "Water today's thirsty words"
+ * (reviews today from GET /srs/activity + `due_now`); hidden ("coming
+ * soon") when the activity call failed. Not available yet, so not shown:
+ * missions 2-3, streak freezes and time estimates. A5's streak card stays hidden: it is
  * the freeze card ("streak is safe" + rain barrel), and a learner who
  * missed 2+ days has no live `current_streak_days` to keep safe.
  */
@@ -85,7 +94,9 @@ export function HomeLive() {
         wilting: s.leech_count,
         plants: gardenPlants(s, 9),
       }}
-      missions={null}
+      missions={
+        activity.data ? [thirstyMission(activity.data, isoDay(today), s.due_now)] : null
+      }
       action={
         s.due_now > 0
           ? { href: GARDEN_ROUTES.review, kind: 'start', wordsLeft: s.due_now, minutes: null }
