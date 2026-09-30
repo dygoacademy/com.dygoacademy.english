@@ -18,6 +18,8 @@
  * constant used to hold if you're tracing an old bookmark or log line.
  */
 
+import { GARDEN_REFERENCE_PREFIX, GARDEN_ROUTES } from './garden';
+
 /** Paths that require a signed-in session. Prefix-matched. */
 export const PROTECTED_PATH_PREFIXES = [
   // The signed-in front door itself — was implicitly covered by the old
@@ -33,6 +35,25 @@ export const PROTECTED_PATH_PREFIXES = [
   '/settings',
   '/groups',
   '/join',
+  // Word Garden (Phase 12 UI-3 U3-5a). Until now only the (garden) layout
+  // redirected signed-out visitors, and it dropped `next`; listing it here
+  // lets middleware.ts bounce through /login and come back. Covers
+  // /garden/join/<token> too, same reasoning as ROUTES.join below. The
+  // dev/fixture pages are carved out in PUBLIC_GARDEN_DEV_PREFIXES.
+  '/garden',
+] as const;
+
+/**
+ * Garden dev/fixture pages that stay public even though '/garden' is
+ * protected: `npm run garden:diff` and the Playwright screenshot suite load
+ * them signed out. They're still gated by the garden flag (and the reference
+ * pages by GARDEN_REFERENCE_PAGES) in middleware.ts, and render only canvas
+ * sample data, never a user's.
+ */
+export const PUBLIC_GARDEN_DEV_PREFIXES = [
+  GARDEN_REFERENCE_PREFIX,
+  GARDEN_ROUTES.gallery,
+  GARDEN_ROUTES.tokens,
 ] as const;
 
 /** Auth-only paths — a signed-in user is redirected away from these. */
@@ -65,10 +86,15 @@ export const ROUTES = {
   join: (token: string) => `/join/${token}`,
 } as const;
 
+function matchesPrefix(pathname: string, prefix: string): boolean {
+  return pathname === prefix || pathname.startsWith(`${prefix}/`);
+}
+
 export function isProtectedPath(pathname: string): boolean {
-  return PROTECTED_PATH_PREFIXES.some(
-    (prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`),
-  );
+  if (PUBLIC_GARDEN_DEV_PREFIXES.some((prefix) => matchesPrefix(pathname, prefix))) {
+    return false;
+  }
+  return PROTECTED_PATH_PREFIXES.some((prefix) => matchesPrefix(pathname, prefix));
 }
 
 export function isAuthPath(pathname: string): boolean {
