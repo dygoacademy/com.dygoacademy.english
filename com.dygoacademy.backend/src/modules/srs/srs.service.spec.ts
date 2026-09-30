@@ -8,6 +8,7 @@ import {
   computeSrsSummary,
   resolveUserTimezone,
 } from './srs.service';
+import { newCard, schedule } from './fsrs-scheduler';
 
 async function makeService(queryAsMock: jest.Mock, withUserMock?: jest.Mock): Promise<SrsService> {
   const moduleRef = await Test.createTestingModule({
@@ -30,6 +31,51 @@ function withUserOf(queryMock: jest.Mock): jest.Mock {
 }
 
 describe('SrsService.findDue', () => {
+  it("previews use the row's learning_steps and the EASY→GOOD rule for new cards (U4-1)", async () => {
+    const t0 = new Date(Date.now() - 30 * 86_400_000);
+    let card = newCard(t0);
+    for (let i = 0; i < 3; i++) card = schedule(card, 'GOOD', card.dueAt).card;
+    // A Relearning row one step in (older data): its AGAIN is no longer the 10-minute step.
+    const step = { ...schedule(card, 'AGAIN', card.dueAt).card, learningSteps: 1 };
+    const learningRow = {
+      topic_word_id: 'w1',
+      is_new: false,
+      state: step.state,
+      stability: step.stability,
+      difficulty: step.difficulty,
+      reps: step.reps,
+      lapses: step.lapses,
+      learning_steps: step.learningSteps,
+      scheduled_days: step.scheduledDays,
+      last_reviewed_at: step.lastReviewAt,
+      next_due_at: new Date(Date.now() - 1000),
+    };
+    const newRow = {
+      topic_word_id: 'w2',
+      is_new: true,
+      state: 'New',
+      stability: null,
+      difficulty: null,
+      reps: 0,
+      lapses: 0,
+      learning_steps: 0,
+      scheduled_days: 0,
+      last_reviewed_at: null,
+      next_due_at: null,
+    };
+    const queryAsMock = jest
+      .fn()
+      .mockResolvedValueOnce([learningRow])
+      .mockResolvedValueOnce([newRow]);
+    const service = await makeService(queryAsMock);
+
+    const [learning, fresh] = await service.findDue('user-1', undefined, 5);
+
+    expect(learningRow.learning_steps).toBeGreaterThan(0);
+    expect(learning.interval_preview?.AGAIN).not.toEqual({ unit: 'minutes', count: 10 });
+    expect(fresh.interval_preview?.EASY).toEqual(fresh.interval_preview?.GOOD);
+  });
+
   it('only queries new cards when the existing-due query already filled the limit', async () => {
     const existingRow = { topic_word_id: 'w1', next_due_at: new Date() };
     const queryAsMock = jest.fn().mockResolvedValueOnce([existingRow]);

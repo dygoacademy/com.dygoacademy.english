@@ -57,6 +57,8 @@ export interface DueCard {
   difficulty: number | null;
   reps: number;
   lapses: number;
+  /** FSRS learning/relearning step index (0 for new cards); feeds the interval previews. */
+  learning_steps: number;
   scheduled_days: number;
   last_reviewed_at: Date | null;
   /** Recall probability right now (0–1); null for a new card. Computed at read time. */
@@ -272,7 +274,7 @@ export class SrsService {
       `select ${DUE_CARD_COLUMNS},
               false as is_new,
               uws.fsrs_state as state, uws.stability, uws.difficulty,
-              uws.reps, uws.lapses, uws.scheduled_days, uws.last_reviewed_at,
+              uws.reps, uws.lapses, uws.learning_steps, uws.scheduled_days, uws.last_reviewed_at,
               (uws.mastered_at is not null) as is_mastered,
               uws.is_leech, uws.next_due_at
          from public.user_word_srs uws
@@ -303,7 +305,7 @@ export class SrsService {
               -- Cast explicitly so both branches' rows have the same JS shape
               -- (an un-cast numeric literal comes back from pg as a string).
               'New'::text as state, null::real as stability, null::real as difficulty,
-              0 as reps, 0 as lapses, 0::real as scheduled_days,
+              0 as reps, 0 as lapses, 0 as learning_steps, 0::real as scheduled_days,
               null::timestamptz as last_reviewed_at, false as is_mastered,
               false as is_leech, null::timestamptz as next_due_at
          from public.topic_words tw
@@ -1087,7 +1089,7 @@ function withRetrievability(cards: DueCard[], now: Date): DueCard[] {
       difficulty: c.difficulty,
       reps: c.reps,
       lapses: c.lapses,
-      learningSteps: 0,
+      learningSteps: Number(c.learning_steps ?? 0),
       scheduledDays: Number(c.scheduled_days ?? 0),
       lastReviewAt: c.last_reviewed_at ? new Date(c.last_reviewed_at) : null,
       dueAt: new Date(c.next_due_at ?? now),
@@ -1096,10 +1098,10 @@ function withRetrievability(cards: DueCard[], now: Date): DueCard[] {
     return {
       ...c,
       // UI-4: Compute retrievability (existing logic)
-      retrievability:
-        c.is_new || c.next_due_at == null ? null : retrievability(cardState, now),
+      retrievability: c.is_new || c.next_due_at == null ? null : retrievability(cardState, now),
       // UI-4: Compute interval previews for the Watering Page rating buttons
-      interval_preview: computeRatingIntervals(cardState, now),
+      // U4-1: same EASY→GOOD rule as rate() for words with no user_word_srs row.
+      interval_preview: computeRatingIntervals(cardState, now, c.is_new === true),
     };
   });
 }

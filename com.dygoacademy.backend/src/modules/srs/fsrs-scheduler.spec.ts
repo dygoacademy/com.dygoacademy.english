@@ -2,12 +2,15 @@ import {
   FsrsCardState,
   MASTERY_STABILITY_DAYS,
   SrsRating,
+  computeRatingIntervals,
   createScheduler,
+  formatInterval,
   newCard,
   nextMasteredAt,
   retrievability,
   schedule,
 } from './fsrs-scheduler';
+import { gradeFlashcard } from './grading';
 
 /** Production parameters with fuzz off, so intervals are exact. */
 const scheduler = createScheduler({ enable_fuzz: false });
@@ -146,5 +149,52 @@ describe('fsrs-scheduler — mastery', () => {
     expect(nextMasteredAt(null, { stability: 10 }, 'GOOD', now)).toBeNull();
     expect(nextMasteredAt(t0, { stability: 10 }, 'HARD', now)).toEqual(t0);
     expect(nextMasteredAt(t0, { stability: 40 }, 'AGAIN', now)).toBeNull();
+  });
+});
+
+describe('fsrs-scheduler — interval previews match rate() (U4-1)', () => {
+  const RATINGS: SrsRating[] = ['AGAIN', 'HARD', 'GOOD', 'EASY'];
+  // Production config has no learning steps (fsrs-config.ts), so a Learning
+  // row only exists from older data; build one from a relearning card.
+  const review = run(['GOOD', 'GOOD', 'GOOD']).card;
+  const relearning = schedule(review, 'AGAIN', review.dueAt, scheduler).card;
+  const learning: FsrsCardState = { ...relearning, state: 'Learning' };
+  const cases: [string, FsrsCardState, Date, boolean][] = [
+    ['New', newCard(START), START, true],
+    ['Learning', learning, learning.dueAt, false],
+    ['Review', review, review.dueAt, false],
+    ['Relearning', relearning, relearning.dueAt, false],
+  ];
+
+  it.each(cases)(
+    '%s card: every rating previews the interval rate() schedules',
+    (_name, card, now, isNew) => {
+      expect(card.state).toBe(_name);
+      const previews = computeRatingIntervals(card, now, isNew, scheduler);
+      for (const r of RATINGS) {
+        const expected = formatInterval(
+          schedule(card, gradeFlashcard(r, isNew), now, scheduler).card.dueAt,
+          now,
+        );
+        expect(previews[r]).toEqual(expected);
+      }
+    },
+  );
+
+  it('EASY on a new card previews the GOOD interval', () => {
+    const previews = computeRatingIntervals(newCard(START), START, true, scheduler);
+    expect(previews.EASY).toEqual(previews.GOOD);
+  });
+
+  it("uses the card's real learning step", () => {
+    const atZero = computeRatingIntervals(relearning, relearning.dueAt, false, scheduler).AGAIN;
+    const pastStep = computeRatingIntervals(
+      { ...relearning, learningSteps: 1 },
+      relearning.dueAt,
+      false,
+      scheduler,
+    ).AGAIN;
+    expect(atZero).toEqual({ unit: 'minutes', count: 10 });
+    expect(pastStep).not.toEqual(atZero);
   });
 });

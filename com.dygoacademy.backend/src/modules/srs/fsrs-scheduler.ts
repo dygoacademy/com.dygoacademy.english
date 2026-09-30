@@ -9,6 +9,7 @@
 import { Card, FSRS, Grade, Rating, State, createEmptyCard, fsrs } from 'ts-fsrs';
 
 import { buildFsrsParams } from './fsrs-config';
+import { gradeFlashcard } from './grading';
 
 export type SrsRating = 'AGAIN' | 'HARD' | 'GOOD' | 'EASY';
 export type FsrsStateName = 'New' | 'Learning' | 'Review' | 'Relearning';
@@ -189,8 +190,7 @@ export function nextMasteredAt(
  * The interval shows what date each rating would schedule: "< 1 min", "5 days", etc.
  */
 export type RatingInterval =
-  | { unit: 'lessThanMinute' }
-  | { unit: 'minutes' | 'hours' | 'days' | 'months'; count: number };
+  { unit: 'lessThanMinute' } | { unit: 'minutes' | 'hours' | 'days' | 'months'; count: number };
 
 /**
  * UI-4: Format a future date into a human-readable interval.
@@ -247,18 +247,28 @@ export function formatInterval(futureDate: Date, now: Date = new Date()): Rating
  *
  * Computation: for the current card state, call scheduler.next() for each grade.
  * The resulting card has a `due` field (Date) which we format.
+ *
+ * U4-1: each rating goes through `gradeFlashcard` first, exactly as `rate()`
+ * does, so EASY on a new card (no `user_word_srs` row) previews the GOOD
+ * interval it will actually get.
  */
 export function computeRatingIntervals(
   card: FsrsCardState,
   now: Date,
+  isNewCard = false,
   scheduler: FSRS = defaultScheduler,
 ): Record<SrsRating, RatingInterval> {
   const libCard = toLibCard(card);
+  const preview = (rating: SrsRating): RatingInterval =>
+    formatInterval(
+      scheduler.next(libCard, now, RATING_TO_GRADE[gradeFlashcard(rating, isNewCard)]).card.due,
+      now,
+    );
 
   return {
-    AGAIN: formatInterval(scheduler.next(libCard, now, Rating.Again).card.due, now),
-    HARD: formatInterval(scheduler.next(libCard, now, Rating.Hard).card.due, now),
-    GOOD: formatInterval(scheduler.next(libCard, now, Rating.Good).card.due, now),
-    EASY: formatInterval(scheduler.next(libCard, now, Rating.Easy).card.due, now),
+    AGAIN: preview('AGAIN'),
+    HARD: preview('HARD'),
+    GOOD: preview('GOOD'),
+    EASY: preview('EASY'),
   };
 }
