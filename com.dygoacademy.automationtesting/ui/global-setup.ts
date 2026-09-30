@@ -33,9 +33,9 @@ export default async function globalSetup(config: FullConfig): Promise<void> {
     ]);
     const page = await context.newPage();
     await page.goto('/login?next=%2Fgarden');
-    await page.getByLabel('Email').fill(creds.email);
-    await page.getByLabel('Password').fill(creds.password);
-    await page.getByRole('button', { name: 'Sign in' }).click();
+    await page.getByLabel('Email', { exact: true }).fill(creds.email);
+    await page.getByLabel('Password', { exact: true }).fill(creds.password);
+    await page.getByRole('button', { name: 'Sign in', exact: true }).click();
     try {
       await page.waitForURL((u) => u.pathname.startsWith('/garden'), { timeout: 30_000 });
     } catch {
