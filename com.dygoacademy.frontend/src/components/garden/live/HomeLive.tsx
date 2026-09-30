@@ -7,29 +7,37 @@ import { GARDEN_ROUTES } from '@/constants/garden';
 import { ROUTES } from '@/constants/routes';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
 import { useDailyActivity } from '@/hooks/useDailyActivity';
+import { useNotificationSchedules } from '@/hooks/useNotificationSchedules';
 import { useSrsStats } from '@/hooks/useSrsStats';
+import { useUpcomingActivity } from '@/hooks/useUpcomingActivity';
 
-import { hourIn, isoDay, todayIn } from '../format';
+import { addDays, hourIn, isoDay, todayIn } from '../format';
 import { TodaysGardenScreen } from '../screens/TodaysGardenScreen';
 import { WelcomeBackScreen } from '../screens/WelcomeBackScreen';
-import { displayName, greetingFor, missedDays, sampleGarden } from './data';
+import { displayName, gardenPlants, greetingFor, missedDays, ripensTomorrow } from './data';
 import { LiveError, LiveLoading } from './LiveState';
 
 /**
  * /garden: Today's Garden (A1), or Welcome back (A5) when the learner has
  * missed 2+ days according to GET /srs/activity.
  *
- * Real data: GET /srs/stats (streak, words, due, mastered, leeches) and
- * GET /srs/activity (last 30 days). Not available yet, so not shown:
- * daily missions (UI-6, "coming soon"), "ripens tomorrow" (needs the
- * upcoming-activity endpoint, not in the committed backend), streak
- * freezes and time estimates.
+ * Real data: GET /srs/stats (streak, words, due, mastered, leeches, and
+ * U4-3's `stage_counts` for the garden plants; the `sampleGarden` estimate
+ * stays as the fallback when the field is missing), GET /srs/activity
+ * (last 30 days) and "ripens tomorrow" from GET /srs/activity/upcoming at
+ * the learner's earliest enabled reminder time (hidden without one).
+ * Not available yet, so not shown: daily missions (UI-6, "coming soon"),
+ * streak freezes and time estimates. A5's streak card stays hidden: it is
+ * the freeze card ("streak is safe" + rain barrel), and a learner who
+ * missed 2+ days has no live `current_streak_days` to keep safe.
  */
 export function HomeLive() {
   const timeZone = useTimeZone();
   const stats = useSrsStats();
   const activity = useDailyActivity(30);
   const user = useCurrentUser();
+  const upcoming = useUpcomingActivity(2);
+  const schedules = useNotificationSchedules();
 
   if (stats.isPending || activity.isPending) return <LiveLoading />;
   if (stats.isError || !stats.data) {
@@ -40,12 +48,6 @@ export function HomeLive() {
   const s = stats.data;
   const name = displayName(user.data);
   const today = todayIn(timeZone, now);
-  const counts = {
-    total: s.total_words,
-    mastered: s.mastered_words,
-    leeches: s.leech_count,
-    due: s.due_now,
-  };
   const missed = activity.data ? missedDays(activity.data, isoDay(today)) : null;
 
   if (missed !== null && missed >= 2) {
@@ -57,7 +59,7 @@ export function HomeLive() {
           thirsty: s.due_now,
           wilting: s.leech_count,
           ripe: s.mastered_words,
-          plants: sampleGarden(counts, 8),
+          plants: gardenPlants(s, 8),
         }}
         streak={null}
         revive={
@@ -81,7 +83,7 @@ export function HomeLive() {
         thirsty: s.due_now,
         ripe: s.mastered_words,
         wilting: s.leech_count,
-        plants: sampleGarden(counts, 9),
+        plants: gardenPlants(s, 9),
       }}
       missions={null}
       action={
@@ -89,7 +91,7 @@ export function HomeLive() {
           ? { href: GARDEN_ROUTES.review, kind: 'start', wordsLeft: s.due_now, minutes: null }
           : null
       }
-      ripens={null}
+      ripens={ripensTomorrow(upcoming.data, isoDay(addDays(today, 1)), schedules.data)}
     />
   );
 }

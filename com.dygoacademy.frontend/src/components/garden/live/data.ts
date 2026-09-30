@@ -2,9 +2,17 @@
  * Pure helpers for the live garden routes (UI-fidelity 6). No React, no
  * fetching: the live components pass in what the existing hooks returned.
  */
-import type { TopicSummary, TopicWordSummary } from '@/types';
+import type {
+  SrsStageCounts,
+  SrsStats,
+  StudySchedule,
+  TopicSummary,
+  TopicWordSummary,
+  UpcomingActivity,
+} from '@/types';
 import { GARDEN_ROUTES } from '@/constants/garden';
 
+import { parseClock, type ClockTime } from '../format';
 import type { HeroPlant } from '../HeroGardenCard';
 import { stageFromSrs, type GardenFsrsState } from '../plantStage';
 import type { BedStage, TopicBedWord } from '../screens/TopicBedScreen';
@@ -96,6 +104,106 @@ export function sampleGarden(
     }
   }
   return plants.slice(0, slots);
+}
+
+/**
+ * Split `slots` across `values` in proportion (largest remainder), giving
+ * every non-zero value at least one slot while there are slots to give.
+ */
+function allocate(values: readonly number[], slots: number): number[] {
+  const total = values.reduce((sum, v) => sum + Math.max(v, 0), 0);
+  if (total === 0 || slots <= 0) return values.map(() => 0);
+  const exact = values.map((v) => (Math.max(v, 0) / total) * slots);
+  const alloc = exact.map((x, i) => (values[i] > 0 ? Math.max(1, Math.floor(x)) : 0));
+  let sum = alloc.reduce((a, b) => a + b, 0);
+  while (sum > slots) {
+    // Too many minimum-1 slots: take from the largest allocation.
+    const i = alloc.indexOf(Math.max(...alloc));
+    alloc[i] -= 1;
+    sum -= 1;
+  }
+  while (sum < slots) {
+    let best = -1;
+    for (let i = 0; i < alloc.length; i++) {
+      if (values[i] <= 0) continue;
+      if (best === -1 || exact[i] - alloc[i] > exact[best] - alloc[best]) best = i;
+    }
+    alloc[best] += 1;
+    sum += 1;
+  }
+  return alloc;
+}
+
+/**
+ * U4-3: the hero garden from real `GET /srs/stats` `stage_counts`
+ * (A7 stages: New → seed, Learning/Relearning → sprout, Review → flower,
+ * mastered → tree). Leeches stay counted in their stage (A7), so they turn
+ * growing plants wilting; `due` marks growing plants thirsty.
+ */
+export function stageGarden(
+  stages: SrsStageCounts,
+  extras: { leeches: number; due: number },
+  slots: number,
+): HeroPlant[] {
+  const [trees, flowers, sprouts, seeds] = allocate(
+    [stages.mastered, stages.review, stages.learning, stages.new],
+    slots,
+  );
+  if (trees + flowers + sprouts + seeds === 0) {
+    return Array.from({ length: slots }, () => 'seed' as const);
+  }
+  const total = stages.mastered + stages.review + stages.learning + stages.new;
+  const share = (n: number) => (n > 0 ? Math.max(1, Math.round((n / total) * slots)) : 0);
+  let growing: Array<'sprout' | 'flower'> = [
+    ...Array.from({ length: sprouts }, () => 'sprout' as const),
+    ...Array.from({ length: flowers }, () => 'flower' as const),
+  ];
+  const wilting = Math.min(share(extras.leeches), growing.length);
+  growing = growing.slice(wilting);
+  const thirsty = Math.min(share(extras.due), growing.length);
+
+  const plants: HeroPlant[] = [];
+  const pools: HeroPlant[][] = [
+    Array.from({ length: trees }, () => 'tree' as const),
+    growing.map((stage, i) => ({ stage, thirsty: i < thirsty })),
+    Array.from({ length: seeds }, () => 'seed' as const),
+    Array.from({ length: wilting }, () => 'wilting' as const),
+  ];
+  while (plants.length < slots && pools.some((pool) => pool.length > 0)) {
+    for (const pool of pools) {
+      const next = pool.shift();
+      if (next !== undefined) plants.push(next);
+    }
+  }
+  return plants.slice(0, slots);
+}
+
+/** Garden plants from `stage_counts`, else the `sampleGarden` estimate. */
+export function gardenPlants(stats: SrsStats, slots: number): HeroPlant[] {
+  const extras = { leeches: stats.leech_count, due: stats.due_now };
+  if (stats.stage_counts) return stageGarden(stats.stage_counts, extras, slots);
+  return sampleGarden(
+    { total: stats.total_words, mastered: stats.mastered_words, ...extras },
+    slots,
+  );
+}
+
+/**
+ * "Tomorrow {time} · N words ripen": N from GET /srs/activity/upcoming for
+ * `tomorrow` (ISO day), the time from the learner's earliest enabled reminder.
+ * Null (line hidden) without a reminder or when nothing ripens.
+ */
+export function ripensTomorrow(
+  upcoming: readonly UpcomingActivity[] | undefined,
+  tomorrow: string,
+  schedules: readonly StudySchedule[] | undefined,
+): { time: ClockTime; count: number } | null {
+  const count = upcoming?.find((row) => row.due_date.slice(0, 10) === tomorrow)?.due_count ?? 0;
+  const reminder = [...(schedules ?? [])]
+    .filter((s) => s.is_enabled)
+    .sort((a, b) => a.reminder_time.localeCompare(b.reminder_time))[0];
+  if (count <= 0 || !reminder) return null;
+  return { time: parseClock(reminder.reminder_time), count };
 }
 
 /** "07:30:00" → a Date today at that time (for locale formatting). */

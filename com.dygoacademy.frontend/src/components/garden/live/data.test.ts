@@ -1,6 +1,21 @@
 import { describe, expect, it } from 'vitest';
 
-import { displayName, greetingFor, missedDays, sampleGarden, weekOf } from './data';
+import type { SrsStats } from '@/types';
+
+import {
+  displayName,
+  gardenPlants,
+  greetingFor,
+  missedDays,
+  ripensTomorrow,
+  sampleGarden,
+  stageGarden,
+  weekOf,
+} from './data';
+
+const stagesOf = (plants: ReturnType<typeof stageGarden>) =>
+  plants.map((p) => (typeof p === 'string' ? p : p.stage));
+const count = (xs: string[], x: string) => xs.filter((y) => y === x).length;
 
 describe('live garden helpers', () => {
   it('greets by time of day', () => {
@@ -69,5 +84,74 @@ describe('topics helpers', () => {
       { id: 'mine', label: 'Mine' },
     ]);
     expect(topicFilters([{ group: 'mine' }], labels)).toEqual([{ id: 'mine', label: 'Mine' }]);
+  });
+
+  it('builds the garden from stage_counts (U4-3)', () => {
+    const stages = { new: 10, learning: 20, review: 30, mastered: 40 };
+    const plain = stagesOf(stageGarden(stages, { leeches: 0, due: 0 }, 10));
+    expect(plain).toHaveLength(10);
+    expect(count(plain, 'tree')).toBe(4);
+    expect(count(plain, 'flower')).toBe(3);
+    expect(count(plain, 'sprout')).toBe(2);
+    expect(count(plain, 'seed')).toBe(1);
+
+    // Every non-empty stage shows up, even when small.
+    const small = stagesOf(
+      stageGarden({ new: 1, learning: 1, review: 0, mastered: 98 }, { leeches: 0, due: 0 }, 9),
+    );
+    expect(count(small, 'seed')).toBe(1);
+    expect(count(small, 'sprout')).toBe(1);
+    expect(count(small, 'tree')).toBe(7);
+
+    const withExtras = stageGarden(stages, { leeches: 10, due: 30 }, 10);
+    expect(count(stagesOf(withExtras), 'wilting')).toBe(1);
+    expect(count(stagesOf(withExtras), 'tree')).toBe(4);
+    expect(withExtras.filter((p) => typeof p !== 'string' && p.thirsty)).toHaveLength(3);
+
+    expect(
+      stageGarden({ new: 0, learning: 0, review: 0, mastered: 0 }, { leeches: 0, due: 0 }, 3),
+    ).toEqual(['seed', 'seed', 'seed']);
+  });
+
+  it('falls back to sampleGarden without stage_counts', () => {
+    const stats = {
+      total_words: 100,
+      mastered_words: 50,
+      leech_count: 10,
+      due_now: 20,
+      current_streak_days: 3,
+    } as SrsStats;
+    expect(gardenPlants(stats, 9)).toEqual(
+      sampleGarden({ total: 100, mastered: 50, leeches: 10, due: 20 }, 9),
+    );
+    const live = gardenPlants(
+      {
+        ...stats,
+        stage_counts: { new: 0, learning: 0, review: 50, mastered: 50 },
+      },
+      4,
+    );
+    expect(count(stagesOf(live), 'seed')).toBe(0);
+    expect(count(stagesOf(live), 'tree')).toBe(2);
+  });
+
+  it('shows what ripens tomorrow at the reminder time', () => {
+    const upcoming = [
+      { due_date: '2026-09-30', due_count: 4 },
+      { due_date: '2026-10-01', due_count: 7 },
+    ];
+    const schedule = (reminder_time: string, is_enabled = true) => ({
+      id: reminder_time,
+      reminder_time,
+      timezone: 'UTC',
+      is_enabled,
+    });
+    expect(
+      ripensTomorrow(upcoming, '2026-10-01', [schedule('19:00:00'), schedule('07:30:00')]),
+    ).toEqual({ time: { hour: 7, minute: 30 }, count: 7 });
+    expect(ripensTomorrow(upcoming, '2026-10-01', [schedule('07:30:00', false)])).toBeNull();
+    expect(ripensTomorrow(upcoming, '2026-10-01', undefined)).toBeNull();
+    expect(ripensTomorrow(upcoming, '2026-10-02', [schedule('07:30:00')])).toBeNull();
+    expect(ripensTomorrow(undefined, '2026-10-01', [schedule('07:30:00')])).toBeNull();
   });
 });
