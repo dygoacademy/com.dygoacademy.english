@@ -76,8 +76,8 @@ describe('NotificationProcessor', () => {
 
   it('isolates a per-user failure — one bad stats query does not stop the tick', async () => {
     // buildPayload resolves each user's timezone first (one query), then
-    // fires stats + streak + profile together via Promise.all — four
-    // queue slots per user, not one. The failing user's *stats* (totals)
+    // fires stats + streak + profile + freeze uses together via Promise.all — five
+    // queue slots per user (+ a refill write when due), not one. The failing user's *stats* (totals)
     // query rejects; its streak and profile queries still get called (and
     // must resolve to something) before the rejection is observed by the
     // caller.
@@ -87,10 +87,13 @@ describe('NotificationProcessor', () => {
       .mockRejectedValueOnce(new Error('db down')) // user-1 stats query fails
       .mockResolvedValueOnce([]) // user-1 streak query (result discarded — Promise.all already rejects)
       .mockResolvedValueOnce([{ display_name: null }]) // user-1 profile query (discarded)
+      .mockResolvedValueOnce([]) // user-1 freeze-uses query (UI-6 U6-3, discarded)
       .mockResolvedValueOnce([{ timezone: 'UTC' }]) // user-2 timezone resolution
       .mockResolvedValueOnce([{ due_now: '3', leech_count: '0' }]) // user-2 stats
       .mockResolvedValueOnce([]) // user-2 streak
-      .mockResolvedValueOnce([{ display_name: null }]); // user-2 profile
+      .mockResolvedValueOnce([{ display_name: null }]) // user-2 profile
+      .mockResolvedValueOnce([]) // user-2 freeze uses (UI-6 U6-3)
+      .mockResolvedValueOnce([]); // user-2 weekly freeze refill write
 
     await processor.process(makeJob());
 

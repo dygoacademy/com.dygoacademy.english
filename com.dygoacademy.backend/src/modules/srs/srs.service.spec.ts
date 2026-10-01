@@ -787,6 +787,8 @@ describe('computeSrsSummary (extracted — also used by NotificationProcessor)',
         current_streak_days: 1,
         display_name: null,
         stage_counts: { new: 0, learning: 0, review: 0, mastered: 1 },
+        freezes: { available: 2, used_this_week: 0, refills_on: '2026-09-07' },
+        best_streak_days: 1,
       });
       // All three queries filter explicitly by the passed userId, regardless
       // of whether the caller's queryFn is RLS-scoped or not (see the
@@ -800,6 +802,94 @@ describe('computeSrsSummary (extracted — also used by NotificationProcessor)',
     } finally {
       Date.now = realNow;
     }
+  });
+});
+
+describe('computeSrsSummary streak freezes (UI-6 U6-3)', () => {
+  const at = async (
+    nowIso: string,
+    reviews: string[],
+    profile: Record<string, unknown>,
+    frozen: string[] = [],
+    tz = 'UTC',
+  ) => {
+    const realNow = Date.now;
+    Date.now = () => Date.parse(nowIso);
+    try {
+      const queryFn = jest
+        .fn()
+        .mockResolvedValueOnce([{ total_words: '1', mastered_words: '0', due_now: '0', leech_count: '0' }])
+        .mockResolvedValueOnce(reviews.map((review_date) => ({ review_date })))
+        .mockResolvedValueOnce([{ display_name: null, ...profile }])
+        .mockResolvedValueOnce(frozen.map((local_date) => ({ local_date })))
+        .mockResolvedValue([]);
+      const summary = await computeSrsSummary(queryFn, 'user-9', tz);
+      return { summary, queryFn };
+    } finally {
+      Date.now = realNow;
+    }
+  };
+  const fresh = { streak_freezes_available: 2, freezes_refilled_on: '2026-08-31' };
+
+  it('uses a freeze for a missed day and keeps the streak', async () => {
+    // Thu 2026-09-03; studied Mon+Tue, missed Wed.
+    const { summary, queryFn } = await at('2026-09-03T15:00:00.000Z', ['2026-09-01', '2026-08-31'], fresh);
+    expect(summary.current_streak_days).toBe(2);
+    expect(summary.freezes).toEqual({ available: 1, used_this_week: 1, refills_on: '2026-09-07' });
+    expect(queryFn).toHaveBeenCalledTimes(5);
+    expect(queryFn.mock.calls[4][0]).toContain('insert into public.streak_freeze_uses');
+    expect(queryFn.mock.calls[4][1]).toEqual(['user-9', ['2026-09-02'], 1, '2026-08-31']);
+  });
+
+  it('breaks the streak when no freeze is left, and writes nothing', async () => {
+    const { summary, queryFn } = await at('2026-09-03T15:00:00.000Z', ['2026-09-01', '2026-08-31'], {
+      streak_freezes_available: 0,
+      freezes_refilled_on: '2026-08-31',
+    });
+    expect(summary.current_streak_days).toBe(0);
+    expect(summary.freezes.available).toBe(0);
+    expect(queryFn).toHaveBeenCalledTimes(4);
+  });
+
+  it('does not spend freezes on a gap longer than what is left', async () => {
+    const { summary, queryFn } = await at('2026-09-05T15:00:00.000Z', ['2026-09-01'], fresh);
+    expect(summary.current_streak_days).toBe(0);
+    expect(summary.freezes.available).toBe(2);
+    expect(queryFn).toHaveBeenCalledTimes(4);
+  });
+
+  it('refills to 2 on Monday before using one', async () => {
+    // Mon 2026-09-07; last week's freezes were used up; missed Sunday.
+    const { summary, queryFn } = await at('2026-09-07T10:00:00.000Z', ['2026-09-05'], {
+      streak_freezes_available: 0,
+      freezes_refilled_on: '2026-08-31',
+    });
+    expect(summary.current_streak_days).toBe(1);
+    expect(summary.freezes).toEqual({ available: 1, used_this_week: 0, refills_on: '2026-09-14' });
+    expect(queryFn.mock.calls[4][1]).toEqual(['user-9', ['2026-09-06'], 1, '2026-09-07']);
+  });
+
+  it("uses the learner's local day (time zone)", async () => {
+    // 18:00Z on 09-02 is already 09-03 in Ho Chi Minh: 09-02 counts as missed there.
+    const local = await at('2026-09-02T18:00:00.000Z', ['2026-09-01'], fresh, [], 'Asia/Ho_Chi_Minh');
+    expect(local.summary.freezes.used_this_week).toBe(1);
+    expect(local.summary.current_streak_days).toBe(1);
+    const utc = await at('2026-09-02T18:00:00.000Z', ['2026-09-01'], fresh, [], 'UTC');
+    expect(utc.summary.freezes.used_this_week).toBe(0);
+    expect(utc.queryFn).toHaveBeenCalledTimes(4);
+  });
+
+  it('lets a stored frozen day bridge the chain and reports the best streak', async () => {
+    const old = ['2026-08-25', '2026-08-24', '2026-08-23', '2026-08-22', '2026-08-21', '2026-08-20'];
+    const { summary } = await at(
+      '2026-09-03T15:00:00.000Z',
+      ['2026-09-03', '2026-09-01', ...old],
+      { streak_freezes_available: 1, freezes_refilled_on: '2026-08-31' },
+      ['2026-09-02'],
+    );
+    expect(summary.current_streak_days).toBe(2);
+    expect(summary.best_streak_days).toBe(6);
+    expect(summary.freezes).toEqual({ available: 1, used_this_week: 1, refills_on: '2026-09-07' });
   });
 });
 

@@ -149,6 +149,20 @@ export interface SrsStats {
    * `mastered_at is not null` (equals `mastered_words`).
    */
   stage_counts: SrsStageCounts;
+  /**
+   * UI-6 U6-3: streak freezes (decision 7) -- 2 a week, refilled to 2 on the
+   * learner's local Monday, one used automatically per missed day while the
+   * whole current gap can be covered. `refills_on` = next local Monday.
+   */
+  freezes: SrsFreezes;
+  /** UI-6 U6-3: longest streak in the loaded history (frozen days bridge). */
+  best_streak_days: number;
+}
+
+export interface SrsFreezes {
+  available: number;
+  used_this_week: number;
+  refills_on: string;
 }
 
 export interface SrsStageCounts {
@@ -914,6 +928,106 @@ export function computeStreak(descendingDates: string[], todayDateString?: strin
   return streak;
 }
 
+/** Max freezes a learner holds; refilled to this every local Monday. */
+export const STREAK_FREEZES_PER_WEEK = 2;
+
+const DAY_MS = 86_400_000;
+const toDayNum = (d: string): number => Date.parse(`${d}T00:00:00.000Z`) / DAY_MS;
+const fromDayNum = (n: number): string => new Date(n * DAY_MS).toISOString().slice(0, 10);
+
+/**
+ * UI-6 U6-3: current + best streak where a frozen day keeps the chain alive
+ * but doesn't add to it (only study days count). Same "today not studied
+ * yet doesn't break it" rule as `computeStreak`; with no frozen days the
+ * current value equals `computeStreak`'s.
+ */
+export function computeStreakWithFreezes(
+  studyDates: string[],
+  frozenDates: string[],
+  todayDateString: string,
+): { current: number; best: number } {
+  const study = new Set(studyDates.map(toDayNum));
+  const kept = new Set([...study, ...frozenDates.map(toDayNum)]);
+  const today = toDayNum(todayDateString);
+
+  let current = 0;
+  let cursor = kept.has(today) ? today : today - 1;
+  while (kept.has(cursor)) {
+    if (study.has(cursor)) current += 1;
+    cursor -= 1;
+  }
+
+  let best = 0;
+  let run = 0;
+  let prev: number | null = null;
+  for (const day of [...kept].sort((a, b) => a - b)) {
+    run = prev !== null && day === prev + 1 ? run : 0;
+    if (study.has(day)) run += 1;
+    best = Math.max(best, run);
+    prev = day;
+  }
+  return { current, best: Math.max(best, current) };
+}
+
+/**
+ * UI-6 U6-3: lazy weekly refill + auto-use for the current gap. Pure: the
+ * caller persists `newFrozen` / `available` / `refilledOn` when `changed`.
+ * Missed days = the local days after the last studied-or-frozen day up to
+ * yesterday; they're frozen only if the freezes left cover all of them
+ * (a gap longer than that loses the streak anyway, so none are spent).
+ */
+export function applyStreakFreezes(input: {
+  studyDates: string[];
+  frozenDates: string[];
+  available: number | null | undefined;
+  refilledOn: string | null | undefined;
+  today: string;
+}): {
+  available: number;
+  refilledOn: string;
+  newFrozen: string[];
+  usedThisWeek: number;
+  refillsOn: string;
+  changed: boolean;
+} {
+  const today = toDayNum(input.today);
+  const dow = new Date(today * DAY_MS).getUTCDay(); // 0 = Sunday
+  const monday = today - ((dow + 6) % 7);
+  const mondayStr = fromDayNum(monday);
+
+  let available = Math.max(0, Math.min(STREAK_FREEZES_PER_WEEK, Number(input.available ?? STREAK_FREEZES_PER_WEEK)));
+  let changed = false;
+  if (!input.refilledOn || toDayNum(input.refilledOn) < monday) {
+    available = STREAK_FREEZES_PER_WEEK;
+    changed = true;
+  }
+  const refilledOn = changed ? mondayStr : (input.refilledOn as string);
+
+  const keptDays = [...input.studyDates, ...input.frozenDates].map(toDayNum);
+  const newFrozen: string[] = [];
+  if (keptDays.length > 0) {
+    const last = Math.max(...keptDays);
+    const missed = today - 1 - last;
+    if (missed > 0 && missed <= available) {
+      for (let d = last + 1; d <= today - 1; d += 1) newFrozen.push(fromDayNum(d));
+      available -= missed;
+      changed = true;
+    }
+  }
+
+  const usedThisWeek = [...input.frozenDates, ...newFrozen].filter(
+    (d) => toDayNum(d) >= monday,
+  ).length;
+  return {
+    available,
+    refilledOn,
+    newFrozen,
+    usedThisWeek,
+    refillsOn: fromDayNum(monday + 7),
+    changed,
+  };
+}
+
 /**
  * A minimal query executor `computeSrsSummary` can run against -- exactly
  * the shape `DatabaseService.queryAs`/`.query` already have, so a caller
@@ -1031,7 +1145,7 @@ export async function computeSrsSummary(
   userId: string,
   timezone: string = DEFAULT_TIMEZONE,
 ): Promise<SrsStats> {
-  const [totals, streakRows, profileRows] = await Promise.all([
+  const [totals, streakRows, profileRows, freezeRows] = await Promise.all([
     queryFn<{
       total_words: string;
       mastered_words: string;
@@ -1089,11 +1203,58 @@ export async function computeSrsSummary(
     // `display_name` into the aggregate's GROUP BY for no reason (left
     // join). `profiles` is a one-row-per-user lookup by primary key --
     // cheap regardless.
-    queryFn<{ display_name: string | null }>(
-      `select display_name from public.profiles where id = $1`,
+    // UI-6 U6-3: freeze columns ride on the same profile lookup.
+    queryFn<{
+      display_name: string | null;
+      streak_freezes_available?: number | null;
+      freezes_refilled_on?: string | null;
+    }>(
+      `select display_name, streak_freezes_available,
+              freezes_refilled_on::text as freezes_refilled_on
+         from public.profiles where id = $1`,
+      [userId],
+    ),
+    queryFn<{ local_date: string }>(
+      `select local_date::text as local_date
+         from public.streak_freeze_uses
+        where user_id = $1
+        order by local_date desc
+        limit 366`,
       [userId],
     ),
   ]);
+
+  const today = todayInTimezone(timezone);
+  const studyDates = (streakRows ?? []).map((r) => r.review_date);
+  const frozenDates = (freezeRows ?? []).map((r) => r.local_date);
+  const profile = profileRows?.[0];
+  const freeze = applyStreakFreezes({
+    studyDates,
+    frozenDates,
+    available: profile?.streak_freezes_available,
+    refilledOn: profile?.freezes_refilled_on,
+    today,
+  });
+  if (freeze.changed) {
+    // One statement so the freeze rows and the counter move together.
+    await queryFn(
+      `with used as (
+         insert into public.streak_freeze_uses (user_id, local_date)
+         select $1, d from unnest($2::date[]) as d
+         on conflict (user_id, local_date) do nothing
+         returning 1
+       )
+       update public.profiles
+          set streak_freezes_available = $3, freezes_refilled_on = $4::date
+        where id = $1`,
+      [userId, freeze.newFrozen, freeze.available, freeze.refilledOn],
+    );
+  }
+  const streak = computeStreakWithFreezes(
+    studyDates,
+    [...frozenDates, ...freeze.newFrozen],
+    today,
+  );
 
   const t = totals[0];
   return {
@@ -1101,17 +1262,20 @@ export async function computeSrsSummary(
     mastered_words: Number(t?.mastered_words ?? 0),
     due_now: Number(t?.due_now ?? 0),
     leech_count: Number(t?.leech_count ?? 0),
-    current_streak_days: computeStreak(
-      streakRows.map((r) => r.review_date),
-      todayInTimezone(timezone),
-    ),
-    display_name: profileRows[0]?.display_name ?? null,
+    current_streak_days: streak.current,
+    display_name: profile?.display_name ?? null,
     stage_counts: {
       new: Number(t?.new_rows ?? 0) + Number(t?.unseen_words ?? 0),
       learning: Number(t?.learning_words ?? 0),
       review: Number(t?.review_words ?? 0),
       mastered: Number(t?.mastered_words ?? 0),
     },
+    freezes: {
+      available: freeze.available,
+      used_this_week: freeze.usedThisWeek,
+      refills_on: freeze.refillsOn,
+    },
+    best_streak_days: streak.best,
   };
 }
 

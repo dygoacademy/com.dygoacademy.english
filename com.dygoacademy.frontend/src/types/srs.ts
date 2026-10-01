@@ -144,6 +144,23 @@ export interface SrsStats {
    * against an older backend.
    */
   stage_counts?: SrsStageCounts;
+  /**
+   * UI-6 U6-3: streak freezes (2 a week, refilled on the learner's local
+   * Monday, used automatically for missed days). Optional for older backends.
+   */
+  freezes?: SrsFreezes;
+  /** UI-6 U6-3: longest streak in the history (frozen days bridge it). */
+  best_streak_days?: number;
+}
+
+/** `SrsStats.freezes` — streak freezes. */
+export interface SrsFreezes {
+  /** Freezes left this week (0–2). */
+  available: number;
+  /** Freezes used since this local Monday. */
+  used_this_week: number;
+  /** Next local Monday (YYYY-MM-DD), when `available` refills to 2. */
+  refills_on: string;
 }
 
 /** `SrsStats.stage_counts` — words per garden stage. */
