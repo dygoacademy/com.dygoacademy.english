@@ -1,5 +1,5 @@
 import type { Viewport } from 'next';
-import { cookies } from 'next/headers';
+import { cookies, headers } from 'next/headers';
 import { notFound, redirect } from 'next/navigation';
 
 import { GroupsTabLive } from '@/components/garden/live/GroupsTabLive';
@@ -16,12 +16,25 @@ import { GardenRoot } from './GardenRoot';
  * helpers in globals.css. Classic screens keep the root viewport, since
  * they have no safe-area padding and would slide under the notch.
  */
-export const viewport: Viewport = {
-  width: 'device-width',
-  initialScale: 1,
-  viewportFit: 'cover',
-  themeColor: '#24463A',
-};
+export async function generateViewport(): Promise<Viewport> {
+  const viewport: Viewport = {
+    width: 'device-width',
+    initialScale: 1,
+    viewportFit: 'cover',
+    themeColor: '#24463A',
+  };
+  // iOS (Safari and Chrome, both WebKit) zooms the page while a text field
+  // has focus and can leave it zoomed after tapping out of the field (quiz
+  // "Fill in the blank", iPhone 17 Pro Max, 2026-10-02). maximum-scale=1
+  // stops those automatic zooms; iOS still lets people pinch-zoom (it
+  // ignores maximum-scale for user gestures since iOS 10). Android would
+  // block pinch-zoom with it, so it is set for iPhone/iPad only.
+  const ua = (await headers()).get('user-agent') ?? '';
+  if (/iPhone|iPad|iPod/.test(ua) || (/Macintosh/.test(ua) && /Mobile\//.test(ua))) {
+    viewport.maximumScale = 1;
+  }
+  return viewport;
+}
 
 /**
  * Word Garden route group (ui rebuild implementation plan.md, UI-0/UI-1).
