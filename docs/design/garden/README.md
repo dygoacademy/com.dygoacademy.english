@@ -131,6 +131,23 @@ Same method as the UI-L table. The GR screens with a tab bar use the canvas's fi
 | GR6-join | 0.001% | 0.001% |
 | GR7-create | 0.001% | 0.001% |
 
+## Diff results, Quiz (2026-10-01, UI-5 QZ-3)
+
+Run by Dylan on the Mac against UAT (`--base https://www.dygoacademy.com`), build with `05616dd`. All 16 pass (≤ 0.5%).
+
+| Reference | English | Vietnamese (`-vi`) |
+| --- | ---: | ---: |
+| Q1-quiz-choose | 0.055% | 0.056% |
+| Q2-quiz-right | 0.212% | 0.194% |
+| Q3-quiz-not-quite | 0.188% | 0.170% |
+| Q4-quiz-cloze-hint | 0.258% | 0.260% |
+| Q5-quiz-listen | 0.203% | 0.198% |
+| Q6-quiz-result | 0.322% | 0.304% |
+| Q7-quiz-result-perfect | 0.072% | 0.075% |
+| Q8-quiz-drill-done | 0.163% | 0.139% |
+
+First run failed Q2/Q3 (0.65% / 1.12%): the empty gap pill was 88px border-box instead of the canvas's 104px content-box, and the autofocused Next button showed a focus ring (the diff now blurs an autofocused button before shooting). Both fixed in `05616dd`.
+
 ## Known differences (resolved 2026-09-26)
 
 | # | Canvas | Resolution |
