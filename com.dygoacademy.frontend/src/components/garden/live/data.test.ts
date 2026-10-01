@@ -6,7 +6,10 @@ import {
   displayName,
   gardenPlants,
   greetingFor,
+  liveMissions,
+  liveMissionsSummary,
   missedDays,
+  missionQuizHref,
   missionsSummary,
   ripensTomorrow,
   sampleGarden,
@@ -183,5 +186,47 @@ describe('missionsSummary (U4-4)', () => {
     expect(missionsSummary({ done: 5, total: 5 })).toEqual({ done: 1, total: 1, next: null });
     expect(missionsSummary({ done: 0, total: 0 })).toEqual({ done: 1, total: 1, next: null });
     expect(missionsSummary({ done: 5, total: 8 })).toEqual({ done: 0, total: 1, next: null });
+  });
+});
+
+describe('live missions (U6-5)', () => {
+  const today = {
+    date: '2026-10-01',
+    goldenBloom: false,
+    missions: [
+      { type: 'REVIEW_DUE' as const, target: 8, progress: 11, done: true },
+      { type: 'LEARN_NEW' as const, target: 5, progress: 2, done: false },
+      { type: 'QUIZ' as const, target: 1, progress: 0, done: false },
+    ],
+  };
+  const href = '/garden/quiz?topic=t2';
+
+  it('maps the 3 missions to A1 rows, capping progress at the target', () => {
+    expect(liveMissions(today, href)).toEqual([
+      { kind: 'water', done: 8, total: 8 },
+      { kind: 'plant', done: 2, total: 5 },
+      { kind: 'challenge', minutes: null, done: false, href },
+    ]);
+  });
+
+  it('summarises A3: done count, and the quiz as next while it is open', () => {
+    expect(liveMissionsSummary(today, href)).toEqual({
+      done: 1,
+      total: 3,
+      next: { mission: 'challenge', minutes: null, href },
+    });
+    const all = { ...today, goldenBloom: true, missions: today.missions.map((m) => ({ ...m, done: true })) };
+    expect(liveMissionsSummary(all, href)).toEqual({ done: 3, total: 3, next: null });
+  });
+
+  it('links the quiz to the most-due bed, or all beds when nothing is due', () => {
+    const topics = [
+      { id: 't1', due_count: '3' },
+      { id: 't2', due_count: '7' },
+      { id: 't3', due_count: '7' },
+    ];
+    expect(missionQuizHref(topics)).toBe('/garden/quiz?topic=t2');
+    expect(missionQuizHref([{ id: 't1', due_count: '0' }, { id: 't2' }])).toBe('/garden/quiz');
+    expect(missionQuizHref(undefined)).toBe('/garden/quiz');
   });
 });

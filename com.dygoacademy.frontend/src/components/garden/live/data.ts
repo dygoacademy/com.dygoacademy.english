@@ -11,6 +11,7 @@ import type {
   UpcomingActivity,
 } from '@/types';
 import { GARDEN_ROUTES } from '@/constants/garden';
+import type { TodayMissions } from '@/hooks/useMissions';
 
 import { parseClock, type ClockTime } from '../format';
 import type { HeroPlant } from '../HeroGardenCard';
@@ -93,6 +94,49 @@ export function missionsSummary(mission: { done: number; total: number }): {
   next: null;
 } {
   return { done: mission.done >= mission.total ? 1 : 0, total: 1, next: null };
+}
+
+/**
+ * UI-6 (U6-5): A1's mission rows from `GET /missions/today`, in the API's
+ * order (REVIEW_DUE, LEARN_NEW, QUIZ). Progress is capped at the target so
+ * extra reviews don't overflow the bar; QUIZ links to `quizHref`.
+ */
+export function liveMissions(today: TodayMissions, quizHref: string): MissionItem[] {
+  return today.missions.map((m): MissionItem => {
+    if (m.type === 'QUIZ') return { kind: 'challenge', minutes: null, done: m.done, href: quizHref };
+    const total = Math.max(0, m.target);
+    const done = m.done ? total : Math.min(Math.max(0, m.progress), total);
+    return { kind: m.type === 'REVIEW_DUE' ? 'water' : 'plant', done, total };
+  });
+}
+
+/** UI-6 (U6-5): A3's Golden Bloom card; the next mission is the quiz while it's open. */
+export function liveMissionsSummary(
+  today: TodayMissions,
+  quizHref: string,
+): { done: number; total: number; next: { mission: 'challenge'; minutes: null; href: string } | null } {
+  const quizOpen = today.missions.some((m) => m.type === 'QUIZ' && !m.done);
+  return {
+    done: today.missions.filter((m) => m.done).length,
+    total: today.missions.length,
+    next: quizOpen ? { mission: 'challenge', minutes: null, href: quizHref } : null,
+  };
+}
+
+/**
+ * The QUIZ mission's link: the garden quiz of the bed with the most due
+ * words (`GET /topics` `due_count`; first bed on a tie), or the quiz over
+ * all beds when no bed has anything due (or the topics call failed).
+ */
+export function missionQuizHref(
+  topics: ReadonlyArray<Pick<GardenTopicSummary, 'id' | 'due_count'>> | undefined,
+): string {
+  let best: { id: string; due: number } | null = null;
+  for (const topic of topics ?? []) {
+    const due = num(topic.due_count);
+    if (due > 0 && (!best || due > best.due)) best = { id: topic.id, due };
+  }
+  return GARDEN_ROUTES.quiz(best?.id);
 }
 
 /**

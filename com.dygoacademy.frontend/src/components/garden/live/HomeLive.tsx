@@ -7,8 +7,10 @@ import { GARDEN_ROUTES } from '@/constants/garden';
 import { ROUTES } from '@/constants/routes';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
 import { useDailyActivity } from '@/hooks/useDailyActivity';
+import { useTodayMissions } from '@/hooks/useMissions';
 import { useNotificationSchedules } from '@/hooks/useNotificationSchedules';
 import { useSrsStats } from '@/hooks/useSrsStats';
+import { useTopics } from '@/hooks/useTopics';
 import { useUpcomingActivity } from '@/hooks/useUpcomingActivity';
 
 import { addDays, hourIn, isoDay, todayIn } from '../format';
@@ -18,7 +20,9 @@ import {
   displayName,
   gardenPlants,
   greetingFor,
+  liveMissions,
   missedDays,
+  missionQuizHref,
   ripensTomorrow,
   thirstyMission,
 } from './data';
@@ -33,10 +37,12 @@ import { LiveError, LiveLoading } from './LiveState';
  * stays as the fallback when the field is missing), GET /srs/activity
  * (last 30 days) and "ripens tomorrow" from GET /srs/activity/upcoming at
  * the learner's earliest enabled reminder time (hidden without one).
- * Missions v0 (U4-4): only mission 1, "Water today's thirsty words"
- * (reviews today from GET /srs/activity + `due_now`); hidden ("coming
- * soon") when the activity call failed. Not available yet, so not shown:
- * missions 2-3, streak freezes and time estimates. A5's streak card stays hidden: it is
+ * Missions (U6-5): GET /missions/today's 3 rows (water due words, plant
+ * new words, the collocation quiz linking to the most-due bed's quiz) and
+ * the Golden Bloom state. If that call fails, Missions v0 (U4-4): only
+ * "Water today's thirsty words" (reviews today from GET /srs/activity +
+ * `due_now`); "coming soon" when that call failed too. Not shown yet:
+ * streak freezes (U6-6) and time estimates. A5's streak card stays hidden: it is
  * the freeze card ("streak is safe" + rain barrel), and a learner who
  * missed 2+ days has no live `current_streak_days` to keep safe.
  */
@@ -47,8 +53,10 @@ export function HomeLive() {
   const user = useCurrentUser();
   const upcoming = useUpcomingActivity(2);
   const schedules = useNotificationSchedules();
+  const missions = useTodayMissions();
+  const topics = useTopics();
 
-  if (stats.isPending || activity.isPending) return <LiveLoading />;
+  if (stats.isPending || activity.isPending || missions.isPending) return <LiveLoading />;
   if (stats.isError || !stats.data) {
     return <LiveError onRetry={() => void stats.refetch()} />;
   }
@@ -95,8 +103,13 @@ export function HomeLive() {
         plants: gardenPlants(s, 9),
       }}
       missions={
-        activity.data ? [thirstyMission(activity.data, isoDay(today), s.due_now)] : null
+        missions.data
+          ? liveMissions(missions.data, missionQuizHref(topics.data))
+          : activity.data
+            ? [thirstyMission(activity.data, isoDay(today), s.due_now)]
+            : null
       }
+      goldenBloom={missions.data?.goldenBloom ?? false}
       action={
         s.due_now > 0
           ? { href: GARDEN_ROUTES.review, kind: 'start', wordsLeft: s.due_now, minutes: null }

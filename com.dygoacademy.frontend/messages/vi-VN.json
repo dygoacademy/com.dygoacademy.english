@@ -372,6 +372,7 @@
         "comingSoon": "Nhiệm vụ hằng ngày sắp có. Trong lúc chờ, hãy tưới các từ đến hạn bên dưới.",
         "goldenBloom": "Hoàn thành cả {total} để nở <b>Hoa Vàng hôm nay</b>",
         "goldenBloomOne": "Hoàn thành để nở <b>Hoa Vàng hôm nay</b>",
+        "goldenBloomEarned": "<b>Hoa Vàng hôm nay</b> đã nở",
         "water": "Tưới {count} từ đến hạn",
         "thirsty": "Tưới các từ cần tưới hôm nay",
         "plant": "Gieo {count} từ mới",

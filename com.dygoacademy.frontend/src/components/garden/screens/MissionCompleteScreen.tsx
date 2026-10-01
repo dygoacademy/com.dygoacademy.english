@@ -34,7 +34,7 @@ export interface MissionCompleteScreenProps {
     done: number;
     total: number;
     /** The next mission to do (only the collocation challenge so far). */
-    next: { mission: 'challenge'; minutes: number; href: string } | null;
+    next: { mission: 'challenge'; minutes: number | null; href: string } | null;
   } | null;
   /** The reminder row; null hides it. */
   reminder: { ripening: number; time: ClockTime; on: boolean } | null;
@@ -163,10 +163,12 @@ export function MissionCompleteScreen({
                 className: 'h-[54px] rounded-control text-[16px]',
               })}
             >
-              {t('nextMission', {
-                title: missionNames(missions.next.mission),
-                minutes: missions.next.minutes,
-              })}
+              {missions.next.minutes === null
+                ? missionNames(missions.next.mission)
+                : t('nextMission', {
+                    title: missionNames(missions.next.mission),
+                    minutes: missions.next.minutes,
+                  })}
             </Link>
           ) : null}
         </div>

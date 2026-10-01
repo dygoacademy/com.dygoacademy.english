@@ -34,7 +34,8 @@ export type MissionItem =
   /** Missions v0 (U4-4): "Water today's thirsty words", done = reviewed today. */
   | { kind: 'thirsty'; done: number; total: number }
   | { kind: 'plant'; done: number; total: number }
-  | { kind: 'challenge'; minutes: number; done: boolean };
+  /** `minutes` null: no time estimate (live data); `href` links the row while not done. */
+  | { kind: 'challenge'; minutes: number | null; done: boolean; href?: string };
 
 export interface TodaysGardenScreenProps {
   /** Today, as a calendar day (format.ts `calendarDay` / `todayIn`). */
@@ -53,6 +54,8 @@ export interface TodaysGardenScreenProps {
   };
   /** Null until daily missions exist (UI-6): shows "coming soon". */
   missions: readonly MissionItem[] | null;
+  /** All missions done today (UI-6): the Golden Bloom strip says it has bloomed. */
+  goldenBloom?: boolean;
   /** The main action; null when nothing is due. */
   /** `minutes` is an estimate; null leaves it out. */
   action: {
@@ -79,6 +82,7 @@ export function TodaysGardenScreen({
   streakDays,
   garden,
   missions,
+  goldenBloom = false,
   action,
   ripens,
   stickyNav = true,
@@ -144,10 +148,14 @@ export function TodaysGardenScreen({
             <p className="flex items-center gap-2 rounded-tile bg-garden-gold-soft px-2.5 py-2 text-[13px] text-garden-gold-soft-text">
               <GoldenBloomIcon width={18} height={18} centreFirst />
               <span>
-                {t.rich(missions.length === 1 ? 'missions.goldenBloomOne' : 'missions.goldenBloom', {
-                  total: missions.length,
-                  b: (c) => <b>{c}</b>,
-                })}
+                {t.rich(
+                  goldenBloom
+                    ? 'missions.goldenBloomEarned'
+                    : missions.length === 1
+                      ? 'missions.goldenBloomOne'
+                      : 'missions.goldenBloom',
+                  { total: missions.length, b: (c) => <b>{c}</b> },
+                )}
               </span>
             </p>
           </>
@@ -193,17 +201,30 @@ function Mission({ item }: { item: MissionItem }) {
   const t = useTranslations('screens.home.missions');
   const status = missionStatus(item);
   if (item.kind === 'challenge') {
-    return (
+    const row = (
       <MissionRow
         tone="gold"
         icon={<ChallengeIcon width={20} height={20} />}
         title={t('challenge')}
         value={item.done ? 1 : 0}
         max={1}
-        valueLabel={item.done ? t('valueDone') : t('valueMinutes', { count: item.minutes })}
+        valueLabel={
+          item.done
+            ? t('valueDone')
+            : item.minutes === null
+              ? t('valueCount', { done: 0, total: 1 })
+              : t('valueMinutes', { count: item.minutes })
+        }
         progressText={item.done ? t('valueDone') : t('notStarted')}
         status={status}
       />
+    );
+    return item.href && !item.done ? (
+      <Link href={item.href} className="block rounded-tile">
+        {row}
+      </Link>
+    ) : (
+      row
     );
   }
   const water = item.kind === 'water' || item.kind === 'thirsty';

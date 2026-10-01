@@ -372,6 +372,7 @@
         "comingSoon": "Daily missions are coming soon. Until then, water what’s due below.",
         "goldenBloom": "Finish all {total} to grow today's <b>Golden Bloom</b>",
         "goldenBloomOne": "Finish it to grow today's <b>Golden Bloom</b>",
+        "goldenBloomEarned": "Today's <b>Golden Bloom</b> has bloomed",
         "water": "Water {count, plural, one {# due word} other {# due words}}",
         "thirsty": "Water today's thirsty words",
         "plant": "Plant {count, plural, one {# new word} other {# new words}}",
