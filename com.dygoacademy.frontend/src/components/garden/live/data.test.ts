@@ -4,6 +4,7 @@ import type { SrsStats } from '@/types';
 
 import {
   displayName,
+  freezeStreak,
   gardenPlants,
   greetingFor,
   liveMissions,
@@ -15,6 +16,7 @@ import {
   sampleGarden,
   stageGarden,
   thirstyMission,
+  weekHarvest,
   weekOf,
 } from './data';
 
@@ -228,5 +230,49 @@ describe('live missions (U6-5)', () => {
     expect(missionQuizHref(topics)).toBe('/garden/quiz?topic=t2');
     expect(missionQuizHref([{ id: 't1', due_count: '0' }, { id: 't2' }])).toBe('/garden/quiz');
     expect(missionQuizHref(undefined)).toBe('/garden/quiz');
+  });
+});
+
+describe('weekly harvest and freezes (U6-6)', () => {
+  const day = (iso: string) => new Date(`${iso}T00:00:00Z`);
+
+  it('maps /missions/week onto the calendar week, future days empty', () => {
+    const days = ['2026-09-28', '2026-09-29', '2026-09-30', '2026-10-01', '2026-10-02', '2026-10-03', '2026-10-04'].map(day);
+    const week = [
+      { date: '2026-09-25', done: 3, goldenBloom: true },
+      { date: '2026-09-28', done: 3, goldenBloom: true },
+      { date: '2026-09-29', done: 1, goldenBloom: false },
+      { date: '2026-09-30', done: 0, goldenBloom: false },
+      { date: '2026-10-01', done: 2, goldenBloom: false },
+    ];
+    const h = weekHarvest(week, days, day('2026-10-01'));
+    expect(h.done).toBe(6);
+    expect(h.total).toBe(21);
+    expect(h.seedPack).toBeNull();
+    expect(h.days.map((d) => d.missions)).toEqual([3, 1, 0, 2, 0, 0, 0]);
+    expect(h.days.filter((d) => 'today' in d && d.today).map((d) => d.day)).toEqual([day('2026-10-01')]);
+  });
+
+  const stats = (over: Partial<SrsStats>): SrsStats => ({
+    total_words: 10,
+    mastered_words: 1,
+    due_now: 2,
+    leech_count: 0,
+    current_streak_days: 5,
+    display_name: null,
+    ...over,
+  });
+
+  it('shows the freeze card only when freezes covered days and the streak lives', () => {
+    const freezes = { available: 0, used_this_week: 2, refills_on: '2026-10-05' };
+    expect(freezeStreak(stats({ freezes }))).toEqual({
+      days: 5,
+      covered: 2,
+      left: 0,
+      refills: day('2026-10-05'),
+    });
+    expect(freezeStreak(stats({}))).toBeNull();
+    expect(freezeStreak(stats({ freezes: { ...freezes, used_this_week: 0 } }))).toBeNull();
+    expect(freezeStreak(stats({ freezes, current_streak_days: 0 }))).toBeNull();
   });
 });

@@ -18,6 +18,7 @@ import { TodaysGardenScreen } from '../screens/TodaysGardenScreen';
 import { WelcomeBackScreen } from '../screens/WelcomeBackScreen';
 import {
   displayName,
+  freezeStreak,
   gardenPlants,
   greetingFor,
   liveMissions,
@@ -42,9 +43,9 @@ import { LiveError, LiveLoading } from './LiveState';
  * the Golden Bloom state. If that call fails, Missions v0 (U4-4): only
  * "Water today's thirsty words" (reviews today from GET /srs/activity +
  * `due_now`); "coming soon" when that call failed too. Not shown yet:
- * streak freezes (U6-6) and time estimates. A5's streak card stays hidden: it is
- * the freeze card ("streak is safe" + rain barrel), and a learner who
- * missed 2+ days has no live `current_streak_days` to keep safe.
+ * time estimates. A5's freeze card ("streak is safe" + rain barrel, U6-6)
+ * shows when GET /srs/stats `freezes` covered missed days this week and
+ * the streak is still alive (`freezeStreak`); hidden otherwise.
  */
 export function HomeLive() {
   const timeZone = useTimeZone();
@@ -78,7 +79,7 @@ export function HomeLive() {
           ripe: s.mastered_words,
           plants: gardenPlants(s, 8),
         }}
-        streak={null}
+        streak={freezeStreak(s)}
         revive={
           s.leech_count > 0
             ? { count: s.leech_count, minutes: null, href: `${ROUTES.quiz}?mode=leech` }
