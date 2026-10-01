@@ -69,6 +69,12 @@ const NAMES = [
   'AU3-create-account-invite',
   'AU4-reset-password',
   'AU4-reset-password-sent',
+  // UI-5 quiz
+  'Q1-quiz-choose',
+  'Q2-quiz-right',
+  'Q3-quiz-not-quite',
+  'Q4-quiz-cloze-hint',
+  'Q5-quiz-listen',
 ];
 
 /** Old short codes still accepted on the command line. */

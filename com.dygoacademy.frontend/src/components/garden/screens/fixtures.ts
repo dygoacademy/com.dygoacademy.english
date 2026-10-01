@@ -13,6 +13,7 @@ import type { HeroPlant } from '../HeroGardenCard';
 import type { KeepsakeItem } from './MeScreen';
 import type { BedStage, TopicBedWord } from './TopicBedScreen';
 import type { TopicsScreenTopic } from './TopicsScreen';
+import type { QuizScreenProps } from './QuizScreen';
 import type { MissionItem } from './TodaysGardenScreen';
 import type { AvatarTone } from './WeeklyHarvestScreen';
 
@@ -44,6 +45,12 @@ export const REFERENCE_NAMES = [
   'AU3-create-account-invite',
   'AU4-reset-password',
   'AU4-reset-password-sent',
+  // UI-5 QZ-1: sample data in QUIZ below
+  'Q1-quiz-choose',
+  'Q2-quiz-right',
+  'Q3-quiz-not-quite',
+  'Q4-quiz-cloze-hint',
+  'Q5-quiz-listen',
 ] as const;
 export type ReferenceName = (typeof REFERENCE_NAMES)[number];
 
@@ -372,6 +379,108 @@ const SAMPLE = {
   },
 } as const;
 
+type QuizReference =
+  | 'Q1-quiz-choose'
+  | 'Q2-quiz-right'
+  | 'Q3-quiz-not-quite'
+  | 'Q4-quiz-cloze-hint'
+  | 'Q5-quiz-listen';
+type QuizFixture = Pick<
+  QuizScreenProps,
+  'index' | 'total' | 'question' | 'feedback' | 'hint' | 'initialAnswer' | 'initialPick'
+>;
+
+/**
+ * Canvas "Adult · Quiz" Q1–Q5 (AdultQuiz*.dc.html): the question as the
+ * API sends it (prompt with the task prefix, gap of five underscores), so
+ * the fixture pages go through the same prompt parsing as a live quiz.
+ * The topic name comes from `SAMPLE` (Environment).
+ */
+const DROUGHT_CHOICE: QuizScreenProps['question'] = {
+  id: 'drought:CONTEXTUAL_CHOICE',
+  type: 'CONTEXTUAL_CHOICE',
+  prompt:
+    'Choose the word that completes the sentence: "Years of _____ have left the river almost dry."',
+  answerMode: 'CHOICE',
+  options: ['pollution', 'drought', 'habitat', 'emissions'],
+};
+
+export const QUIZ: Record<QuizReference, QuizFixture> = {
+  'Q1-quiz-choose': {
+    index: 2,
+    total: 10,
+    question: DROUGHT_CHOICE,
+    feedback: null,
+    hint: { status: 'idle' },
+  },
+  'Q2-quiz-right': {
+    index: 3,
+    total: 10,
+    question: {
+      id: 'mitigate:MATCHING',
+      type: 'MATCHING',
+      prompt: 'Which word is a synonym of "mitigate"?',
+      answerMode: 'CHOICE',
+      options: ['worsen', 'reduce', 'sustain', 'ignore'],
+    },
+    initialPick: 'reduce',
+    feedback: {
+      correct: true,
+      correctAnswer: 'reduce',
+      word: 'mitigate',
+      ipa: '/ˈmɪt.ɪ.ɡeɪt/',
+      example: 'Planting more trees can help mitigate the effects of climate change.',
+      note: 'mastered',
+    },
+    hint: { status: 'idle' },
+  },
+  'Q3-quiz-not-quite': {
+    index: 2,
+    total: 10,
+    question: DROUGHT_CHOICE,
+    initialPick: 'pollution',
+    feedback: {
+      correct: false,
+      correctAnswer: 'drought',
+      word: 'drought',
+      explanation: 'a long period with little or no rain',
+      note: 'comesBack',
+    },
+    hint: { status: 'idle' },
+  },
+  'Q4-quiz-cloze-hint': {
+    index: 4,
+    total: 10,
+    question: {
+      id: 'sustainable:CLOZE',
+      type: 'CLOZE',
+      prompt: 'Fill in the blank: "Cities need more _____ forms of public transport."',
+      answerMode: 'TEXT',
+    },
+    initialAnswer: 'sustainab',
+    feedback: null,
+    hint: {
+      status: 'shown',
+      ipa: '/səˈsteɪ.nə.bəl/',
+      definition: 'able to continue for a long time without harming the environment',
+    },
+  },
+  'Q5-quiz-listen': {
+    index: 9,
+    total: 10,
+    question: {
+      id: 'biodiversity:DICTATION',
+      type: 'DICTATION',
+      prompt: 'Listen to the audio, then type the word you hear.',
+      // Never loaded unless the button is pressed; it only has to be set.
+      audioUrl: '/audio/reference-sample.mp3',
+      answerMode: 'TEXT',
+    },
+    feedback: null,
+    hint: { status: 'idle' },
+  },
+};
+
 /** A7's meanings in Chinese, in the order of `BED.words`. */
 const BED_MEANINGS_ZH = [
   '干旱',
@@ -424,5 +533,6 @@ export function referenceFixtures(locale: AppLocale) {
           : BED.words,
     },
     ME: { ...ME, meanings: sample.meanings },
+    QUIZ_TOPIC: sample.topics[0],
   };
 }

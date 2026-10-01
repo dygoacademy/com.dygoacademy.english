@@ -8,9 +8,18 @@ import { ForgotPasswordScreen } from '@/components/garden/auth/ForgotPasswordScr
 import { RegisterScreen } from '@/components/garden/auth/RegisterScreen';
 import { SignInScreen } from '@/components/garden/auth/SignInScreen';
 import { GroupsTabProvider } from '@/components/garden/groupsTab';
-import { ACCOUNT, FORGOT_PASSWORD, REGISTER, SIGN_IN, referenceFixtures, type ReferenceName } from '@/components/garden/screens/fixtures';
+import {
+  ACCOUNT,
+  FORGOT_PASSWORD,
+  QUIZ,
+  REGISTER,
+  SIGN_IN,
+  referenceFixtures,
+  type ReferenceName,
+} from '@/components/garden/screens/fixtures';
 import { MeScreen } from '@/components/garden/screens/MeScreen';
 import { MissionCompleteScreen } from '@/components/garden/screens/MissionCompleteScreen';
+import { QuizScreen } from '@/components/garden/screens/QuizScreen';
 import { ReviewScreen } from '@/components/garden/screens/ReviewScreen';
 import { TodaysGardenScreen } from '@/components/garden/screens/TodaysGardenScreen';
 import { TopicBedScreen } from '@/components/garden/screens/TopicBedScreen';
@@ -44,6 +53,7 @@ function ReferenceScreenBody({ name, locale }: { name: ReferenceName; locale: Ap
     HARVEST,
     HOME,
     ME,
+    QUIZ_TOPIC,
     REVIEW,
     TOPICS,
     TOPICS_ACADEMIC_FILTER,
@@ -159,6 +169,21 @@ function ReferenceScreenBody({ name, locale }: { name: ReferenceName; locale: Ap
             />
           ) : null}
         </>
+      );
+    case 'Q1-quiz-choose':
+    case 'Q2-quiz-right':
+    case 'Q3-quiz-not-quite':
+    case 'Q4-quiz-cloze-hint':
+    case 'Q5-quiz-listen':
+      return (
+        <QuizScreen
+          {...QUIZ[name]}
+          topicTitle={QUIZ_TOPIC}
+          closeHref={GARDEN_ROUTES.reference('A7-topic-bed')}
+          onHint={() => {}}
+          onSubmit={() => {}}
+          onNext={() => {}}
+        />
       );
     case 'GR1-shared-gardens':
     case 'GR2-group-garden':
