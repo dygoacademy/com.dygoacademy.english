@@ -34,6 +34,9 @@ import { addMissed, type MissedWord } from './results';
  * instead: GET /quizzes/leech-drill (all of the learner's leeches, not
  * scoped to the bed), same question and result screens; `topicId` then
  * only decides where Close and Back go.
+ *
+ * QZ-4: a normal quiz with misses links "Drill tricky words" to that
+ * drill (`?topic=<id>&mode=leech`, so it comes back to the same bed).
  */
 export function QuizLive({ topicId, mode }: { topicId?: string; mode?: 'leech' }) {
   const t = useTranslations('screens.quiz');
@@ -74,6 +77,7 @@ export function QuizLive({ topicId, mode }: { topicId?: string; mode?: 'leech' }
         total={items.length}
         missed={missed}
         drill={isDrill}
+        drillHref={isDrill ? null : GARDEN_ROUTES.quiz(topicId, 'leech')}
       />
     );
   }
