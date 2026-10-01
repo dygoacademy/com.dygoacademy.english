@@ -199,6 +199,10 @@ async function main() {
     await page.addStyleTag({ content: FREEZE_CSS });
     await page.evaluate(async () => {
       await document.fonts.ready;
+      // An autofocused button (e.g. the quiz's Next) shows a focus ring when the
+      // page was opened without a mouse; real learners tap first, so no ring.
+      const active = document.activeElement;
+      if (active instanceof HTMLButtonElement) active.blur();
     });
     await page.waitForTimeout(250);
     const shot = await page.screenshot({ clip: { x: 0, y: 0, width: 390, height: 844 } });

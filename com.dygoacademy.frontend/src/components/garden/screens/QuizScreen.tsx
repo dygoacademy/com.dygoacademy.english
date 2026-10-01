@@ -434,7 +434,8 @@ function QuestionPrompt({
         <span
           data-gap={state}
           className={gcn(
-            'mx-0.5 inline-block min-w-[88px] rounded-[10px] border-b-2 px-2 text-center font-body text-[18px] font-bold leading-[1.5]',
+            // min-width 88 + 2×8 padding: the canvas pill is content-box (104 wide empty).
+            'mx-0.5 inline-block min-w-[104px] rounded-[10px] border-b-2 px-2 text-center font-body text-[18px] font-bold leading-[1.5]',
             state === 'right'
               ? 'border-garden-success bg-rating-good text-garden-forest'
               : state === 'wrong'
