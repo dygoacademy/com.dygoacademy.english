@@ -29,8 +29,9 @@ const push = vi.fn();
 vi.mock('next/navigation', () => ({ useRouter: () => ({ push }) }));
 
 describe('reference fixtures', () => {
-  it('lists the 30 canvas references (12 adult screens, 7 group screens, 6 sign-in, 5 quiz)', () => {
-    expect(REFERENCE_NAMES).toHaveLength(30);
+  it('lists the 33 canvas references (12 adult screens, 7 group screens, 6 sign-in, 8 quiz)', () => {
+    expect(REFERENCE_NAMES).toHaveLength(33);
+    expect(isReferenceName('Q8-quiz-drill-done')).toBe(true);
     expect(isReferenceName('Q4-quiz-cloze-hint')).toBe(true);
     expect(isReferenceName('AU3-create-account-invite')).toBe(true);
     expect(isReferenceName('AU1-sign-in-error')).toBe(true);

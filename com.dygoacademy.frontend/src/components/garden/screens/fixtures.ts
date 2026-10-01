@@ -13,6 +13,7 @@ import type { HeroPlant } from '../HeroGardenCard';
 import type { KeepsakeItem } from './MeScreen';
 import type { BedStage, TopicBedWord } from './TopicBedScreen';
 import type { TopicsScreenTopic } from './TopicsScreen';
+import type { QuizResultScreenProps } from './QuizResultScreen';
 import type { QuizScreenProps } from './QuizScreen';
 import type { MissionItem } from './TodaysGardenScreen';
 import type { AvatarTone } from './WeeklyHarvestScreen';
@@ -51,6 +52,10 @@ export const REFERENCE_NAMES = [
   'Q3-quiz-not-quite',
   'Q4-quiz-cloze-hint',
   'Q5-quiz-listen',
+  // UI-5 QZ-2: sample data in QUIZ_RESULT below
+  'Q6-quiz-result',
+  'Q7-quiz-result-perfect',
+  'Q8-quiz-drill-done',
 ] as const;
 export type ReferenceName = (typeof REFERENCE_NAMES)[number];
 
@@ -478,6 +483,32 @@ export const QUIZ: Record<QuizReference, QuizFixture> = {
     },
     feedback: null,
     hint: { status: 'idle' },
+  },
+};
+
+type QuizResultReference = 'Q6-quiz-result' | 'Q7-quiz-result-perfect' | 'Q8-quiz-drill-done';
+type QuizResultFixture = Pick<QuizResultScreenProps, 'correct' | 'total' | 'missed' | 'drill'>;
+
+/**
+ * Canvas "Adult · Quiz" Q6–Q8 (AdultQuizResult / Perfect / Drill.dc.html): 7 of 10 with
+ * three missed (Drill shown), 10 of 10 (bloom), drill 4 of 5 (no Drill).
+ */
+export const QUIZ_RESULT: Record<QuizResultReference, QuizResultFixture> = {
+  'Q6-quiz-result': {
+    correct: 7,
+    total: 10,
+    missed: [
+      { id: 'drought', word: 'drought' },
+      { id: 'deteriorate', word: 'deteriorate' },
+      { id: 'biodiversity', word: 'biodiversity' },
+    ],
+  },
+  'Q7-quiz-result-perfect': { correct: 10, total: 10, missed: [] },
+  'Q8-quiz-drill-done': {
+    correct: 4,
+    total: 5,
+    missed: [{ id: 'drought', word: 'drought' }],
+    drill: true,
   },
 };
 

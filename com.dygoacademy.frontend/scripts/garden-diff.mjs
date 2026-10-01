@@ -75,6 +75,9 @@ const NAMES = [
   'Q3-quiz-not-quite',
   'Q4-quiz-cloze-hint',
   'Q5-quiz-listen',
+  'Q6-quiz-result',
+  'Q7-quiz-result-perfect',
+  'Q8-quiz-drill-done',
 ];
 
 /** Old short codes still accepted on the command line. */

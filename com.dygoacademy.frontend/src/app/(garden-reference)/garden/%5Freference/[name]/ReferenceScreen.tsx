@@ -12,6 +12,7 @@ import {
   ACCOUNT,
   FORGOT_PASSWORD,
   QUIZ,
+  QUIZ_RESULT,
   REGISTER,
   SIGN_IN,
   referenceFixtures,
@@ -19,6 +20,7 @@ import {
 } from '@/components/garden/screens/fixtures';
 import { MeScreen } from '@/components/garden/screens/MeScreen';
 import { MissionCompleteScreen } from '@/components/garden/screens/MissionCompleteScreen';
+import { QuizResultScreen } from '@/components/garden/screens/QuizResultScreen';
 import { QuizScreen } from '@/components/garden/screens/QuizScreen';
 import { ReviewScreen } from '@/components/garden/screens/ReviewScreen';
 import { TodaysGardenScreen } from '@/components/garden/screens/TodaysGardenScreen';
@@ -183,6 +185,18 @@ function ReferenceScreenBody({ name, locale }: { name: ReferenceName; locale: Ap
           onHint={() => {}}
           onSubmit={() => {}}
           onNext={() => {}}
+        />
+      );
+    case 'Q6-quiz-result':
+    case 'Q7-quiz-result-perfect':
+    case 'Q8-quiz-drill-done':
+      return (
+        <QuizResultScreen
+          {...QUIZ_RESULT[name]}
+          closeHref={GARDEN_ROUTES.reference('A7-topic-bed')}
+          backHref={GARDEN_ROUTES.reference('A7-topic-bed')}
+          back="bed"
+          drillHref={GARDEN_ROUTES.reference('Q1-quiz-choose')}
         />
       );
     case 'GR1-shared-gardens':

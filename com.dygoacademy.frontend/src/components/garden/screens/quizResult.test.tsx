@@ -10,7 +10,7 @@ import { TopicBedScreen, type TopicBedWord } from './TopicBedScreen';
 
 vi.mock('next/navigation', () => ({ useRouter: () => ({ push: vi.fn() }) }));
 
-describe('QuizResultScreen (U5-6)', () => {
+describe('QuizResultScreen (U5-6, UI-5 QZ-2)', () => {
   it('shows the score, the words that need water and Back to bed', () => {
     renderWithIntl(
       <QuizResultScreen
@@ -35,7 +35,7 @@ describe('QuizResultScreen (U5-6)', () => {
     expect(screen.queryByRole('link', { name: 'Drill tricky words' })).toBeNull();
   });
 
-  it('all right: no missed list; the drill link shows only when offered', () => {
+  it('all right: bloom art, muted 0 tile, no missed list, no drill link', () => {
     renderWithIntl(
       <QuizResultScreen
         closeHref="/garden/topics"
@@ -44,17 +44,55 @@ describe('QuizResultScreen (U5-6)', () => {
         correct={5}
         total={5}
         missed={[]}
-        drill
         drillHref="/garden/quiz?mode=leech"
       />,
     );
-    expect(screen.getByText('Drill done')).toBeTruthy();
+    expect(screen.getByText('Quiz done')).toBeTruthy();
     expect(screen.getByText('Every answer right. This bed is thriving.')).toBeTruthy();
+    expect(screen.getByTestId('quiz-result-bloom')).toBeTruthy();
+    expect(screen.queryByTestId('quiz-result-watering')).toBeNull();
+    expect(screen.getByText('0').className).toContain('text-garden-placeholder');
+    expect(screen.getByText('5').className).toContain('text-garden-success');
     expect(screen.queryByRole('heading', { name: 'Words that need water' })).toBeNull();
     expect(screen.getByRole('link', { name: 'Back to topics' })).toBeTruthy();
+    expect(screen.queryByRole('link', { name: 'Drill tricky words' })).toBeNull();
+  });
+
+  it('normal quiz with misses: watering-can art, gold tile and the drill link', () => {
+    renderWithIntl(
+      <QuizResultScreen
+        closeHref="/garden/topics/t1"
+        backHref="/garden/topics/t1"
+        back="bed"
+        correct={7}
+        total={10}
+        missed={[{ id: 'w1', word: 'drought' }]}
+        drillHref="/garden/quiz?topic=t1&mode=leech"
+      />,
+    );
+    expect(screen.getByTestId('quiz-result-watering')).toBeTruthy();
+    expect(screen.getByText('1').className).toContain('text-garden-gold-text');
     expect(
       screen.getByRole('link', { name: 'Drill tricky words' }).getAttribute('href'),
-    ).toBe('/garden/quiz?mode=leech');
+    ).toBe('/garden/quiz?topic=t1&mode=leech');
+  });
+
+  it('drill result with misses: no drill link even when offered', () => {
+    renderWithIntl(
+      <QuizResultScreen
+        closeHref="/garden/topics/t1"
+        backHref="/garden/topics/t1"
+        back="bed"
+        correct={4}
+        total={5}
+        missed={[{ id: 'w1', word: 'drought' }]}
+        drill
+        drillHref="/garden/quiz?topic=t1&mode=leech"
+      />,
+    );
+    expect(screen.getByText('Drill done')).toBeTruthy();
+    expect(screen.getByRole('heading', { name: 'Words that need water' })).toBeTruthy();
+    expect(screen.queryByRole('link', { name: 'Drill tricky words' })).toBeNull();
   });
 });
 
