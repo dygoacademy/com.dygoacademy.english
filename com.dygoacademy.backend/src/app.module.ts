@@ -13,6 +13,7 @@ import { HealthModule } from './health/health.module';
 import { AnalyticsModule } from './modules/analytics/analytics.module';
 import { BillingModule } from './modules/billing/billing.module';
 import { GroupsModule } from './modules/groups/groups.module';
+import { MissionsModule } from './modules/missions/missions.module';
 import { NotificationsModule } from './modules/notifications/notifications.module';
 import { ProfilesModule } from './modules/profiles/profiles.module';
 import { QuizModule } from './modules/quiz/quiz.module';
@@ -48,6 +49,7 @@ import { NotificationProcessor } from './workers/notification.processor';
     NotificationsModule,
     AnalyticsModule,
     ProfilesModule,
+    MissionsModule,
   ],
   providers: [
     EnrichmentProcessor,

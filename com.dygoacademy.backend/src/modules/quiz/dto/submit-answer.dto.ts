@@ -41,4 +41,14 @@ export class SubmitAnswerDto {
   @IsOptional()
   @IsIn(['en-US', 'vi-VN', 'zh-CN', 'en', 'vi', 'zh'])
   locale?: string;
+
+  @ApiPropertyOptional({
+    description:
+      'UI-6: true on the last answer of a quiz. Counts one finished quiz toward the ' +
+      "learner's QUIZ daily mission (same transaction as the SRS write).",
+    default: false,
+  })
+  @IsOptional()
+  @IsBoolean()
+  final?: boolean;
 }

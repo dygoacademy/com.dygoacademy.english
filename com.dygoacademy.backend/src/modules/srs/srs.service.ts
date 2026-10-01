@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 
 import { DatabaseService } from '../../database/database.service';
+import { MissionClient, recordMissionProgress } from '../missions/missions.store';
 import { RateWordDto } from './dto/rate-word.dto';
 import { SessionMode, StartSessionDto } from './dto/start-session.dto';
 import { SyncReviewItemDto, SyncReviewsDto } from './dto/sync-reviews.dto';
@@ -360,6 +361,7 @@ export class SrsService {
         quizType: null,
         hintUsed: false,
         gradeFor: (isNewCard) => gradeFlashcard(dto.rating, isNewCard),
+        countsForReviewMissions: true,
       },
       now,
     );
@@ -381,6 +383,8 @@ export class SrsService {
       hintUsed: boolean;
       responseMs?: number;
       source?: 'quiz' | 'leech_drill';
+      /** UI-6 U6-2: the last answer of a quiz — counts toward the QUIZ mission. */
+      quizFinished?: boolean;
     },
     now: Date = new Date(),
   ): Promise<RateWordResult> {
@@ -394,6 +398,7 @@ export class SrsService {
         quizType: input.quizType,
         hintUsed: input.hintUsed,
         gradeFor: () => rating,
+        quizFinished: input.quizFinished === true,
       },
       now,
     );
@@ -415,6 +420,9 @@ export class SrsService {
       quizType: GradedQuizType | null;
       hintUsed: boolean;
       gradeFor: (isNewCard: boolean) => SrsRating;
+      /** UI-6 U6-2: flashcard reviews bump REVIEW_DUE / LEARN_NEW. */
+      countsForReviewMissions?: boolean;
+      quizFinished?: boolean;
     },
     now: Date,
   ): Promise<RateWordResult> {
@@ -507,7 +515,26 @@ export class SrsService {
         ],
       );
 
+      // UI-6 U6-2: daily mission progress, in this same transaction. A graded
+      // flashcard review counts as LEARN_NEW when the card was new, else
+      // REVIEW_DUE; a finished quiz counts as QUIZ.
+      const missionClient = client as unknown as MissionClient;
+      const wasDue = !isNewCard && current.dueAt.getTime() <= now.getTime();
+      // Runs after the schedule writes, so `wasDue` re-adds this card to the
+      // due count if today's rows are created right here.
+      const recordMissions = async (graded: boolean): Promise<void> => {
+        const extraDue = wasDue ? 1 : 0;
+        if (input.countsForReviewMissions && graded) {
+          const type = isNewCard ? 'LEARN_NEW' : 'REVIEW_DUE';
+          await recordMissionProgress(missionClient, userId, timezone, now, type, extraDue);
+        }
+        if (input.quizFinished) {
+          await recordMissionProgress(missionClient, userId, timezone, now, 'QUIZ', extraDue);
+        }
+      };
+
       if (!outcome) {
+        await recordMissions(false);
         // Logged only — the schedule is untouched. `existing` is always set
         // here: a new card always grades (grading.ts).
         return {
@@ -586,6 +613,7 @@ export class SrsService {
       );
 
       const row = upserted.rows[0];
+      await recordMissions(true);
       return {
         topic_word_id: input.topicWordId,
         rating,

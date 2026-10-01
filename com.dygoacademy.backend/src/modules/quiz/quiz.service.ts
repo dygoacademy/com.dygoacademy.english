@@ -241,6 +241,7 @@ export class QuizService {
         correct,
         hintUsed: dto.hintUsed ?? false,
         responseMs: dto.responseMs,
+        quizFinished: dto.final === true,
       });
       result.srs = {
         graded: srs.graded,

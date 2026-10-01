@@ -254,7 +254,18 @@ describe('QuizService.answer', () => {
       correct: false,
       hintUsed: false,
       responseMs: 900,
+      quizFinished: false,
     });
+  });
+
+  it('final: true marks the quiz finished for the QUIZ daily mission (UI-6 U6-2)', async () => {
+    const queryAsMock = jest.fn().mockResolvedValueOnce([wordRow()]);
+    const recordQuizResultMock = jest.fn().mockResolvedValue(SRS_RESULT);
+    const service = await makeService({ queryAsMock, recordQuizResultMock });
+
+    await service.answer('user-1', 'tw-1:CLOZE', { answer: 'resilient', final: true });
+
+    expect(recordQuizResultMock.mock.calls[0][1]).toMatchObject({ quizFinished: true });
   });
 
   it('passes hintUsed through to the SRS so a hinted answer can be capped at HARD', async () => {

@@ -332,6 +332,52 @@ describe('SrsService.rate (Phase 10 — FSRS)', () => {
     expect(result.is_mastered).toBe(false);
     expect(upsertParams(queryMock)[14]).toBeNull();
   });
+
+  describe('daily missions (UI-6 U6-2)', () => {
+    const missionSql = (m: jest.Mock) =>
+      m.mock.calls.slice(6).map((c) => [String(c[0]), c[1] as unknown[]] as const);
+
+    it('a graded review of a due card bumps REVIEW_DUE in the same transaction', async () => {
+      const queryMock = txMock({ state: reviewRow() });
+      queryMock.mockResolvedValueOnce({ rows: [{ n: '3' }] }); // today's rows exist
+      const service = await makeService(jest.fn(), withUserOf(queryMock));
+
+      await service.rate('user-1', { topicWordId: 'w1', rating: 'GOOD' }, NOW);
+
+      const calls = missionSql(queryMock);
+      expect(calls).toHaveLength(2);
+      expect(calls[1][0]).toContain('update public.daily_missions');
+      // Asia/Singapore (txMock's profile tz) local date of NOW.
+      expect(calls[1][1]).toEqual(['user-1', '2026-09-01', 'REVIEW_DUE']);
+    });
+
+    it("a new card's first review bumps LEARN_NEW and creates today's rows if missing", async () => {
+      const queryMock = txMock({ state: null });
+      queryMock
+        .mockResolvedValueOnce({ rows: [{ n: '0' }] }) // no rows yet
+        .mockResolvedValueOnce({ rows: [{ n: '4' }] }); // 4 due
+      const service = await makeService(jest.fn(), withUserOf(queryMock));
+
+      await service.rate('user-1', { topicWordId: 'w1', rating: 'GOOD' }, NOW);
+
+      const calls = missionSql(queryMock);
+      expect(calls[2][0]).toContain('insert into public.daily_missions');
+      expect(calls[2][1]).toEqual(['user-1', '2026-09-01', 4, 5, 1]);
+      expect(calls[3][1]).toEqual(['user-1', '2026-09-01', 'LEARN_NEW']);
+    });
+
+    it('an ungraded review does not touch missions', async () => {
+      const queryMock = txMock({
+        state: reviewRow({ next_due_at: new Date(NOW.getTime() + DAY) }),
+      });
+      const service = await makeService(jest.fn(), withUserOf(queryMock));
+
+      const result = await service.rate('user-1', { topicWordId: 'w1', rating: 'GOOD' }, NOW);
+
+      expect(result.graded).toBe(false);
+      expect(queryMock.mock.calls.some((c) => String(c[0]).includes('daily_missions'))).toBe(false);
+    });
+  });
 });
 
 describe('SrsService.recordQuizResult (Phase 10 — quizzes grade the SRS)', () => {
@@ -392,6 +438,24 @@ describe('SrsService.recordQuizResult (Phase 10 — quizzes grade the SRS)', () 
       expect(log[8]).toBe(hintUsed);
     },
   );
+
+  it('quizFinished bumps the QUIZ mission (UI-6 U6-2); quiz answers never bump review missions', async () => {
+    const queryMock = txNewCard();
+    queryMock.mockResolvedValueOnce({ rows: [{ n: '3' }] });
+    const service = await makeService(jest.fn(), withUserOf(queryMock));
+
+    await service.recordQuizResult(
+      'user-1',
+      { topicWordId: 'w1', quizType: 'CLOZE', correct: true, hintUsed: false, quizFinished: true },
+      NOW,
+    );
+
+    const updates = queryMock.mock.calls.filter((c) =>
+      String(c[0]).includes('update public.daily_missions'),
+    );
+    expect(updates).toHaveLength(1);
+    expect(updates[0][1]).toEqual(['user-1', '2026-09-01', 'QUIZ']);
+  });
 });
 
 describe('SrsService.findLeeches', () => {
