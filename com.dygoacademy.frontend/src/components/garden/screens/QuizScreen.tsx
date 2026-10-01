@@ -284,7 +284,9 @@ function QuestionBody({
           <input
             id={`quiz-answer-${question.id}`}
             lang="en"
-            autoFocus
+            // Not on Listen and spell: on a phone the keyboard would open over
+            // the play button, and tapping play closes it again (iOS zoom).
+            autoFocus={question.type !== 'DICTATION'}
             value={text}
             onChange={(event) => setText(event.target.value)}
             disabled={submitting || answered}
@@ -404,7 +406,7 @@ function QuestionPrompt({
         <AudioButton
           src={question.audioUrl ?? null}
           label={t('listen')}
-          className="h-[84px] w-[84px] shadow-press-forest [&_svg]:h-9 [&_svg]:w-9"
+          playClassName="h-[84px] w-[84px] shadow-press-forest [&_svg]:h-9 [&_svg]:w-9"
         />
         <p className="text-center text-[15px] text-garden-muted">{t('listenQ')}</p>
       </div>

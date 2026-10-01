@@ -31,6 +31,9 @@ export interface GardenAudioButtonProps {
   /** Start in a given state, e.g. 'error' when the caller already knows the clip is missing. */
   initialStatus?: AudioStatus;
   className?: string;
+  /** Extra classes for the round play button only (e.g. a bigger size); the
+   *  "unavailable, tap to retry" pill keeps its own size so its text fits. */
+  playClassName?: string;
 }
 
 export function AudioButton({
@@ -39,6 +42,7 @@ export function AudioButton({
   playbackRate = 1,
   initialStatus = 'idle',
   className,
+  playClassName,
 }: GardenAudioButtonProps) {
   const t = useTranslations('components.audio');
   const [status, setStatus] = React.useState<AudioStatus>(initialStatus);
@@ -136,6 +140,7 @@ export function AudioButton({
         'transition-[transform,background-color] duration-press ease-garden active:scale-95',
         status === 'playing' && 'bg-garden-forest-deep',
         className,
+        playClassName,
       )}
     >
       <SpeakerIcon width={24} height={24} />
