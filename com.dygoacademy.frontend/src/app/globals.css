@@ -358,7 +358,12 @@
     outline-offset: 2px;
   }
 
-  /* §3 No double-tap zoom delay on anything tappable */
+  /* §3 No double-tap zoom anywhere in the garden (pinch zoom still works).
+     Only tappables had it, so on iOS a second tap on text — e.g. tapping the
+     quiz sentence to close the keyboard — zoomed the page to that block and
+     left it zoomed (iPhone 17 Pro Max, 2026-10-02). touch-action applies to
+     every descendant through the ancestor chain. */
+  [data-ui='garden'],
   [data-ui='garden'] :is(a, button, [role='button'], label) {
     touch-action: manipulation;
   }
