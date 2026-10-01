@@ -78,6 +78,23 @@ const JOBS = [
   ['AdultForgotVi.dc.html', 'vi', 'AU4-reset-password-sent-vi', { sent: true }],
   ['AdultMe.dc.html', 'en', 'A8-me-account', { account: true }],
   ['AdultMeVi.dc.html', 'vi', 'A8-me-account-vi', { account: true }],
+  // Quiz (canvas page "Adult · Quiz", 2026-10-01). States are baked into each board.
+  ['AdultQuiz.dc.html', 'en', 'Q1-quiz-choose', {}],
+  ['AdultQuizRight.dc.html', 'en', 'Q2-quiz-right', {}],
+  ['AdultQuizWrong.dc.html', 'en', 'Q3-quiz-not-quite', {}],
+  ['AdultQuizCloze.dc.html', 'en', 'Q4-quiz-cloze-hint', {}],
+  ['AdultQuizListen.dc.html', 'en', 'Q5-quiz-listen', {}],
+  ['AdultQuizResult.dc.html', 'en', 'Q6-quiz-result', {}],
+  ['AdultQuizPerfect.dc.html', 'en', 'Q7-quiz-result-perfect', {}],
+  ['AdultQuizDrill.dc.html', 'en', 'Q8-quiz-drill-done', {}],
+  ['AdultQuizVi.dc.html', 'vi', 'Q1-quiz-choose-vi', {}],
+  ['AdultQuizRightVi.dc.html', 'vi', 'Q2-quiz-right-vi', {}],
+  ['AdultQuizWrongVi.dc.html', 'vi', 'Q3-quiz-not-quite-vi', {}],
+  ['AdultQuizClozeVi.dc.html', 'vi', 'Q4-quiz-cloze-hint-vi', {}],
+  ['AdultQuizListenVi.dc.html', 'vi', 'Q5-quiz-listen-vi', {}],
+  ['AdultQuizResultVi.dc.html', 'vi', 'Q6-quiz-result-vi', {}],
+  ['AdultQuizPerfectVi.dc.html', 'vi', 'Q7-quiz-result-perfect-vi', {}],
+  ['AdultQuizDrillVi.dc.html', 'vi', 'Q8-quiz-drill-done-vi', {}],
 ].filter(([, , name]) => !FILTER || name.includes(FILTER));
 
 // English pages redrawn with the app's body stack (DM Sans, then Be Vietnam

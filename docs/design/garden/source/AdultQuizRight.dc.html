@@ -1,0 +1,232 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Quiz · Right answer</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&amp;family=DM+Sans:wght@400;500;600;700&amp;display=swap">
+<style>
+body{margin:0;font-family:'DM Sans',sans-serif;background:#F4F1EA;color:#1C2B24}
+a{color:#B4552E}a:hover{color:#8A3E20}
+@keyframes rise{0%{transform:translateY(8px);opacity:0}100%{transform:translateY(0);opacity:1}}
+.rise{animation:rise .25s ease-out}
+@keyframes bloom{0%{transform:scale(.6);opacity:0}70%{transform:scale(1.06)}100%{transform:scale(1);opacity:1}}
+.bloom{animation:bloom .7s ease-out}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; background: #F4F1EA; display: flex; flex-direction: column; gap: 14px; padding: 20px 16px 24px; font-family: inherit; color: #1C2B24; overflow: hidden">
+
+<div style="display: flex; align-items: center; gap: 12px">
+<a href="AdultTopicDetail.dc.html" aria-label="Close" style="width: 44px; height: 44px; border-radius: 22px; background: #FFFFFF; border: 1px solid #E3DDD0; display: flex; align-items: center; justify-content: center; color: #1C2B24; flex-shrink: 0"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M6 6 L18 18"></path><path d="M18 6 L6 18"></path></svg></a>
+<div style="flex-grow: 1; display: flex; flex-direction: column; gap: 5px">
+<div style="display: flex; justify-content: space-between; font-size: 12px; font-weight: 600; color: #5E6A62"><span>{{label}}</span><span>{{n}}/{{total}}</span></div>
+<div style="position: relative; height: 10px; border-radius: 5px; background: #EAE5DA">
+<div style="width: {{pct}}; height: 10px; border-radius: 5px; background: #7FA487; transition: width .3s"></div>
+<svg style="position: absolute; top: -9px; left: {{leafPos}}" width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20 C4 18 3 10 6 4 C12 5 20 9 12 20 Z" fill="#3E7F5A"></path></svg>
+</div>
+</div>
+</div>
+
+<div class="rise" style="flex-grow: 1; display: flex; flex-direction: column; gap: 14px">
+<div style="background: #FFFFFF; border: 1px solid #E3DDD0; border-radius: 26px; padding: 22px 20px; display: flex; flex-direction: column; gap: 14px; box-shadow: 0 6px 0 #E8E1D2">
+<span style="width: fit-content; font-size: 12px; font-weight: 700; background: #DDE7DA; color: #24463A; padding: 4px 10px; border-radius: 10px">{{q.tag}}</span>
+
+<sc-if value="{{q.isSentence}}" hint-placeholder-val="{{true}}">
+<p lang="en" style="margin: 0; font-family: 'Fraunces', serif; font-size: 22px; font-weight: 500; line-height: 1.45">{{q.before}}<span style="display: inline-block; min-width: 88px; padding: 0 8px; margin: 0 2px; border-radius: 10px; background: {{blankBg}}; border-bottom: 2px solid {{blankLine}}; color: {{blankColor}}; font-family: 'DM Sans', sans-serif; font-weight: 700; font-size: 18px; text-align: center; line-height: 1.5">{{blankText}}</span>{{q.after}}</p>
+</sc-if>
+
+<sc-if value="{{q.isMatch}}" hint-placeholder-val="{{false}}">
+<div style="display: flex; flex-direction: column; gap: 4px">
+<span style="font-size: 16px; color: #5E6A62">Which word means the same as</span>
+<span lang="en" style="font-family: 'Fraunces', serif; font-weight: 600; font-size: 38px; line-height: 1.05">{{q.word}}</span>
+</div>
+</sc-if>
+
+<sc-if value="{{q.isListen}}" hint-placeholder-val="{{false}}">
+<div style="display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 6px 0 2px">
+<button aria-label="Play the word" style="width: 84px; height: 84px; border-radius: 42px; border: none; background: #24463A; color: #FFFFFF; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 4px 0 #142A21"><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9 H8 L13 5 V19 L8 15 H4 Z"></path><path d="M16.5 8.5 C18 10 18 14 16.5 15.5"></path><path d="M19 6 C22 9 22 15 19 18"></path></svg></button>
+<span style="font-size: 15px; color: #5E6A62; text-align: center">Listen, then type the word you hear.</span>
+</div>
+</sc-if>
+
+<sc-if value="{{hintShown}}" hint-placeholder-val="{{false}}">
+<div role="note" aria-label="Hint" class="rise" style="display: flex; flex-direction: column; gap: 2px; border-radius: 14px; background: #E3F0F8; padding: 10px 12px; font-size: 14px; color: #1D4A68">
+<span lang="en" style="font-weight: 700">{{q.ipa}}</span>
+<span lang="en">{{q.definition}}</span>
+</div>
+</sc-if>
+<sc-if value="{{hintLink}}" hint-placeholder-val="{{false}}">
+<button onClick="{{showHint}}" style="align-self: flex-start; min-height: 44px; border: none; background: none; padding: 0; font-family: inherit; font-size: 14px; font-weight: 600; color: #24463A; text-decoration: underline; text-underline-offset: 4px; cursor: pointer">Need a hint?</button>
+</sc-if>
+</div>
+
+<sc-if value="{{isChoice}}" hint-placeholder-val="{{true}}">
+<div style="display: flex; flex-direction: column; gap: 10px">
+<sc-for list="{{options}}" as="o" hint-placeholder-count="4">
+<button onClick="{{o.pick}}" aria-pressed="{{o.pressed}}" style="min-height: 54px; box-sizing: border-box; border-radius: 16px; border: {{o.borderW}} solid {{o.border}}; background: {{o.bg}}; color: {{o.color}}; display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 12px 16px; font-family: inherit; font-size: 16px; font-weight: 600; text-align: left; cursor: pointer">
+<span lang="en">{{o.text}}</span>
+<sc-if value="{{o.isRight}}" hint-placeholder-val="{{false}}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12 L10 17 L19 7"></path></svg></sc-if>
+<sc-if value="{{o.isWrong}}" hint-placeholder-val="{{false}}"><span style="font-size: 12px; font-weight: 700; flex-shrink: 0">Your pick</span></sc-if>
+</button>
+</sc-for>
+</div>
+</sc-if>
+
+<sc-if value="{{isText}}" hint-placeholder-val="{{false}}">
+<div style="display: flex; flex-direction: column; gap: 10px">
+<div lang="en" aria-label="Type your answer…" style="height: 54px; box-sizing: border-box; border-radius: 16px; border: {{inputBorderW}} solid {{inputBorder}}; background: {{inputBg}}; padding: 0 16px; display: flex; align-items: center; font-size: 17px; color: {{inputColor}}">{{inputText}}<span style="display: {{caret}}; width: 2px; height: 22px; background: #24463A; margin-left: 1px"></span></div>
+<sc-if value="{{unanswered}}" hint-placeholder-val="{{true}}">
+<button onClick="{{check}}" style="height: 58px; border-radius: 18px; border: none; background: #24463A; color: #FFFFFF; display: flex; align-items: center; justify-content: center; font-family: inherit; font-weight: 700; font-size: 17px; box-shadow: 0 4px 0 #142A21; cursor: pointer; width: 100%; opacity: {{checkOpacity}}">Check</button>
+</sc-if>
+</div>
+</sc-if>
+
+<sc-if value="{{answered}}" hint-placeholder-val="{{false}}">
+<section aria-live="polite" class="rise" style="margin-top: auto; display: flex; flex-direction: column; gap: 6px; border-radius: 20px; border: 1px solid {{fbBorder}}; background: {{fbBg}}; padding: 16px; font-size: 15px">
+<span style="font-size: 18px; font-weight: 700; color: {{fbTitleColor}}">{{fbTitle}}</span>
+<sc-if value="{{correct}}" hint-placeholder-val="{{true}}">
+<span lang="en" style="color: #5E6A62">{{q.headword}} · {{q.ipa}}</span>
+<span lang="en" style="font-family: 'Fraunces', serif; font-style: italic; color: #2E3A33; line-height: 1.45">“{{q.example}}”</span>
+</sc-if>
+<sc-if value="{{showMastered}}" hint-placeholder-val="{{false}}">
+<span style="width: fit-content; border-radius: 12px; background: #FFFFFF; padding: 4px 10px; font-size: 12px; line-height: 1.35; font-weight: 700; color: #24463A">Mastered — this word needs watering less often now.</span>
+</sc-if>
+<sc-if value="{{wrong}}" hint-placeholder-val="{{false}}">
+<span lang="en" style="color: #2E3A33">{{q.definitionLine}}</span>
+<span style="font-size: 13px; color: #6B5215">This word comes back in your next watering.</span>
+</sc-if>
+<button onClick="{{next}}" style="height: 58px; border-radius: 18px; border: none; background: #B4552E; color: #FFFFFF; display: flex; align-items: center; justify-content: center; font-family: inherit; font-weight: 700; font-size: 17px; text-decoration: none; box-shadow: 0 4px 0 #7E3719; cursor: pointer; width: 100%; margin-top: 6px">{{nextLabel}}</button>
+</section>
+</sc-if>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = {"qi": 1, "pick": "reduce", "hint": false, "typed": "", "n": 4, "total": 10, "label": "Quiz · Environment", "mastered": true};
+  }
+  renderVals() {
+    const L = {"types": {"CLOZE": "Fill in the blank", "DICTATION": "Listen and spell", "MATCHING": "Synonym or antonym", "CONTEXTUAL_CHOICE": "Choose the word"}, "placeholder": "Type your answer…", "right": "That’s right!", "notQuite": "Not quite — it’s “{a}”", "next": "Next", "finish": "See results"};
+    const Q = [
+ {
+  "type": "CONTEXTUAL_CHOICE",
+  "isSentence": true,
+  "before": "Years of ",
+  "after": " have left the river almost dry.",
+  "answer": "drought",
+  "options": [
+   "pollution",
+   "drought",
+   "habitat",
+   "emissions"
+  ],
+  "ipa": "/draʊt/",
+  "definition": "a long period with little or no rain",
+  "example": "Years of drought have left the river almost dry."
+ },
+ {
+  "type": "MATCHING",
+  "isMatch": true,
+  "word": "mitigate",
+  "answer": "reduce",
+  "options": [
+   "worsen",
+   "reduce",
+   "sustain",
+   "ignore"
+  ],
+  "ipa": "/ˈmɪt.ɪ.ɡeɪt/",
+  "definition": "to make something bad less harmful or serious",
+  "example": "Planting more trees can help mitigate the effects of climate change."
+ },
+ {
+  "type": "CLOZE",
+  "isSentence": true,
+  "before": "Cities need more ",
+  "after": " forms of public transport.",
+  "answer": "sustainable",
+  "ipa": "/səˈsteɪ.nə.bəl/",
+  "definition": "able to continue for a long time without harming the environment",
+  "example": "Cities need more sustainable forms of public transport."
+ },
+ {
+  "type": "DICTATION",
+  "isListen": true,
+  "answer": "biodiversity",
+  "ipa": "/ˌbaɪ.əʊ.daɪˈvɜː.sə.ti/",
+  "definition": "the variety of plants and animals in a place",
+  "example": "Rainforests are home to rich biodiversity."
+ }
+];
+    const s = this.state;
+    const q0 = Q[s.qi % Q.length];
+    const isChoice = !!q0.options;
+    const answered = s.pick !== null;
+    const correct = answered && s.pick.trim().toLowerCase() === q0.answer;
+    const q = Object.assign({}, q0, {
+      tag: L.types[q0.type],
+      isSentence: !!q0.isSentence, isMatch: !!q0.isMatch, isListen: !!q0.isListen,
+      headword: q0.word || q0.answer,
+      definitionLine: (q0.word || q0.answer) + ' · ' + q0.definition
+    });
+    const options = isChoice ? q0.options.map((text) => {
+      const isRight = answered && text === q0.answer;
+      const isWrong = answered && !correct && text === s.pick;
+      return {
+        text, isRight, isWrong,
+        pressed: text === s.pick ? 'true' : 'false',
+        borderW: isRight || isWrong ? '2px' : '1px',
+        border: isRight ? '#24463A' : (isWrong ? '#E0B04A' : '#E3DDD0'),
+        bg: isRight ? '#DDE7DA' : (isWrong ? '#FBF4E4' : '#FFFFFF'),
+        color: isRight ? '#24463A' : (isWrong ? '#6B5215' : (answered ? '#8A938C' : '#1C2B24')),
+        pick: () => { if (!answered) this.setState({ pick: text }); }
+      };
+    }) : [];
+    const done = s.n - 1 + (answered ? 1 : 0);
+    const frac = done / s.total;
+    const typed = s.typed || '';
+    return {
+      label: s.label, n: s.n, total: s.total,
+      pct: Math.round(frac * 100) + '%',
+      leafPos: 'calc(' + Math.round(frac * 100) + '% - 11px)',
+      q, options, isChoice, isText: !isChoice,
+      answered, unanswered: !answered, correct, wrong: answered && !correct,
+      showMastered: correct && !!s.mastered,
+      blankText: q0.isSentence && answered ? q0.answer : '',
+      blankBg: answered ? (correct ? '#DDE7DA' : '#FBF4E4') : '#F4F1EA',
+      blankLine: answered ? (correct ? '#3E7F5A' : '#E0B04A') : '#5E6A62',
+      blankColor: correct ? '#24463A' : '#6B5215',
+      hintShown: !isChoice && s.hint,
+      hintLink: !isChoice && !s.hint && !answered,
+      showHint: () => this.setState({ hint: true }),
+      inputText: typed || L.placeholder,
+      inputColor: typed ? '#1C2B24' : '#8A938C',
+      caret: !answered && typed ? 'inline-block' : 'none',
+      inputBorderW: answered ? '2px' : '1px',
+      inputBorder: answered ? (correct ? '#24463A' : '#E0B04A') : (typed ? '#24463A' : '#E3DDD0'),
+      inputBg: answered ? (correct ? '#DDE7DA' : '#FBF4E4') : '#FFFFFF',
+      checkOpacity: typed ? '1' : '0.45',
+      check: () => { if (typed) this.setState({ pick: typed }); },
+      fbBorder: correct ? '#24463A' : '#EFD9A6',
+      fbBg: correct ? '#DDE7DA' : '#FBF4E4',
+      fbTitleColor: correct ? '#24463A' : '#6B5215',
+      fbTitle: correct ? L.right : L.notQuite.replace('{a}', q0.answer),
+      nextLabel: s.n >= s.total ? L.finish : L.next,
+      next: () => {
+        const qi = (s.qi + 1) % Q.length;
+        const nq = Q[qi];
+        this.setState({ qi, pick: null, hint: false, n: s.n >= s.total ? 1 : s.n + 1, mastered: false,
+          typed: nq.options ? '' : nq.answer });
+      }
+    };
+  }
+}
+</script>
+</body>
+</html>
