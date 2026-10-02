@@ -402,7 +402,111 @@
         "detail": "Còn {count} từ · khoảng {minutes} phút",
         "detailNoTime": "Còn {count} từ"
       },
-      "ripens": "Ngày mai {time} · <b>{count} từ sẽ chín</b>"
+      "ripens": "Ngày mai {time} · <b>{count} từ sẽ chín</b>",
+      "public": {
+        "metaTitle": "Dygo · Vun trồng tiếng Anh, từng từ một",
+        "metaDescription": "Dygo biến từ mới thành một khu vườn. Mỗi ngày dành vài phút tưới những từ đến hạn và ngắm chúng lớn lên từ hạt giống đến lúc kết trái.",
+        "nav": {
+          "label": "Trên trang này",
+          "features": "Tính năng",
+          "howItWorks": "Cách hoạt động",
+          "forParents": "Phụ huynh"
+        },
+        "signIn": "Đăng nhập",
+        "createAccount": "Tạo tài khoản",
+        "hero": {
+          "title": "Vun trồng tiếng Anh, từng từ một.",
+          "lead": "Dygo biến từ mới thành một khu vườn. Mỗi ngày dành vài phút tưới những từ đến hạn và ngắm chúng lớn lên từ hạt giống đến lúc kết trái.",
+          "start": "Bắt đầu miễn phí",
+          "haveAccount": "Tôi đã có tài khoản",
+          "languages": "Có English, Tiếng Việt và 简体中文"
+        },
+        "how": {
+          "title": "Từ vựng của bạn lớn lên thế nào",
+          "lead": "Dygo nhắc lại mỗi từ ngay trước lúc bạn sắp quên, để từ đó nhớ lâu.",
+          "seed": {
+            "name": "Hạt",
+            "text": "Từ mới. Gieo từ một chủ đề hoặc tự thêm."
+          },
+          "sprout": {
+            "name": "Mầm",
+            "text": "Đang học. Tưới ngắn và thường xuyên."
+          },
+          "flower": {
+            "name": "Hoa",
+            "text": "Đã nhớ. Khoảng cách tưới giãn ra theo ngày."
+          },
+          "fruiting": {
+            "name": "Kết trái",
+            "text": "Đã thuộc. Thỉnh thoảng ghé thăm là đủ."
+          }
+        },
+        "features": {
+          "title": "Mọi thứ để vốn từ lớn lên",
+          "watering": {
+            "title": "Tưới mỗi ngày",
+            "text": "Ôn những từ đến hạn hôm nay. Chọn mức độ bạn nhớ, Dygo sẽ hẹn lần tưới tiếp theo."
+          },
+          "quizzes": {
+            "title": "Kiểm tra",
+            "text": "Chọn từ đúng, đồng nghĩa, điền vào chỗ trống, nghe và viết. Từ sai sẽ quay lại, không có dấu ✕ đỏ."
+          },
+          "beds": {
+            "title": "Luống chủ đề",
+            "text": "Bộ từ IELTS Academic và luống của riêng bạn, kèm câu ví dụ, phát âm và từ đồng nghĩa."
+          },
+          "missions": {
+            "title": "Nhiệm vụ và Hoa Vàng",
+            "text": "Ba nhiệm vụ nhỏ mỗi ngày. Hoàn thành cả ba để nở Hoa Vàng; thùng nước mưa giữ chuỗi ngày khi bạn bận."
+          },
+          "shared": {
+            "title": "Vườn chung",
+            "text": "Học cùng lớp hoặc bạn bè. Xem cả nhóm tiến bộ ra sao, không bao giờ lộ tiến độ riêng của ai."
+          },
+          "language": {
+            "title": "Ngôn ngữ của bạn",
+            "text": "Nghĩa bằng tiếng Việt hoặc tiếng Trung khi bạn cần, chỉ tiếng Anh khi bạn muốn."
+          }
+        },
+        "parents": {
+          "overline": "Dành cho phụ huynh",
+          "soon": "Sắp ra mắt",
+          "title": "Một khu vườn cho trẻ em",
+          "lead": "Trẻ học những từ tiếng Anh đầu tiên qua hình ảnh, âm thanh và chú chim Dygo. Nút bấm to, buổi học ngắn, hướng dẫn bằng tiếng Việt và tiếng Anh.",
+          "points": {
+            "pictures": "Đố vui bằng hình: chạm vào từ con nghe được",
+            "faces": "Hai khuôn mặt đơn giản thay cho thang điểm",
+            "stars": "Ong và ngôi sao, không bao giờ có dấu ✕ đỏ",
+            "account": "Mở vườn của con ngay từ tài khoản của bạn"
+          },
+          "kidsPrompt": "Tìm “cat”!",
+          "kidsHint": "Find the cat!"
+        },
+        "facts": {
+          "minutes": {
+            "value": "Vài phút",
+            "label": "mỗi ngày"
+          },
+          "missions": {
+            "value": "3 nhiệm vụ nhỏ",
+            "label": "mỗi ngày"
+          },
+          "languages": {
+            "value": "3 ngôn ngữ",
+            "label": "Anh, Việt, Trung"
+          }
+        },
+        "cta": {
+          "title": "Gieo hạt giống đầu tiên hôm nay",
+          "lead": "Bắt đầu miễn phí. Vườn của bạn sẵn sàng chỉ trong một phút.",
+          "button": "Tạo tài khoản"
+        },
+        "footer": {
+          "terms": "Điều khoản",
+          "privacy": "Quyền riêng tư",
+          "copyright": "© 2026 Dygo Academy"
+        }
+      }
     },
     "review": {
       "close": "Đóng",

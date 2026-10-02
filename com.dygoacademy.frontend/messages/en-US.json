@@ -402,7 +402,111 @@
         "detail": "{count, plural, one {# word} other {# words}} left · about {minutes} min",
         "detailNoTime": "{count, plural, one {# word} other {# words}} left"
       },
-      "ripens": "Tomorrow {time} · <b>{count, plural, one {# word} other {# words}} ripen</b>"
+      "ripens": "Tomorrow {time} · <b>{count, plural, one {# word} other {# words}} ripen</b>",
+      "public": {
+        "metaTitle": "Dygo · Grow your English, one word at a time",
+        "metaDescription": "Dygo turns new words into a garden. Spend a few minutes a day watering the words that are due, and watch them grow from seeds into fruit.",
+        "nav": {
+          "label": "On this page",
+          "features": "Features",
+          "howItWorks": "How it works",
+          "forParents": "For parents"
+        },
+        "signIn": "Sign in",
+        "createAccount": "Create account",
+        "hero": {
+          "title": "Grow your English, one word at a time.",
+          "lead": "Dygo turns new words into a garden. Spend a few minutes a day watering the words that are due, and watch them grow from seeds into fruit.",
+          "start": "Start growing, it’s free",
+          "haveAccount": "I have an account",
+          "languages": "In English, Tiếng Việt and 简体中文"
+        },
+        "how": {
+          "title": "How your words grow",
+          "lead": "Dygo shows each word again just before you’d forget it, so it sticks.",
+          "seed": {
+            "name": "Seed",
+            "text": "A new word. Plant it from a topic or add your own."
+          },
+          "sprout": {
+            "name": "Sprout",
+            "text": "Learning. Short, frequent waterings."
+          },
+          "flower": {
+            "name": "Flower",
+            "text": "Remembered. Waterings spread out to days."
+          },
+          "fruiting": {
+            "name": "Fruiting",
+            "text": "Mastered. It only needs the odd visit."
+          }
+        },
+        "features": {
+          "title": "Everything a growing vocabulary needs",
+          "watering": {
+            "title": "Daily watering",
+            "text": "Review the words that are due today. Say how well you remembered, and Dygo plans the next watering."
+          },
+          "quizzes": {
+            "title": "Quizzes",
+            "text": "Choose the word, synonyms, fill in the blank, listen and spell. Missed words come back, never a red cross."
+          },
+          "beds": {
+            "title": "Topic beds",
+            "text": "IELTS Academic collections and your own beds, with example sentences, pronunciation and synonyms."
+          },
+          "missions": {
+            "title": "Missions and Golden Bloom",
+            "text": "Three small missions a day. Finish all three for a Golden Bloom; the rain barrel keeps your streak on busy days."
+          },
+          "shared": {
+            "title": "Shared gardens",
+            "text": "Learn with a class or friends. See how the group is doing, never anyone’s private progress."
+          },
+          "language": {
+            "title": "Your language",
+            "text": "Meanings in Vietnamese or Chinese when you want them, English only when you don’t."
+          }
+        },
+        "parents": {
+          "overline": "For parents",
+          "soon": "Coming soon",
+          "title": "A garden for kids, too",
+          "lead": "Children learn their first English words with pictures, sounds and Dygo the bird. Big buttons, short sessions, and prompts in Vietnamese and English.",
+          "points": {
+            "pictures": "Picture quizzes: tap the word you hear",
+            "faces": "Two simple faces instead of ratings",
+            "stars": "Bees and stars, never a red cross",
+            "account": "Open your child’s garden from your own account"
+          },
+          "kidsPrompt": "Find “cat”!",
+          "kidsHint": "Tìm “cat”!"
+        },
+        "facts": {
+          "minutes": {
+            "value": "A few minutes",
+            "label": "a day"
+          },
+          "missions": {
+            "value": "3 small missions",
+            "label": "every day"
+          },
+          "languages": {
+            "value": "3 languages",
+            "label": "English, Vietnamese, Chinese"
+          }
+        },
+        "cta": {
+          "title": "Plant your first seed today",
+          "lead": "Free to start. Your garden is ready in a minute.",
+          "button": "Create account"
+        },
+        "footer": {
+          "terms": "Terms",
+          "privacy": "Privacy",
+          "copyright": "© 2026 Dygo Academy"
+        }
+      }
     },
     "review": {
       "close": "Close",

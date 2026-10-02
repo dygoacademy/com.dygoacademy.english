@@ -4,25 +4,35 @@ import { useTranslations } from 'next-intl';
 
 import { LOCALES, type AppLocale } from '@/i18n/config';
 
+import { gcn } from '../cn';
+
 /**
  * UI-A · the language chip at the top right of every auth screen (globe,
  * language name, chevron). A native `<select>` sits invisibly on top, so
  * phones open their own picker. The caller stores the choice in the
  * `dygo_locale` cookie before sign-in (UI-L resolution order).
+ * The public home page (HP-1) draws it 36px tall via `className`.
  */
 export function LanguageChip({
   locale,
   onChange,
   disabled,
+  className,
 }: {
   locale: AppLocale;
   onChange: (locale: AppLocale) => void;
   disabled?: boolean;
+  className?: string;
 }) {
   const t = useTranslations('components.language');
 
   return (
-    <label className="relative flex h-[38px] items-center gap-1.5 rounded-[18px] border border-border bg-surface px-3 text-[13px] font-semibold text-text focus-within:border-forest">
+    <label
+      className={gcn(
+        'relative flex h-[38px] items-center gap-1.5 rounded-[18px] border border-border bg-surface px-3 text-[13px] font-semibold text-text focus-within:border-forest',
+        className,
+      )}
+    >
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#24463A" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
         <circle cx="12" cy="12" r="9" />
         <path d="M3 12 H21" />

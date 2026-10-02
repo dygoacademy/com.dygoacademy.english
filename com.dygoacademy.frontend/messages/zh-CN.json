@@ -406,7 +406,111 @@
         "detail": "还剩 {count} 个单词 · 约 {minutes} 分钟",
         "detailNoTime": "还剩 {count} 个单词"
       },
-      "ripens": "明天 {time} · <b>{count} 个单词将成熟</b>"
+      "ripens": "明天 {time} · <b>{count} 个单词将成熟</b>",
+      "public": {
+        "metaTitle": "Dygo · 一次一个单词，让英语生长",
+        "metaDescription": "Dygo 把新单词变成一座花园。每天花几分钟浇灌到期的单词，看着它们从种子长到结果。",
+        "nav": {
+          "label": "本页内容",
+          "features": "功能",
+          "howItWorks": "使用方法",
+          "forParents": "家长专区"
+        },
+        "signIn": "登录",
+        "createAccount": "创建账户",
+        "hero": {
+          "title": "一次一个单词，让英语生长。",
+          "lead": "Dygo 把新单词变成一座花园。每天花几分钟浇灌到期的单词，看着它们从种子长到结果。",
+          "start": "免费开始种植",
+          "haveAccount": "我已有账户",
+          "languages": "支持 English、Tiếng Việt 和简体中文"
+        },
+        "how": {
+          "title": "你的单词如何生长",
+          "lead": "Dygo 会在你快要忘记之前再次展示每个单词，让它牢牢记住。",
+          "seed": {
+            "name": "种子",
+            "text": "新单词。从主题中种下，或自己添加。"
+          },
+          "sprout": {
+            "name": "幼苗",
+            "text": "学习中。浇水时间短、次数多。"
+          },
+          "flower": {
+            "name": "开花",
+            "text": "已记住。浇水间隔拉长到几天。"
+          },
+          "fruiting": {
+            "name": "结果",
+            "text": "已掌握。偶尔来看看就够了。"
+          }
+        },
+        "features": {
+          "title": "让词汇量生长所需的一切",
+          "watering": {
+            "title": "每日浇水",
+            "text": "复习今天到期的单词。说说你记得多好，Dygo 会安排下一次浇水。"
+          },
+          "quizzes": {
+            "title": "测验",
+            "text": "选词、同义词、填空、听写。答错的单词会再出现，绝不会有红叉。"
+          },
+          "beds": {
+            "title": "主题花床",
+            "text": "IELTS Academic 词库和你自己的花床，附例句、发音和同义词。"
+          },
+          "missions": {
+            "title": "任务和金色花开",
+            "text": "每天三个小任务。全部完成即可获得金色花开；忙碌的日子里，雨水桶会保住你的连续天数。"
+          },
+          "shared": {
+            "title": "共享花园",
+            "text": "和班级或朋友一起学习。看到整个小组的进展，但绝不会看到任何人的个人进度。"
+          },
+          "language": {
+            "title": "你的语言",
+            "text": "需要时显示越南语或中文释义，不需要时只用英语。"
+          }
+        },
+        "parents": {
+          "overline": "家长专区",
+          "soon": "即将上线",
+          "title": "也有给孩子的花园",
+          "lead": "孩子通过图片、声音和小鸟 Dygo 学习最初的英语单词。大按钮、短时学习，提示语有越南语和英语。",
+          "points": {
+            "pictures": "看图测验：点出你听到的单词",
+            "faces": "用两个简单表情代替评分",
+            "stars": "蜜蜂和星星，绝不会有红叉",
+            "account": "在你自己的账户里打开孩子的花园"
+          },
+          "kidsPrompt": "找到“cat”！",
+          "kidsHint": "Find the cat!"
+        },
+        "facts": {
+          "minutes": {
+            "value": "几分钟",
+            "label": "每天"
+          },
+          "missions": {
+            "value": "3 个小任务",
+            "label": "每天"
+          },
+          "languages": {
+            "value": "3 种语言",
+            "label": "英语、越南语、中文"
+          }
+        },
+        "cta": {
+          "title": "今天就种下第一颗种子",
+          "lead": "免费开始。一分钟就能准备好你的花园。",
+          "button": "创建账户"
+        },
+        "footer": {
+          "terms": "条款",
+          "privacy": "隐私",
+          "copyright": "© 2026 Dygo Academy"
+        }
+      }
     },
     "review": {
       "close": "关闭",

@@ -1,0 +1,34 @@
+import type { Metadata } from 'next';
+import { getTranslations } from 'next-intl/server';
+
+import { HomeLive } from '@/components/home/HomeLive';
+import { getGardenLocaleContext } from '@/i18n/garden-locale';
+
+export async function generateMetadata(): Promise<Metadata> {
+  const [t, locale] = await Promise.all([
+    getTranslations('screens.home.public'),
+    getGardenLocaleContext(),
+  ]);
+  const title = t('metaTitle');
+  const description = t('metaDescription');
+  return {
+    title,
+    description,
+    openGraph: {
+      title,
+      description,
+      type: 'website',
+      siteName: 'Dygo Academy',
+      locale: locale.appLocale.replace('-', '_'),
+    },
+  };
+}
+
+/**
+ * `/` for signed-out visitors (Home page HP-1): the public home page,
+ * canvas page "Home page" (`reference/H1-home-phone`, `H2-home-desktop`).
+ * Signed in, middleware sends `/` to /garden before this renders.
+ */
+export default function HomePage() {
+  return <HomeLive />;
+}

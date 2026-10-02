@@ -62,7 +62,7 @@ export const PUBLIC_GARDEN_DEV_PREFIXES = [
 export const AUTH_PATHS = ['/login', '/register'] as const;
 
 export const ROUTES = {
-  /** Bare domain: signed in → /garden, signed out → /search (middleware.ts). */
+  /** Bare domain: signed in → /garden, signed out → the public home page (Home page HP-1). */
   home: '/',
   login: '/login',
   register: '/register',

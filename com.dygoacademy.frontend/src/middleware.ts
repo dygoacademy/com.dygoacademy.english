@@ -1,7 +1,7 @@
 import { NextResponse, type NextRequest } from 'next/server';
 
-import { GARDEN_REFERENCE_PREFIX, GARDEN_ROUTES } from '@/constants/garden';
-import { legacyRedirect, ROUTES } from '@/constants/routes';
+import { GARDEN_REFERENCE_PREFIX } from '@/constants/garden';
+import { legacyRedirect } from '@/constants/routes';
 import { referencePagesAllowed } from '@/lib/garden-reference';
 import { updateSession } from '@/lib/supabase/middleware';
 
@@ -16,7 +16,8 @@ import { updateSession } from '@/lib/supabase/middleware';
  * Since UI-8 U8-3 the Word Garden is the only signed-in UI, and since
  * U8-5 it lives at the final short URLs (decision 1): old `/garden/<x>`
  * links and the deleted classic paths get a permanent redirect (query
- * kept) before anything else, and a signed-in "/" goes to /garden.
+ * kept) before anything else. "/" is decided in updateSession (Home page
+ * HP-1): signed in → /garden, signed out → the public home page.
  */
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -40,22 +41,9 @@ export async function middleware(request: NextRequest) {
     return NextResponse.rewrite(new URL('/__garden-ui-disabled', request.url));
   }
 
-  const response = await updateSession(request);
-
-  // updateSession only returns a redirect for an auth bounce (anonymous
-  // visitor on a protected path). Leave those alone: the garden redirect
-  // is for signed-in users, and the next request re-runs this anyway.
-  if (response.headers.has('location')) return response;
-
-  // The bare domain is the front door: signed in → the garden home
-  // (signed out, updateSession already sent it to /search). Temporary,
-  // since it depends on the session.
-  if (pathname !== ROUTES.home) return response;
-
-  const redirect = NextResponse.redirect(new URL(GARDEN_ROUTES.home, request.url));
-  // Carry over any refreshed Supabase session cookies.
-  response.cookies.getAll().forEach((cookie) => redirect.cookies.set(cookie));
-  return redirect;
+  // Also answers "/": signed in → /garden, signed out → the public home
+  // page (see lib/supabase/middleware.ts).
+  return updateSession(request);
 }
 
 export const config = {

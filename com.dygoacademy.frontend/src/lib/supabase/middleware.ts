@@ -10,6 +10,7 @@ import { NextResponse, type NextRequest } from 'next/server';
 import type { CookieOptions } from '@supabase/ssr';
 
 import { env } from '@/config/env';
+import { GARDEN_ROUTES } from '@/constants/garden';
 import { isProtectedPath, ROUTES } from '@/constants/routes';
 
 export async function updateSession(request: NextRequest) {
@@ -44,16 +45,17 @@ export async function updateSession(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  // Root is a special case, not just another protected prefix: an
-  // anonymous visitor hitting "/" (the signed-in front door since the
-  // 2026-09-17 reshuffle) isn't trying to reach a specific page they'll
-  // want to resume after logging in -- they're just a guest who landed on
-  // the bare domain, so this sends them to the public entry point
-  // (live-requested same day, "guest go to the website we should redirect
-  // them to search page") instead of dead-ending them on a login form via
-  // the generic `?next=` branch below.
-  if (!user && request.nextUrl.pathname === ROUTES.home) {
-    return NextResponse.redirect(new URL(ROUTES.search, request.url));
+  // Root is a special case, not just another protected prefix. Signed
+  // out, "/" is the public home page (Home page HP-1, 2026-10-02): it
+  // renders here, no redirect (it replaced the 2026-09-17 "guests go to
+  // /search" bounce; /search itself is unchanged). Signed in, "/" is the
+  // front door to the garden home -- a temporary redirect, since it
+  // depends on the session, carrying any refreshed session cookies.
+  if (request.nextUrl.pathname === ROUTES.home) {
+    if (!user) return response;
+    const redirect = NextResponse.redirect(new URL(GARDEN_ROUTES.home, request.url));
+    response.cookies.getAll().forEach((cookie) => redirect.cookies.set(cookie));
+    return redirect;
   }
 
   if (!user && isProtectedPath(request.nextUrl.pathname)) {
