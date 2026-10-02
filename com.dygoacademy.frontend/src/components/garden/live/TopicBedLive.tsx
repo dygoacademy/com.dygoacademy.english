@@ -15,7 +15,7 @@ import { toBedWords, type GardenTopicWord } from './data';
 import { LiveError, LiveLoading } from './LiveState';
 
 /**
- * /garden/topics/[id]: a topic bed (A7) from GET /topics/:id and the
+ * /topics/[id]: a topic bed (A7) from GET /topics/:id and the
  * topic's due cards (POST /srs/sessions with the topic).
  *
  * U5-3: each word's plant stage, wilting and next watering come from the
@@ -28,11 +28,11 @@ import { LiveError, LiveLoading } from './LiveState';
  * always English, ignoring the meaning-language preference).
  *
  * U5-4: "Water N due" opens watering scoped to this bed
- * (/garden/review?topic=…, i.e. POST /srs/sessions with the topic); +
+ * (/review?topic=…, i.e. POST /srs/sessions with the topic); +
  * opens the garden Add word sheet (POST /words, then the bed refetches).
  * Options still opens the classic topic page.
  *
- * U5-6: Quiz opens the garden quiz for this bed (/garden/quiz?topic=…),
+ * U5-6: Quiz opens the garden quiz for this bed (/quiz?topic=…),
  * and wilting rows open the leech drill (…&mode=leech), which comes back
  * to this bed.
  */

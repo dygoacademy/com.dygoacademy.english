@@ -1,10 +1,11 @@
 /**
- * Paths for the Word Garden UI rebuild (ui rebuild implementation plan.md).
+ * Paths for the Word Garden screens (ui rebuild implementation plan.md).
  *
- * Kept out of constants/routes.ts on purpose while both UIs live side by
- * side: the final URLs are an open decision in the plan, so every new
- * screen lives under /garden/... for now. UI-8 folds these into ROUTES
- * (and PROTECTED_PATH_PREFIXES) when the garden moves to its final URLs.
+ * UI-8 U8-5 (decision 1): the final short URLs. `/garden` stays the home;
+ * the other screens moved up from `/garden/<x>` to `/<x>`, and
+ * middleware.ts redirects the old `/garden/<x>` paths permanently (see
+ * LEGACY_GARDEN_SEGMENTS in constants/routes.ts). The dev pages (_tokens,
+ * _gallery, _reference) stay under /garden.
  */
 export const GARDEN_ROUTES = {
   /** Today's Garden (A1), or Welcome back (A5) after 2+ missed days. */
@@ -19,29 +20,29 @@ export const GARDEN_ROUTES = {
   /** Flag-only component gallery (UI-2); folder `%5Fgallery`, same reason. */
   gallery: '/garden/_gallery',
   /** A2 Review (watering) and A3 Mission complete. */
-  review: '/garden/review',
-  reviewDone: '/garden/review/done',
+  review: '/review',
+  reviewDone: '/review/done',
   /** A4 Weekly harvest. */
-  missions: '/garden/missions',
+  missions: '/missions',
   /** A6 Topics and A7 Topic bed. */
-  topics: '/garden/topics',
-  topic: (id: string) => `/garden/topics/${encodeURIComponent(id)}`,
+  topics: '/topics',
+  topic: (id: string) => `/topics/${encodeURIComponent(id)}`,
   /** Garden quiz (U5-5/6): a bed's quiz, or the leech drill back to that bed. */
   quiz: (topicId?: string, mode?: 'leech') => {
     const params = new URLSearchParams();
     if (topicId) params.set('topic', topicId);
     if (mode) params.set('mode', mode);
     const query = params.toString();
-    return query ? `/garden/quiz?${query}` : '/garden/quiz';
+    return query ? `/quiz?${query}` : '/quiz';
   },
   /** A8 Me. */
-  me: '/garden/me',
+  me: '/me',
   /** UI-G shared gardens: GR1 list, GR2 a garden, GR3/GR4 tend (admins), GR6 join. */
-  groups: '/garden/groups',
-  group: (id: string) => `/garden/groups/${encodeURIComponent(id)}`,
+  groups: '/groups',
+  group: (id: string) => `/groups/${encodeURIComponent(id)}`,
   groupManage: (id: string, tab: 'tricky' | 'gardeners' = 'tricky') =>
-    `/garden/groups/${encodeURIComponent(id)}/manage${tab === 'gardeners' ? '?tab=gardeners' : ''}`,
-  join: (token: string) => `/garden/join/${encodeURIComponent(token)}`,
+    `/groups/${encodeURIComponent(id)}/manage${tab === 'gardeners' ? '?tab=gardeners' : ''}`,
+  join: (token: string) => `/join/${encodeURIComponent(token)}`,
   /**
    * Flag-only, dev-only canvas reference pages (UI-fidelity 4): each renders
    * one screen with the canvas sample data for the pixel diff. Folder

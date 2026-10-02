@@ -205,7 +205,7 @@ describe('live missions (U6-5)', () => {
       { type: 'QUIZ' as const, target: 1, progress: 0, done: false },
     ],
   };
-  const href = '/garden/quiz?topic=t2';
+  const href = '/quiz?topic=t2';
 
   it('maps the 3 missions to A1 rows, capping progress at the target', () => {
     expect(liveMissions(today, href)).toEqual([
@@ -231,9 +231,9 @@ describe('live missions (U6-5)', () => {
       { id: 't2', due_count: '7' },
       { id: 't3', due_count: '7' },
     ];
-    expect(missionQuizHref(topics)).toBe('/garden/quiz?topic=t2');
-    expect(missionQuizHref([{ id: 't1', due_count: '0' }, { id: 't2' }])).toBe('/garden/quiz');
-    expect(missionQuizHref(undefined)).toBe('/garden/quiz');
+    expect(missionQuizHref(topics)).toBe('/quiz?topic=t2');
+    expect(missionQuizHref([{ id: 't1', due_count: '0' }, { id: 't2' }])).toBe('/quiz');
+    expect(missionQuizHref(undefined)).toBe('/quiz');
   });
 });
 

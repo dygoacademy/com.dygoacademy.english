@@ -1,7 +1,7 @@
 import { NextResponse, type NextRequest } from 'next/server';
 
 import { GARDEN_REFERENCE_PREFIX, GARDEN_ROUTES } from '@/constants/garden';
-import { ROUTES } from '@/constants/routes';
+import { legacyRedirect, ROUTES } from '@/constants/routes';
 import { referencePagesAllowed } from '@/lib/garden-reference';
 import { updateSession } from '@/lib/supabase/middleware';
 
@@ -13,12 +13,22 @@ import { updateSession } from '@/lib/supabase/middleware';
  * (src/constants/routes.ts) — this is the edge half of the auth guard.
  * The (garden) layout re-checks server-side as defense in depth.
  *
- * Since UI-8 U8-3 the Word Garden is the only signed-in UI: the front
- * door ("/"), invite links (/join/<token>) and the deleted classic paths
- * redirect into /garden. U8-5 replaces these with the final short URLs.
+ * Since UI-8 U8-3 the Word Garden is the only signed-in UI, and since
+ * U8-5 it lives at the final short URLs (decision 1): old `/garden/<x>`
+ * links and the deleted classic paths get a permanent redirect (query
+ * kept) before anything else, and a signed-in "/" goes to /garden.
  */
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
+
+  // Old URLs → final short URLs (UI-8 U8-5). Before the session check, so
+  // a signed-out visitor's `next` is already the new path.
+  const moved = legacyRedirect(pathname);
+  if (moved) {
+    const url = request.nextUrl.clone();
+    url.pathname = moved;
+    return NextResponse.redirect(url, 308);
+  }
 
   // The canvas reference pages (UI-fidelity 4) are a development tool for
   // the pixel diff: they don't exist in production builds unless the build
@@ -37,35 +47,15 @@ export async function middleware(request: NextRequest) {
   // is for signed-in users, and the next request re-runs this anyway.
   if (response.headers.has('location')) return response;
 
-  const target = gardenTarget(pathname);
-  if (!target) return response;
+  // The bare domain is the front door: signed in → the garden home
+  // (signed out, updateSession already sent it to /search). Temporary,
+  // since it depends on the session.
+  if (pathname !== ROUTES.home) return response;
 
-  const redirect = NextResponse.redirect(new URL(target, request.url));
+  const redirect = NextResponse.redirect(new URL(GARDEN_ROUTES.home, request.url));
   // Carry over any refreshed Supabase session cookies.
   response.cookies.getAll().forEach((cookie) => redirect.cookies.set(cookie));
   return redirect;
-}
-
-/** Where a signed-in request for the front door or a classic path goes. */
-function gardenTarget(pathname: string): string | null {
-  if (pathname === ROUTES.home) return GARDEN_ROUTES.home;
-
-  const joinToken = pathname.match(/^\/join\/([^/]+)\/?$/)?.[1];
-  if (joinToken) return GARDEN_ROUTES.join(decodeURIComponent(joinToken));
-
-  const topicId = pathname.match(/^\/topics\/([^/]+)\/?$/)?.[1];
-  if (topicId) return GARDEN_ROUTES.topic(decodeURIComponent(topicId));
-
-  const groupId = pathname.match(/^\/groups\/([^/]+)\/?$/)?.[1];
-  if (groupId) return GARDEN_ROUTES.group(decodeURIComponent(groupId));
-
-  const path = pathname.replace(/\/$/, '');
-  if (path === '/study') return GARDEN_ROUTES.review;
-  if (path === '/topics') return GARDEN_ROUTES.topics;
-  if (path === '/quiz') return GARDEN_ROUTES.quiz();
-  if (path === '/groups') return GARDEN_ROUTES.groups;
-  if (path === '/analytics' || path === '/settings') return GARDEN_ROUTES.me;
-  return null;
 }
 
 export const config = {

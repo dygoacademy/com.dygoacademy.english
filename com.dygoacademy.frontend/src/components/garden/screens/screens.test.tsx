@@ -45,7 +45,7 @@ describe('reference fixtures', () => {
 describe('TodaysGardenScreen', () => {
   it('renders the canvas copy from the fixture', () => {
     renderWithIntl(
-      <TodaysGardenScreen {...HOME} action={{ ...HOME.action, href: '/garden/review' }} />,
+      <TodaysGardenScreen {...HOME} action={{ ...HOME.action, href: '/review' }} />,
     );
     expect(screen.getByRole('heading', { level: 1 }).textContent).toBe('Good evening, Minh');
     expect(screen.getByText('412 words growing')).toBeTruthy();
@@ -71,7 +71,7 @@ describe('ReviewScreen', () => {
     closeHref: '/garden',
     card: REVIEW.card,
     intervals: REVIEW.intervals,
-    bloomHref: '/garden/review/done',
+    bloomHref: '/review/done',
   };
 
   it('flips to the answer and the rating bar on "Show answer"', () => {
@@ -101,10 +101,10 @@ describe('WeeklyHarvestScreen', () => {
 
   it("links the group card to that group's garden", () => {
     renderWithIntl(
-      <WeeklyHarvestScreen {...base} group={{ ...HARVEST.group, href: '/garden/groups/g1' }} />,
+      <WeeklyHarvestScreen {...base} group={{ ...HARVEST.group, href: '/groups/g1' }} />,
     );
     const card = screen.getByRole('link', { name: /IELTS Sprint group/ });
-    expect(card.getAttribute('href')).toBe('/garden/groups/g1');
+    expect(card.getAttribute('href')).toBe('/groups/g1');
     expect(card.textContent).toContain('4 of 5 watered today · 126 shared words');
   });
 
@@ -156,8 +156,8 @@ describe('TopicsScreen', () => {
 describe('TopicBedScreen', () => {
   const props = {
     ...BED,
-    backHref: '/garden/topics',
-    water: { count: 6, href: '/garden/review' },
+    backHref: '/topics',
+    water: { count: 6, href: '/review' },
     quizHref: '/quiz',
     addWordHref: '/add',
   };
@@ -189,7 +189,7 @@ describe('MeScreen', () => {
     renderWithIntl(
       <MeScreen
         {...ME}
-        dailyGoal={{ ...ME.dailyGoal, href: '/garden/missions' }}
+        dailyGoal={{ ...ME.dailyGoal, href: '/missions' }}
         family={{ ...ME.family, href: '/' }}
         onReminderChange={onReminderChange}
       />,

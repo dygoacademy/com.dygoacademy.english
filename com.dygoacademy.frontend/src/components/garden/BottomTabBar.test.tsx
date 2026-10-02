@@ -7,9 +7,9 @@ import { BottomTabBar } from './BottomTabBar';
 
 const ITEMS = [
   { key: 'garden', href: '/garden', label: 'Garden', icon: null },
-  { key: 'missions', href: '/garden/missions', label: 'Missions', icon: null },
-  { key: 'topics', href: '/garden/topics', label: 'Topics', icon: null },
-  { key: 'me', href: '/garden/me', label: 'Me', icon: null },
+  { key: 'missions', href: '/missions', label: 'Missions', icon: null },
+  { key: 'topics', href: '/topics', label: 'Topics', icon: null },
+  { key: 'me', href: '/me', label: 'Me', icon: null },
 ];
 
 describe('BottomTabBar', () => {

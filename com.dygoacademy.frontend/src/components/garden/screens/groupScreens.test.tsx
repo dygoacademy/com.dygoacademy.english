@@ -21,7 +21,7 @@ describe('SharedGardensScreen', () => {
   const props = {
     gardens: fx.list.gardens.map((garden) => ({
       id: garden.id,
-      href: `/garden/groups/${garden.id}`,
+      href: `/groups/${garden.id}`,
       name: garden.name,
       role: garden.role,
       meta: 'meta',
@@ -63,9 +63,9 @@ describe('SharedGardensScreen', () => {
 describe('TendGardenScreen', () => {
   const base = {
     groupName: 'IELTS Sprint · Week 3',
-    backHref: '/garden/groups/g1',
-    trickyHref: '/garden/groups/g1/manage',
-    gardenersHref: '/garden/groups/g1/manage?tab=gardeners',
+    backHref: '/groups/g1',
+    trickyHref: '/groups/g1/manage',
+    gardenersHref: '/groups/g1/manage?tab=gardeners',
   };
 
   it('shows totals only and picks the rain-day size', () => {

@@ -18,9 +18,8 @@ import { displayLink, inviteUrl } from './groupData';
  * limits chosen at that moment, and shown from then on. Changing any of
  * them afterwards clears the shown link; the next Copy / Share mints a
  * new one (the old link stays live until it expires; revoke it under
- * "Invite links"). The shared link is the classic /join/<token> path,
- * which works for every user; garden users are sent on to
- * /garden/join/<token> by the middleware.
+ * "Invite links"). The shared link is /join/<token>, the garden's own
+ * join page since UI-8 U8-5.
  */
 const EXPIRY_DAYS = [7, 1, 30, null] as const;
 const USES = [20, 1, 100, null] as const;

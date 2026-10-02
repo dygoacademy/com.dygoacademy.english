@@ -79,7 +79,7 @@ describe('RegisterScreen (AU3, from an invite)', () => {
 describe('auth paths', () => {
   it('finds the invite token in a join next path', () => {
     expect(inviteTokenFromNext('/join/abc123')).toBe('abc123');
-    expect(inviteTokenFromNext('/garden/join/abc123')).toBe('abc123');
+    expect(inviteTokenFromNext('/join/abc123')).toBe('abc123');
     expect(inviteTokenFromNext('/topics')).toBeNull();
     expect(inviteTokenFromNext(null)).toBeNull();
   });

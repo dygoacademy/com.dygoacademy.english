@@ -14,7 +14,7 @@ import { InviteSheetLive } from './InviteSheetLive';
 import { LiveError, LiveLoading } from './LiveState';
 
 /**
- * /garden/groups/[id]: GR2 on GET /groups/:id/garden (UI-G: group totals
+ * /groups/[id]: GR2 on GET /groups/:id/garden (UI-G: group totals
  * and your own beds, "today" in your time zone) and the roster for the
  * initials. Admins get the manage button (GR3/GR4) and Invite (GR5).
  * Beds open the topic bed (A7). A running rain day (GET /groups/:id/

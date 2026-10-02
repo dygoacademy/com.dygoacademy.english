@@ -1,7 +1,7 @@
 import { screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 
-import { addMissed } from '@/app/(garden)/garden/quiz/results';
+import { addMissed } from '@/app/(garden)/quiz/results';
 import { GARDEN_ROUTES } from '@/constants/garden';
 import { renderWithIntl } from '@/test/render';
 
@@ -14,8 +14,8 @@ describe('QuizResultScreen (U5-6, UI-5 QZ-2)', () => {
   it('shows the score, the words that need water and Back to bed', () => {
     renderWithIntl(
       <QuizResultScreen
-        closeHref="/garden/topics/t1"
-        backHref="/garden/topics/t1"
+        closeHref="/topics/t1"
+        backHref="/topics/t1"
         back="bed"
         correct={7}
         total={10}
@@ -31,20 +31,20 @@ describe('QuizResultScreen (U5-6, UI-5 QZ-2)', () => {
     expect(screen.getByText('resilient')).toBeTruthy();
     expect(screen.getByText('mitigate')).toBeTruthy();
     const back = screen.getByRole('link', { name: 'Back to bed' });
-    expect(back.getAttribute('href')).toBe('/garden/topics/t1');
+    expect(back.getAttribute('href')).toBe('/topics/t1');
     expect(screen.queryByRole('link', { name: 'Drill tricky words' })).toBeNull();
   });
 
   it('all right: bloom art, muted 0 tile, no missed list, no drill link', () => {
     renderWithIntl(
       <QuizResultScreen
-        closeHref="/garden/topics"
-        backHref="/garden/topics"
+        closeHref="/topics"
+        backHref="/topics"
         back="topics"
         correct={5}
         total={5}
         missed={[]}
-        drillHref="/garden/quiz?mode=leech"
+        drillHref="/quiz?mode=leech"
       />,
     );
     expect(screen.getByText('Quiz done')).toBeTruthy();
@@ -61,33 +61,33 @@ describe('QuizResultScreen (U5-6, UI-5 QZ-2)', () => {
   it('normal quiz with misses: watering-can art, gold tile and the drill link', () => {
     renderWithIntl(
       <QuizResultScreen
-        closeHref="/garden/topics/t1"
-        backHref="/garden/topics/t1"
+        closeHref="/topics/t1"
+        backHref="/topics/t1"
         back="bed"
         correct={7}
         total={10}
         missed={[{ id: 'w1', word: 'drought' }]}
-        drillHref="/garden/quiz?topic=t1&mode=leech"
+        drillHref="/quiz?topic=t1&mode=leech"
       />,
     );
     expect(screen.getByTestId('quiz-result-watering')).toBeTruthy();
     expect(screen.getByText('1').className).toContain('text-gold-text');
     expect(
       screen.getByRole('link', { name: 'Drill tricky words' }).getAttribute('href'),
-    ).toBe('/garden/quiz?topic=t1&mode=leech');
+    ).toBe('/quiz?topic=t1&mode=leech');
   });
 
   it('drill result with misses: no drill link even when offered', () => {
     renderWithIntl(
       <QuizResultScreen
-        closeHref="/garden/topics/t1"
-        backHref="/garden/topics/t1"
+        closeHref="/topics/t1"
+        backHref="/topics/t1"
         back="bed"
         correct={4}
         total={5}
         missed={[{ id: 'w1', word: 'drought' }]}
         drill
-        drillHref="/garden/quiz?topic=t1&mode=leech"
+        drillHref="/quiz?topic=t1&mode=leech"
       />,
     );
     expect(screen.getByText('Drill done')).toBeTruthy();
@@ -107,9 +107,9 @@ describe('addMissed', () => {
 
 describe('GARDEN_ROUTES.quiz', () => {
   it('builds the bed quiz and leech drill links', () => {
-    expect(GARDEN_ROUTES.quiz()).toBe('/garden/quiz');
-    expect(GARDEN_ROUTES.quiz('t 1')).toBe('/garden/quiz?topic=t+1');
-    expect(GARDEN_ROUTES.quiz('t1', 'leech')).toBe('/garden/quiz?topic=t1&mode=leech');
+    expect(GARDEN_ROUTES.quiz()).toBe('/quiz');
+    expect(GARDEN_ROUTES.quiz('t 1')).toBe('/quiz?topic=t+1');
+    expect(GARDEN_ROUTES.quiz('t1', 'leech')).toBe('/quiz?topic=t1&mode=leech');
   });
 });
 
@@ -121,18 +121,18 @@ describe('TopicBedScreen wilting rows', () => {
   const props = {
     title: 'Work',
     meta: { collection: null, level: null, words: 2 },
-    backHref: '/garden/topics',
+    backHref: '/topics',
     stageCounts: { seed: 0, sprout: 1, flower: 1, tree: 0 },
     words,
     water: null,
-    quizHref: '/garden/quiz?topic=t1',
+    quizHref: '/quiz?topic=t1',
     addWordHref: '/add',
   };
 
   it('link to the leech drill when wiltingHref is set; other rows stay static', () => {
-    renderWithIntl(<TopicBedScreen {...props} wiltingHref="/garden/quiz?topic=t1&mode=leech" />);
+    renderWithIntl(<TopicBedScreen {...props} wiltingHref="/quiz?topic=t1&mode=leech" />);
     const links = screen.getAllByRole('link').map((a) => a.getAttribute('href'));
-    expect(links).toContain('/garden/quiz?topic=t1&mode=leech');
+    expect(links).toContain('/quiz?topic=t1&mode=leech');
     expect(screen.getByRole('link', { name: /fragile/ })).toBeTruthy();
     expect(screen.queryByRole('link', { name: /robust/ })).toBeNull();
   });

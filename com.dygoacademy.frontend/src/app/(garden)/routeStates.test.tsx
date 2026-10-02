@@ -3,9 +3,9 @@ import { NextIntlClientProvider } from 'next-intl';
 import type { ReactElement } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 
-import en from '../../../../messages/en-US.json';
-import vi_messages from '../../../../messages/vi-VN.json';
-import zh from '../../../../messages/zh-CN.json';
+import en from '../../../messages/en-US.json';
+import vi_messages from '../../../messages/vi-VN.json';
+import zh from '../../../messages/zh-CN.json';
 
 import GardenError from './error';
 import GardenLoading from './loading';

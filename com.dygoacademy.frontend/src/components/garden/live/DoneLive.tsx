@@ -23,8 +23,8 @@ import {
 import { useReminderSwitch } from './useReminderSwitch';
 
 /**
- * /garden/review/done: Mission complete (A3) for the session that just
- * ended. The session's results come in the URL from /garden/review
+ * /review/done: Mission complete (A3) for the session that just
+ * ended. The session's results come in the URL from /review
  * (watered, recalled %, minutes, a word that bloomed); the streak from
  * GET /srs/stats and this week's days from GET /srs/activity (a day is
  * done when it has reviews). Missions (U6-5): the Golden Bloom card counts

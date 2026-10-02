@@ -56,7 +56,7 @@ describe('group live data', () => {
 
   it('reads a token from a pasted link or a bare token', () => {
     expect(tokenFromLink('https://dygoacademy.com/join/7Hk2-qP9x_Lm4r')).toBe('7Hk2-qP9x_Lm4r');
-    expect(tokenFromLink('dygoacademy.com/garden/join/abc')).toBe('abc');
+    expect(tokenFromLink('dygoacademy.com/join/abc')).toBe('abc');
     expect(tokenFromLink('AbCdEfGhIjKlMnOpQrStUvWx')).toBe('AbCdEfGhIjKlMnOpQrStUvWx');
     expect(tokenFromLink('hello')).toBeNull();
     expect(tokenFromLink('')).toBeNull();

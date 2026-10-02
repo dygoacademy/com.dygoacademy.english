@@ -22,7 +22,7 @@ import { useLanguageSettings } from "./useLanguageSettings";
 import { useReminderSwitch } from "./useReminderSwitch";
 
 /**
- * /garden/me: Me (A8).
+ * /me: Me (A8).
  *
  * Real: the name (Supabase profile metadata, else the email), mastered
  * words as "words fruiting" (GET /srs/stats), and the reminder: the

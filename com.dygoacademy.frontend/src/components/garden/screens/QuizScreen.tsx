@@ -28,7 +28,7 @@ import { ProgressVine } from '../ProgressVine';
  * "good" wash and a check; a wrong pick is marked gold "Your pick", never
  * a red ✕, and the panel explains and says the word will come back.
  *
- * Props only; the route (`/garden/quiz`) owns the session.
+ * Props only; the route (`/quiz`) owns the session.
  */
 export interface QuizScreenQuestion {
   id: string;

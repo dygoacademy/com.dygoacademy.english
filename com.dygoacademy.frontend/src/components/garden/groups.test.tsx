@@ -41,7 +41,7 @@ describe('RoleBadge', () => {
 
 describe('GroupCard', () => {
   const card = {
-    href: '/garden/groups/g1',
+    href: '/groups/g1',
     name: 'IELTS Sprint · Week 3',
     role: 'ADMIN' as const,
     meta: '5 gardeners · 3 shared beds · 126 words',
@@ -52,7 +52,7 @@ describe('GroupCard', () => {
   it('links to the garden and shows your due words', () => {
     renderWithIntl(<GroupCard {...card} due={5} />);
     const link = screen.getByRole('link');
-    expect(link.getAttribute('href')).toBe('/garden/groups/g1');
+    expect(link.getAttribute('href')).toBe('/groups/g1');
     expect(within(link).getByText('5 due for you')).toBeTruthy();
     expect(within(link).getByText('Admin')).toBeTruthy();
   });
@@ -70,8 +70,8 @@ describe('RainDayBanner', () => {
   it('has a Water link in both variants', () => {
     renderWithIntl(
       <>
-        <RainDayBanner variant="forest" title="IELTS Sprint · water 10 words" detail="3 of 5 done" waterHref="/garden/review" />
-        <RainDayBanner variant="water" title="Rain day · water 10 words" detail="you: 4 of 10" waterHref="/garden/review" />
+        <RainDayBanner variant="forest" title="IELTS Sprint · water 10 words" detail="3 of 5 done" waterHref="/review" />
+        <RainDayBanner variant="water" title="Rain day · water 10 words" detail="you: 4 of 10" waterHref="/review" />
       </>,
     );
     expect(screen.getAllByRole('link', { name: 'Water' })).toHaveLength(2);

@@ -16,7 +16,7 @@ import { sortBedsByDue, toScreenTopic, topicFilters, type GardenTopicSummary } f
 import { LiveError, LiveLoading } from './LiveState';
 
 /**
- * /garden/topics: the beds (A6) from GET /topics.
+ * /topics: the beds (A6) from GET /topics.
  *
  * Real: title, word count, CEFR range, fruiting / flowering / sprouting
  * shares, due badge and the filter chips (library collections, Mine)

@@ -45,8 +45,8 @@ describe('empty screens', () => {
       <TopicBedScreen
         {...BED}
         words={[]}
-        backHref="/garden/topics"
-        water={{ count: 0, href: '/garden/review' }}
+        backHref="/topics"
+        water={{ count: 0, href: '/review' }}
         quizHref="/quiz"
         addWordHref="/add"
       />,

@@ -22,7 +22,7 @@ import { StatTile } from '../StatTile';
  * only for a normal quiz with misses and when the caller offers it) and
  * "Back to bed".
  *
- * Props only; `/garden/quiz` owns the session.
+ * Props only; `/quiz` owns the session.
  */
 export interface QuizResultScreenProps {
   closeHref: string;

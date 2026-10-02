@@ -20,6 +20,6 @@ describe('GardenTabBar', () => {
     const links = screen.getByRole('navigation').querySelectorAll('a');
     expect(links).toHaveLength(5);
     expect(links[3].textContent).toBe('Groups');
-    expect(links[3].getAttribute('href')).toBe('/garden/groups');
+    expect(links[3].getAttribute('href')).toBe('/groups');
   });
 });

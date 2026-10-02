@@ -42,7 +42,7 @@ export interface WeeklyHarvestScreenProps {
   /** The learner's study group; null hides the card. */
   group: {
     name: string;
-    /** The group's garden (`/garden/groups/[id]`); without it the card is not a link. */
+    /** The group's garden (`/groups/[id]`); without it the card is not a link. */
     href?: string;
     watered: number;
     members: number;

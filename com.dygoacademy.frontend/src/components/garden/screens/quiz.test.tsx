@@ -1,7 +1,7 @@
 import { fireEvent, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 
-import { toFeedback } from '@/app/(garden)/garden/quiz/feedback';
+import { toFeedback } from '@/app/(garden)/quiz/feedback';
 import { renderWithIntl } from '@/test/render';
 import type { QuizAnswerResult } from '@/types';
 
@@ -17,7 +17,7 @@ const base: QuizScreenProps = {
   topicTitle: 'Work',
   index: 2,
   total: 10,
-  closeHref: '/garden/topics/t1',
+  closeHref: '/topics/t1',
   question: {
     id: 'w1:CLOZE',
     type: 'CLOZE',

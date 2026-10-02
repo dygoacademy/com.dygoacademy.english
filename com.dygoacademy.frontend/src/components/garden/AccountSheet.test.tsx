@@ -13,7 +13,7 @@ const replace = vi.fn();
 const refresh = vi.fn();
 vi.mock('next/navigation', () => ({
   useRouter: () => ({ replace, refresh, push: vi.fn() }),
-  usePathname: () => '/garden/me',
+  usePathname: () => '/me',
 }));
 
 const signOut = vi.fn();

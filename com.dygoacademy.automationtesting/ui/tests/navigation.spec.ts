@@ -23,9 +23,7 @@ function tabBar(page: Page): Locator {
 
 async function gotoSignedIn(page: Page, path: string): Promise<void> {
   await page.goto(path);
-  expect(new URL(page.url()).pathname, 'signed-in session was not accepted (redirected)').toMatch(
-    /^\/garden/,
-  );
+  expect(new URL(page.url()).pathname, 'signed-in session was not accepted (redirected)').toBe(path);
 }
 
 /** Tab bar box once it has stopped moving (live data can still be loading). */
@@ -93,9 +91,23 @@ async function checkBack(page: Page, listPath: string, detail: RegExp, what: str
 }
 
 test('Back from a Topic bed returns to Topics', async ({ page }) => {
-  await checkBack(page, '/garden/topics', /^\/garden\/topics\/[^/]+$/, 'topics');
+  await checkBack(page, '/topics', /^\/topics\/[^/]+$/, 'topics');
 });
 
 test('Back from a Group garden returns to Groups', async ({ page }) => {
-  await checkBack(page, '/garden/groups', /^\/garden\/groups\/[^/]+$/, 'shared gardens');
+  await checkBack(page, '/groups', /^\/groups\/[^/]+$/, 'shared gardens');
+});
+
+/** UI-8 U8-5: old /garden/<x> and classic paths land on the short URLs. */
+test('old garden and classic paths redirect to the short URLs', async ({ page }) => {
+  for (const [from, to] of [
+    ['/garden/topics', '/topics'],
+    ['/garden/me', '/me'],
+    ['/garden/review', '/review'],
+    ['/study', '/review'],
+    ['/', '/garden'],
+  ] as const) {
+    await page.goto(from);
+    expect(new URL(page.url()).pathname, `${from} redirect`).toBe(to);
+  }
 });

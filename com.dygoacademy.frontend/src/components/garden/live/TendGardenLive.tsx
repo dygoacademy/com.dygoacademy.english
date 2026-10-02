@@ -23,7 +23,7 @@ import { InviteSheetLive } from './InviteSheetLive';
 import { LiveError, LiveLoading } from './LiveState';
 
 /**
- * /garden/groups/[id]/manage (?tab=gardeners): GR3 / GR4, admins only.
+ * /groups/[id]/manage (?tab=gardeners): GR3 / GR4, admins only.
  *
  * Everything the classic group pages do, on the existing endpoints:
  * - Tricky patches: GET /groups/:id/tricky-patches (UI-G; last 7 days,

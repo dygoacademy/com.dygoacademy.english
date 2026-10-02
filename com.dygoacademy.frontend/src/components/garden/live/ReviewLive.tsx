@@ -16,7 +16,7 @@ import { ReviewScreen } from '../screens/ReviewScreen';
 import { LiveError, LiveLoading } from './LiveState';
 
 /**
- * /garden/review: watering (A2) on the existing study session.
+ * /review: watering (A2) on the existing study session.
  *
  * Real data: POST /srs/sessions (up to 20 due cards, optionally for one
  * topic) and POST /srs/rate through useRateWord (which queues offline).
@@ -26,7 +26,7 @@ import { LiveError, LiveLoading } from './LiveState';
  * (`word_translations`, joined server-side by `profiles.meaning_locale`);
  * it's simply absent for a word Gemini hasn't translated yet. Synonyms
  * come from the card's `synonyms`. At the end, "See your garden bloom"
- * carries this session's results to /garden/review/done in the URL.
+ * carries this session's results to /review/done in the URL.
  */
 export function ReviewLive({ topicId }: { topicId?: string }) {
   const t = useTranslations('screens.review');

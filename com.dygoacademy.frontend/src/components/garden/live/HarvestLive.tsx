@@ -13,7 +13,7 @@ import { todayIn, useGardenFormat, weekDays } from '../format';
 import { weekHarvest } from './data';
 
 /**
- * /garden/missions: Weekly harvest (A4). U6-6: the harvest is the calendar
+ * /missions: Weekly harvest (A4). U6-6: the harvest is the calendar
  * week's missions per day from GET /missions/week (Golden Blooms = 3/3
  * days); the rain barrel shows `freezes.available` from GET /srs/stats.
  * Either call failing (or loading) keeps that block's "coming soon" state.

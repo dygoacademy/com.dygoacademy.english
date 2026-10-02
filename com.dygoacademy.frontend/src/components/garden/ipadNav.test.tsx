@@ -51,7 +51,7 @@ describe('GardenTabBar iPad switch', () => {
     expect(hrefs(sidebar)).toEqual(hrefs(tabBar));
     for (const nav of navs) {
       const current = nav.querySelector('[aria-current="page"]');
-      expect(current?.getAttribute('href')).toBe('/garden/topics');
+      expect(current?.getAttribute('href')).toBe('/topics');
     }
   });
 });

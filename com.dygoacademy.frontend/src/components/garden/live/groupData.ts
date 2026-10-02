@@ -68,7 +68,7 @@ export function tokenFromLink(input: string): string | null {
   return /^[A-Za-z0-9_-]{16,}$/.test(text) ? text : null;
 }
 
-/** The link to share for a token: the classic /join path, which works for everyone. */
+/** The link to share for a token: /join/<token> (the garden join page since UI-8 U8-5). */
 export function inviteUrl(origin: string, token: string): string {
   return `${origin.replace(/\/$/, '')}/join/${token}`;
 }

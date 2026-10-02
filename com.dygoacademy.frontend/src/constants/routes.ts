@@ -11,9 +11,12 @@
  * "/topics", and the topics grid at "/topics/browse" — moved one level
  * each: "/" is now the signed-in front door (was "/topics"), "/topics" is
  * now the grid (was "/topics/browse"), and the guest trial moved out to
- * "/search". UI-8 U8-3 deleted the classic signed-in screens; their
- * paths stay in PROTECTED_PATH_PREFIXES so an old bookmark still bounces
- * through /login, then middleware.ts redirects it into /garden.
+ * "/search". UI-8 U8-3 deleted the classic signed-in screens, and U8-5
+ * gave the garden its final short URLs (decision 1): `/garden` is the
+ * home, the screens live at /review, /topics/**, /missions, /me,
+ * /groups/**, /quiz and /join/**. legacyRedirect() below maps the old
+ * `/garden/<x>` and classic paths onto them (permanent redirects in
+ * middleware.ts).
  */
 
 import { GARDEN_REFERENCE_PREFIX, GARDEN_ROUTES } from './garden';
@@ -26,18 +29,19 @@ export const PROTECTED_PATH_PREFIXES = [
   // `pathname === prefix` check means this only ever matches the exact
   // "/", never every route (a naive prefix-match on '/' would).
   '/',
+  // Word Garden screens at their final short URLs (UI-8 U8-5). '/join'
+  // too: redeeming an invite needs a session.
+  '/review',
   '/topics',
-  '/study',
-  '/quiz',
-  '/analytics',
-  '/settings',
+  '/missions',
+  '/me',
   '/groups',
+  '/quiz',
   '/join',
-  // Word Garden (Phase 12 UI-3 U3-5a). Until now only the (garden) layout
-  // redirected signed-out visitors, and it dropped `next`; listing it here
-  // lets middleware.ts bounce through /login and come back. Covers
-  // /garden/join/<token> too, same reasoning as '/join' (redeeming an invite needs a session). The
-  // dev/fixture pages are carved out in PUBLIC_GARDEN_DEV_PREFIXES.
+  // The garden home (Phase 12 UI-3 U3-5a): listing it lets middleware.ts
+  // bounce through /login and come back with `next`. The dev/fixture
+  // pages under it are carved out in PUBLIC_GARDEN_DEV_PREFIXES; old
+  // /garden/<x> links are redirected before the auth check.
   '/garden',
 ] as const;
 
@@ -58,7 +62,7 @@ export const PUBLIC_GARDEN_DEV_PREFIXES = [
 export const AUTH_PATHS = ['/login', '/register'] as const;
 
 export const ROUTES = {
-  /** Signed-in front door; middleware.ts redirects it to /garden (UI-8 U8-3). */
+  /** Bare domain: signed in → /garden, signed out → /search (middleware.ts). */
   home: '/',
   login: '/login',
   register: '/register',
@@ -79,6 +83,43 @@ export function isProtectedPath(pathname: string): boolean {
 
 export function isAuthPath(pathname: string): boolean {
   return AUTH_PATHS.some((path) => pathname === path);
+}
+
+/** Garden screens that moved from `/garden/<x>` to `/<x>` in UI-8 U8-5. */
+export const LEGACY_GARDEN_SEGMENTS = [
+  'review',
+  'topics',
+  'missions',
+  'me',
+  'groups',
+  'quiz',
+  'join',
+] as const;
+
+/** Deleted classic paths (UI-8 U8-3) and where they live now. */
+const LEGACY_CLASSIC_PATHS: Record<string, string> = {
+  '/study': GARDEN_ROUTES.review,
+  '/analytics': GARDEN_ROUTES.me,
+  '/settings': GARDEN_ROUTES.me,
+};
+
+/**
+ * The final URL for an old path (UI-8 U8-5, decision 1), or null when the
+ * path is already final. Path only: middleware.ts keeps the query string
+ * and answers with a permanent (308) redirect, before the auth check, so a
+ * signed-out visitor bounces through /login with the new path as `next`.
+ * `/garden/<x>/rest` → `/<x>/rest` for the moved screens; the dev pages
+ * (/garden/_reference, _gallery, _tokens) and `/garden` itself stay.
+ * The signed-in `/` → `/garden` hop depends on the session, so it isn't
+ * here (see middleware.ts).
+ */
+export function legacyRedirect(pathname: string): string | null {
+  const garden = pathname.match(/^\/garden\/([^/]+)(\/.*)?$/);
+  if (garden && (LEGACY_GARDEN_SEGMENTS as readonly string[]).includes(garden[1])) {
+    return `/${garden[1]}${garden[2] ?? ''}`;
+  }
+  const path = pathname.length > 1 ? pathname.replace(/\/$/, '') : pathname;
+  return LEGACY_CLASSIC_PATHS[path] ?? null;
 }
 
 /**

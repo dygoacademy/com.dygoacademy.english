@@ -19,7 +19,7 @@ import { avatarRow, firstRainDay, gardenPlant, rainDayEnds, tokenFromLink, wette
 import { LiveError, LiveLoading } from './LiveState';
 
 /**
- * /garden/groups: GR1 on GET /groups (name, your role), GET
+ * /groups: GR1 on GET /groups (name, your role), GET
  * /groups/garden-counts (UI-G: sizes and your due words; the cards still
  * render without it) and each group's roster for the initials (RLS: a
  * Viewer sees only themself). "+" and "Start a garden" open GR7

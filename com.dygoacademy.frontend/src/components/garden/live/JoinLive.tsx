@@ -13,7 +13,7 @@ import { JoinGardenScreen } from '../screens/JoinGardenScreen';
 import { LiveError, LiveLoading } from './LiveState';
 
 /**
- * /garden/join/[token]: GR6. The preview (GET /invites/:token/preview,
+ * /join/[token]: GR6. The preview (GET /invites/:token/preview,
  * UI-G: name, description, inviter, role, counts, no member data), then
  * "Join the garden" redeems (POST /invites/:token/redeem, idempotent) and
  * opens the garden. Garden users reach this from the shared /join/<token>

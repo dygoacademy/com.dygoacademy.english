@@ -21,7 +21,7 @@ import { toFeedback } from './feedback';
 import { addMissed, type MissedWord } from './results';
 
 /**
- * /garden/quiz?topic=<id>: the garden quiz, part 1 (U5-5), on the same
+ * /quiz?topic=<id>: the garden quiz, part 1 (U5-5), on the same
  * endpoints as the classic quiz: POST /quizzes/generate (10 items, scoped
  * to the topic), POST /quizzes/:id/answer, GET /quizzes/:id/hint (TEXT
  * items only; the answer carries the app language so a wrong answer's

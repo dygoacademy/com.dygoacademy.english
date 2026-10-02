@@ -345,7 +345,7 @@ export function displayName(
   return null;
 }
 
-/** The finished session, carried from /garden/review to /garden/review/done in the URL. */
+/** The finished session, carried from /review to /review/done in the URL. */
 export interface SessionResult {
   watered: number;
   recalled: number | null;
@@ -354,7 +354,7 @@ export interface SessionResult {
   more: number;
 }
 
-/** Reads the session result from /garden/review/done's search params. */
+/** Reads the session result from /review/done's search params. */
 export function parseSessionResult(
   params: Record<string, string | string[] | undefined>,
 ): SessionResult {

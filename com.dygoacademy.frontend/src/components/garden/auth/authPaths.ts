@@ -22,11 +22,12 @@ export function safeNextPath(value: string | null | undefined): string | null {
 }
 
 /**
- * The invite token when `next` is a join link (`/join/<token>` or the
- * garden's `/garden/join/<token>`): the register page then reads as AU3.
+ * The invite token when `next` is a join link (`/join/<token>`, UI-8 U8-5;
+ * an old `/garden/join/<token>` link is redirected there first): the
+ * register page then reads as AU3.
  */
 export function inviteTokenFromNext(next: string | null | undefined): string | null {
-  const match = next?.match(/^\/(?:garden\/)?join\/([^/?#]+)/);
+  const match = next?.match(/^\/join\/([^/?#]+)/);
   return match ? decodeURIComponent(match[1]) : null;
 }
 
