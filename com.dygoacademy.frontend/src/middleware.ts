@@ -23,7 +23,7 @@ import { updateSession } from '@/lib/supabase/middleware';
  * case a route is ever added here without updating the matcher below.
  *
  * Third job (UI-0 of the Word Garden rebuild): the garden UI flag. A
- * `?ui=garden|classic` query stores a per-browser override cookie, and a
+ * `?ui=garden` query stores a per-browser opt-in cookie, and a
  * signed-in, flagged user who lands on the front door ("/") is sent to
  * the garden. With the flag off and no cookie, nothing below changes the
  * response — classic users get exactly what updateSession returned.
