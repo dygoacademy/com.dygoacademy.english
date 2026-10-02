@@ -11,6 +11,7 @@ import { GroupsTabProvider } from '@/components/garden/groupsTab';
 import {
   ACCOUNT,
   FORGOT_PASSWORD,
+  HOME_REFERENCE,
   QUIZ,
   QUIZ_RESULT,
   REGISTER,
@@ -28,6 +29,7 @@ import { TopicBedScreen } from '@/components/garden/screens/TopicBedScreen';
 import { TopicsScreen } from '@/components/garden/screens/TopicsScreen';
 import { WeeklyHarvestScreen } from '@/components/garden/screens/WeeklyHarvestScreen';
 import { WelcomeBackScreen } from '@/components/garden/screens/WelcomeBackScreen';
+import { HomeScreen } from '@/components/home/HomeScreen';
 import { GARDEN_ROUTES } from '@/constants/garden';
 import type { AppLocale } from '@/i18n/config';
 
@@ -248,6 +250,19 @@ function ReferenceScreenBody({ name, locale }: { name: ReferenceName; locale: Ap
           signInHref={AUTH_HREFS.login}
           initialEmail={FORGOT_PASSWORD.email}
         />
+      );
+    case 'H1-home-phone':
+    case 'H2-home-desktop':
+      return (
+        <div style={{ width: HOME_REFERENCE[name].width }}>
+          <HomeScreen
+            locale={locale}
+            onLanguageChange={() => {}}
+            registerHref={AUTH_HREFS.register}
+            loginHref={AUTH_HREFS.login}
+            layout={HOME_REFERENCE[name].layout}
+          />
+        </div>
       );
   }
 }

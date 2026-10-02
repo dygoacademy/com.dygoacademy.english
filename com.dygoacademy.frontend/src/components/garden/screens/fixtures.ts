@@ -56,8 +56,21 @@ export const REFERENCE_NAMES = [
   'Q6-quiz-result',
   'Q7-quiz-result-perfect',
   'Q8-quiz-drill-done',
+  // Home page HP-2: the public home page, layout in HOME_REFERENCE below
+  'H1-home-phone',
+  'H2-home-desktop',
 ] as const;
 export type ReferenceName = (typeof REFERENCE_NAMES)[number];
+
+/**
+ * Home page HP-2: the two home boards (canvas page "Home page"). The copy is
+ * `screens.home.public.*` (from the reference `.html` / `-vi.html`); the
+ * fixture forces the layout and the board width, not the window width.
+ */
+export const HOME_REFERENCE = {
+  'H1-home-phone': { layout: 'phone', width: 390 },
+  'H2-home-desktop': { layout: 'desktop', width: 1280 },
+} as const satisfies Record<string, { layout: 'phone' | 'desktop'; width: number }>;
 
 export function isReferenceName(value: string): value is ReferenceName {
   return (REFERENCE_NAMES as readonly string[]).includes(value);

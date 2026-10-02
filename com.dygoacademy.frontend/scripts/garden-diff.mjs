@@ -3,7 +3,9 @@
  * Word Garden pixel diff (Phase 12, UI-fidelity 4; docs/design/garden/README.md).
  *
  * Screenshots every canvas reference page (/garden/_reference/<name>) at
- * 390 × 844, device scale factor 2, animations and transitions off, and
+ * the reference's own size (its PNG's width/2 × height/2: 390 × 844 for
+ * the A/GR/AU/Q screens, the full board for the home pages H1/H2; HP-2),
+ * device scale factor 2, animations and transitions off, and
  * diffs it against docs/design/garden/reference/<name>.png with pixelmatch
  * (threshold 0.1). Pass = at most 0.5% of pixels differ.
  *
@@ -36,6 +38,8 @@ import { fileURLToPath } from 'node:url';
 import pixelmatch from 'pixelmatch';
 import { chromium } from 'playwright-core';
 import { PNG } from 'pngjs';
+
+import { DEVICE_SCALE_FACTOR, referenceViewport } from './garden-diff-size.mjs';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const frontend = path.resolve(here, '..');
@@ -78,6 +82,9 @@ const NAMES = [
   'Q6-quiz-result',
   'Q7-quiz-result-perfect',
   'Q8-quiz-drill-done',
+  // Home page HP-2 (full boards: 390 × 3800 and 1280 × 2600)
+  'H1-home-phone',
+  'H2-home-desktop',
 ];
 
 /** Old short codes still accepted on the command line. */
@@ -165,7 +172,7 @@ async function main() {
   });
   const context = await browser.newContext({
     viewport: { width: 390, height: 844 },
-    deviceScaleFactor: 2,
+    deviceScaleFactor: DEVICE_SCALE_FACTOR,
   });
   const url = new URL(args.base);
   await context.addCookies(
@@ -186,6 +193,10 @@ async function main() {
       rows.push({ name, error: 'no reference PNG' });
       continue;
     }
+    // HP-2: the viewport is the reference board (PNG size / DPR), so the
+    // phone screens stay 390 × 844 and the home pages are shot whole.
+    const size = referenceViewport(refPath);
+    await page.setViewportSize(size);
     const response = await page.goto(`${args.base}/garden/_reference/${screen}?locale=${locale}`, {
       waitUntil: 'load',
     });
@@ -205,7 +216,9 @@ async function main() {
       if (active instanceof HTMLButtonElement) active.blur();
     });
     await page.waitForTimeout(250);
-    const shot = await page.screenshot({ clip: { x: 0, y: 0, width: 390, height: 844 } });
+    const shot = await page.screenshot({
+      clip: { x: 0, y: 0, width: size.width, height: size.height },
+    });
     fs.writeFileSync(path.join(outDir, `${name}.actual.png`), shot);
 
     const actual = PNG.sync.read(shot);

@@ -93,4 +93,12 @@ describe('HomeScreen (Home page H1 / H2)', () => {
     fireEvent.change(screen.getByLabelText('App language'), { target: { value: 'vi-VN' } });
     expect(onLanguageChange).toHaveBeenCalledWith('vi-VN');
   });
+
+  it('follows the window width by default and lets the fixtures force a layout (HP-2)', () => {
+    const { container, unmount } = renderScreen();
+    expect(container.querySelector('[data-home-layout]')?.getAttribute('data-home-layout')).toBe('auto');
+    unmount();
+    const forced = renderScreen({ layout: 'desktop' });
+    expect(forced.container.querySelector('[data-home-layout]')?.getAttribute('data-home-layout')).toBe('desktop');
+  });
 });

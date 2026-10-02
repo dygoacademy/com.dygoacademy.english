@@ -1,4 +1,5 @@
 import type { Config } from 'tailwindcss';
+import plugin from 'tailwindcss/plugin';
 
 // Design tokens: the Word Garden CSS variables in src/app/globals.css
 // (design system §5). The shadcn/ui colour names below (border, primary,
@@ -199,7 +200,18 @@ const config: Config = {
       },
     },
   },
-  plugins: [require('tailwindcss-animate')],
+  plugins: [
+    require('tailwindcss-animate'),
+    // Home page HP-2: `home-lg:` = `lg:` (1024px) for the public home page,
+    // unless an ancestor's data-home-layout forces the phone or desktop
+    // layout (the H1/H2 reference fixtures, whatever the window width).
+    plugin(({ addVariant }) => {
+      addVariant('home-lg', [
+        '@media (min-width: 1024px) { &:not([data-home-layout="phone"] *) }',
+        '[data-home-layout="desktop"] &',
+      ]);
+    }),
+  ],
 };
 
 export default config;
