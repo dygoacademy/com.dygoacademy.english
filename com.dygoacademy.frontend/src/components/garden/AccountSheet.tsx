@@ -49,7 +49,9 @@ export function AccountSheet({
       }}
       title={t('title')}
       closeButton={false}
-      className="bg-garden-bg"
+      // A8-me-account canvas (phone): 28px top corners ([&&] beats the shared rounded-t-hero), a 40px grabber and 4px more
+      // between grabber and title than the shared sheet header.
+      className="bg-garden-bg [&&]:rounded-t-[28px] medium:[&&]:rounded-t-hero [&_[data-testid=sheet-grabber]>span]:w-10 [&_[data-testid=sheet-grabber]]:mb-1"
     >
       <div className="flex flex-col gap-[14px] pb-[18px] pt-2">
         <div className="flex items-center gap-3 rounded-[18px] border border-garden-border bg-garden-surface px-[14px] py-3">
