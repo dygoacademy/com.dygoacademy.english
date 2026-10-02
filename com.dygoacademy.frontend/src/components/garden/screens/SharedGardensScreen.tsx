@@ -59,7 +59,7 @@ function Action({
 }
 
 const SECONDARY =
-  'flex h-[54px] items-center justify-center gap-1.5 rounded-control text-[14px] font-bold text-garden-forest';
+  'flex h-[54px] items-center justify-center gap-1.5 rounded-control text-[14px] font-bold text-forest';
 
 export function SharedGardensScreen({
   gardens,
@@ -76,7 +76,7 @@ export function SharedGardensScreen({
     <div className={gcn(SCREEN_CLASSES, 'relative gap-[14px] pt-[22px]')}>
       <header className="flex items-end gap-3 px-5">
         <div className="flex flex-grow flex-col">
-          <span className="text-[13px] font-medium text-garden-muted">
+          <span className="text-[13px] font-medium text-muted-foreground">
             {t('summary', { gardens: gardens.length, gardeners })}
           </span>
           <h1 className="font-display text-[28px] font-semibold leading-[1.1]">{t('title')}</h1>
@@ -84,7 +84,7 @@ export function SharedGardensScreen({
         <Action
           action={start}
           aria-label={t('create')}
-          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-garden-forest text-white"
+          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-forest text-white"
         >
           <PlusIcon width={20} height={20} />
         </Action>
@@ -107,13 +107,13 @@ export function SharedGardensScreen({
           <EmptyState title={t('emptyTitle')} body={t('emptyBody')} />
         ) : null}
         <div className="grid grid-cols-2 gap-2">
-          <Action action={start} className={gcn(SECONDARY, 'border border-dashed border-garden-dashed')}>
+          <Action action={start} className={gcn(SECONDARY, 'border border-dashed border-dashed-line')}>
             <PlusIcon width={18} height={18} />
             {t('start')}
           </Action>
           <Action
             action={join}
-            className={gcn(SECONDARY, 'border border-garden-border bg-garden-surface')}
+            className={gcn(SECONDARY, 'border border-border bg-surface')}
           >
             <LinkIcon width={18} height={18} />
             {t('join')}

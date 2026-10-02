@@ -29,7 +29,7 @@ export function ProgressVine({
       aria-valuemax={safeMax}
       aria-valuenow={clamped}
       aria-valuetext={valueText}
-      className={gcn('relative h-2.5 rounded-[5px] bg-garden-track', className)}
+      className={gcn('relative h-2.5 rounded-[5px] bg-track', className)}
     >
       <div
         className="h-2.5 rounded-[5px] bg-stage-tree-canopy transition-[width] duration-300"

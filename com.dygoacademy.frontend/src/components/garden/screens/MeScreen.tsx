@@ -107,19 +107,19 @@ export function MeScreen({
       <header className="flex items-center gap-[14px] px-5">
         <div
           aria-hidden="true"
-          className="flex h-16 w-16 shrink-0 items-center justify-center rounded-[32px] bg-garden-forest font-display text-[28px] font-semibold text-garden-gold-light"
+          className="flex h-16 w-16 shrink-0 items-center justify-center rounded-[32px] bg-forest font-display text-[28px] font-semibold text-gold-light"
         >
           {name.slice(0, 1).toUpperCase()}
         </div>
         <div className="flex flex-grow flex-col gap-1">
           <h1 className="font-display text-[24px] font-semibold leading-[1.1]">{name}</h1>
           {goal ? (
-            <span className="text-[13px] text-garden-muted">
+            <span className="text-[13px] text-muted-foreground">
               {t('goal', { exam: goal.exam, band: BAND_FORMAT.format(goal.band) })}
             </span>
           ) : null}
           {testDay ? (
-            <span className="self-start rounded-[10px] bg-rating-again px-2.5 py-[3px] text-[12px] font-bold text-garden-primary-shadow">
+            <span className="self-start rounded-[10px] bg-rating-again px-2.5 py-[3px] text-[12px] font-bold text-primary-shadow">
               {t('testDay', {
                 date: testDay === 'unset' ? t('testDayUnset') : f.dayMonth(testDay),
               })}
@@ -130,7 +130,7 @@ export function MeScreen({
           aria-label={t('account')}
           aria-haspopup="dialog"
           onClick={onAccountClick}
-          className="self-start text-garden-forest"
+          className="self-start text-forest"
         >
           <GearIcon width={22} height={22} />
         </IconButton>
@@ -152,10 +152,10 @@ export function MeScreen({
         />
       </div>
 
-      <section className="mx-4 flex flex-col gap-2.5 rounded-card border border-garden-border bg-garden-surface px-4 py-[14px]">
+      <section className="mx-4 flex flex-col gap-2.5 rounded-card border border-border bg-surface px-4 py-[14px]">
         <div className="flex items-baseline justify-between">
           <h2 className="font-display text-[17px] font-semibold">{t('calendarTitle')}</h2>
-          <span className="text-[12px] text-garden-muted">{t('calendarRange')}</span>
+          <span className="text-[12px] text-muted-foreground">{t('calendarRange')}</span>
         </div>
         {calendar ? (
           <GardenCalendar
@@ -166,7 +166,7 @@ export function MeScreen({
             high="3"
           />
         ) : (
-          <p className="text-[13px] text-garden-muted">{t('comingSoon')}</p>
+          <p className="text-[13px] text-muted-foreground">{t('comingSoon')}</p>
         )}
       </section>
 
@@ -231,7 +231,7 @@ export function MeScreen({
             })}
           </div>
         ) : (
-          <p className="text-[13px] text-garden-muted">{t('comingSoon')}</p>
+          <p className="text-[13px] text-muted-foreground">{t('comingSoon')}</p>
         )}
       </section>
 

@@ -88,7 +88,7 @@ export function TopicBedScreen({
           : t('inDays', { count: due.days });
 
   return (
-    <div className="mx-auto flex min-h-screen-dvh w-full max-w-[560px] flex-col gap-[14px] bg-garden-bg px-4 pt-5 text-garden-text">
+    <div className="mx-auto flex min-h-screen-dvh w-full max-w-[560px] flex-col gap-[14px] bg-bg px-4 pt-5 text-text">
       <header className="flex items-center gap-3">
         <IconButton asChild aria-label={t('back')}>
           <Link href={backHref}>
@@ -97,7 +97,7 @@ export function TopicBedScreen({
         </IconButton>
         <div className="flex flex-grow flex-col">
           <h1 className="font-display text-[26px] font-semibold leading-[1.1]">{title}</h1>
-          <span className="text-[13px] text-garden-muted">
+          <span className="text-[13px] text-muted-foreground">
             {[meta.collection, meta.level, t('wordsCount', { count: meta.words })]
               .filter(Boolean)
               .join(topicsT('separator'))}
@@ -140,7 +140,7 @@ export function TopicBedScreen({
             {t('water', { count: water.count })}
           </Link>
         ) : (
-          <span className="flex h-[52px] flex-grow items-center justify-center rounded-control bg-garden-surface-sunken text-[15px] font-semibold text-garden-muted">
+          <span className="flex h-[52px] flex-grow items-center justify-center rounded-control bg-surface-sunken text-[15px] font-semibold text-muted-foreground">
             {t('nothingDue')}
           </span>
         )}
@@ -153,7 +153,7 @@ export function TopicBedScreen({
         <IconButton
           aria-label={t('addWord')}
           onClick={onAddWord ?? (() => router.push(addWordHref))}
-          className="h-[52px] w-[52px] rounded-control text-garden-forest"
+          className="h-[52px] w-[52px] rounded-control text-forest"
         >
           <PlusIcon width={20} height={20} />
         </IconButton>
@@ -163,7 +163,7 @@ export function TopicBedScreen({
         <h2 className="font-display text-[18px] font-semibold">
           {stage ? t(`stageTitle.${stage}`) : t('allWords')}
         </h2>
-        <span className="text-[12px] text-garden-muted">{t('sorted')}</span>
+        <span className="text-[12px] text-muted-foreground">{t('sorted')}</span>
       </div>
 
       <ul className="flex flex-grow flex-col gap-2">

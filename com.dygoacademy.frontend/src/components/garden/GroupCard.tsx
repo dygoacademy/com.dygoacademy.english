@@ -35,12 +35,12 @@ export function GroupCard({ href, name, role, meta, plant, avatars, due, classNa
     <Link
       href={href}
       className={gcn(
-        'flex items-center gap-3 rounded-[20px] border border-garden-border bg-garden-surface py-3 pl-2.5 pr-[14px] text-garden-text',
-        'transition-colors duration-quick ease-garden hover:border-garden-muted active:bg-garden-surface-sunken',
+        'flex items-center gap-3 rounded-[20px] border border-border bg-surface py-3 pl-2.5 pr-[14px] text-text',
+        'transition-colors duration-quick ease-garden hover:border-muted-foreground active:bg-surface-sunken',
         className,
       )}
     >
-      <span className="flex h-14 w-14 shrink-0 items-end justify-center overflow-hidden rounded-control bg-garden-forest">
+      <span className="flex h-14 w-14 shrink-0 items-end justify-center overflow-hidden rounded-control bg-forest">
         <TilePlant plant={plant} />
       </span>
       <span className="flex min-w-0 flex-grow flex-col gap-1.5">
@@ -50,15 +50,15 @@ export function GroupCard({ href, name, role, meta, plant, avatars, due, classNa
           </span>
           <RoleBadge role={role} />
         </span>
-        <span className="text-[12px] text-garden-muted">{meta}</span>
+        <span className="text-[12px] text-muted-foreground">{meta}</span>
         <span className="flex items-center justify-between">
           <AvatarStack avatars={avatars} />
           {due === null ? null : due > 0 ? (
-            <span className="rounded-[10px] bg-garden-water-soft px-2 py-[3px] text-[12px] font-bold text-garden-water-text">
+            <span className="rounded-[10px] bg-water-soft px-2 py-[3px] text-[12px] font-bold text-water-text">
               {t('dueForYou', { count: due })}
             </span>
           ) : (
-            <span className="text-[12px] font-semibold text-garden-success">{t('allWatered')}</span>
+            <span className="text-[12px] font-semibold text-success">{t('allWatered')}</span>
           )}
         </span>
       </span>

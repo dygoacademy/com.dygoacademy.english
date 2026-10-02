@@ -24,7 +24,7 @@ describe('GardenTabBar iPad switch', () => {
     renderWithIntl(<GardenTabBar active="garden" ipadNav={false} />);
     const navs = screen.getAllByRole('navigation');
     expect(navs).toHaveLength(1);
-    expect(navs[0].className).not.toContain('medium:hidden');
+    expect(navs[0].className).not.toContain('md:hidden');
     expect(document.querySelector('[data-garden-nav]')).toBeNull();
   });
 
@@ -37,12 +37,12 @@ describe('GardenTabBar iPad switch', () => {
     const navs = screen.getAllByRole('navigation');
     expect(navs).toHaveLength(3);
     const [tabBar, rail, sidebar] = navs;
-    expect(tabBar.className).toContain('medium:hidden');
+    expect(tabBar.className).toContain('md:hidden');
     expect(rail.getAttribute('data-garden-nav')).toBe('rail');
-    expect(rail.className).toContain('medium:flex');
-    expect(rail.className).toContain('expanded:hidden');
+    expect(rail.className).toContain('md:flex');
+    expect(rail.className).toContain('lg:hidden');
     expect(sidebar.getAttribute('data-garden-nav')).toBe('sidebar');
-    expect(sidebar.className).toContain('expanded:flex');
+    expect(sidebar.className).toContain('lg:flex');
 
     const hrefs = (nav: HTMLElement) =>
       Array.from(nav.querySelectorAll('a')).map((a) => a.getAttribute('href'));

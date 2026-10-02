@@ -4,7 +4,7 @@ import * as React from 'react';
 import * as DialogPrimitive from '@radix-ui/react-dialog';
 
 import { cn } from '@/lib/utils';
-import { GARDEN_CONTENT_WIDTH } from '@/constants/layout';
+import { CONTENT_WIDTH } from '@/constants/layout';
 
 /**
  * shadcn/ui's Dialog, added 2026-09-05 to replace the hand-rolled
@@ -24,7 +24,7 @@ import { GARDEN_CONTENT_WIDTH } from '@/constants/layout';
  *   - `aria-modal`, labelling via DialogTitle/DialogDescription, body
  *     scroll lock -- all spec'd once instead of copied by hand per modal
  *
- * `DialogContent`'s width reads `GARDEN_CONTENT_WIDTH.default`
+ * `DialogContent`'s width reads `CONTENT_WIDTH.default`
  * (constants/layout.ts) so every popup shares one width per size class.
  */
 const Dialog = DialogPrimitive.Root;
@@ -56,7 +56,7 @@ const DialogContent = React.forwardRef<
     <DialogPrimitive.Content
       ref={ref}
       className={cn(
-        `fixed left-1/2 top-1/2 z-50 grid w-full ${GARDEN_CONTENT_WIDTH.default} -translate-x-1/2 -translate-y-1/2 gap-3 rounded-2xl border bg-card p-5 text-card-foreground shadow-lg outline-none duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95`,
+        `fixed left-1/2 top-1/2 z-50 grid w-full ${CONTENT_WIDTH.default} -translate-x-1/2 -translate-y-1/2 gap-3 rounded-2xl border bg-card p-5 text-card-foreground shadow-lg outline-none duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95`,
         className,
       )}
       {...props}

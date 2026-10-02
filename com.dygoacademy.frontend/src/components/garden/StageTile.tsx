@@ -33,8 +33,8 @@ export const StageTile = React.forwardRef<HTMLButtonElement, StageTileProps>(
         'flex h-[92px] min-w-0 cursor-pointer flex-col items-center justify-end gap-0.5 rounded-[18px] border-2 pb-2',
         'transition-colors duration-quick ease-garden disabled:opacity-50',
         selected
-          ? 'border-garden-forest bg-garden-forest text-white'
-          : 'border-garden-border bg-garden-surface text-garden-text',
+          ? 'border-forest bg-forest text-white'
+          : 'border-border bg-surface text-text',
         className,
       )}
       {...props}

@@ -22,7 +22,7 @@ export function LanguageChip({
   const t = useTranslations('components.language');
 
   return (
-    <label className="relative flex h-[38px] items-center gap-1.5 rounded-[18px] border border-garden-border bg-garden-surface px-3 text-[13px] font-semibold text-garden-text focus-within:border-garden-forest">
+    <label className="relative flex h-[38px] items-center gap-1.5 rounded-[18px] border border-border bg-surface px-3 text-[13px] font-semibold text-text focus-within:border-forest">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#24463A" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
         <circle cx="12" cy="12" r="9" />
         <path d="M3 12 H21" />

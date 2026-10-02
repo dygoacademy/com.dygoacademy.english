@@ -59,7 +59,7 @@ export function DailyGoalSheet({
           />
         ))}
       </RadioGroup>
-      <p aria-live="polite" className="min-h-5 text-[13px] text-garden-muted">
+      <p aria-live="polite" className="min-h-5 text-[13px] text-muted-foreground">
         {error ? t("error") : saving ? t("saving") : null}
       </p>
     </BottomSheet>

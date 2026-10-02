@@ -11,10 +11,10 @@ import { gcn } from './cn';
  */
 const TONE = {
   default: '',
-  success: 'text-garden-success',
-  forest: 'text-garden-forest',
-  gold: 'text-garden-gold-text',
-  muted: 'text-garden-placeholder',
+  success: 'text-success',
+  forest: 'text-forest',
+  gold: 'text-gold-text',
+  muted: 'text-placeholder',
 } as const;
 
 const PADDING = { md: 'p-3', sm: 'p-2.5', lg: 'px-[14px] py-3' } as const;
@@ -37,7 +37,7 @@ export function StatTile({
   return (
     <div
       className={gcn(
-        'flex flex-col gap-0.5 rounded-control border border-garden-border bg-garden-surface',
+        'flex flex-col gap-0.5 rounded-control border border-border bg-surface',
         PADDING[size],
         className,
       )}
@@ -51,7 +51,7 @@ export function StatTile({
       >
         {value}
       </span>
-      <span className={gcn('text-garden-muted', LABEL[size])}>
+      <span className={gcn('text-muted-foreground', LABEL[size])}>
         {label}
       </span>
     </div>

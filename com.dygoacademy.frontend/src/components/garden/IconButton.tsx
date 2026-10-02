@@ -24,9 +24,9 @@ export interface IconButtonProps extends Omit<
 
 export const iconButtonClasses =
   'inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full ' +
-  'border border-garden-border bg-garden-surface text-garden-text ' +
+  'border border-border bg-surface text-text ' +
   'transition-[transform,background-color] duration-press ease-garden ' +
-  'hover:bg-garden-surface-sunken active:scale-95 disabled:opacity-50';
+  'hover:bg-surface-sunken active:scale-95 disabled:opacity-50';
 
 export const IconButton = React.forwardRef<HTMLButtonElement, IconButtonProps>(
   ({ className, type, children, asChild = false, ...props }, ref) => {

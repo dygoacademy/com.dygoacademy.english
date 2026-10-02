@@ -22,7 +22,7 @@ export interface AddWordSheetProps {
 }
 
 const FIELD =
-  'box-border min-h-12 w-full rounded-[14px] border bg-garden-surface px-[14px] py-3 text-[17px] leading-[1.4] text-garden-text outline-none placeholder:text-garden-placeholder focus:border-garden-forest';
+  'box-border min-h-12 w-full rounded-[14px] border bg-surface px-[14px] py-3 text-[17px] leading-[1.4] text-text outline-none placeholder:text-placeholder focus:border-forest';
 
 export function AddWordSheet({ topicId, open, onOpenChange, topicTitle }: AddWordSheetProps) {
   const t = useTranslations('screens.bed.addSheet');
@@ -52,7 +52,7 @@ export function AddWordSheet({ topicId, open, onOpenChange, topicTitle }: AddWor
         }}
       >
         <label htmlFor={inputId} className="flex flex-col gap-1.5">
-          <span className="text-[12px] font-bold uppercase tracking-[.08em] text-garden-muted">
+          <span className="text-[12px] font-bold uppercase tracking-[.08em] text-muted-foreground">
             {t('label')}
           </span>
           <input
@@ -65,19 +65,19 @@ export function AddWordSheet({ topicId, open, onOpenChange, topicTitle }: AddWor
             spellCheck={false}
             placeholder={t('placeholder')}
             onChange={(event) => form.setWord(event.target.value)}
-            className={gcn(FIELD, form.word ? 'border-garden-forest' : 'border-garden-border')}
+            className={gcn(FIELD, form.word ? 'border-forest' : 'border-border')}
           />
         </label>
-        <span className="px-1 text-[13px] text-garden-muted">{t('hint')}</span>
+        <span className="px-1 text-[13px] text-muted-foreground">{t('hint')}</span>
         {form.error ? (
-          <p role="alert" className="px-1 text-[13px] text-garden-primary-text">
+          <p role="alert" className="px-1 text-[13px] text-primary-text">
             {form.error}
           </p>
         ) : null}
         <button
           type="submit"
           disabled={!form.canSubmit}
-          className="flex h-14 items-center justify-center rounded-[18px] bg-garden-primary text-[17px] font-bold text-white shadow-press-primary transition-transform duration-press ease-garden active:translate-y-[2px] disabled:bg-garden-disabled disabled:text-garden-text disabled:shadow-none"
+          className="flex h-14 items-center justify-center rounded-[18px] bg-primary text-[17px] font-bold text-white shadow-press-primary transition-transform duration-press ease-garden active:translate-y-[2px] disabled:bg-disabled disabled:text-text disabled:shadow-none"
         >
           {form.busy ? t('adding') : t('submit')}
         </button>

@@ -24,9 +24,9 @@ export function TrickyPatchRow({ word, meta, share, className }: TrickyPatchRowP
           <span className="text-[15px] font-bold" lang="en">
             {word}
           </span>
-          <span className="text-[13px] text-garden-muted">{meta}</span>
+          <span className="text-[13px] text-muted-foreground">{meta}</span>
         </div>
-        <div aria-hidden="true" className="h-1.5 rounded-[3px] bg-garden-track">
+        <div aria-hidden="true" className="h-1.5 rounded-[3px] bg-track">
           <div
             className="h-1.5 rounded-[3px] bg-[var(--color-locked-seed)]"
             style={{ width: `${Math.max(0, Math.min(100, Math.round(share)))}%` }}

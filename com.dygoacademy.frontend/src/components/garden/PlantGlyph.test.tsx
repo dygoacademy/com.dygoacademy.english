@@ -31,11 +31,11 @@ describe('PlantGlyph', () => {
 
   it('adds the drip only when asked', () => {
     const { container, rerender } = render(<PlantGlyph stage="thirsty" />);
-    expect(container.querySelector('.garden-drip')).toBeNull();
+    expect(container.querySelector('.drip')).toBeNull();
     rerender(<PlantGlyph stage="thirsty" animate="drip" />);
-    expect(container.querySelector('.garden-drip')).not.toBeNull();
+    expect(container.querySelector('.drip')).not.toBeNull();
     rerender(<PlantGlyph stage="flower" animate="bloom" />);
-    expect(container.querySelector('svg')!.getAttribute('class')).toContain('garden-bloom');
+    expect(container.querySelector('svg')!.getAttribute('class')).toContain('bloom');
   });
 });
 

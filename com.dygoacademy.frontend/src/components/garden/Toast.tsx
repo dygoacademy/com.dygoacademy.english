@@ -53,20 +53,20 @@ export function Toast({
       className={gcn(
         'pointer-events-none flex justify-center',
         position === 'fixed' &&
-          'fixed inset-x-0 bottom-[calc(72px+var(--safe-bottom))] z-50 px-page-safe medium:bottom-auto medium:top-[calc(16px+var(--safe-top))]',
+          'fixed inset-x-0 bottom-[calc(72px+var(--safe-bottom))] z-50 px-page-safe md:bottom-auto md:top-[calc(16px+var(--safe-top))]',
         className,
       )}
     >
       {open ? (
         <div
           data-variant={variant}
-          className="garden-rise pointer-events-auto flex min-h-12 w-full max-w-[400px] items-center gap-3 rounded-control bg-garden-forest px-4 py-3 text-body-m text-white"
+          className="rise pointer-events-auto flex min-h-12 w-full max-w-[400px] items-center gap-3 rounded-control bg-forest px-4 py-3 text-body-m text-white"
         >
           <span
             aria-hidden="true"
             className={gcn(
               'inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full [&_svg]:h-4 [&_svg]:w-4',
-              variant === 'success' ? 'bg-garden-success' : 'bg-garden-forest-deep',
+              variant === 'success' ? 'bg-success' : 'bg-forest-deep',
             )}
           >
             {variant === 'success' ? <CheckIcon /> : <InfoIcon />}

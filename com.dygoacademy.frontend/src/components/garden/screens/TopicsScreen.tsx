@@ -99,7 +99,7 @@ export function TopicsScreen({
     <div className={gcn(SCREEN_CLASSES, 'gap-[14px] pt-[22px]')}>
       <header className="flex items-end gap-3 px-5">
         <div className="flex flex-grow flex-col">
-          <span className="text-[13px] font-medium text-garden-muted">
+          <span className="text-[13px] font-medium text-muted-foreground">
             {t('summary', { beds: topics.length, words: totalWords })}
           </span>
           <h1 className="font-display text-[28px] font-semibold leading-[1.1]">{t('title')}</h1>
@@ -168,7 +168,7 @@ export function TopicsScreen({
         <button
           type="button"
           onClick={() => (onNewBed ? onNewBed() : newBedHref && router.push(newBedHref))}
-          className="flex h-14 cursor-pointer items-center justify-center gap-2 rounded-[18px] border border-dashed border-garden-dashed bg-transparent text-[15px] font-bold text-garden-forest"
+          className="flex h-14 cursor-pointer items-center justify-center gap-2 rounded-[18px] border border-dashed border-dashed-line bg-transparent text-[15px] font-bold text-forest"
         >
           <PlusIcon width={20} height={20} />
           {t('newBed')}

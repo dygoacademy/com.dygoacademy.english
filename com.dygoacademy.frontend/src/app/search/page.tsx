@@ -96,9 +96,9 @@ export default async function LandingPage() {
           Dygo
         </Link>
       </header>
-      <main className="flex flex-1 flex-col items-center gap-6 p-4 pt-12 sm:gap-8 sm:pt-20 md:pt-28">
+      <main className="flex flex-1 flex-col items-center gap-6 p-4 pt-12 sm:gap-8 sm:pt-20 tablet:pt-28">
         <div className="flex flex-col items-center gap-2 text-center sm:gap-3">
-          <h1 className="text-2xl font-semibold leading-snug sm:text-3xl md:text-4xl">
+          <h1 className="text-2xl font-semibold leading-snug sm:text-3xl tablet:text-4xl">
             Learn the words that move your IELTS score
           </h1>
           <p className="max-w-sm text-sm text-muted-foreground sm:max-w-md sm:text-base">

@@ -16,7 +16,7 @@ import {
 } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { GARDEN_CONTENT_WIDTH } from '@/constants/layout';
+import { CONTENT_WIDTH } from '@/constants/layout';
 import { ROUTES } from '@/constants/routes';
 import { apiClient, ApiError } from '@/lib/api-client';
 import { formatIpa } from '@/lib/utils';
@@ -123,7 +123,7 @@ export function GuestWordTrial() {
 
   if (stage === 'card' && card) {
     return (
-      <div className={`mx-auto flex w-full ${GARDEN_CONTENT_WIDTH.wide} flex-col items-center gap-5`}>
+      <div className={`mx-auto flex w-full ${CONTENT_WIDTH.wide} flex-col items-center gap-5`}>
         <Flashcard
           className="h-96 w-full"
           flipped={flipped}
@@ -251,7 +251,7 @@ export function GuestWordTrial() {
 
   if (stage === 'not-found') {
     return (
-      <Card className={`mx-auto w-full ${GARDEN_CONTENT_WIDTH.wide}`}>
+      <Card className={`mx-auto w-full ${CONTENT_WIDTH.wide}`}>
         <CardHeader className="items-center text-center">
           <CardTitle className="text-xl leading-snug">
             &quot;{lastSearchedWord}&quot; hasn&apos;t been taught here yet.
@@ -280,7 +280,7 @@ export function GuestWordTrial() {
   }
 
   return (
-    <Card className={`mx-auto w-full ${GARDEN_CONTENT_WIDTH.wide}`}>
+    <Card className={`mx-auto w-full ${CONTENT_WIDTH.wide}`}>
       <CardHeader className="items-center text-center">
         <CardTitle className="text-2xl leading-tight">
           Type one word you

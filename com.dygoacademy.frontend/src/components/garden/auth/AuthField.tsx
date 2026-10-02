@@ -40,11 +40,11 @@ export function AuthField({
     <div className="flex flex-col gap-1.5">
       <label
         htmlFor={id}
-        className="text-[12px] font-bold uppercase tracking-[.08em] text-garden-muted"
+        className="text-[12px] font-bold uppercase tracking-[.08em] text-muted-foreground"
       >
         {label}
       </label>
-      <div className="box-border flex min-h-[48px] items-center justify-between gap-2 rounded-[14px] border border-garden-border bg-garden-surface px-3.5 py-3 focus-within:border-garden-forest">
+      <div className="box-border flex min-h-[48px] items-center justify-between gap-2 rounded-[14px] border border-border bg-surface px-3.5 py-3 focus-within:border-forest">
         <input
           id={id}
           name={name}
@@ -55,7 +55,7 @@ export function AuthField({
           placeholder={placeholder}
           value={value}
           onChange={(event) => onChange(event.target.value)}
-          className="min-w-0 flex-1 border-0 bg-transparent p-0 text-[16px] leading-[1.4] text-garden-text outline-none placeholder:text-garden-placeholder"
+          className="min-w-0 flex-1 border-0 bg-transparent p-0 text-[16px] leading-[1.4] text-text outline-none placeholder:text-placeholder"
         />
         {isPassword ? (
           <button
@@ -64,7 +64,7 @@ export function AuthField({
             aria-pressed={visible}
             aria-label={visible ? t('hidePassword') : t('showPassword')}
             onClick={() => setVisible((v) => !v)}
-            className="shrink-0 bg-transparent p-0 text-[14px] font-bold text-garden-forest"
+            className="shrink-0 bg-transparent p-0 text-[14px] font-bold text-forest"
           >
             {visible ? t('hide') : t('show')}
           </button>

@@ -8,41 +8,26 @@ const config: Config = {
   darkMode: ['class'],
   content: ['./src/**/*.{ts,tsx}'],
   theme: {
-    // Pinned explicitly (live-requested 2026-09-17, "standardize for the
-    // whole application") rather than left as Tailwind's implicit
-    // defaults -- these numbers ARE Tailwind's defaults today, so nothing
-    // about existing `sm:`/`md:`/`lg:` usage (Navbar, PublicNavbar, the
-    // container below) changes. Pinning them means a future Tailwind
-    // major version changing its own defaults can't silently reflow
-    // every screen in the app, and gives this table one home in code
-    // instead of only living in dygo_academy_frontend_architecture.md §16.
-    // Mapped against real current-device CSS viewport widths (portrait):
-    //   base (no prefix) < 640px — every iPhone in portrait (375–440px,
-    //     SE up through Pro Max) — the mobile-first design target.
-    //   sm:  640px  — iPhone landscape (667–956px), iPad mini portrait (744px).
-    //   md:  768px  — iPad / iPad Air / iPad Pro 11" portrait (820–834px)
-    //     — the practical "tablet" breakpoint for this app.
-    //   lg:  1024px — iPad Air 13"/Pro 13" portrait (1024–1032px), and
-    //     every iPad in landscape (1133–1376px).
-    //   xl:  1280px, 2xl: 1536px — kept at Tailwind's defaults; nothing in
-    //     the current iPhone/iPad lineup needs them, reserved for a future
-    //     desktop-width layout.
+    // Breakpoints, pinned explicitly (2026-09-17) so a future Tailwind major
+    // can't reflow the app. UI-8 U8-4 gave md/lg to the Word Garden size
+    // classes (design system §2.2/§2.3), against real CSS viewport widths:
+    //   base (no prefix) < 600px — every iPhone in portrait (375–440px).
+    //   md:  600px  — iPad portrait, Split View 1/2 and 2/3 (was `medium:`).
+    //   sm:  640px  — iPhone landscape, iPad mini portrait (744px).
+    //   tablet: 768px — the old 768px `md:`, kept for the search page and
+    //     components/ui/navigation-menu so nothing reflows.
+    //   lg:  1024px — iPad landscape, 13" iPad portrait (was `expanded:`).
+    //   xl:  1280px, 2xl: 1536px — Tailwind defaults, reserved for desktop.
+    //   short: iPhone landscape (max-height 499px).
+    // Listed by width so the cascade keeps min-width order.
     screens: {
+      md: '600px',
       sm: '640px',
-      md: '768px',
+      tablet: '768px',
       lg: '1024px',
       xl: '1280px',
       '2xl': '1536px',
-      // Word Garden size classes (design system §2.2/§2.3, UI-1 of the
-      // rebuild plan). The spec wants `md` at 600px, but `md:` is 768px
-      // above and still used by classic screens (search page, navigation
-      // menu), so moving it now would reflow them. Garden screens use
-      // these names instead; UI-8 renames them to md/lg when the classic
-      // UI is deleted. Listed last so they never reorder the classic
-      // media queries.
-      medium: '600px', // iPad portrait, Split View 1/2 and 2/3
-      expanded: '1024px', // iPad landscape, 13" iPad portrait
-      short: { raw: '(max-height: 499px)' }, // iPhone landscape
+      short: { raw: '(max-height: 499px)' },
     },
     container: {
       center: true,
@@ -85,59 +70,58 @@ const config: Config = {
           foreground: 'var(--color-text)',
         },
         // Word Garden tokens (design system §5), CSS variables on :root and
-        // [data-ui="garden"] (globals.css). Still namespaced `garden-`;
-        // U8-4 drops the prefix (bg-garden-surface -> bg-surface).
-        garden: {
-          bg: 'var(--color-bg)',
-          surface: 'var(--color-surface)',
-          'surface-sunken': 'var(--color-surface-sunken)',
-          border: 'var(--color-border)',
-          text: 'var(--color-text)',
-          muted: 'var(--color-text-muted)',
-          forest: 'var(--color-forest)',
-          'forest-deep': 'var(--color-forest-deep)',
-          'forest-shadow': 'var(--color-forest-shadow)',
-          'forest-muted': 'var(--color-forest-muted)',
-          primary: 'var(--color-primary)',
-          'primary-shadow': 'var(--color-primary-shadow)',
-          'primary-text': 'var(--color-primary-text)',
-          water: 'var(--color-water)',
-          'water-soft': 'var(--color-water-soft)',
-          'water-text': 'var(--color-water-text)',
-          gold: 'var(--color-gold)',
-          'gold-text': 'var(--color-gold-text)',
-          'gold-soft': 'var(--color-gold-soft)',
-          'gold-soft-text': 'var(--color-gold-soft-text)',
-          success: 'var(--color-success)',
-          disabled: 'var(--color-disabled)',
-          'card-lift': 'var(--color-card-lift)',
-          // Canvas colours (UI-fidelity 2), see globals.css.
-          track: 'var(--color-track)',
-          'gold-light': 'var(--color-gold-light)',
-          'on-forest': 'var(--color-on-forest)',
-          'on-forest-muted': 'var(--color-on-forest-muted)',
-          'gold-wash': 'var(--color-gold-wash)',
-          'gold-border': 'var(--color-gold-border)',
-          'sprout-border': 'var(--color-sprout-border)',
-          example: 'var(--color-example-text)',
-          'water-due': 'var(--color-water-due)',
-          'water-border': 'var(--color-water-border)',
-          'water-strong': 'var(--color-water-strong)',
-          'water-text-soft': 'var(--color-water-text-soft)',
-          divider: 'var(--color-divider)',
-          dashed: 'var(--color-dashed)',
-          'locked-bg': 'var(--color-locked-bg)',
-          'locked-border': 'var(--color-locked-border)',
-          'locked-text': 'var(--color-locked-text)',
-          'calendar-1': 'var(--color-calendar-1)',
-          'avatar-flower-text': 'var(--color-avatar-flower-text)',
-          'avatar-sprout-text': 'var(--color-avatar-sprout-text)',
-          'avatar-due-text': 'var(--color-avatar-due-text)',
-          'avatar-gold-text': 'var(--color-avatar-gold-text)',
-          placeholder: 'var(--color-placeholder)',
-          scrim: 'var(--color-scrim)',
-          'on-forest-line': 'var(--color-on-forest-line)',
-        },
+        // [data-ui="garden"] (globals.css). UI-8 U8-4 dropped the `garden-`
+        // prefix. Not repeated here: border / primary (above, same variable)
+        // and text-muted (= muted.foreground, so text-muted-foreground).
+        // Renamed to avoid Tailwind clashes: dashed -> dashed-line
+        // (border-dashed is a border style), card-lift -> card-lift-bg
+        // (shadow-card-lift is the box shadow).
+        bg: 'var(--color-bg)',
+        surface: 'var(--color-surface)',
+        'surface-sunken': 'var(--color-surface-sunken)',
+        text: 'var(--color-text)',
+        forest: 'var(--color-forest)',
+        'forest-deep': 'var(--color-forest-deep)',
+        'forest-shadow': 'var(--color-forest-shadow)',
+        'forest-muted': 'var(--color-forest-muted)',
+        'primary-shadow': 'var(--color-primary-shadow)',
+        'primary-text': 'var(--color-primary-text)',
+        water: 'var(--color-water)',
+        'water-soft': 'var(--color-water-soft)',
+        'water-text': 'var(--color-water-text)',
+        gold: 'var(--color-gold)',
+        'gold-text': 'var(--color-gold-text)',
+        'gold-soft': 'var(--color-gold-soft)',
+        'gold-soft-text': 'var(--color-gold-soft-text)',
+        success: 'var(--color-success)',
+        disabled: 'var(--color-disabled)',
+        'card-lift-bg': 'var(--color-card-lift)',
+        // Canvas colours (UI-fidelity 2), see globals.css.
+        track: 'var(--color-track)',
+        'gold-light': 'var(--color-gold-light)',
+        'on-forest': 'var(--color-on-forest)',
+        'on-forest-muted': 'var(--color-on-forest-muted)',
+        'gold-wash': 'var(--color-gold-wash)',
+        'gold-border': 'var(--color-gold-border)',
+        'sprout-border': 'var(--color-sprout-border)',
+        example: 'var(--color-example-text)',
+        'water-due': 'var(--color-water-due)',
+        'water-border': 'var(--color-water-border)',
+        'water-strong': 'var(--color-water-strong)',
+        'water-text-soft': 'var(--color-water-text-soft)',
+        divider: 'var(--color-divider)',
+        'dashed-line': 'var(--color-dashed)',
+        'locked-bg': 'var(--color-locked-bg)',
+        'locked-border': 'var(--color-locked-border)',
+        'locked-text': 'var(--color-locked-text)',
+        'calendar-1': 'var(--color-calendar-1)',
+        'avatar-flower-text': 'var(--color-avatar-flower-text)',
+        'avatar-sprout-text': 'var(--color-avatar-sprout-text)',
+        'avatar-due-text': 'var(--color-avatar-due-text)',
+        'avatar-gold-text': 'var(--color-avatar-gold-text)',
+        placeholder: 'var(--color-placeholder)',
+        scrim: 'var(--color-scrim)',
+        'on-forest-line': 'var(--color-on-forest-line)',
         // §5.2 plant stages — one colour per SRS state.
         stage: {
           seed: 'var(--stage-seed)',
@@ -168,7 +152,7 @@ const config: Config = {
         body: ['var(--font-stack-body)'],
       },
       // §4.2 Garden type scale. Sizes are CSS variables so they switch to
-      // the iPad sizes at 600px without a `medium:` prefix on every use.
+      // the iPad sizes at 600px without an `md:` prefix on every use.
       fontSize: {
         'display-xl': ['var(--text-display-xl)', { lineHeight: '1.05', fontWeight: '600' }],
         'display-l': ['var(--text-display-l)', { lineHeight: '1.1', fontWeight: '600' }],

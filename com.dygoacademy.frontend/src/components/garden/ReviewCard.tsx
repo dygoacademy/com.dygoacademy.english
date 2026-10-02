@@ -94,7 +94,7 @@ export function ReviewCard({
     <article
       aria-label={t('cardLabel', { word })}
       className={gcn(
-        'flex flex-col gap-[14px] rounded-hero border border-garden-border bg-garden-surface px-5 py-[22px] shadow-card-lift',
+        'flex flex-col gap-[14px] rounded-hero border border-border bg-surface px-5 py-[22px] shadow-card-lift',
         className,
       )}
     >
@@ -106,8 +106,8 @@ export function ReviewCard({
               className={gcn(
                 'rounded-[10px] px-2.5 py-1 text-[12px]',
                 tag.strong
-                  ? 'bg-rating-good font-bold text-garden-forest'
-                  : 'bg-garden-bg font-semibold text-garden-muted',
+                  ? 'bg-rating-good font-bold text-forest'
+                  : 'bg-bg font-semibold text-muted-foreground',
               )}
             >
               {tag.text}
@@ -124,13 +124,13 @@ export function ReviewCard({
           >
             {word}
           </span>
-          {ipa ? <span className="text-[16px] text-garden-muted">{ipa}</span> : null}
+          {ipa ? <span className="text-[16px] text-muted-foreground">{ipa}</span> : null}
         </div>
         <AudioButton src={audioSrc} label={t('play', { word })} />
       </div>
 
       {revealed ? (
-        <div className="garden-rise flex flex-col gap-[14px]">
+        <div className="rise flex flex-col gap-[14px]">
           <div className="flex flex-col gap-0.5">
             <h3 className="sr-only">{t('meaning')}</h3>
             {meaningFirst && meaningTranslation?.text ? (
@@ -141,7 +141,7 @@ export function ReviewCard({
                 >
                   {meaningTranslation.text}
                 </span>
-                <span lang="en" className="text-[15px] text-garden-muted">
+                <span lang="en" className="text-[15px] text-muted-foreground">
                   {meaning}
                 </span>
               </>
@@ -151,7 +151,7 @@ export function ReviewCard({
                   {meaning}
                 </span>
                 {meaningTranslation?.text ? (
-                  <span lang={meaningTranslation.lang} className="text-[15px] text-garden-muted">
+                  <span lang={meaningTranslation.lang} className="text-[15px] text-muted-foreground">
                     {meaningTranslation.text}
                   </span>
                 ) : null}
@@ -164,7 +164,7 @@ export function ReviewCard({
               <h3 className="sr-only">{t('example')}</h3>
               <p
                 lang="en"
-                className="rounded-[14px] bg-garden-surface-sunken px-[14px] py-3 font-display text-[16px] leading-[1.45] text-garden-example"
+                className="rounded-[14px] bg-surface-sunken px-[14px] py-3 font-display text-[16px] leading-[1.45] text-example"
               >
                 {t('quoted', { text: example })}
               </p>
@@ -175,7 +175,7 @@ export function ReviewCard({
           <ChipList title={t('collocations')} items={collocations} />
         </div>
       ) : (
-        <div className="flex flex-grow flex-col items-center justify-center gap-2.5 text-center text-garden-muted">
+        <div className="flex flex-grow flex-col items-center justify-center gap-2.5 text-center text-muted-foreground">
           <ThinkSprout />
           <span className="text-[15px]">{t.rich('hiddenHint', { br: () => <br /> })}</span>
         </div>
@@ -189,12 +189,12 @@ function ChipList({ title, items }: { title: string; items?: readonly string[] |
   if (!items || items.length === 0) return null;
   return (
     <div className="flex flex-col gap-2">
-      <h3 className="overline-label text-[12px] font-bold text-garden-muted">{title}</h3>
+      <h3 className="overline-label text-[12px] font-bold text-muted-foreground">{title}</h3>
       <ul lang="en" className="flex flex-wrap gap-1.5">
         {items.map((item) => (
           <li
             key={item}
-            className="rounded-control border border-garden-sprout-border px-3 py-1.5 text-[14px] font-semibold text-garden-forest"
+            className="rounded-control border border-sprout-border px-3 py-1.5 text-[14px] font-semibold text-forest"
           >
             {item}
           </li>

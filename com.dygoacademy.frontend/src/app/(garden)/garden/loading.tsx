@@ -12,7 +12,7 @@ import { useTranslations } from 'next-intl';
  * layout: small label + display title, then a hero card and list rows.
  * The shimmer stops for reduced motion.
  */
-const BLOCK = 'animate-pulse rounded-[18px] bg-garden-surface-sunken motion-reduce:animate-none';
+const BLOCK = 'animate-pulse rounded-[18px] bg-surface-sunken motion-reduce:animate-none';
 
 export default function GardenLoading() {
   const t = useTranslations('screens.live');
@@ -20,7 +20,7 @@ export default function GardenLoading() {
     <div
       role="status"
       aria-busy="true"
-      className="mx-auto flex min-h-screen-dvh w-full max-w-[560px] flex-col gap-[14px] bg-garden-bg pt-[22px] text-garden-text"
+      className="mx-auto flex min-h-screen-dvh w-full max-w-[560px] flex-col gap-[14px] bg-bg pt-[22px] text-text"
     >
       <span className="sr-only">{t('loading')}</span>
       <div aria-hidden="true" className="flex flex-col gap-2 px-5">

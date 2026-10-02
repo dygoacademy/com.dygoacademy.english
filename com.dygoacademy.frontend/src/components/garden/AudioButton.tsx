@@ -97,7 +97,7 @@ export function AudioButton({
         aria-label={t('none')}
         className={gcn(
           'inline-flex h-[52px] w-[52px] shrink-0 items-center justify-center rounded-full',
-          'bg-garden-surface-sunken text-garden-muted [&_svg]:h-6 [&_svg]:w-6',
+          'bg-surface-sunken text-muted-foreground [&_svg]:h-6 [&_svg]:w-6',
           className,
         )}
       >
@@ -113,8 +113,8 @@ export function AudioButton({
         onClick={play}
         data-status="error"
         className={gcn(
-          'inline-flex min-h-11 shrink-0 items-center gap-2 rounded-full border border-garden-gold px-3 py-1.5 text-left',
-          'bg-garden-gold-soft text-label text-garden-gold-soft-text',
+          'inline-flex min-h-11 shrink-0 items-center gap-2 rounded-full border border-gold px-3 py-1.5 text-left',
+          'bg-gold-soft text-label text-gold-soft-text',
           'transition-transform duration-press ease-garden active:scale-95 [&_svg]:h-5 [&_svg]:w-5',
           className,
         )}
@@ -136,9 +136,9 @@ export function AudioButton({
       data-status={status}
       className={gcn(
         'inline-flex h-[52px] w-[52px] shrink-0 cursor-pointer items-center justify-center rounded-full',
-        'bg-garden-forest text-white',
+        'bg-forest text-white',
         'transition-[transform,background-color] duration-press ease-garden active:scale-95',
-        status === 'playing' && 'bg-garden-forest-deep',
+        status === 'playing' && 'bg-forest-deep',
         className,
         playClassName,
       )}

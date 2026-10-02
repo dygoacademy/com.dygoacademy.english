@@ -26,8 +26,8 @@ export const Chip = React.forwardRef<HTMLButtonElement, ChipProps>(
         "after:absolute after:inset-x-0 after:-inset-y-[3px] after:content-['']",
         'transition-colors duration-quick ease-garden disabled:opacity-50',
         selected
-          ? 'border-garden-forest bg-garden-forest text-white'
-          : 'border-garden-border bg-garden-surface text-garden-text hover:bg-garden-surface-sunken',
+          ? 'border-forest bg-forest text-white'
+          : 'border-border bg-surface text-text hover:bg-surface-sunken',
         className,
       )}
       {...props}

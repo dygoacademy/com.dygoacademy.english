@@ -16,7 +16,7 @@ export type CardProps =
       Omit<React.ComponentProps<typeof Link>, 'className' | 'children'> & { href: string });
 
 const base =
-  'block rounded-card border border-garden-border bg-garden-surface p-4 text-garden-text';
+  'block rounded-card border border-border bg-surface p-4 text-text';
 
 export function Card(props: CardProps) {
   if (props.href !== undefined) {
@@ -26,7 +26,7 @@ export function Card(props: CardProps) {
         {...linkProps}
         className={gcn(
           base,
-          'transition-colors duration-quick ease-garden hover:border-garden-muted active:bg-garden-surface-sunken',
+          'transition-colors duration-quick ease-garden hover:border-muted-foreground active:bg-surface-sunken',
           className,
         )}
       >

@@ -38,10 +38,10 @@ export function GardenSidebar({
       aria-label={t('label')}
       data-garden-nav={inline ? undefined : 'sidebar'}
       className={gcn(
-        'w-60 flex-col border-r border-garden-border bg-garden-surface px-3 pt-[max(16px,var(--safe-top))]',
+        'w-60 flex-col border-r border-border bg-surface px-3 pt-[max(16px,var(--safe-top))]',
         inline
           ? 'flex min-h-[360px]'
-          : 'fixed inset-y-0 left-0 z-40 hidden pl-[max(12px,var(--safe-left))] expanded:flex',
+          : 'fixed inset-y-0 left-0 z-40 hidden pl-[max(12px,var(--safe-left))] lg:flex',
         className,
       )}
     >
@@ -56,8 +56,8 @@ export function GardenSidebar({
                 className={gcn(
                   'flex items-center gap-3 rounded-control px-3 py-2.5 text-[15px]',
                   active
-                    ? 'bg-garden-bg font-bold text-garden-forest'
-                    : 'font-medium text-garden-muted',
+                    ? 'bg-bg font-bold text-forest'
+                    : 'font-medium text-muted-foreground',
                 )}
               >
                 <span aria-hidden="true" className="flex [&_svg]:h-6 [&_svg]:w-6">

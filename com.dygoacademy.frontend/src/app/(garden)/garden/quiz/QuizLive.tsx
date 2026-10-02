@@ -84,7 +84,7 @@ export function QuizLive({ topicId, mode }: { topicId?: string; mode?: 'leech' }
 
   if (items.length === 0) {
     return (
-      <div className="mx-auto flex min-h-screen-dvh w-full max-w-[560px] flex-col items-center justify-center gap-[18px] bg-garden-bg px-6 text-center text-garden-text">
+      <div className="mx-auto flex min-h-screen-dvh w-full max-w-[560px] flex-col items-center justify-center gap-[18px] bg-bg px-6 text-center text-text">
         <p className="font-display text-[24px] font-semibold">
           {isDrill ? t('emptyDrill') : t('empty')}
         </p>

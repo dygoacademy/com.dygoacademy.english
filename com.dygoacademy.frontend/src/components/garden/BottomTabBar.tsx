@@ -37,7 +37,7 @@ export function BottomTabBar({ items, activeKey, fixed = false, className }: Bot
     <nav
       aria-label={t('label')}
       className={gcn(
-        'z-40 border-t border-garden-border bg-garden-surface pt-2',
+        'z-40 border-t border-border bg-surface pt-2',
         'pb-[max(20px,var(--safe-bottom))]',
         // Canvas: 8px at the sides with four tabs, 4px with five (UI-G, GR1–GR4).
         items.length >= 5
@@ -60,7 +60,7 @@ export function BottomTabBar({ items, activeKey, fixed = false, className }: Bot
                 aria-current={active ? 'page' : undefined}
                 className={gcn(
                   'flex flex-col items-center gap-[3px] py-1.5',
-                  active ? 'text-garden-forest' : 'text-garden-muted',
+                  active ? 'text-forest' : 'text-muted-foreground',
                 )}
               >
                 <span aria-hidden="true" className="flex [&_svg]:h-6 [&_svg]:w-6">

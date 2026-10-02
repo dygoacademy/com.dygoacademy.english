@@ -29,10 +29,10 @@ export function GardenRail({ items, activeKey, inline = false, className }: Gard
       aria-label={t('label')}
       data-garden-nav={inline ? undefined : 'rail'}
       className={gcn(
-        'w-20 flex-col border-r border-garden-border bg-garden-surface pt-[max(16px,var(--safe-top))]',
+        'w-20 flex-col border-r border-border bg-surface pt-[max(16px,var(--safe-top))]',
         inline
           ? 'flex min-h-[360px]'
-          : 'fixed inset-y-0 left-0 z-40 hidden pl-[var(--safe-left)] medium:flex expanded:hidden',
+          : 'fixed inset-y-0 left-0 z-40 hidden pl-[var(--safe-left)] md:flex lg:hidden',
         className,
       )}
     >
@@ -46,7 +46,7 @@ export function GardenRail({ items, activeKey, inline = false, className }: Gard
                 aria-current={active ? 'page' : undefined}
                 className={gcn(
                   'mx-2 flex flex-col items-center gap-[3px] rounded-tile py-2',
-                  active ? 'bg-garden-bg text-garden-forest' : 'text-garden-muted',
+                  active ? 'bg-bg text-forest' : 'text-muted-foreground',
                 )}
               >
                 <span aria-hidden="true" className="flex [&_svg]:h-6 [&_svg]:w-6">

@@ -24,7 +24,7 @@ export function StreakPill({
       role="img"
       aria-label={label}
       className={gcn(
-        'flex items-center gap-1.5 rounded-[20px] border border-garden-border bg-garden-surface py-[7px] pl-[9px] pr-3',
+        'flex items-center gap-1.5 rounded-[20px] border border-border bg-surface py-[7px] pl-[9px] pr-3',
         className,
       )}
     >
@@ -32,7 +32,7 @@ export function StreakPill({
       <span aria-hidden="true" className="text-[15px] font-bold">
         {count}
       </span>
-      <span aria-hidden="true" className="text-[12px] text-garden-muted">
+      <span aria-hidden="true" className="text-[12px] text-muted-foreground">
         {unit}
       </span>
     </div>

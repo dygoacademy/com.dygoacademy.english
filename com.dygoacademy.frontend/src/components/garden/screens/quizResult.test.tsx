@@ -51,8 +51,8 @@ describe('QuizResultScreen (U5-6, UI-5 QZ-2)', () => {
     expect(screen.getByText('Every answer right. This bed is thriving.')).toBeTruthy();
     expect(screen.getByTestId('quiz-result-bloom')).toBeTruthy();
     expect(screen.queryByTestId('quiz-result-watering')).toBeNull();
-    expect(screen.getByText('0').className).toContain('text-garden-placeholder');
-    expect(screen.getByText('5').className).toContain('text-garden-success');
+    expect(screen.getByText('0').className).toContain('text-placeholder');
+    expect(screen.getByText('5').className).toContain('text-success');
     expect(screen.queryByRole('heading', { name: 'Words that need water' })).toBeNull();
     expect(screen.getByRole('link', { name: 'Back to topics' })).toBeTruthy();
     expect(screen.queryByRole('link', { name: 'Drill tricky words' })).toBeNull();
@@ -71,7 +71,7 @@ describe('QuizResultScreen (U5-6, UI-5 QZ-2)', () => {
       />,
     );
     expect(screen.getByTestId('quiz-result-watering')).toBeTruthy();
-    expect(screen.getByText('1').className).toContain('text-garden-gold-text');
+    expect(screen.getByText('1').className).toContain('text-gold-text');
     expect(
       screen.getByRole('link', { name: 'Drill tricky words' }).getAttribute('href'),
     ).toBe('/garden/quiz?topic=t1&mode=leech');

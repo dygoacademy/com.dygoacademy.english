@@ -12,13 +12,13 @@ import { gcn } from './cn';
 export type GardenerTone = 'forest' | 'flower' | 'due' | 'sprout' | 'gold' | 'mist' | 'more';
 
 const TONES: Record<GardenerTone, string> = {
-  forest: 'bg-garden-forest text-garden-gold-light',
-  flower: 'bg-stage-flower text-garden-avatar-flower-text',
-  due: 'bg-stage-due text-garden-avatar-due-text',
-  sprout: 'bg-stage-sprout-leaf text-garden-avatar-sprout-text',
-  gold: 'bg-garden-gold-light text-garden-avatar-gold-text',
-  mist: 'bg-garden-on-forest-muted text-garden-forest',
-  more: 'bg-garden-track text-garden-muted',
+  forest: 'bg-forest text-gold-light',
+  flower: 'bg-stage-flower text-avatar-flower-text',
+  due: 'bg-stage-due text-avatar-due-text',
+  sprout: 'bg-stage-sprout-leaf text-avatar-sprout-text',
+  gold: 'bg-gold-light text-avatar-gold-text',
+  mist: 'bg-on-forest-muted text-forest',
+  more: 'bg-track text-muted-foreground',
 };
 
 const PERSON_TONES: readonly GardenerTone[] = ['forest', 'flower', 'due', 'sprout', 'gold', 'mist'];
@@ -60,7 +60,7 @@ export function GardenerAvatar({ text, tone, size = 26, ringed = false, classNam
       className={gcn(
         'flex shrink-0 items-center justify-center rounded-full font-bold',
         SIZE[size],
-        ringed && 'border-2 border-garden-surface',
+        ringed && 'border-2 border-surface',
         TONES[tone],
         className,
       )}

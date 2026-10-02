@@ -54,7 +54,7 @@ export function GardenerRow({
     <li
       className={gcn(
         'flex items-center gap-3 px-[14px] py-2.5',
-        !last && 'border-b border-garden-divider',
+        !last && 'border-b border-divider',
       )}
     >
       <GardenerAvatar text={initial} tone={tone} size={40} />
@@ -64,16 +64,16 @@ export function GardenerRow({
           {isYou ? (
             <>
               {' '}
-              <span className="text-[12px] font-semibold text-garden-muted">{t('you')}</span>
+              <span className="text-[12px] font-semibold text-muted-foreground">{t('you')}</span>
             </>
           ) : null}
         </span>
-        <span className="text-[12px] text-garden-muted">{joined}</span>
+        <span className="text-[12px] text-muted-foreground">{joined}</span>
       </div>
       <span className="relative shrink-0">
         <span
           aria-hidden="true"
-          className="flex h-9 items-center gap-1 rounded-[12px] border border-garden-border bg-garden-surface pl-2.5 pr-2 text-[13px] font-bold text-garden-forest"
+          className="flex h-9 items-center gap-1 rounded-[12px] border border-border bg-surface pl-2.5 pr-2 text-[13px] font-bold text-forest"
         >
           {t(`roles.${role}`)}
           <ChevronDownIcon width={14} height={14} />

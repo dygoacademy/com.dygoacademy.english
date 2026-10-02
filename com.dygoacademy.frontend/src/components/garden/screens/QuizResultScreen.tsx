@@ -58,7 +58,7 @@ export function QuizResultScreen({
   const showDrill = Boolean(drillHref) && !drill && !perfect;
 
   return (
-    <div className="mx-auto flex min-h-screen-dvh w-full max-w-[560px] flex-col gap-4 bg-garden-bg px-4 pb-6 pt-5 text-garden-text">
+    <div className="mx-auto flex min-h-screen-dvh w-full max-w-[560px] flex-col gap-4 bg-bg px-4 pb-6 pt-5 text-text">
       <div className="flex justify-end">
         <IconButton asChild aria-label={t('close')}>
           <Link href={closeHref}>
@@ -70,17 +70,17 @@ export function QuizResultScreen({
       <div className="flex flex-col items-center gap-1.5 text-center">
         <div
           data-testid={perfect ? 'quiz-result-bloom' : 'quiz-result-watering'}
-          className="flex h-[148px] w-[148px] items-center justify-center rounded-full bg-garden-forest"
+          className="flex h-[148px] w-[148px] items-center justify-center rounded-full bg-forest"
         >
           {perfect ? <QuizBloomArt /> : <QuizWateringArt />}
         </div>
-        <span className="mt-2 text-[12px] font-bold uppercase tracking-[0.1em] text-garden-success">
+        <span className="mt-2 text-[12px] font-bold uppercase tracking-[0.1em] text-success">
           {drill ? t('overlineDrill') : t('overline')}
         </span>
         <h1 className="font-display text-[30px] font-semibold leading-[1.1]">
           {t('title', { correct, total })}
         </h1>
-        <span className="text-[15px] text-garden-muted">
+        <span className="text-[15px] text-muted-foreground">
           {perfect ? t('allRight') : t('someMissed', { count: missed.length })}
         </span>
       </div>
@@ -103,7 +103,7 @@ export function QuizResultScreen({
       {!perfect ? (
         <section
           aria-labelledby="quiz-result-missed"
-          className="flex flex-col gap-2.5 rounded-card border border-garden-gold-border bg-garden-gold-soft p-[14px]"
+          className="flex flex-col gap-2.5 rounded-card border border-gold-border bg-gold-soft p-[14px]"
         >
           <div className="flex items-center gap-2">
             <WaterIcon width={18} height={18} fill="var(--color-water-due)" aria-hidden="true" />
@@ -116,13 +116,13 @@ export function QuizResultScreen({
               <li
                 key={w.id}
                 lang="en"
-                className="rounded-full border border-garden-gold-border bg-garden-surface px-3 py-[5px] text-[14px] font-semibold"
+                className="rounded-full border border-gold-border bg-surface px-3 py-[5px] text-[14px] font-semibold"
               >
                 {w.word}
               </li>
             ))}
           </ul>
-          <p className="text-[13px] leading-[1.4] text-garden-gold-soft-text">{t('missedNote')}</p>
+          <p className="text-[13px] leading-[1.4] text-gold-soft-text">{t('missedNote')}</p>
         </section>
       ) : null}
 

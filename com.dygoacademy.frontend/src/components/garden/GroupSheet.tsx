@@ -22,10 +22,10 @@ import { IconButton } from './IconButton';
  *   because a portal renders nothing on the server.
  */
 const PANEL =
-  'flex flex-col gap-[14px] rounded-t-hero bg-garden-bg px-4 pb-[max(34px,var(--safe-bottom))] pt-2.5 text-garden-text';
+  'flex flex-col gap-[14px] rounded-t-hero bg-bg px-4 pb-[max(34px,var(--safe-bottom))] pt-2.5 text-text';
 
 function Grabber() {
-  return <span aria-hidden="true" className="h-[5px] w-9 self-center rounded-[3px] bg-garden-disabled" />;
+  return <span aria-hidden="true" className="h-[5px] w-9 self-center rounded-[3px] bg-disabled" />;
 }
 
 function SheetHeader({
@@ -45,7 +45,7 @@ function SheetHeader({
         <span id={titleId} className="font-display text-[22px] font-semibold">
           {title}
         </span>
-        {subtitle ? <span className="text-[13px] text-garden-muted">{subtitle}</span> : null}
+        {subtitle ? <span className="text-[13px] text-muted-foreground">{subtitle}</span> : null}
       </div>
       {close}
     </div>
@@ -70,7 +70,7 @@ export function GroupSheet({ open, onOpenChange, title, subtitle, children }: Gr
   return (
     <DialogPrimitive.Root open={open} onOpenChange={onOpenChange}>
       <DialogPrimitive.Portal container={container ?? undefined}>
-        <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-garden-scrim data-[state=closed]:animate-out data-[state=open]:animate-in data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
+        <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-scrim data-[state=closed]:animate-out data-[state=open]:animate-in data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
         <DialogPrimitive.Content
           data-ui={container ? undefined : 'garden'}
           aria-describedby={undefined}
@@ -109,12 +109,12 @@ export function SheetBackdrop({ eyebrow, title }: { eyebrow: string; title: stri
   return (
     <div aria-hidden="true" className="absolute inset-0 flex flex-col gap-[14px] pt-[22px]">
       <div className="flex flex-col px-5">
-        <span className="text-[13px] text-garden-muted">{eyebrow}</span>
+        <span className="text-[13px] text-muted-foreground">{eyebrow}</span>
         <span className="font-display text-[28px] font-semibold">{title}</span>
       </div>
-      <div className="mx-4 h-[150px] rounded-[24px] bg-garden-forest" />
-      <div className="mx-4 h-20 rounded-[20px] border border-garden-border bg-garden-surface" />
-      <div className="mx-4 h-20 rounded-[20px] border border-garden-border bg-garden-surface" />
+      <div className="mx-4 h-[150px] rounded-[24px] bg-forest" />
+      <div className="mx-4 h-20 rounded-[20px] border border-border bg-surface" />
+      <div className="mx-4 h-20 rounded-[20px] border border-border bg-surface" />
     </div>
   );
 }
@@ -135,7 +135,7 @@ export function GroupSheetFrame({
   const titleId = React.useId();
   return (
     <>
-      <div className="absolute inset-0 bg-garden-scrim" />
+      <div className="absolute inset-0 bg-scrim" />
       <div
         role="dialog"
         aria-modal="true"

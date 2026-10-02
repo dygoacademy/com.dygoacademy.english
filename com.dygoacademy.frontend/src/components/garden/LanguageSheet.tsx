@@ -114,7 +114,7 @@ export function LanguageSheet({
         </RadioGroup>
       ) : null}
 
-      <p aria-live="polite" className="min-h-5 text-[13px] text-garden-muted">
+      <p aria-live="polite" className="min-h-5 text-[13px] text-muted-foreground">
         {error ? t("error") : saving ? t("saving") : null}
       </p>
     </BottomSheet>
@@ -132,13 +132,13 @@ export function RadioGroup({
 }) {
   return (
     <fieldset className="mb-4 flex flex-col">
-      <legend className="overline-label mb-1 text-[12px] font-bold text-garden-muted">
+      <legend className="overline-label mb-1 text-[12px] font-bold text-muted-foreground">
         {legend}
       </legend>
       {hint ? (
-        <p className="mb-1 text-[13px] text-garden-muted">{hint}</p>
+        <p className="mb-1 text-[13px] text-muted-foreground">{hint}</p>
       ) : null}
-      <div className="flex flex-col rounded-card border border-garden-border [&>label:last-child]:border-b-0">
+      <div className="flex flex-col rounded-card border border-border [&>label:last-child]:border-b-0">
         {children}
       </div>
     </fieldset>
@@ -163,8 +163,8 @@ export function RadioRow({
   return (
     <label
       className={gcn(
-        "flex h-[52px] cursor-pointer items-center gap-3 border-b border-garden-divider px-[14px]",
-        "has-[:focus-visible]:outline has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-garden-forest",
+        "flex h-[52px] cursor-pointer items-center gap-3 border-b border-divider px-[14px]",
+        "has-[:focus-visible]:outline has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-forest",
         disabled && "cursor-default opacity-60",
       )}
     >
@@ -184,8 +184,8 @@ export function RadioRow({
         className={gcn(
           "flex h-6 w-6 items-center justify-center rounded-full border-2",
           checked
-            ? "border-garden-forest bg-garden-forest"
-            : "border-garden-border",
+            ? "border-forest bg-forest"
+            : "border-border",
         )}
       >
         {checked ? (

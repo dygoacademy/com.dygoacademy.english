@@ -80,13 +80,13 @@ export function BottomSheet({
           data-dragging={dragging || undefined}
           style={dragging ? { transform: `translateY(${dragY}px)` } : undefined}
           className={gcn(
-            'fixed inset-x-0 bottom-0 z-50 flex max-h-[90dvh] min-h-0 flex-col rounded-t-hero bg-garden-surface pb-safe text-garden-text outline-none',
+            'fixed inset-x-0 bottom-0 z-50 flex max-h-[90dvh] min-h-0 flex-col rounded-t-hero bg-surface pb-safe text-text outline-none',
             'duration-200 data-[state=closed]:animate-out data-[state=open]:animate-in',
             'data-[state=closed]:slide-out-to-bottom data-[state=open]:slide-in-from-bottom',
-            'medium:inset-x-auto medium:bottom-auto medium:left-1/2 medium:top-1/2 medium:max-h-[85dvh] medium:w-[calc(100%-48px)] medium:max-w-[540px]',
-            'medium:-translate-x-1/2 medium:-translate-y-1/2 medium:rounded-hero medium:pb-0',
-            'medium:data-[state=closed]:slide-out-to-bottom-4 medium:data-[state=open]:slide-in-from-bottom-4',
-            'medium:data-[state=closed]:fade-out-0 medium:data-[state=open]:fade-in-0',
+            'md:inset-x-auto md:bottom-auto md:left-1/2 md:top-1/2 md:max-h-[85dvh] md:w-[calc(100%-48px)] md:max-w-[540px]',
+            'md:-translate-x-1/2 md:-translate-y-1/2 md:rounded-hero md:pb-0',
+            'md:data-[state=closed]:slide-out-to-bottom-4 md:data-[state=open]:slide-in-from-bottom-4',
+            'md:data-[state=closed]:fade-out-0 md:data-[state=open]:fade-in-0',
             'motion-reduce:data-[state=closed]:animate-none motion-reduce:data-[state=open]:animate-none',
             dragging ? 'transition-none' : 'transition-transform duration-quick ease-garden',
             className,
@@ -97,7 +97,7 @@ export function BottomSheet({
           <div
             aria-hidden="true"
             data-testid="sheet-grabber"
-            className="flex h-6 shrink-0 cursor-grab touch-none items-center justify-center medium:hidden"
+            className="flex h-6 shrink-0 cursor-grab touch-none items-center justify-center md:hidden"
             onPointerDown={(event) => {
               dragStart.current = event.clientY;
               event.currentTarget.setPointerCapture?.(event.pointerId);
@@ -109,16 +109,16 @@ export function BottomSheet({
             onPointerUp={endDrag}
             onPointerCancel={endDrag}
           >
-            <span className="h-[5px] w-9 rounded-full bg-garden-disabled" />
+            <span className="h-[5px] w-9 rounded-full bg-disabled" />
           </div>
 
-          <div className="flex shrink-0 items-start justify-between gap-3 px-5 pb-2 pt-1 medium:pt-5">
+          <div className="flex shrink-0 items-start justify-between gap-3 px-5 pb-2 pt-1 md:pt-5">
             <div className="min-w-0">
               <DialogPrimitive.Title className="font-display text-display-s">
                 {title}
               </DialogPrimitive.Title>
               {description ? (
-                <DialogPrimitive.Description className="mt-1 text-body-s text-garden-muted">
+                <DialogPrimitive.Description className="mt-1 text-body-s text-muted-foreground">
                   {description}
                 </DialogPrimitive.Description>
               ) : null}
@@ -136,7 +136,7 @@ export function BottomSheet({
             {children}
           </div>
           {footer ? (
-            <div className="shrink-0 border-t border-garden-border px-5 pb-4 pt-3">{footer}</div>
+            <div className="shrink-0 border-t border-border px-5 pb-4 pt-3">{footer}</div>
           ) : null}
         </DialogPrimitive.Content>
       </DialogPortal>

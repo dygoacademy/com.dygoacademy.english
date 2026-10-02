@@ -12,27 +12,27 @@ export const buttonVariants = cva(
   [
     'relative flex select-none items-center justify-center gap-2 text-center font-bold',
     'transition-[transform,box-shadow,background-color] duration-press ease-garden',
-    'medium:max-w-[400px]',
+    'md:max-w-[400px]',
     'disabled:cursor-not-allowed',
   ],
   {
     variants: {
       variant: {
         primary: [
-          'h-[58px] rounded-[18px] bg-garden-primary text-[17px] text-white shadow-press-primary',
+          'h-[58px] rounded-[18px] bg-primary text-[17px] text-white shadow-press-primary',
           'active:translate-y-[2px] active:shadow-press-primary-down',
-          'disabled:translate-y-0 disabled:bg-garden-disabled disabled:text-garden-text disabled:shadow-none',
+          'disabled:translate-y-0 disabled:bg-disabled disabled:text-text disabled:shadow-none',
         ],
         secondary: [
-          'h-[52px] rounded-control border border-garden-border bg-garden-surface px-4',
-          'text-[15px] text-garden-forest',
-          'hover:bg-garden-surface-sunken active:bg-garden-surface-sunken',
-          'disabled:border-garden-disabled disabled:text-garden-muted',
+          'h-[52px] rounded-control border border-border bg-surface px-4',
+          'text-[15px] text-forest',
+          'hover:bg-surface-sunken active:bg-surface-sunken',
+          'disabled:border-disabled disabled:text-muted-foreground',
         ],
         forest: [
-          'h-[60px] rounded-[18px] bg-garden-forest text-[17px] text-white shadow-press-forest',
+          'h-[60px] rounded-[18px] bg-forest text-[17px] text-white shadow-press-forest',
           'active:translate-y-[2px] active:shadow-press-forest-down',
-          'disabled:translate-y-0 disabled:bg-garden-disabled disabled:text-garden-text disabled:shadow-none',
+          'disabled:translate-y-0 disabled:bg-disabled disabled:text-text disabled:shadow-none',
         ],
       },
     },

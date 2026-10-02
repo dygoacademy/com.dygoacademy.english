@@ -154,7 +154,7 @@ export function QuizScreen({
   const answeredCount = index + (feedback ? 1 : 0);
 
   return (
-    <div className="mx-auto flex min-h-screen-dvh w-full max-w-[560px] flex-col gap-[14px] bg-garden-bg px-4 pb-6 pt-5 text-garden-text">
+    <div className="mx-auto flex min-h-screen-dvh w-full max-w-[560px] flex-col gap-[14px] bg-bg px-4 pb-6 pt-5 text-text">
       <div className="flex items-center gap-3">
         <IconButton asChild aria-label={t('close')}>
           <Link href={closeHref}>
@@ -162,7 +162,7 @@ export function QuizScreen({
           </Link>
         </IconButton>
         <div className="flex flex-grow flex-col gap-[5px]">
-          <div className="flex justify-between gap-2 text-[12px] font-semibold text-garden-muted">
+          <div className="flex justify-between gap-2 text-[12px] font-semibold text-muted-foreground">
             <span className="truncate">
               {topicTitle ? t('label', { topic: topicTitle }) : t('labelAll')}
             </span>
@@ -232,12 +232,12 @@ function QuestionBody({
   }
 
   return (
-    <div className="garden-rise flex flex-grow flex-col gap-[14px]">
+    <div className="rise flex flex-grow flex-col gap-[14px]">
       <article
         aria-label={t(`type.${question.type}`)}
-        className="flex flex-col gap-[14px] rounded-hero border border-garden-border bg-garden-surface px-5 py-[22px] shadow-card-lift"
+        className="flex flex-col gap-[14px] rounded-hero border border-border bg-surface px-5 py-[22px] shadow-card-lift"
       >
-        <span className="w-fit rounded-[10px] bg-rating-good px-2.5 py-1 text-[12px] font-bold text-garden-forest">
+        <span className="w-fit rounded-[10px] bg-rating-good px-2.5 py-1 text-[12px] font-bold text-forest">
           {t(`type.${question.type}`)}
         </span>
 
@@ -248,7 +248,7 @@ function QuestionBody({
             <div
               role="note"
               aria-label={t('hintTitle')}
-              className="garden-rise flex flex-col gap-0.5 rounded-[14px] bg-garden-water-soft px-3 py-2.5 text-[14px] text-garden-water-text"
+              className="rise flex flex-col gap-0.5 rounded-[14px] bg-water-soft px-3 py-2.5 text-[14px] text-water-text"
             >
               <span lang={hint.ipa ? 'en' : undefined} className="font-bold">
                 {hint.ipa || t('noIpa')}
@@ -262,7 +262,7 @@ function QuestionBody({
               type="button"
               onClick={onHint}
               disabled={hint.status === 'loading'}
-              className="min-h-11 self-start text-[14px] font-semibold text-garden-forest underline underline-offset-4 disabled:text-garden-muted"
+              className="min-h-11 self-start text-[14px] font-semibold text-forest underline underline-offset-4 disabled:text-muted-foreground"
             >
               {hint.status === 'loading' ? t('hintLoading') : t('hint')}
             </button>
@@ -297,15 +297,15 @@ function QuestionBody({
             autoComplete="off"
             spellCheck={false}
             className={gcn(
-              'h-[54px] rounded-[16px] bg-garden-surface px-4 text-[17px] text-garden-text caret-garden-forest',
-              'placeholder:text-garden-placeholder focus:outline-none',
+              'h-[54px] rounded-[16px] bg-surface px-4 text-[17px] text-text caret-forest',
+              'placeholder:text-placeholder focus:outline-none',
               answered
                 ? feedback?.correct
-                  ? 'border-2 border-garden-forest bg-rating-good'
-                  : 'border-2 border-stage-tree-fruit bg-garden-gold-soft'
+                  ? 'border-2 border-forest bg-rating-good'
+                  : 'border-2 border-stage-tree-fruit bg-gold-soft'
                 : text
-                  ? 'border border-garden-forest'
-                  : 'border border-garden-border',
+                  ? 'border border-forest'
+                  : 'border border-border',
             )}
           />
           {answered ? null : (
@@ -315,7 +315,7 @@ function QuestionBody({
               loading={submitting}
               disabled={!text.trim()}
               // Canvas: 58px, and still forest (dimmed) while the field is empty.
-              className="h-[58px] disabled:bg-garden-forest disabled:text-white disabled:opacity-[.45] disabled:shadow-press-forest"
+              className="h-[58px] disabled:bg-forest disabled:text-white disabled:opacity-[.45] disabled:shadow-press-forest"
             >
               {t('check')}
             </Button>
@@ -338,14 +338,14 @@ function QuestionBody({
                     'flex min-h-[54px] w-full items-center justify-between gap-2 rounded-[16px] px-4 py-3 text-left text-[16px] font-semibold',
                     'transition-colors duration-quick ease-garden',
                     isRight
-                      ? 'border-2 border-garden-forest bg-rating-good text-garden-forest'
+                      ? 'border-2 border-forest bg-rating-good text-forest'
                       : isWrongPick
-                        ? 'border-2 border-stage-tree-fruit bg-garden-gold-soft text-garden-gold-soft-text'
+                        ? 'border-2 border-stage-tree-fruit bg-gold-soft text-gold-soft-text'
                         : answered
-                          ? 'border border-garden-border bg-garden-surface text-garden-placeholder'
+                          ? 'border border-border bg-surface text-placeholder'
                           : isPick
-                            ? 'border border-garden-forest bg-garden-surface'
-                            : 'border border-garden-border bg-garden-surface hover:border-garden-muted',
+                            ? 'border border-forest bg-surface'
+                            : 'border border-border bg-surface hover:border-muted-foreground',
                   )}
                 >
                   <span lang="en" className="min-w-0 break-words">
@@ -363,7 +363,7 @@ function QuestionBody({
       )}
 
       {errorText && !answered ? (
-        <p role="alert" className="text-center text-[14px] text-garden-muted">
+        <p role="alert" className="text-center text-[14px] text-muted-foreground">
           {errorText}
         </p>
       ) : null}
@@ -408,7 +408,7 @@ function QuestionPrompt({
           label={t('listen')}
           playClassName="h-[84px] w-[84px] shadow-press-forest [&_svg]:h-9 [&_svg]:w-9"
         />
-        <p className="text-center text-[15px] text-garden-muted">{t('listenQ')}</p>
+        <p className="text-center text-[15px] text-muted-foreground">{t('listenQ')}</p>
       </div>
     );
   }
@@ -417,7 +417,7 @@ function QuestionPrompt({
   if (matching) {
     return (
       <div className="flex flex-col gap-1">
-        <p className="text-[16px] text-garden-muted">
+        <p className="text-[16px] text-muted-foreground">
           {t(matching.relation === 'antonym' ? 'matchQAntonym' : 'matchQ')}
         </p>
         <p lang="en" className="break-words font-display text-[38px] font-semibold leading-[1.05]">
@@ -439,10 +439,10 @@ function QuestionPrompt({
             // min-width 88 + 2×8 padding: the canvas pill is content-box (104 wide empty).
             'mx-0.5 inline-block min-w-[104px] rounded-[10px] border-b-2 px-2 text-center font-body text-[18px] font-bold leading-[1.5]',
             state === 'right'
-              ? 'border-garden-success bg-rating-good text-garden-forest'
+              ? 'border-success bg-rating-good text-forest'
               : state === 'wrong'
-                ? 'border-stage-tree-fruit bg-garden-gold-soft text-garden-gold-soft-text'
-                : 'border-garden-muted bg-garden-bg text-garden-gold-soft-text',
+                ? 'border-stage-tree-fruit bg-gold-soft text-gold-soft-text'
+                : 'border-muted-foreground bg-bg text-gold-soft-text',
           )}
         >
           {feedback ? feedback.correctAnswer : null}
@@ -479,43 +479,43 @@ function FeedbackPanel({
     <section
       aria-live="polite"
       className={gcn(
-        'garden-rise mt-auto flex flex-col gap-1.5 rounded-card border p-4 text-[15px]',
+        'rise mt-auto flex flex-col gap-1.5 rounded-card border p-4 text-[15px]',
         feedback.correct
-          ? 'border-garden-forest bg-rating-good'
-          : 'border-garden-gold-border bg-garden-gold-soft',
+          ? 'border-forest bg-rating-good'
+          : 'border-gold-border bg-gold-soft',
       )}
     >
       <p
         className={gcn(
           'text-[18px] font-bold',
-          feedback.correct ? 'text-garden-forest' : 'text-garden-gold-soft-text',
+          feedback.correct ? 'text-forest' : 'text-gold-soft-text',
         )}
       >
         {feedback.correct ? t('right') : t('notQuite', { answer: feedback.correctAnswer })}
       </p>
       {feedback.correct ? (
         <>
-          <p lang="en" className="text-garden-muted">
+          <p lang="en" className="text-muted-foreground">
             {feedback.ipa ? t('wordIpa', { word, ipa: feedback.ipa }) : word}
           </p>
           {feedback.example ? (
-            <p lang="en" className="font-display italic leading-[1.45] text-garden-example">
+            <p lang="en" className="font-display italic leading-[1.45] text-example">
               {t('quote', { text: feedback.example })}
             </p>
           ) : null}
           {feedback.note === 'mastered' ? (
-            <p className="w-fit rounded-tile bg-garden-surface px-2.5 py-1 text-[12px] font-bold leading-[1.35] text-garden-forest">
+            <p className="w-fit rounded-tile bg-surface px-2.5 py-1 text-[12px] font-bold leading-[1.35] text-forest">
               {t('mastered')}
             </p>
           ) : null}
         </>
       ) : (
         <>
-          <p lang="en" className="text-garden-example">
+          <p lang="en" className="text-example">
             {definition ? `${word} · ${definition}` : word}
           </p>
           {feedback.note === 'comesBack' ? (
-            <p className="text-[13px] text-garden-gold-soft-text">{t('comesBack')}</p>
+            <p className="text-[13px] text-gold-soft-text">{t('comesBack')}</p>
           ) : null}
         </>
       )}

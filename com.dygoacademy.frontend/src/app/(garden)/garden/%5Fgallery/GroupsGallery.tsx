@@ -23,7 +23,7 @@ import type { GroupRole } from '@/types';
  * InviteSheet, with the canvas sample data in the page's language.
  */
 function StateLabel({ children }: { children: React.ReactNode }) {
-  return <p className="overline-label mb-2 mt-5 text-label text-garden-muted">{children}</p>;
+  return <p className="overline-label mb-2 mt-5 text-label text-muted-foreground">{children}</p>;
 }
 
 export function GroupsGallery() {
@@ -98,7 +98,7 @@ export function GroupsGallery() {
       </div>
 
       <StateLabel>{g('tricky')}</StateLabel>
-      <ul className="rounded-[22px] border border-garden-border bg-garden-surface px-4 py-1">
+      <ul className="rounded-[22px] border border-border bg-surface px-4 py-1">
         {fx.tricky.rows.map((row) => (
           <TrickyPatchRow
             key={row.word}
@@ -110,7 +110,7 @@ export function GroupsGallery() {
       </ul>
 
       <StateLabel>{g('gardeners')}</StateLabel>
-      <ul className="flex flex-col overflow-hidden rounded-[22px] border border-garden-border bg-garden-surface">
+      <ul className="flex flex-col overflow-hidden rounded-[22px] border border-border bg-surface">
         {fx.roster.map((member, index) => (
           <GardenerRow
             key={member.id}

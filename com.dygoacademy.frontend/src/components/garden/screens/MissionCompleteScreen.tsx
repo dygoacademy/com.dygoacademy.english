@@ -44,7 +44,7 @@ export interface MissionCompleteScreenProps {
 /** The blooming flower in its 168px forest medal. */
 function BloomMedal({ label }: { label: string }) {
   return (
-    <div className="garden-bloom flex h-[168px] w-[168px] items-center justify-center rounded-[84px] bg-garden-forest">
+    <div className="bloom flex h-[168px] w-[168px] items-center justify-center rounded-[84px] bg-forest">
       <svg width="130" height="130" viewBox="0 0 60 60" role="img" aria-label={label}>
         <path
           d="M30 56 V28"
@@ -87,7 +87,7 @@ export function MissionCompleteScreen({
   const dash = t('unknown');
 
   return (
-    <div className="mx-auto flex min-h-screen-dvh w-full max-w-[560px] flex-col gap-4 bg-garden-bg px-4 pb-6 pt-5 text-garden-text">
+    <div className="mx-auto flex min-h-screen-dvh w-full max-w-[560px] flex-col gap-4 bg-bg px-4 pb-6 pt-5 text-text">
       <div className="flex justify-end">
         <IconButton asChild aria-label={t('close')}>
           <Link href={closeHref}>
@@ -98,14 +98,14 @@ export function MissionCompleteScreen({
 
       <div className="flex flex-col items-center gap-1.5 text-center">
         <BloomMedal label={t('bloomLabel')} />
-        <span className="mt-2 text-[12px] font-bold uppercase tracking-[0.1em] text-garden-success">
+        <span className="mt-2 text-[12px] font-bold uppercase tracking-[0.1em] text-success">
           {t('overline')}
         </span>
         <h1 className="font-display text-[30px] font-semibold leading-[1.1]">
           {t('title', { count: words })}
         </h1>
         {bloomed ? (
-          <span className="text-[15px] text-garden-muted">
+          <span className="text-[15px] text-muted-foreground">
             {t('bloomed', { word: bloomed.word, count: bloomed.more })}
           </span>
         ) : null}
@@ -144,14 +144,14 @@ export function MissionCompleteScreen({
       ) : null}
 
       {missions ? (
-        <div className="flex flex-col gap-3 rounded-card border border-garden-gold-border bg-garden-gold-soft p-[14px]">
+        <div className="flex flex-col gap-3 rounded-card border border-gold-border bg-gold-soft p-[14px]">
           <div className="flex items-center gap-3">
             <GoldenBloomIcon width={40} height={40} stemTo={23} />
             <div className="flex flex-grow flex-col">
               <span className="text-[16px] font-bold">
                 {t('missionsDone', { done: missions.done, total: missions.total })}
               </span>
-              <span className="text-[13px] text-garden-gold-soft-text">
+              <span className="text-[13px] text-gold-soft-text">
                 {t('missionsLeft', { count: missions.total - missions.done })}
               </span>
             </div>
@@ -175,13 +175,13 @@ export function MissionCompleteScreen({
       ) : null}
 
       {reminder ? (
-        <div className="flex items-center gap-3 rounded-[18px] border border-garden-border bg-garden-surface px-[14px] py-3">
+        <div className="flex items-center gap-3 rounded-[18px] border border-border bg-surface px-[14px] py-3">
           <BellIcon width={22} height={22} stroke="var(--color-forest)" />
           <div className="flex flex-grow flex-col">
             <span className="text-[14px] font-bold">
               {t('ripening', { count: reminder.ripening })}
             </span>
-            <span className="text-[12px] text-garden-muted">
+            <span className="text-[12px] text-muted-foreground">
               {t('remindAt', { time: f.clock(reminder.time) })}
             </span>
           </div>
@@ -198,7 +198,7 @@ export function MissionCompleteScreen({
 
       <Link
         href={backHref}
-        className="mt-auto text-center text-[15px] font-semibold text-garden-forest underline"
+        className="mt-auto text-center text-[15px] font-semibold text-forest underline"
       >
         {t('back')}
       </Link>

@@ -77,7 +77,7 @@ export function GroupGardenScreen({
   const c = useTranslations('components.groups');
 
   const inviteClasses =
-    'box-content flex h-10 shrink-0 items-center gap-1.5 rounded-[14px] border border-garden-border bg-garden-surface px-[14px] text-[14px] font-bold text-garden-forest';
+    'box-content flex h-10 shrink-0 items-center gap-1.5 rounded-[14px] border border-border bg-surface px-[14px] text-[14px] font-bold text-forest';
 
   return (
     <div className={gcn(SCREEN_CLASSES, 'relative gap-3 pt-[22px]')}>
@@ -89,7 +89,7 @@ export function GroupGardenScreen({
         </IconButton>
         <div className="flex min-w-0 flex-grow flex-col">
           <h1 className="font-display text-[22px] font-semibold leading-[1.1]">{name}</h1>
-          <span className="text-[13px] text-garden-muted">{t('subtitle', { role, members })}</span>
+          <span className="text-[13px] text-muted-foreground">{t('subtitle', { role, members })}</span>
         </div>
         {manageHref ? (
           <IconButton asChild aria-label={t('manage')} className={BACK_CLASSES}>
@@ -100,14 +100,14 @@ export function GroupGardenScreen({
         ) : null}
       </header>
 
-      <section className="mx-4 flex flex-col gap-1 overflow-hidden rounded-[24px] bg-garden-forest px-4 pt-[14px] text-garden-on-forest">
+      <section className="mx-4 flex flex-col gap-1 overflow-hidden rounded-[24px] bg-forest px-4 pt-[14px] text-on-forest">
         <span className="text-[12px] font-semibold uppercase tracking-[.08em] text-stage-sprout">
           {t('eyebrow')}
         </span>
         <span className="font-display text-[22px] font-medium">
           {t('heroTitle', { count: hero.words })}
         </span>
-        <div className="flex gap-[14px] text-[12px] text-garden-on-forest-muted">
+        <div className="flex gap-[14px] text-[12px] text-on-forest-muted">
           <span className="flex items-center gap-[5px]">
             <span aria-hidden="true" className="h-2 w-2 rounded-[4px] bg-stage-due" />
             {t('watered', { watered: hero.watered, members })}
@@ -137,35 +137,35 @@ export function GroupGardenScreen({
       <section className="flex flex-col gap-2 px-4">
         <div className="flex items-baseline justify-between">
           <h2 className="font-display text-[18px] font-semibold">{t('beds')}</h2>
-          <span className="text-[12px] text-garden-muted">{t('sorted')}</span>
+          <span className="text-[12px] text-muted-foreground">{t('sorted')}</span>
         </div>
         {beds.map((bed) => (
           <Link
             key={bed.id}
             href={bed.href}
-            className="flex items-center gap-2.5 rounded-[18px] border border-garden-border bg-garden-surface py-2 pl-2 pr-3 text-garden-text transition-colors duration-quick ease-garden hover:border-garden-muted"
+            className="flex items-center gap-2.5 rounded-[18px] border border-border bg-surface py-2 pl-2 pr-3 text-text transition-colors duration-quick ease-garden hover:border-muted-foreground"
           >
-            <span className="flex h-11 w-11 shrink-0 items-end justify-center overflow-hidden rounded-[13px] bg-garden-forest">
+            <span className="flex h-11 w-11 shrink-0 items-end justify-center overflow-hidden rounded-[13px] bg-forest">
               <TilePlant plant={bed.plant} size="bed" />
             </span>
             <span className="flex min-w-0 flex-grow flex-col gap-1">
               <span className="flex justify-between gap-2">
                 <span className="text-[15px] font-bold">{bed.title}</span>
                 {bed.due === null ? null : bed.due > 0 ? (
-                  <span className="rounded-[10px] bg-garden-water-soft px-2 py-[3px] text-[12px] font-bold text-garden-water-text">
+                  <span className="rounded-[10px] bg-water-soft px-2 py-[3px] text-[12px] font-bold text-water-text">
                     {c('dueForYou', { count: bed.due })}
                   </span>
                 ) : (
-                  <span className="text-[12px] font-semibold text-garden-success">{c('allWatered')}</span>
+                  <span className="text-[12px] font-semibold text-success">{c('allWatered')}</span>
                 )}
               </span>
-              <span className="text-[12px] text-garden-muted">
+              <span className="text-[12px] text-muted-foreground">
                 {[t('bedWords', { count: bed.words }), bed.level].filter(Boolean).join(t('separator'))}
               </span>
-              <span aria-hidden="true" className="flex h-[5px] overflow-hidden rounded-[3px] bg-garden-track">
+              <span aria-hidden="true" className="flex h-[5px] overflow-hidden rounded-[3px] bg-track">
                 {bed.shares ? (
                   <>
-                    <span className="bg-garden-success" style={{ width: `${bed.shares.tree}%` }} />
+                    <span className="bg-success" style={{ width: `${bed.shares.tree}%` }} />
                     <span className="bg-stage-flower" style={{ width: `${bed.shares.flower}%` }} />
                     <span className="bg-stage-sprout" style={{ width: `${bed.shares.sprout}%` }} />
                   </>
@@ -175,7 +175,7 @@ export function GroupGardenScreen({
           </Link>
         ))}
         {beds.length === 0 ? (
-          <p className="py-3 text-center text-[13px] text-garden-muted">{t('noBeds')}</p>
+          <p className="py-3 text-center text-[13px] text-muted-foreground">{t('noBeds')}</p>
         ) : null}
       </section>
 

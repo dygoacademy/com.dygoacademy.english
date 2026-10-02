@@ -64,7 +64,7 @@ export function AuthShell({
         >
           {title}
         </h1>
-        <p className="text-[15px] text-garden-muted">{subtitle}</p>
+        <p className="text-[15px] text-muted-foreground">{subtitle}</p>
       </div>
       {children}
     </div>
@@ -76,7 +76,7 @@ function SignInHero() {
   return (
     <div
       aria-hidden="true"
-      className="box-border flex h-[120px] shrink-0 items-end justify-center gap-2.5 overflow-hidden rounded-hero bg-garden-forest pb-3"
+      className="box-border flex h-[120px] shrink-0 items-end justify-center gap-2.5 overflow-hidden rounded-hero bg-forest pb-3"
     >
       <TileSprout width={40} height={40} />
       <TileFlower width={40} height={50} />
@@ -108,7 +108,7 @@ export function AuthError({ children }: { children: React.ReactNode }) {
   return (
     <div
       role="alert"
-      className="rounded-[14px] bg-rating-again px-3 py-2.5 text-[14px] leading-[1.35] text-garden-primary-text"
+      className="rounded-[14px] bg-rating-again px-3 py-2.5 text-[14px] leading-[1.35] text-primary-text"
     >
       {children}
     </div>
@@ -117,10 +117,10 @@ export function AuthError({ children }: { children: React.ReactNode }) {
 
 /** The big primary button (AU4 puts it straight under the form). */
 export const AUTH_BUTTON_CLASSES =
-  'flex h-[58px] w-full shrink-0 items-center justify-center rounded-[18px] bg-garden-primary text-[17px] font-bold text-white shadow-press-primary transition-transform duration-press ease-garden active:translate-y-[2px] disabled:opacity-60';
+  'flex h-[58px] w-full shrink-0 items-center justify-center rounded-[18px] bg-primary text-[17px] font-bold text-white shadow-press-primary transition-transform duration-press ease-garden active:translate-y-[2px] disabled:opacity-60';
 
 /** The big primary button at the bottom of an auth form. */
 export const AUTH_SUBMIT_CLASSES = `mt-auto ${AUTH_BUTTON_CLASSES}`;
 
 /** Links on auth screens are underlined forest text, like the canvas. */
-export const AUTH_LINK_CLASSES = 'text-garden-forest underline';
+export const AUTH_LINK_CLASSES = 'text-forest underline';

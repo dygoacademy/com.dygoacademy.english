@@ -86,7 +86,7 @@ export function SignInScreen({
           {busy ? t('signIn.submitting') : t('signIn.submit')}
         </button>
       </form>
-      <p className="text-center text-[14px] text-garden-muted">
+      <p className="text-center text-[14px] text-muted-foreground">
         {t.rich('signIn.newHere', {
           link: (chunks) => (
             <Link href={registerHref} className={`font-bold ${AUTH_LINK_CLASSES}`}>

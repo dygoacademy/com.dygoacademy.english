@@ -37,7 +37,7 @@ export const Switch = React.forwardRef<HTMLButtonElement, SwitchProps>(
         size === 'md' ? 'h-8 w-[52px]' : 'h-[30px] w-12',
         "after:absolute after:inset-x-0 after:-inset-y-[7px] after:content-['']",
         'transition-colors duration-quick ease-garden disabled:opacity-50',
-        checked ? 'bg-garden-success' : 'bg-garden-disabled',
+        checked ? 'bg-success' : 'bg-disabled',
         className,
       )}
       {...props}

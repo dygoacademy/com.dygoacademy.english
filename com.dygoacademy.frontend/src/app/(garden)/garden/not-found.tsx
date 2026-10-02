@@ -16,7 +16,7 @@ import { GARDEN_ROUTES } from '@/constants/garden';
 export default function GardenNotFound() {
   const t = useTranslations('screens.live');
   return (
-    <div className="mx-auto flex min-h-screen-dvh w-full max-w-[560px] flex-col justify-center gap-4 bg-garden-bg px-5 text-garden-text">
+    <div className="mx-auto flex min-h-screen-dvh w-full max-w-[560px] flex-col justify-center gap-4 bg-bg px-5 text-text">
       <EmptyState
         title={t('notFoundTitle')}
         body={t('notFoundBody')}

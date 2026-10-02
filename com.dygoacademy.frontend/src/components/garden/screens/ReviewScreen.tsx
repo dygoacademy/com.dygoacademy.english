@@ -94,7 +94,7 @@ export function ReviewScreen({
   const shown = onShowAnswer ? state : localState;
 
   return (
-    <div className="mx-auto flex min-h-screen-dvh w-full max-w-[560px] flex-col gap-[14px] bg-garden-bg px-4 pb-6 pt-5 text-garden-text">
+    <div className="mx-auto flex min-h-screen-dvh w-full max-w-[560px] flex-col gap-[14px] bg-bg px-4 pb-6 pt-5 text-text">
       <div className="flex items-center gap-3">
         <IconButton asChild aria-label={t('close')}>
           <Link href={closeHref}>
@@ -102,7 +102,7 @@ export function ReviewScreen({
           </Link>
         </IconButton>
         <div className="flex flex-grow flex-col gap-[5px]">
-          <div className="flex justify-between text-[12px] font-semibold text-garden-muted">
+          <div className="flex justify-between text-[12px] font-semibold text-muted-foreground">
             <span>{t('missionLabel', { title: missionTitle })}</span>
             <span aria-hidden="true">{t('count', { done, total })}</span>
           </div>
@@ -111,7 +111,7 @@ export function ReviewScreen({
       </div>
 
       {shown === 'finished' ? (
-        <div className="garden-rise flex flex-grow flex-col items-center justify-center gap-[18px] text-center">
+        <div className="rise flex flex-grow flex-col items-center justify-center gap-[18px] text-center">
           <FinishedFlower />
           <h1 className="font-display text-[28px] font-semibold">
             {t('finishedTitle', { count: total })}
@@ -132,7 +132,7 @@ export function ReviewScreen({
           ) : null}
         </div>
       ) : card ? (
-        <div className="garden-rise flex flex-grow flex-col gap-[14px]">
+        <div className="rise flex flex-grow flex-col gap-[14px]">
           <ReviewCard {...card} revealed={shown === 'answer'} className="flex-grow" />
           {shown === 'question' ? (
             <Button
@@ -142,13 +142,13 @@ export function ReviewScreen({
               {t('showAnswer')}
             </Button>
           ) : (
-            <div className="garden-rise">
+            <div className="rise">
               <RatingBar intervals={intervals} onRate={(r) => onRate?.(r)} disabled={rating} />
             </div>
           )}
         </div>
       ) : emptyText ? (
-        <p className="flex flex-grow items-center justify-center px-6 text-center text-[15px] text-garden-muted">
+        <p className="flex flex-grow items-center justify-center px-6 text-center text-[15px] text-muted-foreground">
           {emptyText}
         </p>
       ) : null}
@@ -157,6 +157,6 @@ export function ReviewScreen({
 }
 
 const SECONDARY = gcn(
-  'flex h-11 items-center rounded-[22px] border border-garden-border bg-garden-surface px-[18px]',
-  'text-[14px] font-semibold text-garden-muted',
+  'flex h-11 items-center rounded-[22px] border border-border bg-surface px-[18px]',
+  'text-[14px] font-semibold text-muted-foreground',
 );

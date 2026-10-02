@@ -55,7 +55,7 @@ export function WelcomeBackScreen({
   return (
     <div className={gcn(SCREEN_CLASSES, 'gap-4 pt-[22px]')}>
       <header className="flex flex-col gap-1 px-5">
-        <span className="text-[13px] font-medium text-garden-muted">{f.longDay(date)}</span>
+        <span className="text-[13px] font-medium text-muted-foreground">{f.longDay(date)}</span>
         <h1 className="font-display text-[30px] font-semibold leading-[1.12]">
           {name
             ? t.rich('title', { name, br: () => <br /> })
@@ -66,13 +66,13 @@ export function WelcomeBackScreen({
       <HeroGardenCard className="mx-4" variant="comeback" plants={garden.plants} legend={legend} />
 
       {streak ? (
-        <div className="mx-4 flex items-center gap-3 rounded-[18px] border border-garden-water-border bg-garden-water-soft px-[14px] py-3">
+        <div className="mx-4 flex items-center gap-3 rounded-[18px] border border-water-border bg-water-soft px-[14px] py-3">
           <RainBarrelIcon width={30} height={30} stroke="var(--color-water-strong)" />
           <div className="flex flex-col">
-            <span className="text-[15px] font-bold text-garden-water-text">
+            <span className="text-[15px] font-bold text-water-text">
               {t('streakSafe', { count: streak.days })}
             </span>
-            <span className="text-[13px] text-garden-water-text-soft">
+            <span className="text-[13px] text-water-text-soft">
               {t('streakBarrel', {
                 covered: streak.covered,
                 left: streak.left,
@@ -84,19 +84,19 @@ export function WelcomeBackScreen({
       ) : null}
 
       {revive || waterAll ? (
-        <section className="mx-4 flex flex-col gap-3 rounded-[22px] border border-garden-border bg-garden-surface p-4">
+        <section className="mx-4 flex flex-col gap-3 rounded-[22px] border border-border bg-surface p-4">
           {revive ? (
             <>
               <div className="flex flex-col gap-0.5">
-                <span className="overline-label text-[12px] font-bold text-garden-success">
+                <span className="overline-label text-[12px] font-bold text-success">
                   {t('overline')}
                 </span>
                 <h2 className="font-display text-[21px] font-semibold">
                   {t('reviveTitle', { count: revive.count })}
                 </h2>
-                <p className="text-[14px] text-garden-muted">{t('reviveBody')}</p>
+                <p className="text-[14px] text-muted-foreground">{t('reviveBody')}</p>
               </div>
-              <Link href={revive.href} className={buttonClassName('primary', { twoLine: true, className: 'medium:max-w-none' })}>
+              <Link href={revive.href} className={buttonClassName('primary', { twoLine: true, className: 'md:max-w-none' })}>
                 <ButtonTwoLine
                   label={t('revive')}
                   secondLine={
@@ -112,7 +112,7 @@ export function WelcomeBackScreen({
           {waterAll ? (
             <Link
               href={waterAll.href}
-              className="text-center text-[14px] font-semibold text-garden-forest underline"
+              className="text-center text-[14px] font-semibold text-forest underline"
             >
               {t(revive ? 'waterAllInstead' : 'waterAll', { count: waterAll.count })}
             </Link>

@@ -96,9 +96,9 @@ export function RainCloud(props: SvgProps) {
         d="M14 32 C4 32 4 18 14 18 C14 8 30 4 36 14 C42 6 60 8 60 20 C72 18 74 32 64 32 Z"
         fill="var(--comeback-cloud)"
       />
-      <path className="garden-rain" d="M24 38 V44" stroke={DROP} strokeWidth="3" strokeLinecap="round" />
+      <path className="rain" d="M24 38 V44" stroke={DROP} strokeWidth="3" strokeLinecap="round" />
       <path
-        className="garden-rain"
+        className="rain"
         d="M38 40 V46"
         stroke={DROP}
         strokeWidth="3"
@@ -106,7 +106,7 @@ export function RainCloud(props: SvgProps) {
         style={{ animationDelay: '.4s' }}
       />
       <path
-        className="garden-rain"
+        className="rain"
         d="M52 38 V44"
         stroke={DROP}
         strokeWidth="3"

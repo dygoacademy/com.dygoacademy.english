@@ -67,7 +67,7 @@ export interface TendGardenScreenProps {
 }
 
 const WATER_BUTTON =
-  'flex h-10 shrink-0 items-center rounded-[14px] bg-garden-primary px-[14px] text-[14px] font-bold text-white shadow-[0_3px_0_var(--color-primary-shadow)] active:translate-y-px';
+  'flex h-10 shrink-0 items-center rounded-[14px] bg-primary px-[14px] text-[14px] font-bold text-white shadow-[0_3px_0_var(--color-primary-shadow)] active:translate-y-px';
 
 export function TendGardenScreen({
   tab,
@@ -99,14 +99,14 @@ export function TendGardenScreen({
         </IconButton>
         <div className="flex flex-grow flex-col">
           <h1 className="font-display text-[24px] font-semibold leading-[1.1]">{t('title')}</h1>
-          <span className="text-[13px] text-garden-muted">{groupName}</span>
+          <span className="text-[13px] text-muted-foreground">{groupName}</span>
         </div>
       </header>
 
       <div
         role="tablist"
         aria-label={t('title')}
-        className="mx-4 grid grid-cols-2 gap-1 rounded-[14px] bg-garden-track p-1"
+        className="mx-4 grid grid-cols-2 gap-1 rounded-[14px] bg-track p-1"
       >
         {tabs.map((item) => {
           const selected = item.key === tab;
@@ -120,7 +120,7 @@ export function TendGardenScreen({
               scroll={false}
               className={gcn(
                 'flex h-9 items-center justify-center rounded-[11px] text-[14px] font-bold',
-                selected ? 'bg-garden-surface text-garden-forest' : 'bg-transparent text-garden-muted',
+                selected ? 'bg-surface text-forest' : 'bg-transparent text-muted-foreground',
               )}
             >
               {item.label}
@@ -134,17 +134,17 @@ export function TendGardenScreen({
           <section
             role="tabpanel"
             aria-label={t('trickyTab')}
-            className="mx-4 flex flex-col rounded-[22px] border border-garden-border bg-garden-surface px-4 pb-2 pt-[14px]"
+            className="mx-4 flex flex-col rounded-[22px] border border-border bg-surface px-4 pb-2 pt-[14px]"
           >
             <div className="mb-0.5 flex items-baseline justify-between">
               <h2 className="font-display text-[18px] font-semibold">{t('trickyTitle')}</h2>
-              <span className="text-[12px] text-garden-muted">{t('window')}</span>
+              <span className="text-[12px] text-muted-foreground">{t('window')}</span>
             </div>
-            <span className="mb-1 text-[13px] text-garden-muted">{t('trickyIntro')}</span>
+            <span className="mb-1 text-[13px] text-muted-foreground">{t('trickyIntro')}</span>
             {tricky.message ? (
-              <p className="py-3 text-[13px] text-garden-muted">{tricky.message}</p>
+              <p className="py-3 text-[13px] text-muted-foreground">{tricky.message}</p>
             ) : tricky.rows.length === 0 ? (
-              <p className="py-3 text-[13px] text-garden-muted">{t('trickyEmpty')}</p>
+              <p className="py-3 text-[13px] text-muted-foreground">{t('trickyEmpty')}</p>
             ) : (
               <ul className="flex flex-col">
                 {tricky.rows.map((row) => (
@@ -159,12 +159,12 @@ export function TendGardenScreen({
             )}
           </section>
 
-          <section className="mx-4 flex flex-col gap-3 rounded-[22px] bg-garden-forest p-4 text-garden-on-forest">
+          <section className="mx-4 flex flex-col gap-3 rounded-[22px] bg-forest p-4 text-on-forest">
             <div className="flex items-center gap-2.5">
               <RainCloud width={40} height={30} />
               <div className="flex flex-col">
                 <h2 className="text-[16px] font-bold">{t('rainTitle')}</h2>
-                <span className="text-[12px] text-garden-on-forest-muted">
+                <span className="text-[12px] text-on-forest-muted">
                   {t('rainBody', { count: tricky.rainDay.members })}
                 </span>
               </div>
@@ -181,8 +181,8 @@ export function TendGardenScreen({
                     className={gcn(
                       'h-10 rounded-[13px] border text-[14px] font-bold',
                       pressed
-                        ? 'border-garden-on-forest bg-garden-on-forest text-garden-forest'
-                        : 'border-garden-on-forest-line bg-transparent text-garden-on-forest',
+                        ? 'border-on-forest bg-on-forest text-forest'
+                        : 'border-on-forest-line bg-transparent text-on-forest',
                     )}
                   >
                     {t('size', { count: size })}
@@ -194,7 +194,7 @@ export function TendGardenScreen({
               type="button"
               onClick={tricky.rainDay.onStart}
               disabled={tricky.rainDay.busy}
-              className="h-[52px] rounded-control bg-garden-primary text-[16px] font-bold text-white shadow-press-primary transition-transform duration-press ease-garden active:translate-y-[2px] disabled:opacity-60"
+              className="h-[52px] rounded-control bg-primary text-[16px] font-bold text-white shadow-press-primary transition-transform duration-press ease-garden active:translate-y-[2px] disabled:opacity-60"
             >
               {t('start', { count: tricky.rainDay.size })}
             </button>
@@ -220,20 +220,20 @@ export function TendGardenScreen({
           <ul
             role="tabpanel"
             aria-label={t('gardenersTab')}
-            className="mx-4 flex flex-col overflow-hidden rounded-[22px] border border-garden-border bg-garden-surface"
+            className="mx-4 flex flex-col overflow-hidden rounded-[22px] border border-border bg-surface"
           >
             {gardeners.rows.map(({ id, ...row }, index) => (
               <GardenerRow key={id} {...row} last={index === gardeners.rows.length - 1} />
             ))}
           </ul>
-          <div className="mx-4 flex flex-col gap-1.5 px-1 text-[12px] text-garden-muted">
+          <div className="mx-4 flex flex-col gap-1.5 px-1 text-[12px] text-muted-foreground">
             <span>
               {t.rich('legend', {
-                b: (chunks) => <b className="text-garden-text">{chunks}</b>,
+                b: (chunks) => <b className="text-text">{chunks}</b>,
               })}
             </span>
           </div>
-          <div className="mx-4 flex items-center gap-3 rounded-[18px] border border-garden-border bg-garden-surface px-[14px] py-3">
+          <div className="mx-4 flex items-center gap-3 rounded-[18px] border border-border bg-surface px-[14px] py-3">
             {gardeners.onInvites ? (
               <button
                 type="button"
@@ -269,12 +269,12 @@ function InviteSummary({ invites }: { invites: { count: number; detail: string |
   const t = useTranslations('screens.groups.tend');
   return (
     <>
-      <LinkIcon width={22} height={22} className="shrink-0 text-garden-forest" />
+      <LinkIcon width={22} height={22} className="shrink-0 text-forest" />
       <span className="flex flex-grow flex-col">
         <span className="text-[14px] font-bold">
           {invites.count > 0 ? t('invitesActive', { count: invites.count }) : t('invitesNone')}
         </span>
-        <span className="text-[12px] text-garden-muted">
+        <span className="text-[12px] text-muted-foreground">
           {invites.count > 0 ? invites.detail : t('invitesNoneBody')}
         </span>
       </span>

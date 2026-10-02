@@ -69,11 +69,11 @@ export function ForgotPasswordScreen({
         <>
           <div
             role="status"
-            className="flex flex-col items-center gap-2.5 rounded-[22px] border border-garden-border bg-garden-surface px-4 py-[18px] text-center"
+            className="flex flex-col items-center gap-2.5 rounded-[22px] border border-border bg-surface px-4 py-[18px] text-center"
           >
             <WaterIcon width={56} height={56} fill="var(--stage-due)" />
             <span className="text-[17px] font-bold">{t('forgot.sent.title')}</span>
-            <span className="text-[14px] leading-[1.4] text-garden-muted">
+            <span className="text-[14px] leading-[1.4] text-muted-foreground">
               {t('forgot.sent.body', { email: sentTo })}
             </span>
           </div>
@@ -84,7 +84,7 @@ export function ForgotPasswordScreen({
             type="button"
             onClick={onResend}
             disabled={busy}
-            className="border-0 bg-transparent p-0 text-[14px] font-bold leading-[normal] text-garden-forest disabled:opacity-60"
+            className="border-0 bg-transparent p-0 text-[14px] font-bold leading-[normal] text-forest disabled:opacity-60"
           >
             {busy ? t('forgot.submitting') : t('forgot.sent.resend')}
           </button>

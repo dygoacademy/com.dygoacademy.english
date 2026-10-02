@@ -5,7 +5,7 @@ import * as AlertDialogPrimitive from '@radix-ui/react-alert-dialog';
 
 import { buttonVariants } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { GARDEN_CONTENT_WIDTH } from '@/constants/layout';
+import { CONTENT_WIDTH } from '@/constants/layout';
 
 /**
  * Radix Primitives' AlertDialog (`@radix-ui/react-alert-dialog`), added
@@ -24,7 +24,7 @@ import { GARDEN_CONTENT_WIDTH } from '@/constants/layout';
  * exactly the "you must make an explicit choice" behavior an irreversible
  * confirm (delete a word, delete a topic) wants, that a normal dismissable
  * modal doesn't. `AlertDialogContent` reuses the app's shared
- * `GARDEN_CONTENT_WIDTH.default` so it's the same width as every other
+ * `CONTENT_WIDTH.default` so it's the same width as every other
  * popup (`ui/dialog.tsx`).
  *
  * First caller replaces the classic word row's `window.confirm()` for
@@ -60,7 +60,7 @@ const AlertDialogContent = React.forwardRef<
     <AlertDialogPrimitive.Content
       ref={ref}
       className={cn(
-        `fixed left-1/2 top-1/2 z-50 grid w-full ${GARDEN_CONTENT_WIDTH.default} -translate-x-1/2 -translate-y-1/2 gap-3 rounded-2xl border bg-card p-5 text-card-foreground shadow-lg outline-none duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95`,
+        `fixed left-1/2 top-1/2 z-50 grid w-full ${CONTENT_WIDTH.default} -translate-x-1/2 -translate-y-1/2 gap-3 rounded-2xl border bg-card p-5 text-card-foreground shadow-lg outline-none duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95`,
         className,
       )}
       {...props}

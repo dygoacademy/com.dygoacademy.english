@@ -188,7 +188,7 @@ function JoinWithLinkSheet({
         }}
       >
         <label htmlFor={fieldId} className="flex flex-col gap-1.5">
-          <span className="text-[12px] font-bold uppercase tracking-[.08em] text-garden-muted">
+          <span className="text-[12px] font-bold uppercase tracking-[.08em] text-muted-foreground">
             {t('joinField')}
           </span>
           <input
@@ -202,17 +202,17 @@ function JoinWithLinkSheet({
               setInvalid(false);
             }}
             aria-invalid={invalid || undefined}
-            className="min-h-12 w-full rounded-[14px] border border-garden-border bg-garden-surface px-[14px] py-3 text-[16px] outline-none placeholder:text-garden-placeholder focus:border-garden-forest"
+            className="min-h-12 w-full rounded-[14px] border border-border bg-surface px-[14px] py-3 text-[16px] outline-none placeholder:text-placeholder focus:border-forest"
           />
         </label>
         {invalid ? (
-          <p role="alert" className="px-1 text-[13px] text-garden-primary-text">
+          <p role="alert" className="px-1 text-[13px] text-primary-text">
             {t('joinInvalid')}
           </p>
         ) : null}
         <button
           type="submit"
-          className="flex h-14 items-center justify-center rounded-[18px] bg-garden-primary text-[17px] font-bold text-white shadow-press-primary active:translate-y-[2px]"
+          className="flex h-14 items-center justify-center rounded-[18px] bg-primary text-[17px] font-bold text-white shadow-press-primary active:translate-y-[2px]"
         >
           {t('joinGo')}
         </button>

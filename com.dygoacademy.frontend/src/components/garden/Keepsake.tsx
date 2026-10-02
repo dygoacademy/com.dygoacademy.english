@@ -31,20 +31,20 @@ export function Keepsake({
             background: `conic-gradient(var(--stage-tree-canopy) 0 ${progress.percent}%, var(--color-border) ${progress.percent}% 100%)`,
           }}
         >
-          <span className="flex h-[46px] w-[46px] items-center justify-center rounded-[23px] bg-garden-bg text-[12px] font-bold text-garden-muted">
+          <span className="flex h-[46px] w-[46px] items-center justify-center rounded-[23px] bg-bg text-[12px] font-bold text-muted-foreground">
             {progress.value}
           </span>
         </span>
       ) : (
         <span
           aria-hidden="true"
-          className="flex h-14 w-14 items-center justify-center rounded-[28px] bg-garden-forest font-display text-[18px] font-semibold text-garden-gold-light"
+          className="flex h-14 w-14 items-center justify-center rounded-[28px] bg-forest font-display text-[18px] font-semibold text-gold-light"
         >
           {icon ?? number}
         </span>
       )}
       <span
-        className={gcn('text-[12px] font-semibold leading-[1.2]', progress && 'text-garden-muted')}
+        className={gcn('text-[12px] font-semibold leading-[1.2]', progress && 'text-muted-foreground')}
       >
         {label}
       </span>

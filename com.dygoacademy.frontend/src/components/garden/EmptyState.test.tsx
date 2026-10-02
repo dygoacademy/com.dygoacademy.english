@@ -21,7 +21,7 @@ describe('EmptyState', () => {
     );
     const item = container.querySelector('li')!;
     expect(item.textContent).toBe('Nothing yet');
-    expect(item.className).toContain('text-garden-muted');
+    expect(item.className).toContain('text-muted-foreground');
   });
 
   it('renders a card with title, body and action', () => {

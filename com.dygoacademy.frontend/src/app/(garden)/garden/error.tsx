@@ -30,10 +30,10 @@ export default function GardenError({
   return (
     <div
       role="alert"
-      className="mx-auto flex min-h-screen-dvh w-full max-w-[560px] flex-col items-center justify-center gap-4 bg-garden-bg px-6 text-center text-garden-text"
+      className="mx-auto flex min-h-screen-dvh w-full max-w-[560px] flex-col items-center justify-center gap-4 bg-bg px-6 text-center text-text"
     >
       <h1 className="font-display text-[24px] font-semibold leading-[1.15]">{t('errorTitle')}</h1>
-      <p className="text-[15px] text-garden-muted">{t('error')}</p>
+      <p className="text-[15px] text-muted-foreground">{t('error')}</p>
       <div className="flex w-full max-w-[320px] flex-col gap-2">
         <Button variant="forest" className="w-full" onClick={() => reset()}>
           {t('retry')}

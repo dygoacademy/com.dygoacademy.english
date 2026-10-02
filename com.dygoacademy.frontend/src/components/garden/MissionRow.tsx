@@ -36,8 +36,8 @@ export interface MissionRowProps {
 }
 
 const WELL: Record<MissionTone, string> = {
-  water: 'bg-garden-water-soft',
-  gold: 'bg-garden-gold-wash',
+  water: 'bg-water-soft',
+  gold: 'bg-gold-wash',
   plant: 'bg-rating-good',
 };
 
@@ -64,14 +64,14 @@ export function MissionRow({
         aria-hidden="true"
         className={gcn(
           'flex h-10 w-10 shrink-0 items-center justify-center rounded-full',
-          done ? 'bg-garden-forest text-white' : WELL[tone],
+          done ? 'bg-forest text-white' : WELL[tone],
         )}
       >
         {done ? <CheckIcon width={20} height={20} stroke="var(--color-surface)" /> : icon}
       </span>
       <div className="flex flex-grow flex-col gap-[5px]">
         <div className="flex justify-between">
-          <span className={gcn('text-[15px] font-bold', done && 'text-garden-muted line-through')}>
+          <span className={gcn('text-[15px] font-bold', done && 'text-muted-foreground line-through')}>
             {title}
             <span className="sr-only">{t('statusSuffix', { status: t(`status.${status}`) })}</span>
           </span>
@@ -79,7 +79,7 @@ export function MissionRow({
             aria-hidden="true"
             className={gcn(
               'text-[13px]',
-              done ? 'font-semibold text-garden-success' : 'text-garden-muted',
+              done ? 'font-semibold text-success' : 'text-muted-foreground',
             )}
           >
             {valueLabel}
@@ -91,11 +91,11 @@ export function MissionRow({
           aria-valuemax={safeMax}
           aria-valuenow={clamped}
           aria-valuetext={progressText}
-          className={gcn('h-1.5 rounded-[3px]', done ? 'bg-garden-success' : 'bg-garden-track')}
+          className={gcn('h-1.5 rounded-[3px]', done ? 'bg-success' : 'bg-track')}
         >
           {!done && percent > 0 ? (
             <div
-              className="h-1.5 rounded-[3px] bg-garden-water transition-[width] duration-quick ease-garden"
+              className="h-1.5 rounded-[3px] bg-water transition-[width] duration-quick ease-garden"
               style={{ width: `${percent}%` }}
             />
           ) : null}

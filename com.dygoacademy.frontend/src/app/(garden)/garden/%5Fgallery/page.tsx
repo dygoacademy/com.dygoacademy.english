@@ -28,7 +28,7 @@ import {
   stageFromSrs,
   type GardenFsrsState,
 } from '@/components/garden';
-import { GARDEN_CONTENT_WIDTH } from '@/constants/layout';
+import { CONTENT_WIDTH } from '@/constants/layout';
 import { GARDEN_ROUTES } from '@/constants/garden';
 
 import { BROKEN_AUDIO, TEST_TONE } from './galleryAudio';
@@ -78,7 +78,7 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 }
 
 function StateLabel({ children }: { children: React.ReactNode }) {
-  return <p className="overline-label mb-2 mt-5 text-label text-garden-muted">{children}</p>;
+  return <p className="overline-label mb-2 mt-5 text-label text-muted-foreground">{children}</p>;
 }
 
 function ArrowLeft() {
@@ -132,11 +132,11 @@ export default async function GardenGalleryPage() {
   const format = await getFormatter();
 
   return (
-    <main className="min-h-screen-dvh bg-garden-bg pb-safe pt-safe">
-      <div className={`mx-auto ${GARDEN_CONTENT_WIDTH.wide} px-page-safe pb-10 pt-6`}>
+    <main className="min-h-screen-dvh bg-bg pb-safe pt-safe">
+      <div className={`mx-auto ${CONTENT_WIDTH.wide} px-page-safe pb-10 pt-6`}>
         <h1 className="font-display text-display-l">{t('title')}</h1>
-        <p className="mt-2 text-body-m text-garden-muted">{t('intro')}</p>
-        <p className="mt-2 text-body-s text-garden-muted">{t('pending')}</p>
+        <p className="mt-2 text-body-m text-muted-foreground">{t('intro')}</p>
+        <p className="mt-2 text-body-s text-muted-foreground">{t('pending')}</p>
 
         <Section title={t('sections.buttons')}>
           <StateLabel>{t('states.default')}</StateLabel>
@@ -193,12 +193,12 @@ export default async function GardenGalleryPage() {
           <StateLabel>{t('states.static')}</StateLabel>
           <Card>
             <p className="font-display text-display-s">{t('sample.cardTitle')}</p>
-            <p className="mt-1 text-body-s text-garden-muted">{t('sample.cardBody')}</p>
+            <p className="mt-1 text-body-s text-muted-foreground">{t('sample.cardBody')}</p>
           </Card>
           <StateLabel>{t('states.tappable')}</StateLabel>
           <Card href={GARDEN_ROUTES.tokens}>
             <p className="font-display text-display-s">{t('sample.cardTitle')}</p>
-            <p className="mt-1 text-body-s text-garden-muted">{t('sample.cardBody')}</p>
+            <p className="mt-1 text-body-s text-muted-foreground">{t('sample.cardBody')}</p>
           </Card>
         </Section>
 
@@ -223,7 +223,7 @@ export default async function GardenGalleryPage() {
           <div className="space-y-3 overflow-x-auto">
             {PLANT_STAGES.map((stage) => (
               <div key={stage} className="flex items-end gap-3">
-                <span className="w-20 shrink-0 text-body-s text-garden-muted">{plant(stage)}</span>
+                <span className="w-20 shrink-0 text-body-s text-muted-foreground">{plant(stage)}</span>
                 {PLANT_GLYPH_SIZES.map((size) => (
                   <PlantGlyph key={size} stage={stage} size={size} />
                 ))}
@@ -247,9 +247,9 @@ export default async function GardenGalleryPage() {
         </Section>
 
         <Section title={t('sections.stageMapping')}>
-          <div className="overflow-x-auto rounded-card border border-garden-border bg-garden-surface">
+          <div className="overflow-x-auto rounded-card border border-border bg-surface">
             <table className="w-full text-left text-body-s">
-              <thead className="text-label text-garden-muted">
+              <thead className="text-label text-muted-foreground">
                 <tr>
                   <th className="px-3 py-2 font-semibold">{t('sample.mapState')}</th>
                   <th className="px-3 py-2 font-semibold">{t('sample.mapMastered')}</th>
@@ -257,7 +257,7 @@ export default async function GardenGalleryPage() {
                   <th className="px-3 py-2 font-semibold">{t('sample.mapStage')}</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-garden-border">
+              <tbody className="divide-y divide-border">
                 {STAGE_MAP_ROWS.map((row, index) => {
                   const stage = stageFromSrs(
                     row.state,
@@ -348,7 +348,7 @@ export default async function GardenGalleryPage() {
         </Section>
 
         <Section title={t('sections.missionRow')}>
-          <ul className="divide-y divide-garden-border rounded-card border border-garden-border bg-garden-surface px-4">
+          <ul className="divide-y divide-border rounded-card border border-border bg-surface px-4">
             <li>
               <MissionRow
                 icon={<WaterIcon />}
@@ -489,7 +489,7 @@ export default async function GardenGalleryPage() {
         </Section>
 
         <Section title={t('sections.sheet')}>
-          <p className="mb-3 text-body-s text-garden-muted">{t('states.sheetHint')}</p>
+          <p className="mb-3 text-body-s text-muted-foreground">{t('states.sheetHint')}</p>
           <GallerySheets />
         </Section>
 

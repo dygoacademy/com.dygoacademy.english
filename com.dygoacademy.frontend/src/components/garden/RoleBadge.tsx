@@ -10,9 +10,9 @@ import { gcn } from './cn';
  * decision 11): Admin / Editor / Viewer for ADMIN / WRITE / READ.
  */
 const STYLE: Record<GroupRole, string> = {
-  ADMIN: 'bg-garden-forest text-white',
-  WRITE: 'bg-garden-on-forest-muted text-garden-forest',
-  READ: 'bg-garden-bg text-garden-muted',
+  ADMIN: 'bg-forest text-white',
+  WRITE: 'bg-on-forest-muted text-forest',
+  READ: 'bg-bg text-muted-foreground',
 };
 
 export function RoleBadge({ role, className }: { role: GroupRole; className?: string }) {

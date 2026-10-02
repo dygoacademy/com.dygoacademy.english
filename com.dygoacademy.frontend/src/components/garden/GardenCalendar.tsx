@@ -13,17 +13,17 @@ import { gcn } from './cn';
 export type CalendarLevel = 0 | 1 | 2 | 3;
 
 const LEVEL = [
-  'bg-garden-track border-garden-track',
-  'bg-garden-calendar-1 border-garden-calendar-1',
+  'bg-track border-track',
+  'bg-calendar-1 border-calendar-1',
   'bg-stage-tree-canopy border-stage-tree-canopy',
-  'bg-garden-forest border-garden-forest',
+  'bg-forest border-forest',
 ] as const;
 
 const SWATCH = [
-  'bg-garden-track',
-  'bg-garden-calendar-1',
+  'bg-track',
+  'bg-calendar-1',
   'bg-stage-tree-canopy',
-  'bg-garden-forest',
+  'bg-forest',
 ];
 
 export function GardenCalendar({
@@ -57,14 +57,14 @@ export function GardenCalendar({
                 key={d}
                 className={gcn(
                   'rounded-[3px] border',
-                  level === null ? 'border-garden-border bg-transparent' : LEVEL[level],
+                  level === null ? 'border-border bg-transparent' : LEVEL[level],
                 )}
               />
             ))}
           </div>
         ))}
       </div>
-      <div aria-hidden="true" className="flex items-center gap-1 text-[12px] text-garden-muted">
+      <div aria-hidden="true" className="flex items-center gap-1 text-[12px] text-muted-foreground">
         <span className="flex-grow">{legend}</span>
         <span>{low}</span>
         {SWATCH.map((swatch) => (

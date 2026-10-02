@@ -58,7 +58,7 @@ export function TopicsLive() {
 }
 
 const INPUT =
-  'h-12 w-full rounded-control border border-garden-border bg-garden-surface px-4 text-[16px] text-garden-text placeholder:text-garden-muted';
+  'h-12 w-full rounded-control border border-border bg-surface px-4 text-[16px] text-text placeholder:text-muted-foreground';
 
 function SearchSheet({
   open,
@@ -95,17 +95,17 @@ function SearchSheet({
                 onOpenChange(false);
                 router.push(bed.href);
               }}
-              className="flex min-h-11 w-full items-center justify-between gap-3 border-b border-garden-divider py-2 text-left"
+              className="flex min-h-11 w-full items-center justify-between gap-3 border-b border-divider py-2 text-left"
             >
               <span className="text-[15px] font-semibold">{bed.title}</span>
-              <span className="shrink-0 text-[12px] text-garden-muted">
+              <span className="shrink-0 text-[12px] text-muted-foreground">
                 {t('words', { count: bed.words })}
               </span>
             </button>
           </li>
         ))}
         {matches.length === 0 ? (
-          <li className="py-4 text-center text-[13px] text-garden-muted">
+          <li className="py-4 text-center text-[13px] text-muted-foreground">
             {t('searchEmpty', { query: query.trim() })}
           </li>
         ) : null}
@@ -164,7 +164,7 @@ function NewBedSheet({
       }
     >
       <form id="garden-new-bed" onSubmit={submit} className="flex flex-col gap-3">
-        <label className="flex flex-col gap-1.5 text-[13px] font-semibold text-garden-muted">
+        <label className="flex flex-col gap-1.5 text-[13px] font-semibold text-muted-foreground">
           {t('newBedName')}
           <input
             value={title}
@@ -175,7 +175,7 @@ function NewBedSheet({
           />
         </label>
         {writable.length > 1 ? (
-          <label className="flex flex-col gap-1.5 text-[13px] font-semibold text-garden-muted">
+          <label className="flex flex-col gap-1.5 text-[13px] font-semibold text-muted-foreground">
             {t('newBedGroup')}
             <select
               value={chosen}
@@ -191,10 +191,10 @@ function NewBedSheet({
           </label>
         ) : null}
         {groups.data && writable.length === 0 ? (
-          <p className="text-[13px] text-garden-primary-text">{t('newBedNoGroup')}</p>
+          <p className="text-[13px] text-primary-text">{t('newBedNoGroup')}</p>
         ) : null}
         {create.isError ? (
-          <p role="alert" className="text-[13px] text-garden-primary-text">
+          <p role="alert" className="text-[13px] text-primary-text">
             {t('newBedError')}
           </p>
         ) : null}

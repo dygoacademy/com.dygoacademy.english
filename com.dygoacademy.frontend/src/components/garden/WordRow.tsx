@@ -42,9 +42,9 @@ export type WordRowProps =
   | (WordRowBase & { href?: undefined; onClick?: () => void });
 
 const DUE_TONE: Record<WordDueTone, string> = {
-  now: 'text-garden-water-due',
-  new: 'text-garden-gold-text',
-  later: 'text-garden-muted',
+  now: 'text-water-due',
+  new: 'text-gold-text',
+  later: 'text-muted-foreground',
 };
 
 export function WordRow(props: WordRowProps) {
@@ -53,18 +53,18 @@ export function WordRow(props: WordRowProps) {
   const plant = useTranslations('components.plant');
 
   const classes = gcn(
-    'flex min-h-[60px] w-full items-center gap-2.5 rounded-control border py-2 pl-2 pr-3 text-left text-garden-text',
+    'flex min-h-[60px] w-full items-center gap-2.5 rounded-control border py-2 pl-2 pr-3 text-left text-text',
     variant === 'wilting'
-      ? 'border-garden-gold-border bg-garden-gold-soft'
-      : 'border-garden-border bg-garden-surface',
+      ? 'border-gold-border bg-gold-soft'
+      : 'border-border bg-surface',
     (props.href !== undefined || props.onClick) &&
-      'transition-colors duration-quick ease-garden hover:border-garden-muted',
+      'transition-colors duration-quick ease-garden hover:border-muted-foreground',
     className,
   );
 
   const content = (
     <>
-      <span className="flex h-10 w-10 shrink-0 items-end justify-center overflow-hidden rounded-tile bg-garden-bg">
+      <span className="flex h-10 w-10 shrink-0 items-end justify-center overflow-hidden rounded-tile bg-bg">
         <PlantGlyph stage={stage} aria-label={plant(stage)} />
       </span>
       <span className="flex min-w-0 flex-grow flex-col">
@@ -73,7 +73,7 @@ export function WordRow(props: WordRowProps) {
         </span>
         <span
           lang={meaningLang}
-          className="overflow-hidden text-ellipsis whitespace-nowrap text-[13px] text-garden-muted"
+          className="overflow-hidden text-ellipsis whitespace-nowrap text-[13px] text-muted-foreground"
         >
           {meaning}
         </span>

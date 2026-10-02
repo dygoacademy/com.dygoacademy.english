@@ -297,7 +297,7 @@ function NormalScene({ plants, label }: { plants: readonly HeroPlant[]; label: s
         return (
           <svg key={slot} x={spotX(NORMAL_SLOTS[slot])} y="-10" width="40" height="142" overflow="visible">
             {art}
-            {thirsty ? <DripDrop y={dripY} className="garden-drip" /> : null}
+            {thirsty ? <DripDrop y={dripY} className="drip" /> : null}
           </svg>
         );
       })}
@@ -320,7 +320,7 @@ function ComebackScene({ plants, label }: { plants: readonly HeroPlant[]; label:
         ].map(([d, delay]) => (
           <path
             key={d}
-            className="garden-rain"
+            className="rain"
             d={d}
             stroke="var(--stage-due)"
             strokeWidth="3"
@@ -357,8 +357,8 @@ export function HeroGardenCard({
     <section
       data-variant={variant}
       className={gcn(
-        'flex flex-col overflow-hidden rounded-hero px-4 pt-4 text-garden-on-forest',
-        comeback ? 'gap-1.5 bg-garden-forest-muted' : 'gap-1 bg-garden-forest',
+        'flex flex-col overflow-hidden rounded-hero px-4 pt-4 text-on-forest',
+        comeback ? 'gap-1.5 bg-forest-muted' : 'gap-1 bg-forest',
         className,
       )}
     >
@@ -380,7 +380,7 @@ export function HeroGardenCard({
 
       <ul
         aria-label={t('legend')}
-        className="flex gap-[14px] text-[12px] text-garden-on-forest-muted"
+        className="flex gap-[14px] text-[12px] text-on-forest-muted"
       >
         {legend.map((item) => (
           <li key={item.stage} className="flex items-center gap-[5px]">

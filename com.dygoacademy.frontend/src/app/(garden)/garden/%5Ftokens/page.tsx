@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 
-import { GARDEN_CONTENT_WIDTH } from '@/constants/layout';
+import { CONTENT_WIDTH } from '@/constants/layout';
 
 /**
  * /garden/_tokens — flag-only token and type test page (rebuild plan
@@ -38,28 +38,28 @@ const OVERLINE_SAMPLES = [
 const MIXED_STRING = 'Colour / color · Friday, 25 September · 9月25日 星期五 · mitigate 减轻';
 
 const COLOURS = [
-  ['--color-bg', '#F4F1EA', 'bg-garden-bg'],
-  ['--color-surface', '#FFFFFF', 'bg-garden-surface'],
-  ['--color-surface-sunken', '#F7F4EC', 'bg-garden-surface-sunken'],
-  ['--color-border', '#E3DDD0', 'bg-garden-border'],
-  ['--color-text', '#1C2B24', 'bg-garden-text'],
-  ['--color-text-muted', '#5E6A62', 'bg-garden-muted'],
-  ['--color-forest', '#24463A', 'bg-garden-forest'],
-  ['--color-forest-deep', '#1B372D', 'bg-garden-forest-deep'],
-  ['--color-forest-shadow', '#142A21', 'bg-garden-forest-shadow'],
-  ['--color-primary', '#B4552E', 'bg-garden-primary'],
-  ['--color-primary-shadow', '#7E3719', 'bg-garden-primary-shadow'],
-  ['--color-primary-text', '#8A3E20', 'bg-garden-primary-text'],
-  ['--color-water', '#4A8FBF', 'bg-garden-water'],
-  ['--color-water-soft', '#E3F0F8', 'bg-garden-water-soft'],
-  ['--color-water-text', '#1D4A68', 'bg-garden-water-text'],
-  ['--color-gold', '#C8962B', 'bg-garden-gold'],
-  ['--color-gold-text', '#9A6E14', 'bg-garden-gold-text'],
-  ['--color-gold-soft', '#FBF4E4', 'bg-garden-gold-soft'],
-  ['--color-gold-soft-text', '#6B5215', 'bg-garden-gold-soft-text'],
-  ['--color-success', '#3E7F5A', 'bg-garden-success'],
-  ['--color-disabled', '#CFC8B8', 'bg-garden-disabled'],
-  ['--color-card-lift', '#E8E1D2', 'bg-garden-card-lift'],
+  ['--color-bg', '#F4F1EA', 'bg-bg'],
+  ['--color-surface', '#FFFFFF', 'bg-surface'],
+  ['--color-surface-sunken', '#F7F4EC', 'bg-surface-sunken'],
+  ['--color-border', '#E3DDD0', 'bg-border'],
+  ['--color-text', '#1C2B24', 'bg-text'],
+  ['--color-text-muted', '#5E6A62', 'bg-muted-foreground'],
+  ['--color-forest', '#24463A', 'bg-forest'],
+  ['--color-forest-deep', '#1B372D', 'bg-forest-deep'],
+  ['--color-forest-shadow', '#142A21', 'bg-forest-shadow'],
+  ['--color-primary', '#B4552E', 'bg-primary'],
+  ['--color-primary-shadow', '#7E3719', 'bg-primary-shadow'],
+  ['--color-primary-text', '#8A3E20', 'bg-primary-text'],
+  ['--color-water', '#4A8FBF', 'bg-water'],
+  ['--color-water-soft', '#E3F0F8', 'bg-water-soft'],
+  ['--color-water-text', '#1D4A68', 'bg-water-text'],
+  ['--color-gold', '#C8962B', 'bg-gold'],
+  ['--color-gold-text', '#9A6E14', 'bg-gold-text'],
+  ['--color-gold-soft', '#FBF4E4', 'bg-gold-soft'],
+  ['--color-gold-soft-text', '#6B5215', 'bg-gold-soft-text'],
+  ['--color-success', '#3E7F5A', 'bg-success'],
+  ['--color-disabled', '#CFC8B8', 'bg-disabled'],
+  ['--color-card-lift', '#E8E1D2', 'bg-card-lift-bg'],
 ] as const;
 
 const STAGES = [
@@ -149,19 +149,19 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 
 function Swatches({ items }: { items: readonly (readonly [string, string, string])[] }) {
   return (
-    <ul className="grid grid-cols-1 gap-2 medium:grid-cols-2 expanded:grid-cols-3">
+    <ul className="grid grid-cols-1 gap-2 md:grid-cols-2 lg:grid-cols-3">
       {items.map(([name, hex, cls]) => (
         <li
           key={name}
-          className="flex items-center gap-3 rounded-tile border border-garden-border bg-garden-surface p-2"
+          className="flex items-center gap-3 rounded-tile border border-border bg-surface p-2"
         >
           <span
             aria-hidden="true"
-            className={`h-10 w-10 shrink-0 rounded-tile border border-garden-border ${cls}`}
+            className={`h-10 w-10 shrink-0 rounded-tile border border-border ${cls}`}
           />
           <span className="min-w-0">
             <code className="block truncate text-body-s">{name}</code>
-            <span className="text-body-s text-garden-muted">{hex}</span>
+            <span className="text-body-s text-muted-foreground">{hex}</span>
           </span>
         </li>
       ))}
@@ -173,22 +173,22 @@ export default async function GardenTokensPage() {
   const t = await getTranslations('tokens');
 
   return (
-    <main className="min-h-screen-dvh bg-garden-bg">
-      <div aria-hidden="true" className="h-[var(--safe-top)] bg-garden-water-soft" />
-      <div className={`mx-auto ${GARDEN_CONTENT_WIDTH.wide} px-page-safe pb-10 pt-6`}>
+    <main className="min-h-screen-dvh bg-bg">
+      <div aria-hidden="true" className="h-[var(--safe-top)] bg-water-soft" />
+      <div className={`mx-auto ${CONTENT_WIDTH.wide} px-page-safe pb-10 pt-6`}>
         <h1 className="font-display text-display-l">{t('title')}</h1>
-        <p className="mt-2 text-body-m text-garden-muted">{t('intro')}</p>
+        <p className="mt-2 text-body-m text-muted-foreground">{t('intro')}</p>
 
-        <p className="mt-4 inline-flex flex-wrap gap-2 rounded-full bg-garden-forest px-3 py-1 text-label text-white">
+        <p className="mt-4 inline-flex flex-wrap gap-2 rounded-full bg-forest px-3 py-1 text-label text-white">
           <span className="overline-label">{t('sizeClass.label')}</span>
-          <span className="medium:hidden">{t('sizeClass.compact')}</span>
-          <span className="hidden medium:inline expanded:hidden">{t('sizeClass.medium')}</span>
-          <span className="hidden expanded:inline">{t('sizeClass.expanded')}</span>
+          <span className="md:hidden">{t('sizeClass.compact')}</span>
+          <span className="hidden md:inline lg:hidden">{t('sizeClass.medium')}</span>
+          <span className="hidden lg:inline">{t('sizeClass.expanded')}</span>
           <span className="hidden short:inline">· {t('sizeClass.short')}</span>
         </p>
 
         <Section title={t('sections.colour')}>
-          <p className="mb-3 text-body-s text-garden-muted">{t('notes.swatch')}</p>
+          <p className="mb-3 text-body-s text-muted-foreground">{t('notes.swatch')}</p>
           <Swatches items={COLOURS} />
         </Section>
 
@@ -210,14 +210,14 @@ export default async function GardenTokensPage() {
         </Section>
 
         <Section title={t('sections.fonts')}>
-          <p className="text-body-s text-garden-muted">{t('notes.fonts')}</p>
+          <p className="text-body-s text-muted-foreground">{t('notes.fonts')}</p>
           <ul className="mt-3 space-y-3">
             {FONT_SAMPLES.map(([name, cls, text]) => (
               <li
                 key={name}
-                className="rounded-card border border-garden-border bg-garden-surface p-4"
+                className="rounded-card border border-border bg-surface p-4"
               >
-                <code className="text-body-s text-garden-muted">{name}</code>
+                <code className="text-body-s text-muted-foreground">{name}</code>
                 <p lang={name.includes('Vietnam') ? 'vi' : 'en'} className={`mt-1 ${cls}`}>
                   {text}
                 </p>
@@ -231,9 +231,9 @@ export default async function GardenTokensPage() {
             {TYPE_STYLES.map(([name, cls]) => (
               <li
                 key={name}
-                className="rounded-card border border-garden-border bg-garden-surface p-4"
+                className="rounded-card border border-border bg-surface p-4"
               >
-                <code className="text-body-s text-garden-muted">{name}</code>
+                <code className="text-body-s text-muted-foreground">{name}</code>
                 {TEST_STRINGS.map(({ lang, text }) => (
                   <p key={lang} lang={lang} className={`mt-1 ${cls}`}>
                     {name === 'display-m' ? `412 · ${text}` : text}
@@ -241,19 +241,19 @@ export default async function GardenTokensPage() {
                 ))}
               </li>
             ))}
-            <li className="rounded-card border border-garden-border bg-garden-surface-sunken p-4">
+            <li className="rounded-card border border-border bg-surface-sunken p-4">
               <p className="text-body-m">{MIXED_STRING}</p>
             </li>
           </ul>
         </Section>
 
         <Section title={t('sections.overline')}>
-          <p className="mb-3 text-body-s text-garden-muted">{t('notes.overline')}</p>
+          <p className="mb-3 text-body-s text-muted-foreground">{t('notes.overline')}</p>
           {OVERLINE_SAMPLES.map((sample, index) => (
             <p
               key={sample.lang}
               lang={sample.lang}
-              className={`overline-label text-label text-garden-muted${index > 0 ? ' mt-1' : ''}`}
+              className={`overline-label text-label text-muted-foreground${index > 0 ? ' mt-1' : ''}`}
             >
               {sample.text}
             </p>
@@ -265,7 +265,7 @@ export default async function GardenTokensPage() {
             {SPACING.map(([name, cls]) => (
               <li key={name} className="flex items-center gap-3">
                 <code className="w-28 text-body-s">{name}</code>
-                <span aria-hidden="true" className={`h-4 bg-garden-water ${cls}`} />
+                <span aria-hidden="true" className={`h-4 bg-water ${cls}`} />
               </li>
             ))}
           </ul>
@@ -276,7 +276,7 @@ export default async function GardenTokensPage() {
             {RADII.map(([name, cls]) => (
               <div
                 key={name}
-                className={`flex h-20 w-28 items-end border border-garden-border bg-garden-surface p-2 text-body-s ${cls}`}
+                className={`flex h-20 w-28 items-end border border-border bg-surface p-2 text-body-s ${cls}`}
               >
                 {name}
               </div>
@@ -288,28 +288,28 @@ export default async function GardenTokensPage() {
           <div className="flex flex-wrap items-start gap-4">
             <button
               type="button"
-              className="h-14 rounded-control bg-garden-primary px-6 text-body-l font-bold text-white shadow-press-primary transition duration-press ease-garden active:translate-y-[2px] active:shadow-press-primary-down"
+              className="h-14 rounded-control bg-primary px-6 text-body-l font-bold text-white shadow-press-primary transition duration-press ease-garden active:translate-y-[2px] active:shadow-press-primary-down"
             >
               {t('sample.button')}
             </button>
             <button
               type="button"
-              className="h-[60px] rounded-control bg-garden-forest px-6 text-body-l font-bold text-white shadow-press-forest transition duration-press ease-garden active:translate-y-[2px] active:shadow-press-forest-down"
+              className="h-[60px] rounded-control bg-forest px-6 text-body-l font-bold text-white shadow-press-forest transition duration-press ease-garden active:translate-y-[2px] active:shadow-press-forest-down"
             >
               {t('sample.pressMe')}
             </button>
-            <div className="h-24 w-40 rounded-hero border border-garden-border bg-garden-surface shadow-card-lift" />
+            <div className="h-24 w-40 rounded-hero border border-border bg-surface shadow-card-lift" />
           </div>
         </Section>
 
         <Section title={t('sections.motion')}>
-          <p className="mb-3 text-body-s text-garden-muted">{t('notes.motion')}</p>
+          <p className="mb-3 text-body-s text-muted-foreground">{t('notes.motion')}</p>
           <div className="flex flex-wrap gap-3">
             {MOTION.map(([name, cls]) => (
               <button
                 key={name}
                 type="button"
-                className={`h-16 w-32 rounded-control border border-garden-border bg-garden-surface text-body-s transition-transform hover:scale-105 focus-visible:scale-105 ${cls}`}
+                className={`h-16 w-32 rounded-control border border-border bg-surface text-body-s transition-transform hover:scale-105 focus-visible:scale-105 ${cls}`}
               >
                 {name}
               </button>
@@ -318,17 +318,17 @@ export default async function GardenTokensPage() {
         </Section>
 
         <Section title={t('sections.safeArea')}>
-          <p className="text-body-s text-garden-muted">{t('notes.safeArea')}</p>
+          <p className="text-body-s text-muted-foreground">{t('notes.safeArea')}</p>
         </Section>
 
         <Section title={t('sections.widths')}>
-          <p className="mb-3 text-body-s text-garden-muted">{t('notes.widths')}</p>
+          <p className="mb-3 text-body-s text-muted-foreground">{t('notes.widths')}</p>
           <div className="space-y-2">
-            {(Object.keys(GARDEN_CONTENT_WIDTH) as (keyof typeof GARDEN_CONTENT_WIDTH)[]).map(
+            {(Object.keys(CONTENT_WIDTH) as (keyof typeof CONTENT_WIDTH)[]).map(
               (tier) => (
                 <div
                   key={tier}
-                  className={`${GARDEN_CONTENT_WIDTH[tier]} rounded-tile bg-garden-forest px-3 py-2 text-body-s text-white`}
+                  className={`${CONTENT_WIDTH[tier]} rounded-tile bg-forest px-3 py-2 text-body-s text-white`}
                 >
                   {tier}
                 </div>
@@ -337,7 +337,7 @@ export default async function GardenTokensPage() {
           </div>
         </Section>
       </div>
-      <div aria-hidden="true" className="h-[var(--safe-bottom)] bg-garden-water-soft" />
+      <div aria-hidden="true" className="h-[var(--safe-bottom)] bg-water-soft" />
     </main>
   );
 }

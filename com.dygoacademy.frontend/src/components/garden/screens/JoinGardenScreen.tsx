@@ -40,7 +40,7 @@ export interface JoinGardenScreenProps {
 }
 
 const JOIN_BUTTON =
-  'mt-auto flex h-[58px] shrink-0 items-center justify-center rounded-[18px] bg-garden-primary text-[17px] font-bold text-white shadow-press-primary transition-transform duration-press ease-garden active:translate-y-[2px] disabled:opacity-60';
+  'mt-auto flex h-[58px] shrink-0 items-center justify-center rounded-[18px] bg-primary text-[17px] font-bold text-white shadow-press-primary transition-transform duration-press ease-garden active:translate-y-[2px] disabled:opacity-60';
 
 export function JoinGardenScreen({
   groupName,
@@ -76,7 +76,7 @@ export function JoinGardenScreen({
       <div className="flex flex-col items-center gap-2 text-center">
         <div
           aria-hidden="true"
-          className="box-border flex h-[150px] w-[180px] items-end justify-center gap-1 overflow-hidden rounded-[28px] bg-garden-forest pb-[14px]"
+          className="box-border flex h-[150px] w-[180px] items-end justify-center gap-1 overflow-hidden rounded-[28px] bg-forest pb-[14px]"
         >
           <TileSprout width={40} height={40} />
           <TileTree width={46} height={50} />
@@ -84,27 +84,27 @@ export function JoinGardenScreen({
         </div>
         <span className="mt-2 flex items-center gap-2">
           {inviter ? <GardenerAvatar text={inviter.initial} tone={inviter.tone} size={28} /> : null}
-          <span className="text-[14px] text-garden-muted">
+          <span className="text-[14px] text-muted-foreground">
             {inviter ? t('invitedBy', { name: inviter.name }) : t('invited')}
           </span>
         </span>
         <h1 className="font-display text-[30px] font-semibold leading-[1.1]">{groupName}</h1>
-        {description ? <span className="text-[14px] text-garden-muted">{description}</span> : null}
+        {description ? <span className="text-[14px] text-muted-foreground">{description}</span> : null}
       </div>
 
       <div className="grid grid-cols-3 gap-2">
         {stats.map((stat) => (
           <div
             key={stat.label}
-            className="flex flex-col gap-0.5 rounded-control border border-garden-border bg-garden-surface p-3"
+            className="flex flex-col gap-0.5 rounded-control border border-border bg-surface p-3"
           >
             <span className="font-display text-[22px] font-semibold">{stat.value}</span>
-            <span className="text-[12px] text-garden-muted">{stat.label}</span>
+            <span className="text-[12px] text-muted-foreground">{stat.label}</span>
           </div>
         ))}
       </div>
 
-      <ul className="flex flex-col gap-2.5 rounded-[20px] border border-garden-border bg-garden-surface px-4 py-[14px]">
+      <ul className="flex flex-col gap-2.5 rounded-[20px] border border-border bg-surface px-4 py-[14px]">
         {[t('benefitBeds'), t('benefitRain'), t('benefitPrivate')].map((line) => (
           <li key={line} className="flex gap-2.5 text-[14px]">
             <JoinCheckIcon width={18} height={18} className="shrink-0" />
@@ -113,15 +113,15 @@ export function JoinGardenScreen({
         ))}
       </ul>
 
-      <span className="text-center text-[13px] text-garden-muted">
+      <span className="text-center text-[13px] text-muted-foreground">
         {t.rich(`joinAs.${role}`, {
           role: c(`roles.${role}`),
-          b: (chunks) => <b className="text-garden-text">{chunks}</b>,
+          b: (chunks) => <b className="text-text">{chunks}</b>,
         })}
       </span>
 
       {message ? (
-        <div role="status" className="text-center text-[13px] text-garden-primary-text">
+        <div role="status" className="text-center text-[13px] text-primary-text">
           {message}
         </div>
       ) : null}
@@ -135,7 +135,7 @@ export function JoinGardenScreen({
           {t('join')}
         </Link>
       )}
-      <Link href={notNowHref} className="text-center text-[15px] font-semibold text-garden-forest underline">
+      <Link href={notNowHref} className="text-center text-[15px] font-semibold text-forest underline">
         {t('notNow')}
       </Link>
     </div>

@@ -55,17 +55,17 @@ export interface WeeklyHarvestScreenProps {
 }
 
 const AVATAR: Record<AvatarTone, string> = {
-  flower: 'bg-stage-flower text-garden-avatar-flower-text',
-  sprout: 'bg-stage-sprout-leaf text-garden-avatar-sprout-text',
-  due: 'bg-stage-due text-garden-avatar-due-text',
-  more: 'bg-garden-track text-garden-muted',
+  flower: 'bg-stage-flower text-avatar-flower-text',
+  sprout: 'bg-stage-sprout-leaf text-avatar-sprout-text',
+  due: 'bg-stage-due text-avatar-due-text',
+  more: 'bg-track text-muted-foreground',
 };
 
 const GROUP_CARD =
-  'flex flex-col gap-1.5 rounded-card border border-garden-border bg-garden-surface p-[14px] text-garden-text';
+  'flex flex-col gap-1.5 rounded-card border border-border bg-surface p-[14px] text-text';
 
 function ComingSoon({ children }: { children: React.ReactNode }) {
-  return <p className="text-[13px] text-garden-muted">{children}</p>;
+  return <p className="text-[13px] text-muted-foreground">{children}</p>;
 }
 
 export function WeeklyHarvestScreen({
@@ -90,7 +90,7 @@ export function WeeklyHarvestScreen({
             <span
               key={index}
               className={gcn(
-                'box-content flex h-7 w-7 items-center justify-center rounded-[14px] border-2 border-garden-surface text-[11px] font-bold',
+                'box-content flex h-7 w-7 items-center justify-center rounded-[14px] border-2 border-surface text-[11px] font-bold',
                 index > 0 && '-ml-2',
                 AVATAR[avatar.tone],
               )}
@@ -101,7 +101,7 @@ export function WeeklyHarvestScreen({
         </div>
       ) : null}
       <span className="text-[15px] font-bold">{group.name}</span>
-      <span className="text-[12px] leading-[1.35] text-garden-muted">
+      <span className="text-[12px] leading-[1.35] text-muted-foreground">
         {t('groupBody', {
           watered: group.watered,
           members: group.members,
@@ -114,13 +114,13 @@ export function WeeklyHarvestScreen({
   return (
     <div className={gcn(SCREEN_CLASSES, 'gap-[14px] pt-[22px]')}>
       <header className="flex flex-col px-5">
-        <span className="text-[13px] font-medium text-garden-muted">
+        <span className="text-[13px] font-medium text-muted-foreground">
           {t('weekOf', { date: f.dayMonth(weekStart) })}
         </span>
         <h1 className="font-display text-[28px] font-semibold leading-[1.1]">{t('title')}</h1>
       </header>
 
-      <section className="mx-4 flex flex-col gap-3 rounded-[24px] bg-garden-forest p-4 text-garden-on-forest">
+      <section className="mx-4 flex flex-col gap-3 rounded-[24px] bg-forest p-4 text-on-forest">
         {harvest ? (
           <>
             <div className="flex items-baseline justify-between">
@@ -140,16 +140,16 @@ export function WeeklyHarvestScreen({
               }))}
             />
             {harvest.seedPack ? (
-              <div className="flex items-center gap-2.5 rounded-[14px] bg-garden-forest-deep px-3 py-2.5">
+              <div className="flex items-center gap-2.5 rounded-[14px] bg-forest-deep px-3 py-2.5">
                 <SeedPackIcon width={28} height={28} />
-                <span className="flex-grow text-[13px] text-garden-on-forest-muted">
+                <span className="flex-grow text-[13px] text-on-forest-muted">
                   {t.rich('seedPack', {
                     need: harvest.seedPack.need,
                     name: harvest.seedPack.name,
-                    b: (c) => <b className="whitespace-nowrap text-garden-gold-light">{c}</b>,
+                    b: (c) => <b className="whitespace-nowrap text-gold-light">{c}</b>,
                   })}
                 </span>
-                <span className="text-[13px] font-bold text-garden-gold-light">
+                <span className="text-[13px] font-bold text-gold-light">
                   {t('seedPackCount', {
                     have: harvest.seedPack.have,
                     need: harvest.seedPack.need,
@@ -161,25 +161,25 @@ export function WeeklyHarvestScreen({
         ) : (
           <>
             <h2 className="text-[15px] font-bold">{t('missionsTitle')}</h2>
-            <p className="text-[13px] text-garden-on-forest-muted">{t('missionsComingSoon')}</p>
+            <p className="text-[13px] text-on-forest-muted">{t('missionsComingSoon')}</p>
           </>
         )}
       </section>
 
-      <section className="mx-4 flex flex-col gap-2.5 rounded-[22px] border border-garden-border bg-garden-surface p-4">
+      <section className="mx-4 flex flex-col gap-2.5 rounded-[22px] border border-border bg-surface p-4">
         {goal ? (
           <>
             <div className="flex items-baseline justify-between">
               <h2 className="font-display text-[19px] font-semibold">
                 {t('goalBand', { band: goal.band })}
               </h2>
-              <span className="text-[13px] text-garden-muted">{t('goalHint')}</span>
+              <span className="text-[13px] text-muted-foreground">{t('goalHint')}</span>
             </div>
             <div className="flex items-baseline gap-1.5">
-              <span className="font-display text-[32px] font-semibold text-garden-forest">
+              <span className="font-display text-[32px] font-semibold text-forest">
                 {f.number(goal.mastered)}
               </span>
-              <span className="text-[14px] text-garden-muted">
+              <span className="text-[14px] text-muted-foreground">
                 {t('goalMastered', { target: goal.target })}
               </span>
             </div>
@@ -190,14 +190,14 @@ export function WeeklyHarvestScreen({
                 growing: goal.growing,
                 target: goal.target,
               })}
-              className="flex h-2.5 overflow-hidden rounded-[5px] bg-garden-track"
+              className="flex h-2.5 overflow-hidden rounded-[5px] bg-track"
             >
-              <div className="bg-garden-success" style={{ width: `${masteredPct}%` }} />
+              <div className="bg-success" style={{ width: `${masteredPct}%` }} />
               <div className="bg-stage-sprout" style={{ width: `${growingPct}%` }} />
             </div>
-            <div className="flex gap-[14px] text-[12px] text-garden-muted">
+            <div className="flex gap-[14px] text-[12px] text-muted-foreground">
               <span className="flex items-center gap-[5px]">
-                <span aria-hidden="true" className="h-2 w-2 rounded-[4px] bg-garden-success" />
+                <span aria-hidden="true" className="h-2 w-2 rounded-[4px] bg-success" />
                 {t('legendMastered')}
               </span>
               <span className="flex items-center gap-[5px]">
@@ -222,12 +222,12 @@ export function WeeklyHarvestScreen({
       </section>
 
       <div className="mx-4 grid grid-cols-2 gap-2.5">
-        <div className="flex flex-col gap-1.5 rounded-card border border-garden-border bg-garden-surface p-[14px]">
+        <div className="flex flex-col gap-1.5 rounded-card border border-border bg-surface p-[14px]">
           <RainBarrelIcon width={30} height={30} stroke="var(--color-water)" />
           <span className="text-[15px] font-bold">
             {freezes !== null ? t('barrelTitle', { count: freezes }) : t('barrelName')}
           </span>
-          <span className="text-[12px] leading-[1.35] text-garden-muted">
+          <span className="text-[12px] leading-[1.35] text-muted-foreground">
             {freezes !== null ? t('barrelBody') : t('comingSoon')}
           </span>
         </div>

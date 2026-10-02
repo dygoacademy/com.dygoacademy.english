@@ -18,7 +18,7 @@ export function WeekDots({ days, className }: { days: readonly WeekDay[]; classN
   return (
     <ul
       className={gcn(
-        'flex justify-between rounded-[18px] border border-garden-border bg-garden-surface px-[14px] py-3',
+        'flex justify-between rounded-[18px] border border-border bg-surface px-[14px] py-3',
         className,
       )}
     >
@@ -28,9 +28,9 @@ export function WeekDots({ days, className }: { days: readonly WeekDay[]; classN
             aria-hidden="true"
             className={gcn(
               'flex h-[30px] w-[30px] items-center justify-center rounded-[15px] border-2',
-              day.state === 'done' && 'border-garden-success bg-garden-success',
-              day.state === 'today' && 'border-garden-primary bg-garden-primary',
-              day.state === 'empty' && 'border-garden-border bg-garden-surface',
+              day.state === 'done' && 'border-success bg-success',
+              day.state === 'today' && 'border-primary bg-primary',
+              day.state === 'empty' && 'border-border bg-surface',
             )}
           >
             {day.state !== 'empty' ? (
@@ -41,7 +41,7 @@ export function WeekDots({ days, className }: { days: readonly WeekDay[]; classN
             aria-hidden="true"
             className={gcn(
               'text-[12px] font-semibold',
-              day.state === 'today' ? 'text-garden-primary' : 'text-garden-muted',
+              day.state === 'today' ? 'text-primary' : 'text-muted-foreground',
             )}
           >
             {day.initial}

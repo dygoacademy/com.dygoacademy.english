@@ -174,14 +174,14 @@ export function TendGardenLive({ groupId, tab }: { groupId: string; tab: 'tricky
         footer: (
           <div className="mx-4 flex flex-col gap-2">
             {status ? (
-              <p role="status" className="px-1 text-[13px] text-garden-muted">
+              <p role="status" className="px-1 text-[13px] text-muted-foreground">
                 {status}
               </p>
             ) : null}
             <button
               type="button"
               onClick={() => setSettingsOpen(true)}
-              className="flex h-12 items-center justify-center rounded-control border border-garden-border bg-garden-surface text-[14px] font-bold text-garden-forest"
+              className="flex h-12 items-center justify-center rounded-control border border-border bg-surface text-[14px] font-bold text-forest"
             >
               {t('settings')}
             </button>
@@ -237,15 +237,15 @@ function InviteLinksSheet({
   return (
     <GroupSheet open={open} onOpenChange={onOpenChange} title={t('linksTitle')} subtitle={t('linksSubtitle')}>
       {invites.length === 0 ? (
-        <p className="text-[13px] text-garden-muted">{t('invitesNone')}</p>
+        <p className="text-[13px] text-muted-foreground">{t('invitesNone')}</p>
       ) : (
-        <ul className="flex flex-col overflow-hidden rounded-[18px] border border-garden-border bg-garden-surface">
+        <ul className="flex flex-col overflow-hidden rounded-[18px] border border-border bg-surface">
           {invites.map((invite, index) => (
             <li
               key={invite.id}
               className={
                 index < invites.length - 1
-                  ? 'flex items-center gap-3 border-b border-garden-divider px-[14px] py-2.5'
+                  ? 'flex items-center gap-3 border-b border-divider px-[14px] py-2.5'
                   : 'flex items-center gap-3 px-[14px] py-2.5'
               }
             >
@@ -255,7 +255,7 @@ function InviteLinksSheet({
                 disabled={revoke.isPending}
                 onClick={() => revoke.mutate(invite.id)}
                 aria-label={t('revokeLabel', { role: roles(invite.grant_role) })}
-                className="h-9 shrink-0 rounded-[12px] border border-garden-border px-3 text-[13px] font-bold text-garden-primary-text"
+                className="h-9 shrink-0 rounded-[12px] border border-border px-3 text-[13px] font-bold text-primary-text"
               >
                 {t('revoke')}
               </button>
@@ -266,7 +266,7 @@ function InviteLinksSheet({
       <button
         type="button"
         onClick={onNew}
-        className="flex h-[54px] items-center justify-center rounded-control bg-garden-forest text-[16px] font-bold text-white shadow-press-forest"
+        className="flex h-[54px] items-center justify-center rounded-control bg-forest text-[16px] font-bold text-white shadow-press-forest"
       >
         {t('newLink')}
       </button>
@@ -336,7 +336,7 @@ function SettingsSheet({
                 onError: () => setMessage(t('actionFailed')),
               });
             }}
-            className="h-11 text-[15px] font-semibold text-garden-primary-text underline"
+            className="h-11 text-[15px] font-semibold text-primary-text underline"
           >
             {t('delete')}
           </button>

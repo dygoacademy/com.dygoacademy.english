@@ -19,7 +19,7 @@ export function SettingsList({
   return (
     <div
       className={gcn(
-        'flex flex-col rounded-card border border-garden-border bg-garden-surface [&>*:last-child]:border-b-0',
+        'flex flex-col rounded-card border border-border bg-surface [&>*:last-child]:border-b-0',
         className,
       )}
     >
@@ -54,14 +54,14 @@ export function SettingsRow({
 }) {
   // Content-box, as in the canvas: 52px plus the 1px divider.
   const classes =
-    'box-content flex h-[52px] items-center gap-3 border-b border-garden-divider px-[14px] text-garden-text';
+    'box-content flex h-[52px] items-center gap-3 border-b border-divider px-[14px] text-text';
   const content = (
     <>
       {icon}
       <span id={labelId} className="flex-grow text-[15px] font-semibold">
         {label}
       </span>
-      {value ? <span className="text-[14px] text-garden-muted">{value}</span> : null}
+      {value ? <span className="text-[14px] text-muted-foreground">{value}</span> : null}
       {control ??
         (href !== undefined || chevron ? (
           <ChevronRightIcon width={16} height={16} stroke="var(--color-text-muted)" />

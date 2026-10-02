@@ -339,10 +339,10 @@ export function PlantGlyph({
       {...(labelled ? { role: 'img', 'aria-label': ariaLabel } : { 'aria-hidden': true as const })}
       // No shrink-0: like the canvas, a glyph may shrink a little in a
       // tight flex column (the Fruiting stage tile).
-      className={gcn(drip && 'overflow-visible', animate === 'bloom' && 'garden-bloom', className)}
+      className={gcn(drip && 'overflow-visible', animate === 'bloom' && 'bloom', className)}
     >
       {art.body}
-      {drip ? <DripDrop cx={art.vw / 2} y={art.dripY} className="garden-drip" /> : null}
+      {drip ? <DripDrop cx={art.vw / 2} y={art.dripY} className="drip" /> : null}
     </svg>
   );
 }

@@ -27,19 +27,19 @@ export function EmptyState({ body, title, action, as = 'div', className }: Empty
   if (title === undefined) {
     const Tag = as;
     return (
-      <Tag className={gcn('py-6 text-center text-[13px] text-garden-muted', className)}>{body}</Tag>
+      <Tag className={gcn('py-6 text-center text-[13px] text-muted-foreground', className)}>{body}</Tag>
     );
   }
   const Tag = as === 'p' ? 'div' : as;
   return (
     <Tag
       className={gcn(
-        'flex flex-col gap-1 rounded-[20px] border border-garden-border bg-garden-surface px-4 py-5 text-center',
+        'flex flex-col gap-1 rounded-[20px] border border-border bg-surface px-4 py-5 text-center',
         className,
       )}
     >
       <span className="text-[16px] font-bold">{title}</span>
-      <span className="text-[13px] text-garden-muted">{body}</span>
+      <span className="text-[13px] text-muted-foreground">{body}</span>
       {action ? <div className="mt-2 flex justify-center">{action}</div> : null}
     </Tag>
   );

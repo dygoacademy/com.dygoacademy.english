@@ -34,7 +34,7 @@ export interface CreateGardenBodyProps {
 }
 
 const FIELD =
-  'box-border min-h-12 w-full rounded-[14px] border bg-garden-surface px-[14px] py-3 text-[16px] leading-[1.4] text-garden-text outline-none placeholder:text-garden-placeholder focus:border-garden-forest';
+  'box-border min-h-12 w-full rounded-[14px] border bg-surface px-[14px] py-3 text-[16px] leading-[1.4] text-text outline-none placeholder:text-placeholder focus:border-forest';
 
 export function CreateGardenBody({
   name,
@@ -66,7 +66,7 @@ export function CreateGardenBody({
       }}
     >
       <label htmlFor={nameId} className="flex flex-col gap-1.5">
-        <span className="text-[12px] font-bold uppercase tracking-[.08em] text-garden-muted">
+        <span className="text-[12px] font-bold uppercase tracking-[.08em] text-muted-foreground">
           {t('name')}
         </span>
         <input
@@ -76,11 +76,11 @@ export function CreateGardenBody({
           required
           placeholder={namePlaceholder}
           onChange={(event) => onNameChange?.(event.target.value)}
-          className={gcn(FIELD, name ? 'border-garden-forest' : 'border-garden-border')}
+          className={gcn(FIELD, name ? 'border-forest' : 'border-border')}
         />
       </label>
       <label htmlFor={aboutId} className="flex flex-col gap-1.5">
-        <span className="text-[12px] font-bold uppercase tracking-[.08em] text-garden-muted">
+        <span className="text-[12px] font-bold uppercase tracking-[.08em] text-muted-foreground">
           {t('about')}
         </span>
         <textarea
@@ -90,26 +90,26 @@ export function CreateGardenBody({
           maxLength={500}
           placeholder={aboutPlaceholder}
           onChange={(event) => onAboutChange?.(event.target.value)}
-          className={gcn(FIELD, 'block resize-none border-garden-border [field-sizing:content]')}
+          className={gcn(FIELD, 'block resize-none border-border [field-sizing:content]')}
         />
       </label>
-      <div className="flex items-center gap-3 rounded-control border border-garden-border bg-garden-surface px-[14px] py-3">
+      <div className="flex items-center gap-3 rounded-control border border-border bg-surface px-[14px] py-3">
         <div className="flex flex-grow flex-col">
           <span className="text-[14px] font-bold">{t('openTitle')}</span>
-          <span className="text-[12px] text-garden-muted">{open ? t('openOn') : t('openOff')}</span>
+          <span className="text-[12px] text-muted-foreground">{open ? t('openOn') : t('openOff')}</span>
         </div>
         <Switch checked={open} onCheckedChange={onOpenChange} aria-label={t('openTitle')} />
       </div>
-      {note ? <span className="px-1 text-[13px] text-garden-muted">{note}</span> : null}
+      {note ? <span className="px-1 text-[13px] text-muted-foreground">{note}</span> : null}
       {error ? (
-        <p role="alert" className="px-1 text-[13px] text-garden-primary-text">
+        <p role="alert" className="px-1 text-[13px] text-primary-text">
           {error}
         </p>
       ) : null}
       <button
         type="submit"
         disabled={!canSubmit && Boolean(onSubmit)}
-        className="flex h-14 items-center justify-center rounded-[18px] bg-garden-primary text-[17px] font-bold text-white shadow-press-primary transition-transform duration-press ease-garden active:translate-y-[2px] disabled:bg-garden-disabled disabled:text-garden-text disabled:shadow-none"
+        className="flex h-14 items-center justify-center rounded-[18px] bg-primary text-[17px] font-bold text-white shadow-press-primary transition-transform duration-press ease-garden active:translate-y-[2px] disabled:bg-disabled disabled:text-text disabled:shadow-none"
       >
         {submitLabel}
       </button>

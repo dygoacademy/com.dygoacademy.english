@@ -65,10 +65,10 @@ export function RegisterScreen({
   const initial = invite?.inviterName.trim().charAt(0).toUpperCase() ?? '';
   const hero = joining ? (
     invite ? (
-      <div className="flex shrink-0 items-center gap-3 rounded-[22px] bg-garden-forest px-4 py-3.5 text-garden-on-forest">
+      <div className="flex shrink-0 items-center gap-3 rounded-[22px] bg-forest px-4 py-3.5 text-on-forest">
         <span
           aria-hidden="true"
-          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-garden-gold-light text-[15px] font-bold text-garden-forest"
+          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gold-light text-[15px] font-bold text-forest"
         >
           {initial}
         </span>
@@ -83,7 +83,7 @@ export function RegisterScreen({
   ) : (
     <div
       aria-hidden="true"
-      className="box-border flex h-[96px] shrink-0 items-end justify-center gap-2.5 overflow-hidden rounded-hero bg-garden-forest pb-3"
+      className="box-border flex h-[96px] shrink-0 items-end justify-center gap-2.5 overflow-hidden rounded-hero bg-forest pb-3"
     >
       <AuthSeed width={34} height={24} />
       <TileSprout width={40} height={40} />
@@ -144,8 +144,8 @@ export function RegisterScreen({
         </button>
       </form>
       {/* Terms and Privacy stay plain text until Dylan has the URLs (plan decision 12). */}
-      <p className="text-center text-[12px] leading-[1.4] text-garden-muted">{t('register.terms')}</p>
-      <p className="text-center text-[14px] text-garden-muted">
+      <p className="text-center text-[12px] leading-[1.4] text-muted-foreground">{t('register.terms')}</p>
+      <p className="text-center text-[14px] text-muted-foreground">
         {t.rich(joining ? 'register.invite.haveAccount' : 'register.haveAccount', {
           link: (chunks) => (
             <Link href={signInHref} className={`font-bold ${AUTH_LINK_CLASSES}`}>

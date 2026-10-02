@@ -67,7 +67,7 @@ export function GardenTabBar({
       <BottomTabBar
         items={items}
         activeKey={active}
-        className={gcn(tabBarClasses, 'medium:hidden')}
+        className={gcn(tabBarClasses, 'md:hidden')}
       />
       <GardenRail items={items} activeKey={active} />
       <GardenSidebar items={items} activeKey={active} />
@@ -77,4 +77,4 @@ export function GardenTabBar({
 
 /** Screen column: the canvas frame (390 wide on iPhone), full height. */
 export const SCREEN_CLASSES =
-  'mx-auto flex min-h-screen-dvh w-full max-w-[560px] flex-col bg-garden-bg text-garden-text';
+  'mx-auto flex min-h-screen-dvh w-full max-w-[560px] flex-col bg-bg text-text';

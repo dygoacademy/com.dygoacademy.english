@@ -11,7 +11,7 @@ export function LiveLoading() {
   return (
     <div
       role="status"
-      className="flex min-h-screen-dvh flex-col items-center justify-center gap-3 bg-garden-bg text-garden-muted"
+      className="flex min-h-screen-dvh flex-col items-center justify-center gap-3 bg-bg text-muted-foreground"
     >
       <Spinner />
       <span className="text-[15px]">{t('loading')}</span>
@@ -24,9 +24,9 @@ export function LiveError({ onRetry, message }: { onRetry?: () => void; message?
   return (
     <div
       role="alert"
-      className="flex min-h-screen-dvh flex-col items-center justify-center gap-4 bg-garden-bg px-6 text-center"
+      className="flex min-h-screen-dvh flex-col items-center justify-center gap-4 bg-bg px-6 text-center"
     >
-      <p className="text-[15px] text-garden-muted">{message ?? t('error')}</p>
+      <p className="text-[15px] text-muted-foreground">{message ?? t('error')}</p>
       {onRetry ? (
         <Button variant="forest" className="w-full max-w-[320px]" onClick={onRetry}>
           {t('retry')}

@@ -30,12 +30,12 @@ export function TopicRow({ href, title, meta, stage, due, shares, className }: T
     <Link
       href={href}
       className={gcn(
-        'flex h-[76px] items-center gap-3 rounded-card border border-garden-border bg-garden-surface pl-2.5 pr-[14px] text-garden-text',
-        'transition-colors duration-quick ease-garden hover:border-garden-muted active:bg-garden-surface-sunken',
+        'flex h-[76px] items-center gap-3 rounded-card border border-border bg-surface pl-2.5 pr-[14px] text-text',
+        'transition-colors duration-quick ease-garden hover:border-muted-foreground active:bg-surface-sunken',
         className,
       )}
     >
-      <span className="flex h-14 w-14 shrink-0 items-end justify-center overflow-hidden rounded-control bg-garden-forest">
+      <span className="flex h-14 w-14 shrink-0 items-end justify-center overflow-hidden rounded-control bg-forest">
         <PlantGlyph stage={stage} variant="topic" />
       </span>
       <span className="flex min-w-0 flex-grow flex-col gap-[5px]">
@@ -43,24 +43,24 @@ export function TopicRow({ href, title, meta, stage, due, shares, className }: T
           <span className="text-[16px] font-bold">{title}</span>
           {due ? (
             due.tone === 'due' ? (
-              <span className="shrink-0 rounded-[10px] bg-garden-water-soft px-2 py-[3px] text-[12px] font-bold text-garden-water-text">
+              <span className="shrink-0 rounded-[10px] bg-water-soft px-2 py-[3px] text-[12px] font-bold text-water-text">
                 {due.text}
               </span>
             ) : (
-              <span className="shrink-0 text-[12px] font-semibold text-garden-success">
+              <span className="shrink-0 text-[12px] font-semibold text-success">
                 {due.text}
               </span>
             )
           ) : null}
         </span>
-        <span className="text-[12px] text-garden-muted">{meta}</span>
+        <span className="text-[12px] text-muted-foreground">{meta}</span>
         <span
           aria-hidden="true"
-          className="flex h-1.5 overflow-hidden rounded-[3px] bg-garden-track"
+          className="flex h-1.5 overflow-hidden rounded-[3px] bg-track"
         >
           {shares ? (
             <>
-              <span className="bg-garden-success" style={{ width: `${shares.tree}%` }} />
+              <span className="bg-success" style={{ width: `${shares.tree}%` }} />
               <span className="bg-stage-flower" style={{ width: `${shares.flower}%` }} />
               <span className="bg-stage-sprout" style={{ width: `${shares.sprout}%` }} />
             </>
@@ -89,16 +89,16 @@ export function LockedTopicRow({
   return (
     <div
       className={gcn(
-        'flex h-[76px] items-center gap-3 rounded-card border border-dashed border-garden-locked-border bg-garden-locked-bg pl-2.5 pr-[14px]',
+        'flex h-[76px] items-center gap-3 rounded-card border border-dashed border-locked-border bg-locked-bg pl-2.5 pr-[14px]',
         className,
       )}
     >
-      <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-control bg-garden-border">
+      <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-control bg-border">
         <SeedPackIcon width={30} height={30} seed="var(--color-locked-seed)" sprout={false} />
       </span>
       <span className="flex flex-grow flex-col gap-[3px]">
-        <span className="text-[16px] font-bold text-garden-locked-text">{title}</span>
-        <span className="text-[12px] text-garden-muted">{hint}</span>
+        <span className="text-[16px] font-bold text-locked-text">{title}</span>
+        <span className="text-[12px] text-muted-foreground">{hint}</span>
       </span>
       <LockIcon
         width={20}

@@ -104,7 +104,7 @@ export function TodaysGardenScreen({
     <div className={gcn(SCREEN_CLASSES, 'gap-[14px] pt-[22px]')}>
       <header className="flex items-end gap-3 px-5">
         <div className="flex flex-grow flex-col">
-          <span className="text-[13px] font-medium text-garden-muted">{f.longDay(date)}</span>
+          <span className="text-[13px] font-medium text-muted-foreground">{f.longDay(date)}</span>
           <h1 className="font-display text-[28px] font-semibold leading-[1.1]">
             {name ? t(`greeting.${greeting}`, { name }) : t(`greetingNoName.${greeting}`)}
           </h1>
@@ -127,11 +127,11 @@ export function TodaysGardenScreen({
         legend={legend}
       />
 
-      <section className="mx-4 flex flex-col gap-3 rounded-[22px] border border-garden-border bg-garden-surface px-4 py-[14px]">
+      <section className="mx-4 flex flex-col gap-3 rounded-[22px] border border-border bg-surface px-4 py-[14px]">
         <div className="flex items-baseline justify-between">
           <h2 className="font-display text-[19px] font-semibold">{t('missions.title')}</h2>
           {missions ? (
-            <span className="text-[13px] font-semibold text-garden-muted">
+            <span className="text-[13px] font-semibold text-muted-foreground">
               {t('missions.progress', { done: doneCount, total: missions.length })}
             </span>
           ) : null}
@@ -145,7 +145,7 @@ export function TodaysGardenScreen({
                 </li>
               ))}
             </ul>
-            <p className="flex items-center gap-2 rounded-tile bg-garden-gold-soft px-2.5 py-2 text-[13px] text-garden-gold-soft-text">
+            <p className="flex items-center gap-2 rounded-tile bg-gold-soft px-2.5 py-2 text-[13px] text-gold-soft-text">
               <GoldenBloomIcon width={18} height={18} centreFirst />
               <span>
                 {t.rich(
@@ -160,13 +160,13 @@ export function TodaysGardenScreen({
             </p>
           </>
         ) : (
-          <p className="text-[13px] text-garden-muted">{t('missions.comingSoon')}</p>
+          <p className="text-[13px] text-muted-foreground">{t('missions.comingSoon')}</p>
         )}
       </section>
 
       <div className="flex flex-col gap-2.5 px-4">
         {action ? (
-          <Link href={action.href} className={buttonClassName('primary', { twoLine: true, className: 'medium:max-w-none' })}>
+          <Link href={action.href} className={buttonClassName('primary', { twoLine: true, className: 'md:max-w-none' })}>
             <ButtonTwoLine
               label={t(`action.${action.kind}`)}
               secondLine={
@@ -179,13 +179,13 @@ export function TodaysGardenScreen({
           </Link>
         ) : null}
         {ripens ? (
-          <p className="flex items-center gap-2 px-1 text-[13px] text-garden-muted">
+          <p className="flex items-center gap-2 px-1 text-[13px] text-muted-foreground">
             <BellIcon width={16} height={16} />
             <span>
               {t.rich('ripens', {
                 time: f.clock(ripens.time),
                 count: ripens.count,
-                b: (c) => <b className="text-garden-text">{c}</b>,
+                b: (c) => <b className="text-text">{c}</b>,
               })}
             </span>
           </p>

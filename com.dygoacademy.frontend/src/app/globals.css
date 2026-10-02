@@ -91,9 +91,11 @@
  * On :root and [data-ui="garden"] (set by GardenRoot). UI-8 U8-3 deleted
  * the classic palette; the shadcn colour names in tailwind.config.ts now
  * point at these variables. Tailwind names for every token
- * live in tailwind.config.ts (colors.garden / stage / rating, fontSize
+ * live in tailwind.config.ts (colours bg / surface / forest… / stage /
+ * rating, fontSize
  * display-* / body-* / label, borderRadius tile/control/card/hero,
- * boxShadow press-*, screens medium / expanded / short).
+ * boxShadow press-*, screens md / lg / short). UI-8 U8-4 dropped the
+ * old `garden-` prefix.
  * ---------------------------------------------------------------------
  */
 @layer base {
@@ -390,16 +392,16 @@
 }
 
 /*
- * Word Garden motion (UI-2, design system §12). Keyframe names are
- * prefixed `garden-` and the classes are only used by components in
- * src/components/garden, so nothing classic changes. Durations come from
+ * Word Garden motion (UI-2, design system §12). Classes drip / bloom /
+ * rise / rain (and the fade-in keyframe) lost their `garden-` prefix in
+ * UI-8 U8-4; they are used by src/components/garden. Durations come from
  * the motion tokens above; under prefers-reduced-motion the ambient drip
  * stops and bloom / rise become a 150ms fade.
  */
 /* Keyframes and timings copied from the canvas (source/*.dc.html):
    drip 1.8s ease-in-out infinite, bloom .7s ease-out, rise .25s ease-out,
    rain 1.4s linear infinite. */
-@keyframes garden-drip {
+@keyframes drip {
   0%,
   100% {
     transform: translateY(0);
@@ -410,7 +412,7 @@
     opacity: 0.7;
   }
 }
-@keyframes garden-bloom {
+@keyframes bloom {
   0% {
     transform: scale(0.6);
     opacity: 0;
@@ -423,7 +425,7 @@
     opacity: 1;
   }
 }
-@keyframes garden-rise {
+@keyframes rise {
   0% {
     transform: translateY(8px);
     opacity: 0;
@@ -433,7 +435,7 @@
     opacity: 1;
   }
 }
-@keyframes garden-rain {
+@keyframes rain {
   0% {
     transform: translateY(-4px);
     opacity: 0;
@@ -446,7 +448,7 @@
     opacity: 0;
   }
 }
-@keyframes garden-fade-in {
+@keyframes fade-in {
   from {
     opacity: 0;
   }
@@ -456,27 +458,27 @@
 }
 
 @layer utilities {
-  .garden-drip {
-    animation: garden-drip var(--motion-drip) ease-in-out infinite;
+  .drip {
+    animation: drip var(--motion-drip) ease-in-out infinite;
   }
-  .garden-bloom {
-    animation: garden-bloom var(--motion-bloom) ease-out;
+  .bloom {
+    animation: bloom var(--motion-bloom) ease-out;
   }
-  .garden-rise {
-    animation: garden-rise var(--motion-rise) ease-out;
+  .rise {
+    animation: rise var(--motion-rise) ease-out;
   }
-  .garden-rain {
-    animation: garden-rain var(--motion-rain) linear infinite;
+  .rain {
+    animation: rain var(--motion-rain) linear infinite;
   }
   @media (prefers-reduced-motion: reduce) {
-    .garden-drip,
-    .garden-rain {
+    .drip,
+    .rain {
       animation: none;
       opacity: 1;
     }
-    .garden-bloom,
-    .garden-rise {
-      animation: garden-fade-in 150ms linear both;
+    .bloom,
+    .rise {
+      animation: fade-in 150ms linear both;
     }
   }
 }
