@@ -69,6 +69,7 @@ describe('legacyRedirect (UI-8 U8-5)', () => {
     ['/study', '/review'],
     ['/study/', '/review'],
     ['/analytics', '/me'],
+    ['/search', '/'],
     ['/settings', '/me'],
   ])('%s → %s', (from, to) => {
     expect(legacyRedirect(from)).toBe(to);
@@ -85,7 +86,7 @@ describe('legacyRedirect (UI-8 U8-5)', () => {
     '/review',
     '/topics/t1',
     '/join/abc',
-    '/search',
+    '/searching',
     '/studying',
   ])('leaves %s alone', (path) => {
     expect(legacyRedirect(path)).toBeNull();

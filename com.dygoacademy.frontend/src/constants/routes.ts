@@ -16,7 +16,8 @@
  * home, the screens live at /review, /topics/**, /missions, /me,
  * /groups/**, /quiz and /join/**. legacyRedirect() below maps the old
  * `/garden/<x>` and classic paths onto them (permanent redirects in
- * middleware.ts).
+ * middleware.ts). The guest trial at "/search" was deleted on 2026-10-03
+ * (the public home page at "/" replaced it); "/search" now redirects to "/".
  */
 
 import { GARDEN_REFERENCE_PREFIX, GARDEN_ROUTES } from './garden';
@@ -66,8 +67,6 @@ export const ROUTES = {
   home: '/',
   login: '/login',
   register: '/register',
-  /** Anonymous "try one word" landing page — was "/" until the 2026-09-17 reshuffle. */
-  search: '/search',
 } as const;
 
 function matchesPrefix(pathname: string, prefix: string): boolean {
@@ -101,6 +100,9 @@ const LEGACY_CLASSIC_PATHS: Record<string, string> = {
   '/study': GARDEN_ROUTES.review,
   '/analytics': GARDEN_ROUTES.me,
   '/settings': GARDEN_ROUTES.me,
+  // The guest "try one word" page, deleted 2026-10-03: the public home page
+  // at "/" (Home page HP-1) replaced it.
+  '/search': '/',
 };
 
 /**

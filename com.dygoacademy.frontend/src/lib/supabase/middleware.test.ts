@@ -74,9 +74,4 @@ describe('middleware: the public home page at "/" (HP-1)', () => {
     expect(response.status).toBe(200);
     expect(response.headers.get('location')).toBeNull();
   });
-
-  it('leaves /search reachable for guests', async () => {
-    const response = await middleware(request('/search'));
-    expect(response.status).toBe(200);
-  });
 });
