@@ -19,6 +19,8 @@ const fontCss =
   face('Fraunces', '100 900', fv('fraunces-latin-ext-opsz-normal.woff2'), EXT) +
   face('Fraunces', '100 900', fv('fraunces-vietnamese-opsz-normal.woff2'), VI) +
   W4.map(w => face('DM Sans', w, f('dm-sans', `dm-sans-latin-${w}-normal.woff2`)) + face('DM Sans', w, f('dm-sans', `dm-sans-latin-ext-${w}-normal.woff2`), EXT)).join('') +
+  // Baloo 2 (kids card on the home page); needs `npm i @fontsource/baloo-2` in tools/.
+  (fs.existsSync(path.join(fontDir, 'baloo-2')) ? [700, 800].map(w => ['latin', 'latin-ext', 'vietnamese'].map(sub => face('Baloo 2', w, f('baloo-2', `baloo-2-${sub}-${w}-normal.woff2`))).join('')).join('') : '') +
   W4.map(w => ['latin', 'latin-ext', 'vietnamese'].map(sub => face('Be Vietnam Pro', w, f('be-vietnam-pro', `be-vietnam-pro-${sub}-${w}-normal.woff2`))).join('')).join('');
 
 // [file, output name, state overrides]
@@ -95,6 +97,12 @@ const JOBS = [
   ['AdultQuizResultVi.dc.html', 'vi', 'Q6-quiz-result-vi', {}],
   ['AdultQuizPerfectVi.dc.html', 'vi', 'Q7-quiz-result-perfect-vi', {}],
   ['AdultQuizDrillVi.dc.html', 'vi', 'Q8-quiz-drill-done-vi', {}],
+  // Public home page (canvas page "Home page", 2026-10-02): tall boards, so they
+  // carry their own size ($size, [width, height]); Baloo 2 is the kids-card font.
+  ['LandingPhone.dc.html', 'en', 'H1-home-phone', { $size: [390, 3800] }],
+  ['LandingDesktop.dc.html', 'en', 'H2-home-desktop', { $size: [1280, 2600] }],
+  ['LandingPhoneVi.dc.html', 'vi', 'H1-home-phone-vi', { $size: [390, 3800] }],
+  ['LandingDesktopVi.dc.html', 'vi', 'H2-home-desktop-vi', { $size: [1280, 2600] }],
 ].filter(([, , name]) => !FILTER || name.includes(FILTER));
 
 // English pages redrawn with the app's body stack (DM Sans, then Be Vietnam
@@ -153,6 +161,8 @@ const RUNTIME = String.raw`
   const browser = await chromium.launch({ executablePath: process.env.CHROME_PATH || undefined, channel: process.env.CHROME_PATH ? undefined : 'chrome' });
   const page = await browser.newPage({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 2 });
   for (const [file, , name, overrides] of JOBS) {
+    const [W, H] = overrides.$size || [390, 844];
+    await page.setViewportSize({ width: W, height: H });
     let html = fs.readFileSync(path.join(__dirname, '..', 'source', file), 'utf8').replace('<script src="./support.js"></script>', '');
     if (APP_FONT_STACK.has(name)) html = withAppFontStack(html);
     await page.setContent(html, { waitUntil: 'domcontentloaded' });
@@ -160,7 +170,7 @@ const RUNTIME = String.raw`
     await page.addStyleTag({ content: fontCss });
     await page.evaluate(() => document.fonts.ready);
     await page.waitForTimeout(150);
-    await page.screenshot({ path: path.join(OUT, name + '.png'), clip: { x: 0, y: 0, width: 390, height: 844 } });
+    await page.screenshot({ path: path.join(OUT, name + '.png'), clip: { x: 0, y: 0, width: W, height: H } });
     const flat = '<!doctype html>\n' + (await page.evaluate(() => document.documentElement.outerHTML)).replace(/@font-face\{[^}]*\}/g, '');
     fs.writeFileSync(path.join(OUT, name + '.html'), flat);
     console.log('ok', name);
