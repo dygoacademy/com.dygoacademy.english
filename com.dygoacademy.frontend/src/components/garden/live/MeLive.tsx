@@ -9,9 +9,7 @@ import {
   useMyProfile,
   useUpdateProfilePrefs,
 } from "@/hooks/useProfile";
-import { useNotificationSchedules } from "@/hooks/useNotificationSchedules";
 import { useSrsStats } from "@/hooks/useSrsStats";
-import { useUpsertSchedule } from "@/hooks/useUpsertSchedule";
 
 import { DailyGoalSheet } from "../DailyGoalSheet";
 import { parseClock } from "../format";
@@ -21,6 +19,7 @@ import { MeScreen } from "../screens/MeScreen";
 import { AccountSheetLive } from "./AccountSheetLive";
 import { displayName, meCalendar, meKeepsakes } from "./data";
 import { useLanguageSettings } from "./useLanguageSettings";
+import { useReminderSwitch } from "./useReminderSwitch";
 
 /**
  * /garden/me: Me (A8).
@@ -29,7 +28,8 @@ import { useLanguageSettings } from "./useLanguageSettings";
  * words as "words fruiting" (GET /srs/stats), and the reminder: the
  * learner's first Web Push schedule (GET /notifications/schedules), which
  * the switch turns on and off through the existing upsert (same time and
- * zone). UI-6 U6-7: best streak (`best_streak_days`, GET /srs/stats),
+ * zone; U6-7b: shared with A3 via useReminderSwitch, which also makes sure
+ * Web Push is subscribed when it turns on). UI-6 U6-7: best streak (`best_streak_days`, GET /srs/stats),
  * Golden Blooms and keepsakes (GET /me/keepsakes), the calendar (missions
  * per day, GET /missions/week), the daily goal row (opens DailyGoalSheet,
  * saves `daily_goal_minutes`) and UK/US English in the language sheet
@@ -45,8 +45,7 @@ export function MeLive() {
   const [accountOpen, setAccountOpen] = React.useState(false);
   const user = useCurrentUser();
   const stats = useSrsStats();
-  const schedules = useNotificationSchedules();
-  const upsert = useUpsertSchedule();
+  const reminder = useReminderSwitch();
   const week = useWeekMissions();
   const keepsakes = useMyKeepsakes();
   const profile = useMyProfile();
@@ -62,15 +61,13 @@ export function MeLive() {
 
   const email = user.data?.email ?? "";
   const name = displayName(user.data) ?? (email ? email.split("@")[0] : "");
-  const schedule = [...(schedules.data ?? [])].sort((a, b) =>
-    a.reminder_time.localeCompare(b.reminder_time),
-  )[0];
+  const schedule = reminder.schedule;
 
   return (
     <>
       <MeScreen
         // Remount when the schedule loads so the switch starts in its real state.
-        key={schedule ? `${schedule.id}-${schedule.is_enabled}` : "none"}
+        key={reminder.key}
         name={name}
         goal={null}
         testDay={null}
@@ -94,14 +91,7 @@ export function MeLive() {
               }
             : null
         }
-        onReminderChange={(on) => {
-          if (!schedule) return;
-          upsert.mutate({
-            reminderTime: schedule.reminder_time,
-            timezone: schedule.timezone,
-            isEnabled: on,
-          });
-        }}
+        onReminderChange={(on) => void reminder.change(on)}
         meanings={preferences.meaningLocale ?? "none"}
         onLanguageClick={() => setLanguageOpen(true)}
         family={null}

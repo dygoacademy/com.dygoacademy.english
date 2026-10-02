@@ -4,6 +4,8 @@ import type { SrsStats } from '@/types';
 
 import {
   displayName,
+  doneReminder,
+  earliestSchedule,
   freezeStreak,
   gardenPlants,
   greetingFor,
@@ -333,5 +335,45 @@ describe('A8 Me (U6-7)', () => {
       { type: 'nextStreak', current: 31, target: 100 },
     ]);
     expect(meKeepsakes({ earned: [], next: [], golden_blooms: 0 })).toEqual([]);
+  });
+});
+
+describe('doneReminder (U6-7b)', () => {
+  const upcoming = [
+    { due_date: '2026-10-02', due_count: 4 },
+    { due_date: '2026-10-03T00:00:00.000Z', due_count: 9 },
+  ];
+  const schedule = (reminder_time: string, is_enabled = true) => ({
+    id: reminder_time,
+    reminder_time,
+    timezone: 'UTC',
+    is_enabled,
+  });
+
+  it('picks the earliest schedule, enabled or not', () => {
+    expect(earliestSchedule([schedule('19:00:00'), schedule('07:30:00', false)])?.id).toBe('07:30:00');
+    expect(earliestSchedule(undefined)).toBeUndefined();
+  });
+
+  it("shows tomorrow's count with the earliest schedule's time and state", () => {
+    expect(doneReminder(upcoming, '2026-10-03', [schedule('19:00:00'), schedule('07:30:00', false)])).toEqual({
+      ripening: 9,
+      time: { hour: 7, minute: 30 },
+      on: false,
+    });
+    expect(doneReminder(upcoming, '2026-10-03', [schedule('06:15:00')])).toEqual({
+      ripening: 9,
+      time: { hour: 6, minute: 15 },
+      on: true,
+    });
+  });
+
+  it('is off at the default time with no schedule, and hidden while loading', () => {
+    expect(doneReminder(undefined, '2026-10-03', [])).toEqual({
+      ripening: 0,
+      time: { hour: 20, minute: 0 },
+      on: false,
+    });
+    expect(doneReminder(upcoming, '2026-10-03', undefined)).toBeNull();
   });
 });

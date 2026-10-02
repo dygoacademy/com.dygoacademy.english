@@ -282,6 +282,37 @@ export function ripensTomorrow(
   return { time: parseClock(reminder.reminder_time), count };
 }
 
+/** The reminder time a new schedule gets (same default as the classic settings page). */
+export const DEFAULT_REMINDER_TIME = '20:00';
+
+/** The learner's earliest schedule (enabled or not): the one A3 and A8 show. */
+export function earliestSchedule(
+  schedules: readonly StudySchedule[] | undefined,
+): StudySchedule | undefined {
+  return [...(schedules ?? [])].sort((a, b) => a.reminder_time.localeCompare(b.reminder_time))[0];
+}
+
+/**
+ * A3's "N words ripen tomorrow — remind me at {time}" row: N from GET
+ * /srs/activity/upcoming for `tomorrow` (ISO day), time and on/off from the
+ * earliest schedule; no schedule yet → off at the default time (turning it
+ * on creates one). Null (row hidden) until the schedules have loaded.
+ */
+export function doneReminder(
+  upcoming: readonly UpcomingActivity[] | undefined,
+  tomorrow: string,
+  schedules: readonly StudySchedule[] | undefined,
+): { ripening: number; time: ClockTime; on: boolean } | null {
+  if (!schedules) return null;
+  const ripening = upcoming?.find((row) => row.due_date.slice(0, 10) === tomorrow)?.due_count ?? 0;
+  const schedule = earliestSchedule(schedules);
+  return {
+    ripening,
+    time: parseClock(schedule?.reminder_time ?? DEFAULT_REMINDER_TIME),
+    on: schedule?.is_enabled ?? false,
+  };
+}
+
 /** "07:30:00" → a Date today at that time (for locale formatting). */
 export function timeOfDay(hhmmss: string): Date {
   const [h, m] = hhmmss.split(':').map(Number);

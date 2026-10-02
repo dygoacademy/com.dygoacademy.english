@@ -8,16 +8,19 @@ import { useDailyActivity } from '@/hooks/useDailyActivity';
 import { useTodayMissions } from '@/hooks/useMissions';
 import { useSrsStats } from '@/hooks/useSrsStats';
 import { useTopics } from '@/hooks/useTopics';
+import { useUpcomingActivity } from '@/hooks/useUpcomingActivity';
 
 import { MissionCompleteScreen } from '../screens/MissionCompleteScreen';
-import { isoDay, todayIn, useGardenFormat, weekDays } from '../format';
+import { addDays, isoDay, todayIn, useGardenFormat, weekDays } from '../format';
 import {
+  doneReminder,
   liveMissionsSummary,
   missionQuizHref,
   missionsSummary,
   thirstyMission,
   type SessionResult,
 } from './data';
+import { useReminderSwitch } from './useReminderSwitch';
 
 /**
  * /garden/review/done: Mission complete (A3) for the session that just
@@ -28,7 +31,11 @@ import {
  * GET /missions/today's done missions, and its button opens the collocation
  * quiz (most-due bed) while that mission is open; if the call fails,
  * Missions v0 (U4-4) counts mission 1 (water today's thirsty words: done
- * when nothing is due). The reminder row waits for UI-6.
+ * when nothing is due). Reminder (U6-7b): "N words ripen tomorrow" from GET
+ * /srs/activity/upcoming, the switch from the earliest schedule via
+ * useReminderSwitch (shared with A8; no schedule → off, turning it on
+ * creates one at the default time after the Web Push prompt). Hidden only
+ * when the browser has no Web Push.
  */
 export function DoneLive({ result }: { result: SessionResult }) {
   const timeZone = useTimeZone();
@@ -37,6 +44,8 @@ export function DoneLive({ result }: { result: SessionResult }) {
   const activity = useDailyActivity(7);
   const todayMissions = useTodayMissions();
   const topics = useTopics();
+  const upcoming = useUpcomingActivity(2);
+  const reminder = useReminderSwitch();
 
   const today = todayIn(timeZone);
   const todayIso = isoDay(today);
@@ -55,6 +64,8 @@ export function DoneLive({ result }: { result: SessionResult }) {
 
   return (
     <MissionCompleteScreen
+      // Restart the switch from the real state when the schedule loads or saves.
+      key={reminder.key}
       closeHref={GARDEN_ROUTES.home}
       backHref={GARDEN_ROUTES.home}
       words={result.watered}
@@ -74,7 +85,12 @@ export function DoneLive({ result }: { result: SessionResult }) {
               )
             : null
       }
-      reminder={null}
+      reminder={
+        reminder.supported
+          ? doneReminder(upcoming.data, isoDay(addDays(today, 1)), reminder.schedules)
+          : null
+      }
+      onReminderChange={(on) => void reminder.change(on)}
     />
   );
 }
