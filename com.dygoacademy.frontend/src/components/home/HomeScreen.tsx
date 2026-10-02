@@ -110,7 +110,7 @@ export function HomeScreen({
             locale={locale}
             onChange={onLanguageChange}
             disabled={languageBusy}
-            className="h-9 whitespace-nowrap"
+            className="whitespace-nowrap"
           />
           <Link
             href={loginHref}
@@ -208,7 +208,7 @@ export function HomeScreen({
               {(['pictures', 'faces', 'stars', 'account'] as const).map((key) => (
                 <li key={key} className="flex items-start gap-2.5 text-[15px] leading-[1.45] home-lg:text-[16px]">
                   <span className="mt-0.5 shrink-0">
-                    <HomeStar width={18} height={18} className="block" />
+                    <HomeStar width={18} height={18} className="inline align-baseline" />
                   </span>
                   <span>{t(`parents.points.${key}`)}</span>
                 </li>
@@ -287,12 +287,12 @@ function HeroScene() {
       </div>
       <div className="absolute inset-x-0 bottom-0 h-[34px] bg-[#1B362C] home-lg:h-[46px]" />
       <div className="absolute inset-x-0 bottom-[22px] flex items-end justify-center gap-2.5 home-lg:bottom-[30px] home-lg:gap-[26px]">
-        <HomeSeed className="block size-10 home-lg:size-[54px]" />
-        <HomeSprout className="block size-[46px] home-lg:size-[62px]" />
-        <HomeFlower className="block h-[57px] w-[44px] home-lg:h-[76px] home-lg:w-[59px]" />
-        <HomeTree className="block h-[73px] w-[58px] home-lg:h-[99px] home-lg:w-[78px]" />
-        <HomeFlower className="block h-[49px] w-[38px] home-lg:h-[66px] home-lg:w-[51px]" />
-        <HomeSprout className="block size-10 home-lg:size-[54px]" />
+        <span><HomeSeed className="inline align-baseline size-10 home-lg:size-[54px]" /></span>
+        <span><HomeSprout className="inline align-baseline size-[46px] home-lg:size-[62px]" /></span>
+        <span><HomeFlower className="inline align-baseline h-[57px] w-[44px] home-lg:h-[76px] home-lg:w-[59px]" /></span>
+        <span><HomeTree className="inline align-baseline h-[73px] w-[58px] home-lg:h-[99px] home-lg:w-[78px]" /></span>
+        <span><HomeFlower className="inline align-baseline h-[49px] w-[38px] home-lg:h-[66px] home-lg:w-[51px]" /></span>
+        <span><HomeSprout className="inline align-baseline size-10 home-lg:size-[54px]" /></span>
       </div>
     </div>
   );
@@ -301,7 +301,7 @@ function HeroScene() {
 function StageCard({ n, art, name, text }: { n: number; art: React.ReactNode; name: string; text: string }) {
   return (
     <div className="flex flex-col gap-2 rounded-[22px] border border-border bg-surface p-4 home-lg:p-[22px]">
-      <div aria-hidden="true" className="flex h-20 items-end justify-center rounded-2xl bg-bg pb-1 [&>svg]:block">
+      <div aria-hidden="true" className="flex h-[84px] items-end justify-center rounded-2xl bg-bg pb-1 [&>svg]:block">
         {art}
       </div>
       <span className="text-[12px] font-bold text-gold-text">{n}</span>
@@ -343,7 +343,7 @@ function FeatureCard({
 
 /** The kids preview: stars, the bee, Dygo's prompt and two picture answers (the cat is right). */
 function KidsCard({ prompt, hint }: { prompt: string; hint: string }) {
-  const tile = 'flex h-24 items-center justify-center rounded-[24px] border-[3px] home-lg:h-[120px]';
+  const tile = 'flex h-[102px] items-center justify-center rounded-[24px] border-[3px] home-lg:h-[126px]';
   return (
     <div className="relative flex flex-col gap-4 overflow-hidden rounded-[30px] bg-[#FFF8EC] p-[18px] home-lg:min-w-0 home-lg:flex-1 home-lg:p-7">
       <div aria-hidden="true" className="absolute right-[22px] top-[18px]">
@@ -357,8 +357,8 @@ function KidsCard({ prompt, hint }: { prompt: string; hint: string }) {
       <div className="flex items-center gap-3 rounded-[24px] bg-white p-3 shadow-[0_3px_0_#F1E3CC]">
         <DygoBird label="Dygo" width={58} height={58} className="block shrink-0" />
         <div className="flex flex-col">
-          {/* Baloo 2 is the kids' font (canvas); the body stack is the fallback. */}
-          <span className="[font-family:'Baloo_2',var(--font-stack-body)] text-[24px] font-extrabold leading-[1.05] text-[#2E2A26]">
+          {/* Baloo 2 is the kids' font (canvas), self-hosted in (garden)/fonts (HP-3). */}
+          <span className="[font-family:var(--font-stack-kids)] text-[24px] font-extrabold leading-[1.05] text-[#2E2A26]">
             {prompt}
           </span>
           <span className="text-[14px] text-[#6B625A]">{hint}</span>
