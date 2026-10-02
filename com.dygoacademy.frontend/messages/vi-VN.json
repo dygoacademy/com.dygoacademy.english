@@ -315,7 +315,11 @@
       "meaningWith": "{language} + English",
       "meaningNone": "Chỉ tiếng Anh",
       "saving": "Đang lưu…",
-      "error": "Chưa lưu được. Hãy kiểm tra kết nối và thử lại."
+      "error": "Chưa lưu được. Hãy kiểm tra kết nối và thử lại.",
+      "variety": "Kiểu tiếng Anh",
+      "varietyHint": "Cách viết và phát âm trong vườn của bạn.",
+      "varietyUS": "Tiếng Anh Mỹ",
+      "varietyUK": "Tiếng Anh Anh"
     },
     "account": {
       "title": "Tài khoản",
@@ -343,6 +347,14 @@
       "you": "(bạn)",
       "changeRole": "Đổi vai trò của {name}",
       "remove": "Xóa khỏi vườn"
+    },
+    "dailyGoal": {
+      "title": "Mục tiêu ngày",
+      "description": "Bạn muốn dành bao lâu trong vườn mỗi ngày.",
+      "legend": "Số phút mỗi ngày",
+      "minutes": "{count} phút",
+      "saving": "Đang lưu…",
+      "error": "Chưa lưu được. Hãy kiểm tra kết nối và thử lại."
     }
   },
   "screens": {
@@ -565,7 +577,9 @@
         "firstHarvest": "Vụ đầu tiên",
         "streak": "Chuỗi {count} ngày",
         "blooms": "{count} Hoa Vàng",
-        "next": "Tiếp: {count} từ"
+        "next": "Tiếp: {count} từ",
+        "nextStreak": "Tiếp: chuỗi {count} ngày",
+        "nextBlooms": "Tiếp: {count} Hoa Vàng"
       },
       "dailyGoal": "Mục tiêu ngày",
       "dailyGoalValue": "{missions} nhiệm vụ · {minutes} phút",

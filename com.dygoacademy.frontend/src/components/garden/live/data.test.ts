@@ -9,6 +9,8 @@ import {
   greetingFor,
   liveMissions,
   liveMissionsSummary,
+  meCalendar,
+  meKeepsakes,
   missedDays,
   missionQuizHref,
   missionsSummary,
@@ -274,5 +276,62 @@ describe('weekly harvest and freezes (U6-6)', () => {
     expect(freezeStreak(stats({}))).toBeNull();
     expect(freezeStreak(stats({ freezes: { ...freezes, used_this_week: 0 } }))).toBeNull();
     expect(freezeStreak(stats({ freezes, current_streak_days: 0 }))).toBeNull();
+  });
+});
+
+describe('A8 Me (U6-7)', () => {
+  it('builds 16 Monday-first weeks ending this week, missions per day, future days null', () => {
+    const today = new Date(2026, 9, 1, 15); // Thursday 2026-10-01, local
+    const cal = meCalendar(
+      [
+        { date: '2026-09-25', done: 3, goldenBloom: true },
+        { date: '2026-09-29', done: 1, goldenBloom: false },
+        { date: '2026-10-01', done: 5, goldenBloom: false },
+      ],
+      today,
+    );
+    expect(cal).toHaveLength(16);
+    expect(cal.every((w) => w.length === 7)).toBe(true);
+    expect(cal[15]).toEqual([0, 1, 0, 3, null, null, null]);
+    expect(cal[14]).toEqual([0, 0, 0, 0, 3, 0, 0]);
+    expect(cal[0].every((d) => d === 0)).toBe(true);
+  });
+
+  it('shows earned keepsakes then the closest next streak / Golden Bloom one, 4 at most', () => {
+    const at = '2026-10-01T00:00:00Z';
+    expect(
+      meKeepsakes({
+        earned: [
+          { kind: 'FIRST_HARVEST', value: 0, earned_at: at },
+          { kind: 'STREAK', value: 7, earned_at: at },
+        ],
+        next: [
+          { kind: 'STREAK', value: 30, progress: 9, target: 30 },
+          { kind: 'GOLDEN_BLOOMS', value: 10, progress: 6, target: 10 },
+        ],
+        golden_blooms: 6,
+      }),
+    ).toEqual([
+      { type: 'firstHarvest' },
+      { type: 'streak', days: 7 },
+      { type: 'nextBlooms', current: 6, target: 10 },
+    ]);
+    const many = meKeepsakes({
+      earned: [
+        { kind: 'FIRST_HARVEST', value: 0, earned_at: at },
+        { kind: 'STREAK', value: 7, earned_at: at },
+        { kind: 'STREAK', value: 30, earned_at: at },
+        { kind: 'GOLDEN_BLOOMS', value: 10, earned_at: at },
+      ],
+      next: [{ kind: 'STREAK', value: 100, progress: 31, target: 100 }],
+      golden_blooms: 12,
+    });
+    expect(many).toEqual([
+      { type: 'streak', days: 7 },
+      { type: 'streak', days: 30 },
+      { type: 'blooms', count: 10 },
+      { type: 'nextStreak', current: 31, target: 100 },
+    ]);
+    expect(meKeepsakes({ earned: [], next: [], golden_blooms: 0 })).toEqual([]);
   });
 });

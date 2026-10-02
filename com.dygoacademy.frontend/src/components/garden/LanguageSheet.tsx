@@ -20,15 +20,26 @@ import { CheckIcon } from "./icons";
  * (English, 简体中文, Tiếng Việt, each in its own language) and the
  * meaning language for the review card (Tiếng Việt, 简体中文 or English
  * only). Props only; the caller saves (MeLive: profile + cookie).
+ * UI-6 (U6-7): with `englishVariety`, a third group picks US or UK English
+ * (spelling and pronunciation; saved as the profile's `english_variety`).
  */
+export type EnglishVarietyCode = "en-US" | "en-GB";
+const VARIETIES: { code: EnglishVarietyCode; key: "varietyUS" | "varietyUK" }[] = [
+  { code: "en-US", key: "varietyUS" },
+  { code: "en-GB", key: "varietyUK" },
+];
+
 export interface LanguageSheetProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   uiLocale: AppLocale;
   meaningLocale: MeaningLocale | null;
+  /** UK/US English (U6-7); the group is hidden when undefined. */
+  englishVariety?: EnglishVarietyCode;
   onChange: (change: {
     uiLocale?: AppLocale;
     meaningLocale?: MeaningLocale | null;
+    englishVariety?: EnglishVarietyCode;
   }) => void;
   saving?: boolean;
   error?: boolean;
@@ -39,6 +50,7 @@ export function LanguageSheet({
   onOpenChange,
   uiLocale,
   meaningLocale,
+  englishVariety,
   onChange,
   saving = false,
   error = false,
@@ -87,6 +99,21 @@ export function LanguageSheet({
         />
       </RadioGroup>
 
+      {englishVariety ? (
+        <RadioGroup legend={t("variety")} hint={t("varietyHint")}>
+          {VARIETIES.map(({ code, key }) => (
+            <RadioRow
+              key={code}
+              name="garden-english-variety"
+              checked={englishVariety === code}
+              disabled={saving}
+              onSelect={() => onChange({ englishVariety: code })}
+              label={t(key)}
+            />
+          ))}
+        </RadioGroup>
+      ) : null}
+
       <p aria-live="polite" className="min-h-5 text-[13px] text-garden-muted">
         {error ? t("error") : saving ? t("saving") : null}
       </p>
@@ -94,7 +121,7 @@ export function LanguageSheet({
   );
 }
 
-function RadioGroup({
+export function RadioGroup({
   legend,
   hint,
   children,
@@ -118,7 +145,7 @@ function RadioGroup({
   );
 }
 
-function RadioRow({
+export function RadioRow({
   name,
   checked,
   disabled,

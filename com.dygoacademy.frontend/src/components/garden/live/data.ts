@@ -12,10 +12,13 @@ import type {
 } from '@/types';
 import { GARDEN_ROUTES } from '@/constants/garden';
 import type { MissionDay, TodayMissions } from '@/hooks/useMissions';
+import type { MyKeepsakes } from '@/hooks/useProfile';
 
 import { parseClock, type ClockTime } from '../format';
+import type { CalendarLevel } from '../GardenCalendar';
 import type { HeroPlant } from '../HeroGardenCard';
 import { stageFromSrs, type GardenFsrsState } from '../plantStage';
+import type { KeepsakeItem } from '../screens/MeScreen';
 import type { BedStage, TopicBedWord } from '../screens/TopicBedScreen';
 import type { TopicsScreenTopic } from '../screens/TopicsScreen';
 import type { Greeting, MissionItem } from '../screens/TodaysGardenScreen';
@@ -553,4 +556,58 @@ export function freezeStreak(stats: SrsStats): WelcomeBackScreenProps['streak'] 
     left: f.available,
     refills: new Date(`${f.refills_on}T00:00:00Z`),
   };
+}
+
+/**
+ * UI-6 (U6-7): A8's garden calendar — 16 Monday-first week columns ending
+ * with this week; a day's level is the missions done that day (0–3) from
+ * `GET /missions/week`, days still to come are null. Missions only exist
+ * since U6 (2026-10-01) and the endpoint covers the trailing 7 days, so
+ * older days show 0.
+ */
+export function meCalendar(
+  week: readonly MissionDay[],
+  today: Date,
+  weeks = 16,
+): (CalendarLevel | null)[][] {
+  const byDate = new Map(week.map((d) => [d.date, d.done]));
+  const todayIso = isoDate(today);
+  const thisMonday = weekOf(today)[0];
+  return Array.from({ length: weeks }, (_, w) =>
+    Array.from({ length: 7 }, (_, d) => {
+      const day = new Date(thisMonday);
+      day.setDate(thisMonday.getDate() - (weeks - 1 - w) * 7 + d);
+      const iso = isoDate(day);
+      if (iso > todayIso) return null;
+      return Math.min(Math.max(0, byDate.get(iso) ?? 0), 3) as CalendarLevel;
+    }),
+  );
+}
+
+/**
+ * UI-6 (U6-7): A8's keepsakes from `GET /me/keepsakes` — the earned ones
+ * (latest last) and the closest next streak / Golden Bloom keepsake, at
+ * most `slots` (the 4-column row).
+ */
+export function meKeepsakes(keepsakes: MyKeepsakes, slots = 4): KeepsakeItem[] {
+  const next = keepsakes.next
+    .filter((n) => n.kind !== 'FIRST_HARVEST' && n.target > 0)
+    .sort((a, b) => b.progress / b.target - a.progress / a.target)[0];
+  const nextItem: KeepsakeItem[] = next
+    ? [
+        {
+          type: next.kind === 'STREAK' ? 'nextStreak' : 'nextBlooms',
+          current: Math.min(next.progress, next.target),
+          target: next.target,
+        },
+      ]
+    : [];
+  const earned = keepsakes.earned.map((k): KeepsakeItem =>
+    k.kind === 'FIRST_HARVEST'
+      ? { type: 'firstHarvest' }
+      : k.kind === 'STREAK'
+        ? { type: 'streak', days: k.value }
+        : { type: 'blooms', count: k.value },
+  );
+  return [...earned.slice(Math.max(0, earned.length - (slots - nextItem.length))), ...nextItem];
 }

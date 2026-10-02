@@ -39,7 +39,9 @@ export type KeepsakeItem =
   | { type: 'firstHarvest' }
   | { type: 'streak'; days: number }
   | { type: 'blooms'; count: number }
-  | { type: 'nextWords'; current: number; target: number };
+  | { type: 'nextWords'; current: number; target: number }
+  | { type: 'nextStreak'; current: number; target: number }
+  | { type: 'nextBlooms'; current: number; target: number };
 
 export interface MeScreenProps {
   name: string;
@@ -55,7 +57,9 @@ export interface MeScreenProps {
   };
   calendar: ReadonlyArray<ReadonlyArray<CalendarLevel | null>> | null;
   keepsakes: readonly KeepsakeItem[] | null;
-  dailyGoal: { missions: number; minutes: number; href: string } | null;
+  /** The row links to `href`, or (U6-7) opens the goal sheet via `onDailyGoalClick`. */
+  dailyGoal: { missions: number; minutes: number; href?: string } | null;
+  onDailyGoalClick?: () => void;
   reminder: { time: ClockTime; on: boolean } | null;
   onReminderChange?: (on: boolean) => void;
   /**
@@ -83,6 +87,7 @@ export function MeScreen({
   calendar,
   keepsakes,
   dailyGoal,
+  onDailyGoalClick,
   reminder,
   onReminderChange,
   meanings,
@@ -203,10 +208,19 @@ export function MeScreen({
                     />
                   );
                 case 'nextWords':
+                case 'nextStreak':
+                case 'nextBlooms':
                   return (
                     <Keepsake
                       key={index}
-                      label={t('keepsake.next', { count: item.target })}
+                      label={t(
+                        item.type === 'nextWords'
+                          ? 'keepsake.next'
+                          : item.type === 'nextStreak'
+                            ? 'keepsake.nextStreak'
+                            : 'keepsake.nextBlooms',
+                        { count: item.target },
+                      )}
                       progress={{
                         percent: Math.round((item.current / item.target) * 100),
                         value: f.number(item.current),
@@ -231,6 +245,7 @@ export function MeScreen({
               : t('comingSoonShort')
           }
           href={dailyGoal?.href}
+          onClick={dailyGoal && !dailyGoal.href ? onDailyGoalClick : undefined}
           chevron={!dailyGoal}
         />
         <SettingsRow

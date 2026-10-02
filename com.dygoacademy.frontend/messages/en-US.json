@@ -315,7 +315,11 @@
       "meaningWith": "{language} + English",
       "meaningNone": "English only",
       "saving": "Saving…",
-      "error": "That didn’t save. Check your connection and try again."
+      "error": "That didn’t save. Check your connection and try again.",
+      "variety": "English style",
+      "varietyHint": "Spelling and pronunciation in your garden.",
+      "varietyUS": "US English",
+      "varietyUK": "UK English"
     },
     "account": {
       "title": "Account",
@@ -343,6 +347,14 @@
       "you": "(you)",
       "changeRole": "Change {name}'s role",
       "remove": "Remove from garden"
+    },
+    "dailyGoal": {
+      "title": "Daily goal",
+      "description": "How long you’d like to spend in the garden each day.",
+      "legend": "Minutes a day",
+      "minutes": "{count} min",
+      "saving": "Saving…",
+      "error": "That didn’t save. Check your connection and try again."
     }
   },
   "screens": {
@@ -565,7 +577,9 @@
         "firstHarvest": "First harvest",
         "streak": "{count}-day streak",
         "blooms": "{count} Golden Blooms",
-        "next": "{count} words · next"
+        "next": "{count} words · next",
+        "nextStreak": "{count}-day streak · next",
+        "nextBlooms": "{count} Golden Blooms · next"
       },
       "dailyGoal": "Daily goal",
       "dailyGoalValue": "{missions} missions · {minutes} min",

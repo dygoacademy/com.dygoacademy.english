@@ -75,4 +75,20 @@ describe("LanguageSheet", () => {
       ),
     ).toBeTruthy();
   });
+
+  it("hides UK/US English unless given (U6-7)", () => {
+    renderSheet();
+    expect(screen.queryByRole("group", { name: "English style" })).toBeNull();
+  });
+
+  it("picks UK or US English (U6-7)", () => {
+    const onChange = renderSheet({ englishVariety: "en-US" });
+    expect(screen.getByRole("group", { name: "English style" })).toBeTruthy();
+    expect(
+      (screen.getByRole("radio", { name: "US English" }) as HTMLInputElement)
+        .checked,
+    ).toBe(true);
+    fireEvent.click(screen.getByRole("radio", { name: "UK English" }));
+    expect(onChange).toHaveBeenLastCalledWith({ englishVariety: "en-GB" });
+  });
 });

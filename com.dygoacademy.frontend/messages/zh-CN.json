@@ -319,7 +319,11 @@
       "meaningWith": "{language} + English",
       "meaningNone": "仅英文",
       "saving": "正在保存…",
-      "error": "没能保存。请检查网络后重试。"
+      "error": "没能保存。请检查网络后重试。",
+      "variety": "英语类型",
+      "varietyHint": "花园里的拼写和发音。",
+      "varietyUS": "美式英语",
+      "varietyUK": "英式英语"
     },
     "account": {
       "title": "账户",
@@ -347,6 +351,14 @@
       "you": "（你）",
       "changeRole": "更改{name}的角色",
       "remove": "移出花园"
+    },
+    "dailyGoal": {
+      "title": "每日目标",
+      "description": "你每天想在花园里待多久。",
+      "legend": "每天分钟数",
+      "minutes": "{count} 分钟",
+      "saving": "正在保存…",
+      "error": "没能保存。请检查网络后重试。"
     }
   },
   "screens": {
@@ -569,7 +581,9 @@
         "firstHarvest": "第一次收获",
         "streak": "连续 {count} 天",
         "blooms": "{count} 朵金色花开",
-        "next": "下一个：{count} 个单词"
+        "next": "下一个：{count} 个单词",
+        "nextStreak": "下一个：连续 {count} 天",
+        "nextBlooms": "下一个：{count} 朵金色花开"
       },
       "dailyGoal": "每日目标",
       "dailyGoalValue": "{missions} 个任务 · {minutes} 分钟",

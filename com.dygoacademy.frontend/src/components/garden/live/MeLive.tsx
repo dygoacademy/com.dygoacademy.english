@@ -3,16 +3,23 @@
 import * as React from "react";
 
 import { useCurrentUser } from "@/hooks/useCurrentUser";
+import { useWeekMissions } from "@/hooks/useMissions";
+import {
+  useMyKeepsakes,
+  useMyProfile,
+  useUpdateProfilePrefs,
+} from "@/hooks/useProfile";
 import { useNotificationSchedules } from "@/hooks/useNotificationSchedules";
 import { useSrsStats } from "@/hooks/useSrsStats";
 import { useUpsertSchedule } from "@/hooks/useUpsertSchedule";
 
+import { DailyGoalSheet } from "../DailyGoalSheet";
 import { parseClock } from "../format";
 import { LanguageSheet } from "../LanguageSheet";
 import { useGardenPreferences } from "../preferences";
 import { MeScreen } from "../screens/MeScreen";
 import { AccountSheetLive } from "./AccountSheetLive";
-import { displayName } from "./data";
+import { displayName, meCalendar, meKeepsakes } from "./data";
 import { useLanguageSettings } from "./useLanguageSettings";
 
 /**
@@ -22,9 +29,12 @@ import { useLanguageSettings } from "./useLanguageSettings";
  * words as "words fruiting" (GET /srs/stats), and the reminder: the
  * learner's first Web Push schedule (GET /notifications/schedules), which
  * the switch turns on and off through the existing upsert (same time and
- * zone). Not available yet (UI-6): best streak, time in the garden,
- * Golden Blooms, the missions calendar, keepsakes, daily goal and family,
- * shown as "—" or "coming soon". UI-L: "Meanings in" shows the profile's
+ * zone). UI-6 U6-7: best streak (`best_streak_days`, GET /srs/stats),
+ * Golden Blooms and keepsakes (GET /me/keepsakes), the calendar (missions
+ * per day, GET /missions/week), the daily goal row (opens DailyGoalSheet,
+ * saves `daily_goal_minutes`) and UK/US English in the language sheet
+ * (saves `english_variety`), both via PATCH /profiles/me. Still not
+ * available: time in the garden ("—"); family stays hidden. UI-L: "Meanings in" shows the profile's
  * meaning language and opens the language sheet (app + meaning language).
  * SO-1: the gear opens the Account sheet (who's signed in, Sign out).
  */
@@ -37,6 +47,18 @@ export function MeLive() {
   const stats = useSrsStats();
   const schedules = useNotificationSchedules();
   const upsert = useUpsertSchedule();
+  const week = useWeekMissions();
+  const keepsakes = useMyKeepsakes();
+  const profile = useMyProfile();
+  const prefs = useUpdateProfilePrefs();
+  const [goalOpen, setGoalOpen] = React.useState(false);
+  // Optimistic: show the value being saved until the reply lands.
+  const pending = prefs.isPending ? prefs.variables : undefined;
+  const goalMinutes =
+    pending?.dailyGoalMinutes ?? profile.data?.daily_goal_minutes ?? null;
+  const variety =
+    pending?.englishVariety ?? profile.data?.english_variety ?? undefined;
+  const lastPref = prefs.variables;
 
   const email = user.data?.email ?? "";
   const name = displayName(user.data) ?? (email ? email.split("@")[0] : "");
@@ -54,13 +76,16 @@ export function MeLive() {
         testDay={null}
         stats={{
           fruiting: stats.data?.mastered_words ?? null,
-          bestStreak: null,
+          bestStreak: stats.data?.best_streak_days ?? null,
           hours: null,
-          goldenBlooms: null,
+          goldenBlooms: keepsakes.data?.golden_blooms ?? null,
         }}
-        calendar={null}
-        keepsakes={null}
-        dailyGoal={null}
+        calendar={week.data ? meCalendar(week.data, new Date()) : null}
+        keepsakes={keepsakes.data ? meKeepsakes(keepsakes.data) : null}
+        dailyGoal={
+          goalMinutes === null ? null : { missions: 3, minutes: goalMinutes }
+        }
+        onDailyGoalClick={() => setGoalOpen(true)}
         reminder={
           schedule
             ? {
@@ -93,10 +118,28 @@ export function MeLive() {
         onOpenChange={setLanguageOpen}
         uiLocale={language.uiLocale}
         meaningLocale={language.meaningLocale}
-        onChange={(next) => void language.change(next)}
-        saving={language.saving}
-        error={language.error}
+        englishVariety={variety}
+        onChange={({ englishVariety, ...next }) => {
+          if (englishVariety) prefs.mutate({ englishVariety });
+          if (next.uiLocale !== undefined || next.meaningLocale !== undefined)
+            void language.change(next);
+        }}
+        saving={language.saving || prefs.isPending}
+        error={
+          language.error ||
+          (prefs.isError && lastPref?.englishVariety !== undefined)
+        }
       />
+      {goalMinutes !== null ? (
+        <DailyGoalSheet
+          open={goalOpen}
+          onOpenChange={setGoalOpen}
+          minutes={goalMinutes}
+          onChange={(minutes) => prefs.mutate({ dailyGoalMinutes: minutes })}
+          saving={prefs.isPending}
+          error={prefs.isError && lastPref?.dailyGoalMinutes !== undefined}
+        />
+      ) : null}
     </>
   );
 }
