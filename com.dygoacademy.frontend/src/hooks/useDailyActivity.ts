@@ -14,7 +14,7 @@ import type { DailyActivity } from '@/types';
  *
  * `timezone` (default: lib/timezone.ts's resolved zone) is sent as `tz` so
  * the backend groups `reviewed_at` into the same calendar days this
- * caller's "today" uses — see LearningPath.tsx's comment for the bug this
+ * caller's "today" uses — see the classic learning path's comment for the bug this
  * closes. Also keyed into the query so a stale cache entry from a
  * different zone (e.g. right after `getResolvedTimezone()` first resolves)
  * never gets served.

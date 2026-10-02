@@ -1,22 +1,13 @@
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
-import { cookies } from 'next/headers';
 import { Suspense } from 'react';
 
 import { GardenRoot } from '@/app/(garden)/GardenRoot';
 import { SignInLive } from '@/components/garden/auth/SignInLive';
 import { getGardenLocaleContext } from '@/i18n/garden-locale';
-import { GARDEN_UI_COOKIE, isGardenEnabled } from '@/lib/garden-ui';
 
-import { ClassicLogin } from './ClassicLogin';
-
-async function gardenOn(): Promise<boolean> {
-  const cookieStore = await cookies();
-  return isGardenEnabled(cookieStore.get(GARDEN_UI_COOKIE)?.value);
-}
 
 export async function generateMetadata(): Promise<Metadata> {
-  if (!(await gardenOn())) return {};
   const t = await getTranslations('screens.auth.signIn');
   return { title: t('metaTitle') };
 }
@@ -29,8 +20,6 @@ export async function generateMetadata(): Promise<Metadata> {
  * `useSearchParams()` in both needs the Suspense boundary.
  */
 export default async function LoginPage() {
-  if (!(await gardenOn())) return <ClassicLogin />;
-
   const locale = await getGardenLocaleContext();
   return (
     <GardenRoot

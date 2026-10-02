@@ -1,6 +1,6 @@
+import Link from 'next/link';
 import { redirect } from 'next/navigation';
 
-import { PublicNavbar } from '@/components/layout/PublicNavbar';
 import { GuestWordTrial } from '@/components/onboarding/GuestWordTrial';
 import { ROUTES } from '@/constants/routes';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
@@ -15,7 +15,7 @@ import { createServerSupabaseClient } from '@/lib/supabase/server';
  * Lives at "/search", not "/" — moved here 2026-09-17 as part of a wider
  * URL reshuffle (see constants/routes.ts's own header) that freed up the
  * bare root for the signed-in front door instead (now
- * `(dashboard)/page.tsx`). Keeps this file's original wireframe-1a
+ * the classic dashboard page). Keeps this file's original wireframe-1a
  * framing otherwise — still the anonymous entry point, just at a
  * different URL.
  *
@@ -30,7 +30,7 @@ import { createServerSupabaseClient } from '@/lib/supabase/server';
  * below — there is nowhere to redirect them to, they're already where an
  * anonymous visitor belongs.
  *
- * `PublicNavbar` above the trial card -- added the same day, alongside
+ * the guest header above the trial card -- added the same day, alongside
  * `lib/supabase/middleware.ts` now sending an anonymous "/" visitor here
  * instead of to `/login` ("redirect them to search page with menu"). This
  * route is now the *only* way most anonymous visitors ever arrive, so it
@@ -65,7 +65,7 @@ import { createServerSupabaseClient } from '@/lib/supabase/server';
  * just surrounded by more margin, reading as an unfinished phone layout
  * rather than a tablet-considered one. `GuestWordTrial`'s card itself is
  * deliberately left at its current width -- it already reads from the
- * shared `CONTENT_WIDTH` constant, which every page/popup in the app was
+ * shared content-width constant, which every page/popup in the app was
  * consolidated onto after past per-page width drift (see
  * `constants/layout.ts`'s own history); widening it here would reopen
  * that. Scaling the hero text/spacing instead uses the extra tablet width
@@ -91,7 +91,11 @@ export default async function LandingPage() {
 
   return (
     <div className="flex min-h-dvh flex-col">
-      <PublicNavbar />
+      <header className="flex items-center justify-center border-b px-4 py-3">
+        <Link href={ROUTES.search} className="font-bold">
+          Dygo
+        </Link>
+      </header>
       <main className="flex flex-1 flex-col items-center gap-6 p-4 pt-12 sm:gap-8 sm:pt-20 md:pt-28">
         <div className="flex flex-col items-center gap-2 text-center sm:gap-3">
           <h1 className="text-2xl font-semibold leading-snug sm:text-3xl md:text-4xl">

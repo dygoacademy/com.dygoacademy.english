@@ -25,11 +25,11 @@ export function formatIpa(value: string | null): string | null {
 
 /**
  * "N words" or "N words · M focus words" — Phase 9, "Topics as
- * Collections" mockup subtext, added 2026-09-21. Shared by `TopicCard`,
- * `TopicCollectionRow`, and `TopicGridCard` (three separate components
+ * Collections" mockup subtext, added 2026-09-21. Shared by the topic card,
+ * collection row and grid card (three separate components
  * that each independently render a topic's word count) rather than
  * tripling the same string-building logic across them — the exact kind
- * of drift `constants/layout.ts`'s `CONTENT_WIDTH` comment already warns
+ * of drift `constants/layout.ts`'s width comment already warns
  * about for a different value. Takes the two raw string counts, not a
  * `TopicSummary`, so this file doesn't need to import a domain type just
  * to format two numbers. The "· M focus words" clause only appears when

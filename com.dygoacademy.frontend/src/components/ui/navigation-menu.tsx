@@ -8,7 +8,7 @@ import { cn } from '@/lib/utils';
 
 /**
  * shadcn/ui's Navigation Menu, added 2026-09-17 to replace the plain
- * `<header><nav><Link>` markup `PublicNavbar` (and `Navbar`) hand-rolled --
+ * `<header><nav><Link>` markup the classic headers hand-rolled --
  * live-requested the same day ("follow radix-ui component rather then
  * build by yourself"). Radix's NavigationMenuPrimitive gives roving-
  * tabindex keyboard navigation (arrow keys move between top-level items,
@@ -19,7 +19,7 @@ import { cn } from '@/lib/utils';
  *
  * Kept as the full primitive set (Trigger/Content/Viewport/Indicator
  * included, not just List/Item/Link) even though today's only consumer
- * (`PublicNavbar`) is plain links with no dropdown -- matches this
+ * (the guest header) is plain links with no dropdown -- matches this
  * directory's own pattern of wrapping the whole Radix primitive once
  * rather than a trimmed-down version per call site (see dialog.tsx), and
  * means a future item that *does* need a dropdown (a locale switcher, a

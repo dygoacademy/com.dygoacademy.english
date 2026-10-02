@@ -1,59 +1,24 @@
 import { NextResponse, type NextRequest } from 'next/server';
 
-import { GARDEN_PATH_PREFIX, GARDEN_REFERENCE_PREFIX, GARDEN_ROUTES } from '@/constants/garden';
+import { GARDEN_REFERENCE_PREFIX, GARDEN_ROUTES } from '@/constants/garden';
 import { ROUTES } from '@/constants/routes';
-import {
-  GARDEN_UI_COOKIE,
-  GARDEN_UI_COOKIE_MAX_AGE,
-  GARDEN_UI_QUERY_PARAM,
-  isGardenEnabled,
-  parseUiQuery,
-  type UiVariant,
-} from '@/lib/garden-ui';
 import { referencePagesAllowed } from '@/lib/garden-reference';
 import { updateSession } from '@/lib/supabase/middleware';
 
 /**
- * Runs on every matched request before any Server Component. Three jobs:
+ * Runs on every matched request before any Server Component. Jobs:
  * refresh the Supabase session cookie (see lib/supabase/middleware.ts for
  * why that's mandatory, not optional), and turn an expired/missing
  * session into a redirect for anything under PROTECTED_PATH_PREFIXES
  * (src/constants/routes.ts) — this is the edge half of the auth guard.
- * The (dashboard) layout re-checks server-side as defense in depth, in
- * case a route is ever added here without updating the matcher below.
+ * The (garden) layout re-checks server-side as defense in depth.
  *
- * Third job (UI-0 of the Word Garden rebuild): the garden UI flag. A
- * `?ui=garden` query stores a per-browser opt-in cookie, and a
- * signed-in, flagged user who lands on the front door ("/") is sent to
- * the garden. With the flag off and no cookie, nothing below changes the
- * response — classic users get exactly what updateSession returned.
+ * Since UI-8 U8-3 the Word Garden is the only signed-in UI: the front
+ * door ("/"), invite links (/join/<token>) and the deleted classic paths
+ * redirect into /garden. U8-5 replaces these with the final short URLs.
  */
 export async function middleware(request: NextRequest) {
-  const uiOverride = parseUiQuery(request.nextUrl.searchParams.get(GARDEN_UI_QUERY_PARAM));
-  if (uiOverride) {
-    // Written to the request too, so the Server Components rendering this
-    // same request (the (garden) layout's flag gate) already see it.
-    request.cookies.set(GARDEN_UI_COOKIE, uiOverride);
-  }
-
-  const gardenOn = isGardenEnabled(request.cookies.get(GARDEN_UI_COOKIE)?.value);
   const { pathname } = request.nextUrl;
-
-  // Unflagged requests for /garden/... must look exactly like they did
-  // before UI-0: a 404. Done here rather than only in the (garden) layout
-  // because the App Router renders a page in parallel with its layouts,
-  // so a layout-level notFound() still streams the page's RSC payload
-  // (seen with `next dev` on 2026-09-25). Rewriting to a path no route
-  // matches gives the app's normal not-found page with a real 404 status.
-  if (
-    !gardenOn &&
-    (pathname === GARDEN_PATH_PREFIX || pathname.startsWith(`${GARDEN_PATH_PREFIX}/`))
-  ) {
-    return rememberUiOverride(
-      NextResponse.rewrite(new URL('/__garden-ui-disabled', request.url)),
-      uiOverride,
-    );
-  }
 
   // The canvas reference pages (UI-fidelity 4) are a development tool for
   // the pixel diff: they don't exist in production builds unless the build
@@ -62,50 +27,45 @@ export async function middleware(request: NextRequest) {
     !referencePagesAllowed() &&
     (pathname === GARDEN_REFERENCE_PREFIX || pathname.startsWith(`${GARDEN_REFERENCE_PREFIX}/`))
   ) {
-    return rememberUiOverride(
-      NextResponse.rewrite(new URL('/__garden-ui-disabled', request.url)),
-      uiOverride,
-    );
+    return NextResponse.rewrite(new URL('/__garden-ui-disabled', request.url));
   }
 
-  let response = await updateSession(request);
+  const response = await updateSession(request);
 
   // updateSession only returns a redirect for an auth bounce (anonymous
   // visitor on a protected path). Leave those alone: the garden redirect
   // is for signed-in users, and the next request re-runs this anyway.
-  const isAuthRedirect = response.headers.has('location');
+  if (response.headers.has('location')) return response;
 
-  if (!isAuthRedirect && gardenOn && pathname === ROUTES.home) {
-    const gardenUrl = new URL(GARDEN_ROUTES.home, request.url);
-    const redirect = NextResponse.redirect(gardenUrl);
-    // Carry over any refreshed Supabase session cookies.
-    response.cookies.getAll().forEach((cookie) => redirect.cookies.set(cookie));
-    response = redirect;
-  }
+  const target = gardenTarget(pathname);
+  if (!target) return response;
 
-  // UI-G: invite links are the classic /join/<token> (they work for
-  // everyone). A signed-in, flagged user opens the garden's join screen
-  // (GR6) instead. Unflagged users get exactly what they got before.
-  const joinToken = pathname.match(/^\/join\/([^/]+)\/?$/)?.[1];
-  if (!isAuthRedirect && gardenOn && joinToken && !response.headers.has('location')) {
-    const redirect = NextResponse.redirect(new URL(GARDEN_ROUTES.join(joinToken), request.url));
-    response.cookies.getAll().forEach((cookie) => redirect.cookies.set(cookie));
-    response = redirect;
-  }
-
-  return rememberUiOverride(response, uiOverride);
+  const redirect = NextResponse.redirect(new URL(target, request.url));
+  // Carry over any refreshed Supabase session cookies.
+  response.cookies.getAll().forEach((cookie) => redirect.cookies.set(cookie));
+  return redirect;
 }
 
-/** Persists a `?ui=` choice on whatever response this request ends with. */
-function rememberUiOverride(response: NextResponse, uiOverride: UiVariant | null): NextResponse {
-  if (uiOverride) {
-    response.cookies.set(GARDEN_UI_COOKIE, uiOverride, {
-      path: '/',
-      maxAge: GARDEN_UI_COOKIE_MAX_AGE,
-      sameSite: 'lax',
-    });
-  }
-  return response;
+/** Where a signed-in request for the front door or a classic path goes. */
+function gardenTarget(pathname: string): string | null {
+  if (pathname === ROUTES.home) return GARDEN_ROUTES.home;
+
+  const joinToken = pathname.match(/^\/join\/([^/]+)\/?$/)?.[1];
+  if (joinToken) return GARDEN_ROUTES.join(decodeURIComponent(joinToken));
+
+  const topicId = pathname.match(/^\/topics\/([^/]+)\/?$/)?.[1];
+  if (topicId) return GARDEN_ROUTES.topic(decodeURIComponent(topicId));
+
+  const groupId = pathname.match(/^\/groups\/([^/]+)\/?$/)?.[1];
+  if (groupId) return GARDEN_ROUTES.group(decodeURIComponent(groupId));
+
+  const path = pathname.replace(/\/$/, '');
+  if (path === '/study') return GARDEN_ROUTES.review;
+  if (path === '/topics') return GARDEN_ROUTES.topics;
+  if (path === '/quiz') return GARDEN_ROUTES.quiz();
+  if (path === '/groups') return GARDEN_ROUTES.groups;
+  if (path === '/analytics' || path === '/settings') return GARDEN_ROUTES.me;
+  return null;
 }
 
 export const config = {

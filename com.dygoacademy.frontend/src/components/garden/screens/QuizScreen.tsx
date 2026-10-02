@@ -21,7 +21,7 @@ import { ProgressVine } from '../ProgressVine';
  * the big play button) and the hint, then the answer (a text field +
  * "Check", or the options), then the feedback panel at the bottom.
  *
- * Every `QuizQuestion` type is covered: CLOZE and DICTATION answer by
+ * Every quiz-question type is covered: CLOZE and DICTATION answer by
  * typing (with the on-demand hint), MATCHING and CONTEXTUAL_CHOICE by
  * picking an option. After an answer the options stay on screen as a
  * read-only review. Feedback is kind: the right answer gets the green

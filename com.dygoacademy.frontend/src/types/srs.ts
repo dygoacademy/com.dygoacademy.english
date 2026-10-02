@@ -4,7 +4,7 @@
  * mistake-weighted retention formula (Phase 2, Module 3); the study
  * session UI (Phase 0 wireframe implementation) collects one of these
  * four per card even where the student only sees two buttons — see
- * components/flashcard/RatingButtons.tsx.
+ * the classic rating buttons (deleted in UI-8).
  */
 export type SrsRating = 'AGAIN' | 'HARD' | 'GOOD' | 'EASY';
 /**

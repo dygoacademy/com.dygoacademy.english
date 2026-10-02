@@ -7,7 +7,7 @@ import { ApiError } from '@/lib/api-client';
 
 /**
  * The "add a word to this topic" form logic, garden-owned (UI-5 U5-4).
- * Same behaviour as the classic `components/topics/AddWordModal.tsx`
+ * Same behaviour as the classic add-word modal (deleted in UI-8)
  * (left unchanged): trim, ignore empty input, POST /words through
  * `useCreateWord`, show the API's message on failure, clear on close.
  * `fallbackError` is the translated message for non-API failures.

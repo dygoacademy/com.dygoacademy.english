@@ -8,7 +8,7 @@ import { Switch } from './Switch';
 
 /**
  * Body of "Start a garden" (canvas GR7), also used to edit a garden's
- * name, description and visibility (the classic GroupSettingsPanel): the
+ * name, description and visibility (the classic group settings panel): the
  * name field, an optional "About", the Open-garden switch, a note, and the
  * primary button. Controlled: the live sheet owns the values.
  */

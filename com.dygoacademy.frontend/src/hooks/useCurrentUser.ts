@@ -6,9 +6,9 @@ import { createClient } from '@/lib/supabase/client';
 
 /**
  * The signed-in caller's own Supabase user id, client-side. Nothing needed
- * this before this pass — `(dashboard)/layout.tsx` (a Server Component)
- * already resolves the user for the Navbar's email, but nothing client-side
- * did. RosterPanel needs it to label "(you)" on the caller's own row, since
+ * this before this pass — the classic dashboard layout (a Server Component)
+ * already resolves the user for the the classic top nav's email, but nothing client-side
+ * did. the classic roster panel needs it to label "(you)" on the caller's own row, since
  * `GroupRosterMember` is `user_id`/`role`/`joined_at` only — no session
  * context of its own.
  */

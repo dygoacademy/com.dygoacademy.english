@@ -62,7 +62,7 @@ export interface GroupMember {
  * from signup, but an invited student's is their own personal tenant, not
  * the inviting teacher's, so the policy's tenant-equality check still fails
  * for the teacher viewing them — a distinct, still-open gap from the one
- * that migration actually closed; see its header comment). `RosterPanel`
+ * that migration actually closed; see its header comment). the classic roster panel
  * falls back to the shortened user id when both are null, same as it
  * always has.
  */

@@ -3,59 +3,6 @@
 @tailwind utilities;
 
 @layer base {
-  :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
-    /* Same as background/card in this theme -- added for the shadcn/ui
-       migration (2026-09-05): Select's dropdown content and Dialog's
-       overlay both reference bg-popover/text-popover-foreground, which
-       didn't exist in this file (button.tsx/card.tsx never needed them). */
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
-    /* Brand accent — the one color used consistently for every primary CTA
-       across the Dygo Wireframes canvas (../dygo_academy_frontend_architecture.md
-       §customer journey): hex #c2603f / oklch(0.62 0.16 35), converted to HSL
-       here to match this file'''s existing token format. */
-    --primary: 15 52% 50%;
-    --primary-foreground: 0 0% 100%;
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
-    --radius: 0.5rem;
-  }
-
-  .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
-    --primary: 15 60% 58%;
-    --primary-foreground: 0 0% 100%;
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
-  }
-
   * {
     @apply border-border;
   }
@@ -141,15 +88,16 @@
  * Word Garden tokens (ui rebuild implementation plan.md, UI-1).
  * Values from dygo_academy_ui_ux_design_system.md v0.2 §4–§7 and §12.
  *
- * Scoped to [data-ui="garden"] (set by src/app/(garden)/layout.tsx) so
- * the classic screens above keep their colours until UI-8 swaps these
- * onto :root and deletes the old palette. Tailwind names for every token
+ * On :root and [data-ui="garden"] (set by GardenRoot). UI-8 U8-3 deleted
+ * the classic palette; the shadcn colour names in tailwind.config.ts now
+ * point at these variables. Tailwind names for every token
  * live in tailwind.config.ts (colors.garden / stage / rating, fontSize
  * display-* / body-* / label, borderRadius tile/control/card/hero,
  * boxShadow press-*, screens medium / expanded / short).
  * ---------------------------------------------------------------------
  */
 @layer base {
+  :root,
   [data-ui='garden'] {
     /* §5.1 Colour — adult semantic tokens */
     --color-bg: #f4f1ea;
@@ -318,7 +266,11 @@
     --safe-right: env(safe-area-inset-right, 0px);
     --safe-bottom: env(safe-area-inset-bottom, 0px);
     --safe-left: env(safe-area-inset-left, 0px);
+  }
 
+  /* The garden shell itself (tokens above also sit on :root since UI-8 U8-3,
+     so pages outside GardenRoot — /search, error pages — get them too). */
+  [data-ui='garden'] {
     min-height: 100vh; /* fallback for browsers without dvh */
     min-height: 100dvh;
     background-color: var(--color-bg);

@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 
 /**
  * Catches render/data errors anywhere under the root layout that a more
- * specific error.tsx (e.g. (dashboard)/error.tsx) doesn't already handle.
+ * specific error.tsx (e.g. a route group's own) doesn't already handle.
  * Must be a Client Component — Next.js requirement for error boundaries.
  */
 export default function GlobalErrorBoundary({

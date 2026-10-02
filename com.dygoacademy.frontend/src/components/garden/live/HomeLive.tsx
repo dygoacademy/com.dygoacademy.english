@@ -4,7 +4,6 @@ import * as React from 'react';
 import { useTimeZone } from 'next-intl';
 
 import { GARDEN_ROUTES } from '@/constants/garden';
-import { ROUTES } from '@/constants/routes';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
 import { useDailyActivity } from '@/hooks/useDailyActivity';
 import { useTodayMissions } from '@/hooks/useMissions';
@@ -82,7 +81,7 @@ export function HomeLive() {
         streak={freezeStreak(s)}
         revive={
           s.leech_count > 0
-            ? { count: s.leech_count, minutes: null, href: `${ROUTES.quiz}?mode=leech` }
+            ? { count: s.leech_count, minutes: null, href: GARDEN_ROUTES.quiz(undefined, 'leech') }
             : null
         }
         waterAll={s.due_now > 0 ? { count: s.due_now, href: GARDEN_ROUTES.review } : null}

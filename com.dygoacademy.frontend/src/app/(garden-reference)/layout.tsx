@@ -1,9 +1,7 @@
 import type { Viewport } from 'next';
-import { cookies } from 'next/headers';
 import { notFound } from 'next/navigation';
 
 import { referencePagesAllowed } from '@/lib/garden-reference';
-import { GARDEN_UI_COOKIE, isGardenEnabled } from '@/lib/garden-ui';
 
 export const viewport: Viewport = {
   width: 'device-width',
@@ -23,7 +21,6 @@ export const viewport: Viewport = {
  *  1. Not in production, unless the build set GARDEN_REFERENCE_PAGES=on
  *     (`referencePagesAllowed`, for diffing UAT): middleware.ts rewrites
  *     these paths to the 404 page, and this layout and the page check again.
- *  2. The garden flag or the `?ui=garden` cookie, like every garden page.
  * The pages show only fixture data, never a user's.
  *
  * UI-L: each page wraps itself in `GardenRoot` with the language from
@@ -31,8 +28,6 @@ export const viewport: Viewport = {
  */
 export default async function GardenReferenceLayout({ children }: { children: React.ReactNode }) {
   if (!referencePagesAllowed()) notFound();
-  const cookieStore = await cookies();
-  if (!isGardenEnabled(cookieStore.get(GARDEN_UI_COOKIE)?.value)) notFound();
 
   return children;
 }

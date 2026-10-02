@@ -7,7 +7,7 @@ import { cn } from '@/lib/utils';
 
 /**
  * shadcn/ui's Select, added 2026-09-05 to replace the plain native
- * `<select>` CreateTopicModal used for the group picker. Icons are inline
+ * `<select>` create-topic modal used for the group picker. Icons are inline
  * SVG rather than lucide-react (not a dependency anywhere else in this
  * codebase -- see the search icon added to GuestWordTrial.tsx the same
  * day, same reasoning).

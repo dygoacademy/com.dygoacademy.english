@@ -1,13 +1,11 @@
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
-import { notFound } from 'next/navigation';
 
 import { ResetPasswordLive } from '@/components/garden/auth/ResetPasswordLive';
 
-import { GardenAuthRoot, gardenAuthOn } from '../garden-auth';
+import { GardenAuthRoot } from '../garden-auth';
 
 export async function generateMetadata(): Promise<Metadata> {
-  if (!(await gardenAuthOn())) return {};
   const t = await getTranslations('screens.auth.reset');
   return { title: t('metaTitle') };
 }
@@ -18,8 +16,6 @@ export async function generateMetadata(): Promise<Metadata> {
  * redirect: the link itself signs the learner in (recovery session).
  */
 export default async function ResetPasswordPage() {
-  if (!(await gardenAuthOn())) notFound();
-
   return (
     <GardenAuthRoot>
       <ResetPasswordLive />

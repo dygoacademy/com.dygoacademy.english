@@ -9,7 +9,7 @@ import { useAddWordForm } from './useAddWordForm';
 
 /**
  * "Add word" on a topic bed (A7, UI-5 U5-4): a garden bottom sheet with
- * one word field, on the same form logic as the classic AddWordModal
+ * one word field, on the same form logic as the classic add-word modal
  * (`useAddWordForm`). IPA, audio and examples are filled in afterwards
  * by enrichment; the bed refetches when the word is added.
  */

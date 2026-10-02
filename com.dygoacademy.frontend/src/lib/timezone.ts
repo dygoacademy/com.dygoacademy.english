@@ -1,10 +1,10 @@
 /**
  * The one place in the app that resolves "what timezone is this session
- * in." Everything date-bounded (LearningPath's ribbon, useSrsStats'
+ * in." Everything date-bounded (the classic learning path's ribbon, useSrsStats'
  * streak, useDailyActivity/useUpcomingActivity's day grouping) should
  * call this instead of touching `Intl`/the platform directly — added
  * 2026-09-21 after the ribbon showed the wrong "Today" for a UTC+8 user
- * in the early hours of their local day (LearningPath.tsx was building
+ * in the early hours of their local day (the classic learning path was building
  * its 5-row window from UTC calendar dates, and the backend's day
  * grouping in `srs.service.ts` was doing the same).
  *

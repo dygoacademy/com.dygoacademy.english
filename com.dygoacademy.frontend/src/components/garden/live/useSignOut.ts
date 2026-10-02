@@ -10,7 +10,7 @@ import { AUTH_HREFS } from "../auth/authPaths";
 
 /**
  * Garden sign-out (SO-1), the same Supabase steps as the classic
- * `layout/SignOutButton` (left untouched): the default signOut() first;
+ * the old sign-out button (deleted in UI-8): the default signOut() first;
  * if GoTrue's /logout call fails, clear the browser's own session with
  * `scope: 'local'` (no network, so a flaky server can't strand the user).
  * Then the React Query cache is cleared and the learner lands on the

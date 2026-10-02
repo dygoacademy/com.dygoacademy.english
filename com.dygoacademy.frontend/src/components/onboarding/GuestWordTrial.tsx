@@ -16,7 +16,7 @@ import {
 } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { CONTENT_WIDTH } from '@/constants/layout';
+import { GARDEN_CONTENT_WIDTH } from '@/constants/layout';
 import { ROUTES } from '@/constants/routes';
 import { apiClient, ApiError } from '@/lib/api-client';
 import { formatIpa } from '@/lib/utils';
@@ -43,7 +43,7 @@ type Stage = 'input' | 'card' | 'not-found';
  * muted-mono label, changed to a proper bold title same day ("the guest
  * page, I need to change the Dygo link the nice title with bold") --
  * then removed outright 2026-09-18 ("remove Dygo in the search box") once
- * `PublicNavbar` (added after that, same week) already put the "Dygo"
+ * the guest header (added after that, same week) already put the "Dygo"
  * wordmark directly above this card on `/search`, making the in-card
  * label a second, redundant repetition of the brand name one line above
  * it. Dropped from both the input-stage and not-found-stage Cards, not
@@ -52,18 +52,18 @@ type Stage = 'input' | 'card' | 'not-found';
  * label on one and not the other would read as an inconsistency rather
  * than a deliberate choice.
  *
- * Width bumped from a hardcoded `max-w-sm` to the shared `CONTENT_WIDTH`
+ * Width bumped from a hardcoded `max-w-sm` to the shared content-width
  * config, with an explicit `mx-auto` added -- live-requested 2026-09-17
  * ("update the block of search screen width to wide", "move that block
  * to center"). This file's three `max-w-sm` occurrences (the found-word
  * flashcard wrapper, and the input/not-found Cards) were hardcoded
- * outside the page-by-page sweep that introduced `CONTENT_WIDTH`
+ * outside the page-by-page sweep that introduced content-width
  * elsewhere in the app -- that pass touched page-level containers and
  * `ui/dialog.tsx`, not components rendered *inside* a page, so this one
  * was missed. Centering previously relied entirely on the parent
  * `<main>`'s `flex items-center justify-center` (`app/search/page.tsx`);
  * `mx-auto` here makes each stage's own root element self-centering too,
- * matching the convention every other `CONTENT_WIDTH` call site in the
+ * matching the convention every other content-width call site in the
  * app already uses, instead of depending on this component always being
  * rendered inside a centering flex parent.
  *
@@ -123,7 +123,7 @@ export function GuestWordTrial() {
 
   if (stage === 'card' && card) {
     return (
-      <div className={`mx-auto flex w-full ${CONTENT_WIDTH.wide} flex-col items-center gap-5`}>
+      <div className={`mx-auto flex w-full ${GARDEN_CONTENT_WIDTH.wide} flex-col items-center gap-5`}>
         <Flashcard
           className="h-96 w-full"
           flipped={flipped}
@@ -133,7 +133,7 @@ export function GuestWordTrial() {
               {/* Play (+ speed) moved into a floating bottom-right corner
                   dock -- live-requested 2026-09-18 ("give me options that
                   help student to focus and easier to use in right hand"),
-                  same `layout="corner"` treatment as WordCardModal/study's
+                  same `layout="corner"` treatment as the old study card's
                   cards (see AudioButton.tsx's comment for the full
                   history), so Play sits in the same place everywhere. */}
               <div className="flex flex-1 flex-col items-center justify-center gap-2 pb-2 pr-14">
@@ -151,8 +151,8 @@ export function GuestWordTrial() {
               {/* Back side redesigned into labeled sections -- live-requested
                   2026-09-18 ("the data in the flash card is messy hard to
                   learn ... recommend to sort all data with UI/UX super easy
-                  for user"), applied consistently with WordCardModal/study's
-                  card. See WordCardModal.tsx's own comment on this block for
+                  for user"), applied consistently with the old study card's
+                  card. See the word-card modal's history (deleted in UI-8) on this block for
                   the full before/after reasoning.
 
                   Content wrapped in its own scrollable inner div (`pb-16
@@ -161,7 +161,7 @@ export function GuestWordTrial() {
                   design-critique finding (Phase 8, master schedule): this
                   back face had no way to hear either accent once flipped,
                   even though it's the only side showing US/UK IPA side by
-                  side. WordCardModal's back face already used exactly this
+                  side. the old word-card modal's back face already used exactly this
                   inner-scroll + corner-dock split (see its own comment on
                   this block) for the same reason -- ported here instead of
                   inventing a second pattern. */}
@@ -251,7 +251,7 @@ export function GuestWordTrial() {
 
   if (stage === 'not-found') {
     return (
-      <Card className={`mx-auto w-full ${CONTENT_WIDTH.wide}`}>
+      <Card className={`mx-auto w-full ${GARDEN_CONTENT_WIDTH.wide}`}>
         <CardHeader className="items-center text-center">
           <CardTitle className="text-xl leading-snug">
             &quot;{lastSearchedWord}&quot; hasn&apos;t been taught here yet.
@@ -280,7 +280,7 @@ export function GuestWordTrial() {
   }
 
   return (
-    <Card className={`mx-auto w-full ${CONTENT_WIDTH.wide}`}>
+    <Card className={`mx-auto w-full ${GARDEN_CONTENT_WIDTH.wide}`}>
       <CardHeader className="items-center text-center">
         <CardTitle className="text-2xl leading-tight">
           Type one word you
@@ -323,12 +323,12 @@ export function GuestWordTrial() {
           {error && <p className="text-center text-xs text-destructive">{error}</p>}
         </form>
       </CardContent>
-      {/* "Sign in" moved here from PublicNavbar's top menu 2026-09-18
+      {/* "Sign in" moved here from the guest header's top menu 2026-09-18
           ("move login button to search group in the search page") -- sits
           next to the existing "create a free account" link so both auth
           paths are together at the point a guest is actually deciding
           between them, instead of the primary CTA living here and the
-          secondary one being up in the header. PublicNavbar had no other
+          secondary one being up in the header. The guest header had no other
           menu item, so it now renders as a plain logo header with no
           Navigation Menu at all -- see that file's own comment. */}
       <CardFooter className="flex flex-col items-center gap-1.5">

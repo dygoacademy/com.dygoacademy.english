@@ -7,7 +7,7 @@ import type { TopicWord } from '@/types';
 
 /**
  * POST /api/v1/words/:id/re-enrich — the "Try again" button on the FAILED
- * word state (wireframe 1l, WordStatusRow.tsx), unwired since Module 2
+ * word state (wireframe 1l, the classic word row), unwired since Module 2
  * shipped: the button existed in the wireframe and the frontend markup, but
  * had no `onClick` and the backend route didn't exist until the twelfth
  * pass. Mirrors `useCreateWord`'s invalidation — the row flips back to

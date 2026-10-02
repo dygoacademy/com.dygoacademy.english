@@ -1,7 +1,9 @@
 import type { Config } from 'tailwindcss';
 
-// Design tokens per dygo_academy_tech_spec_and_conventions.md §3.3 —
-// shadcn/ui-compatible CSS variables, defined in src/app/globals.css.
+// Design tokens: the Word Garden CSS variables in src/app/globals.css
+// (design system §5). The shadcn/ui colour names below (border, primary,
+// card…) point at garden tokens since UI-8 U8-3 deleted the classic
+// palette, so components/ui/* keep working without their own colours.
 const config: Config = {
   darkMode: ['class'],
   content: ['./src/**/*.{ts,tsx}'],
@@ -49,44 +51,42 @@ const config: Config = {
     },
     extend: {
       colors: {
-        border: 'hsl(var(--border))',
-        input: 'hsl(var(--input))',
-        ring: 'hsl(var(--ring))',
-        background: 'hsl(var(--background))',
-        foreground: 'hsl(var(--foreground))',
+        border: 'var(--color-border)',
+        input: 'var(--color-border)',
+        ring: 'var(--color-forest)',
+        background: 'var(--color-bg)',
+        foreground: 'var(--color-text)',
         primary: {
-          DEFAULT: 'hsl(var(--primary))',
-          foreground: 'hsl(var(--primary-foreground))',
+          DEFAULT: 'var(--color-primary)',
+          foreground: 'var(--color-surface)',
         },
         secondary: {
-          DEFAULT: 'hsl(var(--secondary))',
-          foreground: 'hsl(var(--secondary-foreground))',
+          DEFAULT: 'var(--color-surface-sunken)',
+          foreground: 'var(--color-text)',
         },
         destructive: {
-          DEFAULT: 'hsl(var(--destructive))',
-          foreground: 'hsl(var(--destructive-foreground))',
+          DEFAULT: 'var(--color-primary-text)',
+          foreground: 'var(--color-surface)',
         },
         muted: {
-          DEFAULT: 'hsl(var(--muted))',
-          foreground: 'hsl(var(--muted-foreground))',
+          DEFAULT: 'var(--color-surface-sunken)',
+          foreground: 'var(--color-text-muted)',
         },
         accent: {
-          DEFAULT: 'hsl(var(--accent))',
-          foreground: 'hsl(var(--accent-foreground))',
+          DEFAULT: 'var(--color-surface-sunken)',
+          foreground: 'var(--color-text)',
         },
         card: {
-          DEFAULT: 'hsl(var(--card))',
-          foreground: 'hsl(var(--card-foreground))',
+          DEFAULT: 'var(--color-surface)',
+          foreground: 'var(--color-text)',
         },
         popover: {
-          DEFAULT: 'hsl(var(--popover))',
-          foreground: 'hsl(var(--popover-foreground))',
+          DEFAULT: 'var(--color-surface)',
+          foreground: 'var(--color-text)',
         },
-        // Word Garden tokens (design system §5). Namespaced `garden-`
-        // because `muted`, `primary`, `border` and `background` above
-        // still belong to the classic UI; the values are CSS variables
-        // that only exist under [data-ui="garden"] (globals.css). UI-8
-        // drops the prefix (bg-garden-surface -> bg-surface).
+        // Word Garden tokens (design system §5), CSS variables on :root and
+        // [data-ui="garden"] (globals.css). Still namespaced `garden-`;
+        // U8-4 drops the prefix (bg-garden-surface -> bg-surface).
         garden: {
           bg: 'var(--color-bg)',
           surface: 'var(--color-surface)',
@@ -180,11 +180,8 @@ const config: Config = {
         label: ['var(--text-label)', { lineHeight: '1.3', fontWeight: '600' }],
       },
       borderRadius: {
-        lg: 'var(--radius)',
-        md: 'calc(var(--radius) - 2px)',
-        sm: 'calc(var(--radius) - 4px)',
         // §7.1 Garden radii, named by use so they can't be confused with
-        // the classic sm/md/lg above.
+        // Tailwind's default sm/md/lg.
         tile: 'var(--radius-sm)', // 12 — small tiles, icon wells, banners
         control: 'var(--radius-md)', // 16 — buttons, stat tiles, list rows
         card: 'var(--radius-lg)', // 20 — standard cards

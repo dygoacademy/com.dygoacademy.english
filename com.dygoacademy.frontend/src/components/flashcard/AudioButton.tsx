@@ -25,14 +25,14 @@ import { cn } from '@/lib/utils';
  * next to an independently-sized Play button (the mismatch was the same
  * one `layout="corner"` had, just not yet fixed here). Speed control is
  * kept for this layout, unlike `corner`'s: `inline`'s two remaining
- * callers are the quiz's DICTATION question (QuizQuestion.tsx, "listen
+ * callers are the quiz's DICTATION question (quiz-question, "listen
  * then spell it") and /study's LISTENING sub-mode, and slowing playback
  * down to catch a tricky sound is a real, useful thing to do mid-quiz —
  * it just needed a layout that reads as one control on a phone instead of
  * a tiny toggle bolted onto a big button.
  *
  * `layout="corner"` added 2026-09-18 ("give me options that help student
- * to focus and easier to use in right hand") — WordCardModal's front/back
+ * to focus and easier to use in right hand") — the word-card modal's front/back
  * (and study/GuestWordTrial) render this pinned in the card's bottom-right
  * corner (the spot a right thumb rests on holding the phone one-handed)
  * instead of inline beneath the word, so the word/definition area stays

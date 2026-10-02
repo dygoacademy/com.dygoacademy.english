@@ -1,11 +1,10 @@
 import type { Viewport } from 'next';
-import { cookies, headers } from 'next/headers';
-import { notFound, redirect } from 'next/navigation';
+import { headers } from 'next/headers';
+import { redirect } from 'next/navigation';
 
 import { GroupsTabLive } from '@/components/garden/live/GroupsTabLive';
 import { ROUTES } from '@/constants/routes';
 import { getGardenLocaleContext, getGardenUser } from '@/i18n/garden-locale';
-import { GARDEN_UI_COOKIE, isGardenEnabled } from '@/lib/garden-ui';
 
 import { GardenRoot } from './GardenRoot';
 
@@ -39,14 +38,9 @@ export async function generateViewport(): Promise<Viewport> {
 /**
  * Word Garden route group (ui rebuild implementation plan.md, UI-0/UI-1).
  *
- * Built next to (dashboard), not inside it, so the new screens get their
- * own layout, fonts and theme while the classic UI stays untouched.
- *
- * Gates, both server-side:
- *  1. Flag — middleware.ts already 404s unflagged /garden requests; this
- *     re-check is defense in depth, like the session check below.
- *  2. Session — same check as the (dashboard) layout. /garden isn't in
- *     PROTECTED_PATH_PREFIXES yet (routes.ts is left alone until UI-8).
+ * The only signed-in adult UI since UI-8 U8-3 deleted the classic
+ * dashboard group. Re-checks the session server-side as defense in
+ * depth (middleware.ts already bounces signed-out /garden requests).
  *
  * GardenRoot sets `data-ui="garden"` (the garden tokens in globals.css),
  * the font variables and the next-intl provider.
@@ -57,11 +51,6 @@ export async function generateViewport(): Promise<Viewport> {
  * uses, so the session and profile are read once per request.
  */
 export default async function GardenLayout({ children }: { children: React.ReactNode }) {
-  const cookieStore = await cookies();
-  if (!isGardenEnabled(cookieStore.get(GARDEN_UI_COOKIE)?.value)) {
-    notFound();
-  }
-
   const { user } = await getGardenUser();
 
   if (!user) {

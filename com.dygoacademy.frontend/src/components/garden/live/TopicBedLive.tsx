@@ -4,7 +4,6 @@ import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 
 import { GARDEN_ROUTES } from '@/constants/garden';
-import { ROUTES } from '@/constants/routes';
 import { useStudySession } from '@/hooks/useStudySession';
 import { useTopic } from '@/hooks/useTopic';
 import { languageOf } from '@/i18n/config';
@@ -84,9 +83,8 @@ export function TopicBedLive({ topicId }: { topicId: string }) {
             : null
         }
         quizHref={GARDEN_ROUTES.quiz(topicId)}
-        addWordHref={`${ROUTES.topics}/${encodeURIComponent(topicId)}`}
+        addWordHref={GARDEN_ROUTES.topic(topicId)}
         onAddWord={() => setAdding(true)}
-        optionsHref={`${ROUTES.topics}/${encodeURIComponent(topicId)}`}
         wiltingHref={GARDEN_ROUTES.quiz(topicId, 'leech')}
       />
       <AddWordSheet
