@@ -7,6 +7,18 @@ Consolidated from the thirteen automated development passes' individual
 the single script to actually run tomorrow — it supersedes all of those;
 they don't need to be read separately. Written by the 13th pass.
 
+> **2026-10-02 update (Phase 12 UI-8): new UI and URLs.** The classic UI is
+> gone; the garden is the only signed-in UI. Signed-in `/` lands on
+> `/garden` (not `/topics`). Screens: `/garden` home, `/review` (was
+> `/study`), `/topics`, `/topics/:id`, `/missions`, `/me` (replaces
+> `/analytics` and `/settings`), `/groups/**`, `/quiz`, `/join/:token`.
+> Old links redirect permanently: `/garden/<x>/**` → `/<x>/**`, `/study` →
+> `/review`, `/analytics` and `/settings` → `/me`. Read the paths in the
+> sections below with that mapping. Extra checks: open an old
+> `/garden/review` and `/study` bookmark and confirm the redirect; on a real
+> iPhone (bottom tab bar) and iPad (rail ≥ 600px, sidebar ≥ 1024px) walk
+> every screen in English and Vietnamese.
+
 ## Read this first: what's genuinely untested
 
 Every check below has passed unit tests and static analysis (159/159
@@ -57,11 +69,11 @@ owns "Oxford English Center"), `marco@dygo.test` (WRITE), `alex@dygo.test`
 ## A. Registration, auth, solo tenant
 
 1. Register a **brand-new** account (not one of the five above). Confirm
-   it lands on `/topics`, then confirm `POST /groups` succeeds and you
+   it lands on `/garden`, then confirm `POST /groups` succeeds and you
    land on the new group as ADMIN — this only works because every signup
    now auto-provisions a personal 0-seat tenant (fixed 9th pass; before
    that, any non-seeded user's first `POST /groups` failed outright).
-2. Sign in as `sarah@dygo.test`. Confirm the session lands on `/topics`
+2. Sign in as `sarah@dygo.test`. Confirm the session lands on `/garden`
    and the Navbar shows five tabs including "Groups."
 
 ## B. Groups, roster, invites
@@ -100,8 +112,8 @@ owns "Oxford English Center"), `marco@dygo.test` (WRITE), `alex@dygo.test`
 
 ## D. SRS & flashcards
 
-11. Study at `/study`, rate several cards (again/hard/good/easy), confirm
-    the deck reorders and due counts on `/analytics` move accordingly.
+11. Review at `/review`, rate several cards (again/hard/good/easy), confirm
+    the deck reorders and due counts on `/me` and `/garden` move accordingly.
 12. In devtools, go offline (Network tab → Offline), rate a card: confirm
     it still advances immediately rather than waiting on the network.
     Reconnect and confirm the rating lands within a few seconds without a
@@ -127,7 +139,7 @@ owns "Oxford English Center"), `marco@dygo.test` (WRITE), `alex@dygo.test`
 16. Set real `VAPID_PUBLIC_KEY`/`VAPID_PRIVATE_KEY`/`VAPID_SUBJECT`,
     subscribe a real browser, schedule a reminder a few minutes out, wait
     for the `notification-tick-every-15m` job (or trigger it manually).
-    Confirm a real push arrives and tapping it opens `/study` or
+    Confirm a real push arrives and tapping it opens `/study` (now 308 → `/review`) or
     `/quiz?mode=leech`.
 17. As a group ADMIN, trigger a class sprint twice in quick succession.
     Confirm the second call returns `429` with a `retryAfterSeconds`

@@ -255,6 +255,17 @@ Conflating them is how a roadmap quietly turns into a status report.
 
 ## 2. Live today
 
+> **2026-10-02 note (Phase 12 UI-8) — no API route changes; the frontend
+> callers moved.** The classic UI is deleted, so every route below is called
+> from the garden screens at their final URLs: groups from `/groups/**`,
+> invite redeem/preview from `/join/:token` (invite links are still
+> `/join/<token>`), SRS from `/review`, topics from `/topics/**`, quizzes from
+> `/quiz`, profile/stats/schedules from `/me`. The push deep links the backend
+> sends (`/study`, `/topics/:id`) are unchanged; the frontend middleware
+> 308-redirects `/study` → `/review` (and `/garden/<x>` → `/<x>`), so no backend
+> change is needed. The `app/(dashboard)/…` paths in older notes below are
+> history.
+
 **39 operations · Phase 0 + Module 1 + Module 3 + Module 5 + Module 6 complete**
 
 One other controller is registered — `billing` — but declares no routes, so

@@ -260,7 +260,11 @@ npm run dev
 
 | Endpoint | |
 | :--- | :--- |
-| http://localhost:3000 | App Router shell — landing page, (auth) and (dashboard) route groups |
+| http://localhost:3000 | Signed out → `/search` (guest trial); signed in → `/garden` |
+| http://localhost:3000/login | Sign in (also `/register`, `/forgot-password`, `/reset-password`) |
+| http://localhost:3000/garden | Home — Today's garden |
+| `/review` · `/topics` · `/topics/:id` · `/missions` · `/me` · `/groups/**` · `/quiz` · `/join/:token` | The garden screens (final URLs since Phase 12 UI-8) |
+| http://localhost:3000/garden/_reference/&lt;screen&gt; | Canvas fixture pages used by `npm run garden:diff` |
 | http://localhost:3000/api/health | Route Handler placeholder, returns `{ "status": "ok" }` |
 
 Phase 0 wires the scaffold end to end: App Router, Tailwind CSS + shadcn/ui
@@ -273,8 +277,13 @@ the session on every request and redirects a signed-out visitor away from
 depth. `src/config/env.ts` validates the vars below at boot the same way
 the backend does — missing or malformed `NEXT_PUBLIC_*` fails immediately
 with a clear message instead of a runtime error three components deep.
-The `(auth)` and `(dashboard)` routes still render placeholders — real
-screens and the login form land in Phase 1.
+**Since Phase 12 UI-8 (2026-10-02)** the classic UI is deleted and the
+Word Garden (`src/app/(garden)`, `src/components/garden`) is the only
+signed-in UI; there is no `NEXT_PUBLIC_GARDEN_UI` flag or `?ui=classic`
+any more. Old links redirect permanently in `src/middleware.ts`:
+`/garden/<x>/**` → `/<x>/**`, `/study` → `/review`, `/analytics` and
+`/settings` → `/me`. Paths live in `src/constants/routes.ts` and
+`src/constants/garden.ts`; see `dygo_academy_frontend_architecture.md` §4.
 
 Requires the backend (step 4) to be running for `/api/v1/topics` to resolve;
 the landing page itself has no data dependency.
@@ -572,7 +581,7 @@ DygoAcademy/
 ├── com.dygoacademy.frontend/       # Next.js App Router — scaffolded
 │   ├── .env.example                 # NEXT_PUBLIC_* template — copy to .env.local
 │   └── src/
-│       ├── app/                     # (auth), (dashboard) route groups + api/
+│       ├── app/                     # (auth), (auth-garden), (garden) route groups, search/, api/
 │       ├── components/ui/           # shadcn/ui primitives (button, card, ...)
 │       ├── hooks/                   # Custom hooks — empty until Phase 1+
 │       ├── lib/                     # supabase/{client,server,middleware}.ts, api-client.ts, utils.ts

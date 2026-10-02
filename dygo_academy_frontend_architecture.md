@@ -58,90 +58,78 @@ Two things worth naming explicitly because they're easy to lose track of later: 
 
 ## 3. Directory structure
 
+Updated 2026-10-02 (Phase 12 UI-8): the classic adult UI is deleted (U8-3), the garden is the only signed-in UI, and its screens live at their final short URLs (U8-5). Older layouts are in git history.
+
 ```
 com.dygoacademy.frontend/
 ├── src/
-│   ├── middleware.ts                # Session refresh + edge-side auth guard — runs before every matched request
-│   ├── config/
-│   │   └── env.ts                   # zod-validated NEXT_PUBLIC_* config, fails fast at boot
+│   ├── middleware.ts                # Session refresh, auth guard, legacy-URL 308 redirects (§4)
+│   ├── config/env.ts                # zod-validated NEXT_PUBLIC_* config, fails fast at boot
 │   ├── constants/
-│   │   └── routes.ts                # Single source of truth for path strings (PROTECTED_PATH_PREFIXES, ROUTES)
-│   ├── types/                       # Domain types — mirror the API wire format & DB schema exactly
-│   │   ├── api.ts                   #   ApiResponse<T> / ApiErrorResponse envelope
-│   │   ├── user.ts                  #   Profile, GroupRole
-│   │   ├── group.ts                 #   Group, GroupMember
-│   │   ├── topic.ts                 #   Topic, TopicSummary
-│   │   ├── word.ts                  #   TopicWord, WordStatus, CefrLevel
-│   │   ├── srs.ts                   #   SrsRating
-│   │   └── index.ts                 #   barrel export
-│   ├── lib/
-│   │   ├── api-client.ts            # Typed fetch wrapper — unwraps ApiResponse<T>, attaches bearer token
-│   │   ├── utils.ts                 # cn() class merger
-│   │   └── supabase/
-│   │       ├── client.ts            #   Browser client — Client Components only
-│   │       ├── server.ts            #   Server client — Server Components / Route Handlers / Server Actions
-│   │       └── middleware.ts        #   updateSession() — the shared logic middleware.ts calls
-│   ├── stores/
-│   │   └── useStudySessionStore.ts  # Zustand — client-only session state (see §6)
-│   ├── hooks/
-│   │   └── useTopics.ts             # TanStack Query — the first real data hook (§15), wraps live GET /topics
+│   │   ├── routes.ts                # PROTECTED_PATH_PREFIXES, ROUTES, legacyRedirect() — single source of truth for paths
+│   │   ├── garden.ts                # GARDEN_ROUTES (the short URLs), reference/dev page paths
+│   │   └── layout.ts                # CONTENT_WIDTH tiers (§17)
+│   ├── i18n/                        # next-intl config + messages (en-US, vi-VN, zh-CN live in ../messages)
+│   ├── types/                       # Domain types — mirror the API wire format & DB schema
+│   ├── lib/                         # api-client.ts, supabase/{client,server,middleware}.ts, offline review queue, push, timezone
+│   ├── stores/useStudySessionStore.ts
+│   ├── hooks/                       # TanStack Query hooks (topics, srs, quiz, groups, invites, missions, profile, push…)
 │   ├── components/
-│   │   ├── ui/                      # shadcn/ui primitives — button.tsx, card.tsx, ... (the design system layer)
-│   │   ├── layout/                  # App chrome — Navbar, SignOutButton, QueryProvider, ThemeProvider
-│   │   ├── onboarding/               # GuestWordTrial.tsx — the pre-signup trial (§15)
-│   │   ├── topics/                  # DueNowCard, TopicCard, TopicGridCard, LeechNudge, WordStatusRow, EmptyTopicState
-│   │   ├── flashcard/                # Flashcard.tsx (flip), RatingButtons.tsx — shared by guest trial & study session
-│   │   └── quiz/                    # Feature components — Phase 3, still empty
+│   │   ├── ui/                      # shadcn/ui primitives still used by dialogs and the guest trial
+│   │   ├── layout/                  # QueryProvider, ThemeProvider
+│   │   ├── onboarding/              # GuestWordTrial (the /search guest trial)
+│   │   ├── flashcard/               # Flashcard, AudioButton (guest trial)
+│   │   └── garden/                  # The design system's components (BottomTabBar, GardenRail, GardenSidebar, sheets, rows…)
+│   │       ├── screens/             #   Pure screens + canvas fixtures (also rendered by /garden/_reference/<screen>)
+│   │       ├── live/                #   *Live wrappers: hooks → screen props
+│   │       └── auth/                #   Sign-in / register / forgot / reset screens
 │   └── app/
-│       ├── layout.tsx               # Root layout — ThemeProvider + QueryProvider
-│       ├── page.tsx                 # Landing page — guest word trial (§15)
-│       ├── globals.css              # Tailwind + design tokens (incl. brand accent, §15) + 3D transform utilities
-│       ├── error.tsx                # Root error boundary
-│       ├── global-error.tsx         # Catches errors in the root layout itself
-│       ├── not-found.tsx            # 404
-│       ├── loading.tsx              # Default navigation-loading UI
-│       ├── api/health/route.ts      # Route Handler placeholder
-│       ├── (auth)/
-│       │   ├── login/page.tsx
-│       │   └── register/page.tsx
-│       └── (dashboard)/
-│           ├── layout.tsx           # Server-side session re-check + Navbar
-│           ├── error.tsx            # Segment-scoped error boundary
-│           ├── loading.tsx          # Segment-scoped loading UI
-│           ├── topics/page.tsx      # Home screen — due-now, your topics (real data), leech nudge
-│           ├── topics/browse/page.tsx     # Topics grid (1f) — search filter, all topics, real data
-│           ├── topics/[topicId]/page.tsx  # Topic detail — empty/enriching/failed word states
-│           ├── study/page.tsx       # Study session — flashcard flip + two-button rating
-│           ├── analytics/page.tsx
-│           └── settings/page.tsx
-├── package.json                     # name: com.dygoacademy.frontend
-├── tailwind.config.ts
-├── components.json                  # shadcn/ui config
-├── tsconfig.json                    # @/* → ./src/*
+│       ├── layout.tsx, error.tsx, global-error.tsx, not-found.tsx, loading.tsx, globals.css
+│       ├── api/health/route.ts
+│       ├── search/page.tsx          # Signed-out guest trial ("/" sends signed-out visitors here)
+│       ├── (auth)/login, register   # Garden-styled auth screens
+│       ├── (auth-garden)/forgot-password, reset-password
+│       ├── (garden)/                # Signed-in app: layout (session re-check + nav chrome), error/loading/not-found
+│       │   ├── garden/page.tsx      #   /garden — home (Today's garden)
+│       │   ├── garden/_gallery, _tokens   # dev pages (public)
+│       │   ├── review/, review/done/      # /review, /review/done
+│       │   ├── topics/, topics/[id]/      # /topics, /topics/:id
+│       │   ├── missions/, me/, quiz/      # /missions, /me, /quiz
+│       │   ├── groups/, groups/[id]/, groups/[id]/manage/  # /groups/**
+│       │   └── join/[token]/        #   /join/:token — redeem an invite
+│       └── (garden-reference)/garden/_reference/[name]/  # canvas fixture pages for `npm run garden:diff`
+├── messages/                        # en-US.json, vi-VN.json, zh-CN.json
+├── tailwind.config.ts               # Breakpoints (§16), garden tokens (no prefix since U8-4)
+├── tsconfig.json / tsconfig.test.json
 └── Dockerfile
 ```
 
-Every folder here maps to exactly one concern. If a new file doesn't obviously belong in one of these, that's a signal to ask "does this need a new folder" before dropping it into `lib/` as a catch-all — `lib/` catching everything is how a codebase becomes unmaintainable eighteen months in.
+Every folder here maps to exactly one concern. If a new file doesn't obviously belong in one of these, that's a signal to ask "does this need a new folder" before dropping it into `lib/` as a catch-all.
 
 ---
 
 ## 4. Routing architecture
 
-Next.js **route groups** — `(auth)` and `(dashboard)` — organize the App Router without adding URL segments: `(dashboard)/topics/page.tsx` serves `/topics`, not `/dashboard/topics`. They exist so each group can have its own `layout.tsx`: `(dashboard)/layout.tsx` carries the Navbar and the session check; `(auth)` deliberately has none, because a login page wrapped in the authenticated chrome is a bug waiting to happen.
+Next.js **route groups** — `(auth)`, `(auth-garden)`, `(garden)`, `(garden-reference)` — organize the App Router without adding URL segments: `(garden)/review/page.tsx` serves `/review`. `(garden)/layout.tsx` carries the session re-check and the navigation chrome (bottom tab bar / rail / sidebar, §16); the auth groups deliberately have none.
 
-**Static vs. dynamic rendering** is a direct consequence of the auth guard. The landing page, `/login`, and `/register` have no server-side data dependency and prerender as static HTML (`○` in the build output). Every `(dashboard)` route is forced dynamic (`ƒ`) because the layout calls `cookies()` to check the session on every request — confirmed in the actual build output, not assumed:
+**Final URLs (Phase 12 decision 1, built in UI-8 U8-5, 2026-10-02):**
 
-```
-├ ○ /                                      (static)
-├ ○ /login                                 (static)
-├ ○ /register                              (static)
-├ ƒ /topics                                (dynamic — session check)
-├ ƒ /study                                 (dynamic — session check)
-├ ƒ /analytics                             (dynamic — session check)
-└ ƒ /settings                              (dynamic — session check)
-```
+| URL | Screen | Access |
+| :--- | :--- | :--- |
+| `/` | — | signed in → `/garden` (307), signed out → `/search` |
+| `/search` | Guest word trial | public |
+| `/login`, `/register`, `/forgot-password`, `/reset-password` | Auth | public (signed-in users are sent away from login/register) |
+| `/garden` | Home — Today's garden | signed in |
+| `/review`, `/review/done` | Review session, done screen | signed in |
+| `/topics`, `/topics/:id` | Topics, topic bed | signed in |
+| `/missions`, `/me`, `/quiz` | Missions, Me (settings + stats), quiz | signed in |
+| `/groups`, `/groups/:id`, `/groups/:id/manage` | Shared gardens | signed in |
+| `/join/:token` | Redeem an invite | signed in (bounces through `/login?next=…`) |
+| `/garden/_reference/<screen>`, `/garden/_gallery`, `/garden/_tokens` | Dev/fixture pages | public, canvas sample data only |
 
-This is the right trade: a logged-in area can never be cached and served to the wrong person. The performance cost is paid back in §10 — streaming with `loading.tsx` means the dynamic cost is a fast auth check, not a slow page.
+**Legacy redirects** (`legacyRedirect()` in `constants/routes.ts`, applied in `middleware.ts` **before** the session check, query string kept, all **308 permanent**): `/garden/<x>/**` → `/<x>/**` for review, topics, missions, me, groups, quiz, join; `/study` → `/review`; `/analytics` and `/settings` → `/me`. Old bookmarks, push-notification deep links (the backend still sends `/study`) and invite links keep working.
+
+**Static vs. dynamic rendering:** `/search` and the auth pages have no server data dependency; every `(garden)` route is dynamic because the layout reads `cookies()` to re-check the session. A logged-in area can never be cached and served to the wrong person.
 
 ---
 
@@ -301,62 +289,52 @@ Implemented from the "Dygo Wireframes" Claude Design canvas (project `f856506e-6
 
 ## 16. Responsive breakpoints — target devices and why
 
-Standardized 2026-09-17 ("which screen size for iPhone and iPad when we want to standardize for whole application"). Before this, the app relied on Tailwind's default breakpoint scale implicitly — it happened to already be mobile-first-appropriate (`min-h-dvh` on the guest/search pages, `max-w-sm`/`max-w-md` centered cards everywhere, `sm:` used only for minor spacing in `Navbar`/`PublicNavbar`), but nothing pinned *why* those particular numbers were the right ones for an app whose only two device families are iPhone and iPad.
+Standardized 2026-09-17; **updated 2026-10-02 for Phase 12 UI-8** (U8-4 renamed the garden's `medium`/`expanded` to `md`/`lg`; the old 768px `md:` became `tablet:`).
 
-**Target viewport widths** (CSS pixels / "points," portrait orientation, current lineup as of 2026):
+**Target viewport widths** (CSS pixels, portrait):
 
 | Device class | Width range | Representative models |
 | :--- | :--- | :--- |
-| iPhone | 375–440px | SE (smallest, 375) → standard 390–402 → Plus/Pro Max 428–440 |
+| iPhone | 375–440px | SE (375) → standard 390–402 → Plus/Pro Max 428–440 |
 | iPad mini | 744px | — |
 | iPad / iPad Air / iPad Pro 11" | 820–834px | The two most common iPad sizes |
 | iPad Air 13" / iPad Pro 13" | 1024–1032px | — |
 
-Landscape width equals the portrait *height* for both families — an iPhone in landscape (667–956px) and every iPad in landscape (1133–1376px) both land well past `sm`, which is expected and not something layouts need to special-case for beyond what `sm:`/`md:`/`lg:` already do.
+**`tailwind.config.ts` `theme.screens`:**
 
-**Mapped onto `tailwind.config.ts`'s `theme.screens`** (pinned explicitly the same pass — see that file's own header comment; the values match Tailwind's own defaults, so no existing `sm:`/`md:`/`lg:` usage changed):
-
-| Prefix | Width | Covers |
+| Prefix | Width | Covers / garden layout |
 | :--- | :--- | :--- |
-| *(none — base)* | < 640px | Every iPhone, portrait — the mobile-first design target |
-| `sm:` | ≥ 640px | iPhone landscape, iPad mini portrait |
-| `md:` | ≥ 768px | iPad / iPad Air / iPad Pro 11" portrait — the practical tablet breakpoint |
-| `lg:` | ≥ 1024px | iPad Air 13"/Pro 13" portrait, and every iPad landscape |
+| *(base)* | < 600px | Every iPhone portrait — compact: bottom tab bar |
+| `md:` | ≥ 600px | iPhone landscape, every iPad portrait — medium: `GardenRail` (icon rail) |
+| `sm:` | ≥ 640px | Kept for the few shadcn/guest-trial spacing tweaks |
+| `tablet:` | ≥ 768px | The old classic `md:` (768px), kept so no layout moved in the rename |
+| `lg:` | ≥ 1024px | iPad 13" portrait, every iPad landscape — expanded: `GardenSidebar` |
+| `xl:` / `2xl:` | 1280 / 1536px | Reserved |
+| `short:` | height ≤ 499px | Phone landscape (shorter chrome) |
 
-**Design/test standard going forward**: build and test against **375px** first (the safe floor — an iPhone SE-clean layout is clean on every iPhone), then check **820px** (does a centered `max-w-sm`/`max-w-md` card look absurd floating in the middle of an iPad, or does it need a `md:` treatment). Add a real `lg:` checkpoint (1024px) only once a screen actually gets a multi-column tablet layout — nothing in the app does yet, so `lg:`/`xl:`/`2xl:` remain reserved rather than actively designed against today.
+**Design/test standard:** build at **375px** first, then check **820px** (rail) and **1024px** (sidebar). Playwright runs all 8 viewports in `com.dygoacademy.automationtesting/ui`.
 
 Sources for the device widths: [screensizechecker.com — iPhone viewport sizes](https://screensizechecker.com/devices/iphone-viewport-sizes), [screensizechecker.com — iPad viewport sizes](https://screensizechecker.com/devices/ipad-viewport-sizes).
 
 
 ## 17. Shared content-width config — one source of truth for container widths
 
-Added 2026-09-17 ("Can we make every page and pop-up will follow the same global config then follow width of topics side?"). Before this, container widths were hardcoded independently per file — `max-w-sm` on the auth Cards and every Dialog-based modal, `max-w-md` on Study/Quiz/Groups/Settings/Home, `max-w-2xl` on Topics-grid/Analytics — with no shared name tying them together, so a page could drift out of sync with its siblings by a single unreviewed Tailwind class edit (this had already happened once: Study was on `max-w-sm` while Quiz, its closest sibling in the UI, was on `max-w-md`).
-
-Shipped that same day as three named tiers (`narrow`/`default`/`wide` at 384/448/672px) rather than one global width, because a single width matching Topics' grid (`max-w-2xl`) applied to a login form, a delete-confirmation dialog, or the flashcard itself reads as a form floating in a mostly-empty page. Later the same day, live-requested explicitly ("Could you please help me change all page and pop-up to wide layout?") with that exact tradeoff flagged and confirmed anyway — as of this revision **all three tiers resolve to `max-w-2xl` (672px)**, so every page container and every popup is the same width. The three names are kept rather than collapsed into a single constant specifically so a future "actually, popups look stretched, split them back out" is a one-line value change in `layout.ts`, not a re-thread through every call site — each consumer still names the tier it semantically belongs to (modals/forms use `.narrow`, single-item screens use `.default`, grids use `.wide`); only the underlying pixel value converged.
+Added 2026-09-17; **updated 2026-10-02 for Phase 12 UI-8**: the classic `CONTENT_WIDTH` (all tiers `max-w-2xl`) was deleted with the classic UI (U8-3), and the garden's `GARDEN_CONTENT_WIDTH` was renamed to `CONTENT_WIDTH` (U8-4). Values follow the design system per breakpoint:
 
 ```ts
 // src/constants/layout.ts
 export const CONTENT_WIDTH = {
-  narrow: 'max-w-2xl', // 672px — was max-w-sm (384px) until the wide-everywhere change
-  default: 'max-w-2xl', // 672px — was max-w-md (448px) until the wide-everywhere change
-  wide: 'max-w-2xl', // 672px
+  narrow: 'w-full md:max-w-[540px]',                  // forms and dialogs
+  default: 'w-full md:max-w-[560px] lg:max-w-[640px]', // single-item content
+  wide: 'w-full md:max-w-[720px] lg:max-w-[1080px]',   // grids and dashboards
 } as const;
 ```
 
-**Usage pattern** — every consuming file imports the constant and interpolates it into a template-literal `className`, the same pattern already used for conditional Tailwind classes elsewhere in the codebase:
+**Usage:** import it and interpolate into `className` — never hardcode a `max-w-*` container width inline:
 
 ```tsx
 import { CONTENT_WIDTH } from '@/constants/layout';
-// ...
-<div className={`mx-auto flex ${CONTENT_WIDTH.default} flex-col gap-4 p-6`}>
+<div className={`mx-auto flex ${CONTENT_WIDTH.default} flex-col gap-4`}>
 ```
 
-**Tier assignments, current as of this section** (name → current value → who reads it; the "who reads it" column is unchanged from when the tiers had distinct values, since each call site still names its semantic tier):
-
-| Tier | Current value | Used by |
-| :--- | :--- | :--- |
-| `narrow` | `max-w-2xl` (672px) | `(auth)/login`, `(auth)/register`, `join/[token]` Cards; `ui/dialog.tsx`'s `DialogContent` default (cascades to `WordCardModal`, `AddWordModal`, `CreateTopicModal` — none of which override the width) |
-| `default` | `max-w-2xl` (672px) | `settings`, `study`, `quiz`, `groups`, `groups/[groupId]`, dashboard home (`/`), `topics/[topicId]` |
-| `wide` | `max-w-2xl` (672px) | `topics` (grid), `analytics` |
-
-Same rule as `constants/routes.ts` for paths: never hardcode a `max-w-*` container width inline — go through `CONTENT_WIDTH`. Even with all three tiers converged, a new page should still pick the tier that matches its content density (a form or single-record view uses `.narrow`/`.default`; a grid or multi-card dashboard uses `.wide`) rather than inventing a fourth value — that naming is what makes it cheap to diverge the pixel values again later if a screen turns out to need it.
+Pick the tier that matches the content density rather than inventing a fourth value. Current direct consumers outside the garden screens: `ui/dialog.tsx`, `ui/alert-dialog.tsx`, `onboarding/GuestWordTrial.tsx`, and the `/garden/_gallery` and `/garden/_tokens` dev pages.
