@@ -133,6 +133,10 @@ run_rls_suite() {
   for f in "$DIR"/schema/*.sql; do run_file "$f" "$scratch"; done
   run_file "$DIR/seeds/01_core_fixtures.sql" "$scratch"
   run_file "$DIR/tests/rls_test.sql" "$scratch"
+  # UI-6 retention (U6-1): the migration is self-contained, so apply it on top
+  # of the core fixtures and run its own RLS assertions.
+  run_file "$DIR/migrations/20261001_retention.sql" "$scratch"
+  run_file "$DIR/tests/rls_retention_test.sql" "$scratch"
 }
 
 # -----------------------------------------------------------------------------

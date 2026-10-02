@@ -58,7 +58,7 @@ describe('localeFromAcceptLanguage', () => {
     expect(localeFromAcceptLanguage('vi')).toBe('vi-VN');
     expect(localeFromAcceptLanguage('en-US')).toBe('en-US');
     expect(localeFromAcceptLanguage('en-GB')).toBe('en-US');
-    expect(localeFromAcceptLanguage('en', 'America/Chicago')).toBe('en-US');
+    expect(localeFromAcceptLanguage('en')).toBe('en-US');
   });
 
   it('respects q-values and order', () => {
