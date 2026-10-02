@@ -51,7 +51,7 @@ export function AccountSheet({
       closeButton={false}
       className="bg-garden-bg"
     >
-      <div className="flex flex-col gap-[14px] pb-4">
+      <div className="flex flex-col gap-[14px] pb-[18px] pt-2">
         <div className="flex items-center gap-3 rounded-[18px] border border-garden-border bg-garden-surface px-[14px] py-3">
           <span
             aria-hidden="true"
@@ -86,7 +86,7 @@ export function AccountSheet({
           type="button"
           onClick={() => onOpenChange(false)}
           disabled={signingOut}
-          className="min-h-11 text-[15px] font-semibold text-garden-forest disabled:opacity-60"
+          className="-my-3 min-h-11 text-[15px] font-semibold text-garden-forest disabled:opacity-60"
         >
           {t('cancel')}
         </button>
