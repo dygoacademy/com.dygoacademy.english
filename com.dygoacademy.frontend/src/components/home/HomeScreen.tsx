@@ -175,7 +175,9 @@ export function HomeScreen({
                 {t('hero.haveAccount')}
               </Link>
             </div>
-            <span className="flex items-center gap-2 text-[14px] text-muted-foreground">
+            {/* 19px pins the canvas line box: with line-height normal, the explicit
+                PingFang SC fallback for 简体中文 makes the line 20px and shifts the page 1px. */}
+            <span className="flex items-center gap-2 text-[14px] leading-[19px] text-muted-foreground">
               <GlobeIcon width={16} height={16} />
               {t('hero.languages')}
             </span>

@@ -153,3 +153,12 @@ Engineering-facing log of shipped fixes and changes, one dated entry per change.
 * **Behavior**: the script finds words with no or placeholder audio (`--limit`, default 500; `--dry-run`), skips words already queued, and queues the rest at BullMQ priority 10. Jobs without a priority run first, so a learner's own new words are never stuck behind a backfill. The backend worker does the work, as before: R2 reuse first, TTS only if needed.
 * **Verified**: backend jest 224/224 (the 6 removed tests belonged to the startup service), `tsc` and lint clean. The script was run against Postgres with all seeds plus a real Redis: dry run lists words; 128 jobs queued at priority 10 with `:`-free ids; `--limit 100` then a re-run queued 100, then 28 ("100 already queued"), then nothing; a bad `--limit` exits with an error.
 
+
+## 2026-10-03
+
+### Fixed: home v2 boards 1px shift under the hero languages line (Phase 12, HP-11)
+* **Files**: [`src/components/home/HomeScreen.tsx`](com.dygoacademy.frontend/src/components/home/HomeScreen.tsx)
+* **What**: the hero line "Available in English, Tiếng Việt and 简体中文" gets `leading-[19px]`.
+* **Why**: with `line-height: normal`, the explicit `"PingFang SC"` fallback in the body font stack made the line 20px for 简体中文, while the canvas (`'DM Sans', 'Be Vietnam Pro', sans-serif`) draws it at 19px. Everything below sat 1 CSS px low, so every v2 board failed `garden:diff` at 1.5–2.8%.
+* **Verified**: `garden:diff` against `www.dygoacademy.com`, en-US and vi-VN, all 10 boards pass: H3-home-v2-phone 0.392%, H4-home-v2-desktop 0.200%, H3s-plant-bloomed 0.395%, H3s-pain-flipped 0.399%, H3s-uses-travel 0.392%; vi-VN 0.213–0.443%. The vi-VN phone boards are the closest to the 0.5% bar.
+* **Incident on the way**: a `next dev` started inside `com.dygoacademy.frontend` wrote into the same `.next/` as the pm2 `dygo-frontend` (`next start`) and broke the production build; UAT returned 500 until `.next/` was cleared, `dygo-frontend` restored from `ecosystem.config.js` and the deploy watcher rebuilt it.
