@@ -2,6 +2,7 @@
 
 import * as React from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 
 import { Button } from '../Button';
@@ -12,6 +13,7 @@ import { IconButton } from '../IconButton';
 import { ProgressVine } from '../ProgressVine';
 import { RatingBar, type Rating, type RatingInterval } from '../RatingBar';
 import { ReviewCard, type ReviewCardProps } from '../ReviewCard';
+import { useGardenShortcuts } from '../useGardenShortcuts';
 
 /**
  * A2 · Watering (canvas `reference/A2-review-question`, `-answer`,
@@ -25,6 +27,10 @@ import { ReviewCard, type ReviewCardProps } from '../ReviewCard';
  *
  * Without `onShowAnswer` the screen flips to the answer by itself (the
  * reference pages and the gallery use that).
+ *
+ * Keyboard (design system §10, `useGardenShortcuts`): Space shows the
+ * answer, P plays the word, 1–4 rate (in `RatingBar`), Esc leaves to
+ * `closeHref`. Text fields and open sheets keep their keys.
  */
 export type ReviewState = 'question' | 'answer' | 'finished';
 
@@ -45,6 +51,8 @@ export interface ReviewScreenProps {
   secondaryAction?: { label: string; href?: string; onClick?: () => void } | null;
   /** Shown instead of the card when there is nothing to water. */
   emptyText?: string;
+  /** Space / P / Esc / 1–4 on the window (default on). */
+  keyboardShortcuts?: boolean;
 }
 
 /** The finished flower (120px). */
@@ -83,8 +91,11 @@ export function ReviewScreen({
   bloomHref,
   secondaryAction,
   emptyText,
+  keyboardShortcuts = true,
 }: ReviewScreenProps) {
   const t = useTranslations('screens.review');
+  const router = useRouter();
+  const cardRef = React.useRef<HTMLDivElement>(null);
   const [localState, setLocalState] = React.useState(state);
   const [prevState, setPrevState] = React.useState(state);
   if (prevState !== state) {
@@ -92,6 +103,20 @@ export function ReviewScreen({
     setLocalState(state);
   }
   const shown = onShowAnswer ? state : localState;
+  const showAnswer = () => (onShowAnswer ? onShowAnswer() : setLocalState('answer'));
+
+  useGardenShortcuts(
+    {
+      ' ': card && shown === 'question' ? showAnswer : null,
+      // The card's AudioButton (play, or "unavailable, tap to retry").
+      p:
+        card && shown !== 'finished'
+          ? () => cardRef.current?.querySelector<HTMLButtonElement>('button[data-status]')?.click()
+          : null,
+      Escape: () => router.push(closeHref),
+    },
+    { enabled: keyboardShortcuts },
+  );
 
   return (
     // Design system §10, A2: centred max 560 on iPad portrait; landscape
@@ -100,7 +125,7 @@ export function ReviewScreen({
     <div className="mx-auto flex min-h-screen-dvh w-full max-w-[560px] flex-col gap-[14px] bg-bg px-4 pb-6 pt-5 text-text ipad-lg:max-w-[960px]">
       <div className="flex items-center gap-3">
         <IconButton asChild aria-label={t('close')}>
-          <Link href={closeHref}>
+          <Link href={closeHref} aria-keyshortcuts={keyboardShortcuts ? 'Escape' : undefined}>
             <CloseIcon width={20} height={20} />
           </Link>
         </IconButton>
@@ -135,18 +160,24 @@ export function ReviewScreen({
           ) : null}
         </div>
       ) : card ? (
-        <div className="rise flex flex-grow flex-col gap-[14px]">
+        <div ref={cardRef} className="rise flex flex-grow flex-col gap-[14px]">
           <ReviewCard {...card} revealed={shown === 'answer'} className="flex-grow" />
           {shown === 'question' ? (
             <Button
               variant="forest"
-              onClick={() => (onShowAnswer ? onShowAnswer() : setLocalState('answer'))}
+              onClick={showAnswer}
+              aria-keyshortcuts={keyboardShortcuts ? 'Space' : undefined}
             >
               {t('showAnswer')}
             </Button>
           ) : (
             <div className="rise">
-              <RatingBar intervals={intervals} onRate={(r) => onRate?.(r)} disabled={rating} />
+              <RatingBar
+                intervals={intervals}
+                onRate={(r) => onRate?.(r)}
+                disabled={rating}
+                keyboardShortcuts={keyboardShortcuts}
+              />
             </div>
           )}
         </div>

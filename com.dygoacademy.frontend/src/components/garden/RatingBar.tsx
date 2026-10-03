@@ -4,6 +4,7 @@ import * as React from 'react';
 import { useTranslations } from 'next-intl';
 
 import { gcn } from './cn';
+import { useGardenShortcuts } from './useGardenShortcuts';
 
 /**
  * Rating bar (canvas A2): four equal buttons, 68px tall, radius 16, 8px
@@ -16,10 +17,10 @@ import { gcn } from './cn';
  *   card, so the frontend never re-implements FSRS.
  * - `disabled` (e.g. while the rating is saving) disables all four
  *   buttons and ignores the keyboard.
- * - Keys 1–4 fire Again / Hard / Good / Easy. The key hints only appear
- *   once a keyboard has been used, and hide again on the next tap.
- *   Presses in text fields, with modifier keys, or held-down repeats are
- *   ignored.
+ * - Keys 1–4 fire Again / Hard / Good / Easy through the shared
+ *   `useGardenShortcuts` (text fields, modifier keys, repeats and open
+ *   sheets are ignored there). The key hints only appear once a keyboard
+ *   has been used, and hide again on the next tap.
  */
 export const RATINGS = ['again', 'hard', 'good', 'easy'] as const;
 export type Rating = (typeof RATINGS)[number];
@@ -61,13 +62,6 @@ export interface RatingBarProps {
   className?: string;
 }
 
-function isTypingTarget(target: EventTarget | null): boolean {
-  if (!(target instanceof HTMLElement)) return false;
-  if (target.isContentEditable) return true;
-  const tag = target.tagName;
-  return tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT';
-}
-
 export function RatingBar({
   intervals,
   onRate,
@@ -80,38 +74,15 @@ export function RatingBar({
     interval.unit === 'lessThanMinute'
       ? t('interval.lessThanMinute')
       : t(`interval.${interval.unit}`, { count: interval.count });
-  const [keyboardUsed, setKeyboardUsed] = React.useState(false);
-
-  // Keep the latest props in refs so the window listener is attached once.
-  const onRateRef = React.useRef(onRate);
-  const disabledRef = React.useRef(disabled);
-  React.useEffect(() => {
-    onRateRef.current = onRate;
-    disabledRef.current = disabled;
-  });
-
-  React.useEffect(() => {
-    if (!keyboardShortcuts) return;
-    function onKeyDown(event: KeyboardEvent) {
-      setKeyboardUsed(true);
-      if (event.repeat || event.altKey || event.ctrlKey || event.metaKey) return;
-      if (isTypingTarget(event.target)) return;
-      const rating = RATING_KEY[event.key];
-      if (!rating || disabledRef.current) return;
-      event.preventDefault();
-      onRateRef.current(rating);
-    }
-    function onPointerDown() {
-      // A tap or click means the learner isn't on a keyboard (any more).
-      setKeyboardUsed(false);
-    }
-    window.addEventListener('keydown', onKeyDown);
-    window.addEventListener('pointerdown', onPointerDown);
-    return () => {
-      window.removeEventListener('keydown', onKeyDown);
-      window.removeEventListener('pointerdown', onPointerDown);
-    };
-  }, [keyboardShortcuts]);
+  const { keyboardUsed } = useGardenShortcuts(
+    Object.fromEntries(
+      Object.entries(RATING_KEY).map(([key, rating]) => [
+        key,
+        disabled ? null : () => onRate(rating),
+      ]),
+    ),
+    { enabled: keyboardShortcuts },
+  );
 
   return (
     <div

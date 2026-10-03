@@ -96,6 +96,87 @@ describe('ReviewScreen', () => {
     expect(screen.getByRole('heading', { name: 'All 18 watered' })).toBeTruthy();
     expect(screen.getByRole('link', { name: 'See your garden bloom' })).toBeTruthy();
   });
+
+  describe('keyboard (U7-3)', () => {
+    it('Space shows the answer, then 1–4 rate', () => {
+      const onRate = vi.fn();
+      renderWithIntl(<ReviewScreen {...props} state="question" onRate={onRate} />);
+      expect(
+        screen.getByRole('button', { name: 'Show answer' }).getAttribute('aria-keyshortcuts'),
+      ).toBe('Space');
+      fireEvent.keyDown(window, { key: '3' });
+      expect(onRate).not.toHaveBeenCalled();
+      fireEvent.keyDown(window, { key: ' ' });
+      expect(screen.getByText(REVIEW.card.meaning)).toBeTruthy();
+      fireEvent.keyDown(window, { key: '3' });
+      expect(onRate).toHaveBeenCalledWith('good');
+    });
+
+    it('calls onShowAnswer on Space when the page owns the state', () => {
+      const onShowAnswer = vi.fn();
+      renderWithIntl(<ReviewScreen {...props} state="question" onShowAnswer={onShowAnswer} />);
+      fireEvent.keyDown(window, { key: ' ' });
+      expect(onShowAnswer).toHaveBeenCalledTimes(1);
+    });
+
+    it('P plays the word', () => {
+      const play = vi.spyOn(HTMLMediaElement.prototype, 'play').mockResolvedValue();
+      const pause = vi.spyOn(HTMLMediaElement.prototype, 'pause').mockImplementation(() => {});
+      const { unmount } = renderWithIntl(<ReviewScreen {...props} state="question" />);
+      fireEvent.keyDown(window, { key: 'P' });
+      expect(play).toHaveBeenCalledTimes(1);
+      unmount();
+      play.mockRestore();
+      pause.mockRestore();
+    });
+
+    it('Esc leaves to closeHref', () => {
+      push.mockClear();
+      renderWithIntl(<ReviewScreen {...props} state="answer" />);
+      expect(screen.getByRole('link', { name: 'Close' }).getAttribute('aria-keyshortcuts')).toBe(
+        'Escape',
+      );
+      fireEvent.keyDown(window, { key: 'Escape' });
+      expect(push).toHaveBeenCalledWith('/garden');
+    });
+
+    it('ignores keys while a sheet is open or in a text field, and when turned off', () => {
+      push.mockClear();
+      const onShowAnswer = vi.fn();
+      const { unmount } = renderWithIntl(
+        <>
+          <input aria-label="note" />
+          <ReviewScreen {...props} state="question" onShowAnswer={onShowAnswer} />
+          <div role="dialog" aria-label="sheet" />
+        </>,
+      );
+      fireEvent.keyDown(window, { key: 'Escape' });
+      fireEvent.keyDown(window, { key: ' ' });
+      fireEvent.keyDown(screen.getByRole('textbox', { name: 'note' }), { key: ' ' });
+      expect(push).not.toHaveBeenCalled();
+      expect(onShowAnswer).not.toHaveBeenCalled();
+      unmount();
+      renderWithIntl(
+        <ReviewScreen
+          {...props}
+          state="question"
+          onShowAnswer={onShowAnswer}
+          keyboardShortcuts={false}
+        />,
+      );
+      fireEvent.keyDown(window, { key: ' ' });
+      fireEvent.keyDown(window, { key: 'Escape' });
+      expect(push).not.toHaveBeenCalled();
+      expect(onShowAnswer).not.toHaveBeenCalled();
+    });
+
+    it('leaves Space to a focused button', () => {
+      const onShowAnswer = vi.fn();
+      renderWithIntl(<ReviewScreen {...props} state="question" onShowAnswer={onShowAnswer} />);
+      fireEvent.keyDown(screen.getByRole('button', { name: 'Show answer' }), { key: ' ' });
+      expect(onShowAnswer).not.toHaveBeenCalled();
+    });
+  });
 });
 
 describe('WeeklyHarvestScreen', () => {
