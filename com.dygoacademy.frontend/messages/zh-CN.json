@@ -408,8 +408,7 @@
       },
       "ripens": "明天 {time} · <b>{count} 个单词将成熟</b>",
       "public": {
-        "metaTitle": "Dygo · 一次一个单词，让英语生长",
-        "metaDescription": "Dygo 把新单词变成一座花园。每天花几分钟浇灌到期的单词，看着它们从种子长到结果。",
+        "metaTitle": "Dygo · 学英语单词，也学会怎么用",
         "nav": {
           "label": "本页内容",
           "features": "功能",
@@ -419,11 +418,22 @@
         "signIn": "登录",
         "createAccount": "创建账户",
         "hero": {
-          "title": "一次一个单词，让英语生长。",
-          "lead": "Dygo 把新单词变成一座花园。每天花几分钟浇灌到期的单词，看着它们从种子长到结果。",
-          "start": "免费开始种植",
+          "title": "学一个词，用对它，永远记住。",
+          "lead": "每个单词都配有真实例句和用你的语言写的清楚解释。然后，Dygo 会在你快要忘记之前再次提醒你。每天只需 5 分钟。",
+          "start": "创建免费账户",
           "haveAccount": "我已有账户",
           "languages": "支持 English、Tiếng Việt 和简体中文"
+        },
+        "plant": {
+          "inputLabel": "种下一个单词",
+          "placeholder": "一个你总是记不住的单词…",
+          "button": "种下",
+          "try": "试试：",
+          "chipsLabel": "试一个单词",
+          "synonyms": "同义词",
+          "bird": "我会在你忘记之前提醒你。要留下这个词吗？",
+          "save": "保存这个词——免费",
+          "unknown": "注册后，Dygo 会为你种下“{word}”。"
         },
         "how": {
           "title": "你的单词如何生长",

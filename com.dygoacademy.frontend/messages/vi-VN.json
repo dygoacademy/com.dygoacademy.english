@@ -404,8 +404,7 @@
       },
       "ripens": "Ngày mai {time} · <b>{count} từ sẽ chín</b>",
       "public": {
-        "metaTitle": "Dygo · Vun trồng tiếng Anh, từng từ một",
-        "metaDescription": "Dygo biến từ mới thành một khu vườn. Mỗi ngày dành vài phút tưới những từ đến hạn và ngắm chúng lớn lên từ hạt giống đến lúc kết trái.",
+        "metaTitle": "Dygo · Học từ và biết cách dùng",
         "nav": {
           "label": "Trên trang này",
           "features": "Tính năng",
@@ -415,11 +414,22 @@
         "signIn": "Đăng nhập",
         "createAccount": "Tạo tài khoản",
         "hero": {
-          "title": "Vun trồng tiếng Anh, từng từ một.",
-          "lead": "Dygo biến từ mới thành một khu vườn. Mỗi ngày dành vài phút tưới những từ đến hạn và ngắm chúng lớn lên từ hạt giống đến lúc kết trái.",
-          "start": "Bắt đầu miễn phí",
+          "title": "Học từ. Biết cách dùng. Nhớ mãi.",
+          "lead": "Dygo cho mỗi từ câu ví dụ thật, giải thích bằng tiếng Việt, rồi nhắc lại ngay trước khi bạn quên. Mỗi ngày 5 phút.",
+          "start": "Tạo tài khoản miễn phí",
           "haveAccount": "Tôi đã có tài khoản",
           "languages": "Có English, Tiếng Việt và 简体中文"
+        },
+        "plant": {
+          "inputLabel": "Gieo một từ",
+          "placeholder": "Gõ một từ bạn hay quên…",
+          "button": "Gieo",
+          "try": "Thử:",
+          "chipsLabel": "Thử một từ",
+          "synonyms": "Từ đồng nghĩa",
+          "bird": "Mình sẽ nhắc bạn trước khi bạn quên. Giữ từ này nhé?",
+          "save": "Lưu từ này — miễn phí",
+          "unknown": "Dygo sẽ trồng “{word}” cho bạn sau khi bạn đăng ký."
         },
         "how": {
           "title": "Từ vựng của bạn lớn lên thế nào",

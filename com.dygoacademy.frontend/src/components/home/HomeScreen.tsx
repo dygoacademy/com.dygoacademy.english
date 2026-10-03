@@ -24,12 +24,11 @@ import {
   HomeSeed,
   HomeSprout,
   HomeStar,
-  HomeSun,
   HomeTick,
   HomeTree,
-  HomeWateringCan,
   LogoMark,
 } from './homeArt';
+import { PlantAWord } from './PlantAWord';
 
 /** In-page anchors (desktop header nav). */
 export const HOME_ANCHORS = {
@@ -53,6 +52,8 @@ export interface HomeScreenProps {
   languageBusy?: boolean;
   /** `auto` (default): by window width (`lg`). `phone` / `desktop` force one layout (reference fixtures). */
   layout?: HomeLayout;
+  /** HP-6: start the hero demo bloomed with this word (the H3s-plant-bloomed fixture). */
+  plantedWord?: string;
 }
 
 export type HomeLayout = 'auto' | 'phone' | 'desktop';
@@ -86,6 +87,7 @@ export function HomeScreen({
   privacyHref = '#',
   languageBusy,
   layout = 'auto',
+  plantedWord,
 }: HomeScreenProps) {
   const t = useTranslations('screens.home.public');
 
@@ -129,23 +131,24 @@ export function HomeScreen({
           </Link>
         </header>
 
-        {/* Hero: scene above the text on the phone, text left / scene right on desktop. */}
-        <section className="flex flex-col gap-[22px] px-5 pb-10 pt-2 home-lg:flex-row-reverse home-lg:items-center home-lg:gap-14 home-lg:px-16 home-lg:pb-16 home-lg:pt-10">
-          <div className="home-lg:min-w-0 home-lg:flex-1">
-            <HeroScene />
-          </div>
-          <div className="flex flex-col gap-3.5 home-lg:min-w-0 home-lg:flex-1 home-lg:gap-[18px]">
-            <h1 className="m-0 font-display text-[36px] font-semibold leading-[1.05] tracking-[-0.01em] home-lg:text-[60px]">
+        {/*
+          Hero v2 "Plant a word" (HP-6, reference H3-home-v2-phone / H4-home-v2-desktop):
+          text then the demo on the phone, text left / demo right on desktop. The sign-up
+          buttons show on desktop only (G-home).
+        */}
+        <section className="flex flex-col gap-[18px] px-5 pb-9 pt-1.5 home-lg:flex-row home-lg:items-start home-lg:gap-14 home-lg:px-16 home-lg:pb-16 home-lg:pt-9">
+          <div className="flex flex-col gap-3 home-lg:min-w-0 home-lg:flex-1 home-lg:gap-[18px] home-lg:pt-6">
+            <h1 className="m-0 font-display text-[34px] font-semibold leading-[1.06] tracking-[-0.01em] home-lg:text-[56px]">
               {t('hero.title')}
             </h1>
-            <p className="m-0 text-[17px] leading-[1.5] text-[#44524A] home-lg:text-[19px]">{t('hero.lead')}</p>
-            <div className="mt-1.5 flex flex-wrap gap-2.5">
-              <Link href={registerHref} className={gcn(PRIMARY_CTA, 'w-full home-lg:w-auto')}>
+            <p className="m-0 text-[16px] leading-[1.5] text-[#44524A] home-lg:text-[19px]">{t('hero.lead')}</p>
+            <div className="mt-2 hidden gap-2.5 home-lg:flex">
+              <Link href={registerHref} className={PRIMARY_CTA}>
                 {t('hero.start')}
               </Link>
               <Link
                 href={loginHref}
-                className="hidden h-14 items-center px-[18px] text-[16px] font-bold text-forest no-underline home-lg:inline-flex"
+                className="inline-flex h-14 items-center px-[18px] text-[16px] font-bold text-forest no-underline"
               >
                 {t('hero.haveAccount')}
               </Link>
@@ -154,6 +157,9 @@ export function HomeScreen({
               <GlobeIcon width={16} height={16} />
               {t('hero.languages')}
             </span>
+          </div>
+          <div className="home-lg:min-w-0 home-lg:flex-1">
+            <PlantAWord locale={locale} registerHref={registerHref} initialWord={plantedWord} />
           </div>
         </section>
 
@@ -263,38 +269,6 @@ function Logo({ href }: { href: string }) {
       <LogoMark width={30} height={30} className="block" />
       <span className="font-display text-[24px] font-semibold">Dygo</span>
     </Link>
-  );
-}
-
-/** The hero scene: sun, watering can with drops, seed → fruiting tree. 200 px tall on the phone, 300 on desktop. */
-function HeroScene() {
-  const drop = 'block h-[9px] w-1.5 rounded-[3px] bg-[#8EC5E8]';
-  return (
-    <div
-      aria-hidden="true"
-      className="relative h-[200px] overflow-hidden rounded-[28px] bg-[linear-gradient(180deg,#2C5345_0%,#24463A_100%)] home-lg:h-[300px]"
-    >
-      <div className="absolute right-[18px] top-3.5 home-lg:right-[30px] home-lg:top-[22px]">
-        <HomeSun className="block size-14 home-lg:size-[75px]" />
-      </div>
-      <div className="absolute left-[18px] top-[34px] -rotate-12 home-lg:left-10 home-lg:top-[54px]">
-        <HomeWateringCan className="block size-[70px] home-lg:size-[94px]" />
-      </div>
-      <div className="absolute left-[70px] top-[74px] flex gap-2.5 home-lg:left-[110px] home-lg:top-[108px]">
-        <span className={drop} />
-        <span className={drop} />
-        <span className={drop} />
-      </div>
-      <div className="absolute inset-x-0 bottom-0 h-[34px] bg-[#1B362C] home-lg:h-[46px]" />
-      <div className="absolute inset-x-0 bottom-[22px] flex items-end justify-center gap-2.5 home-lg:bottom-[30px] home-lg:gap-[26px]">
-        <span><HomeSeed className="inline align-baseline size-10 home-lg:size-[54px]" /></span>
-        <span><HomeSprout className="inline align-baseline size-[46px] home-lg:size-[62px]" /></span>
-        <span><HomeFlower className="inline align-baseline h-[57px] w-[44px] home-lg:h-[76px] home-lg:w-[59px]" /></span>
-        <span><HomeTree className="inline align-baseline h-[73px] w-[58px] home-lg:h-[99px] home-lg:w-[78px]" /></span>
-        <span><HomeFlower className="inline align-baseline h-[49px] w-[38px] home-lg:h-[66px] home-lg:w-[51px]" /></span>
-        <span><HomeSprout className="inline align-baseline size-10 home-lg:size-[54px]" /></span>
-      </div>
-    </div>
   );
 }
 

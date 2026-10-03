@@ -404,8 +404,7 @@
       },
       "ripens": "Tomorrow {time} · <b>{count, plural, one {# word} other {# words}} ripen</b>",
       "public": {
-        "metaTitle": "Dygo · Grow your English, one word at a time",
-        "metaDescription": "Dygo turns new words into a garden. Spend a few minutes a day watering the words that are due, and watch them grow from seeds into fruit.",
+        "metaTitle": "Dygo · Learn English words and how to use them",
         "nav": {
           "label": "On this page",
           "features": "Features",
@@ -415,11 +414,22 @@
         "signIn": "Sign in",
         "createAccount": "Create account",
         "hero": {
-          "title": "Grow your English, one word at a time.",
-          "lead": "Dygo turns new words into a garden. Spend a few minutes a day watering the words that are due, and watch them grow from seeds into fruit.",
-          "start": "Start growing, it’s free",
-          "haveAccount": "I have an account",
-          "languages": "In English, Tiếng Việt and 简体中文"
+          "title": "Learn a word. Use it right. Remember it for good.",
+          "lead": "Every word comes with real example sentences and a clear explanation in your language. Then Dygo brings it back right before you’d forget it. Just 5 minutes a day.",
+          "start": "Create free account",
+          "haveAccount": "I already have an account",
+          "languages": "Available in English, Tiếng Việt and 简体中文"
+        },
+        "plant": {
+          "inputLabel": "Plant a word",
+          "placeholder": "A word you keep forgetting…",
+          "button": "Plant",
+          "try": "Try:",
+          "chipsLabel": "Try a word",
+          "synonyms": "Synonyms",
+          "bird": "I’ll remind you before it slips your mind. Want to keep this one?",
+          "save": "Save this word — it’s free",
+          "unknown": "We’ll grow “{word}” for you once you sign up."
         },
         "how": {
           "title": "How your words grow",

@@ -27,7 +27,7 @@ const hrefs = (name: string | RegExp) =>
 describe('HomeScreen (Home page H1 / H2)', () => {
   it('shows the hero headline and every section heading', () => {
     renderScreen();
-    expect(screen.getByRole('heading', { level: 1, name: 'Grow your English, one word at a time.' })).toBeTruthy();
+    expect(screen.getByRole('heading', { level: 1, name: 'Learn a word. Use it right. Remember it for good.' })).toBeTruthy();
     for (const name of [
       'How your words grow',
       'Everything a growing vocabulary needs',
@@ -40,11 +40,11 @@ describe('HomeScreen (Home page H1 / H2)', () => {
 
   it('sends every sign-up button to /register and both sign-in links to /login', () => {
     renderScreen();
-    expect(hrefs('Start growing, it’s free')).toEqual(['/register']);
+    expect(hrefs('Create free account')).toEqual(['/register']);
     // Header (desktop) and the final call to action.
     expect(hrefs('Create account')).toEqual(['/register', '/register']);
     expect(hrefs('Sign in')).toEqual(['/login']);
-    expect(hrefs('I have an account')).toEqual(['/login']);
+    expect(hrefs('I already have an account')).toEqual(['/login']);
   });
 
   it('links the header anchors to sections that exist on the page', () => {

@@ -10,7 +10,8 @@ export async function generateMetadata(): Promise<Metadata> {
     getGardenLocaleContext(),
   ]);
   const title = t('metaTitle');
-  const description = t('metaDescription');
+  // Home page v2 (HP-6): the description is the hero lead.
+  const description = t('hero.lead');
   return {
     title,
     description,

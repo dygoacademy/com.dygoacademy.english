@@ -270,3 +270,67 @@ export function FeatureLanguageIcon(props: ArtProps) {
     </Art>
   );
 }
+
+/*
+ * Home page HP-6 · the "Plant a word" hero art, from
+ * `reference/H3-home-v2-phone.html` (idle pot) and
+ * `H3s-plant-bloomed.html` (bloomed pot), design commit f254fbd.
+ * Shown 112 × 93 on the phone and 124 × 103 on desktop.
+ */
+
+/** The pot's rim and body (shared by every stage). */
+function PotBody() {
+  return (
+    <>
+      <ellipse cx="60" cy="44" rx="36" ry="6" fill="#6B5040" />
+      <rect x="20" y="42" width="80" height="14" rx="4" fill="#B4552E" />
+      <path d="M26 56 H94 L86 98 H34 Z" fill="#C97A4D" />
+      <path d="M30 62 H90" stroke="#B4552E" strokeWidth="2" opacity=".5" />
+    </>
+  );
+}
+
+/**
+ * The hero pot. `seed`: a seed with a little shoot on the soil (idle and
+ * planting; `seedClassName` animates the seed dropping in). `bloom`: the
+ * sprout with a flower (sprouting and bloomed).
+ */
+export function PlantPot({
+  stage,
+  seedClassName,
+  ...props
+}: ArtProps & { stage: 'seed' | 'bloom'; seedClassName?: string }) {
+  return (
+    <Art viewBox="0 -12 120 112" data-pot-stage={stage} {...props}>
+      {stage === 'seed' ? (
+        <g className={seedClassName}>
+          <ellipse cx="60" cy="41" rx="6" ry="4" fill="#4E3A2E" />
+          <path d="M60 38 C60 33 63 30 67 29" stroke="#7FA487" strokeWidth="2.4" fill="none" strokeLinecap="round" />
+        </g>
+      ) : (
+        <>
+          <path d="M60 44 V12" stroke="#7FA487" strokeWidth="3" strokeLinecap="round" />
+          <path d="M60 34 C51 33 46 27 48 21 C56 21 60 27 60 34 Z" fill="#9CC39A" />
+          <path d="M60 30 C69 29 74 23 72 17 C64 17 60 23 60 30 Z" fill="#B7D6AE" />
+          <circle cx="60" cy="2" r="6" fill="#E8A87C" />
+          <circle cx="67" cy="7" r="6" fill="#E8A87C" />
+          <circle cx="64" cy="14" r="6" fill="#E8A87C" />
+          <circle cx="56" cy="14" r="6" fill="#E8A87C" />
+          <circle cx="53" cy="7" r="6" fill="#E8A87C" />
+          <circle cx="60" cy="9" r="4.5" fill="#F2D28B" />
+        </>
+      )}
+      <PotBody />
+    </Art>
+  );
+}
+
+/** The seed on the Plant button, 24 × 24 (shown 20 × 20). */
+export function PlantSeedIcon(props: ArtProps) {
+  return (
+    <Art viewBox="0 0 24 24" {...props}>
+      <ellipse cx="12" cy="16" rx="5" ry="3.5" fill="#FFFFFF" />
+      <path d="M12 13 C12 9 14 7 17 6" stroke="#B7D6AE" strokeWidth="2.2" fill="none" strokeLinecap="round" />
+    </Art>
+  );
+}
