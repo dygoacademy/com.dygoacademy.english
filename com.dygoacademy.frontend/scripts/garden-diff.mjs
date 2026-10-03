@@ -4,7 +4,7 @@
  *
  * Screenshots every canvas reference page (/garden/_reference/<name>) at
  * the reference's own size (its PNG's width/2 × height/2: 390 × 844 for
- * the A/GR/AU/Q screens, the full board for the home pages H1/H2; HP-2),
+ * the A/GR/AU/Q screens, the full board for the home pages H3/H4 and the H3s state boards; HP-2, HP-11),
  * device scale factor 2, animations and transitions off, and
  * diffs it against docs/design/garden/reference/<name>.png with pixelmatch
  * (threshold 0.1). Pass = at most 0.5% of pixels differ.
@@ -82,9 +82,13 @@ const NAMES = [
   'Q6-quiz-result',
   'Q7-quiz-result-perfect',
   'Q8-quiz-drill-done',
-  // Home page HP-2 (full boards: 390 × 3800 and 1280 × 2600)
-  'H1-home-phone',
-  'H2-home-desktop',
+  // Home page v2 (HP-11, full boards, sizes from each PNG). The v1 boards
+  // H1/H2 are retired from the diff; their fixtures and PNGs stay.
+  'H3-home-v2-phone',
+  'H4-home-v2-desktop',
+  'H3s-plant-bloomed',
+  'H3s-pain-flipped',
+  'H3s-uses-travel',
 ];
 
 /** Old short codes still accepted on the command line. */

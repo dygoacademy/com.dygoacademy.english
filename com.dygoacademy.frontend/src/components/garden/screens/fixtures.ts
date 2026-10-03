@@ -6,6 +6,8 @@
  * messages/en-US.json through t().
  */
 import type { AppLocale } from '@/i18n/config';
+import type { PainKey } from '@/components/home/PainCards';
+import type { UseCaseBedKey } from '@/components/home/useCaseWords';
 
 import { calendarDay, weekDays } from '../format';
 import type { CalendarLevel } from '../GardenCalendar';
@@ -59,6 +61,12 @@ export const REFERENCE_NAMES = [
   // Home page HP-2: the public home page, layout in HOME_REFERENCE below
   'H1-home-phone',
   'H2-home-desktop',
+  // Home page HP-11: the v2 boards and their three state boards (HOME_REFERENCE below)
+  'H3-home-v2-phone',
+  'H4-home-v2-desktop',
+  'H3s-plant-bloomed',
+  'H3s-pain-flipped',
+  'H3s-uses-travel',
 ] as const;
 export type ReferenceName = (typeof REFERENCE_NAMES)[number];
 
@@ -70,7 +78,23 @@ export type ReferenceName = (typeof REFERENCE_NAMES)[number];
 export const HOME_REFERENCE = {
   'H1-home-phone': { layout: 'phone', width: 390 },
   'H2-home-desktop': { layout: 'desktop', width: 1280 },
-} as const satisfies Record<string, { layout: 'phone' | 'desktop'; width: number }>;
+  // HP-11: v2 boards (canvas page "Landing v2"); the H3s boards are H3 in one state.
+  'H3-home-v2-phone': { layout: 'phone', width: 390 },
+  'H4-home-v2-desktop': { layout: 'desktop', width: 1280 },
+  'H3s-plant-bloomed': { layout: 'phone', width: 390, plantedWord: 'deadline' },
+  'H3s-pain-flipped': { layout: 'phone', width: 390, flippedPains: ['forget'] },
+  'H3s-uses-travel': { layout: 'phone', width: 390, useCaseBed: 'travel' },
+} as const satisfies Record<
+  string,
+  {
+    layout: 'phone' | 'desktop';
+    width: number;
+    plantedWord?: string;
+    flippedPains?: readonly PainKey[];
+    useCaseBed?: UseCaseBedKey;
+  }
+>;
+export type HomeReferenceName = keyof typeof HOME_REFERENCE;
 
 export function isReferenceName(value: string): value is ReferenceName {
   return (REFERENCE_NAMES as readonly string[]).includes(value);

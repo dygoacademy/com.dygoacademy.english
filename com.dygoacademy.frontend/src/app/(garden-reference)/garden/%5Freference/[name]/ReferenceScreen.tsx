@@ -30,6 +30,8 @@ import { TopicsScreen } from '@/components/garden/screens/TopicsScreen';
 import { WeeklyHarvestScreen } from '@/components/garden/screens/WeeklyHarvestScreen';
 import { WelcomeBackScreen } from '@/components/garden/screens/WelcomeBackScreen';
 import { HomeScreen } from '@/components/home/HomeScreen';
+import type { PainKey } from '@/components/home/PainCards';
+import type { UseCaseBedKey } from '@/components/home/useCaseWords';
 import { GARDEN_ROUTES } from '@/constants/garden';
 import type { AppLocale } from '@/i18n/config';
 
@@ -253,16 +255,33 @@ function ReferenceScreenBody({ name, locale }: { name: ReferenceName; locale: Ap
       );
     case 'H1-home-phone':
     case 'H2-home-desktop':
+    case 'H3-home-v2-phone':
+    case 'H4-home-v2-desktop':
+    case 'H3s-plant-bloomed':
+    case 'H3s-pain-flipped':
+    case 'H3s-uses-travel': {
+      // HP-11: the state boards start HomeScreen in that state (plantedWord / flippedPains / useCaseBed).
+      const board: {
+        layout: 'phone' | 'desktop';
+        width: number;
+        plantedWord?: string;
+        flippedPains?: readonly PainKey[];
+        useCaseBed?: UseCaseBedKey;
+      } = HOME_REFERENCE[name];
       return (
-        <div style={{ width: HOME_REFERENCE[name].width }}>
+        <div style={{ width: board.width }}>
           <HomeScreen
             locale={locale}
             onLanguageChange={() => {}}
             registerHref={AUTH_HREFS.register}
             loginHref={AUTH_HREFS.login}
-            layout={HOME_REFERENCE[name].layout}
+            layout={board.layout}
+            plantedWord={board.plantedWord}
+            flippedPains={board.flippedPains ? [...board.flippedPains] : undefined}
+            useCaseBed={board.useCaseBed}
           />
         </div>
       );
+    }
   }
 }
