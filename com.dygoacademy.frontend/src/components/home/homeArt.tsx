@@ -469,3 +469,57 @@ export function AddWordPlusIcon(props: ArtProps) {
     </Art>
   );
 }
+
+/**
+ * HP-9 · the seed packet of the final call to action, 170 × 208 (shown
+ * 150 × 183 on the phone, 170 × 207 on desktop), paths from the H3/H4 v2
+ * references. The zig-zag top is drawn twice: once in the packet and once
+ * as the `flap` on top of it (same colour, so the still picture matches the
+ * board). On hover/focus of the section (`group`) the flap tears up and
+ * three seeds peek out; reduced motion keeps it closed (CSS only).
+ */
+export function SeedPacketArt(props: ArtProps) {
+  return (
+    <Art viewBox="0 0 170 208" overflow="visible" {...props}>
+      <path
+        d="M8 14 L20 4 L32 14 L44 4 L56 14 L68 4 L80 14 L92 4 L104 14 L116 4 L128 14 L140 4 L152 14 L162 6 V196 A8 8 0 0 1 154 204 H16 A8 8 0 0 1 8 196 Z"
+        fill="#24463A"
+      />
+      <g
+        data-packet-seeds=""
+        className="opacity-0 transition-[opacity,transform] duration-300 [transform-box:fill-box] motion-safe:group-hover:-translate-y-[10px] motion-safe:group-hover:opacity-100 motion-safe:group-focus-within:-translate-y-[10px] motion-safe:group-focus-within:opacity-100"
+      >
+        <ellipse cx="66" cy="16" rx="5" ry="3.5" fill="#B7D6AE" />
+        <ellipse cx="85" cy="13" rx="5" ry="3.5" fill="#9CC39A" />
+        <ellipse cx="104" cy="16" rx="5" ry="3.5" fill="#B7D6AE" />
+      </g>
+      <path
+        data-packet-flap=""
+        d="M8 14 L20 4 L32 14 L44 4 L56 14 L68 4 L80 14 L92 4 L104 14 L116 4 L128 14 L140 4 L152 14 L162 6 V24 H8 Z"
+        fill="#24463A"
+        className="origin-[0%_100%] transition-transform duration-300 [transform-box:fill-box] motion-safe:group-hover:-translate-y-[6px] motion-safe:group-hover:-rotate-[5deg] motion-safe:group-focus-within:-translate-y-[6px] motion-safe:group-focus-within:-rotate-[5deg]"
+      />
+      <rect x="22" y="40" width="126" height="104" rx="10" fill="#F7EFD9" />
+      <path d="M85 120 V86" stroke="#7FA487" strokeWidth="3" strokeLinecap="round" />
+      <path d="M85 106 C76 105 71 99 73 93 C81 93 85 99 85 106 Z" fill="#9CC39A" />
+      <path d="M85 100 C94 99 99 93 97 87 C89 87 85 93 85 100 Z" fill="#B7D6AE" />
+      <ellipse cx="85" cy="122" rx="20" ry="4" fill="#C9BCA2" />
+      <text className="font-display" x="85" y="72" textAnchor="middle" fontWeight="600" fontSize="22" fill="#24463A">
+        Dygo
+      </text>
+      <circle cx="132" cy="170" r="20" fill="#F7EFD9" stroke="#E0B04A" strokeWidth="2" strokeDasharray="3 3" />
+      <g transform="translate(115 153) scale(.53)">
+        <circle cx="32" cy="36" r="24" fill="#B4552E" />
+        <ellipse cx="32" cy="44" rx="14" ry="11" fill="#F7D9C4" />
+        <circle cx="24" cy="30" r="5" fill="#FFFFFF" />
+        <circle cx="40" cy="30" r="5" fill="#FFFFFF" />
+        <circle cx="25" cy="31" r="2.5" fill="#2E2A26" />
+        <circle cx="41" cy="31" r="2.5" fill="#2E2A26" />
+        <path d="M28 36 L36 36 L32 42 Z" fill="#F5C443" />
+      </g>
+      <ellipse cx="34" cy="172" rx="5" ry="3.5" fill="#B7D6AE" />
+      <ellipse cx="50" cy="180" rx="5" ry="3.5" fill="#B7D6AE" />
+      <ellipse cx="42" cy="190" rx="5" ry="3.5" fill="#B7D6AE" />
+    </Art>
+  );
+}

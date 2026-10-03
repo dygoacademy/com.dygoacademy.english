@@ -20,16 +20,15 @@ import {
   HomeApple,
   HomeBee,
   HomeCat,
-  HomeFlower,
-  HomeSeed,
-  HomeSprout,
   HomeStar,
   HomeTick,
   LogoMark,
 } from './homeArt';
 import { GrowthStages } from './GrowthStages';
+import { HomeFaq } from './HomeFaq';
 import { PainCards, type PainKey } from './PainCards';
 import { PlantAWord } from './PlantAWord';
+import { readPlantedWord, rememberPlantedWord, SeedPacketCta } from './SeedPacketCta';
 import { UseCaseBeds } from './UseCaseBeds';
 import type { UseCaseBedKey } from './useCaseWords';
 
@@ -38,6 +37,7 @@ export const HOME_ANCHORS = {
   features: 'features',
   howItWorks: 'how-it-works',
   uses: 'uses',
+  questions: 'faq',
   forParents: 'for-parents',
 } as const;
 
@@ -100,6 +100,15 @@ export function HomeScreen({
   useCaseBed,
 }: HomeScreenProps) {
   const t = useTranslations('screens.home.public');
+  // HP-9: the word planted in the hero this visit, for the seed packet CTA (`/register?seed=`).
+  // Read after mount (sessionStorage is client-only), so the server HTML stays plain `/register`.
+  const [plantedThisVisit, setPlantedThisVisit] = React.useState<string | undefined>();
+  React.useEffect(() => setPlantedThisVisit(readPlantedWord()), []);
+
+  function onPlant(word: string) {
+    rememberPlantedWord(word);
+    setPlantedThisVisit(word);
+  }
 
   return (
     <div data-home-layout={layout} className="min-h-dvh bg-bg font-body text-text">
@@ -112,6 +121,9 @@ export function HomeScreen({
             </a>
             <a href={`#${HOME_ANCHORS.howItWorks}`} className="text-[15px] font-semibold text-text no-underline">
               {t('nav.howItWorks')}
+            </a>
+            <a href={`#${HOME_ANCHORS.questions}`} className="text-[15px] font-semibold text-text no-underline">
+              {t('nav.questions')}
             </a>
             <a href={`#${HOME_ANCHORS.forParents}`} className="text-[15px] font-semibold text-text no-underline">
               {t('nav.forParents')}
@@ -169,7 +181,7 @@ export function HomeScreen({
             </span>
           </div>
           <div className="home-lg:min-w-0 home-lg:flex-1">
-            <PlantAWord locale={locale} registerHref={registerHref} initialWord={plantedWord} />
+            <PlantAWord locale={locale} registerHref={registerHref} initialWord={plantedWord} onPlant={onPlant} />
           </div>
         </section>
 
@@ -251,26 +263,19 @@ export function HomeScreen({
           <KidsCard prompt={t('parents.kidsPrompt')} hint={t('parents.kidsHint')} />
         </section>
 
-        <section className="flex flex-col gap-4 px-5 py-9 home-lg:flex-row home-lg:gap-6 home-lg:p-16">
-          <Fact value={t('facts.minutes.value')} label={t('facts.minutes.label')} />
-          <Fact value={t('facts.missions.value')} label={t('facts.missions.label')} />
-          <Fact value={t('facts.languages.value')} label={t('facts.languages.label')} />
+        {/* Common questions (HP-9): one column on the phone, two on desktop. */}
+        <section
+          id={HOME_ANCHORS.questions}
+          className="flex scroll-mt-4 flex-col gap-5 px-5 py-10 home-lg:gap-7 home-lg:p-16"
+        >
+          <div className="mx-auto flex max-w-[760px] flex-col items-center gap-2 text-center">
+            <h2 className={SECTION_TITLE}>{t('faq.title')}</h2>
+          </div>
+          <HomeFaq />
         </section>
 
-        <section className="relative mx-5 flex flex-col gap-[18px] overflow-hidden rounded-[32px] bg-forest px-5 py-7 text-white home-lg:mx-16 home-lg:flex-row home-lg:items-center home-lg:gap-10 home-lg:px-14 home-lg:py-12">
-          <div className="flex flex-col gap-2 home-lg:flex-1">
-            <h2 className={SECTION_TITLE}>{t('cta.title')}</h2>
-            <p className="m-0 text-[16px] text-sprout-border home-lg:text-[18px]">{t('cta.lead')}</p>
-          </div>
-          <div aria-hidden="true" className="flex items-end gap-2">
-            <HomeSeed width={44} height={44} className="block" />
-            <HomeSprout width={48} height={48} className="block" />
-            <HomeFlower width={44} height={57} className="block" />
-          </div>
-          <Link href={registerHref} className={gcn(PRIMARY_CTA, 'w-full home-lg:w-auto')}>
-            {t('cta.button')}
-          </Link>
-        </section>
+        {/* Seed packet call to action (HP-9), replacing the v1 facts row and forest call to action. */}
+        <SeedPacketCta registerHref={registerHref} loginHref={loginHref} plantedWord={plantedThisVisit} />
 
         <footer className="flex flex-col gap-3 px-5 py-7 text-[14px] text-muted-foreground home-lg:flex-row home-lg:items-center home-lg:gap-5 home-lg:px-16 home-lg:py-10">
           <Logo href={homeHref} />
@@ -363,15 +368,6 @@ function KidsCard({ prompt, hint }: { prompt: string; hint: string }) {
           </span>
         </div>
       </div>
-    </div>
-  );
-}
-
-function Fact({ value, label }: { value: string; label: string }) {
-  return (
-    <div className="flex flex-col gap-0.5 home-lg:flex-1 home-lg:text-center">
-      <span className="font-display text-[24px] font-semibold text-forest home-lg:text-[30px]">{value}</span>
-      <span className="text-[14px] text-muted-foreground">{label}</span>
     </div>
   );
 }

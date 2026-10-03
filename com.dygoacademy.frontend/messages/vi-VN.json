@@ -409,6 +409,7 @@
           "label": "Trên trang này",
           "features": "Tính năng",
           "howItWorks": "Cách hoạt động",
+          "questions": "Câu hỏi",
           "forParents": "Phụ huynh"
         },
         "signIn": "Đăng nhập",
@@ -577,24 +578,44 @@
           "kidsPrompt": "Tìm “cat”!",
           "kidsHint": "Find the cat!"
         },
-        "facts": {
-          "minutes": {
-            "value": "Vài phút",
-            "label": "mỗi ngày"
-          },
-          "missions": {
-            "value": "3 nhiệm vụ nhỏ",
-            "label": "mỗi ngày"
-          },
-          "languages": {
-            "value": "3 ngôn ngữ",
-            "label": "Anh, Việt, Trung"
+        "faq": {
+          "title": "Câu hỏi thường gặp",
+          "items": {
+            "free": {
+              "q": "Dygo có miễn phí không?",
+              "a": "Có. Bạn có thể bắt đầu miễn phí, không cần thẻ."
+            },
+            "who": {
+              "q": "Dygo dành cho ai?",
+              "a": "Cho bất kỳ ai muốn học từ tiếng Anh và cách dùng chúng: cho công việc, học tập, du lịch hay cuộc sống hằng ngày."
+            },
+            "english": {
+              "q": "Tôi có cần giỏi tiếng Anh để bắt đầu không?",
+              "a": "Không. Dygo giải thích từ bằng tiếng Việt hoặc tiếng Trung khi bạn cần."
+            },
+            "phone": {
+              "q": "Dygo có dùng được trên điện thoại không?",
+              "a": "Có. Dygo chạy trên trình duyệt của iPhone, Android, iPad và máy tính, và bạn có thể thêm vào Màn hình chính."
+            },
+            "time": {
+              "q": "Mỗi ngày tôi cần bao nhiêu thời gian?",
+              "a": "Khoảng 5 phút. Dygo cho bạn biết hôm nay những từ nào cần tưới."
+            },
+            "ownWords": {
+              "q": "Tôi có thể thêm từ của riêng mình không?",
+              "a": "Có. Gieo bất kỳ từ nào vào “Từ của tôi” và ôn như các từ khác."
+            },
+            "kids": {
+              "q": "Có phiên bản cho trẻ em không?",
+              "a": "Khu vườn cho trẻ em sắp ra mắt. Hiện tại Dygo dành cho thanh thiếu niên và người lớn."
+            }
           }
         },
         "cta": {
-          "title": "Gieo hạt giống đầu tiên hôm nay",
-          "lead": "Bắt đầu miễn phí. Vườn của bạn sẵn sàng chỉ trong một phút.",
-          "button": "Tạo tài khoản"
+          "overline": "Hạt giống Dygo",
+          "title": "Trồng từ đầu tiên hôm nay",
+          "free": "Miễn phí",
+          "button": "Tạo tài khoản miễn phí"
         },
         "footer": {
           "terms": "Điều khoản",

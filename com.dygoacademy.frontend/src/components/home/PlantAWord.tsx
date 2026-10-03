@@ -22,6 +22,8 @@ export interface PlantAWordProps {
   registerHref: string;
   /** Start already bloomed with this word, no animation (the H3s-plant-bloomed fixture). */
   initialWord?: string;
+  /** HP-9: called with the word each time the visitor plants one (the seed packet CTA keeps it). */
+  onPlant?: (word: string) => void;
 }
 
 const CARD = 'flex flex-col gap-3 rounded-[22px] border border-border bg-surface p-[18px] shadow-[0_6px_0_#E8E1D2]';
@@ -48,7 +50,7 @@ export function saveHref(registerHref: string, word: string) {
  * have a card with a meaning; any other word gets the `plant.unknown`
  * card (no API call). Focus moves to the card heading once it blooms.
  */
-export function PlantAWord({ locale, registerHref, initialWord }: PlantAWordProps) {
+export function PlantAWord({ locale, registerHref, initialWord, onPlant }: PlantAWordProps) {
   const t = useTranslations('screens.home.public.plant');
   const tPos = useTranslations('components.partOfSpeech');
   const [state, setState] = React.useState<PlantState>(initialWord ? 'bloomed' : 'idle');
@@ -78,6 +80,7 @@ export function PlantAWord({ locale, registerHref, initialWord }: PlantAWordProp
     clearTimers();
     const entry = findPlantWord(next);
     setWord(entry ? entry.word : next);
+    onPlant?.(entry ? entry.word : next);
     focusOnBloom.current = true;
     if (prefersReducedMotion()) {
       setState('bloomed');

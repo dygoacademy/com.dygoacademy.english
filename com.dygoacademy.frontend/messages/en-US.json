@@ -409,6 +409,7 @@
           "label": "On this page",
           "features": "Features",
           "howItWorks": "How it works",
+          "questions": "Questions",
           "forParents": "For parents"
         },
         "signIn": "Sign in",
@@ -577,24 +578,44 @@
           "kidsPrompt": "Find “cat”!",
           "kidsHint": "Tìm “cat”!"
         },
-        "facts": {
-          "minutes": {
-            "value": "A few minutes",
-            "label": "a day"
-          },
-          "missions": {
-            "value": "3 small missions",
-            "label": "every day"
-          },
-          "languages": {
-            "value": "3 languages",
-            "label": "English, Vietnamese, Chinese"
+        "faq": {
+          "title": "Common questions",
+          "items": {
+            "free": {
+              "q": "Is Dygo free?",
+              "a": "Yes. It’s free to start, and you don’t need a credit card."
+            },
+            "who": {
+              "q": "Who is Dygo for?",
+              "a": "Anyone who wants to learn English words and use them with confidence, whether for work, study, travel or everyday life."
+            },
+            "english": {
+              "q": "Do I need to be good at English to start?",
+              "a": "No. Dygo can explain words in Vietnamese or Chinese whenever you need it."
+            },
+            "phone": {
+              "q": "Does it work on my phone?",
+              "a": "Yes. It works in your browser on iPhone, Android, iPad and computers, and you can add it to your home screen like an app."
+            },
+            "time": {
+              "q": "How much time do I need?",
+              "a": "About 5 minutes a day. Dygo shows you which words need watering today."
+            },
+            "ownWords": {
+              "q": "Can I add my own words?",
+              "a": "Yes. Add any word to “My own words” and review it just like the others."
+            },
+            "kids": {
+              "q": "Is there a version for children?",
+              "a": "A garden for kids is coming soon. For now, Dygo is designed for teens and adults."
+            }
           }
         },
         "cta": {
-          "title": "Plant your first seed today",
-          "lead": "Free to start. Your garden is ready in a minute.",
-          "button": "Create account"
+          "overline": "Dygo seeds",
+          "title": "Plant your first word today",
+          "free": "Free",
+          "button": "Create free account"
         },
         "footer": {
           "terms": "Terms",
