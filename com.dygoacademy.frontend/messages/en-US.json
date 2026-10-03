@@ -505,6 +505,37 @@
             }
           }
         },
+        "uses": {
+          "title": "What do you need English for?",
+          "lead": "Grow the words that matter to you.",
+          "soon": "Coming soon",
+          "soonLine": "Until then, start with your own words.",
+          "addWord": "Add a word",
+          "button": "Start with these words",
+          "beds": {
+            "work": {
+              "name": "Work",
+              "line": "Words for emails, meetings and talking to customers."
+            },
+            "study": {
+              "name": "Study & IELTS",
+              "line": "The IELTS Academic word list is ready to go."
+            },
+            "travel": {
+              "name": "Travel",
+              "line": "Get around with confidence on your next trip."
+            },
+            "daily": {
+              "name": "Daily life",
+              "line": "Everyday words for shopping, appointments and getting things done."
+            },
+            "own": {
+              "name": "My own words",
+              "line": "Save any word you come across, with your own meaning and example sentence.",
+              "lineAi": "Add any word you meet. Dygo adds the meaning and examples."
+            }
+          }
+        },
         "features": {
           "title": "Everything a growing vocabulary needs",
           "watering": {

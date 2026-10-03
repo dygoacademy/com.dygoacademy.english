@@ -30,11 +30,14 @@ import {
 import { GrowthStages } from './GrowthStages';
 import { PainCards, type PainKey } from './PainCards';
 import { PlantAWord } from './PlantAWord';
+import { UseCaseBeds } from './UseCaseBeds';
+import type { UseCaseBedKey } from './useCaseWords';
 
 /** In-page anchors (desktop header nav). */
 export const HOME_ANCHORS = {
   features: 'features',
   howItWorks: 'how-it-works',
+  uses: 'uses',
   forParents: 'for-parents',
 } as const;
 
@@ -57,6 +60,8 @@ export interface HomeScreenProps {
   plantedWord?: string;
   /** HP-7: start with these pain cards flipped (the H3s-pain-flipped fixture). */
   flippedPains?: PainKey[];
+  /** HP-8: start with this use-case bed selected (the H3s-uses-travel fixture picks `travel`). */
+  useCaseBed?: UseCaseBedKey;
 }
 
 export type HomeLayout = 'auto' | 'phone' | 'desktop';
@@ -92,6 +97,7 @@ export function HomeScreen({
   layout = 'auto',
   plantedWord,
   flippedPains,
+  useCaseBed,
 }: HomeScreenProps) {
   const t = useTranslations('screens.home.public');
 
@@ -186,6 +192,18 @@ export function HomeScreen({
             <p className="m-0 text-[16px] leading-[1.5] text-muted-foreground home-lg:text-[18px]">{t('how.lead')}</p>
           </div>
           <GrowthStages />
+        </section>
+
+        {/* What do you need English for? (HP-8): bed tabs, one bed panel; 3 tiles per row on the phone, 5 on desktop. */}
+        <section
+          id={HOME_ANCHORS.uses}
+          className="flex scroll-mt-4 flex-col gap-5 px-5 pb-9 pt-3 home-lg:gap-7 home-lg:px-16 home-lg:pb-16 home-lg:pt-6"
+        >
+          <div className="mx-auto flex max-w-[760px] flex-col items-center gap-2 text-center">
+            <h2 className={SECTION_TITLE}>{t('uses.title')}</h2>
+            <p className="m-0 text-[16px] leading-[1.5] text-muted-foreground home-lg:text-[18px]">{t('uses.lead')}</p>
+          </div>
+          <UseCaseBeds locale={locale} registerHref={registerHref} initialBed={useCaseBed} />
         </section>
 
         <section

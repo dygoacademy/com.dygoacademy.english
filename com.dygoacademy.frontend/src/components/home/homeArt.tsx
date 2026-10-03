@@ -392,3 +392,80 @@ export function StageArrow({ direction, ...props }: ArtProps & { direction: 'dow
     </Art>
   );
 }
+
+/*
+ * Home page v2 HP-8 · "What do you need English for?": the tab icons and
+ * the plus on an empty "My own words" tile, from
+ * `reference/H3-home-v2-phone.html` and `H4-home-v2-desktop.html` (f254fbd).
+ * The plant tiles reuse HomeSeed, HomeSprout, HomeFlower and HomeTree.
+ */
+
+const USE_ICON = {
+  viewBox: '0 0 24 24',
+  fill: 'none',
+  stroke: 'currentColor',
+  strokeWidth: '2',
+  strokeLinecap: 'round',
+  strokeLinejoin: 'round',
+} as const;
+
+/** Work (a briefcase), 24 × 24 (shown 16 × 16, `currentColor`). */
+export function UseWorkIcon(props: ArtProps) {
+  return (
+    <Art {...USE_ICON} {...props}>
+      <rect x="3.5" y="7.5" width="17" height="12" rx="2.5" />
+      <path d="M9 7.5 V5.5 A1.5 1.5 0 0 1 10.5 4 H13.5 A1.5 1.5 0 0 1 15 5.5 V7.5" />
+      <path d="M3.5 12.5 H20.5" />
+    </Art>
+  );
+}
+
+/** Study & IELTS (a graduation cap), 24 × 24. */
+export function UseStudyIcon(props: ArtProps) {
+  return (
+    <Art {...USE_ICON} {...props}>
+      <path d="M2.5 9 L12 4.5 L21.5 9 L12 13.5 Z" />
+      <path d="M6.5 11 V16 C8.5 18 15.5 18 17.5 16 V11" />
+    </Art>
+  );
+}
+
+/** Travel (a paper plane), 24 × 24. */
+export function UseTravelIcon(props: ArtProps) {
+  return (
+    <Art {...USE_ICON} {...props}>
+      <path d="M3 13.5 L21 6.5 L17.5 18.5 L11.5 14 L8.5 18 L8.5 12.5 Z" />
+    </Art>
+  );
+}
+
+/** Daily life (a house), 24 × 24. */
+export function UseDailyIcon(props: ArtProps) {
+  return (
+    <Art {...USE_ICON} {...props}>
+      <path d="M4 11 L12 4.5 L20 11" />
+      <path d="M6 9.5 V19.5 H18 V9.5" />
+      <path d="M10 19.5 V14.5 H14 V19.5" />
+    </Art>
+  );
+}
+
+/** My own words (a pencil), 24 × 24. */
+export function UseOwnIcon(props: ArtProps) {
+  return (
+    <Art {...USE_ICON} {...props}>
+      <path d="M15.5 4.5 L19.5 8.5 L9 19 H5 V15 Z" />
+      <path d="M13 7 L17 11" />
+    </Art>
+  );
+}
+
+/** The plus before "Add a word" on an empty tile, 24 × 24 (shown 18 × 18, `currentColor`). */
+export function AddWordPlusIcon(props: ArtProps) {
+  return (
+    <Art viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" {...props}>
+      <path d="M12 5 V19" />
+      <path d="M5 12 H19" />
+    </Art>
+  );
+}

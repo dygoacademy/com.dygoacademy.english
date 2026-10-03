@@ -505,6 +505,37 @@
             }
           }
         },
+        "uses": {
+          "title": "Bạn học tiếng Anh để làm gì?",
+          "lead": "Trồng những từ cho cuộc sống của bạn.",
+          "soon": "Sắp ra mắt",
+          "soonLine": "Bắt đầu với từ của riêng bạn.",
+          "addWord": "Thêm từ",
+          "button": "Bắt đầu luống này",
+          "beds": {
+            "work": {
+              "name": "Công việc",
+              "line": "Từ vựng cho email, cuộc họp và khách hàng."
+            },
+            "study": {
+              "name": "Học tập & IELTS",
+              "line": "Kho từ IELTS Academic đã sẵn sàng để gieo."
+            },
+            "travel": {
+              "name": "Du lịch",
+              "line": "Tự tin giao tiếp trong chuyến đi tới."
+            },
+            "daily": {
+              "name": "Đời sống",
+              "line": "Những từ bạn cần mỗi ngày."
+            },
+            "own": {
+              "name": "Từ của tôi",
+              "line": "Thêm bất kỳ từ nào bạn gặp, kèm nghĩa và ví dụ của riêng bạn.",
+              "lineAi": "Thêm bất kỳ từ nào bạn gặp. Dygo sẽ thêm nghĩa và ví dụ."
+            }
+          }
+        },
         "features": {
           "title": "Mọi thứ để vốn từ lớn lên",
           "watering": {

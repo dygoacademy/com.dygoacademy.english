@@ -31,6 +31,7 @@ describe('HomeScreen (Home page H1 / H2)', () => {
     for (const name of [
       'Sound familiar?',
       'How your words grow',
+      'What do you need English for?',
       'Everything a growing vocabulary needs',
       'A garden for kids, too',
       'Plant your first seed today',
@@ -77,7 +78,8 @@ describe('HomeScreen (Home page H1 / H2)', () => {
     ]) {
       expect(screen.getByText(feature)).toBeTruthy();
     }
-    expect(screen.getByText('Coming soon')).toBeTruthy();
+    // For parents, and the Work bed (HP-8, selected by default, not seeded yet).
+    expect(screen.getAllByText('Coming soon')).toHaveLength(2);
     expect(screen.getByRole('img', { name: 'Dygo' })).toBeTruthy();
   });
 
