@@ -1,3 +1,4 @@
+import type * as React from 'react';
 import { useTranslations } from 'next-intl';
 
 import { GARDEN_ROUTES, isGardenIpadNavOn } from '@/constants/garden';
@@ -27,12 +28,18 @@ export type GardenTab = 'garden' | 'missions' | 'topics' | 'groups' | 'me';
  * UI-3 U3-2: with NEXT_PUBLIC_GARDEN_IPAD_NAV on, the same items also render
  * as `GardenRail` (600–1023px) and `GardenSidebar` (≥ 1024px), and the tab
  * bar hides from 600px up. Off (the default), the output is unchanged.
+ *
+ * UI-7 U7-2: `bar={false}` renders only the rail / sidebar (screens with no
+ * tab bar on iPhone, like the topic bed), and `sidebar` goes under the
+ * sidebar's items (the master list of the master–detail views at `lg`).
  */
 export function GardenTabBar({
   active,
   sticky = true,
   groups,
   ipadNav = isGardenIpadNavOn(),
+  bar = true,
+  sidebar,
 }: {
   active: GardenTab;
   sticky?: boolean;
@@ -40,6 +47,10 @@ export function GardenTabBar({
   groups?: boolean;
   /** iPad rail / sidebar. Defaults to NEXT_PUBLIC_GARDEN_IPAD_NAV. */
   ipadNav?: boolean;
+  /** The iPhone bottom tab bar; false shows only the iPad rail / sidebar. */
+  bar?: boolean;
+  /** Under the sidebar's items at `lg` (the topic beds, the shared gardens). */
+  sidebar?: React.ReactNode;
 }) {
   const fromContext = useGroupsTab();
   const showGroups = groups ?? fromContext;
@@ -60,17 +71,21 @@ export function GardenTabBar({
   ];
   const tabBarClasses = sticky ? 'sticky bottom-0 mt-auto' : 'mt-auto';
   if (!ipadNav) {
-    return <BottomTabBar items={items} activeKey={active} className={tabBarClasses} />;
+    return bar ? <BottomTabBar items={items} activeKey={active} className={tabBarClasses} /> : null;
   }
   return (
     <>
-      <BottomTabBar
-        items={items}
-        activeKey={active}
-        className={gcn(tabBarClasses, 'md:hidden')}
-      />
+      {bar ? (
+        <BottomTabBar
+          items={items}
+          activeKey={active}
+          className={gcn(tabBarClasses, 'md:hidden')}
+        />
+      ) : null}
       <GardenRail items={items} activeKey={active} />
-      <GardenSidebar items={items} activeKey={active} />
+      <GardenSidebar items={items} activeKey={active}>
+        {sidebar}
+      </GardenSidebar>
     </>
   );
 }
@@ -78,3 +93,12 @@ export function GardenTabBar({
 /** Screen column: the canvas frame (390 wide on iPhone), full height. */
 export const SCREEN_CLASSES =
   'mx-auto flex min-h-screen-dvh w-full max-w-[560px] flex-col bg-bg text-text';
+
+/**
+ * UI-7 U7-2 (design system §10): added to SCREEN_CLASSES on screens that
+ * render the iPad nav. With the nav on, the column widens and leaves room
+ * for the fixed rail (80px, `ipad:`) or sidebar (240px, `ipad-lg:`):
+ * content up to 720px at `md` and 960px at `lg`.
+ */
+export const IPAD_NAV_COLUMN =
+  'ipad:max-w-[800px] ipad:pl-20 ipad-lg:max-w-[1200px] ipad-lg:pl-60';

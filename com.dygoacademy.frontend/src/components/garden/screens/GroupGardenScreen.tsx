@@ -12,7 +12,7 @@ import { ManageIcon, SharedPlot, TilePlant, type GroupTilePlant } from '../group
 import { BackIcon, PlusIcon } from '../icons';
 import { IconButton } from '../IconButton';
 import { RainDayBanner } from '../RainDayBanner';
-import { GardenTabBar, SCREEN_CLASSES } from './GardenTabBar';
+import { GardenTabBar, IPAD_NAV_COLUMN, SCREEN_CLASSES } from './GardenTabBar';
 
 /**
  * GR2 · Group garden (canvas `reference/GR2-group-garden`). Props only.
@@ -54,6 +54,8 @@ export interface GroupGardenScreenProps {
   /** Admins only; null hides Invite. `onClick` (live sheet) wins over `href`. */
   invite: { href?: string; onClick?: () => void } | null;
   stickyNav?: boolean;
+  /** Master list under the iPad sidebar's tabs at `lg` (GardenSidebarList). */
+  sidebar?: React.ReactNode;
   children?: React.ReactNode;
 }
 
@@ -71,6 +73,7 @@ export function GroupGardenScreen({
   avatars,
   invite,
   stickyNav = true,
+  sidebar,
   children,
 }: GroupGardenScreenProps) {
   const t = useTranslations('screens.groups.garden');
@@ -80,7 +83,7 @@ export function GroupGardenScreen({
     'box-content flex h-10 shrink-0 items-center gap-1.5 rounded-[14px] border border-border bg-surface px-[14px] text-[14px] font-bold text-forest';
 
   return (
-    <div className={gcn(SCREEN_CLASSES, 'relative gap-3 pt-[22px]')}>
+    <div className={gcn(SCREEN_CLASSES, IPAD_NAV_COLUMN, 'relative gap-3 pt-[22px]')}>
       <header className="flex items-center gap-3 px-4">
         <IconButton asChild aria-label={t('back')} className={BACK_CLASSES}>
           <Link href={backHref}>
@@ -198,7 +201,7 @@ export function GroupGardenScreen({
         ) : null}
       </section>
 
-      <GardenTabBar active="groups" groups sticky={stickyNav} />
+      <GardenTabBar active="groups" groups sticky={stickyNav} sidebar={sidebar} />
       {children}
     </div>
   );

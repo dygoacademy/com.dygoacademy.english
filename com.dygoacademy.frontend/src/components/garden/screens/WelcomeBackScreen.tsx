@@ -7,7 +7,7 @@ import { gcn } from '../cn';
 import { useGardenFormat } from '../format';
 import { HeroGardenCard, type HeroLegendItem, type HeroPlant } from '../HeroGardenCard';
 import { ArrowRightIcon, RainBarrelIcon } from '../icons';
-import { GardenTabBar, SCREEN_CLASSES } from './GardenTabBar';
+import { GardenTabBar, IPAD_NAV_COLUMN, SCREEN_CLASSES } from './GardenTabBar';
 
 /**
  * A5 · Welcome back (canvas `reference/A5-welcome-back`), shown on the
@@ -53,7 +53,14 @@ export function WelcomeBackScreen({
   ];
 
   return (
-    <div className={gcn(SCREEN_CLASSES, 'gap-4 pt-[22px]')}>
+    // Design system §10, A5: iPad keeps the one column, centred, max 640.
+    <div
+      className={gcn(
+        SCREEN_CLASSES,
+        IPAD_NAV_COLUMN,
+        'gap-4 pt-[22px] ipad:max-w-[720px] ipad-lg:max-w-[880px]',
+      )}
+    >
       <header className="flex flex-col gap-1 px-5">
         <span className="text-[13px] font-medium text-muted-foreground">{f.longDay(date)}</span>
         <h1 className="font-display text-[30px] font-semibold leading-[1.12]">

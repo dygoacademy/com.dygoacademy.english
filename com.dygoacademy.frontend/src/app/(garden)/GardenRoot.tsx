@@ -1,6 +1,7 @@
 import { NextIntlClientProvider, type AbstractIntlMessages } from 'next-intl';
 
 import { GardenPreferencesProvider } from '@/components/garden/preferences';
+import { isGardenIpadNavOn } from '@/constants/garden';
 import type { AppLocale, MeaningLocale } from '@/i18n/config';
 
 import { gardenFontVariables } from './fonts';
@@ -17,6 +18,9 @@ import { gardenFontVariables } from './fonts';
  * reference pages pass their own `messages` (their language comes from
  * `?locale=`); the live layout lets the provider inherit them from
  * `src/i18n/request.ts`.
+ *
+ * UI-7 U7-2: `data-garden-ipad` (with NEXT_PUBLIC_GARDEN_IPAD_NAV on)
+ * switches on the `ipad:` / `ipad-lg:` layout classes (tailwind.config.ts).
  */
 export function GardenRoot({
   appLocale,
@@ -25,6 +29,7 @@ export function GardenRoot({
   messages,
   meaningLocale,
   stored,
+  ipadNav = isGardenIpadNavOn(),
   children,
 }: {
   appLocale: AppLocale;
@@ -34,6 +39,8 @@ export function GardenRoot({
   meaningLocale: MeaningLocale | null;
   /** What the profile stores (the language sheet shows these). */
   stored?: { uiLocale: AppLocale | null; meaningLocale: MeaningLocale | null };
+  /** iPad layouts (`ipad:` / `ipad-lg:` classes). Defaults to NEXT_PUBLIC_GARDEN_IPAD_NAV. */
+  ipadNav?: boolean;
   children: React.ReactNode;
 }) {
   return (
@@ -49,7 +56,12 @@ export function GardenRoot({
           storedUiLocale: stored?.uiLocale ?? null,
         }}
       >
-        <div data-ui="garden" lang={appLocale} className={`${gardenFontVariables} font-body`}>
+        <div
+          data-ui="garden"
+          data-garden-ipad={ipadNav ? '' : undefined}
+          lang={appLocale}
+          className={`${gardenFontVariables} font-body`}
+        >
           {children}
         </div>
       </GardenPreferencesProvider>

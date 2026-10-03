@@ -95,11 +95,14 @@ export function ReviewCard({
       aria-label={t('cardLabel', { word })}
       className={gcn(
         'flex flex-col gap-[14px] rounded-hero border border-border bg-surface px-5 py-[22px] shadow-card-lift',
+        // Design system §10, A2 landscape: word + audio on the left (5/12),
+        // the answer on the right (7/12). Reading order stays the same.
+        'ipad-lg:grid ipad-lg:grid-cols-12 ipad-lg:content-start ipad-lg:gap-x-8 ipad-lg:px-7',
         className,
       )}
     >
       {tags.length > 0 ? (
-        <ul aria-label={t('tags')} className="flex flex-wrap gap-1.5">
+        <ul aria-label={t('tags')} className="flex flex-wrap gap-1.5 ipad-lg:col-span-5">
           {tags.map((tag, index) => (
             <li
               key={`${tag.text}-${index}`}
@@ -116,7 +119,7 @@ export function ReviewCard({
         </ul>
       ) : null}
 
-      <div className="flex items-center justify-between gap-2.5">
+      <div className="flex items-center justify-between gap-2.5 ipad-lg:col-span-5 ipad-lg:col-start-1 ipad-lg:self-start">
         <div className="flex min-w-0 flex-col">
           <span
             lang="en"
@@ -130,7 +133,7 @@ export function ReviewCard({
       </div>
 
       {revealed ? (
-        <div className="rise flex flex-col gap-[14px]">
+        <div className={gcn('rise flex flex-col gap-[14px]', ANSWER_PANE)}>
           <div className="flex flex-col gap-0.5">
             <h3 className="sr-only">{t('meaning')}</h3>
             {meaningFirst && meaningTranslation?.text ? (
@@ -175,7 +178,12 @@ export function ReviewCard({
           <ChipList title={t('collocations')} items={collocations} />
         </div>
       ) : (
-        <div className="flex flex-grow flex-col items-center justify-center gap-2.5 text-center text-muted-foreground">
+        <div
+          className={gcn(
+            'flex flex-grow flex-col items-center justify-center gap-2.5 text-center text-muted-foreground',
+            ANSWER_PANE,
+          )}
+        >
           <ThinkSprout />
           <span className="text-[15px]">{t.rich('hiddenHint', { br: () => <br /> })}</span>
         </div>
@@ -185,6 +193,10 @@ export function ReviewCard({
 }
 
 /** A small uppercase heading over English word chips (synonyms, collocations). */
+/** The answer (or the hidden hint) as the right-hand pane at `ipad-lg`. */
+const ANSWER_PANE =
+  'ipad-lg:col-span-7 ipad-lg:col-start-6 ipad-lg:row-span-3 ipad-lg:row-start-1 ipad-lg:min-h-[240px]';
+
 function ChipList({ title, items }: { title: string; items?: readonly string[] | null }) {
   if (!items || items.length === 0) return null;
   return (

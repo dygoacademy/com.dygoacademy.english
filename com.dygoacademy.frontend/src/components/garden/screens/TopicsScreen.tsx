@@ -11,7 +11,7 @@ import { PlusIcon, SearchIcon } from '../icons';
 import { IconButton } from '../IconButton';
 import type { PlantStage } from '../plantStage';
 import { LockedTopicRow, TopicRow } from '../TopicRow';
-import { GardenTabBar, SCREEN_CLASSES } from './GardenTabBar';
+import { GardenTabBar, IPAD_NAV_COLUMN, SCREEN_CLASSES } from './GardenTabBar';
 
 /**
  * A6 · Topics, the garden beds (canvas `reference/A6-topics`).
@@ -51,6 +51,8 @@ export interface TopicsScreenProps {
   newBedHref?: string;
   onNewBed?: () => void;
   stickyNav?: boolean;
+  /** Master list under the iPad sidebar's tabs at `lg` (GardenSidebarList). */
+  sidebar?: React.ReactNode;
 }
 
 /**
@@ -86,6 +88,7 @@ export function TopicsScreen({
   newBedHref,
   onNewBed,
   stickyNav = true,
+  sidebar,
 }: TopicsScreenProps) {
   const t = useTranslations('screens.topics');
   const router = useRouter();
@@ -96,7 +99,7 @@ export function TopicsScreen({
   const chips = [{ id: 'all', label: t('all') }, ...filters];
 
   return (
-    <div className={gcn(SCREEN_CLASSES, 'gap-[14px] pt-[22px]')}>
+    <div className={gcn(SCREEN_CLASSES, IPAD_NAV_COLUMN, 'gap-[14px] pt-[22px]')}>
       <header className="flex items-end gap-3 px-5">
         <div className="flex flex-grow flex-col">
           <span className="text-[13px] font-medium text-muted-foreground">
@@ -122,7 +125,8 @@ export function TopicsScreen({
         ))}
       </div>
 
-      <div className="flex flex-col gap-2 px-4">
+      {/* Design system §10, A6: bed cards in 2 columns on iPad. */}
+      <div className="flex flex-col gap-2 px-4 ipad:grid ipad:grid-cols-2 ipad:content-start ipad:gap-2.5">
         {shown.map((topic) => {
           const meta = [
             t('words', { count: topic.words }),
@@ -157,7 +161,9 @@ export function TopicsScreen({
             />
           );
         })}
-        {topics.length === 0 ? <EmptyState as="p" body={t('empty')} /> : null}
+        {topics.length === 0 ? (
+          <EmptyState as="p" body={t('empty')} className="ipad:col-span-2" />
+        ) : null}
         {lockedPack && (filter === 'all' || lockedPack.groups.includes(filter)) ? (
           <LockedTopicRow
             title={lockedPack.name}
@@ -175,7 +181,7 @@ export function TopicsScreen({
         </button>
       </div>
 
-      <GardenTabBar active="topics" sticky={stickyNav} />
+      <GardenTabBar active="topics" sticky={stickyNav} sidebar={sidebar} />
     </div>
   );
 }

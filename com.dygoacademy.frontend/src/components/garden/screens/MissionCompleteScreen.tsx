@@ -87,7 +87,10 @@ export function MissionCompleteScreen({
   const dash = t('unknown');
 
   return (
-    <div className="mx-auto flex min-h-screen-dvh w-full max-w-[560px] flex-col gap-4 bg-bg px-4 pb-6 pt-5 text-text">
+    // Design system §10, A3: one centred column (max 560) on iPad portrait;
+    // landscape puts bloom + stats on the left, next mission + reminder on
+    // the right.
+    <div className="mx-auto flex min-h-screen-dvh w-full max-w-[560px] flex-col gap-4 bg-bg px-4 pb-6 pt-5 text-text ipad-lg:max-w-[960px]">
       <div className="flex justify-end">
         <IconButton asChild aria-label={t('close')}>
           <Link href={closeHref}>
@@ -96,105 +99,111 @@ export function MissionCompleteScreen({
         </IconButton>
       </div>
 
-      <div className="flex flex-col items-center gap-1.5 text-center">
-        <BloomMedal label={t('bloomLabel')} />
-        <span className="mt-2 text-[12px] font-bold uppercase tracking-[0.1em] text-success">
-          {t('overline')}
-        </span>
-        <h1 className="font-display text-[30px] font-semibold leading-[1.1]">
-          {t('title', { count: words })}
-        </h1>
-        {bloomed ? (
-          <span className="text-[15px] text-muted-foreground">
-            {t('bloomed', { word: bloomed.word, count: bloomed.more })}
-          </span>
-        ) : null}
-      </div>
-
-      <div className="grid grid-cols-3 gap-2">
-        <StatTile
-          value={
-            stats.recalledPercent !== null ? t('percent', { value: stats.recalledPercent }) : dash
-          }
-          label={t('recalled')}
-        />
-        <StatTile
-          value={stats.minutesToday !== null ? t('minutes', { count: stats.minutesToday }) : dash}
-          label={t('today')}
-        />
-        <StatTile
-          value={stats.streak !== null ? f.number(stats.streak) : dash}
-          label={t('streak')}
-          tone="success"
-        />
-      </div>
-
-      {week ? (
-        <WeekDots
-          days={week.map(({ day, state }) => ({
-            initial: f.weekdayInitial(day),
-            label: t('dayLabel', {
-              day: f.weekday(day),
-              today: String(state === 'today'),
-              done: String(state !== 'empty'),
-            }),
-            state,
-          }))}
-        />
-      ) : null}
-
-      {missions ? (
-        <div className="flex flex-col gap-3 rounded-card border border-gold-border bg-gold-soft p-[14px]">
-          <div className="flex items-center gap-3">
-            <GoldenBloomIcon width={40} height={40} stemTo={23} />
-            <div className="flex flex-grow flex-col">
-              <span className="text-[16px] font-bold">
-                {t('missionsDone', { done: missions.done, total: missions.total })}
+      <div className="contents ipad-lg:grid ipad-lg:grid-cols-2 ipad-lg:items-start ipad-lg:gap-6">
+        <div className="contents ipad-lg:flex ipad-lg:flex-col ipad-lg:gap-4">
+          <div className="flex flex-col items-center gap-1.5 text-center">
+            <BloomMedal label={t('bloomLabel')} />
+            <span className="mt-2 text-[12px] font-bold uppercase tracking-[0.1em] text-success">
+              {t('overline')}
+            </span>
+            <h1 className="font-display text-[30px] font-semibold leading-[1.1]">
+              {t('title', { count: words })}
+            </h1>
+            {bloomed ? (
+              <span className="text-[15px] text-muted-foreground">
+                {t('bloomed', { word: bloomed.word, count: bloomed.more })}
               </span>
-              <span className="text-[13px] text-gold-soft-text">
-                {t('missionsLeft', { count: missions.total - missions.done })}
-              </span>
-            </div>
+            ) : null}
           </div>
-          {missions.next ? (
-            <Link
-              href={missions.next.href}
-              className={buttonClassName('primary', {
-                className: 'h-[54px] rounded-control text-[16px]',
-              })}
-            >
-              {missions.next.minutes === null
-                ? missionNames(missions.next.mission)
-                : t('nextMission', {
-                    title: missionNames(missions.next.mission),
-                    minutes: missions.next.minutes,
-                  })}
-            </Link>
+
+          <div className="grid grid-cols-3 gap-2">
+            <StatTile
+              value={
+                stats.recalledPercent !== null ? t('percent', { value: stats.recalledPercent }) : dash
+              }
+              label={t('recalled')}
+            />
+            <StatTile
+              value={stats.minutesToday !== null ? t('minutes', { count: stats.minutesToday }) : dash}
+              label={t('today')}
+            />
+            <StatTile
+              value={stats.streak !== null ? f.number(stats.streak) : dash}
+              label={t('streak')}
+              tone="success"
+            />
+          </div>
+
+          {week ? (
+            <WeekDots
+              days={week.map(({ day, state }) => ({
+                initial: f.weekdayInitial(day),
+                label: t('dayLabel', {
+                  day: f.weekday(day),
+                  today: String(state === 'today'),
+                  done: String(state !== 'empty'),
+                }),
+                state,
+              }))}
+            />
           ) : null}
         </div>
-      ) : null}
 
-      {reminder ? (
-        <div className="flex items-center gap-3 rounded-[18px] border border-border bg-surface px-[14px] py-3">
-          <BellIcon width={22} height={22} stroke="var(--color-forest)" />
-          <div className="flex flex-grow flex-col">
-            <span className="text-[14px] font-bold">
-              {t('ripening', { count: reminder.ripening })}
-            </span>
-            <span className="text-[12px] text-muted-foreground">
-              {t('remindAt', { time: f.clock(reminder.time) })}
-            </span>
-          </div>
-          <Switch
-            checked={remindOn}
-            aria-label={t('remindAt', { time: f.clock(reminder.time) })}
-            onCheckedChange={(on) => {
-              setRemindOn(on);
-              onReminderChange?.(on);
-            }}
-          />
+        <div className="contents ipad-lg:flex ipad-lg:flex-col ipad-lg:gap-4 ipad-lg:pt-14">
+          {missions ? (
+            <div className="flex flex-col gap-3 rounded-card border border-gold-border bg-gold-soft p-[14px]">
+              <div className="flex items-center gap-3">
+                <GoldenBloomIcon width={40} height={40} stemTo={23} />
+                <div className="flex flex-grow flex-col">
+                  <span className="text-[16px] font-bold">
+                    {t('missionsDone', { done: missions.done, total: missions.total })}
+                  </span>
+                  <span className="text-[13px] text-gold-soft-text">
+                    {t('missionsLeft', { count: missions.total - missions.done })}
+                  </span>
+                </div>
+              </div>
+              {missions.next ? (
+                <Link
+                  href={missions.next.href}
+                  className={buttonClassName('primary', {
+                    className: 'h-[54px] rounded-control text-[16px]',
+                  })}
+                >
+                  {missions.next.minutes === null
+                    ? missionNames(missions.next.mission)
+                    : t('nextMission', {
+                        title: missionNames(missions.next.mission),
+                        minutes: missions.next.minutes,
+                      })}
+                </Link>
+              ) : null}
+            </div>
+          ) : null}
+
+          {reminder ? (
+            <div className="flex items-center gap-3 rounded-[18px] border border-border bg-surface px-[14px] py-3">
+              <BellIcon width={22} height={22} stroke="var(--color-forest)" />
+              <div className="flex flex-grow flex-col">
+                <span className="text-[14px] font-bold">
+                  {t('ripening', { count: reminder.ripening })}
+                </span>
+                <span className="text-[12px] text-muted-foreground">
+                  {t('remindAt', { time: f.clock(reminder.time) })}
+                </span>
+              </div>
+              <Switch
+                checked={remindOn}
+                aria-label={t('remindAt', { time: f.clock(reminder.time) })}
+                onCheckedChange={(on) => {
+                  setRemindOn(on);
+                  onReminderChange?.(on);
+                }}
+              />
+            </div>
+          ) : null}
         </div>
-      ) : null}
+      </div>
 
       <Link
         href={backHref}

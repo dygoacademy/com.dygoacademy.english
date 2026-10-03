@@ -10,7 +10,7 @@ import { LinkIcon, RainCloud } from '../groupArt';
 import { BackIcon } from '../icons';
 import { IconButton } from '../IconButton';
 import { TrickyPatchRow } from '../TrickyPatchRow';
-import { GardenTabBar, SCREEN_CLASSES } from './GardenTabBar';
+import { GardenTabBar, IPAD_NAV_COLUMN, SCREEN_CLASSES } from './GardenTabBar';
 
 /**
  * GR3 / GR4 · Tend the garden (canvas `reference/GR3-tricky-patches`,
@@ -90,7 +90,7 @@ export function TendGardenScreen({
   const topMisses = Math.max(1, ...(tricky?.rows ?? []).map((row) => row.misses));
 
   return (
-    <div className={gcn(SCREEN_CLASSES, 'relative gap-[14px] pt-[22px]')}>
+    <div className={gcn(SCREEN_CLASSES, IPAD_NAV_COLUMN, 'relative gap-[14px] pt-[22px]')}>
       <header className="flex items-center gap-3 px-4">
         <IconButton asChild aria-label={t('back')} className="box-content">
           <Link href={backHref}>

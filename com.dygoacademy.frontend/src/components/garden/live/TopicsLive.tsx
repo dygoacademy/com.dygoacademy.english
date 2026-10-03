@@ -14,6 +14,7 @@ import { Button } from '../Button';
 import { TopicsScreen, type TopicsScreenTopic } from '../screens/TopicsScreen';
 import { sortBedsByDue, toScreenTopic, topicFilters, type GardenTopicSummary } from './data';
 import { LiveError, LiveLoading } from './LiveState';
+import { TopicBedsSidebar } from './SidebarLists';
 
 /**
  * /topics: the beds (A6) from GET /topics.
@@ -50,6 +51,7 @@ export function TopicsLive() {
         lockedPack={null}
         onSearch={() => setSearchOpen(true)}
         onNewBed={() => setNewBedOpen(true)}
+        sidebar={<TopicBedsSidebar />}
       />
       <SearchSheet open={searchOpen} onOpenChange={setSearchOpen} beds={beds} />
       <NewBedSheet open={newBedOpen} onOpenChange={setNewBedOpen} />

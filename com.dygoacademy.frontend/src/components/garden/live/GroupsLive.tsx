@@ -17,6 +17,7 @@ import { GroupSheet } from '../GroupSheet';
 import { SharedGardensScreen } from '../screens/SharedGardensScreen';
 import { avatarRow, firstRainDay, gardenPlant, rainDayEnds, tokenFromLink, wettestBed } from './groupData';
 import { LiveError, LiveLoading } from './LiveState';
+import { SharedGardensSidebar } from './SidebarLists';
 
 /**
  * /groups: GR1 on GET /groups (name, your role), GET
@@ -93,6 +94,7 @@ export function GroupsLive() {
       rainDay={rainDay}
       start={{ onClick: () => setCreateOpen(true) }}
       join={{ onClick: () => setJoinOpen(true) }}
+      sidebar={<SharedGardensSidebar />}
     >
       <CreateGardenSheet open={createOpen} onOpenChange={setCreateOpen} />
       <JoinWithLinkSheet open={joinOpen} onOpenChange={setJoinOpen} />

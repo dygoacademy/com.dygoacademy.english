@@ -12,6 +12,7 @@ import { GroupGardenScreen } from '../screens/GroupGardenScreen';
 import { avatarRow, bedPlant, bedShares, wettestBed } from './groupData';
 import { InviteSheetLive } from './InviteSheetLive';
 import { LiveError, LiveLoading } from './LiveState';
+import { SharedGardensSidebar } from './SidebarLists';
 
 /**
  * /groups/[id]: GR2 on GET /groups/:id/garden (UI-G: group totals
@@ -46,6 +47,7 @@ export function GroupGardenLive({ groupId }: { groupId: string }) {
 
   return (
     <GroupGardenScreen
+      sidebar={<SharedGardensSidebar activeId={groupId} />}
       name={data.name}
       role={data.role}
       members={data.member_count}

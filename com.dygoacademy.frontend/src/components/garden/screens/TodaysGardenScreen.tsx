@@ -17,7 +17,7 @@ import {
 } from '../icons';
 import { MissionRow, type MissionStatus } from '../MissionRow';
 import { StreakPill } from '../StreakPill';
-import { GardenTabBar, SCREEN_CLASSES } from './GardenTabBar';
+import { GardenTabBar, IPAD_NAV_COLUMN, SCREEN_CLASSES } from './GardenTabBar';
 
 /**
  * A1 · Today's Garden (canvas `reference/A1-todays-garden`). Props only.
@@ -101,7 +101,7 @@ export function TodaysGardenScreen({
   const doneCount = missions?.filter((m) => missionStatus(m) === 'done').length ?? 0;
 
   return (
-    <div className={gcn(SCREEN_CLASSES, 'gap-[14px] pt-[22px]')}>
+    <div className={gcn(SCREEN_CLASSES, IPAD_NAV_COLUMN, 'gap-[14px] pt-[22px]')}>
       <header className="flex items-end gap-3 px-5">
         <div className="flex flex-grow flex-col">
           <span className="text-[13px] font-medium text-muted-foreground">{f.longDay(date)}</span>
@@ -118,78 +118,87 @@ export function TodaysGardenScreen({
         ) : null}
       </header>
 
-      <HeroGardenCard
-        className="mx-4"
-        overline={t('heroOverline')}
-        title={t('heroTitle', { count: garden.growing })}
-        trailing={greeting === 'evening' ? <MoonIcon width={30} height={30} /> : undefined}
-        plants={garden.plants}
-        legend={legend}
-      />
+      {/*
+        Design system §10, A1: iPhone stacks hero → missions → button
+        (`contents`). iPad portrait: hero 5/8 + missions and button 3/8.
+        Landscape: hero full width, then missions 6/12 + button 6/12.
+      */}
+      <div className="contents ipad:mx-4 ipad:grid ipad:grid-cols-8 ipad:items-start ipad:gap-4 ipad-lg:grid-cols-12">
+        <HeroGardenCard
+          className="mx-4 ipad:col-span-5 ipad:mx-0 ipad-lg:col-span-12"
+          overline={t('heroOverline')}
+          title={t('heroTitle', { count: garden.growing })}
+          trailing={greeting === 'evening' ? <MoonIcon width={30} height={30} /> : undefined}
+          plants={garden.plants}
+          legend={legend}
+        />
 
-      <section className="mx-4 flex flex-col gap-3 rounded-[22px] border border-border bg-surface px-4 py-[14px]">
-        <div className="flex items-baseline justify-between">
-          <h2 className="font-display text-[19px] font-semibold">{t('missions.title')}</h2>
-          {missions ? (
-            <span className="text-[13px] font-semibold text-muted-foreground">
-              {t('missions.progress', { done: doneCount, total: missions.length })}
-            </span>
-          ) : null}
+        <div className="contents ipad:col-span-3 ipad:flex ipad:flex-col ipad:gap-[14px] ipad-lg:contents">
+          <section className="mx-4 flex flex-col gap-3 rounded-[22px] border border-border bg-surface px-4 py-[14px] ipad:mx-0 ipad-lg:col-span-6">
+            <div className="flex items-baseline justify-between">
+              <h2 className="font-display text-[19px] font-semibold">{t('missions.title')}</h2>
+              {missions ? (
+                <span className="text-[13px] font-semibold text-muted-foreground">
+                  {t('missions.progress', { done: doneCount, total: missions.length })}
+                </span>
+              ) : null}
+            </div>
+            {missions ? (
+              <>
+                <ul className="flex flex-col gap-3">
+                  {missions.map((item, index) => (
+                    <li key={index}>
+                      <Mission item={item} />
+                    </li>
+                  ))}
+                </ul>
+                <p className="flex items-center gap-2 rounded-tile bg-gold-soft px-2.5 py-2 text-[13px] text-gold-soft-text">
+                  <GoldenBloomIcon width={18} height={18} centreFirst />
+                  <span>
+                    {t.rich(
+                      goldenBloom
+                        ? 'missions.goldenBloomEarned'
+                        : missions.length === 1
+                          ? 'missions.goldenBloomOne'
+                          : 'missions.goldenBloom',
+                      { total: missions.length, b: (c) => <b>{c}</b> },
+                    )}
+                  </span>
+                </p>
+              </>
+            ) : (
+              <p className="text-[13px] text-muted-foreground">{t('missions.comingSoon')}</p>
+            )}
+          </section>
+
+          <div className="flex flex-col gap-2.5 px-4 ipad:px-0 ipad-lg:col-span-6">
+            {action ? (
+              <Link href={action.href} className={buttonClassName('primary', { twoLine: true, className: 'md:max-w-none' })}>
+                <ButtonTwoLine
+                  label={t(`action.${action.kind}`)}
+                  secondLine={
+                    action.minutes === null
+                      ? t('action.detailNoTime', { count: action.wordsLeft })
+                      : t('action.detail', { count: action.wordsLeft, minutes: action.minutes })
+                  }
+                />
+                <ArrowRightIcon width={24} height={24} stroke="var(--color-surface)" />
+              </Link>
+            ) : null}
+            {ripens ? (
+              <p className="flex items-center gap-2 px-1 text-[13px] text-muted-foreground">
+                <BellIcon width={16} height={16} />
+                <span>
+                  {t.rich('ripens', {
+                    time: f.clock(ripens.time),
+                    count: ripens.count,
+                    b: (c) => <b className="text-text">{c}</b>,
+                  })}
+                </span>
+              </p>
+            ) : null}
+          </div>
         </div>
-        {missions ? (
-          <>
-            <ul className="flex flex-col gap-3">
-              {missions.map((item, index) => (
-                <li key={index}>
-                  <Mission item={item} />
-                </li>
-              ))}
-            </ul>
-            <p className="flex items-center gap-2 rounded-tile bg-gold-soft px-2.5 py-2 text-[13px] text-gold-soft-text">
-              <GoldenBloomIcon width={18} height={18} centreFirst />
-              <span>
-                {t.rich(
-                  goldenBloom
-                    ? 'missions.goldenBloomEarned'
-                    : missions.length === 1
-                      ? 'missions.goldenBloomOne'
-                      : 'missions.goldenBloom',
-                  { total: missions.length, b: (c) => <b>{c}</b> },
-                )}
-              </span>
-            </p>
-          </>
-        ) : (
-          <p className="text-[13px] text-muted-foreground">{t('missions.comingSoon')}</p>
-        )}
-      </section>
-
-      <div className="flex flex-col gap-2.5 px-4">
-        {action ? (
-          <Link href={action.href} className={buttonClassName('primary', { twoLine: true, className: 'md:max-w-none' })}>
-            <ButtonTwoLine
-              label={t(`action.${action.kind}`)}
-              secondLine={
-                action.minutes === null
-                  ? t('action.detailNoTime', { count: action.wordsLeft })
-                  : t('action.detail', { count: action.wordsLeft, minutes: action.minutes })
-              }
-            />
-            <ArrowRightIcon width={24} height={24} stroke="var(--color-surface)" />
-          </Link>
-        ) : null}
-        {ripens ? (
-          <p className="flex items-center gap-2 px-1 text-[13px] text-muted-foreground">
-            <BellIcon width={16} height={16} />
-            <span>
-              {t.rich('ripens', {
-                time: f.clock(ripens.time),
-                count: ripens.count,
-                b: (c) => <b className="text-text">{c}</b>,
-              })}
-            </span>
-          </p>
-        ) : null}
       </div>
 
       <GardenTabBar active="garden" sticky={stickyNav} />

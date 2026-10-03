@@ -94,7 +94,10 @@ export function ReviewScreen({
   const shown = onShowAnswer ? state : localState;
 
   return (
-    <div className="mx-auto flex min-h-screen-dvh w-full max-w-[560px] flex-col gap-[14px] bg-bg px-4 pb-6 pt-5 text-text">
+    // Design system §10, A2: centred max 560 on iPad portrait; landscape
+    // widens for the two-pane card (ReviewCard `ipad-lg:`), the rating bar
+    // spanning both panes under it.
+    <div className="mx-auto flex min-h-screen-dvh w-full max-w-[560px] flex-col gap-[14px] bg-bg px-4 pb-6 pt-5 text-text ipad-lg:max-w-[960px]">
       <div className="flex items-center gap-3">
         <IconButton asChild aria-label={t('close')}>
           <Link href={closeHref}>

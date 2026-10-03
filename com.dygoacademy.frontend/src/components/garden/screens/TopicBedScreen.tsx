@@ -6,16 +6,23 @@ import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 
 import { buttonClassName } from '../buttonStyles';
+import { gcn } from '../cn';
 import { EmptyState } from '../EmptyState';
 import { useGardenFormat } from '../format';
 import { BackIcon, MoreIcon, PlusIcon, WaterIcon } from '../icons';
 import { IconButton } from '../IconButton';
 import { StageTile } from '../StageTile';
 import { WordRow } from '../WordRow';
+import { GardenTabBar, IPAD_NAV_COLUMN, SCREEN_CLASSES } from './GardenTabBar';
 
 /**
  * A7 · Topic bed (canvas `reference/A7-topic-bed`, and
  * `A7-topic-bed-filter-sprouts` with the Sprouts tile on). No tab bar.
+ *
+ * UI-7 U7-2 (design system §10, A7): with the iPad nav on, the rail /
+ * sidebar show (no bottom tab bar), the word list goes 2 columns, and at
+ * `lg` the sidebar lists the beds (`sidebar`) as the master of the
+ * master–detail view, this bed being the detail.
  *
  * Header (Back, title + meta, options) → four stage tiles that filter the
  * list (tap again to clear) → Water / Quiz / Add word → the word list.
@@ -56,6 +63,8 @@ export interface TopicBedScreenProps {
   optionsHref?: string;
   /** Wilting rows link here (the leech drill, U5-6); omitted = static rows. */
   wiltingHref?: string;
+  /** Master list under the iPad sidebar's tabs at `lg` (the topic beds). */
+  sidebar?: React.ReactNode;
 }
 
 export function TopicBedScreen({
@@ -71,6 +80,7 @@ export function TopicBedScreen({
   onAddWord,
   optionsHref,
   wiltingHref,
+  sidebar,
 }: TopicBedScreenProps) {
   const t = useTranslations('screens.bed');
   const topicsT = useTranslations('screens.topics');
@@ -88,7 +98,13 @@ export function TopicBedScreen({
           : t('inDays', { count: due.days });
 
   return (
-    <div className="mx-auto flex min-h-screen-dvh w-full max-w-[560px] flex-col gap-[14px] bg-bg px-4 pt-5 text-text">
+    <div
+      className={gcn(
+        SCREEN_CLASSES,
+        IPAD_NAV_COLUMN,
+        'gap-[14px] px-4 pt-5 ipad:pl-24 ipad-lg:pl-64',
+      )}
+    >
       <header className="flex items-center gap-3">
         <IconButton asChild aria-label={t('back')}>
           <Link href={backHref}>
@@ -166,7 +182,7 @@ export function TopicBedScreen({
         <span className="text-[12px] text-muted-foreground">{t('sorted')}</span>
       </div>
 
-      <ul className="flex flex-grow flex-col gap-2">
+      <ul className="flex flex-grow flex-col gap-2 ipad:grid ipad:grid-cols-2 ipad:content-start">
         {shown.map((word) => (
           <li key={word.id}>
             <WordRow
@@ -186,9 +202,15 @@ export function TopicBedScreen({
           </li>
         ))}
         {shown.length === 0 ? (
-          <EmptyState as="li" body={words.length === 0 ? t('emptyBed') : t('empty')} />
+          <EmptyState
+            as="li"
+            body={words.length === 0 ? t('emptyBed') : t('empty')}
+            className="ipad:col-span-2"
+          />
         ) : null}
       </ul>
+
+      <GardenTabBar active="topics" bar={false} sidebar={sidebar} />
     </div>
   );
 }

@@ -10,7 +10,7 @@ import { GroupCard, type GroupCardProps } from '../GroupCard';
 import { LinkIcon } from '../groupArt';
 import { PlusIcon } from '../icons';
 import { RainDayBanner } from '../RainDayBanner';
-import { GardenTabBar, SCREEN_CLASSES } from './GardenTabBar';
+import { GardenTabBar, IPAD_NAV_COLUMN, SCREEN_CLASSES } from './GardenTabBar';
 
 /**
  * GR1 · Shared gardens (canvas `reference/GR1-shared-gardens`). Props only.
@@ -30,6 +30,8 @@ export interface SharedGardensScreenProps {
   start: { href?: string; onClick?: () => void };
   join: { href?: string; onClick?: () => void };
   stickyNav?: boolean;
+  /** Master list under the iPad sidebar's tabs at `lg` (GardenSidebarList). */
+  sidebar?: React.ReactNode;
   children?: React.ReactNode;
 }
 
@@ -68,12 +70,13 @@ export function SharedGardensScreen({
   start,
   join,
   stickyNav = true,
+  sidebar,
   children,
 }: SharedGardensScreenProps) {
   const t = useTranslations('screens.groups.list');
 
   return (
-    <div className={gcn(SCREEN_CLASSES, 'relative gap-[14px] pt-[22px]')}>
+    <div className={gcn(SCREEN_CLASSES, IPAD_NAV_COLUMN, 'relative gap-[14px] pt-[22px]')}>
       <header className="flex items-end gap-3 px-5">
         <div className="flex flex-grow flex-col">
           <span className="text-[13px] font-medium text-muted-foreground">
@@ -121,7 +124,7 @@ export function SharedGardensScreen({
         </div>
       </div>
 
-      <GardenTabBar active="groups" groups sticky={stickyNav} />
+      <GardenTabBar active="groups" groups sticky={stickyNav} sidebar={sidebar} />
       {children}
     </div>
   );

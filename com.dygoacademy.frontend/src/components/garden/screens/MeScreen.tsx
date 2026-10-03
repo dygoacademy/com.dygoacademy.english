@@ -22,7 +22,7 @@ import { SettingsList, SettingsRow } from '../SettingsList';
 import { StatTile } from '../StatTile';
 import { Switch } from '../Switch';
 import { IconButton } from '../IconButton';
-import { GardenTabBar, SCREEN_CLASSES } from './GardenTabBar';
+import { GardenTabBar, IPAD_NAV_COLUMN, SCREEN_CLASSES } from './GardenTabBar';
 
 /**
  * A8 · Me (canvas `reference/A8-me`).
@@ -103,7 +103,7 @@ export function MeScreen({
   const num = (value: number | null) => (value === null ? dash : f.number(value));
 
   return (
-    <div className={gcn(SCREEN_CLASSES, 'gap-3 pt-[22px]')}>
+    <div className={gcn(SCREEN_CLASSES, IPAD_NAV_COLUMN, 'gap-3 pt-[22px]')}>
       <header className="flex items-center gap-[14px] px-5">
         <div
           aria-hidden="true"
@@ -136,153 +136,163 @@ export function MeScreen({
         </IconButton>
       </header>
 
-      <div className="mx-4 grid grid-cols-4 gap-2">
-        <StatTile size="sm" tone="forest" value={num(stats.fruiting)} label={t('stats.fruiting')} />
-        <StatTile size="sm" value={num(stats.bestStreak)} label={t('stats.bestStreak')} />
-        <StatTile
-          size="sm"
-          value={stats.hours === null ? dash : t('stats.hours', { count: stats.hours })}
-          label={t('stats.inGarden')}
-        />
-        <StatTile
-          size="sm"
-          tone="gold"
-          value={num(stats.goldenBlooms)}
-          label={t('stats.goldenBlooms')}
-        />
-      </div>
-
-      <section className="mx-4 flex flex-col gap-2.5 rounded-card border border-border bg-surface px-4 py-[14px]">
-        <div className="flex items-baseline justify-between">
-          <h2 className="font-display text-[17px] font-semibold">{t('calendarTitle')}</h2>
-          <span className="text-[12px] text-muted-foreground">{t('calendarRange')}</span>
-        </div>
-        {calendar ? (
-          <GardenCalendar
-            weeks={calendar}
-            label={t('calendarLabel')}
-            legend={t('calendarLegend')}
-            low="0"
-            high="3"
-          />
-        ) : (
-          <p className="text-[13px] text-muted-foreground">{t('comingSoon')}</p>
-        )}
-      </section>
-
-      <section className="mx-4 flex flex-col gap-2">
-        <h2 className="font-display text-[17px] font-semibold">{t('keepsakesTitle')}</h2>
-        {keepsakes ? (
-          <div className="grid grid-cols-4 gap-2">
-            {keepsakes.map((item, index) => {
-              switch (item.type) {
-                case 'firstHarvest':
-                  return (
-                    <Keepsake
-                      key={index}
-                      label={t('keepsake.firstHarvest')}
-                      icon={<HarvestFruitIcon width={30} height={30} />}
-                    />
-                  );
-                case 'streak':
-                  return (
-                    <Keepsake
-                      key={index}
-                      label={t('keepsake.streak', { count: item.days })}
-                      number={f.number(item.days)}
-                    />
-                  );
-                case 'blooms':
-                  return (
-                    <Keepsake
-                      key={index}
-                      label={t('keepsake.blooms', { count: item.count })}
-                      icon={
-                        <GoldenBloomIcon
-                          width={30}
-                          height={30}
-                          stemTo={23}
-                          stem="var(--stage-sprout-leaf)"
-                        />
-                      }
-                    />
-                  );
-                case 'nextWords':
-                case 'nextStreak':
-                case 'nextBlooms':
-                  return (
-                    <Keepsake
-                      key={index}
-                      label={t(
-                        item.type === 'nextWords'
-                          ? 'keepsake.next'
-                          : item.type === 'nextStreak'
-                            ? 'keepsake.nextStreak'
-                            : 'keepsake.nextBlooms',
-                        { count: item.target },
-                      )}
-                      progress={{
-                        percent: Math.round((item.current / item.target) * 100),
-                        value: f.number(item.current),
-                      }}
-                    />
-                  );
-              }
-            })}
+      {/*
+        Design system §10, A8: iPad shows 2 columns, stats + calendar on
+        the left, keepsakes + settings on the right; iPhone stacks them.
+      */}
+      <div className="contents ipad:mx-4 ipad:grid ipad:grid-cols-2 ipad:items-start ipad:gap-4">
+        <div className="contents ipad:flex ipad:flex-col ipad:gap-3">
+          <div className="mx-4 grid grid-cols-4 gap-2 ipad:mx-0">
+            <StatTile size="sm" tone="forest" value={num(stats.fruiting)} label={t('stats.fruiting')} />
+            <StatTile size="sm" value={num(stats.bestStreak)} label={t('stats.bestStreak')} />
+            <StatTile
+              size="sm"
+              value={stats.hours === null ? dash : t('stats.hours', { count: stats.hours })}
+              label={t('stats.inGarden')}
+            />
+            <StatTile
+              size="sm"
+              tone="gold"
+              value={num(stats.goldenBlooms)}
+              label={t('stats.goldenBlooms')}
+            />
           </div>
-        ) : (
-          <p className="text-[13px] text-muted-foreground">{t('comingSoon')}</p>
-        )}
-      </section>
 
-      <SettingsList className="mx-4">
-        <SettingsRow
-          icon={<MissionsTabIcon {...ICON} strokeLinejoin={undefined} />}
-          label={t('dailyGoal')}
-          value={
-            dailyGoal
-              ? t('dailyGoalValue', { missions: dailyGoal.missions, minutes: dailyGoal.minutes })
-              : t('comingSoonShort')
-          }
-          href={dailyGoal?.href}
-          onClick={dailyGoal && !dailyGoal.href ? onDailyGoalClick : undefined}
-          chevron={!dailyGoal}
-        />
-        <SettingsRow
-          icon={<BellIcon {...ICON} />}
-          label={t('reminder')}
-          labelId="garden-me-reminder"
-          value={reminder ? f.clock(reminder.time) : undefined}
-          control={
-            reminder ? (
-              <Switch
-                size="sm"
-                checked={remindOn}
-                aria-labelledby="garden-me-reminder"
-                onCheckedChange={(on) => {
-                  setRemindOn(on);
-                  onReminderChange?.(on);
-                }}
+          <section className="mx-4 flex flex-col gap-2.5 rounded-card border border-border bg-surface px-4 py-[14px] ipad:mx-0">
+            <div className="flex items-baseline justify-between">
+              <h2 className="font-display text-[17px] font-semibold">{t('calendarTitle')}</h2>
+              <span className="text-[12px] text-muted-foreground">{t('calendarRange')}</span>
+            </div>
+            {calendar ? (
+              <GardenCalendar
+                weeks={calendar}
+                label={t('calendarLabel')}
+                legend={t('calendarLegend')}
+                low="0"
+                high="3"
               />
-            ) : undefined
-          }
-        />
-        <SettingsRow
-          icon={<TranslateIcon {...ICON} />}
-          label={t('meanings')}
-          value={meanings ? t(`meaningsValue.${meanings}`) : t('comingSoonShort')}
-          onClick={onLanguageClick}
-          chevron
-        />
-        {family ? (
-          <SettingsRow
-            icon={<FamilyIcon {...ICON} />}
-            label={t('family')}
-            value={t('familyValue', { name: family.name })}
-            href={family.href}
-          />
-        ) : null}
-      </SettingsList>
+            ) : (
+              <p className="text-[13px] text-muted-foreground">{t('comingSoon')}</p>
+            )}
+          </section>
+        </div>
+
+        <div className="contents ipad:flex ipad:flex-col ipad:gap-3">
+          <section className="mx-4 flex flex-col gap-2 ipad:mx-0">
+            <h2 className="font-display text-[17px] font-semibold">{t('keepsakesTitle')}</h2>
+            {keepsakes ? (
+              <div className="grid grid-cols-4 gap-2">
+                {keepsakes.map((item, index) => {
+                  switch (item.type) {
+                    case 'firstHarvest':
+                      return (
+                        <Keepsake
+                          key={index}
+                          label={t('keepsake.firstHarvest')}
+                          icon={<HarvestFruitIcon width={30} height={30} />}
+                        />
+                      );
+                    case 'streak':
+                      return (
+                        <Keepsake
+                          key={index}
+                          label={t('keepsake.streak', { count: item.days })}
+                          number={f.number(item.days)}
+                        />
+                      );
+                    case 'blooms':
+                      return (
+                        <Keepsake
+                          key={index}
+                          label={t('keepsake.blooms', { count: item.count })}
+                          icon={
+                            <GoldenBloomIcon
+                              width={30}
+                              height={30}
+                              stemTo={23}
+                              stem="var(--stage-sprout-leaf)"
+                            />
+                          }
+                        />
+                      );
+                    case 'nextWords':
+                    case 'nextStreak':
+                    case 'nextBlooms':
+                      return (
+                        <Keepsake
+                          key={index}
+                          label={t(
+                            item.type === 'nextWords'
+                              ? 'keepsake.next'
+                              : item.type === 'nextStreak'
+                                ? 'keepsake.nextStreak'
+                                : 'keepsake.nextBlooms',
+                            { count: item.target },
+                          )}
+                          progress={{
+                            percent: Math.round((item.current / item.target) * 100),
+                            value: f.number(item.current),
+                          }}
+                        />
+                      );
+                  }
+                })}
+              </div>
+            ) : (
+              <p className="text-[13px] text-muted-foreground">{t('comingSoon')}</p>
+            )}
+          </section>
+
+          <SettingsList className="mx-4 ipad:mx-0">
+            <SettingsRow
+              icon={<MissionsTabIcon {...ICON} strokeLinejoin={undefined} />}
+              label={t('dailyGoal')}
+              value={
+                dailyGoal
+                  ? t('dailyGoalValue', { missions: dailyGoal.missions, minutes: dailyGoal.minutes })
+                  : t('comingSoonShort')
+              }
+              href={dailyGoal?.href}
+              onClick={dailyGoal && !dailyGoal.href ? onDailyGoalClick : undefined}
+              chevron={!dailyGoal}
+            />
+            <SettingsRow
+              icon={<BellIcon {...ICON} />}
+              label={t('reminder')}
+              labelId="garden-me-reminder"
+              value={reminder ? f.clock(reminder.time) : undefined}
+              control={
+                reminder ? (
+                  <Switch
+                    size="sm"
+                    checked={remindOn}
+                    aria-labelledby="garden-me-reminder"
+                    onCheckedChange={(on) => {
+                      setRemindOn(on);
+                      onReminderChange?.(on);
+                    }}
+                  />
+                ) : undefined
+              }
+            />
+            <SettingsRow
+              icon={<TranslateIcon {...ICON} />}
+              label={t('meanings')}
+              value={meanings ? t(`meaningsValue.${meanings}`) : t('comingSoonShort')}
+              onClick={onLanguageClick}
+              chevron
+            />
+            {family ? (
+              <SettingsRow
+                icon={<FamilyIcon {...ICON} />}
+                label={t('family')}
+                value={t('familyValue', { name: family.name })}
+                href={family.href}
+              />
+            ) : null}
+          </SettingsList>
+        </div>
+      </div>
 
       <GardenTabBar active="me" sticky={stickyNav} />
     </div>

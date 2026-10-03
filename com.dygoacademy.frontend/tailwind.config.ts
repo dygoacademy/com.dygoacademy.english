@@ -211,6 +211,15 @@ const config: Config = {
         '[data-home-layout="desktop"] &',
       ]);
     }),
+    // UI-7 U7-2: the Word Garden iPad layouts (design system §10). `ipad:` =
+    // `md:` (600px) and `ipad-lg:` = `lg:` (1024px), but only under
+    // GardenRoot's data-garden-ipad, which is set when
+    // NEXT_PUBLIC_GARDEN_IPAD_NAV is on (the rail / sidebar show). With the
+    // flag off the garden keeps its 560px phone column at every width.
+    plugin(({ addVariant }) => {
+      addVariant('ipad', '@media (min-width: 600px) { [data-garden-ipad] & }');
+      addVariant('ipad-lg', '@media (min-width: 1024px) { [data-garden-ipad] & }');
+    }),
   ],
 };
 

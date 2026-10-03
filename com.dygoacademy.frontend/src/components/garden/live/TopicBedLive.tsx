@@ -13,6 +13,7 @@ import { useGardenPreferences } from '../preferences';
 import { TopicBedScreen } from '../screens/TopicBedScreen';
 import { toBedWords, type GardenTopicWord } from './data';
 import { LiveError, LiveLoading } from './LiveState';
+import { TopicBedsSidebar } from './SidebarLists';
 
 /**
  * /topics/[id]: a topic bed (A7) from GET /topics/:id and the
@@ -86,6 +87,7 @@ export function TopicBedLive({ topicId }: { topicId: string }) {
         addWordHref={GARDEN_ROUTES.topic(topicId)}
         onAddWord={() => setAdding(true)}
         wiltingHref={GARDEN_ROUTES.quiz(topicId, 'leech')}
+        sidebar={<TopicBedsSidebar activeId={topicId} />}
       />
       <AddWordSheet
         topicId={topicId}

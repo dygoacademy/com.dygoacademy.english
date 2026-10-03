@@ -6,7 +6,7 @@ import { gcn } from '../cn';
 import { useGardenFormat } from '../format';
 import { RainBarrelIcon, SeedPackIcon } from '../icons';
 import { WeekHarvest, type HarvestDay } from '../WeekHarvest';
-import { GardenTabBar, SCREEN_CLASSES } from './GardenTabBar';
+import { GardenTabBar, IPAD_NAV_COLUMN, SCREEN_CLASSES } from './GardenTabBar';
 
 /**
  * A4 · Weekly harvest (canvas `reference/A4-weekly-harvest`). Props only.
@@ -112,7 +112,7 @@ export function WeeklyHarvestScreen({
   ) : null;
 
   return (
-    <div className={gcn(SCREEN_CLASSES, 'gap-[14px] pt-[22px]')}>
+    <div className={gcn(SCREEN_CLASSES, IPAD_NAV_COLUMN, 'gap-[14px] pt-[22px]')}>
       <header className="flex flex-col px-5">
         <span className="text-[13px] font-medium text-muted-foreground">
           {t('weekOf', { date: f.dayMonth(weekStart) })}
@@ -166,78 +166,85 @@ export function WeeklyHarvestScreen({
         )}
       </section>
 
-      <section className="mx-4 flex flex-col gap-2.5 rounded-[22px] border border-border bg-surface p-4">
-        {goal ? (
-          <>
-            <div className="flex items-baseline justify-between">
-              <h2 className="font-display text-[19px] font-semibold">
-                {t('goalBand', { band: goal.band })}
-              </h2>
-              <span className="text-[13px] text-muted-foreground">{t('goalHint')}</span>
-            </div>
-            <div className="flex items-baseline gap-1.5">
-              <span className="font-display text-[32px] font-semibold text-forest">
-                {f.number(goal.mastered)}
-              </span>
-              <span className="text-[14px] text-muted-foreground">
-                {t('goalMastered', { target: goal.target })}
-              </span>
-            </div>
-            <div
-              role="img"
-              aria-label={t('goalBar', {
-                mastered: goal.mastered,
-                growing: goal.growing,
-                target: goal.target,
-              })}
-              className="flex h-2.5 overflow-hidden rounded-[5px] bg-track"
-            >
-              <div className="bg-success" style={{ width: `${masteredPct}%` }} />
-              <div className="bg-stage-sprout" style={{ width: `${growingPct}%` }} />
-            </div>
-            <div className="flex gap-[14px] text-[12px] text-muted-foreground">
-              <span className="flex items-center gap-[5px]">
-                <span aria-hidden="true" className="h-2 w-2 rounded-[4px] bg-success" />
-                {t('legendMastered')}
-              </span>
-              <span className="flex items-center gap-[5px]">
-                <span aria-hidden="true" className="h-2 w-2 rounded-[4px] bg-stage-sprout" />
-                {t('legendGrowing', { count: goal.growing })}
-              </span>
-              {goal.eta ? (
-                <span className="ml-auto">
-                  {t('eta', {
-                    eta: goal.eta === 'pending' ? t('etaPending') : f.dayMonth(goal.eta),
-                  })}
+      {/*
+        Design system §10, A4: under the full-width harvest, iPad portrait
+        puts the goal beside the rain barrel + group (2 columns), landscape
+        gives goal, barrel and group a column each (3 columns).
+      */}
+      <div className="contents ipad:mx-4 ipad:grid ipad:grid-cols-2 ipad:gap-[14px] ipad-lg:grid-cols-3">
+        <section className="mx-4 flex flex-col gap-2.5 rounded-[22px] border border-border bg-surface p-4 ipad:mx-0">
+          {goal ? (
+            <>
+              <div className="flex items-baseline justify-between">
+                <h2 className="font-display text-[19px] font-semibold">
+                  {t('goalBand', { band: goal.band })}
+                </h2>
+                <span className="text-[13px] text-muted-foreground">{t('goalHint')}</span>
+              </div>
+              <div className="flex items-baseline gap-1.5">
+                <span className="font-display text-[32px] font-semibold text-forest">
+                  {f.number(goal.mastered)}
                 </span>
-              ) : null}
-            </div>
-          </>
-        ) : (
-          <>
-            <h2 className="font-display text-[19px] font-semibold">{t('goalTitle')}</h2>
-            <ComingSoon>{t('goalComingSoon')}</ComingSoon>
-          </>
-        )}
-      </section>
+                <span className="text-[14px] text-muted-foreground">
+                  {t('goalMastered', { target: goal.target })}
+                </span>
+              </div>
+              <div
+                role="img"
+                aria-label={t('goalBar', {
+                  mastered: goal.mastered,
+                  growing: goal.growing,
+                  target: goal.target,
+                })}
+                className="flex h-2.5 overflow-hidden rounded-[5px] bg-track"
+              >
+                <div className="bg-success" style={{ width: `${masteredPct}%` }} />
+                <div className="bg-stage-sprout" style={{ width: `${growingPct}%` }} />
+              </div>
+              <div className="flex gap-[14px] text-[12px] text-muted-foreground">
+                <span className="flex items-center gap-[5px]">
+                  <span aria-hidden="true" className="h-2 w-2 rounded-[4px] bg-success" />
+                  {t('legendMastered')}
+                </span>
+                <span className="flex items-center gap-[5px]">
+                  <span aria-hidden="true" className="h-2 w-2 rounded-[4px] bg-stage-sprout" />
+                  {t('legendGrowing', { count: goal.growing })}
+                </span>
+                {goal.eta ? (
+                  <span className="ml-auto">
+                    {t('eta', {
+                      eta: goal.eta === 'pending' ? t('etaPending') : f.dayMonth(goal.eta),
+                    })}
+                  </span>
+                ) : null}
+              </div>
+            </>
+          ) : (
+            <>
+              <h2 className="font-display text-[19px] font-semibold">{t('goalTitle')}</h2>
+              <ComingSoon>{t('goalComingSoon')}</ComingSoon>
+            </>
+          )}
+        </section>
 
-      <div className="mx-4 grid grid-cols-2 gap-2.5">
-        <div className="flex flex-col gap-1.5 rounded-card border border-border bg-surface p-[14px]">
-          <RainBarrelIcon width={30} height={30} stroke="var(--color-water)" />
-          <span className="text-[15px] font-bold">
-            {freezes !== null ? t('barrelTitle', { count: freezes }) : t('barrelName')}
-          </span>
-          <span className="text-[12px] leading-[1.35] text-muted-foreground">
-            {freezes !== null ? t('barrelBody') : t('comingSoon')}
-          </span>
+        <div className="mx-4 grid grid-cols-2 gap-2.5 ipad:mx-0 ipad-lg:contents">
+          <div className="flex flex-col gap-1.5 rounded-card border border-border bg-surface p-[14px]">
+            <RainBarrelIcon width={30} height={30} stroke="var(--color-water)" />
+            <span className="text-[15px] font-bold">
+              {freezes !== null ? t('barrelTitle', { count: freezes }) : t('barrelName')}
+            </span>
+            <span className="text-[12px] leading-[1.35] text-muted-foreground">
+              {freezes !== null ? t('barrelBody') : t('comingSoon')}
+            </span>
+          </div>
+          {group?.href ? (
+            <Link href={group.href} className={GROUP_CARD}>
+              {groupCard}
+            </Link>
+          ) : group ? (
+            <div className={GROUP_CARD}>{groupCard}</div>
+          ) : null}
         </div>
-        {group?.href ? (
-          <Link href={group.href} className={GROUP_CARD}>
-            {groupCard}
-          </Link>
-        ) : group ? (
-          <div className={GROUP_CARD}>{groupCard}</div>
-        ) : null}
       </div>
 
       <GardenTabBar active="missions" sticky={stickyNav} />
