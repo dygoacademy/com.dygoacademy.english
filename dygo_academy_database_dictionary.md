@@ -46,6 +46,8 @@ Every column, constraint, index and policy below was read out of `pg_catalog` on
 | `review_logs` | Learning state | Append-only review history, partitioned by month. | every review ever — **largest table overall** |
 | `study_schedules` | Notifications | Daily habit reminder configuration. | ≤ few per user |
 | `push_subscriptions` | Notifications | VAPID Web Push endpoints per device. | one per device |
+| `speaking_items` | Speaking (Phase 13) | A sentence for one target word in a topic bed, with native UK/US audio keys and word timings. | ≤ words × beds with speaking |
+| `speaking_attempts` | Speaking (Phase 13) | One row per speaking Compare: score, stage, word marks. No audio. | append-only, grows with use |
 
 ## 3. Entity relationships
 
@@ -71,6 +73,10 @@ erDiagram
     TOPICS ||--o{ TOPIC_WORDS : "topic_id"
     TOPIC_WORDS ||--o{ REVIEW_LOGS : "topic_word_id"
     TOPIC_WORDS ||--o{ USER_WORD_SRS : "topic_word_id"
+    MASTER_LEXICON ||--o{ SPEAKING_ITEMS : "lexicon_id"
+    TOPICS ||--o{ SPEAKING_ITEMS : "topic_id"
+    SPEAKING_ITEMS ||--o{ SPEAKING_ATTEMPTS : "item_id"
+    PROFILES ||--o{ SPEAKING_ATTEMPTS : "user_id"
     AUTH_USERS ||--|| PROFILES : "id (1:1)"
 ```
 
@@ -180,7 +186,7 @@ Application-level user record, 1:1 with `auth.users`.
 | `profiles_select_self_or_tenant` | SELECT | {authenticated} | `((id = auth.uid()) OR ((tenant_id IS NOT NULL) AND (tenant_id = current_user_tenant_id())))` |
 | `profiles_update_self` | UPDATE | {authenticated} | `(id = auth.uid())` |
 
-**Referenced by** — `group_invites`, `group_members`, `groups`, `push_subscriptions`, `review_logs`, `study_schedules`, `tenant_seats`, `topic_words`, `user_word_srs`
+**Referenced by** — `group_invites`, `group_members`, `groups`, `push_subscriptions`, `review_logs`, `speaking_attempts`, `study_schedules`, `tenant_seats`, `topic_words`, `user_word_srs`
 
 **Operational notes**
 
@@ -422,7 +428,7 @@ A vocabulary set inside a group.
 | `topics_select_anon` | SELECT | {anon} | `is_public` |
 | `topics_update_write` | UPDATE | {authenticated} | `has_group_role(group_id, 'WRITE'::group_role)` |
 
-**Referenced by** — `topic_words`
+**Referenced by** — `speaking_items`, `topic_words`
 
 **Operational notes**
 
@@ -541,7 +547,7 @@ Global, deduplicated linguistic cache. Not tenant-scoped.
 | `master_lexicon_select_all` | SELECT | {authenticated} | `true` |
 | `master_lexicon_select_anon` | SELECT | {anon} | `true` |
 
-**Referenced by** — `topic_words`
+**Referenced by** — `speaking_items`, `topic_words`
 
 **Operational notes**
 
@@ -759,6 +765,125 @@ VAPID Web Push endpoints per device.
 - Dead endpoints are not pruned automatically. Web Push returns 404/410 for expired subscriptions; the Phase 3 dispatcher should delete on those responses or the table grows without bound.
 
 ---
+
+### Speaking (Phase 13)
+
+Added by `database/migrations/20261004_speaking.sql` (2026-10-04, Phase 13 T1). Written by hand from the migration, not introspected. RLS assertions: `database/tests/rls_speaking_test.sql` (run by `./database/apply-migrations.sh --test`). Design notes: `docs/phase13-notes.md`.
+
+#### `speaking_items`
+
+A sentence for one target word in a topic bed, with the native-speaker clips and their word (and target-word syllable) timings. Global content.
+
+> Phase 13: a sentence for one target word in a topic bed, with native UK/US audio (R2 object keys) and timings. Written by the T2 script as service_role; read-only for learners.
+
+**Written by** — The Phase 13 content script only, as `service_role`. Every signed-in user can read it; learners and teachers can't write it.
+
+| Column | Type | Null | Default |
+| :--- | :--- | :---: | :--- |
+| `id` | `uuid` | NO | `gen_random_uuid()` |
+| `lexicon_id` | `uuid` | NO | — |
+| `topic_id` | `uuid` | NO | — |
+| `sentence` | `text` | NO | — |
+| `target_index` | `smallint` | NO | — |
+| `audio_uk_path` | `text` | yes | — |
+| `audio_us_path` | `text` | yes | — |
+| `timings_uk` | `jsonb` | yes | — |
+| `timings_us` | `jsonb` | yes | — |
+| `created_at` | `timestamp with time zone` | NO | `now()` |
+
+**Keys**
+
+- `speaking_items_pkey` — PRIMARY KEY: `PRIMARY KEY (id)`
+- `speaking_items_one_per_word_per_topic` — UNIQUE: `UNIQUE (topic_id, lexicon_id)`
+- `speaking_items_lexicon_id_fkey` — FOREIGN KEY: `FOREIGN KEY (lexicon_id) REFERENCES master_lexicon(id) ON DELETE RESTRICT`
+- `speaking_items_topic_id_fkey` — FOREIGN KEY: `FOREIGN KEY (topic_id) REFERENCES topics(id) ON DELETE CASCADE`
+
+**Checks**
+
+- `speaking_items_sentence_check` — `CHECK ((length(TRIM(BOTH FROM sentence)) > 0))`
+- `speaking_items_target_index_check` — `CHECK ((target_index >= 0))`
+- `speaking_items_uk_path_with_timings` / `speaking_items_us_path_with_timings` — an accent's path and timings are both set or both null
+- `speaking_items_has_audio` — at least one of `audio_uk_path`, `audio_us_path`
+- `speaking_items_timings_uk_shape` / `speaking_items_timings_us_shape` — timings, when set, are an object with a numeric `duration` and an array `words`
+
+**Indexes** (beyond those backing keys)
+
+- `idx_speaking_items_topic_id` — `btree (topic_id)`
+- `idx_speaking_items_lexicon_id` — `btree (lexicon_id)`
+
+**RLS policies** — RLS enabled
+
+| Policy | Cmd | Roles | Condition |
+| :--- | :--- | :--- | :--- |
+| `speaking_items_select_all` | SELECT | {authenticated} | `true` |
+
+**Grants** — `authenticated`: SELECT. `anon`: none. `service_role`: SELECT, INSERT, UPDATE, DELETE.
+
+**Referenced by** — `speaking_attempts`
+
+**Operational notes**
+
+- `audio_*_path` are R2 object **keys**, not URLs. The API builds the public URL from `R2_PUBLIC_URL`, so the audio host can change without rewriting rows (unlike `master_lexicon.audio_url`).
+- `timings_*` shape: `{ "duration": 3.31, "words": [ { "text": "Planting", "start": 0.05, "end": 0.39, "syllables": [ { "start": 0.05, "end": 0.22, "stressed": true } ] } ] }`. Syllables only for the target word. The DB checks only the outer shape; the content script validates the rest (zod).
+- One item per word per bed. Deleting a topic deletes its items, and with them their attempts.
+
+---
+
+#### `speaking_attempts`
+
+One row per speaking Compare (SP3). Try again stores another row. The learner's recording is never stored (decision D2).
+
+> Phase 13: one row per speaking Compare (SP3). word_marks = [{index, ok, reason: stress_soft|missing|rushed|slow|null}]. No audio is stored (D2).
+
+**Written by** — The owning user only (insert). Rows are history: only `service_role` can update or delete them.
+
+| Column | Type | Null | Default |
+| :--- | :--- | :---: | :--- |
+| `id` | `uuid` | NO | `gen_random_uuid()` |
+| `user_id` | `uuid` | NO | `auth.uid()` |
+| `item_id` | `uuid` | NO | — |
+| `accent` | `text` | NO | — |
+| `score` | `smallint` | NO | — |
+| `stage` | `text` | NO | — |
+| `word_marks` | `jsonb` | NO | `'[]'::jsonb` |
+| `user_duration_ms` | `integer` | NO | — |
+| `created_at` | `timestamp with time zone` | NO | `now()` |
+
+**Keys**
+
+- `speaking_attempts_pkey` — PRIMARY KEY: `PRIMARY KEY (id)`
+- `speaking_attempts_user_id_fkey` — FOREIGN KEY: `FOREIGN KEY (user_id) REFERENCES profiles(id) ON DELETE CASCADE`
+- `speaking_attempts_item_id_fkey` — FOREIGN KEY: `FOREIGN KEY (item_id) REFERENCES speaking_items(id) ON DELETE CASCADE`
+
+**Checks**
+
+- `speaking_attempts_accent_check` — `CHECK ((accent = ANY (ARRAY['UK'::text, 'US'::text])))`
+- `speaking_attempts_score_check` — `CHECK (((score >= 0) AND (score <= 100)))`
+- `speaking_attempts_stage_check` — `CHECK ((stage = ANY (ARRAY['seed'::text, 'sprout'::text, 'bloom'::text, 'fruit'::text])))`
+- `speaking_attempts_word_marks_check` — `CHECK ((jsonb_typeof(word_marks) = 'array'::text))`
+- `speaking_attempts_user_duration_ms_check` — `CHECK ((user_duration_ms >= 0))`
+
+**Indexes** (beyond those backing keys)
+
+- `idx_speaking_attempts_user_item_created` — `btree (user_id, item_id, created_at DESC)`
+
+**RLS policies** — RLS enabled
+
+| Policy | Cmd | Roles | Condition |
+| :--- | :--- | :--- | :--- |
+| `speaking_attempts_select_own` | SELECT | {authenticated} | `(user_id = auth.uid())` |
+| `speaking_attempts_insert_own` | INSERT | {authenticated} | check `(user_id = auth.uid())` |
+
+**Grants** — `authenticated`: SELECT, INSERT. `anon`: none. `service_role`: SELECT, INSERT, UPDATE, DELETE.
+
+**Operational notes**
+
+- Owner-only, with no teacher exception (like `user_word_srs`). Group views are out of scope for Phase 13.
+- `accent` uses `UK` / `US` (the handover's values), while `profiles.english_variety` uses `en-GB` / `en-US`; the API maps between them.
+- No audio column on purpose (D2). Storing recordings later needs a privacy review and a new migration.
+
+---
+
 ## 6. Security model
 
 ### 6.1 Roles

@@ -46,7 +46,7 @@ Nothing in this file has been deployed. Nothing on UAT, pm2 or the running serve
 - Cloudflare documents `r2.dev` as meant for development: rate-limited and without caching/WAF features. It's widely reported to be unreliable or blocked from mainland China. **Not verified from China** (I can't test that here).
 - The app itself is on `www.dygoacademy.com` through a Cloudflare Tunnel (Cloudflare's global network, not its China network), so its own reachability from China is also unverified.
 - Generating audio is **not** a China question: T2 runs offline as a script on Dylan's Mac. Only *serving* the files matters for learners.
-- Suggestion for Dylan, not done: connect a custom domain on the `dygoacademy.com` zone to the bucket (e.g. `audio.dygoacademy.com`). Audio then goes through the same Cloudflare zone as the app (if the app loads in China, so does the audio), it gets edge caching, and CORS (D7) is set on the bucket. If `speaking_items` stores object **keys**, not URLs (planned for T1), changing the domain later means changing one env var. Existing `master_lexicon.audio_url` rows would need a one-off URL rewrite.
+- Suggestion for Dylan, not done: connect a custom domain on the `dygoacademy.com` zone to the bucket (e.g. `audio.dygoacademy.com`). Audio then goes through the same Cloudflare zone as the app (if the app loads in China, so does the audio), it gets edge caching, and CORS (D7) is set on the bucket. Because `speaking_items` stores object **keys**, not URLs (T1), changing the domain later means changing one env var. Existing `master_lexicon.audio_url` rows would need a one-off URL rewrite.
 
 ## 4. Data facts (for T1/T2)
 
@@ -85,7 +85,7 @@ Nothing in this file has been deployed. Nothing on UAT, pm2 or the running serve
 
 Whichever is chosen, syllable boundaries for the target word come from the IPA (`ˈ` and `.` in `ipa_uk` / `ipa_us`), split evenly inside the word's time range (handover §2.1).
 
-**D2 · Store recordings?** Default no. T1 will add no audio column on `speaking_attempts`, only numbers.
+**D2 · Store recordings?** Default no. T1 has no audio column on `speaking_attempts`, only numbers.
 
 **D3 · Scoring source.** Default: the on-device envelope scorer (T4). Nothing in the repo constrains it.
 
@@ -101,7 +101,7 @@ Whichever is chosen, syllable boundaries for the target word come from the IPA (
 
 | Task | Files |
 | --- | --- |
-| T1 | `database/migrations/20261004_speaking.sql`, `database/tests/rls_speaking_test.sql`, `database/apply-migrations.sh`, `dygo_academy_database_dictionary.md` |
+| T1 (done) | `database/migrations/20261004_speaking.sql`, `database/tests/rls_speaking_test.sql`, `database/apply-migrations.sh`, `dygo_academy_database_dictionary.md` |
 | T2 | `com.dygoacademy.backend/scripts/speaking-generate.js` (backend scripts are plain `.js`, like `audio-backfill.js`), `src/modules/speaking/{speaking.module,speaking.controller,speaking.service}.ts` + specs, `src/storage/storage.service.ts` (a key builder for sentence clips), `app.module.ts`, `dygo_academy_api_surface.md`; frontend `src/types/speaking.ts`, `src/lib/api-client.ts` |
 | T3 | `src/lib/speaking/audio.ts`, `src/hooks/useLiveLevels.ts`, `src/hooks/usePlayer.ts` (or under `lib/speaking/`), tests, a dev page under the garden dev prefixes |
 | T4 | `src/lib/speaking/envelopeScorer.ts`, `src/lib/speaking/constants.ts`, tests |
@@ -125,18 +125,35 @@ Whichever is chosen, syllable boundaries for the target word come from the IPA (
 | No local dev server | `next dev` is banned in the frontend folder; device checks happen on UAT after Dylan deploys, or in a separate copy of the folder |
 | Uncommitted work in the tree | `messages/*.json`, `QuizScreen.tsx` etc. have someone else's uncommitted edits (and the automationtesting deletions). T8 will touch the same message files: commit or stash them first |
 
-## 9. T1 · Database
+## 9. T1 · Database (2026-10-04)
 
-Not started yet (next task in this run).
+- Migration `database/migrations/20261004_speaking.sql`: `speaking_items` and `speaking_attempts` with the handover's columns mapped to the repo (§5), check constraints, RLS, grants, and indexes `speaking_items(topic_id)` (+ `lexicon_id` for the FK) and `speaking_attempts(user_id, item_id, created_at desc)`.
+- RLS: `speaking_items`: select for any signed-in user (`using (true)`, like `master_lexicon`), no write grants for learners; writes only by `service_role`. `speaking_attempts`: select and insert only where `user_id = auth.uid()`; no update or delete (no grant, no policy). Nothing for `anon`.
+- Test `database/tests/rls_speaking_test.sql`, wired into `apply-migrations.sh --test` after the retention test. **Result: passed** (`./database/apply-migrations.sh --test`, exit 0, "Phase 13 T1 speaking RLS assertions: all passed."; 30 assertions: shape, item constraints, anon, items readable by learners in two tenants, no learner or teacher can insert/update/delete items, owner insert with defaulted `user_id`, attempt constraints, Priya / Sarah (teacher) / Dana can't read Alex's attempts, Priya can't insert for Alex, nobody can update or delete attempts).
+- Also checked: the whole chain (stub + schema + every file in `migrations/`) applies cleanly in a separate throwaway DB, dropped afterwards. The real database was not touched; the migration is **not applied** to it (Dylan runs `./database/apply-migrations.sh --migrations` when ready).
+- Bug caught by the test: the first version of the timings shape check let `{"words": []}` (no `duration`) through, because `jsonb_typeof(null) = 'number'` is NULL and a NULL check passes. Fixed with `is not distinct from`.
+- Types: no generated types in this repo. The frontend type file `src/types/speaking.ts` is written by hand in T2 with the API, snake_case, mirroring the response (not the raw table: the API returns URLs, not R2 keys).
 
 ## 10. Decisions taken with defaults
 
-None yet: T0 takes no product decisions. D1–D7 stay as listed in §6.
+| # | Decision | Default taken | Why / how to change |
+| --- | --- | --- | --- |
+| T1-a | One speaking item per word per bed | `unique (topic_id, lexicon_id)`, `topic_id not null` | Follows the handover (`topic_id` + index). Makes T2's upsert simple. Alternative in Q2 |
+| T1-b | Deleting a bed | Cascades to its items and their attempts | Topic deletion (ADMIN) must not fail because of speaking rows nobody can delete |
+| T1-c | Deleting a word | `on delete restrict`, like `topic_words.lexicon_id` | Lexicon rows are never deleted in practice |
+| T1-d | Audio columns | Store R2 object **keys**, not URLs | Host can change (§3) without rewriting rows |
+| T1-e | Accents | Each accent optional, but path and timings come together, and at least one accent per item | D1 might give one voice first. Make both `not null` later if wanted |
+| T1-f | Timings check | Object with numeric `duration` and array `words`; full schema checked with zod in T2 | Keeps the DB check simple |
+| T1-g | Attempts are history | No update / delete for learners | Same as retention tables; Try again = new row |
+| T1-h | `user_id` | References `profiles(id)`, default `auth.uid()` | Repo pattern |
+| T1-i | Accent values | `'UK'` / `'US'` (handover), not `en-GB` / `en-US` | API maps from `profiles.english_variety` |
+| T1-j | Teacher / group views of attempts | None (owner only) | Handover: admin/group views out of scope |
+| T1-k | `score`, `target_index` | `smallint` | Ranges are tiny |
 
 ## 11. Questions for Dylan
 
 1. **D1:** which source for native audio + word timings (§6, options A–E)? Needed before T2.
-2. **Items per bed or per word?** Topics belong to classes, so "the Environment bed" is one specific topic. Should speaking items instead be per word (`lexicon_id` + sentence, shared by every bed that contains the word), so any learner's bed with those words gets Speak? That needs `topic_id` to become optional (a one-line migration) and a different "≥ 5 items" count. T1 will follow the handover (per bed).
+2. **Items per bed or per word?** Topics belong to classes, so "the Environment bed" is one specific topic. Should speaking items instead be per word (`lexicon_id` + sentence, shared by every bed that contains the word), so any learner's bed with those words gets Speak? That needs `topic_id` to become optional (a one-line migration) and a different "≥ 5 items" count. T1 follows the handover (per bed).
 3. **Which topic is the Environment bed** to seed in T2 (UAT DB topic id)? In the seeds it's the QA "Nature & Environment" bed, which has drought, biodiversity and mitigate but not sustainable or deteriorate.
 4. **Audio host for China:** OK to move the R2 bucket behind a custom domain on `dygoacademy.com` (e.g. `audio.dygoacademy.com`)? Can someone test audio loading from Vietnam and mainland China?
 5. **D7 CORS:** can you add CORS rules on the R2 bucket for `https://www.dygoacademy.com`, `http://100.104.108.36:3000` and `http://localhost:3000` (GET, HEAD)? Or do you prefer a same-origin proxy?

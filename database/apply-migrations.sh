@@ -137,6 +137,10 @@ run_rls_suite() {
   # of the core fixtures and run its own RLS assertions.
   run_file "$DIR/migrations/20261001_retention.sql" "$scratch"
   run_file "$DIR/tests/rls_retention_test.sql" "$scratch"
+  # Phase 13 T1 speaking tables: self-contained too (needs only the schema
+  # and core fixtures).
+  run_file "$DIR/migrations/20261004_speaking.sql" "$scratch"
+  run_file "$DIR/tests/rls_speaking_test.sql" "$scratch"
 }
 
 # -----------------------------------------------------------------------------
