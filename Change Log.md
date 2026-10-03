@@ -162,3 +162,8 @@ Engineering-facing log of shipped fixes and changes, one dated entry per change.
 * **Why**: with `line-height: normal`, the explicit `"PingFang SC"` fallback in the body font stack made the line 20px for 简体中文, while the canvas (`'DM Sans', 'Be Vietnam Pro', sans-serif`) draws it at 19px. Everything below sat 1 CSS px low, so every v2 board failed `garden:diff` at 1.5–2.8%.
 * **Verified**: `garden:diff` against `www.dygoacademy.com`, en-US and vi-VN, all 10 boards pass: H3-home-v2-phone 0.392%, H4-home-v2-desktop 0.200%, H3s-plant-bloomed 0.395%, H3s-pain-flipped 0.399%, H3s-uses-travel 0.392%; vi-VN 0.213–0.443%. The vi-VN phone boards are the closest to the 0.5% bar.
 * **Incident on the way**: a `next dev` started inside `com.dygoacademy.frontend` wrote into the same `.next/` as the pm2 `dygo-frontend` (`next start`) and broke the production build; UAT returned 500 until `.next/` was cleared, `dygo-frontend` restored from `ecosystem.config.js` and the deploy watcher rebuilt it.
+
+### Added: CLAUDE.md (project guide for Claude Code)
+* **Files**: [`CLAUDE.md`](CLAUDE.md) (new)
+* **What**: a short project overview, a map of where the requirements, plans and design docs live, the common commands, and 11 master rules.
+* **Why**: so another Claude account can pick up the project quickly. Requirements and plans stay in their own files; CLAUDE.md only points to them.
