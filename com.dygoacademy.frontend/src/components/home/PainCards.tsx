@@ -55,7 +55,7 @@ export function PainCards({ initialFlipped = [] }: PainCardsProps) {
 }
 
 const FACE =
-  'flex flex-col rounded-[22px] p-3.5 [backface-visibility:hidden] [grid-area:1/1] home-lg:p-[18px] motion-reduce:transition-opacity motion-reduce:duration-150';
+  'flex flex-col rounded-[22px] p-3.5 [backface-visibility:hidden] home-lg:p-[18px] motion-reduce:transition-opacity motion-reduce:duration-150';
 
 function PainCard({
   painKey,
@@ -91,7 +91,7 @@ function PainCard({
     >
       <span
         className={gcn(
-          'relative grid flex-1 transition-transform duration-[450ms] ease-in-out [transform-style:preserve-3d] motion-reduce:transition-none motion-reduce:[transform:none]',
+          'relative flex flex-1 transition-transform duration-[450ms] ease-in-out [transform-style:preserve-3d] motion-reduce:transition-none motion-reduce:[transform:none]',
           flipped && '[transform:rotateY(180deg)]',
         )}
       >
@@ -101,7 +101,8 @@ function PainCard({
           className={gcn(
             FACE,
             'gap-2.5 border border-solid border-border bg-surface shadow-[0_4px_0_var(--color-card-lift)]',
-            flipped && 'motion-reduce:opacity-0',
+            // HP-11: only the face shown sets the card's height (as on the boards); the other is laid over it.
+            flipped ? 'absolute inset-0 overflow-hidden motion-reduce:opacity-0' : 'flex-1',
           )}
         >
           <span className="grow font-display text-[16px] font-medium leading-[1.35] text-text home-lg:text-[20px]">
@@ -121,7 +122,7 @@ function PainCard({
           className={gcn(
             FACE,
             'gap-2 bg-forest text-white shadow-[0_4px_0_var(--color-forest-shadow)] [transform:rotateY(180deg)] motion-reduce:[transform:none]',
-            !flipped && 'motion-reduce:opacity-0',
+            !flipped ? 'absolute inset-0 overflow-hidden motion-reduce:opacity-0' : 'flex-1',
           )}
         >
           <span className="text-[11px] font-bold uppercase tracking-[.08em] text-gold-light">{t('helps')}</span>

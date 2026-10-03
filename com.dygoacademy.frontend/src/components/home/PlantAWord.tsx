@@ -94,7 +94,8 @@ export function PlantAWord({ locale, registerHref, initialWord, onPlant }: Plant
   }
 
   const entry = state === 'bloomed' ? findPlantWord(word) : undefined;
-  const potClass = 'block h-[93px] w-[112px] home-lg:h-[103px] home-lg:w-[124px]';
+  // HP-11: inline like the boards' <svg> (it sits on the text baseline, a few px above the box bottom).
+  const potClass = 'inline align-baseline h-[93px] w-[112px] home-lg:h-[103px] home-lg:w-[124px]';
 
   return (
     <div className="flex flex-col gap-3" data-plant-state={state}>

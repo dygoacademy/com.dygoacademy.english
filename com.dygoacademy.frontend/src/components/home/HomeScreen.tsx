@@ -220,7 +220,7 @@ export function HomeScreen({
 
         <section
           id={HOME_ANCHORS.features}
-          className="flex scroll-mt-4 flex-col gap-[22px] px-5 pb-9 pt-3 home-lg:gap-8 home-lg:px-16 home-lg:pb-16 home-lg:pt-8"
+          className="flex scroll-mt-4 flex-col gap-[22px] px-5 pb-9 pt-3 home-lg:gap-8 home-lg:px-16 home-lg:pb-16 home-lg:pt-6"
         >
           <div className="mx-auto flex max-w-[720px] flex-col items-center gap-2 text-center">
             <h2 className={SECTION_TITLE}>{t('features.title')}</h2>

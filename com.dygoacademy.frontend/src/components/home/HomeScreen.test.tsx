@@ -37,7 +37,7 @@ describe('HomeScreen (Home page H1 / H2)', () => {
       'Sound familiar?',
       'How your words grow',
       'What do you need English for?',
-      'Everything a growing vocabulary needs',
+      'Everything you need to grow your vocabulary',
       'A garden for kids, too',
       'Common questions',
       'Plant your first word today',

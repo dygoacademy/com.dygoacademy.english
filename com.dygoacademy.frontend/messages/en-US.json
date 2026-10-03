@@ -538,42 +538,42 @@
           }
         },
         "features": {
-          "title": "Everything a growing vocabulary needs",
+          "title": "Everything you need to grow your vocabulary",
           "watering": {
             "title": "Daily watering",
-            "text": "Review the words that are due today. Say how well you remembered, and Dygo plans the next watering."
+            "text": "Review the words that are due today. Tell Dygo how well you remembered each one, and it schedules the next review."
           },
           "quizzes": {
             "title": "Quizzes",
-            "text": "Choose the word, synonyms, fill in the blank, listen and spell. Missed words come back, never a red cross."
+            "text": "Pick the right word, match synonyms, fill in the blanks, or listen and spell. Words you miss come back later, with no red crosses."
           },
           "beds": {
             "title": "Topic beds",
-            "text": "IELTS Academic collections and your own beds, with example sentences, pronunciation and synonyms."
+            "text": "IELTS Academic word lists plus beds you create yourself, each with example sentences, pronunciation and synonyms."
           },
           "missions": {
             "title": "Missions and Golden Bloom",
-            "text": "Three small missions a day. Finish all three for a Golden Bloom; the rain barrel keeps your streak on busy days."
+            "text": "Three small missions a day. Complete all three to earn a Golden Bloom, and let the rain barrel protect your streak on busy days."
           },
           "shared": {
             "title": "Shared gardens",
-            "text": "Learn with a class or friends. See how the group is doing, never anyone’s private progress."
+            "text": "Learn with your class or friends. See how the group is doing, but never anyone’s private progress."
           },
           "language": {
             "title": "Your language",
-            "text": "Meanings in Vietnamese or Chinese when you want them, English only when you don’t."
+            "text": "Get meanings in Vietnamese or Chinese when you want them, or stick to English when you don’t."
           }
         },
         "parents": {
           "overline": "For parents",
           "soon": "Coming soon",
           "title": "A garden for kids, too",
-          "lead": "Children learn their first English words with pictures, sounds and Dygo the bird. Big buttons, short sessions, and prompts in Vietnamese and English.",
+          "lead": "Children learn their first English words with pictures, sounds and Dygo the bird. Big buttons, short sessions, and instructions in both Vietnamese and English.",
           "points": {
             "pictures": "Picture quizzes: tap the word you hear",
-            "faces": "Two simple faces instead of ratings",
-            "stars": "Bees and stars, never a red cross",
-            "account": "Open your child’s garden from your own account"
+            "faces": "Two simple faces instead of a rating scale",
+            "stars": "Bees and stars instead of red crosses",
+            "account": "Manage your child’s garden from your own account"
           },
           "kidsPrompt": "Find “cat”!",
           "kidsHint": "Tìm “cat”!"

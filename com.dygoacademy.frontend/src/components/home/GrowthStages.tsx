@@ -75,9 +75,9 @@ export function GrowthStages() {
                 </div>
               </div>
               <div className="flex flex-col gap-1.5 border-0 border-t border-solid border-divider pt-2.5">
-                <StageRow icon={<FeatureWaterIcon width={16} height={16} className="block" />} label={t('reviews')} text={t(`stages.${stage}.reviews`)} />
+                <StageRow icon={<FeatureWaterIcon width={16} height={16} className="inline align-baseline" />} label={t('reviews')} text={t(`stages.${stage}.reviews`)} />
                 <StageRow
-                  icon={<GrowUpIcon width={16} height={16} className="block" />}
+                  icon={<GrowUpIcon width={16} height={16} className="inline align-baseline" />}
                   label={stage === 'fruiting' ? t('staysIf') : t('growsWhen')}
                   text={t(`stages.${stage}.grows`)}
                 />

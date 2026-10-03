@@ -52,6 +52,18 @@ describe('PainCards (Home page v2 Sound familiar?, HP-7)', () => {
     expect(pressed()).toEqual(['true', 'false', 'false', 'false']);
   });
 
+  it('lays the turned-away face over the card so only the face shown sets its height (HP-11)', () => {
+    const { container } = renderCards();
+    const card = container.querySelector('[data-pain="use"]') as HTMLElement;
+    const front = card.querySelector('[data-face="front"]') as HTMLElement;
+    const back = card.querySelector('[data-face="back"]') as HTMLElement;
+    expect(back.className).toContain('absolute');
+    expect(front.className).not.toContain('absolute');
+    fireEvent.click(card);
+    expect(front.className).toContain('absolute');
+    expect(back.className).not.toContain('absolute');
+  });
+
   it('keeps both faces in the DOM but hides the turned-away face from the accessibility tree', () => {
     const { container } = renderCards();
     const card = container.querySelector('[data-pain="forget"]') as HTMLElement;
