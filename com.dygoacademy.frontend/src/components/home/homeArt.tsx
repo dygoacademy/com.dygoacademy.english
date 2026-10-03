@@ -334,3 +334,61 @@ export function PlantSeedIcon(props: ArtProps) {
     </Art>
   );
 }
+
+/*
+ * HP-7 · Sound familiar? and How your words grow v2, paths from
+ * `reference/H3-home-v2-phone.html` and `H4-home-v2-desktop.html` (f254fbd).
+ */
+
+/** The "tap to flip" arrows on a pain card front, 24 × 24 (shown 14 × 14, `currentColor`). */
+export function FlipHintIcon(props: ArtProps) {
+  return (
+    <Art viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" {...props}>
+      <path d="M4 12 A8 8 0 0 1 18 6.5" />
+      <path d="M18 2.5 V6.5 H14" />
+      <path d="M20 12 A8 8 0 0 1 6 17.5" />
+      <path d="M6 21.5 V17.5 H10" />
+    </Art>
+  );
+}
+
+/** A wilting sprout (the pain card fronts), 40 × 40 (shown 30 × 30). */
+export function WiltedSprout(props: ArtProps) {
+  return (
+    <Art viewBox="0 0 40 40" {...props}>
+      <ellipse cx="20" cy="37" rx="11" ry="2.5" fill="#E3DDD0" />
+      <path d="M20 37 C20 29 22 25 28 23" stroke="#A89F6B" strokeWidth="2.5" fill="none" />
+      <path d="M21 31 C15 33 10 31 8 26 C14 24 19 26 21 31 Z" fill="#A89F6B" />
+      <path d="M26 24 C32 27 35 31 35 36 C29 35 27 30 26 24 Z" fill="#A89F6B" />
+    </Art>
+  );
+}
+
+/** The green up arrow before "Grows when:" on a stage card, 24 × 24 (shown 16 × 16). */
+export function GrowUpIcon(props: ArtProps) {
+  return (
+    <Art viewBox="0 0 24 24" fill="none" stroke="#3E7F5A" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" {...props}>
+      <path d="M12 19 V5" />
+      <path d="M6 11 L12 5 L18 11" />
+    </Art>
+  );
+}
+
+/** The arrow between stage cards: down on the phone (18), right on desktop (20); `currentColor`. */
+export function StageArrow({ direction, ...props }: ArtProps & { direction: 'down' | 'right' }) {
+  return (
+    <Art viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" {...props}>
+      {direction === 'down' ? (
+        <>
+          <path d="M12 5 V19" />
+          <path d="M6 13 L12 19 L18 13" />
+        </>
+      ) : (
+        <>
+          <path d="M5 12 H19" />
+          <path d="M13 6 L19 12 L13 18" />
+        </>
+      )}
+    </Art>
+  );
+}

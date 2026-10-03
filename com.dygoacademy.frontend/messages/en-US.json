@@ -431,24 +431,78 @@
           "save": "Save this word — it’s free",
           "unknown": "We’ll grow “{word}” for you once you sign up."
         },
+        "pains": {
+          "title": "Sound familiar?",
+          "lead": "Tap a card to see how Dygo helps.",
+          "hint": "Tap to see how Dygo helps",
+          "helps": "How Dygo helps",
+          "cards": {
+            "use": {
+              "front": "“I know what it means, but I can’t use it.”",
+              "back": "Every word comes with real example sentences, synonyms and fill-in-the-blank practice."
+            },
+            "forget": {
+              "front": "“I learn a word today and forget it by next week.”",
+              "back": "Dygo brings each word back right before you’d forget it."
+            },
+            "language": {
+              "front": "“All-English explanations just confuse me.”",
+              "back": "Get meanings in Vietnamese or Chinese when you need them, and switch to English only when you’re ready."
+            },
+            "habit": {
+              "front": "“I start strong, then give up after three days.”",
+              "back": "Just 5 minutes and three small missions a day. On busy days, the rain barrel protects your streak."
+            }
+          }
+        },
         "how": {
           "title": "How your words grow",
-          "lead": "Dygo shows each word again just before you’d forget it, so it sticks.",
-          "seed": {
-            "name": "Seed",
-            "text": "A new word. Plant it from a topic or add your own."
+          "lead": "Think of every word as a plant. Each time you review it and get it right, it grows, and Dygo waits a little longer before the next watering.",
+          "stage": "Stage {n}",
+          "reviews": "Reviews:",
+          "growsWhen": "Grows when:",
+          "staysIf": "Stays that way if:",
+          "stages": {
+            "seed": {
+              "name": "Seed",
+              "means": "A new word you’ve just added.",
+              "reviews": "none yet. It’s waiting for you.",
+              "grows": "you study it for the first time."
+            },
+            "sprout": {
+              "name": "Sprout",
+              "means": "You’re still learning it.",
+              "reviews": "often, later that day or the next day.",
+              "grows": "you get it right a couple of times."
+            },
+            "flower": {
+              "name": "Flower",
+              "means": "You remember it.",
+              "reviews": "every few days, then every week or two.",
+              "grows": "you keep getting it right as the gaps get longer."
+            },
+            "fruiting": {
+              "name": "Fruiting",
+              "means": "You know it for good.",
+              "reviews": "just the odd one, weeks apart.",
+              "grows": "you keep getting it right. Most words get here after about four good reviews."
+            }
           },
-          "sprout": {
-            "name": "Sprout",
-            "text": "Learning. Short, frequent waterings."
+          "spread": {
+            "title": "Reviews spread out as a word grows",
+            "today": "Today",
+            "later": "Weeks later",
+            "text": "Reviewing a word just before you’d forget it is what makes it stick, so your 5 minutes go on the words that need it most."
           },
-          "flower": {
-            "name": "Flower",
-            "text": "Remembered. Waterings spread out to days."
-          },
-          "fruiting": {
-            "name": "Fruiting",
-            "text": "Mastered. It only needs the odd visit."
+          "tips": {
+            "drop": {
+              "title": "A water drop means it’s due today",
+              "text": "Words with a drop need a review today. Dygo picks them for you, so there’s nothing to plan."
+            },
+            "forgot": {
+              "title": "Forgot one? No problem.",
+              "text": "It goes back to being a sprout and comes up a few more times until it sticks."
+            }
           }
         },
         "features": {

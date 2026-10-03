@@ -25,9 +25,10 @@ import {
   HomeSprout,
   HomeStar,
   HomeTick,
-  HomeTree,
   LogoMark,
 } from './homeArt';
+import { GrowthStages } from './GrowthStages';
+import { PainCards, type PainKey } from './PainCards';
 import { PlantAWord } from './PlantAWord';
 
 /** In-page anchors (desktop header nav). */
@@ -54,6 +55,8 @@ export interface HomeScreenProps {
   layout?: HomeLayout;
   /** HP-6: start the hero demo bloomed with this word (the H3s-plant-bloomed fixture). */
   plantedWord?: string;
+  /** HP-7: start with these pain cards flipped (the H3s-pain-flipped fixture). */
+  flippedPains?: PainKey[];
 }
 
 export type HomeLayout = 'auto' | 'phone' | 'desktop';
@@ -88,6 +91,7 @@ export function HomeScreen({
   languageBusy,
   layout = 'auto',
   plantedWord,
+  flippedPains,
 }: HomeScreenProps) {
   const t = useTranslations('screens.home.public');
 
@@ -163,20 +167,25 @@ export function HomeScreen({
           </div>
         </section>
 
+        {/* Sound familiar? (HP-7): four pain cards, 2 × 2 on the phone, 4 in a row on desktop. */}
+        <section className="flex flex-col gap-5 px-5 pb-9 pt-5 home-lg:gap-7 home-lg:px-16 home-lg:pb-16 home-lg:pt-6">
+          <div className="mx-auto flex max-w-[760px] flex-col items-center gap-2 text-center">
+            <h2 className={SECTION_TITLE}>{t('pains.title')}</h2>
+            <p className="m-0 text-[16px] leading-[1.5] text-muted-foreground home-lg:text-[18px]">{t('pains.lead')}</p>
+          </div>
+          <PainCards initialFlipped={flippedPains} />
+        </section>
+
+        {/* How your words grow v2 (HP-7): stage cards, the reviews-spread strip and two tips. */}
         <section
           id={HOME_ANCHORS.howItWorks}
-          className="flex scroll-mt-4 flex-col gap-[22px] px-5 py-9 home-lg:gap-8 home-lg:p-16"
+          className="flex scroll-mt-4 flex-col gap-5 px-5 pb-9 pt-5 home-lg:gap-7 home-lg:px-16 home-lg:pb-16 home-lg:pt-10"
         >
-          <div className="mx-auto flex max-w-[720px] flex-col items-center gap-2 text-center">
+          <div className="mx-auto flex max-w-[760px] flex-col items-center gap-2 text-center">
             <h2 className={SECTION_TITLE}>{t('how.title')}</h2>
             <p className="m-0 text-[16px] leading-[1.5] text-muted-foreground home-lg:text-[18px]">{t('how.lead')}</p>
           </div>
-          <div className="grid grid-cols-2 gap-2.5 home-lg:grid-cols-4 home-lg:gap-5">
-            <StageCard n={1} art={<HomeSeed width={52} height={52} />} name={t('how.seed.name')} text={t('how.seed.text')} />
-            <StageCard n={2} art={<HomeSprout width={56} height={56} />} name={t('how.sprout.name')} text={t('how.sprout.text')} />
-            <StageCard n={3} art={<HomeFlower width={52} height={67} />} name={t('how.flower.name')} text={t('how.flower.text')} />
-            <StageCard n={4} art={<HomeTree width={60} height={76} />} name={t('how.fruiting.name')} text={t('how.fruiting.text')} />
-          </div>
+          <GrowthStages />
         </section>
 
         <section
@@ -269,19 +278,6 @@ function Logo({ href }: { href: string }) {
       <LogoMark width={30} height={30} className="block" />
       <span className="font-display text-[24px] font-semibold">Dygo</span>
     </Link>
-  );
-}
-
-function StageCard({ n, art, name, text }: { n: number; art: React.ReactNode; name: string; text: string }) {
-  return (
-    <div className="flex flex-col gap-2 rounded-[22px] border border-border bg-surface p-4 home-lg:p-[22px]">
-      <div aria-hidden="true" className="flex h-[84px] items-end justify-center rounded-2xl bg-bg pb-1 [&>svg]:block">
-        {art}
-      </div>
-      <span className="text-[12px] font-bold text-gold-text">{n}</span>
-      <span className="font-display text-[19px] font-semibold home-lg:text-[22px]">{name}</span>
-      <span className="text-[14px] leading-[1.45] text-muted-foreground home-lg:text-[15px]">{text}</span>
-    </div>
   );
 }
 

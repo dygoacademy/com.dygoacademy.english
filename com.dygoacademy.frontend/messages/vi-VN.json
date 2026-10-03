@@ -431,24 +431,78 @@
           "save": "Lưu từ này — miễn phí",
           "unknown": "Dygo sẽ trồng “{word}” cho bạn sau khi bạn đăng ký."
         },
+        "pains": {
+          "title": "Nghe quen không?",
+          "lead": "Chạm vào thẻ để xem Dygo giúp gì.",
+          "hint": "Chạm để xem Dygo giúp gì",
+          "helps": "Dygo giúp bạn",
+          "cards": {
+            "use": {
+              "front": "“Tôi biết nghĩa nhưng không biết dùng.”",
+              "back": "Mỗi từ đều có câu ví dụ thật, từ đồng nghĩa và bài điền từ để luyện."
+            },
+            "forget": {
+              "front": "“Học hôm nay, tuần sau đã quên.”",
+              "back": "Dygo nhắc lại từng từ ngay trước khi bạn kịp quên."
+            },
+            "language": {
+              "front": "“Giải thích toàn tiếng Anh, khó hiểu quá.”",
+              "back": "Nghĩa bằng tiếng Việt hoặc tiếng Trung khi bạn cần, chỉ tiếng Anh khi bạn không cần."
+            },
+            "habit": {
+              "front": "“Hăng hái 3 ngày rồi bỏ.”",
+              "back": "Chỉ 5 phút mỗi ngày, 3 nhiệm vụ nhỏ, và thùng nước mưa giữ chuỗi ngày khi bạn bận."
+            }
+          }
+        },
         "how": {
           "title": "Từ vựng của bạn lớn lên thế nào",
-          "lead": "Dygo nhắc lại mỗi từ ngay trước lúc bạn sắp quên, để từ đó nhớ lâu.",
-          "seed": {
-            "name": "Hạt",
-            "text": "Từ mới. Gieo từ một chủ đề hoặc tự thêm."
+          "lead": "Mỗi từ bạn học là một cái cây. Mỗi lần ôn mà bạn vẫn nhớ, cây lớn thêm một bậc, và Dygo đợi lâu hơn một chút trước lần tưới tiếp theo.",
+          "stage": "Giai đoạn {n}",
+          "reviews": "Lịch tưới:",
+          "growsWhen": "Lớn lên khi:",
+          "staysIf": "Giữ được khi:",
+          "stages": {
+            "seed": {
+              "name": "Hạt",
+              "means": "Từ mới bạn vừa gieo.",
+              "reviews": "chưa cần tưới, chờ bạn bắt đầu.",
+              "grows": "bạn học từ này lần đầu tiên."
+            },
+            "sprout": {
+              "name": "Mầm",
+              "means": "Bạn đang học từ này.",
+              "reviews": "thường xuyên: ôn lại trong ngày hoặc ngày hôm sau.",
+              "grows": "bạn nhớ được vài lần."
+            },
+            "flower": {
+              "name": "Hoa",
+              "means": "Bạn đã nhớ từ này.",
+              "reviews": "vài ngày một lần, rồi một đến hai tuần một lần.",
+              "grows": "bạn vẫn nhớ dù khoảng cách ôn dài hơn."
+            },
+            "fruiting": {
+              "name": "Kết trái",
+              "means": "Bạn đã thuộc từ này.",
+              "reviews": "thỉnh thoảng ghé thăm, cách nhau vài tuần.",
+              "grows": "bạn tiếp tục nhớ. Phần lớn từ đến đây sau khoảng 4 lần ôn tốt."
+            }
           },
-          "sprout": {
-            "name": "Mầm",
-            "text": "Đang học. Tưới ngắn và thường xuyên."
+          "spread": {
+            "title": "Cây càng lớn, lần tưới càng thưa",
+            "today": "Hôm nay",
+            "later": "Vài tuần sau",
+            "text": "Ôn lại ngay trước lúc sắp quên giúp từ nhớ lâu, nên 5 phút của bạn dành cho đúng những từ cần ôn."
           },
-          "flower": {
-            "name": "Hoa",
-            "text": "Đã nhớ. Khoảng cách tưới giãn ra theo ngày."
-          },
-          "fruiting": {
-            "name": "Kết trái",
-            "text": "Đã thuộc. Thỉnh thoảng ghé thăm là đủ."
+          "tips": {
+            "drop": {
+              "title": "Giọt nước = cần tưới hôm nay",
+              "text": "Từ có giọt nước là từ cần ôn hôm nay. Dygo tự chọn cho bạn, không cần lên kế hoạch."
+            },
+            "forgot": {
+              "title": "Quên một từ? Không sao",
+              "text": "Cây quay lại thành mầm và được tưới vài lần cho đến khi bạn nhớ lại."
+            }
           }
         },
         "features": {

@@ -29,6 +29,7 @@ describe('HomeScreen (Home page H1 / H2)', () => {
     renderScreen();
     expect(screen.getByRole('heading', { level: 1, name: 'Learn a word. Use it right. Remember it for good.' })).toBeTruthy();
     for (const name of [
+      'Sound familiar?',
       'How your words grow',
       'Everything a growing vocabulary needs',
       'A garden for kids, too',
