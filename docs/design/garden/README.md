@@ -32,6 +32,7 @@ Exported from the canvas on 2026-09-26:
 | `Q1-quiz-choose`, `Q2-quiz-right`, `Q3-quiz-not-quite`, `Q4-quiz-cloze-hint`, `Q5-quiz-listen` | Quiz (canvas page "Adult · Quiz", added 2026-10-01): Choose the word, Synonym (right answer), wrong pick, Fill in the blank with hint, Listen and spell | `/garden/quiz?topic=…` | UI-5 QZ |
 | `Q6-quiz-result`, `Q7-quiz-result-perfect`, `Q8-quiz-drill-done` | Quiz results: some words need water, every answer right, tricky-word drill done | `/garden/quiz` (after the last question) | UI-5 QZ |
 | `H1-home-phone`, `H2-home-desktop` | Public home page (canvas page "Home page", added 2026-10-02): phone 390×3800 and desktop 1280×2600, illustrations only | `/` for signed-out visitors | Home HP |
+| `H3-home-v2-phone`, `H4-home-v2-desktop`, `H3s-plant-bloomed`, `H3s-pain-flipped`, `H3s-uses-travel` | Public home page v2, pain-led (canvas page "Home page v2", approved 2026-10-03, G-home): phone 390 wide, desktop 1280 wide, plus three phone state boards (hero after planting "deadline", "forget" card flipped, Travel bed selected). Each board's size is in `tools/render.js` (`$size`) | `/` for signed-out visitors | Home HP-6 … HP-11 |
 | `GR1-shared-gardens` | GR1 · Shared Gardens (group list) | `/garden/groups` | UI-G |
 | `GR2-group-garden` | GR2 · Group Garden | `/garden/groups/[id]` | UI-G |
 | `GR3-tricky-patches` | GR3 · Tricky Patches + Rain Day | `/garden/groups/[id]/manage` | UI-G |

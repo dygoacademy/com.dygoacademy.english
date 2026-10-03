@@ -103,6 +103,17 @@ const JOBS = [
   ['LandingDesktop.dc.html', 'en', 'H2-home-desktop', { $size: [1280, 2600] }],
   ['LandingPhoneVi.dc.html', 'vi', 'H1-home-phone-vi', { $size: [390, 3800] }],
   ['LandingDesktopVi.dc.html', 'vi', 'H2-home-desktop-vi', { $size: [1280, 2600] }],
+  // Home page v2 (canvas page "Home page v2", 2026-10-03): full boards, sizes from the canvas.
+  ['LandingV2Phone.dc.html', 'en', 'H3-home-v2-phone', { $size: [390, 6569] }],
+  ['LandingV2PhoneVi.dc.html', 'vi', 'H3-home-v2-phone-vi', { $size: [390, 6471] }],
+  ['LandingV2Desktop.dc.html', 'en', 'H4-home-v2-desktop', { $size: [1280, 4433] }],
+  ['LandingV2DesktopVi.dc.html', 'vi', 'H4-home-v2-desktop-vi', { $size: [1280, 4282] }],
+  ['LandingV2PlantBloomed.dc.html', 'en', 'H3s-plant-bloomed', { $size: [390, 6985] }],
+  ['LandingV2PlantBloomedVi.dc.html', 'vi', 'H3s-plant-bloomed-vi', { $size: [390, 6908] }],
+  ['LandingV2PainFlipped.dc.html', 'en', 'H3s-pain-flipped', { $size: [390, 6569] }],
+  ['LandingV2PainFlippedVi.dc.html', 'vi', 'H3s-pain-flipped-vi', { $size: [390, 6471] }],
+  ['LandingV2UsesTravel.dc.html', 'en', 'H3s-uses-travel', { $size: [390, 6547] }],
+  ['LandingV2UsesTravelVi.dc.html', 'vi', 'H3s-uses-travel-vi', { $size: [390, 6471] }],
 ].filter(([, , name]) => !FILTER || name.includes(FILTER));
 
 // English pages redrawn with the app's body stack (DM Sans, then Be Vietnam
