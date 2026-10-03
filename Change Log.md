@@ -180,3 +180,11 @@ Engineering-facing log of shipped fixes and changes, one dated entry per change.
 * **What**: one shared hook for garden keyboard shortcuts (a window `keydown` map; skips text fields, Alt/Ctrl/Cmd chords, held-down repeats, any open dialog or sheet, and Space on a focused button or link). `RatingBar`'s 1–4 now go through it (key hints and `aria-keyshortcuts` kept). Review adds Space = show answer, P = play the word (the card's audio button, or its retry pill), Esc = leave to the close link when no sheet is open; "Show answer" has `aria-keyshortcuts="Space"`, Close has `"Escape"`. New `keyboardShortcuts` prop on `ReviewScreen` (default on).
 * **Why**: design system §10 keyboard shortcuts for iPad and desktop; only 1–4 existed.
 * **Verified**: `tsc --noEmit`, `next lint` on the touched files, 6 new Vitest keyboard tests. All garden Vitest 296/296 in a clean copy of HEAD plus this change. In the working tree, 5 existing tests fail on someone else's uncommitted `messages/en-US.json` copy edits, which is unrelated. Not run: `next build`, Playwright, a real keyboard on iPad.
+
+## 2026-10-04
+
+### Added: Phase 13 discovery notes (T0)
+* **Files**: [`docs/phase13-notes.md`](docs/phase13-notes.md) (new)
+* **What**: repo findings for Phase 13 (Adult Speaking): stack and test setup, how the Review "Listen" button gets its audio (`master_lexicon.audio_url` → `AudioButton`'s `<audio>`), where audio is served (R2 public `r2.dev` URL) and the China question, the words/topics tables, the differences from the Claude Design handover (R2 instead of Supabase Storage, three message files, NestJS + RLS instead of generated Supabase types, no native wrapper), options for decision D1 (native audio with word timings), what the code says about D2–D7, files T1–T10 will touch, risks and questions for Dylan.
+* **Why**: handover §7 T0; the notes are where later tasks record decisions taken with defaults.
+* **Behavior**: docs only, no product code.
