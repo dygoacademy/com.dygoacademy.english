@@ -61,6 +61,9 @@ vi.mock('@/hooks/useLiveLevels', () => ({
   useLiveLevels: (_s: unknown, active: boolean) => (active ? env.levels : []),
 }));
 vi.mock('@/lib/media-cache', () => ({ prefetchMedia: (...a: unknown[]) => prefetch(...a) }));
+// S18: the server check posts through the API client (which reads env on load).
+const upload = vi.fn();
+vi.mock('@/lib/api-client', () => ({ apiClient: { upload: (...a: unknown[]) => upload(...a) } }));
 vi.mock('@/lib/speaking/envelopeScorer', async (orig) => ({
   ...(await orig<typeof import('@/lib/speaking/envelopeScorer')>()),
   envelopeScorer: {
@@ -189,6 +192,8 @@ describe('SpeakLive (The Pond)', () => {
 
   afterEach(() => {
     vi.useRealTimers();
+    vi.unstubAllEnvs();
+    upload.mockReset();
   });
 
   const COUNT_BUTTON = 'Get ready. Recording starts after the beep. Tap to start now';
@@ -266,6 +271,48 @@ describe('SpeakLive (The Pond)', () => {
     await waitFor(() => expect(recorderStop).toHaveBeenCalledTimes(1));
     await waitFor(() => expect(screen.getByText('In bloom · 82% match')).toBeTruthy());
     expect(mutate).toHaveBeenCalledTimes(1);
+  });
+
+  it('server mode (S18): uploads the recording, shows its marks, saves them without "heard"', async () => {
+    vi.stubEnv('NEXT_PUBLIC_SPEECH_CHECK', 'server');
+    const words = SPEAK_FIXTURE_ITEM.sentence.split(' ');
+    upload.mockResolvedValue({
+      score: 64,
+      stage: 'sprout',
+      word_marks: words.map((_, index) =>
+        index === 6
+          ? { index, ok: false, reason: 'missing' }
+          : index === 7
+            ? { index, ok: false, reason: 'unclear', heard: 'affects' }
+            : { index, ok: true, reason: null },
+      ),
+      user_duration_ms: 3500,
+      check_ms: 1500,
+    });
+    await renderLive();
+    await act(async () => fireEvent.click(screen.getByRole('button', { name: 'Start recording' })));
+    await countdown();
+    await act(async () => fireEvent.click(screen.getByRole('button', { name: 'Stop recording' })));
+    await waitFor(() => expect(mutate).toHaveBeenCalledTimes(1));
+    const [path, form] = upload.mock.calls[0] as [string, FormData];
+    expect(path).toBe('/speaking/check');
+    expect(form.get('item_id')).toBe(SPEAK_FIXTURE_ITEM.id);
+    const saved = mutate.mock.calls[0][0];
+    expect(saved).toMatchObject({ score: 64, stage: 'sprout', user_duration_ms: 3500 });
+    expect(saved.word_marks[6]).toEqual({ index: 6, ok: false, reason: 'missing' });
+    expect(saved.word_marks[7]).toEqual({ index: 7, ok: false, reason: 'unclear' });
+    expect(screen.getByText('heard “affects”')).toBeTruthy();
+  });
+
+  it('server mode: a failed upload shows "Couldn\'t check this one" and saves nothing', async () => {
+    vi.stubEnv('NEXT_PUBLIC_SPEECH_CHECK', 'server');
+    upload.mockRejectedValue(new Error('503'));
+    await renderLive();
+    await act(async () => fireEvent.click(screen.getByRole('button', { name: 'Start recording' })));
+    await countdown();
+    await act(async () => fireEvent.click(screen.getByRole('button', { name: 'Stop recording' })));
+    await waitFor(() => expect(screen.getByText("Couldn't check this one")).toBeTruthy());
+    expect(mutate).not.toHaveBeenCalled();
   });
 
   it('cancel during the countdown never starts the recorder', async () => {

@@ -1199,6 +1199,10 @@
           "title": "Rất trôi chảy",
           "body": "Nhịp điệu của bạn khớp với người bản xứ. Sang câu tiếp nhé."
         },
+        "unclear": {
+          "title": "Đọc <b>{word}</b> rõ hơn",
+          "body": "{heard, select, none {Nghe lại người bản xứ, rồi đọc chậm từ này.} other {Chúng tôi nghe thành “{heard}”. Nghe lại người bản xứ, rồi đọc chậm từ này.}}"
+        },
         "also": {
           "both": "Đừng bỏ <b>{missing}</b>, và đọc <b>{unclear}</b>{ipa, select, none {} other { là {ipa}}}.",
           "missing": "Đừng bỏ <b>{missing}</b>.",

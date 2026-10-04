@@ -1203,6 +1203,10 @@
           "title": "很流畅",
           "body": "你的节奏和母语者一致。继续下一句吧。"
         },
+        "unclear": {
+          "title": "把 <b>{word}</b> 读清楚一些",
+          "body": "{heard, select, none {再听一遍母语者的发音，然后慢慢读。} other {我们听到的是“{heard}”。再听一遍母语者的发音，然后慢慢读。}}"
+        },
         "also": {
           "both": "另外别漏掉 <b>{missing}</b>，并把 <b>{unclear}</b> 读准{ipa, select, none {} other {（{ipa}）}}。",
           "missing": "另外别漏掉 <b>{missing}</b>。",

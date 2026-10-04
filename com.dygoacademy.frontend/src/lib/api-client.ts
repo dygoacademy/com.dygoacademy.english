@@ -28,7 +28,8 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
   const res = await fetch(`${env.NEXT_PUBLIC_API_URL}${path}`, {
     ...init,
     headers: {
-      'Content-Type': 'application/json',
+      // A FormData body sets its own multipart Content-Type (with the boundary).
+      ...(init.body instanceof FormData ? {} : { 'Content-Type': 'application/json' }),
       ...(session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : {}),
       ...init.headers,
     },
@@ -61,6 +62,8 @@ export const apiClient = {
     request<T>(path, { method: 'POST', body: json ? JSON.stringify(json) : undefined }),
   patch: <T>(path: string, json?: unknown) =>
     request<T>(path, { method: 'PATCH', body: json ? JSON.stringify(json) : undefined }),
+  /** Multipart POST (e.g. a recording for `/speaking/check`). */
+  upload: <T>(path: string, form: FormData) => request<T>(path, { method: 'POST', body: form }),
   delete: <T>(path: string, json?: unknown) =>
     request<T>(path, { method: 'DELETE', body: json ? JSON.stringify(json) : undefined }),
 };

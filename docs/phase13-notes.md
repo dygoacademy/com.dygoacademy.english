@@ -531,3 +531,13 @@ Dylan: the app calls the Dygo API, the API calls the scorer (option A). No Cloud
 - **Scorer change:** each word's `index` is now its position in `sentence.split()` (the app's numbering), so a lone "—" can't shift the marks.
 - Verified: backend Jest 352/352 (11 new), `tsc` + eslint clean; the real client + mapper against the running scorer: good 100 / fruit, "the" missing 89 / bloom, "migrate" 95 / fruit with mitigate unclear (heard "migrate"), Vietnamese voice 40 / sprout; garbage → 422, scorer down → 503; 1.3–2.1 s.
 - **For M4:** a wrong target word still reaches 95 / fruit; the total should weigh the target word (and `unclear` words) more.
+
+### S18 · The `local` / `server` switch (2026-10-05)
+
+`NEXT_PUBLIC_SPEECH_CHECK` (`env-profiles/prod.env`, baked in at build; anything but `server` = `local`). UAT stays `local` until M5.
+
+- **Flow in `server` mode:** the on-device check runs first (instant). A silent or too-short recording shows "We couldn't hear you" / "Say the whole sentence" and is **not uploaded**. Otherwise the recording, as recorded, goes to `POST /speaking/check`; SP3 shows the server's score, stage and marks (`missing`, `unclear` + "heard …"), plus the phone's stress verdict on the target word (`stress_soft`, the Mac scorer doesn't judge stress) unless the server already flagged that word. Waveforms stay the phone's. Timeout 10 s (`SERVER_CHECK_TIMEOUT_MS`: the backend's 8 s plus the upload); any failure → "Couldn't check this one", nothing saved.
+- **Tip order** (handover v2 §3): target stress → missing → unclear → flowed well. New tip `tip.unclear` ("Say **mitigate** more clearly · We heard “migrate”. Listen to the native speaker again, then say it slowly.") in en / vi / zh; vi and zh drafted by Claude.
+- **Saved attempt:** server score / stage / marks; `unclear` is now a valid reason (backend `SPEAKING_MARK_REASONS`; DB only checks for an array, migration `20261005_speaking_mark_unclear.sql` just updates the column comment). What the scorer `heard` is never saved. Local mode saves exactly as before.
+- **Mic explainer (S16-b):** in `server` mode it says "Your recording is checked, then deleted." instead of "stays on this phone".
+- Tests: frontend `check.test.ts` (merge, upload, mode) + 2 SpeakLive server-mode tests; Vitest 511 passed, the same 66 known failures; backend speaking 42/42; RLS suite passes.

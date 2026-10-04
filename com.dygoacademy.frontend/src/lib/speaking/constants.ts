@@ -96,6 +96,8 @@ export const TIP_KEYS = {
   rushed: 'speak.tip.rushed',
   slow: 'speak.tip.slow',
   flowed: 'speak.tip.flowed',
+  /** A word said unclearly or heard as another word (server check, S18). */
+  unclear: 'speak.tip.unclear',
 } as const;
 
 // ── Sessions and offers ───────────────────────────────────────────────────
@@ -124,11 +126,24 @@ export const FOLLOW_ALONG_SLOWDOWN = 1.5;
 /**
  * SP3 checking (handover v2 §3.2): Compare opens at once, the check runs
  * in the background and fails after CHECK_TIMEOUT_MS ("Couldn't check
- * this one"). Words below UNCLEAR_ACCURACY from a speech service are
- * "unclear" (used from S20; the on-device check never reports it).
+ * this one"). The server check (S18) gets SERVER_CHECK_TIMEOUT_MS: the
+ * backend gives the scorer 8 s, plus the upload.
  */
 export const CHECK_TIMEOUT_MS = 8000;
-export const UNCLEAR_ACCURACY = 60;
+export const SERVER_CHECK_TIMEOUT_MS = 10000;
+
+/**
+ * Where SP3's check runs (S18): `local` = the on-device envelope scorer
+ * (the default), `server` = `POST /speaking/check` → the speech scorer on
+ * the Mac (G6). Set NEXT_PUBLIC_SPEECH_CHECK=server at build time to switch
+ * (M5, after calibration). Read literally so Next inlines it.
+ */
+export type SpeechCheckMode = 'local' | 'server';
+export function speechCheckMode(
+  value: string | undefined = process.env.NEXT_PUBLIC_SPEECH_CHECK,
+): SpeechCheckMode {
+  return value === 'server' ? 'server' : 'local';
+}
 
 /** Sentences in one Pond session. */
 export const POND_SESSION_SIZE = 5;

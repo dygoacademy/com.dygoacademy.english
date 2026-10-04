@@ -1199,6 +1199,10 @@
           "title": "That flowed well",
           "body": "Your rhythm matched the native speaker. On to the next one."
         },
+        "unclear": {
+          "title": "Say <b>{word}</b> more clearly",
+          "body": "{heard, select, none {Listen to the native speaker again, then say it slowly.} other {We heard “{heard}”. Listen to the native speaker again, then say it slowly.}}"
+        },
         "also": {
           "both": "Also keep <b>{missing}</b>, and say <b>{unclear}</b>{ipa, select, none {} other { {ipa}}}.",
           "missing": "Also keep <b>{missing}</b>.",

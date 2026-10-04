@@ -30,6 +30,7 @@ import { beepAndVibrate } from '@/lib/speaking/beep';
 import {
   forDisplay,
   localCheck,
+  serverCheck,
   withTimeout,
   type CheckStatus,
   type ShownResult,
@@ -37,6 +38,7 @@ import {
 import {
   BEEP_GUARD_MS,
   COUNTDOWN_SECONDS,
+  speechCheckMode,
   COUNTDOWN_STEP_MS,
   MIC_EXPLAINED_KEY,
   MIN_VOICE_MS,
@@ -76,8 +78,10 @@ const clipUrl = (item: SpeakingSessionItem, accent: SpeakingAccent) => forAccent
  * → Compare (SP3, handover v2: opens at once with the waveforms, the check
  * runs in the background: checking → done | failed; one `POST
  * /speaking/attempts` per checked attempt) → next, or Done (SP4) after the
- * last. Until the server check (S20) the check runs on the phone
- * (`localCheck`), so the recording never leaves it; nothing changes SRS (D5).
+ * last. By default the check runs on the phone
+ * (`localCheck`); with NEXT_PUBLIC_SPEECH_CHECK=server (S18) a usable
+ * recording is also sent to `POST /speaking/check`, checked by the speech
+ * scorer and dropped (never stored). Nothing changes SRS (D5).
  */
 /** The T7 notice for a mic error. */
 function noticeForMicError(kind: MicErrorKind): SpeakNoticeKind {
@@ -301,19 +305,41 @@ export function SpeakFlow({
           dispatch({ type: 'cancel' });
           return;
         }
-        const shown = forDisplay(r);
+        // Server mode (S18): only a usable recording is uploaded; the
+        // on-device result above still supplies stress and the waveforms.
+        const server = speechCheckMode() === 'server';
+        const shown =
+          server && recording
+            ? await serverCheck(
+                {
+                  recording: recording.blob,
+                  itemId: item.id,
+                  accent,
+                  sentence: item.sentence,
+                  targetIndex: item.target_index,
+                },
+                r,
+              )
+            : forDisplay(r);
+        if (!alive) return;
         setResult(shown);
         setCheckStatus('done');
-        dispatch({ type: 'scored', stage: r.stage, score: r.score });
+        dispatch({ type: 'scored', stage: shown.stage, score: shown.score });
         const index = state.index;
-        setBest((b) => (b[index] && b[index].score >= r.score ? b : { ...b, [index]: shown }));
+        setBest((b) => (b[index] && b[index].score >= shown.score ? b : { ...b, [index]: shown }));
         saveAttempt.mutate({
           item_id: item.id,
           accent,
-          score: r.score,
-          stage: r.stage,
-          word_marks: r.wordMarks,
-          user_duration_ms: r.userDurationMs,
+          score: shown.score,
+          stage: shown.stage,
+          // Marks only: what the scorer `heard` is never stored.
+          // Local mode keeps the scorer's own marks (rushed / slow too).
+          word_marks: (server ? shown.wordMarks : r.wordMarks).map(({ index: i, ok, reason }) => ({
+            index: i,
+            ok,
+            reason,
+          })),
+          user_duration_ms: shown.userDurationMs,
         });
       } catch {
         if (alive) setCheckStatus('failed');
@@ -571,9 +597,7 @@ export function SpeakFlow({
   // SP4 Done: one plant per sentence spoken, its best stage and score.
   const spoken = items
     .map((it, index) => ({ it, index, r: best[index] }))
-    .filter((x): x is { it: SpeakingSessionItem; index: number; r: ShownResult } =>
-      Boolean(x.r),
-    );
+    .filter((x): x is { it: SpeakingSessionItem; index: number; r: ShownResult } => Boolean(x.r));
   const pattern = sessionPattern(Object.fromEntries(spoken.map((x) => [x.index, x.r])));
   const patternItem = pattern ? items[pattern.index] : null;
   return (

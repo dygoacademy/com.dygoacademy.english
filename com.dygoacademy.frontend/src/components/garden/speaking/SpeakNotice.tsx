@@ -2,7 +2,7 @@
 
 import { useTranslations } from 'next-intl';
 
-import type { SpeakNoticeKind } from '@/lib/speaking/constants';
+import { speechCheckMode, type SpeakNoticeKind } from '@/lib/speaking/constants';
 
 import { Button } from '../Button';
 
@@ -38,7 +38,12 @@ export function SpeakNotice({ kind, onPrimary, onSecondary }: SpeakNoticeProps) 
   switch (kind) {
     case 'mic':
       title = t('mic.title');
-      lines = [t('mic.why'), t('mic.private'), t('mic.headphones')];
+      // S16-b: "stays on this phone" is only true while the check runs there.
+      lines = [
+        t('mic.why'),
+        speechCheckMode() === 'server' ? t('privacy') : t('mic.private'),
+        t('mic.headphones'),
+      ];
       primary = t('mic.allow');
       secondary = t('mic.notNow');
       break;

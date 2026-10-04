@@ -9,7 +9,14 @@ export type SpeakingAccent = (typeof SPEAKING_ACCENTS)[number];
 export const SPEAKING_STAGES = ['seed', 'sprout', 'bloom', 'fruit'] as const;
 export type SpeakingStage = (typeof SPEAKING_STAGES)[number];
 
-export const SPEAKING_MARK_REASONS = ['stress_soft', 'missing', 'rushed', 'slow'] as const;
+/** `unclear` comes from the server check (S18); `rushed` / `slow` only from the on-device one. */
+export const SPEAKING_MARK_REASONS = [
+  'stress_soft',
+  'missing',
+  'rushed',
+  'slow',
+  'unclear',
+] as const;
 export type SpeakingMarkReason = (typeof SPEAKING_MARK_REASONS)[number];
 
 export interface SyllableTiming {
@@ -97,4 +104,22 @@ export interface SpeakingWordLookup {
   topic_word_id: string;
   item_id: string;
   spoken_today: boolean;
+}
+
+/** One word's mark from `POST /api/v1/speaking/check` (S17). */
+export interface SpeakingCheckMark {
+  index: number;
+  ok: boolean;
+  reason: 'missing' | 'unclear' | null;
+  /** The word the scorer heard instead (`unclear` only). */
+  heard?: string;
+}
+
+/** `POST /api/v1/speaking/check`: the server's verdict on one recording. Never saved by itself. */
+export interface SpeakingCheckResult {
+  score: number;
+  stage: SpeakingStage;
+  word_marks: SpeakingCheckMark[];
+  user_duration_ms: number;
+  check_ms: number;
 }

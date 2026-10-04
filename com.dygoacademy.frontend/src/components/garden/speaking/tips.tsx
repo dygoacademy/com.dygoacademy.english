@@ -8,11 +8,7 @@ import { ipaSegments, spellingSegments, stressedSpelling } from '@/lib/speaking/
 /** `speak.tip.stress` → `tip.stress` under screens.speak. */
 const tipPath = (tipKey: string) =>
   tipKey.replace(/^speak\./, '') as
-    | 'tip.stress'
-    | 'tip.missing'
-    | 'tip.rushed'
-    | 'tip.slow'
-    | 'tip.flowed';
+    'tip.stress' | 'tip.missing' | 'tip.rushed' | 'tip.slow' | 'tip.flowed' | 'tip.unclear';
 
 /** "ˈmɪt-ɪ-ɡeɪt": the IPA syllables joined, the stressed one marked. */
 export function stressPatternText(ipa: string | null): string {
