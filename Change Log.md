@@ -471,3 +471,8 @@ Engineering-facing log of shipped fixes and changes, one dated entry per change.
 * **Files**: [`docs/phase13-schedule.md`](docs/phase13-schedule.md) (G7 ticked, Session log)
 * **What**: status only. Dylan tried v2 on the iPhone (on-phone checking, the UAT default; the server service, S20, isn't built yet). G6 still open.
 * **Why**: Dylan, 2026-10-04.
+
+### Phase 13 G4: beta approved (Dylan)
+* **Files**: [`docs/phase13-schedule.md`](docs/phase13-schedule.md) (G4 ticked, Session log)
+* **What**: status only. Dylan approved the beta with on-phone checking; S13 spend caps, G5 Google Cloud limits and G6 / S17 / S20 are still open and recorded as such.
+* **Why**: Dylan, 2026-10-04.
