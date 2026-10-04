@@ -216,3 +216,9 @@ Engineering-facing log of shipped fixes and changes, one dated entry per change.
 * **Why**: Dylan left question 3 (§14) to Claude; new and forgotten words are where pronunciation help matters most, and 3 per session keeps reviews quick.
 * **Behavior**: docs only, no code yet.
 
+### Added: audio host notes and Vietnam / China test checklist (Phase 13)
+* **Files**: [`docs/phase13-notes.md`](docs/phase13-notes.md) §15
+* **What**: why moving the R2 bucket from its `r2.dev` URL to a custom domain helps (production use, edge cache, same reachability as the app, control, our own name, no extra cost) and what it doesn't fix (no Cloudflare servers inside mainland China without the China Network), the steps to switch, and a 5-row checklist for testers in Vietnam and China.
+* **Why**: Dylan asked for the benefits and confirmed testers in both countries.
+* **Behavior**: docs only.
+

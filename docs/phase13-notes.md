@@ -165,7 +165,7 @@ Whichever is chosen, syllable boundaries for the target word come from the IPA (
 1. ~~D1~~ decided: B, Google Cloud TTS. **Next step for you:** create a Google Cloud API key with the Text-to-Speech API enabled (billing on), add `GOOGLE_TTS_API_KEY=` to the root `.env`, then run `npm run speaking-generate -- --topic <id> --dry-run` and without `--dry-run` (§13).
 2. ~~Items per bed or per word?~~ **Answered 2026-10-04:** entry from the Missions tab and flashcards (§14), so items are **per word**. Done in `20261004_speaking_per_word.sql`.
 3. ~~Which topic is the Environment bed?~~ No longer needed: items are per word. Run the script with `--topic <id>` for one bed's words, or `--all` for every word without an item.
-4. **Audio host for China:** OK to move the R2 bucket behind a custom domain on `dygoacademy.com` (e.g. `audio.dygoacademy.com`)? Can someone test audio loading from Vietnam and mainland China?
+4. **Audio host for China:** custom domain: benefits explained to Dylan 2026-10-04 (§15), his decision pending. **Testing from Vietnam and China: yes** (Dylan, 2026-10-04); checklist in §15.
 5. **D7 CORS:** can you add CORS rules on the R2 bucket for `https://www.dygoacademy.com`, `http://100.104.108.36:3000` and `http://localhost:3000` (GET, HEAD)? Or do you prefer a same-origin proxy?
 6. **TTS budget:** a rough monthly cap for UK + US sentence audio (2 clips per word)?
 7. The uncommitted `messages/*.json` edits in the working tree: whose are they, and should they be committed before T8 touches the same files?
@@ -244,4 +244,33 @@ At most **3 cards per review session**, chosen once when the session's cards loa
 Why these choices: new and forgotten words are where pronunciation help matters most; 3 per session keeps reviews quick (the backlog note for B-10 set the same cap); picking up front keeps it predictable and testable.
 
 **Implementation (T9):** the review screen needs to know which of its cards have an item and were spoken today. Add one batch endpoint, `GET /api/v1/speaking/words?topic_word_ids=…` → `[{ topic_word_id, item_id, spoken_today }]`, rather than changing the SRS due-card query. The choice itself is a pure function (`pickSpeakOffers(cards, lookup) → topic_word_ids`) with unit tests. The constant `SPEAK_OFFERS_PER_SESSION = 3` lives in `src/lib/speaking/constants.ts`.
+
+## 15. Audio host: custom domain, and the Vietnam / China test (2026-10-04)
+
+**Why move the bucket behind `audio.dygoacademy.com`** (today: `https://pub-….r2.dev`):
+
+| | `r2.dev` (today) | Custom domain |
+| --- | --- | --- |
+| Meant for | Development (Cloudflare's own wording); rate-limited | Production |
+| Edge cache | None: every play goes to the bucket | Cloudflare cache, so a clip is served from the city nearest the learner after the first play. Our clips are already sent as `immutable` |
+| Reachability | A shared `*.r2.dev` name; reported blocked or unreliable in mainland China | Same zone and network as `www.dygoacademy.com`: if the app loads, the audio loads |
+| Control | Almost none | Cache rules, hotlink protection, analytics, WAF, like the rest of the zone |
+| Name | Tied to a random bucket id | Ours; we can move storage later without changing URLs |
+| Cost | Free (R2 has no egress fees) | Free too; the domain is already on Cloudflare (the tunnel uses it) |
+
+What it does **not** fix: Cloudflare's normal network has no servers inside mainland China, so the app and the audio are both served from nearby regions (Hong Kong, Singapore, Tokyo). For fast, reliable China delivery the options are Cloudflare's China Network (Enterprise plan + an ICP licence) or a China CDN. The test below shows whether that's needed.
+
+**Steps if Dylan says yes:** R2 → bucket → Settings → Custom Domains → add `audio.dygoacademy.com`; set `R2_PUBLIC_URL=https://audio.dygoacademy.com`; one SQL update to rewrite the host in existing `master_lexicon.audio_url` rows (speaking items store keys, so they need nothing); set the bucket CORS rules (D7); turn off the `r2.dev` URL once nothing uses it.
+
+**Test checklist (testers in Vietnam and mainland China).** Each on a phone, once on Wi-Fi and once on mobile data, no VPN:
+
+| # | Do | Note |
+| --- | --- | --- |
+| 1 | Open `https://www.dygoacademy.com` and sign in | Loads? Seconds to the garden? |
+| 2 | Review → tap the speaker on 5 different words | Plays every time? "Audio unavailable" shown? Delay before sound |
+| 3 | Open one word's audio URL directly (Dylan sends one `r2.dev` link from `master_lexicon.audio_url`) | Plays? Seconds to start |
+| 4 | Open `https://www.dygoacademy.com/audio/speaking-fixture/fixture-mitigate-us.wav` (served by the app itself, after the next deploy) | Plays? Compare with 3: same origin as the app vs `r2.dev` |
+| 5 | After the custom domain exists: the same clip on `https://audio.dygoacademy.com/…` | Plays? Seconds to start |
+
+Report: city, network (Wi-Fi / which mobile carrier), pass / fail and seconds for each row, and a screenshot of any error. Read it as: if 1 passes and 3 fails, the custom domain fixes it; if 1 also fails or is slow in China, we need the China CDN option.
 
