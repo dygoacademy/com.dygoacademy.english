@@ -37,8 +37,8 @@ Size: **S** ≈ half a usage window, **M** ≈ one full window. Dates are propos
 
 | # | Date | Task | Scope (files) | Done when | Size | Needs |
 | --- | --- | --- | --- | --- | --- | --- |
-| **S0** | Mon 10-05 AM | Housekeeping | `phase 13 implementation plan.md` → match notes (entry points, option 2, D1 = B, T2 done; file stays uncommitted); multi-word targets in `speaking-timings.ts` (first-token rule, see defaults) + spec + regenerate the 4 skipped words | Plan matches reality; 142/143 words have speaking audio | S | — |
-| **S1** | Mon 10-05 | T3a · Audio core (pure) | `src/lib/speaking/audio.ts`: mic permission helper, recorder (MediaRecorder mime pick, PCM fallback), decode, resample to 16 kHz, RMS envelope 100 fps; unit tests | Envelope/resample tests pass | M | — |
+| ✅ **S0** | Mon 10-05 AM | Housekeeping | `phase 13 implementation plan.md` → match notes (entry points, option 2, D1 = B, T2 done; file stays uncommitted); multi-word targets in `speaking-timings.ts` (first-token rule, see defaults) + spec + regenerate the 4 skipped words | Plan matches reality; 142/143 words have speaking audio | S | — |
+| ✅ **S1** | Mon 10-05 | T3a · Audio core (pure) | `src/lib/speaking/audio.ts`: mic permission helper, recorder (MediaRecorder mime pick, PCM fallback), decode, resample to 16 kHz, RMS envelope 100 fps; unit tests | Envelope/resample tests pass | M | — |
 | **S2** | Tue 10-06 | T3b · Hooks + dev page | `useLiveLevels`, `usePlayer` (one player, 0.75×), dev page under the garden dev prefix (record → replay → show envelope + decoded `.m4a` offset vs `.wav`); **Deploy** | Dev page live on UAT | M | — |
 | **G1** | Tue–Wed | **Dylan: iPhone check** | Record + replay on iPhone Safari; note the AAC offset the page shows (Chrome + Safari) | Works on a real iPhone | — | Dylan |
 | **S3** | Wed 10-07 | T4 · Scorer | `src/lib/speaking/envelopeScorer.ts`, `constants.ts` (handover §3 exactly), 4 synthetic tests, run-time log | 4 tests pass; < 150 ms for 5 s | M | G1 (only if the offset needs a correction) |
@@ -64,3 +64,5 @@ Size: **S** ≈ half a usage window, **M** ≈ one full window. Dates are propos
 One line per session: date · session · result · next.
 
 - 2026-10-04 · T0–T2 (+ option 2 media, deploy) · done, see notes §9, §13, §15b · next: S0 / S1
+- 2026-10-04 · S0 · done (f2b159f): multi-word targets, 12 new clips, 144 words with audio (only `analyse` left), plan file synced (uncommitted) · next: S1
+- 2026-10-04 · S1 · done: `src/lib/speaking/audio.ts` + 19 tests · next: S2

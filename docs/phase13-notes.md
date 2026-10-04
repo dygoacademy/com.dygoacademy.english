@@ -177,6 +177,9 @@ Whichever is chosen, syllable boundaries for the target word come from the IPA (
 | T2-h | Session order | Due/new (no SRS row, `New`, or due now) first, then `next_due_at`, then item age | Handover T6 "due/new first" |
 | T2-i | Fixture | macOS `say` (Samantha US, Daniel UK), one word at a time, so word timings are exact | Robotic and slow (~6 s); only for building T3–T5 |
 | S0-a | Multi-word entries | Tokens matched in a row (last one may be inflected), target = the phrase's first token, syllables from the first word of the IPA; if that word has no primary stress its secondary stress (else its first syllable) is promoted | Compressed-run default (schedule). A later `target_length` could highlight the whole phrase |
+| S1-a | Recorder format order | `audio/mp4` first, then WebM/Opus, WebM, Ogg/Opus (`RECORDER_MIME_CANDIDATES`) | iOS Safari records mp4; putting it first keeps newer Safari from picking WebM, whose decoding is newer there. Chrome will also pick mp4 where it supports it; the S2 dev page shows whether it decodes. One array to reorder |
+| S1-b | Resampler | Box-filter average when downsampling, linear interpolation when upsampling; no FIR filter | Enough for a 100 fps energy envelope; keeps the code small and fast |
+| S1-c | PCM fallback | `ScriptProcessorNode` (deprecated but everywhere) wrapped as 16-bit WAV, not an `AudioWorklet` | A worklet needs a separate module file served by Next; only used where `MediaRecorder` is missing |
 
 ## 11. Questions for Dylan
 
