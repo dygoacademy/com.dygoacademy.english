@@ -142,6 +142,9 @@ run_rls_suite() {
   run_file "$DIR/migrations/20261004_speaking.sql" "$scratch"
   run_file "$DIR/migrations/20261004_speaking_per_word.sql" "$scratch"
   run_file "$DIR/tests/rls_speaking_test.sql" "$scratch"
+  # Option 2 audio load times (insert-own only, nobody signed in reads).
+  run_file "$DIR/migrations/20261004_media_load_events.sql" "$scratch"
+  run_file "$DIR/tests/rls_media_load_events_test.sql" "$scratch"
 }
 
 # -----------------------------------------------------------------------------

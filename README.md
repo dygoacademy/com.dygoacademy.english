@@ -453,6 +453,7 @@ pm2 save && pm2 startup   # survive a reboot — follow the command pm2 prints
 | Caching → Cache Rules | If hostname equals `media.dygoacademy.com` → Eligible for cache; Edge TTL: use the origin's Cache-Control | `.wav` isn't cached by default; clips are uploaded as `public, max-age=31536000, immutable`, so after the first play Cloudflare serves them, not the Mac |
 | Rules → Transform Rules → Modify Response Header | If hostname equals `media.dygoacademy.com` → Set static `Access-Control-Allow-Origin: *` | A clip cached from a request without `Origin` has no CORS header; this adds it at the edge for every copy. Safe: the bucket is public and read-only |
 | Security → WAF → Custom rules | If `http.host eq "media.dygoacademy.com" and not http.request.method in {"GET" "HEAD" "OPTIONS"}` → Block | RustFS already refuses unsigned writes (403); this stops write and admin attempts before they reach the Mac |
+| Rules → Settings (or Transform Rules) → Managed Transforms → **Add visitor location headers** → On | Adds `CF-IPCity` (country `CF-IPCountry` is on by default) | The audio start-time log (`media_load_events`) records the learner's city as well as country |
 
 `media.dygoacademy.com/<key>` maps to RustFS bucket `media` (`RUSTFS_SERVER_DOMAINS` in
 `docker-compose.yml`), public for GetObject only (`docker/rustfs/media-policy.json`), CORS in

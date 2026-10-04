@@ -48,6 +48,7 @@ Every column, constraint, index and policy below was read out of `pg_catalog` on
 | `push_subscriptions` | Notifications | VAPID Web Push endpoints per device. | one per device |
 | `speaking_items` | Speaking (Phase 13) | One sentence per word, with native UK/US audio keys and word timings. Shared by every bed with the word. | ≤ one per word |
 | `speaking_attempts` | Speaking (Phase 13) | One row per speaking Compare: score, stage, word marks. No audio. | append-only, grows with use |
+| `media_load_events` | Telemetry | Audio start time per play (tap → sound), cache hit, network, Cloudflare country/city. | one per play — prune old rows when no longer needed |
 
 ## 3. Entity relationships
 
@@ -877,6 +878,36 @@ One row per speaking Compare (SP3). Try again stores another row. The learner's 
 - Owner-only, with no teacher exception (like `user_word_srs`). Group views are out of scope for Phase 13.
 - `accent` uses `UK` / `US` (the handover's values), while `profiles.english_variety` uses `en-GB` / `en-US`; the API maps between them.
 - No audio column on purpose (D2). Storing recordings later needs a privacy review and a new migration.
+
+---
+
+### Telemetry
+
+#### `media_load_events`
+
+Added by `database/migrations/20261004_media_load_events.sql` (option 2, 2026-10-04). Written by hand. RLS test: `database/tests/rls_media_load_events_test.sql`.
+
+> Option 2 (2026-10-04): audio start time per play (tap → sound, ms), from the phone cache or not, played/error, network type, Cloudflare country/city. No IP, no file URL. Insert-own only; read by service_role.
+
+**Written by** — learners' phones through `POST /api/v1/telemetry/media` (as the learner). **Read by** — Dylan, as `service_role` / `postgres`; nobody signed in can read rows, not even their own.
+
+| Column | Type | Null | Default |
+| :--- | :--- | :---: | :--- |
+| `id` | `uuid` | NO | `gen_random_uuid()` |
+| `user_id` | `uuid` | NO | `auth.uid()` |
+| `kind` | `text` (`word` \| `speaking`) | NO | — |
+| `host` | `text` (1–100) | NO | — |
+| `outcome` | `text` (`played` \| `error`) | NO | — |
+| `ms` | `integer` (0–120000) | NO | — |
+| `from_cache` | `boolean` | NO | `false` |
+| `effective_type` | `text` (≤ 10) | yes | — |
+| `country` | `text` (≤ 8) | yes | — |
+| `city` | `text` (≤ 80) | yes | — |
+| `created_at` | `timestamp with time zone` | NO | `now()` |
+
+**Keys** — `media_load_events_pkey` (id); `user_id` → `profiles(id)` on delete cascade. **Index** — `idx_media_load_events_created_at` `btree (created_at DESC)`.
+
+**RLS** — enabled. `media_load_events_insert_own`: INSERT for {authenticated} with check `(user_id = auth.uid())`. **Grants** — `authenticated`: INSERT only (so the API never uses `RETURNING`). `anon`: none. `service_role`: all.
 
 ---
 

@@ -280,3 +280,25 @@ Dylan chose `media.dygoacademy.com` for the server copy (RustFS on this Mac, thr
 
 Still to do in the Cloudflare dashboard (README "Cloudflare dashboard rules"): the bare-domain redirect (today `dygoacademy.com` returns HTTP 530), a Cache Rule for `media.*` (today `cf-cache-status: DYNAMIC`, so every play reaches the Mac), a response-header rule `Access-Control-Allow-Origin: *`, and a WAF rule allowing only GET/HEAD/OPTIONS. Not done yet: writing clips to RustFS as well as R2 (script + worker) and the fallback URLs in the API (§ "where do we save the audio").
 
+### 15b. Option 2 built (2026-10-04)
+
+- **Store:** app media is in RustFS (`STORAGE_PROVIDER=rustfs`, default), public at `https://media.dygoacademy.com/<key>`. Each clip is stored as AAC `.m4a` (linked, ~6–7× smaller) and the original `.wav` at the same key (`KEEP_WAV_COPY`, kept for the WAV support period, Dylan). Existing word audio was moved from R2 (124 files) and the 19 `master_lexicon.audio_url` values now point at `.m4a` on `media.dygoacademy.com`.
+- **Phone:** the service worker caches media cache-first (range requests served from the cache for iOS Safari); Review prefetches the next 3 cards' audio. The speaking screens (T6) will prefetch their 5 clips the same way (`prefetchMedia`).
+- **Measuring:** every play is logged (`media_load_events`: ms from tap to sound, cache hit, network type, Cloudflare country/city). Turn on Cloudflare's "Add visitor location headers" managed transform to get cities. Report:
+
+```sql
+-- Audio start time by place, last 7 days (run as postgres in the dygo_supabase_db container)
+select coalesce(country, '?') as country, coalesce(city, '?') as city,
+       count(*) as plays,
+       percentile_disc(0.5) within group (order by ms) as p50_ms,
+       percentile_disc(0.9) within group (order by ms) as p90_ms,
+       round(100.0 * avg(from_cache::int)) as pct_from_phone,
+       round(100.0 * avg((outcome = 'error')::int), 1) as pct_failed
+  from public.media_load_events
+ where created_at > now() - interval '7 days'
+ group by 1, 2
+ order by plays desc;
+```
+
+- **Needs Dylan:** deploy (backend: RustFS storage, AAC, telemetry endpoint; frontend: service worker, prefetch, logging); apply migrations `20261004_speaking*.sql` and `20261004_media_load_events.sql` (`./database/apply-migrations.sh --migrations`); after the deploy, `npm run media-migrate` once more for words added meanwhile; Cloudflare rules (README table) incl. the CORS header rule, which the phone cache relies on for files Cloudflare cached; real-iPhone check of playback from the cache.
+

@@ -3,6 +3,8 @@
 import * as React from 'react';
 import { useTranslations } from 'next-intl';
 
+import { type MediaKind, trackAudioStart } from '@/lib/media-timing';
+
 import { gcn } from './cn';
 import { SpeakerIcon, SpeakerOffIcon } from './icons';
 
@@ -20,6 +22,9 @@ import { SpeakerIcon, SpeakerOffIcon } from './icons';
  * the button turns into a visible "Audio unavailable, tap to retry"
  * pill, and tapping it makes a fresh `Audio` element and tries again.
  * With no `src` at all it's a disabled button saying there's no audio.
+ *
+ * Option 2 (2026-10-04): each play's start time (tap → sound) is logged
+ * through `trackAudioStart` so slow audio can be measured per country.
  */
 export type AudioStatus = 'idle' | 'playing' | 'error';
 
@@ -34,6 +39,8 @@ export interface GardenAudioButtonProps {
   /** Extra classes for the round play button only (e.g. a bigger size); the
    *  "unavailable, tap to retry" pill keeps its own size so its text fits. */
   playClassName?: string;
+  /** What the clip is, for the audio start-time log (lib/media-timing). */
+  mediaKind?: MediaKind;
 }
 
 export function AudioButton({
@@ -43,6 +50,7 @@ export function AudioButton({
   initialStatus = 'idle',
   className,
   playClassName,
+  mediaKind = 'word',
 }: GardenAudioButtonProps) {
   const t = useTranslations('components.audio');
   const [status, setStatus] = React.useState<AudioStatus>(initialStatus);
@@ -82,6 +90,7 @@ export function AudioButton({
     audio.playbackRate = playbackRate;
     audio.currentTime = 0;
     setStatus('playing');
+    trackAudioStart(audio, src, mediaKind);
     void audio.play().catch((error: unknown) => {
       // A newer play()/pause() interrupting this one isn't a failure.
       if (error instanceof DOMException && error.name === 'AbortError') return;
