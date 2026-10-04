@@ -8,6 +8,7 @@ import { useRateWord } from '@/hooks/useRateWord';
 import { useStudySession } from '@/hooks/useStudySession';
 import { useTopics } from '@/hooks/useTopics';
 import { languageOf } from '@/i18n/config';
+import { prefetchMedia } from '@/lib/media-cache';
 import type { DueCard, RatingInterval, SrsRating } from '@/types';
 
 import { useGardenPreferences } from '../preferences';
@@ -48,6 +49,11 @@ export function ReviewLive({ topicId }: { topicId?: string }) {
   React.useEffect(() => {
     if (cards !== null && startedAt.current === 0) startedAt.current = Date.now();
   }, [cards]);
+  // Warm the phone's media cache with the next few cards' audio, so the
+  // speaker button plays at once on slow networks (option 2, lib/media-cache).
+  React.useEffect(() => {
+    if (cards) void prefetchMedia(cards.slice(index, index + 3).map((c) => c.audio_url));
+  }, [cards, index]);
 
   if (cards === null) {
     if (session.isError) return <LiveError onRetry={() => void session.refetch()} />;
