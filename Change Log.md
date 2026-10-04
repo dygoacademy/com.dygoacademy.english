@@ -488,3 +488,8 @@ Engineering-facing log of shipped fixes and changes, one dated entry per change.
 * **What**: free speech checking on the Mac behind an API. `POST /check` (audio ≤ 1 MB + sentence) → per word `ok` / `unclear` (with `heard`) / `missing`, a 0–100 sound score per word and a total. faster-whisper `base.en` for the words and a wav2vec2 espeak phoneme model with forced alignment for the sounds, run in parallel; short words accept common variants ("the" /ði/). Bound to 127.0.0.1:8100, 4 GB limit, health check, models in a volume, audio never written or logged.
 * **Why**: G6 (Dylan): self-hosted instead of a paid service.
 * **Verified**: unit tests 6/6 in the image; 9 test clips all marked as expected (missing "the", heard "migrate", Chinese voice's "mitigate", Vietnamese voice 40, late start 100, good speech 99–100); 1.7–3.3 s typical, 5.3 s worst with the Mac under load; 0.8 GB memory. Not yet called by the backend (M3).
+
+### Speech scorer: Postman collection and sample clips
+* **Files**: [`docker/speech/dygo-speech.postman_collection.json`](docker/speech/dygo-speech.postman_collection.json), `docker/speech/samples/*.m4a` (4 clips, macOS voices, 30–45 KB), [`docker/speech/README.md`](docker/speech/README.md) (*Try it in Postman*)
+* **What**: an importable collection (Health + four `POST /check` requests) and the clips it sends, so the scorer can be tried without curl.
+* **Why**: Dylan asked how to test the API with Postman (2026-10-04).

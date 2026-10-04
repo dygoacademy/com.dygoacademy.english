@@ -1,0 +1,154 @@
+{
+  "info": {
+    "name": "Dygo speech scorer",
+    "description": "docker/speech (Phase 13 G6). Runs on the Mac only (127.0.0.1). Set the collection variable samplesDir to the absolute path of docker/speech/samples.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://127.0.0.1:8100"
+    },
+    {
+      "key": "samplesDir",
+      "value": "/Users/dylan/dygo/com.dygoacademy.english/docker/speech/samples"
+    }
+  ],
+  "item": [
+    {
+      "name": "Health",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "{{baseUrl}}/health",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "health"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Check · good speech",
+      "request": {
+        "method": "POST",
+        "url": {
+          "raw": "{{baseUrl}}/check",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "check"
+          ]
+        },
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            {
+              "key": "audio",
+              "type": "file",
+              "src": "{{samplesDir}}/good.m4a"
+            },
+            {
+              "key": "sentence",
+              "type": "text",
+              "value": "Planting more trees can help mitigate the effects of climate change."
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Check · \"the\" left out",
+      "request": {
+        "method": "POST",
+        "url": {
+          "raw": "{{baseUrl}}/check",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "check"
+          ]
+        },
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            {
+              "key": "audio",
+              "type": "file",
+              "src": "{{samplesDir}}/missing-the.m4a"
+            },
+            {
+              "key": "sentence",
+              "type": "text",
+              "value": "Planting more trees can help mitigate the effects of climate change."
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Check · \"migrate\" for \"mitigate\"",
+      "request": {
+        "method": "POST",
+        "url": {
+          "raw": "{{baseUrl}}/check",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "check"
+          ]
+        },
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            {
+              "key": "audio",
+              "type": "file",
+              "src": "{{samplesDir}}/migrate.m4a"
+            },
+            {
+              "key": "sentence",
+              "type": "text",
+              "value": "Planting more trees can help mitigate the effects of climate change."
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Check · Vietnamese voice",
+      "request": {
+        "method": "POST",
+        "url": {
+          "raw": "{{baseUrl}}/check",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "check"
+          ]
+        },
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            {
+              "key": "audio",
+              "type": "file",
+              "src": "{{samplesDir}}/vietnamese-voice.m4a"
+            },
+            {
+              "key": "sentence",
+              "type": "text",
+              "value": "Planting more trees can help mitigate the effects of climate change."
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

@@ -15,6 +15,10 @@ curl -s -F audio=@clip.m4a -F "sentence=Planting more trees can help mitigate th
 docker run --rm --entrypoint python comdygoacademyenglish-speech -m pytest -q tests   # rules, no models
 ```
 
+## Try it in Postman
+
+Import `docker/speech/dygo-speech.postman_collection.json` (Postman desktop app on this Mac: the API is on 127.0.0.1 only, so the web app and other devices can't reach it). It has *Health* and four *Check* requests using the clips in `samples/` (macOS voices, AAC `.m4a`): good speech, "the" left out, "migrate" for "mitigate", a Vietnamese voice. If your copy of the repo is somewhere else, change the collection variable `samplesDir`. To try your own voice, record the sentence in Voice Memos, AirDrop the `.m4a` to the Mac and pick it as `audio`.
+
 ## `POST /check`
 
 Multipart: `audio` (m4a / webm / wav, ≤ 1 MB, 0.3–30 s), `sentence`. Errors: 413 over 1 MB, 422 not audio / too short / too long, 503 while models load.
