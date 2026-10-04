@@ -412,8 +412,8 @@ What the unattended run could check is automated (Vitest, mocked mic/API); every
 | 3 · 2 · 1 (0.9 s a step), tap to skip, Cancel during the count | ✅ SpeakLive + FlowCheck tests; Playwright | 📱 | 📱 | 📱 | 📱 | 📱 |
 | Beep at the end of the count (`/garden/_speaking` → 3) | ✅ beep tests | 📱 silent switch **off**: hear it; **on**: expect silence (the clay mic is the cue) | 📱 | 📱 | 📱 | 📱 |
 | Vibration at the beep | ✅ called where supported | — (iOS Safari has none) | — | 📱 | — | — |
-| Beep not in the recording (dev page → 3 → "beep in clip") | ✅ `toneRms` + FlowCheck leak test | 📱 should say "no" | 📱 | 📱 | 📱 | 📱 |
-| Stops by itself 2 s after you finish; "not heard" after 8 s of nothing; 30 s cap | ✅ `voiceEnded` / `notHeard` tests; Playwright auto-stop | 📱 quiet room, then a noisy café | — | 📱 | 📱 | — |
+| Beep not in the recording (dev page → 3 → "beep in clip") | ✅ `toneRms` + FlowCheck leak test | ✅ 10-05 Dylan: **no** (880 Hz in the first 200 ms −153 dBFS, whole clip −106 dBFS) | 📱 | 📱 | 📱 | 📱 |
+| Stops by itself 2 s after you finish; "not heard" after 8 s of nothing; 30 s cap | ✅ `voiceEnded` / `notHeard` tests; Playwright auto-stop | ✅ 10-05 Dylan: stopped by **silence**; recording 6.46 s, `audio/mp4; codecs=mp4a.40.2`, 60.6 KB, decoded 6.45 s at 16 kHz. 📱 still: a noisy café | — | 📱 | 📱 | — |
 | Server check: checking → done, marks missing / heard "…" (UAT `server`) | ✅ merge + SpeakLive server tests; Playwright (stubbed) | 📱 G7 + calibration recordings (M4) | 📱 | 📱 | 📱 | 📱 |
 | Server check fails → "Couldn't check this one", Check again / Record again | ✅ SpeakLive + Playwright (503) | 📱 airplane mode after recording | 📱 | 📱 | — | — |
 | Mic explainer says "checked, then deleted" in `server` mode | ✅ | 📱 first visit (or a private tab) | 📱 | 📱 | 📱 | 📱 |

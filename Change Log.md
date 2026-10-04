@@ -549,3 +549,8 @@ Engineering-facing log of shipped fixes and changes, one dated entry per change.
 * **Files**: [`docs/phase13-schedule.md`](docs/phase13-schedule.md) (Session log)
 * **What**: deploy through `deploy/request.md` (all 4 steps OK, 2026-10-05 07:24): `/garden/_speaking` section 3 for checking the v2 flow and beep leakage on a phone.
 * **Verified live**: www and API health 200; `/garden/_speaking` redirects to login when signed out; section 3 is in the deployed page bundle.
+
+### Phase 13: iPhone check of the v2 recording flow recorded
+* **Files**: [`docs/phase13-notes.md`](docs/phase13-notes.md) (§16 QA matrix, iPhone Safari), [`docs/phase13-schedule.md`](docs/phase13-schedule.md)
+* **What**: Dylan's results from `/garden/_speaking` section 3 on iPhone Safari: stopped by silence; 6.46 s AAC `.m4a`, 60.6 KB; decoded 6.45 s at 16 kHz; beep not in the clip (−153 dBFS in the first 200 ms). Silent switch on and a noisy place still to try.
+* **Why**: S19 device checks.
