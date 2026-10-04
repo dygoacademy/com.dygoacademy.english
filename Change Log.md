@@ -505,3 +505,8 @@ Engineering-facing log of shipped fixes and changes, one dated entry per change.
 * **What**: the app sends the recording to the Dygo API, the API asks the self-hosted scorer and returns SP3's marks (`missing` / `unclear` + `heard` / fine), score and stage. Behind a `SpeechChecker` interface (swap the scorer without an app change); 60 checks an hour per user; 8 s timeout and scorer-down → 503 ("Couldn't check"); recording kept in memory only (multer memory storage, never logged or stored); not saved as an attempt yet.
 * **Why**: Dylan chose app → API → scorer over exposing the scorer through Cloudflare (2026-10-04).
 * **Verified**: backend Jest 352/352 (11 new), `tsc` and eslint clean; scorer tests 6/6; the real client + mapper against the running scorer gave the expected marks for 4 sample clips in 1.3–2.1 s, garbage audio → 422, scorer down → 503. Not deployed.
+
+### Deployed: Phase 13 M3 (`POST /speaking/check`) to UAT
+* **Files**: [`docs/phase13-schedule.md`](docs/phase13-schedule.md) (Session log)
+* **What**: deploy through `deploy/request.md` (all 4 steps OK, 2026-10-05 06:24): M3, the S16 label fixes, the Vietnamese body font and the speaking animations. As before, the deploy builds the working tree, so others' uncommitted edits went out too.
+* **Verified live**: `www.dygoacademy.com` 200, `api.dygoacademy.com/api/v1/health` 200, `POST /api/v1/speaking/check` without a token → 401 (route exists, login required), scorer `/health` ok. Learners see no change: the app checks on the phone until S18.
