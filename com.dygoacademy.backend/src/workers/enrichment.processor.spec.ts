@@ -3,9 +3,21 @@ import { Job } from 'bullmq';
 
 import { GeminiEnrichmentService, LexiconEntry } from '../ai/gemini-enrichment.service';
 import { DatabaseService } from '../database/database.service';
-import { AudioBackfillJob, TranslationsBackfillJob, WordEnrichmentJob } from '../queues/queue.constants';
+import {
+  AudioBackfillJob,
+  TranslationsBackfillJob,
+  WordEnrichmentJob,
+} from '../queues/queue.constants';
+import { encodeForWeb } from '../storage/audio-encode';
 import { StorageService } from '../storage/storage.service';
 import { EnrichmentProcessor } from './enrichment.processor';
+
+// Unit tests don't shell out to ffmpeg: the encoder returns a fake .m4a.
+jest.mock('../storage/audio-encode', () => ({
+  ...jest.requireActual<typeof import('../storage/audio-encode')>('../storage/audio-encode'),
+  encodeForWeb: jest.fn(),
+}));
+const encodeForWebMock = encodeForWeb as jest.MockedFunction<typeof encodeForWeb>;
 
 /**
  * Covers the three outcomes that matter for the enrichment worker (tech spec
@@ -35,7 +47,10 @@ describe('EnrichmentProcessor', () => {
       { sentence: 'Fame is often ephemeral.', level: 'B2', translation_hint: 'short-lived' },
     ],
     translations: {
-      'vi-VN': { meaning: 'chỉ tồn tại trong thời gian ngắn', example_translation: 'Danh vọng thường chỉ tồn tại trong thời gian ngắn.' },
+      'vi-VN': {
+        meaning: 'chỉ tồn tại trong thời gian ngắn',
+        example_translation: 'Danh vọng thường chỉ tồn tại trong thời gian ngắn.',
+      },
       'zh-CN': { meaning: '短暂的', example_translation: '名声往往是短暂的。' },
     },
   };
@@ -71,7 +86,13 @@ describe('EnrichmentProcessor', () => {
     uploadMock = jest
       .fn()
       .mockResolvedValue('http://localhost:9000/dygo-audio/audio/en/us/abc.wav');
-    hasObjectMock = jest.fn().mockResolvedValue(false); // default: no audio in R2 yet
+    hasObjectMock = jest.fn().mockResolvedValue(false); // default: no audio in storage yet
+    encodeForWebMock.mockReset();
+    encodeForWebMock.mockResolvedValue({
+      primary: 'm4a',
+      m4a: Buffer.from('m4a'),
+      wav: Buffer.from('wav'),
+    });
 
     const moduleRef = await Test.createTestingModule({
       providers: [
@@ -130,9 +151,9 @@ describe('EnrichmentProcessor', () => {
     expect(enrichWordMock).toHaveBeenCalledWith('ephemeral', 'en', undefined);
     expect(synthesizeSpeechMock).toHaveBeenCalledWith('ephemeral');
     expect(uploadMock).toHaveBeenCalledWith(
-      expect.stringMatching(/^audio\/en\/us\/.+\.wav$/),
+      expect.stringMatching(/^audio\/en\/us\/.+\.m4a$/),
       expect.any(Buffer),
-      'audio/wav',
+      'audio/mp4',
     );
 
     const upsertCall = queryMock.mock.calls[1];
@@ -143,8 +164,14 @@ describe('EnrichmentProcessor', () => {
     expect(translationsCall[0]).toMatch(/insert into public\.word_translations/i);
     expect(translationsCall[0]).toMatch(/on conflict/i);
     expect(translationsCall[1]).toEqual([
-      'lex-2', 'vi-VN', 'chỉ tồn tại trong thời gian ngắn', 'Danh vọng thường chỉ tồn tại trong thời gian ngắn.',
-      'lex-2', 'zh-CN', '短暂的', '名声往往是短暂的。',
+      'lex-2',
+      'vi-VN',
+      'chỉ tồn tại trong thời gian ngắn',
+      'Danh vọng thường chỉ tồn tại trong thời gian ngắn.',
+      'lex-2',
+      'zh-CN',
+      '短暂的',
+      '名声往往是短暂的。',
     ]);
 
     const updateCall = queryMock.mock.calls[3];
@@ -229,7 +256,7 @@ describe('EnrichmentProcessor', () => {
     expect(last[1]).toEqual(['lex-1', 'tw-1']);
   });
 
-  it('audio-backfill job: reuses audio already in R2 (from before a reset) without calling TTS', async () => {
+  it('audio-backfill job: reuses audio already in storage (from before a reset) without calling TTS', async () => {
     hasObjectMock.mockResolvedValue(true);
     queryMock.mockResolvedValueOnce([{ id: 'lex-9', audio_url: null }]); // re-check
     queryMock.mockResolvedValueOnce([]); // update
@@ -240,10 +267,56 @@ describe('EnrichmentProcessor', () => {
     expect(uploadMock).not.toHaveBeenCalled();
     const [, params] = queryMock.mock.calls[1];
     expect(params[0]).toBe('lex-9');
-    expect(params[1]).toMatch(/^https:\/\/audio\.example\/audio\/en\/us\/[0-9a-f]{32}\.wav$/);
+    expect(params[1]).toMatch(/^https:\/\/audio\.example\/audio\/en\/us\/[0-9a-f]{32}\.m4a$/);
   });
 
-  it('audio-backfill job: generates audio with TTS when R2 has none', async () => {
+  it('audio-backfill job: reuses an older .wav when there is no .m4a', async () => {
+    hasObjectMock.mockImplementation((key: string) => Promise.resolve(key.endsWith('.wav')));
+    queryMock.mockResolvedValueOnce([{ id: 'lex-9', audio_url: null }]);
+    queryMock.mockResolvedValueOnce([]);
+
+    await processor.process(backfillJob());
+
+    expect(synthesizeSpeechMock).not.toHaveBeenCalled();
+    expect(queryMock.mock.calls[1][1][1]).toMatch(/\.wav$/);
+  });
+
+  it('audio-backfill job: stores WAV when the AAC encoder is unavailable', async () => {
+    encodeForWebMock.mockResolvedValue({
+      primary: 'wav',
+      m4a: null,
+      wav: Buffer.from('wav'),
+      fallback: 'ffmpeg not found',
+    });
+    queryMock.mockResolvedValueOnce([{ id: 'lex-9', audio_url: null }]);
+    queryMock.mockResolvedValueOnce([]);
+
+    await processor.process(backfillJob());
+
+    expect(uploadMock).toHaveBeenCalledWith(
+      expect.stringMatching(/^audio\/en\/us\/[0-9a-f]{32}\.wav$/),
+      expect.any(Buffer),
+      'audio/wav',
+    );
+  });
+
+  it('audio-backfill job: stores both .m4a and the .wav copy, and links the .m4a', async () => {
+    uploadMock.mockImplementation((key: string) => Promise.resolve(`https://audio.example/${key}`));
+    queryMock.mockResolvedValueOnce([{ id: 'lex-9', audio_url: null }]);
+    queryMock.mockResolvedValueOnce([]);
+
+    await processor.process(backfillJob());
+
+    expect(uploadMock).toHaveBeenCalledTimes(2);
+    expect(uploadMock.mock.calls[0][0]).toMatch(/^audio\/en\/us\/[0-9a-f]{32}\.m4a$/);
+    expect(uploadMock.mock.calls[0][2]).toBe('audio/mp4');
+    const m4aKey = uploadMock.mock.calls[0][0] as string;
+    expect(uploadMock.mock.calls[1][0]).toBe(m4aKey.replace(/\.m4a$/, '.wav'));
+    expect(uploadMock.mock.calls[1][2]).toBe('audio/wav');
+    expect(queryMock.mock.calls[1][1][1]).toMatch(/\.m4a$/);
+  });
+
+  it('audio-backfill job: generates AAC audio with TTS when storage has none', async () => {
     queryMock.mockResolvedValueOnce([{ id: 'lex-9', audio_url: null }]);
     queryMock.mockResolvedValueOnce([]);
 
@@ -251,9 +324,9 @@ describe('EnrichmentProcessor', () => {
 
     expect(synthesizeSpeechMock).toHaveBeenCalledWith('polite');
     expect(uploadMock).toHaveBeenCalledWith(
-      expect.stringMatching(/^audio\/en\/us\/[0-9a-f]{32}\.wav$/),
+      expect.stringMatching(/^audio\/en\/us\/[0-9a-f]{32}\.m4a$/),
       expect.any(Buffer),
-      'audio/wav',
+      'audio/mp4',
     );
   });
 
@@ -331,8 +404,14 @@ describe('EnrichmentProcessor', () => {
 
     const [, params] = queryMock.mock.calls[0];
     expect(params).toEqual([
-      'lex-9', 'vi-VN', 'lịch sự', 'Cô ấy luôn lịch sự.',
-      'lex-9', 'zh-CN', '礼貌的', '她总是很礼貌。',
+      'lex-9',
+      'vi-VN',
+      'lịch sự',
+      'Cô ấy luôn lịch sự.',
+      'lex-9',
+      'zh-CN',
+      '礼貌的',
+      '她总是很礼貌。',
     ]);
   });
 

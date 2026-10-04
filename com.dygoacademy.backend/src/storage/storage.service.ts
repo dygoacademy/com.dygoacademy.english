@@ -4,10 +4,9 @@ import { HeadObjectCommand, PutObjectCommand, S3Client } from '@aws-sdk/client-s
 import { createHash } from 'node:crypto';
 
 /**
- * S3-compatible object storage — Cloudflare R2, always (tech spec §3,
- * "Audio Storage & CDN"). Used to fall back to local MinIO in dev; removed
- * 2026-09-16 so every environment writes to the same real R2 bucket (see
- * configuration.ts `storage`'s own comment for why).
+ * S3-compatible media storage: RustFS on this Mac (public at
+ * https://media.dygoacademy.com) since 2026-10-04, or Cloudflare R2 with
+ * STORAGE_PROVIDER=r2 (config/storage-config.ts). Same keys either way.
  */
 @Injectable()
 export class StorageService {
@@ -17,7 +16,7 @@ export class StorageService {
   private readonly publicUrl: string;
 
   constructor(private readonly config: ConfigService) {
-    this.bucket = this.config.get<string>('storage.bucket', 'dygo-audio');
+    this.bucket = this.config.get<string>('storage.bucket', 'media');
     this.publicUrl = this.config.get<string>('storage.publicUrl', '');
     this.client = new S3Client({
       endpoint: this.config.get<string>('storage.endpoint'),
@@ -36,9 +35,13 @@ export class StorageService {
    * same word always maps to the same object — which is what lets
    * `hasObject` find audio generated before a database reset.
    */
-  static audioKeyFor(normalizedWord: string, languageCode: string): string {
+  static audioKeyFor(
+    normalizedWord: string,
+    languageCode: string,
+    ext: 'm4a' | 'wav' = 'm4a',
+  ): string {
     const hash = createHash('md5').update(normalizedWord).digest('hex');
-    return `audio/${languageCode}/us/${hash}.wav`;
+    return `audio/${languageCode}/us/${hash}.${ext}`;
   }
 
   /**
@@ -53,9 +56,10 @@ export class StorageService {
     accent: 'UK' | 'US',
     voice: string,
     languageCode = 'en',
+    ext: 'm4a' | 'wav' = 'm4a',
   ): string {
     const hash = createHash('md5').update(`${voice}|${sentence.trim()}`).digest('hex');
-    return `speaking/${languageCode}/${accent.toLowerCase()}/${hash}.wav`;
+    return `speaking/${languageCode}/${accent.toLowerCase()}/${hash}.${ext}`;
   }
 
   /** True if `key` already exists in the bucket (HEAD, no download). */
@@ -70,15 +74,13 @@ export class StorageService {
     }
   }
 
-  /** Public, browser-playable URL for `key` (see `upload`). */
+  /**
+   * Public, browser-playable URL for `key` (see `upload`). Both public hosts
+   * (media.dygoacademy.com and R2's bucket domain) resolve to the bucket
+   * root, so there's never a bucket segment.
+   */
   publicUrlFor(key: string): string {
-    const base = this.publicUrl.replace(/\/+$/, '');
-    // R2's public bucket domain already resolves to bucket root — no
-    // bucket segment needed (forcePathStyle is always false now; see
-    // configuration.ts).
-    return this.config.get<boolean>('storage.forcePathStyle', false)
-      ? `${base}/${this.bucket}/${key}`
-      : `${base}/${key}`;
+    return `${this.publicUrl.replace(/\/+$/, '')}/${key}`;
   }
 
   /**

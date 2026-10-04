@@ -12,6 +12,7 @@ import {
   TranslationsBackfillJob,
   WordEnrichmentJob,
 } from '../queues/queue.constants';
+import { encodeForWeb, filesToStore } from '../storage/audio-encode';
 import { StorageService } from '../storage/storage.service';
 
 interface MasterLexiconRow {
@@ -54,7 +55,9 @@ export class EnrichmentProcessor extends WorkerHost {
     super();
   }
 
-  async process(job: Job<WordEnrichmentJob | AudioBackfillJob | TranslationsBackfillJob>): Promise<void> {
+  async process(
+    job: Job<WordEnrichmentJob | AudioBackfillJob | TranslationsBackfillJob>,
+  ): Promise<void> {
     if (job.name === AUDIO_BACKFILL_JOB) {
       // Fatal on failure (rethrows), so BullMQ retries with backoff. There is
       // no topic_word to mark FAILED: the word is already READY and usable,
@@ -266,21 +269,33 @@ export class EnrichmentProcessor extends WorkerHost {
 
   /**
    * Audio for a word, cheapest source first: the object is keyed by
-   * md5(word), so audio generated before a database reset is still in R2
-   * and is reused for free. Only a word that never had audio costs a TTS
-   * call. Throws on TTS/storage failure; callers decide if that's fatal.
+   * md5(word), so audio generated before a database reset is still in
+   * storage and is reused for free (the .m4a, or an older .wav). Only a
+   * word that never had audio costs a TTS call. New clips are stored as
+   * AAC .m4a (~6× smaller, what the URL points at) plus the WAV at the same
+   * key (KEEP_WAV_COPY); WAV only if ffmpeg is missing. Throws on TTS/storage failure; callers decide if that's fatal.
    */
   private async resolveAudioUrl(normalizedWord: string, languageCode: string): Promise<string> {
-    // Path convention per tech spec §4.2, extension .wav — see
-    // GeminiEnrichmentService.pcmToWav's doc comment for why.
-    const key = StorageService.audioKeyFor(normalizedWord, languageCode);
-    if (await this.storage.hasObject(key)) {
-      this.logger.log(`reusing existing audio for "${normalizedWord}" (no TTS call)`);
-      return this.storage.publicUrlFor(key);
+    for (const ext of ['m4a', 'wav'] as const) {
+      const existing = StorageService.audioKeyFor(normalizedWord, languageCode, ext);
+      if (await this.storage.hasObject(existing)) {
+        this.logger.log(`reusing existing audio for "${normalizedWord}" (no TTS call)`);
+        return this.storage.publicUrlFor(existing);
+      }
     }
     const { pcm, sampleRateHz } = await this.gemini.synthesizeSpeech(normalizedWord);
-    const wav = GeminiEnrichmentService.pcmToWav(pcm, sampleRateHz);
-    return this.storage.upload(key, wav, 'audio/wav');
+    const audio = await encodeForWeb(GeminiEnrichmentService.pcmToWav(pcm, sampleRateHz));
+    if (audio.fallback)
+      this.logger.warn(`no AAC for "${normalizedWord}", WAV only: ${audio.fallback}`);
+    // Primary first, so its URL is the one returned; the WAV copy sits at
+    // the same key with .wav (KEEP_WAV_COPY).
+    const urls: string[] = [];
+    for (const file of filesToStore(audio, (ext) =>
+      StorageService.audioKeyFor(normalizedWord, languageCode, ext),
+    )) {
+      urls.push(await this.storage.upload(file.key, file.body, file.contentType));
+    }
+    return urls[0];
   }
 
   /**

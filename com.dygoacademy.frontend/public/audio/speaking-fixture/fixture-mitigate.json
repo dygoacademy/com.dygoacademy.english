@@ -6,7 +6,7 @@
   "ipa_uk": "/ˈmɪt.ɪ.ɡeɪt/",
   "ipa_us": "/ˈmɪt.ɪ.ɡeɪt/",
   "note": "Phase 13 dev fixture: macOS say, one word at a time (robotic). Not for learners.",
-  "audio_uk_file": "fixture-mitigate-uk.wav",
+  "audio_uk_file": "fixture-mitigate-uk.m4a",
   "timings_uk": {
     "duration": 6.17,
     "words": [
@@ -94,7 +94,7 @@
       }
     ]
   },
-  "audio_us_file": "fixture-mitigate-us.wav",
+  "audio_us_file": "fixture-mitigate-us.m4a",
   "timings_us": {
     "duration": 5.565,
     "words": [

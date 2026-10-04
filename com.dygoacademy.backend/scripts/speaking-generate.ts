@@ -22,10 +22,12 @@
  *      e.g. after a database reset) → reuse them, no TTS call (unless --force);
  *   3. otherwise call Google TTS with a <mark> before every word, build the
  *      timings (src/modules/speaking/speaking-timings.ts), check them, and
- *      upload `speaking/en/<uk|us>/<md5(voice|sentence)>.wav` + `.json`.
+ *      upload `speaking/en/<uk|us>/<md5(voice|sentence)>.m4a` (AAC, linked),
+ *      the `.wav` copy and the `.json` timings.
  * Then upsert speaking_items (one row per word) as service_role.
  *
- * Env: DATABASE_URL, R2_* (as the backend), GOOGLE_TTS_API_KEY (a Google
+ * Env: DATABASE_URL, storage as the backend (RUSTFS_* by default, or
+ * STORAGE_PROVIDER=r2 + R2_*; src/config/storage-config.ts), GOOGLE_TTS_API_KEY (a Google
  * Cloud API key restricted to the Text-to-Speech API), optional
  * SPEAKING_VOICE_UK / SPEAKING_VOICE_US (Neural2 voices support <mark>;
  * Chirp 3 HD voices don't take SSML).
@@ -62,6 +64,8 @@ import {
   trimSilence,
   validateTimings,
 } from '../src/modules/speaking/speaking-timings';
+import { storageConfigFrom } from '../src/config/storage-config';
+import { encodeForWeb, filesToStore } from '../src/storage/audio-encode';
 import { StorageService } from '../src/storage/storage.service';
 
 const DEFAULT_VOICES: Record<SpeakingAccent, string> = {
@@ -247,7 +251,7 @@ const FIXTURE = {
   ipa: '/ˈmɪt.ɪ.ɡeɪt/',
 };
 
-function runFixture(args: Args): void {
+async function runFixture(args: Args): Promise<void> {
   const out = path.resolve(args.out as string);
   fs.mkdirSync(out, { recursive: true });
   const tokens = tokenize(FIXTURE.sentence);
@@ -263,8 +267,13 @@ function runFixture(args: Args): void {
   };
   for (const accent of args.accents) {
     const s = synthesizeSay(tokens, accent);
-    const file = `fixture-mitigate-${accent.toLowerCase()}.wav`;
-    fs.writeFileSync(path.join(out, file), s.wav);
+    // Same pair as production: AAC .m4a (linked) + the .wav copy.
+    const files = filesToStore(
+      await encodeForWeb(s.wav),
+      (ext) => `fixture-mitigate-${accent.toLowerCase()}.${ext}`,
+    );
+    for (const f of files) fs.writeFileSync(path.join(out, f.key), f.body);
+    const file = files[0].key;
     item[`audio_${accent.toLowerCase()}_file`] = file;
     item[`timings_${accent.toLowerCase()}`] = timingsFor(s, tokens, targetIndex, FIXTURE.ipa);
     console.log(`  ${accent}: ${file} (${(s.clip.samples.length / SAMPLE_RATE).toFixed(2)} s)`);
@@ -308,16 +317,16 @@ async function runTopic(args: Args, env: Record<string, string>): Promise<void> 
     UK: env.SPEAKING_VOICE_UK || DEFAULT_VOICES.UK,
     US: env.SPEAKING_VOICE_US || DEFAULT_VOICES.US,
   };
-  const bucket = env.R2_BUCKET_NAME || 'dygo-audio';
+  // Same store as the backend (RustFS → media.dygoacademy.com, or R2).
+  const store = storageConfigFrom(env);
+  const bucket = store.bucket;
   const s3 = new S3Client({
-    endpoint: `https://${env.R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
-    region: env.STORAGE_REGION || 'auto',
-    forcePathStyle: false,
-    credentials: {
-      accessKeyId: env.R2_ACCESS_KEY_ID ?? '',
-      secretAccessKey: env.R2_SECRET_ACCESS_KEY ?? '',
-    },
+    endpoint: store.endpoint,
+    region: store.region,
+    forcePathStyle: store.forcePathStyle,
+    credentials: { accessKeyId: store.accessKeyId, secretAccessKey: store.secretAccessKey },
   });
+  console.log(`Storage: ${store.provider} (${store.publicUrl})`);
   const db = new Client({ connectionString: env.DATABASE_URL });
   await db.connect();
 
@@ -379,8 +388,12 @@ async function runTopic(args: Args, env: Record<string, string>): Promise<void> 
           console.log(`  = ${label}: already in speaking_items`);
           continue;
         }
-        const key = StorageService.speakingAudioKeyFor(sentence, accent, voices[accent]);
-        const jsonKey = key.replace(/\.wav$/, '.json');
+        const keyFor = (ext: 'm4a' | 'wav') =>
+          StorageService.speakingAudioKeyFor(sentence, accent, voices[accent], 'en', ext);
+        const jsonKey = keyFor('m4a').replace(/\.m4a$/, '.json');
+        // An earlier clip for this sentence + voice: the .m4a, else an older .wav.
+        let key = keyFor('m4a');
+        if (!(await exists(s3, bucket, key))) key = keyFor('wav');
         if (!args.force && (await exists(s3, bucket, key)) && (await exists(s3, bucket, jsonKey))) {
           const obj = await s3.send(new GetObjectCommand({ Bucket: bucket, Key: jsonKey }));
           const timings = JSON.parse(await obj.Body!.transformToString()) as SpeakingTimings;
@@ -396,7 +409,7 @@ async function runTopic(args: Args, env: Record<string, string>): Promise<void> 
         const chars = buildSsml(tokens).length;
         ttsChars += chars;
         if (args.dryRun) {
-          console.log(`  + ${label}: would synthesize ${chars} chars → ${key}`);
+          console.log(`  + ${label}: would synthesize ${chars} chars → ${keyFor('m4a')} (+ .wav)`);
           continue;
         }
         const s = await synthesizeGoogle(apiKey, tokens, accent, voices[accent]);
@@ -407,15 +420,23 @@ async function runTopic(args: Args, env: Record<string, string>): Promise<void> 
           accent === 'UK' ? (w.ipa_uk ?? w.ipa_us) : (w.ipa_us ?? w.ipa_uk),
         );
         const meta = { CacheControl: 'public, max-age=31536000, immutable' };
-        await s3.send(
-          new PutObjectCommand({
-            Bucket: bucket,
-            Key: key,
-            Body: s.wav,
-            ContentType: 'audio/wav',
-            ...meta,
-          }),
-        );
+        // AAC .m4a (what the API links) + the WAV copy at the same key
+        // (KEEP_WAV_COPY); WAV only if ffmpeg is missing.
+        const audio = await encodeForWeb(s.wav);
+        if (audio.fallback) console.log(`  ! ${label}: no AAC, WAV only (${audio.fallback})`);
+        const files = filesToStore(audio, keyFor);
+        for (const file of files) {
+          await s3.send(
+            new PutObjectCommand({
+              Bucket: bucket,
+              Key: file.key,
+              Body: file.body,
+              ContentType: file.contentType,
+              ...meta,
+            }),
+          );
+        }
+        key = files[0].key;
         await s3.send(
           new PutObjectCommand({
             Bucket: bucket,
@@ -479,7 +500,7 @@ async function runTopic(args: Args, env: Record<string, string>): Promise<void> 
 
 async function main(): Promise<void> {
   const args = parseArgs(process.argv.slice(2));
-  if (args.fixture) runFixture(args);
+  if (args.fixture) await runFixture(args);
   else await runTopic(args, loadEnv());
 }
 

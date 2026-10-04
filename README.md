@@ -326,6 +326,17 @@ into the browser bundle at `next build` time, not at start time, so
 `build:prod:domain` runs — editing it after the fact and just restarting
 `next start` does nothing until you rebuild.
 
+**App media now lives in RustFS on this Mac (option 2, 2026-10-04).** Word and
+speaking audio is uploaded by `StorageService` to the RustFS bucket `media`
+(`src/config/storage-config.ts`: `STORAGE_PROVIDER=rustfs`, the default) and
+served publicly at `https://media.dygoacademy.com/<key>` through the tunnel,
+cached by Cloudflare. Each clip is stored twice at the same key: AAC `.m4a`
+(about 6× smaller, the URL the app uses) and the original `.wav`
+(`KEEP_WAV_COPY` in `src/storage/audio-encode.ts`, kept for the WAV support
+period). ffmpeg (Homebrew) does the encoding; without it, only the WAV is
+stored. `STORAGE_PROVIDER=r2` switches back to Cloudflare R2 (same keys).
+The history below describes the R2-only period.
+
 **Object storage is the same everywhere — Cloudflare R2, no local
 fallback.** This app's own audio uploads (`StorageService`) used to fall
 back to a local MinIO container when `R2_ACCOUNT_ID` was unset, so
