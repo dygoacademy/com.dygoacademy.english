@@ -60,20 +60,59 @@ export function cleanToken(token: string): string {
     .replace(/^'+|'+$/g, '');
 }
 
+/** The word itself or an inflection: the word (or the word minus a final "e") plus ≤ 4 letters. */
+function isInflectionOf(token: string, target: string): boolean {
+  const stem = target.endsWith('e') ? target.slice(0, -1) : target;
+  return (token.startsWith(target) || token.startsWith(stem)) && token.length - stem.length <= 4;
+}
+
 /**
  * Index of the target word in `tokens`, or -1. Matches the word itself, then
  * an inflection ("droughts", "mitigated", "deteriorating": the word, or the
  * word minus a final "e", followed by a short suffix).
+ *
+ * A multi-word entry ("food court", "french beans") matches its tokens in a
+ * row, the last one possibly inflected, and returns the first token's index:
+ * the phrase's first word is the target (phase 13 notes, S0 default).
  */
 export function findTargetIndex(tokens: string[], word: string): number {
-  const target = word.toLowerCase().trim();
   const cleaned = tokens.map(cleanToken);
+  const parts = word.toLowerCase().trim().split(/\s+/).map(cleanToken).filter(Boolean);
+  if (parts.length === 0) return -1;
+  if (parts.length > 1) {
+    const last = parts.length - 1;
+    return cleaned.findIndex((_, i) =>
+      parts.every((p, k) => {
+        const t = cleaned[i + k];
+        if (t === undefined) return false;
+        return k < last ? t === p : isInflectionOf(t, p);
+      }),
+    );
+  }
+  const target = parts[0];
   const exact = cleaned.indexOf(target);
   if (exact >= 0) return exact;
-  const stem = target.endsWith('e') ? target.slice(0, -1) : target;
-  return cleaned.findIndex(
-    (t) => (t.startsWith(target) || t.startsWith(stem)) && t.length - stem.length <= 4,
-  );
+  return cleaned.findIndex((t) => isInflectionOf(t, target));
+}
+
+/**
+ * The IPA used for the target's syllables. For a multi-word entry that's the
+ * first word of the IPA ("/ˈfuːd ˌkɔːrt/" → "/ˈfuːd/"); if that word has no
+ * primary stress, its secondary stress (or else its first syllable) is
+ * promoted, so the target always has a stressed syllable.
+ */
+export function targetIpaFor(word: string, ipa: string | null | undefined): string | null {
+  if (!ipa) return null;
+  if (!/\s/.test(word.trim())) return ipa;
+  const core = ipa
+    .trim()
+    .replace(/^[/[]+|[/\]]+$/g, '')
+    .split(/[,;]/)[0]
+    .trim();
+  let first = core.split(/\s+/)[0] ?? '';
+  if (!first) return null;
+  if (!first.includes('ˈ')) first = first.includes('ˌ') ? first.replace('ˌ', 'ˈ') : `ˈ${first}`;
+  return `/${first}/`;
 }
 
 function escapeXml(text: string): string {

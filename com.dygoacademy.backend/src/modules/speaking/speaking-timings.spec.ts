@@ -7,6 +7,7 @@ import {
   parseWav,
   PcmClip,
   startsFromTimepoints,
+  targetIpaFor,
   tokenize,
   trimSilence,
   validateTimings,
@@ -47,6 +48,32 @@ describe('tokenize / findTargetIndex', () => {
 
   it('does not take a much longer word as an inflection', () => {
     expect(findTargetIndex(tokenize('Sustainability matters.'), 'sustain')).toBe(-1);
+  });
+
+  it('matches a multi-word entry in a row and returns its first token', () => {
+    expect(findTargetIndex(tokenize('We ate at the food court, then left.'), 'food court')).toBe(4);
+    expect(findTargetIndex(tokenize('Long beans grow fast.'), 'long beans')).toBe(0);
+    // last word may be inflected; the words must be adjacent
+    expect(findTargetIndex(tokenize('Two food courts opened.'), 'food court')).toBe(1);
+    expect(findTargetIndex(tokenize('Food at the court.'), 'food court')).toBe(-1);
+    expect(findTargetIndex(tokenize('Say hello world!'), 'Hello  World')).toBe(1);
+  });
+});
+
+describe('targetIpaFor', () => {
+  it('keeps the IPA of a single word as is', () => {
+    expect(targetIpaFor('mitigate', '/ˈmɪt.ɪ.ɡeɪt/')).toBe('/ˈmɪt.ɪ.ɡeɪt/');
+    expect(targetIpaFor('mitigate', null)).toBeNull();
+  });
+
+  it('uses the first word of a phrase IPA, always with a stressed syllable', () => {
+    expect(targetIpaFor('food court', '/ˈfuːd ˌkɔːrt/')).toBe('/ˈfuːd/');
+    expect(targetIpaFor('french beans', '/ˌfrentʃ ˈbiːnz/')).toBe('/ˈfrentʃ/');
+    expect(targetIpaFor('hello world', '/hə.loʊ ˈwɜːld/')).toBe('/ˈhə.loʊ/');
+    expect(ipaSyllables(targetIpaFor('hello world', '/həˈloʊ ˈwɜːld/'))).toEqual([
+      { stressed: false },
+      { stressed: true },
+    ]);
   });
 });
 

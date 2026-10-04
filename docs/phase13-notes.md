@@ -176,6 +176,7 @@ Whichever is chosen, syllable boundaries for the target word come from the IPA (
 | T2-g | Sentence | The word's first `example_sentences` entry | Handover §2.1 |
 | T2-h | Session order | Due/new (no SRS row, `New`, or due now) first, then `next_due_at`, then item age | Handover T6 "due/new first" |
 | T2-i | Fixture | macOS `say` (Samantha US, Daniel UK), one word at a time, so word timings are exact | Robotic and slow (~6 s); only for building T3–T5 |
+| S0-a | Multi-word entries | Tokens matched in a row (last one may be inflected), target = the phrase's first token, syllables from the first word of the IPA; if that word has no primary stress its secondary stress (else its first syllable) is promoted | Compressed-run default (schedule). A later `target_length` could highlight the whole phrase |
 
 ## 11. Questions for Dylan
 
@@ -325,3 +326,4 @@ select coalesce(country, '?') as country, coalesce(city, '?') as city,
 
 Skipped (5): `analyse` has no example sentence; `food court`, `french beans`, `long beans`, `hello world` are multi-word entries and `findTargetIndex` only matches one token. Follow-up: support a target that spans several tokens (e.g. `target_index` + `target_length`, or mark the phrase's first word), or give those words single-word sentences.
 
+**S0 (2026-10-04):** multi-word entries supported (`findTargetIndex` matches the phrase, `targetIpaFor`; 2 new tests). `speaking-generate --all` then made 12 clips: `food court`, `french beans`, `long beans`, `hello world`, plus `compensation` and `dissatisfaction` (added since T2). 3,406 SSML chars (free tier). **144 words have speaking audio; only `analyse` (no example sentence) is left.** Spot check: `.m4a` 200 on `media.dygoacademy.com`, `food` / `french` targets with one stressed syllable.

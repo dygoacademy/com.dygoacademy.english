@@ -60,6 +60,7 @@ import {
   SpeakingAccent,
   SpeakingTimings,
   startsFromTimepoints,
+  targetIpaFor,
   tokenize,
   trimSilence,
   validateTimings,
@@ -417,7 +418,7 @@ async function runTopic(args: Args, env: Record<string, string>): Promise<void> 
           s,
           tokens,
           targetIndex,
-          accent === 'UK' ? (w.ipa_uk ?? w.ipa_us) : (w.ipa_us ?? w.ipa_uk),
+          targetIpaFor(w.word, accent === 'UK' ? (w.ipa_uk ?? w.ipa_us) : (w.ipa_us ?? w.ipa_uk)),
         );
         const meta = { CacheControl: 'public, max-age=31536000, immutable' };
         // AAC .m4a (what the API links) + the WAV copy at the same key
