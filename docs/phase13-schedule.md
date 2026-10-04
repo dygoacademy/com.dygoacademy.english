@@ -41,7 +41,7 @@ Size: **S** ≈ half a usage window, **M** ≈ one full window. Dates are propos
 | ✅ **S1** | Mon 10-05 | T3a · Audio core (pure) | `src/lib/speaking/audio.ts`: mic permission helper, recorder (MediaRecorder mime pick, PCM fallback), decode, resample to 16 kHz, RMS envelope 100 fps; unit tests | Envelope/resample tests pass | M | — |
 | ✅ **S2** | Tue 10-06 | T3b · Hooks + dev page | `useLiveLevels`, `usePlayer` (one player, 0.75×), dev page under the garden dev prefix (record → replay → show envelope + decoded `.m4a` offset vs `.wav`); **Deploy** | Dev page live on UAT | M | — |
 | **G1** | Tue–Wed | **Dylan: iPhone check** | Record + replay on iPhone Safari; note the AAC offset the page shows (Chrome + Safari) | Works on a real iPhone | — | Dylan |
-| **S3** | Wed 10-07 | T4 · Scorer | `src/lib/speaking/envelopeScorer.ts`, `constants.ts` (handover §3 exactly), 4 synthetic tests, run-time log | 4 tests pass; < 150 ms for 5 s | M | G1 (only if the offset needs a correction) |
+| ✅ **S3** | Wed 10-07 | T4 · Scorer | `src/lib/speaking/envelopeScorer.ts`, `constants.ts` (handover §3 exactly), 4 synthetic tests, run-time log | 4 tests pass; < 150 ms for 5 s | M | G1 (only if the offset needs a correction) |
 | **S4** | Thu 10-08 | T5a · Waveforms | `components/garden/speaking/Waveform.tsx`, `LiveWaveform.tsx`, `CompareWaveform.tsx` + gallery entries; tokens from the design files | Gallery shows them; matches `SpeakCompare.dc.html` waveform look | M | — |
 | **S5** | Fri 10-09 | T5b · Marks + stage | `WordMarks.tsx`, `StageScore.tsx` + gallery; component tests | Gallery + tests | S | — |
 | **G2** | before S6 | **Messages files clean** | The uncommitted `messages/*.json` edits (someone else's) committed or dropped | `git status messages/` clean | — | Dylan |
@@ -69,3 +69,4 @@ One line per session: date · session · result · next.
 - 2026-10-04 · S0 · done (f2b159f): multi-word targets, 12 new clips, 144 words with audio (only `analyse` left), plan file synced (uncommitted) · next: S1
 - 2026-10-04 · S1 · done: `src/lib/speaking/audio.ts` + 19 tests · next: S2
 - 2026-10-04 · S2 · done (8624b2a): `useLiveLevels`, `usePlayer`, dev page `/garden/_speaking`; **deployed 13:41**, www + API 200 · next: S3 (G1 iPhone check by Dylan doesn't block)
+- 2026-10-04 · S3 · done: envelope scorer + constants, 10 tests, 2.9 ms / 5 s clip; DTW step penalty added (S3-a); scores lenient, check at G3 · next: S4
