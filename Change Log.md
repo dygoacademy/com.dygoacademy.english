@@ -292,3 +292,8 @@ Engineering-facing log of shipped fixes and changes, one dated entry per change.
 * **What**: the remaining Phase 13 work split into 13 sessions (S0–S12), each one slice of a task that fits a single Claude usage window from a fresh conversation (about 5–12 files, one or two commits), with dates from Mon 10-05 to Tue 10-20, four Dylan gates (iPhone record check, clean `messages/*.json`, trying the Pond, beta 10-21), a copy-paste start prompt, and a session log so an interrupted session can be resumed.
 * **Why**: Dylan asked for a plan and schedule split by Claude's limits.
 
+### Docs: Phase 13 compressed run (finish Sun 10-04 → Mon 10-05)
+* **Files**: [`docs/phase13-schedule.md`](docs/phase13-schedule.md)
+* **What**: rules for the unattended scheduled runs Dylan asked for: next unticked session(s) in order, a lock so runs never overlap, checkpoint deploys only after S2/S8/S12 when every check is green and only 08:00–22:00 (Dylan's choice), iPhone gates checked by Dylan after those deploys, the `messages/*.json` gate handled by staging only the new keys, defaults for the open questions (Sound patch not included).
+* **Why**: Dylan asked to schedule the remaining sessions to finish today and tomorrow.
+
