@@ -476,3 +476,9 @@ Engineering-facing log of shipped fixes and changes, one dated entry per change.
 * **Files**: [`docs/phase13-schedule.md`](docs/phase13-schedule.md) (G4 ticked, Session log)
 * **What**: status only. Dylan approved the beta with on-phone checking; S13 spend caps, G5 Google Cloud limits and G6 / S17 / S20 are still open and recorded as such.
 * **Why**: Dylan, 2026-10-04.
+
+### Phase 13 G6: self-hosted speech checking on the Mac, spike M1
+* **Files**: [`docs/phase13-notes.md`](docs/phase13-notes.md) §20, [`docs/phase13-speech-spike/`](docs/phase13-speech-spike/) (`Dockerfile`, `gop.py`), [`docs/phase13-schedule.md`](docs/phase13-schedule.md) (Session log)
+* **What**: G6 decided by Dylan (row ticked): no paid service, check recordings on the UAT Mac in Docker behind an API. Spike: Whisper (Speaches, `base.en`, int8 CPU) finds missing and wrong words in 2.2–3.9 s; a wav2vec2 phoneme model with espeak and forced alignment scores each word's sounds in 1.3–3.9 s; results on 9 test clips in the notes. Verdict go; next M2 (scorer container), M3 (S17 adapter), M4 (calibration), M5 (switch on).
+* **Why**: Dylan, 2026-10-04: Azure / SpeechSuper cost too much; Google can't score pronunciation and is blocked in mainland China.
+* **Not changed**: UAT, `docker-compose.yml`, app code. Spike containers stopped; images and model volumes kept for M2.

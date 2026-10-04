@@ -475,3 +475,33 @@ Handover §8 keys are in `screens.speak` in all three locales: `getReady`, `coun
 - **Vietnamese visible text** on the canvas screens matches; the other Vietnamese lines are for states the canvas doesn't draw (mic, denied, quiet, short, unsupported, audio failed, Sound Garden, Say this one), drafted in S6 and still to be checked by Dylan.
 - **zh-CN drafted by Claude, for native review (D6):** `countdownHint`, `countdownButton`, `startingSoon`, `pauseStops`, `checking`, `privacy`, `failed.*`, `mark.heard`, `mark.unclear`, `tip.also.*`, `tip.stress.bodyShort`, `nativeAccent`, `playingShort`, `playNativeLabel`, `playYouLabel`, and the changed `micButton`, `waveLabel.overlay`, `done.gardenLabel`.
 - **Commit:** only the `screens.speak` part of each file (others' edits in `en-US.json` / `vi-VN.json` stay unstaged), and **together with the v2 code**, because the removed keys are still used by the committed v1 screens.
+
+## 20. G6 · Self-hosted speech checking on the Mac (Docker + API), spike M1 (2026-10-04)
+
+Dylan, 2026-10-04: paid services (Azure ≈ $1.80, SpeechSuper ≈ $6 per 1,000 checks) cost too much for now; Google can't score pronunciation and is blocked in mainland China. **G6 = self-hosted on the UAT Mac, in Docker, behind an API.** S17 (`POST /speaking/check` + `SpeechChecker`) stays; S20 becomes "Mac scorer" (steps M2–M5 below).
+
+**Spike M1** (Mac M2, 16 GB; Docker Desktop 8 CPUs / 9.5 GB, CPU only, no GPU in Docker on macOS). Nine test clips made with macOS voices, as AAC `.m4a` like an iPhone (30–48 KB for 4–6 s): good US / UK, the fixture clip, "the" left out, "mitigate" → "migrate", "effects" → "affects", Vietnamese voice (Linh), Chinese voice (Tingting), 2 s of noise before speaking. Code: `docs/phase13-speech-spike/` (`Dockerfile`, `gop.py`).
+
+1. **Words, Whisper** in `ghcr.io/speaches-ai/speaches:latest-cpu` (arm64, OpenAI-style `POST /v1/audio/transcriptions`, word timings), `127.0.0.1` only, int8, 6 threads, 3 GB.
+   - `small.en`: right on every clip (missing "the", "migrate", accents misheard plausibly, late start found at 1.65 s) but **6–12 s** a clip: too slow.
+   - `base.en`: same catches on the test set, **2.2–3.9 s** a clip. Speaches doesn't expose beam size; our own service can call faster-whisper with beam 1 to cut this further.
+   - "affects" for "effects" isn't caught by words (they sound the same); the sound scores below see it a little.
+2. **Sounds, wav2vec2 phoneme model** (`facebook/wav2vec2-lv-60-espeak-cv-ft`, 1.26 GB) + espeak en-us for the expected phonemes + forced alignment, score = how sure the model is the expected sound was said vs its best guess (GOP), 0–100 per word. **1.3–3.9 s** a clip on CPU; first start 61 s (download), later loads from the volume.
+
+| Clip | Total | Low words (< 60) |
+| --- | ---: | --- |
+| good US / UK / fixture | 96 / 96 / 99 | "the" 51 on two (see below) |
+| "the" left out | 92 | **the 27** |
+| "migrate" for "mitigate" | 90 | **mitigate 43** |
+| "affects" for "effects" | 94 | effects 83 (mild) |
+| Vietnamese voice | **39** | 9 of 11 words |
+| Chinese voice | 87 | **mitigate 58** |
+| 2 s noise, then speech | 96 | (no penalty for the late start) |
+
+**Verdict: go.** Both halves catch the right problems, late starts don't hurt, and it's free. To fix in M2–M4:
+- **Speed:** words + sounds one after the other is 4–7 s, too close to SP3's 8 s timeout. Run Whisper and the phoneme model **in parallel**, Whisper with beam 1; target < 4 s. Fallback: a smaller phoneme model, or Whisper natively on the M2 GPU outside Docker.
+- **"the" before a vowel** scores ~51 on good speech: espeak expects /ðə/, speakers say /ði/ before "effects". Accept common variants for function words (calibration, M4).
+- **Thresholds** come from real recordings (Dylan + a Vietnamese speaker), not TTS voices (M4).
+- **Memory:** ~1.5 GB (Whisper) + ~1.5 GB (phonemes) of Docker's 9.5 GB; Supabase etc. use ~2.2 GB today.
+
+**Plan (replaces S20's paid service):** M2 scorer container (FastAPI `POST /check`: audio + sentence + target word → words ok / missing / unclear + heard, sound scores, stress, total; audio in memory only) next to Speaches in `docker-compose.yml`, `127.0.0.1` only, limits + health checks · M3 S17 with a `MacSpeechChecker` adapter · M4 calibration · M5 `NEXT_PUBLIC_SPEECH_CHECK=server`, deploy, iPhone try. Kept on the Mac for M2: images `speaches:latest-cpu`, `dygo-speech-spike-scorer`; volumes `dygo_speech_models` (Whisper, 634 MB), `dygo_speech_spike_hf` (phoneme model, 1.26 GB). Test containers stopped.
