@@ -2,9 +2,11 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { PoolClient } from 'pg';
 
 import { DatabaseService } from '../../database/database.service';
+import { resolveUserTimezone } from '../srs/srs.service';
 import { StorageService } from '../../storage/storage.service';
 import { CreateSpeakingAttemptDto } from './dto/create-attempt.dto';
 import {
+  SPEAKING_LOOKUP_MAX,
   SPEAKING_SESSION_SIZE,
   SpeakingAccent,
   SpeakingAttempt,
@@ -12,6 +14,7 @@ import {
   SpeakingSessionItem,
   SpeakingTimings,
   SpeakingWordItem,
+  SpeakingWordLookup,
 } from './speaking.types';
 
 /** Any 8-4-4-4-12 hex id (seed ids aren't RFC-version UUIDs, so no version check). */
@@ -140,6 +143,46 @@ export class SpeakingService {
         default_accent: await this.defaultAccent(client),
         item: this.toItem(rows.rows[0]),
       };
+    });
+  }
+
+  /**
+   * "Say this one?" offers (T9-a): for the review session's cards, which
+   * words have a speaking item and whether the learner has spoken that item
+   * since local midnight (profile timezone, else `detectedTz`, like the
+   * missions). Unknown, unreadable or malformed ids are just left out.
+   */
+  async lookupWords(
+    userId: string,
+    topicWordIds: string[],
+    detectedTz?: string,
+  ): Promise<SpeakingWordLookup[]> {
+    const ids = [...new Set(topicWordIds.filter((id) => UUID_SHAPE.test(id)))].slice(
+      0,
+      SPEAKING_LOOKUP_MAX,
+    );
+    if (ids.length === 0) return [];
+    return this.db.withUser(userId, async (client) => {
+      const timezone = await resolveUserTimezone(
+        async <T extends Record<string, unknown>>(text: string, params: unknown[]) =>
+          (await client.query<T>(text, params)).rows,
+        userId,
+        detectedTz,
+      );
+      const rows = await client.query<SpeakingWordLookup>(
+        `select tw.id as topic_word_id, si.id as item_id,
+                exists (
+                  select 1 from public.speaking_attempts a
+                   where a.item_id = si.id
+                     and a.user_id = auth.uid()
+                     and a.created_at >= (date_trunc('day', now() at time zone $2) at time zone $2)
+                ) as spoken_today
+           from public.topic_words tw
+           join public.speaking_items si on si.lexicon_id = tw.lexicon_id
+          where tw.id = any($1::uuid[])`,
+        [ids, timezone],
+      );
+      return rows.rows;
     });
   }
 

@@ -139,6 +139,43 @@ describe('SpeakingService.forWord ("Say this one?")', () => {
   });
 });
 
+describe('SpeakingService.lookupWords ("Say this one?" offers)', () => {
+  const A = 'e0e0e0e0-0000-0000-0000-000000000101';
+  const B = 'e0e0e0e0-0000-0000-0000-000000000102';
+
+  it("returns item ids and spoken_today for the learner's local day", async () => {
+    const { withUser, calls } = withUserReturning(
+      [{ timezone: 'Asia/Ho_Chi_Minh' }],
+      [{ topic_word_id: A, item_id: 'item-1', spoken_today: true }],
+    );
+    const service = await makeService({ withUser });
+
+    const rows = await service.lookupWords('user-1', [A, B, A, 'bad'], 'Europe/London');
+
+    expect(rows).toEqual([{ topic_word_id: A, item_id: 'item-1', spoken_today: true }]);
+    expect(withUser).toHaveBeenCalledWith('user-1', expect.any(Function));
+    // ids de-duplicated, malformed dropped; the profile timezone wins over tz.
+    expect(calls[1].params).toEqual([[A, B], 'Asia/Ho_Chi_Minh']);
+    expect(calls[1].text).toMatch(/a\.user_id = auth\.uid\(\)/);
+    expect(calls[1].text).toMatch(/date_trunc\('day', now\(\) at time zone \$2\) at time zone \$2/);
+    expect(calls[1].text).toMatch(/si\.lexicon_id = tw\.lexicon_id/);
+  });
+
+  it('uses tz when the profile has no timezone', async () => {
+    const { withUser, calls } = withUserReturning([{ timezone: 'UTC' }], []);
+    const service = await makeService({ withUser });
+    await service.lookupWords('user-1', [A], 'Asia/Singapore');
+    expect(calls[1].params).toEqual([[A], 'Asia/Singapore']);
+  });
+
+  it('asks nothing for no valid ids', async () => {
+    const withUser = jest.fn();
+    const service = await makeService({ withUser });
+    expect(await service.lookupWords('user-1', ['x', ''])).toEqual([]);
+    expect(withUser).not.toHaveBeenCalled();
+  });
+});
+
 describe('SpeakingService.createAttempt', () => {
   const dto = {
     item_id: 'item-1',

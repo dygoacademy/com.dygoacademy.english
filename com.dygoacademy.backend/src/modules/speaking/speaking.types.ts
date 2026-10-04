@@ -64,3 +64,17 @@ export interface SpeakingAttempt {
   user_duration_ms: number;
   created_at: string;
 }
+
+/**
+ * `GET /speaking/words?topic_word_ids=…` ("Say this one?" offers, T9-a):
+ * which of a review session's cards have a speaking item, and whether the
+ * learner already spoke it today (their local day).
+ */
+export interface SpeakingWordLookup {
+  topic_word_id: string;
+  item_id: string;
+  spoken_today: boolean;
+}
+
+/** At most this many ids per lookup (a review session has up to 20 cards). */
+export const SPEAKING_LOOKUP_MAX = 50;
