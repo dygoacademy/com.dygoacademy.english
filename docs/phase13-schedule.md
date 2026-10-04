@@ -43,7 +43,7 @@ Size: **S** ≈ half a usage window, **M** ≈ one full window. Dates are propos
 | **G1** | Tue–Wed | **Dylan: iPhone check** | Record + replay on iPhone Safari; note the AAC offset the page shows (Chrome + Safari) | Works on a real iPhone | — | Dylan |
 | ✅ **S3** | Wed 10-07 | T4 · Scorer | `src/lib/speaking/envelopeScorer.ts`, `constants.ts` (handover §3 exactly), 4 synthetic tests, run-time log | 4 tests pass; < 150 ms for 5 s | M | G1 (only if the offset needs a correction) |
 | ✅ **S4** | Thu 10-08 | T5a · Waveforms | `components/garden/speaking/Waveform.tsx`, `LiveWaveform.tsx`, `CompareWaveform.tsx` + gallery entries; tokens from the design files | Gallery shows them; matches `SpeakCompare.dc.html` waveform look | M | — |
-| **S5** | Fri 10-09 | T5b · Marks + stage | `WordMarks.tsx`, `StageScore.tsx` + gallery; component tests | Gallery + tests | S | — |
+| ✅ **S5** | Fri 10-09 | T5b · Marks + stage | `WordMarks.tsx`, `StageScore.tsx` + gallery; component tests | Gallery + tests | S | — |
 | **G2** | before S6 | **Messages files clean** | The uncommitted `messages/*.json` edits (someone else's) committed or dropped | `git status messages/` clean | — | Dylan |
 | **S6** | Mon 10-12 | T8 · Strings | Handover §8 keys in `en-US.json`, `vi-VN.json`, `zh-CN.json` (zh drafted, flagged), mic-explainer copy drafted | All keys in 3 locales; i18n tests pass | S | G2 |
 | **S7** | Tue 10-13 | T6a · Pond flow, SP1 + SP2 | `/sounds` route (`routes.ts`, `GARDEN_ROUTES`), `live/SpeakLive.tsx` (state machine, `GET /speaking/session`, prefetch 5 clips), `SpeakListenScreen`, `SpeakRecordingScreen` + fixtures | SP1 → SP2 works with fixture data; tests | M | S1–S6 |
@@ -71,3 +71,4 @@ One line per session: date · session · result · next.
 - 2026-10-04 · S2 · done (8624b2a): `useLiveLevels`, `usePlayer`, dev page `/garden/_speaking`; **deployed 13:41**, www + API 200 · next: S3 (G1 iPhone check by Dylan doesn't block)
 - 2026-10-04 · S3 · done: envelope scorer + constants, 10 tests, 2.9 ms / 5 s clip; DTW step penalty added (S3-a); scores lenient, check at G3 · next: S4
 - 2026-10-04 · S4 · done: Waveform / LiveWaveform / CompareWaveform + gallery section, 8 tests; visual check vs design waits for the S8 deploy · next: S5
+- 2026-10-04 · S5 · done: WordMarks, StageScore, SpeakingPlant + gallery, 7 tests · next: S6 (G2 handled by staging only the new keys)

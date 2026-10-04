@@ -6,15 +6,18 @@ import { Button } from '@/components/garden/Button';
 import {
   CompareWaveform,
   LiveWaveform,
+  SpeakingPlant,
+  StageScore,
   targetSpan,
   Waveform,
+  WordMarks,
   type CompareView,
 } from '@/components/garden/speaking';
 import { fetchAndDecode, getAudioContext, rmsEnvelope } from '@/lib/speaking/audio';
-import type { SpeakingTimings } from '@/types';
+import { SPEAKING_STAGES, type SpeakingTimings, type SpeakingWordMark } from '@/types';
 
 /**
- * Phase 13 waveforms on /garden/_gallery (T5, schedule S4), with the
+ * Phase 13 speaking components on /garden/_gallery (T5, schedules S4–S5), with the
  * fixture sentence "Planting more trees can help mitigate the effects of
  * climate change." Gallery-only labels, English, kept here until S6 adds
  * the speaking strings (phase notes, decision S4-b).
@@ -31,7 +34,26 @@ const COPY = {
   nativeLabel: 'Waveform of a native speaker saying the sentence',
   liveLabel: 'Your voice, live, over the native shape',
   compareLabel: 'Your sentence in clay over the native speaker in green',
+  marks: 'WordMarks · SP3',
+  stages: 'StageScore · SP3 (each stage)',
+  plants: 'SpeakingPlant · SP4 garden',
+  reasons: {
+    stress_soft: 'MIT is too soft',
+    missing: 'not heard',
+    rushed: 'too fast',
+    slow: 'too slow',
+  },
+  stageTitle: { seed: 'Seed', sprout: 'Sprout', bloom: 'In bloom', fruit: 'Fruit' },
+  match: (stage: string, pct: number) => `${stage} · ${pct}% match`,
+  scale: 'Seed · Sprout · Bloom · ',
+  scaleEnd: 'Fruit at 90%',
 } as const;
+
+const DEMO_MARKS: SpeakingWordMark[] = [
+  { index: 5, ok: false, reason: 'stress_soft' },
+  { index: 9, ok: false, reason: 'rushed' },
+];
+const STAGE_PCT = { seed: 31, sprout: 58, bloom: 82, fruit: 94 } as const;
 
 const FIXTURE_URL = '/audio/speaking-fixture/fixture-mitigate-us.wav';
 const FPS = 100;
@@ -171,6 +193,39 @@ export function SpeakingGallery() {
           playKey={plays}
           label={COPY.compareLabel}
         />
+      </div>
+
+      <Label>{COPY.marks}</Label>
+      <div className="rounded-card border border-border bg-surface p-4">
+        <WordMarks
+          words={timings.words.map((w) => w.text)}
+          marks={DEMO_MARKS}
+          reasonText={(m) => (m.reason ? COPY.reasons[m.reason] : null)}
+        />
+      </div>
+
+      <Label>{COPY.stages}</Label>
+      <div className="flex flex-col gap-4 rounded-card border border-border bg-surface p-4">
+        {SPEAKING_STAGES.map((stage) => (
+          <StageScore
+            key={stage}
+            stage={stage}
+            title={COPY.match(COPY.stageTitle[stage], STAGE_PCT[stage])}
+            scale={
+              <>
+                {COPY.scale}
+                <b>{COPY.scaleEnd}</b>
+              </>
+            }
+          />
+        ))}
+      </div>
+
+      <Label>{COPY.plants}</Label>
+      <div className="flex items-end justify-around rounded-card bg-forest px-3 pt-3">
+        {SPEAKING_STAGES.map((stage) => (
+          <SpeakingPlant key={stage} stage={stage} />
+        ))}
       </div>
     </div>
   );

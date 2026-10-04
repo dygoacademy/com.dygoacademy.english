@@ -192,6 +192,8 @@ Whichever is chosen, syllable boundaries for the target word come from the IPA (
 | S4-b | Gallery labels | The speaking gallery section's labels are English constants until S6 | Keeps S4 off the message files (G2) |
 | S4-c | Playing sweep | CSS keyframes in a `<style>` inside the SVG, run once over the clip's length; hidden with `prefers-reduced-motion` | No `globals.css` change; the design's 2.2 s loop becomes the real clip length |
 | S4-d | Live bars | One learner bar per 1/72 of the native clip (mean of the 20/s live levels), full height at RMS 0.2, capped at 72 bars | Puts the learner's voice on the native timeline as SP2 shows; a slower learner runs to the end |
+| S5-a | Stage plants | `SpeakingPlant` draws fruit / bloom / sprout exactly as the SP4 garden in `SpeakDone.dc.html`; the seed (not in the design) is a seed on a small mound in `--stage-seed`. The stage score shows it on the 60 px forest circle | One drawing for SP3 and SP4; the garden's `PlantGlyph` has different stages (flower, tree, wilting) |
+| S5-b | Segments | Stage score fills segments up to and including the reached stage (bloom = 3 of 4), as the design shows | — |
 
 ## 11. Questions for Dylan
 
