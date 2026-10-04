@@ -516,3 +516,9 @@ Engineering-facing log of shipped fixes and changes, one dated entry per change.
 * **What**: with `NEXT_PUBLIC_SPEECH_CHECK=server` the app sends a usable recording (as recorded) to `POST /speaking/check` and shows the server's marks and score, keeping the phone's stress check for the target word; silent / short recordings are caught on the phone and never uploaded; failures show "Couldn't check this one". New `unclear` tip in 3 locales; attempts can store `unclear` (never what was heard); the mic explainer says "checked, then deleted" in server mode. Default stays `local`, so nothing changes for learners yet.
 * **Why**: schedule row S18 (the switch), after Dylan chose app → API → self-hosted scorer (G6 / M3).
 * **Verified**: frontend `tsc` clean, `next lint` clean on changed files, Vitest 511 passed (10 new: merge, upload, mode, SpeakLive server mode and failure) with the same 66 known failures; backend speaking Jest 42/42, `tsc` clean; migration applied, RLS suite passes. Not deployed.
+
+### Deployed: UAT speaking check switched to the server (Phase 13 M5)
+* **Files**: [`docs/phase13-schedule.md`](docs/phase13-schedule.md) (Session log); on this Mac only, `env-profiles/prod.env` (git-ignored): `NEXT_PUBLIC_SPEECH_CHECK=server`
+* **What**: The Pond and "Say this one?" now send usable recordings to `POST /speaking/check` (the self-hosted speech scorer) and show its marks; the phone still screens silent / short recordings and judges target-word stress. Deployed 2026-10-05 06:49 (all 4 steps OK).
+* **Why**: Dylan asked to switch UAT now, before calibration (M4), to try it on the iPhone.
+* **Verified live**: the deployed bundle's check-mode default is "server" and it contains the upload to `/speaking/check`; www and API health 200; scorer healthy. **Rollback**: set `NEXT_PUBLIC_SPEECH_CHECK=local` in `env-profiles/prod.env` and redeploy.
