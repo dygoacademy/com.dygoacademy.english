@@ -440,3 +440,8 @@ Engineering-facing log of shipped fixes and changes, one dated entry per change.
 * **Files**: [`docs/phase13-schedule.md`](docs/phase13-schedule.md) (handover v2 section, rows S14–S20 and G6 / G7, S14b / S15 / S16 ticked, Session log), [`docs/phase13-notes.md`](docs/phase13-notes.md) (§19 v2 UI notes, S15-a, S16)
 * **What**: planning and status only. The v2 plan written this evening (server checking behind a `local` / `server` switch, S14–S20, gate G6 blocking); S15-a: no WAV on the phone, the recording is uploaded as recorded (S14 lists accepted formats, S17 takes `audio/mp4` / `audio/webm`, S20 converts on the backend only if needed), dev-page run moved to S19; S16-a / S16-b and the zh-CN review list; the 19:45 `garden:diff` results.
 * **Why**: keep the plan in git next to the v2 code (a14c1d1).
+
+### Phase 13 v2: speaking animations left out of a14c1d1
+* **Files**: [`com.dygoacademy.frontend/src/app/globals.css`](com.dygoacademy.frontend/src/app/globals.css) (only the speaking block)
+* **What**: the `speak-pop` (countdown number, .9 s) and `speak-shim` (checking placeholders, 1.2 s) keyframes and utilities, still with reduced motion. a14c1d1's screens already use these classes; without this block the committed tree drew them without animation.
+* **Why**: the block sat in `globals.css` next to Dylan's uncommitted font work and was left out when only the `speak-faded` token was staged.

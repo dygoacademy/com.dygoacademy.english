@@ -487,6 +487,47 @@
   }
 }
 
+/* Speaking (Phase 13, SpeakRecording / SpeakCompare .dc.html): the
+   countdown number pops in (.9s ease-out) and the checking placeholders
+   shimmer (1.2s ease-in-out infinite). Reduced motion: still. */
+@keyframes speak-pop {
+  0% {
+    transform: scale(0.6);
+    opacity: 0;
+  }
+  30% {
+    transform: scale(1.08);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+@keyframes speak-shimmer {
+  0%,
+  100% {
+    opacity: 0.55;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+@layer utilities {
+  .speak-pop {
+    animation: speak-pop 0.9s ease-out;
+  }
+  .speak-shim {
+    animation: speak-shimmer 1.2s ease-in-out infinite;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .speak-pop,
+    .speak-shim {
+      animation: none;
+    }
+  }
+}
+
 /*
  * UI-3 U3-2 iPad navigation (NEXT_PUBLIC_GARDEN_IPAD_NAV, off by default):
  * the fixed rail (80px, 600–1023px) and sidebar (240px, ≥ 1024px) sit on
