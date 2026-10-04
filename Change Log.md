@@ -544,3 +544,8 @@ Engineering-facing log of shipped fixes and changes, one dated entry per change.
 * **What**: (1) `/garden/_speaking` section 3 runs the v2 recording flow on its own (3 · 2 · 1, beep, record 150 ms later, auto-stop / not heard / cap / tap) and shows why it stopped and whether the 880 Hz beep leaked into the first 200 ms (Goertzel `toneRms`). (2) The `/sounds` Playwright spec brought to v2, and its stubs fixed: they returned bare JSON instead of the API's `{ success, data }` envelope, so the S12 spec would have failed on its first run; `/speaking/check` is stubbed; new tests for checking → marks (saved without `heard`) and for a failed check → Check again. (3) QA matrix rows for the v2 flow.
 * **Why**: schedule row S19.
 * **Verified**: FlowCheck tests 2/2 (incl. a leaked beep), `toneRms` tests 3/3; frontend `tsc` and lint clean; Vitest 516 passed with the same 66 known failures; the Playwright spec type-checks and lists. Not run here: it signs in to the live site with the e2e account (Dylan runs `BASE_URL=https://www.dygoacademy.com npx playwright test tests/sounds.spec.ts --project=iphone-16`).
+
+### Deployed: Phase 13 S19 (dev-page recording-flow check) to UAT
+* **Files**: [`docs/phase13-schedule.md`](docs/phase13-schedule.md) (Session log)
+* **What**: deploy through `deploy/request.md` (all 4 steps OK, 2026-10-05 07:24): `/garden/_speaking` section 3 for checking the v2 flow and beep leakage on a phone.
+* **Verified live**: www and API health 200; `/garden/_speaking` redirects to login when signed out; section 3 is in the deployed page bundle.
