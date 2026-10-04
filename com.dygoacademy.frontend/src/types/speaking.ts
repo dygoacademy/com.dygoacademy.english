@@ -32,10 +32,12 @@ export interface SpeakingTimings {
   words: WordTiming[];
 }
 
-/** One sentence in `GET /api/v1/speaking/topics/:topicId/session`. */
+/** One sentence in `GET /api/v1/speaking/session` and `GET /api/v1/speaking/words/:topicWordId`. */
 export interface SpeakingSessionItem {
   id: string;
   lexicon_id: string;
+  /** The learner's topic_words row for this word (one of them, if it's in several beds). */
+  topic_word_id: string;
   word: string;
   part_of_speech: string | null;
   cefr_level: string | null;
@@ -54,13 +56,18 @@ export interface SpeakingSessionItem {
   is_due: boolean;
 }
 
+/** The Pond (Sound Garden on the Missions tab): `GET /api/v1/speaking/session[?topic_id=]`. */
 export interface SpeakingSession {
-  topic_id: string;
-  topic_title: string;
-  /** All speaking items in the bed; the Speak button shows at >= 5. */
+  /** How many of the learner's words have a speaking item. */
   item_count: number;
   default_accent: SpeakingAccent;
   items: SpeakingSessionItem[];
+}
+
+/** "Say this one?" on a flashcard: `GET /api/v1/speaking/words/:topicWordId`. */
+export interface SpeakingWordItem {
+  default_accent: SpeakingAccent;
+  item: SpeakingSessionItem;
 }
 
 export interface SpeakingWordMark {

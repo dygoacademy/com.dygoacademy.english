@@ -6,12 +6,14 @@ import { StorageService } from '../../storage/storage.service';
 import { SpeakingService } from './speaking.service';
 
 const TOPIC_ID = 'c0c0c0c0-0000-0000-0000-000000000005';
+const TOPIC_WORD_ID = 'e0e0e0e0-0000-0000-0000-000000000100';
 const TIMINGS = { duration: 3.3, words: [] };
 
 function itemRow(overrides: Record<string, unknown> = {}) {
   return {
     id: 'item-1',
     lexicon_id: 'lex-1',
+    topic_word_id: 'tw-1',
     word: 'mitigate',
     part_of_speech: 'verb',
     cefr_level: 'C1',
@@ -60,57 +62,79 @@ function withUserReturning(...results: unknown[][]) {
   return { withUser, calls };
 }
 
-describe('SpeakingService.session', () => {
-  it('returns the topic, count, default accent and items with public URLs, not R2 keys', async () => {
+describe('SpeakingService.session (The Pond)', () => {
+  it('returns the count, default accent and items with public URLs, not R2 keys', async () => {
     const { withUser, calls } = withUserReturning(
-      [{ id: TOPIC_ID, title: 'Nature & Environment', item_count: '7', english_variety: 'en-GB' }],
+      [{ item_count: '7' }],
       [itemRow()],
+      [{ english_variety: 'en-GB' }],
     );
     const service = await makeService({ withUser });
 
-    const session = await service.session('user-1', TOPIC_ID);
+    const session = await service.session('user-1');
 
     expect(withUser).toHaveBeenCalledWith('user-1', expect.any(Function));
-    expect(session).toMatchObject({
-      topic_id: TOPIC_ID,
-      topic_title: 'Nature & Environment',
-      item_count: 7,
-      default_accent: 'UK',
-    });
+    expect(session).toMatchObject({ item_count: 7, default_accent: 'UK' });
     expect(session.items).toHaveLength(1);
     expect(session.items[0]).toMatchObject({
+      topic_word_id: 'tw-1',
       audio_uk_url: 'https://cdn.test/speaking/en/uk/abc.wav',
       audio_us_url: null,
       timings_uk: TIMINGS,
       target_index: 5,
     });
     expect(session.items[0]).not.toHaveProperty('audio_uk_path');
-    // Session size is a parameter, due/new first.
-    expect(calls[1].params).toEqual([TOPIC_ID, 5]);
-    expect(calls[1].text).toMatch(/order by is_due desc/);
+    // All the learner's words (no topic), 5 per session, due then new first.
+    expect(calls[0].params).toEqual([null]);
+    expect(calls[1].params).toEqual([null, 5]);
+    expect(calls[1].text).toMatch(/order by w\.due_now desc, w\.is_new desc/);
+    // One row per word, joined by lexicon_id (items belong to the word).
+    expect(calls[1].text).toMatch(/distinct on \(tw\.lexicon_id\)/);
+    expect(calls[1].text).toMatch(/si\.lexicon_id = w\.lexicon_id/);
   });
 
-  it('defaults to US when the learner has no UK preference', async () => {
-    const { withUser } = withUserReturning(
-      [{ id: TOPIC_ID, title: 'Bed', item_count: '0', english_variety: 'en-US' }],
+  it('narrows to one bed when topic_id is given; US unless the learner chose en-GB', async () => {
+    const { withUser, calls } = withUserReturning(
+      [{ item_count: '0' }],
       [],
+      [{ english_variety: 'en-US' }],
     );
     const service = await makeService({ withUser });
     const session = await service.session('user-1', TOPIC_ID);
-    expect(session.default_accent).toBe('US');
-    expect(session.items).toEqual([]);
+    expect(calls[1].params).toEqual([TOPIC_ID, 5]);
+    expect(session).toEqual({ item_count: 0, default_accent: 'US', items: [] });
   });
 
-  it('404s when RLS hides the topic', async () => {
+  it('404s on a malformed topic id without querying', async () => {
+    const withUser = jest.fn();
+    const service = await makeService({ withUser });
+    await expect(service.session('user-1', 'not-a-uuid')).rejects.toBeInstanceOf(NotFoundException);
+    expect(withUser).not.toHaveBeenCalled();
+  });
+});
+
+describe('SpeakingService.forWord ("Say this one?")', () => {
+  it("returns the card word's item", async () => {
+    const { withUser, calls } = withUserReturning([itemRow()], [{ english_variety: null }]);
+    const service = await makeService({ withUser });
+    const result = await service.forWord('user-1', TOPIC_WORD_ID);
+    expect(calls[0].params).toEqual([TOPIC_WORD_ID]);
+    expect(result.default_accent).toBe('US');
+    expect(result.item).toMatchObject({ id: 'item-1', word: 'mitigate' });
+  });
+
+  it('404s when the word is unreadable or has no item', async () => {
     const { withUser } = withUserReturning([]);
     const service = await makeService({ withUser });
-    await expect(service.session('user-1', TOPIC_ID)).rejects.toBeInstanceOf(NotFoundException);
+    await expect(service.forWord('user-1', TOPIC_WORD_ID)).rejects.toBeInstanceOf(
+      NotFoundException,
+    );
   });
 
   it('404s on a malformed id without querying', async () => {
     const withUser = jest.fn();
     const service = await makeService({ withUser });
-    await expect(service.session('user-1', 'not-a-uuid')).rejects.toBeInstanceOf(NotFoundException);
+    await expect(service.forWord('user-1', 'x')).rejects.toBeInstanceOf(NotFoundException);
     expect(withUser).not.toHaveBeenCalled();
   });
 });

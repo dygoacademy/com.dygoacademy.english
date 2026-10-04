@@ -12,10 +12,12 @@ export type SpeakingMarkReason = (typeof SPEAKING_MARK_REASONS)[number];
 /** Sentences in one speaking session (handover §1). */
 export const SPEAKING_SESSION_SIZE = 5;
 
-/** One sentence in `GET /speaking/topics/:topicId/session`. */
+/** One sentence in `GET /speaking/session` and `GET /speaking/words/:topicWordId`. */
 export interface SpeakingSessionItem {
   id: string;
   lexicon_id: string;
+  /** The learner's topic_words row for this word (one of them, if the word is in several beds). */
+  topic_word_id: string;
   word: string;
   part_of_speech: string | null;
   cefr_level: string | null;
@@ -32,18 +34,23 @@ export interface SpeakingSessionItem {
   audio_us_url: string | null;
   timings_uk: SpeakingTimings | null;
   timings_us: SpeakingTimings | null;
-  /** Why it was picked first: due/new words lead the session. */
+  /** Due now or never reviewed; these lead the session. */
   is_due: boolean;
 }
 
+/** The Pond (Sound Garden on the Missions tab). */
 export interface SpeakingSession {
-  topic_id: string;
-  topic_title: string;
-  /** Every speaking item in this bed (the Speak button shows at >= 5, D4). */
+  /** How many of the learner's words have a speaking item. */
   item_count: number;
   /** From profiles.english_variety: en-GB → UK, otherwise US. */
   default_accent: SpeakingAccent;
   items: SpeakingSessionItem[];
+}
+
+/** "Say this one?" on a flashcard. */
+export interface SpeakingWordItem {
+  default_accent: SpeakingAccent;
+  item: SpeakingSessionItem;
 }
 
 /** `POST /speaking/attempts` response. */

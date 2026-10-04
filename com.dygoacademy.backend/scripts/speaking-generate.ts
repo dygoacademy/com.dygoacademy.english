@@ -1,26 +1,29 @@
 #!/usr/bin/env ts-node
 /**
  * speaking-generate — Phase 13 T2: native UK + US sentence audio with word
- * timings for one topic bed, from Google Cloud Text-to-Speech (decision
+ * timings, one item per word, from Google Cloud Text-to-Speech (decision
  * D1 = B: SSML <mark> timepoints).
  *
- *   npm run speaking-generate -- --topic <uuid> --dry-run    # what would be made, and the cost
+ *   npm run speaking-generate -- --topic <uuid> --dry-run    # a bed's words: what would be made + cost
  *   npm run speaking-generate -- --topic <uuid>              # make it (uses ../.env)
+ *   npm run speaking-generate -- --all --limit 200           # any READY word without an item yet
  *   npm run speaking-generate:prod -- --topic <uuid>         # ../env-profiles/prod.env on top
  *   npm run speaking-generate -- --fixture --out <dir>       # local test clip, no keys, no DB
  *
  * Options: --accents uk,us (default both) · --limit N (default 50) ·
  * --force (re-synthesize and overwrite audio that already exists).
  *
- * For each READY word in the topic: take its first example sentence, find
- * the target word, and for each accent
- *   1. if speaking_items already has that accent → skip (unless --force);
+ * A speaking item belongs to the word (master_lexicon), shared by every bed
+ * that has it; --topic just picks which words to do. For each word: take its
+ * first example sentence, find the target word, and for each accent
+ *   1. if the word's item already has that accent for this sentence → skip
+ *      (unless --force);
  *   2. if R2 already has the clip + its timings JSON (same sentence and voice,
  *      e.g. after a database reset) → reuse them, no TTS call (unless --force);
  *   3. otherwise call Google TTS with a <mark> before every word, build the
  *      timings (src/modules/speaking/speaking-timings.ts), check them, and
  *      upload `speaking/en/<uk|us>/<md5(voice|sentence)>.wav` + `.json`.
- * Then upsert speaking_items (one row per word per topic) as service_role.
+ * Then upsert speaking_items (one row per word) as service_role.
  *
  * Env: DATABASE_URL, R2_* (as the backend), GOOGLE_TTS_API_KEY (a Google
  * Cloud API key restricted to the Text-to-Speech API), optional
@@ -72,6 +75,7 @@ const TTS_URL = 'https://texttospeech.googleapis.com/v1beta1/text:synthesize';
 
 interface Args {
   topic?: string;
+  all: boolean;
   accents: SpeakingAccent[];
   limit: number;
   dryRun: boolean;
@@ -81,12 +85,13 @@ interface Args {
 }
 
 function usage(): never {
-  console.log(fs.readFileSync(__filename, 'utf8').split('\n').slice(2, 13).join('\n'));
+  console.log(fs.readFileSync(__filename, 'utf8').split('\n').slice(2, 14).join('\n'));
   process.exit(0);
 }
 
 function parseArgs(argv: string[]): Args {
   const args: Args = {
+    all: false,
     accents: ['UK', 'US'],
     limit: 50,
     dryRun: false,
@@ -96,6 +101,7 @@ function parseArgs(argv: string[]): Args {
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
     if (a === '--topic') args.topic = argv[++i];
+    else if (a === '--all') args.all = true;
     else if (a === '--accents') {
       args.accents = argv[++i].split(',').map((s) => s.trim().toUpperCase()) as SpeakingAccent[];
     } else if (a === '--limit') args.limit = parseInt(argv[++i], 10);
@@ -107,7 +113,9 @@ function parseArgs(argv: string[]): Args {
     else throw new Error(`unknown option ${a} (see --help)`);
   }
   if (args.accents.some((x) => x !== 'UK' && x !== 'US')) throw new Error('--accents takes uk,us');
-  if (!args.fixture && !args.topic) throw new Error('--topic <uuid> is required (or --fixture)');
+  if (!args.fixture && !args.topic === !args.all) {
+    throw new Error('give --topic <uuid> or --all (or --fixture)');
+  }
   if (args.fixture && !args.out) throw new Error('--fixture needs --out <dir>');
   return args;
 }
@@ -274,10 +282,10 @@ interface WordRow {
   ipa_uk: string | null;
   ipa_us: string | null;
   sentence: string | null;
+  /** The word's existing item, if any. */
+  item_sentence: string | null;
   audio_uk_path: string | null;
   audio_us_path: string | null;
-  timings_uk: SpeakingTimings | null;
-  timings_us: SpeakingTimings | null;
 }
 
 async function exists(s3: S3Client, bucket: string, key: string): Promise<boolean> {
@@ -321,25 +329,32 @@ async function runTopic(args: Args, env: Record<string, string>): Promise<void> 
     // Reads and writes as service_role, like the backend's workers.
     await db.query('begin');
     await db.query("select set_config('role', 'service_role', true)");
-    const topic = await db.query<{ title: string }>(
-      'select title from public.topics where id = $1',
-      [args.topic],
-    );
-    if (!topic.rows[0]) throw new Error(`topic ${args.topic} not found`);
-    console.log(`Topic: ${topic.rows[0].title}${args.dryRun ? '  (dry run)' : ''}`);
+    if (args.topic) {
+      const topic = await db.query<{ title: string }>(
+        'select title from public.topics where id = $1',
+        [args.topic],
+      );
+      if (!topic.rows[0]) throw new Error(`topic ${args.topic} not found`);
+      console.log(`Topic: ${topic.rows[0].title}${args.dryRun ? '  (dry run)' : ''}`);
+    } else {
+      console.log(`All READY words without an item${args.dryRun ? '  (dry run)' : ''}`);
+    }
     console.log(`Voices: UK ${voices.UK}, US ${voices.US}`);
 
     const words = await db.query<WordRow>(
       `select ml.id as lexicon_id, ml.normalized_word as word, ml.ipa_uk, ml.ipa_us,
               ml.example_sentences -> 0 ->> 'sentence' as sentence,
-              si.audio_uk_path, si.audio_us_path, si.timings_uk, si.timings_us
-         from public.topic_words tw
-         join public.master_lexicon ml on ml.id = tw.lexicon_id
-         left join public.speaking_items si on si.topic_id = tw.topic_id and si.lexicon_id = ml.id
-        where tw.topic_id = $1 and tw.status = 'READY'
-        order by tw.created_at, ml.normalized_word
+              si.sentence as item_sentence, si.audio_uk_path, si.audio_us_path
+         from public.master_lexicon ml
+         left join public.speaking_items si on si.lexicon_id = ml.id
+        where exists (
+                select 1 from public.topic_words tw
+                 where tw.lexicon_id = ml.id and tw.status = 'READY'
+                   and ($1::uuid is null or tw.topic_id = $1::uuid))
+          and ($1::uuid is not null or si.id is null)
+        order by ml.normalized_word
         limit $2`,
-      [args.topic, args.limit],
+      [args.topic ?? null, args.limit],
     );
 
     for (const w of words.rows) {
@@ -360,7 +375,7 @@ async function runTopic(args: Args, env: Record<string, string>): Promise<void> 
       for (const accent of args.accents) {
         const a = accent.toLowerCase() as 'uk' | 'us';
         const label = `${w.word} ${accent}`;
-        if (w[`audio_${a}_path`] && !args.force) {
+        if (w[`audio_${a}_path`] && w.item_sentence === sentence && !args.force) {
           console.log(`  = ${label}: already in speaking_items`);
           continue;
         }
@@ -417,18 +432,26 @@ async function runTopic(args: Args, env: Record<string, string>): Promise<void> 
       if (!args.dryRun && (result.UK || result.US)) {
         await db.query(
           `insert into public.speaking_items
-             (lexicon_id, topic_id, sentence, target_index, audio_uk_path, timings_uk, audio_us_path, timings_us)
-           values ($1, $2, $3, $4, $5, $6, $7, $8)
-           on conflict (topic_id, lexicon_id) do update set
+             (lexicon_id, sentence, target_index, audio_uk_path, timings_uk, audio_us_path, timings_us)
+           values ($1, $2, $3, $4, $5, $6, $7)
+           on conflict (lexicon_id) do update set
              sentence = excluded.sentence,
              target_index = excluded.target_index,
-             audio_uk_path = coalesce(excluded.audio_uk_path, speaking_items.audio_uk_path),
-             timings_uk = coalesce(excluded.timings_uk, speaking_items.timings_uk),
-             audio_us_path = coalesce(excluded.audio_us_path, speaking_items.audio_us_path),
-             timings_us = coalesce(excluded.timings_us, speaking_items.timings_us)`,
+             -- Keep the other accent only if it was made for this same sentence.
+             audio_uk_path = case when speaking_items.sentence = excluded.sentence
+               then coalesce(excluded.audio_uk_path, speaking_items.audio_uk_path)
+               else excluded.audio_uk_path end,
+             timings_uk = case when speaking_items.sentence = excluded.sentence
+               then coalesce(excluded.timings_uk, speaking_items.timings_uk)
+               else excluded.timings_uk end,
+             audio_us_path = case when speaking_items.sentence = excluded.sentence
+               then coalesce(excluded.audio_us_path, speaking_items.audio_us_path)
+               else excluded.audio_us_path end,
+             timings_us = case when speaking_items.sentence = excluded.sentence
+               then coalesce(excluded.timings_us, speaking_items.timings_us)
+               else excluded.timings_us end`,
           [
             w.lexicon_id,
-            args.topic,
             sentence,
             targetIndex,
             result.UK?.key ?? null,

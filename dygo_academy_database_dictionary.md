@@ -46,7 +46,7 @@ Every column, constraint, index and policy below was read out of `pg_catalog` on
 | `review_logs` | Learning state | Append-only review history, partitioned by month. | every review ever — **largest table overall** |
 | `study_schedules` | Notifications | Daily habit reminder configuration. | ≤ few per user |
 | `push_subscriptions` | Notifications | VAPID Web Push endpoints per device. | one per device |
-| `speaking_items` | Speaking (Phase 13) | A sentence for one target word in a topic bed, with native UK/US audio keys and word timings. | ≤ words × beds with speaking |
+| `speaking_items` | Speaking (Phase 13) | One sentence per word, with native UK/US audio keys and word timings. Shared by every bed with the word. | ≤ one per word |
 | `speaking_attempts` | Speaking (Phase 13) | One row per speaking Compare: score, stage, word marks. No audio. | append-only, grows with use |
 
 ## 3. Entity relationships
@@ -74,7 +74,6 @@ erDiagram
     TOPIC_WORDS ||--o{ REVIEW_LOGS : "topic_word_id"
     TOPIC_WORDS ||--o{ USER_WORD_SRS : "topic_word_id"
     MASTER_LEXICON ||--o{ SPEAKING_ITEMS : "lexicon_id"
-    TOPICS ||--o{ SPEAKING_ITEMS : "topic_id"
     SPEAKING_ITEMS ||--o{ SPEAKING_ATTEMPTS : "item_id"
     PROFILES ||--o{ SPEAKING_ATTEMPTS : "user_id"
     AUTH_USERS ||--|| PROFILES : "id (1:1)"
@@ -428,7 +427,7 @@ A vocabulary set inside a group.
 | `topics_select_anon` | SELECT | {anon} | `is_public` |
 | `topics_update_write` | UPDATE | {authenticated} | `has_group_role(group_id, 'WRITE'::group_role)` |
 
-**Referenced by** — `speaking_items`, `topic_words`
+**Referenced by** — `topic_words`
 
 **Operational notes**
 
@@ -768,13 +767,13 @@ VAPID Web Push endpoints per device.
 
 ### Speaking (Phase 13)
 
-Added by `database/migrations/20261004_speaking.sql` (2026-10-04, Phase 13 T1). Written by hand from the migration, not introspected. RLS assertions: `database/tests/rls_speaking_test.sql` (run by `./database/apply-migrations.sh --test`). Design notes: `docs/phase13-notes.md`.
+Added by `database/migrations/20261004_speaking.sql` (2026-10-04, Phase 13 T1) and made per word by `20261004_speaking_per_word.sql` (same day: speaking starts from the Missions tab and flashcards, not a bed). Written by hand from the migration, not introspected. RLS assertions: `database/tests/rls_speaking_test.sql` (run by `./database/apply-migrations.sh --test`). Design notes: `docs/phase13-notes.md`.
 
 #### `speaking_items`
 
-A sentence for one target word in a topic bed, with the native-speaker clips and their word (and target-word syllable) timings. Global content.
+One sentence per word (`master_lexicon`), with the native-speaker clips and their word (and target-word syllable) timings. Global content, shared by every bed that contains the word.
 
-> Phase 13: a sentence for one target word in a topic bed, with native UK/US audio (R2 object keys) and timings. Written by the T2 script as service_role; read-only for learners.
+> Phase 13: one sentence per word (master_lexicon), shared by every bed that contains the word, with native UK/US audio (R2 object keys) and timings. Written by the content script as service_role; read-only for learners.
 
 **Written by** — The Phase 13 content script only, as `service_role`. Every signed-in user can read it; learners and teachers can't write it.
 
@@ -782,7 +781,6 @@ A sentence for one target word in a topic bed, with the native-speaker clips and
 | :--- | :--- | :---: | :--- |
 | `id` | `uuid` | NO | `gen_random_uuid()` |
 | `lexicon_id` | `uuid` | NO | — |
-| `topic_id` | `uuid` | NO | — |
 | `sentence` | `text` | NO | — |
 | `target_index` | `smallint` | NO | — |
 | `audio_uk_path` | `text` | yes | — |
@@ -794,9 +792,8 @@ A sentence for one target word in a topic bed, with the native-speaker clips and
 **Keys**
 
 - `speaking_items_pkey` — PRIMARY KEY: `PRIMARY KEY (id)`
-- `speaking_items_one_per_word_per_topic` — UNIQUE: `UNIQUE (topic_id, lexicon_id)`
+- `speaking_items_one_per_word` — UNIQUE: `UNIQUE (lexicon_id)`
 - `speaking_items_lexicon_id_fkey` — FOREIGN KEY: `FOREIGN KEY (lexicon_id) REFERENCES master_lexicon(id) ON DELETE RESTRICT`
-- `speaking_items_topic_id_fkey` — FOREIGN KEY: `FOREIGN KEY (topic_id) REFERENCES topics(id) ON DELETE CASCADE`
 
 **Checks**
 
@@ -808,8 +805,7 @@ A sentence for one target word in a topic bed, with the native-speaker clips and
 
 **Indexes** (beyond those backing keys)
 
-- `idx_speaking_items_topic_id` — `btree (topic_id)`
-- `idx_speaking_items_lexicon_id` — `btree (lexicon_id)`
+- none (the unique key on `lexicon_id` serves lookups by word)
 
 **RLS policies** — RLS enabled
 
@@ -825,7 +821,7 @@ A sentence for one target word in a topic bed, with the native-speaker clips and
 
 - `audio_*_path` are R2 object **keys**, not URLs. The API builds the public URL from `R2_PUBLIC_URL`, so the audio host can change without rewriting rows (unlike `master_lexicon.audio_url`).
 - `timings_*` shape: `{ "duration": 3.31, "words": [ { "text": "Planting", "start": 0.05, "end": 0.39, "syllables": [ { "start": 0.05, "end": 0.22, "stressed": true } ] } ] }`. Syllables only for the target word. The DB checks only the outer shape; the content script validates the rest (zod).
-- One item per word per bed. Deleting a topic deletes its items, and with them their attempts.
+- One item per word. The API joins items to the learner's words through `topic_words.lexicon_id`, so a word in two beds has one item. The per-word migration merged any duplicates into the oldest item and moved their attempts onto it.
 
 ---
 

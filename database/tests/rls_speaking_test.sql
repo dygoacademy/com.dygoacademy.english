@@ -1,16 +1,18 @@
 -- =============================================================================
--- RLS assertions for Phase 13 T1 (migrations/20261004_speaking.sql).
+-- RLS assertions for Phase 13 (migrations/20261004_speaking.sql, then
+-- 20261004_speaking_per_word.sql: one item per word, no topic_id).
 -- Run AFTER the schema and seeds/01_core_fixtures.sql, in a throwaway
 -- database:
 --
 --   psql -d dygo_rls_scratch -f database/migrations/20261004_speaking.sql
+--   psql -d dygo_rls_scratch -f database/migrations/20261004_speaking_per_word.sql
 --   psql -d dygo_rls_scratch -f database/tests/rls_speaking_test.sql
 --
 -- Every check raises on failure; the script runs in one transaction and
 -- rolls back. Fixture people (seeds/01_core_fixtures.sql): Sarah (1111…) is
 -- the group ADMIN, Alex (3333…) and Priya (4444…) are learners in the same
--- tenant; Dana (5555…) is in another. Topics cccc…1 (private, Sarah's group)
--- and cccc…3 (Dana's private topic); words dddd…1 ephemeral, dddd…2 resilient.
+-- tenant; Dana (5555…) is in another. Words dddd…1 ephemeral, dddd…2
+-- resilient, dddd…3 analyse.
 -- =============================================================================
 \set ON_ERROR_STOP on
 
@@ -72,21 +74,27 @@ select assert_eq(
 select assert_eq(
   (select count(*) from pg_indexes
     where schemaname = 'public'
-      and indexname in ('idx_speaking_items_topic_id', 'idx_speaking_attempts_user_item_created')),
-  2, 'indexes speaking_items(topic_id) and speaking_attempts(user_id, item_id, created_at desc)');
+      and indexname = 'idx_speaking_attempts_user_item_created'),
+  1, 'index speaking_attempts(user_id, item_id, created_at desc)');
+select assert_eq(
+  (select count(*) from information_schema.columns
+    where table_schema = 'public' and table_name = 'speaking_items' and column_name = 'topic_id'),
+  0, 'speaking_items has no topic_id (items belong to the word)');
+select assert_eq(
+  (select count(*) from pg_constraint
+    where conname = 'speaking_items_one_per_word' and contype = 'u'),
+  1, 'unique (lexicon_id)');
 
 \echo ''
 \echo '=== S2. The content script (service_role) writes items ======================'
 set role service_role;
 insert into public.speaking_items
-  (id, lexicon_id, topic_id, sentence, target_index, audio_us_path, timings_us) values
+  (id, lexicon_id, sentence, target_index, audio_us_path, timings_us) values
   ('5a5a5a5a-0000-0000-0000-000000000001', 'dddddddd-0000-0000-0000-000000000001',
-   'cccccccc-0000-0000-0000-000000000001',
    'Fame in the digital age is often ephemeral.', 6,
    'speaking/en/us/test-1.wav',
    '{"duration": 2.4, "words": [{"text": "Fame", "start": 0.05, "end": 0.3, "syllables": []}]}'),
   ('5a5a5a5a-0000-0000-0000-000000000002', 'dddddddd-0000-0000-0000-000000000002',
-   'cccccccc-0000-0000-0000-000000000001',
    'Small businesses proved remarkably resilient.', 4,
    'speaking/en/us/test-2.wav',
    '{"duration": 2.1, "words": []}');
@@ -98,28 +106,28 @@ select assert_eq((select count(*) from public.speaking_items), 2, 'service_role:
 \echo ''
 \echo '=== S3. Item constraints ===================================================='
 select assert_sqlstate(
-  $$insert into public.speaking_items (lexicon_id, topic_id, sentence, target_index, audio_us_path, timings_us)
-    values ('dddddddd-0000-0000-0000-000000000001', 'cccccccc-0000-0000-0000-000000000001',
+  $$insert into public.speaking_items (lexicon_id, sentence, target_index, audio_us_path, timings_us)
+    values ('dddddddd-0000-0000-0000-000000000001',
             'Another sentence.', 0, 'k', '{"duration": 1, "words": []}')$$,
-  '23505', 'one item per word per topic');
+  '23505', 'one item per word');
 select assert_sqlstate(
-  $$insert into public.speaking_items (lexicon_id, topic_id, sentence, target_index, audio_us_path, timings_us)
-    values ('dddddddd-0000-0000-0000-000000000003', 'cccccccc-0000-0000-0000-000000000001',
+  $$insert into public.speaking_items (lexicon_id, sentence, target_index, audio_us_path, timings_us)
+    values ('dddddddd-0000-0000-0000-000000000003',
             'Analyse this.', -1, 'k', '{"duration": 1, "words": []}')$$,
   '23514', 'target_index must be >= 0');
 select assert_sqlstate(
-  $$insert into public.speaking_items (lexicon_id, topic_id, sentence, target_index, audio_us_path)
-    values ('dddddddd-0000-0000-0000-000000000003', 'cccccccc-0000-0000-0000-000000000001',
+  $$insert into public.speaking_items (lexicon_id, sentence, target_index, audio_us_path)
+    values ('dddddddd-0000-0000-0000-000000000003',
             'Analyse this.', 0, 'k')$$,
   '23514', 'audio path needs timings');
 select assert_sqlstate(
-  $$insert into public.speaking_items (lexicon_id, topic_id, sentence, target_index)
-    values ('dddddddd-0000-0000-0000-000000000003', 'cccccccc-0000-0000-0000-000000000001',
+  $$insert into public.speaking_items (lexicon_id, sentence, target_index)
+    values ('dddddddd-0000-0000-0000-000000000003',
             'Analyse this.', 0)$$,
   '23514', 'item needs at least one accent');
 select assert_sqlstate(
-  $$insert into public.speaking_items (lexicon_id, topic_id, sentence, target_index, audio_us_path, timings_us)
-    values ('dddddddd-0000-0000-0000-000000000003', 'cccccccc-0000-0000-0000-000000000001',
+  $$insert into public.speaking_items (lexicon_id, sentence, target_index, audio_us_path, timings_us)
+    values ('dddddddd-0000-0000-0000-000000000003',
             'Analyse this.', 0, 'k', '{"words": []}')$$,
   '23514', 'timings need a numeric duration');
 reset role;
@@ -144,8 +152,8 @@ select login_as('55555555-5555-5555-5555-555555555555'); -- Dana, other tenant
 select assert_eq((select count(*) from public.speaking_items), 2, 'Dana: items are global content');
 select login_as('11111111-1111-1111-1111-111111111111'); -- Sarah, group ADMIN
 select assert_sqlstate(
-  $$insert into public.speaking_items (lexicon_id, topic_id, sentence, target_index, audio_us_path, timings_us)
-    values ('dddddddd-0000-0000-0000-000000000003', 'cccccccc-0000-0000-0000-000000000001',
+  $$insert into public.speaking_items (lexicon_id, sentence, target_index, audio_us_path, timings_us)
+    values ('dddddddd-0000-0000-0000-000000000003',
             'Analyse this.', 0, 'k', '{"duration": 1, "words": []}')$$,
   '42501', 'Sarah (group ADMIN): insert an item');
 select assert_sqlstate(
@@ -225,5 +233,5 @@ select assert_eq((select max(score) from public.speaking_attempts), 91, 'Alex: a
 reset role;
 
 \echo ''
-\echo 'Phase 13 T1 speaking RLS assertions: all passed.'
+\echo 'Phase 13 speaking RLS assertions: all passed.'
 rollback;

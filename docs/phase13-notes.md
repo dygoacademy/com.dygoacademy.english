@@ -66,7 +66,7 @@ Nothing in this file has been deployed. Nothing on UAT, pm2 or the running serve
 | Generated Supabase types; browser reads tables | NestJS API + RLS via `withUser`; hand-written snake_case types | T2 adds `GET /speaking/topics/:topicId/session` and `POST /speaking/attempts` in a `modules/speaking/` module and `src/types/speaking.ts` (fields exactly as the columns: `audio_uk_url`, `timings_us`, `target_index`, `word_marks`, `user_duration_ms`…). No endpoints or types added in this run |
 | `word_id` → words table | `master_lexicon` | Column is `lexicon_id`, same name as in `topic_words` |
 | `user_id` → `auth.users` | Every per-user table references `public.profiles(id)` | `speaking_attempts.user_id` references `profiles(id)`, default `auth.uid()` |
-| Topic bed "A7" with Quiz | `components/garden/screens/TopicBedScreen.tsx` gets a `quizHref` prop from `live/TopicBedLive.tsx`; route `/topics/[id]` | T9 adds `speakHref` the same way; `/speak` goes into `PROTECTED_PATH_PREFIXES` and `GARDEN_ROUTES.speak(topicId)` |
+| Speak button on the topic bed (A7), `/speak/[topicId]` | **Changed by Dylan 2026-10-04 (§14):** no topic-bed entry. Speaking starts from the Missions tab (Sound Garden → The Pond) and from a flashcard ("Say this one?"); quiz has none | Items are per word; routes and screens follow §14 |
 | `lib/speaking/*` | Frontend code lives under `src/` | `src/lib/speaking/{audio,envelopeScorer,constants}.ts` |
 | Native wrapper may exist | None | Skip `NSMicrophoneUsageDescription`; plain Safari permission prompt |
 | Accent values `UK`/`US` | `profiles.english_variety` uses `en-GB`/`en-US` | Kept `UK`/`US` in the speaking tables as the handover says; the API maps `en-GB → UK`, `en-US → US` to pick the default chip |
@@ -89,7 +89,7 @@ Whichever is chosen, syllable boundaries for the target word come from the IPA (
 
 **D3 · Scoring source.** Default: the on-device envelope scorer (T4). Nothing in the repo constrains it.
 
-**D4 · Entry point.** `TopicBedScreen` already has a Quiz button driven by `quizHref`, so a Speak button next to it fits. The "≥ 5 items" check needs a count from the API (T2's session endpoint can return it, or the topic payload gets `speaking_item_count`).
+**D4 · Entry point: decided by Dylan 2026-10-04, see §14.** Missions tab → "Sound Garden" card → `/sounds` (The Pond + Sound patch); flashcard → "Say this one?" sheet (≤ 3 cards); quiz → nothing. Not a Speak button on the topic bed.
 
 **D5 · Garden effect.** Default: visual only on SP4, attempts saved, no SRS change, no mission. `daily_missions.type`'s check constraint would block a SPEAK mission without a migration anyway.
 
@@ -106,10 +106,10 @@ Whichever is chosen, syllable boundaries for the target word come from the IPA (
 | T3 | `src/lib/speaking/audio.ts`, `src/hooks/useLiveLevels.ts`, `src/hooks/usePlayer.ts` (or under `lib/speaking/`), tests, a dev page under the garden dev prefixes |
 | T4 | `src/lib/speaking/envelopeScorer.ts`, `src/lib/speaking/constants.ts`, tests |
 | T5 | `src/components/garden/speaking/{Waveform,LiveWaveform,CompareWaveform,WordMarks,StageScore}.tsx`, gallery page `src/app/(garden)/garden/_gallery/page.tsx` |
-| T6 | `src/app/(garden)/speak/[topicId]/page.tsx`, `components/garden/screens/Speak{Listen,Recording,Compare,Done}Screen.tsx`, `components/garden/live/SpeakLive.tsx`, fixtures, `src/constants/routes.ts`, `src/constants/garden.ts` |
+| T6 | `/sounds` (The Pond) per §14 instead of `/speak/[topicId]`: `src/app/(garden)/sounds/**`, `components/garden/screens/Speak{Listen,Recording,Compare,Done}Screen.tsx`, `components/garden/live/SpeakLive.tsx`, fixtures, `src/constants/routes.ts`, `src/constants/garden.ts` |
 | T7 | the screens above + tests |
 | T8 | `messages/en-US.json`, `vi-VN.json`, `zh-CN.json` |
-| T9 | `components/garden/screens/TopicBedScreen.tsx`, `components/garden/live/TopicBedLive.tsx` |
+| T9 | Sound Garden card on the Missions tab, and "Say this one?" on the review card (`ReviewCard.tsx` / `ReviewScreen.tsx`, `live/ReviewLive.tsx`) instead of `TopicBedScreen.tsx` |
 | T10 | this file, a Playwright spec under `com.dygoacademy.automationtesting/ui` |
 
 ## 8. Risks
@@ -120,7 +120,7 @@ Whichever is chosen, syllable boundaries for the target word come from the IPA (
 | Google gives word **starts** only | Word ends = next start pulled back over silence on the PCM; fine for v1 envelope scoring, worth eyeballing on the first real clips |
 | Audio from China | `r2.dev` URL is the weakest link (§3); the existing word audio has the same problem today |
 | R2 CORS (D7) | Without it the native waveform can't be drawn; playback alone still works |
-| Items are per topic, topics are per class | A learner's own "Environment" bed won't have items unless T2 seeds that exact topic (see Q2) |
+| Pond scope = Review's new-card scope | Every READY word the learner can read, which includes other people's **public** topics (same as `SrsService.findDue`). If The Pond should only use words already in their garden, it's a one-line change |
 | `deteriorate` missing | The handover's 5 Environment words aren't all in one seeded bed |
 | iOS Safari recording quirks | `audio/mp4` from MediaRecorder, AudioContext must start in a tap, mic indicator must be released; test on a real iPhone at T3 |
 | No local dev server | `next dev` is banned in the frontend folder; device checks happen on UAT after Dylan deploys, or in a separate copy of the folder |
@@ -139,8 +139,8 @@ Whichever is chosen, syllable boundaries for the target word come from the IPA (
 
 | # | Decision | Default taken | Why / how to change |
 | --- | --- | --- | --- |
-| T1-a | One speaking item per word per bed | `unique (topic_id, lexicon_id)`, `topic_id not null` | Follows the handover (`topic_id` + index). Makes T2's upsert simple. Alternative in Q2 |
-| T1-b | Deleting a bed | Cascades to its items and their attempts | Topic deletion (ADMIN) must not fail because of speaking rows nobody can delete |
+| T1-a | ~~One item per word per bed~~ → **one item per word** | `unique (lexicon_id)`, no `topic_id` (`20261004_speaking_per_word.sql`) | Dylan's answer to Q2 (§14). Duplicates merged into the oldest item, attempts moved, nothing lost |
+| T1-b | ~~Deleting a bed cascades to its items~~ | Gone with `topic_id`; items live as long as the word | — |
 | T1-c | Deleting a word | `on delete restrict`, like `topic_words.lexicon_id` | Lexicon rows are never deleted in practice |
 | T1-d | Audio columns | Store R2 object **keys**, not URLs | Host can change (§3) without rewriting rows |
 | T1-e | Accents | Each accent optional, but path and timings come together, and at least one accent per item | D1 might give one voice first. Make both `not null` later if wanted |
@@ -163,8 +163,8 @@ Whichever is chosen, syllable boundaries for the target word come from the IPA (
 ## 11. Questions for Dylan
 
 1. ~~D1~~ decided: B, Google Cloud TTS. **Next step for you:** create a Google Cloud API key with the Text-to-Speech API enabled (billing on), add `GOOGLE_TTS_API_KEY=` to the root `.env`, then run `npm run speaking-generate -- --topic <id> --dry-run` and without `--dry-run` (§13).
-2. **Items per bed or per word?** Topics belong to classes, so "the Environment bed" is one specific topic. Should speaking items instead be per word (`lexicon_id` + sentence, shared by every bed that contains the word), so any learner's bed with those words gets Speak? That needs `topic_id` to become optional (a one-line migration) and a different "≥ 5 items" count. T1 follows the handover (per bed).
-3. **Which topic is the Environment bed** to seed in T2 (UAT DB topic id)? In the seeds it's the QA "Nature & Environment" bed, which has drought, biodiversity and mitigate but not sustainable or deteriorate.
+2. ~~Items per bed or per word?~~ **Answered 2026-10-04:** entry from the Missions tab and flashcards (§14), so items are **per word**. Done in `20261004_speaking_per_word.sql`.
+3. ~~Which topic is the Environment bed?~~ No longer needed: items are per word. Run the script with `--topic <id>` for one bed's words, or `--all` for every word without an item.
 4. **Audio host for China:** OK to move the R2 bucket behind a custom domain on `dygoacademy.com` (e.g. `audio.dygoacademy.com`)? Can someone test audio loading from Vietnam and mainland China?
 5. **D7 CORS:** can you add CORS rules on the R2 bucket for `https://www.dygoacademy.com`, `http://100.104.108.36:3000` and `http://localhost:3000` (GET, HEAD)? Or do you prefer a same-origin proxy?
 6. **TTS budget:** a rough monthly cap for UK + US sentence audio (2 clips per word)?
@@ -196,7 +196,7 @@ Only the synthesizer function in `scripts/speaking-generate.ts` is provider-spec
 
 - **Script** `com.dygoacademy.backend/scripts/speaking-generate.ts` (`npm run speaking-generate`, `:prod`): for each READY word in `--topic`, takes the first example sentence, finds the target word (inflections OK: *contaminated*, *ecosystems*), asks Google Cloud TTS (`v1beta1 text:synthesize`, `LINEAR16`, `enableTimePointing: SSML_MARK`) for UK and US with a `<mark>` before every word, builds and validates the timings, uploads `speaking/en/<uk|us>/<md5(voice|sentence)>.wav` + `.json` to R2, and upserts `speaking_items` as `service_role`. `--dry-run` (lists clips and the cost, writes nothing), `--force` (otherwise never overwrites: an accent already in the DB is skipped, and clips already in R2 are reused with their stored timings), `--accents`, `--limit`.
 - **Timings** `src/modules/speaking/speaking-timings.ts`: SSML with marks, timepoints → word starts, word ends = next start trimmed over silence (−40 dBFS, 10 ms frames), target syllables from the IPA split evenly with primary stress (`ˈ`) marked, `validateTimings`, WAV read/write. 17 unit tests.
-- **API** `src/modules/speaking/`: `GET /api/v1/speaking/topics/:topicId/session` and `POST /api/v1/speaking/attempts` (documented in `dygo_academy_api_surface.md`). All queries run as the learner (`withUser`), so RLS decides access. 7 unit tests. The SQL was also run as Alex against a throwaway database built from the schema, fixtures and every migration: due word first, Vietnamese meaning joined, another tenant's topic hidden, attempt insert with `user_id` from `auth.uid()`.
+- **API** `src/modules/speaking/`: `GET /api/v1/speaking/session` (The Pond; optional `?topic_id=`), `GET /api/v1/speaking/words/:topicWordId` ("Say this one?") and `POST /api/v1/speaking/attempts` (documented in `dygo_academy_api_surface.md`). All queries run as the learner (`withUser`), so RLS decides access. 9 unit tests. The exact SQL the service sends (captured from it) was run as Alex against a throwaway database built from the schema, fixtures and every migration: due word first, then a new word, then the rest; Vietnamese meaning joined; the topic filter works; a word he can't read returns nothing; attempt insert takes `user_id` from `auth.uid()`.
 - **Frontend types** `src/types/speaking.ts` (snake_case, mirrors the backend), exported from `src/types/index.ts`. No API calls yet (T6).
 - **Fixture** `com.dygoacademy.frontend/public/audio/speaking-fixture/`: `fixture-mitigate-uk.wav`, `fixture-mitigate-us.wav` and `fixture-mitigate.json` (sentence, target index, IPA, timings), made with `npm run speaking-generate -- --fixture --out ../com.dygoacademy.frontend/public/audio/speaking-fixture`.
 - **Checks**: backend `tsc --noEmit` clean, Jest 321/321, eslint clean on the new files; frontend `tsc --noEmit` and `next lint` clean on the new types. The script's word query was run against the QA "Nature & Environment" bed in a throwaway database: 20 READY words, all with a sentence. Without a key, the script stops with "GOOGLE_TTS_API_KEY is not set… Nothing was generated."
@@ -206,4 +206,27 @@ Only the synthesizer function in `scripts/speaking-generate.ts` is provider-spec
   3. `cd com.dygoacademy.backend && npm run speaking-generate -- --topic <Environment bed id> --dry-run`, then without `--dry-run`.
   4. Restart the backend so the new `/speaking` routes load (the API code isn't deployed).
 - The QA seed's Environment bed has 20 words; the handover's 5 aren't all in it (`sustainable` is in another bed, `deteriorate` nowhere). The script makes items for every READY word in the bed (`--limit`), so the session picks 5 of them.
+
+## 14. Entry points (Dylan, 2026-10-04, answer to Q2)
+
+```
+Missions tab ── "Sound Garden" card ─────► Sound Garden (/sounds)
+                                             ├─ 🪷 The Pond: shadowing with the two waveforms
+                                             └─ 🌱 Sound patch: the 12 sound drills
+Flashcard ── "Say this one?" (≤ 3 cards) ─► shadow sheet over the card
+Quiz ── nothing
+```
+
+This brings back v1.2's entry points (`phase 13 implementation plan.md` §14), replacing the handover's D4 (a Speak button on the topic bed, `/speak/[topicId]`). The Pond is the handover's SP1–SP4 flow; the "Say this one?" sheet runs SP1–SP3 for one card (v2.0 backlog B-10).
+
+**Done now (data and API only, no UI):**
+- `database/migrations/20261004_speaking_per_word.sql`: `speaking_items` loses `topic_id`; one item per word (`unique (lexicon_id)`). Duplicates are merged into the oldest item and their attempts moved onto it (tested: two items for one word, an attempt on each → one item, both attempts kept). RLS test updated (`--test` passes).
+- API: `GET /speaking/session` (The Pond: the learner's words with items, due → new → rest, optional `?topic_id=`), `GET /speaking/words/:topicWordId` (the flashcard sheet; `topic_word_id` is what `DueCard` already has). The topic-scoped `GET /speaking/topics/:topicId/session` is removed.
+- Script: items per word; `--topic` picks a bed's words, `--all` every READY word without an item. If a word's sentence changes, the other accent's old clip is dropped instead of kept with the wrong sentence (tested).
+
+**Questions this raises (UI tasks, not built):**
+1. **Sound patch (12 drills)** was backlog B-3 in v2.0 (`final-t-d`, `final-s-plural`, `final-ed`, `final-k-g`, `th-t`, `th-s`, `sh-s`, `s-z`, `l-r`, `n-l`, `v-w`, `long-short-i`). Is it in Phase 13 now? It needs minimal-pair content and audio (the same Google pipeline can make it) and screens that aren't in the design files yet.
+2. **When does the Sound Garden card show?** Proposed default: when `item_count ≥ 5` (enough for one Pond session).
+3. **"≤ 3 cards":** at most 3 "Say this one?" offers per review session. Which cards: the first 3 that have a speaking item, or new/hard words first? Proposed default: the first 3 with an item.
+4. **Does a Pond session count for anything** (a mission, the streak)? Default stays D5: visual only, no SRS change, no mission.
 

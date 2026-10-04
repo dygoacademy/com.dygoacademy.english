@@ -1,10 +1,10 @@
-import { Body, Controller, Get, Param, Post } from '@nestjs/common';
-import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { Body, Controller, Get, Param, Post, Query } from '@nestjs/common';
+import { ApiBearerAuth, ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger';
 
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { CreateSpeakingAttemptDto } from './dto/create-attempt.dto';
 import { SpeakingService } from './speaking.service';
-import { SpeakingAttempt, SpeakingSession } from './speaking.types';
+import { SpeakingAttempt, SpeakingSession, SpeakingWordItem } from './speaking.types';
 
 @ApiBearerAuth()
 @ApiTags('speaking')
@@ -12,19 +12,32 @@ import { SpeakingAttempt, SpeakingSession } from './speaking.types';
 export class SpeakingController {
   constructor(private readonly speaking: SpeakingService) {}
 
-  @Get('topics/:topicId/session')
+  @Get('session')
   @ApiOperation({
-    summary: 'A speaking session for one topic bed (Phase 13)',
+    summary: 'A speaking session for The Pond (Phase 13)',
     description:
-      'Up to 5 sentences, due and new words first, with native UK/US audio URLs and word ' +
-      'timings. item_count = all speaking items in the bed (the Speak button needs >= 5). ' +
-      '404 when the caller cannot read the topic.',
+      "Up to 5 of the learner's words that have a speaking item: due first, then new, then " +
+      'the rest. Native UK/US audio URLs and word timings. item_count = how many of their ' +
+      'words have an item. topic_id narrows it to one bed.',
   })
+  @ApiQuery({ name: 'topic_id', required: false })
   async session(
     @CurrentUser('id') userId: string,
-    @Param('topicId') topicId: string,
+    @Query('topic_id') topicId?: string,
   ): Promise<SpeakingSession> {
-    return this.speaking.session(userId, topicId);
+    return this.speaking.session(userId, topicId || undefined);
+  }
+
+  @Get('words/:topicWordId')
+  @ApiOperation({
+    summary: 'The speaking item for one flashcard word (Phase 13, "Say this one?")',
+    description: '404 when the caller cannot read the word or it has no speaking item yet.',
+  })
+  async forWord(
+    @CurrentUser('id') userId: string,
+    @Param('topicWordId') topicWordId: string,
+  ): Promise<SpeakingWordItem> {
+    return this.speaking.forWord(userId, topicWordId);
   }
 
   @Post('attempts')
