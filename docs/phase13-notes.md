@@ -220,6 +220,8 @@ Whichever is chosen, syllable boundaries for the target word come from the IPA (
 | S11-b | The sheet | A full-screen layer over the review (SP1–SP3 for that sentence, `SpeakFlow` in single mode); Close, Escape or "Back to the card" return to the same card; the attempt is saved like The Pond's | The SP screens are phone-height layouts; a half sheet would crop them |
 | S11-c | When offers are off | No offers when the browser can't record, the mic permission reads `denied`, or the learner tapped "Skip speaking" in the sheet (rest of the session) | T9-a point 5 |
 | S11-d | S11 deploy | Not deployed after S11 although the row says so: the compressed run deploys only after S2, S8 and S12 | Run rules win |
+| S12-a | Playwright spec not run | `ui/tests/sounds.spec.ts` is written and type-checked, not run: its global setup signs the fixture user in on the live site, and this unattended run doesn't enter passwords on a non-local host | Dylan runs it (command in §16) |
+| S12-b | Master schedule line | Not added: `dygo_academy_master_project_schedule.md` has someone else's uncommitted edits | Add the Phase 13 line when that file is committed |
 
 ## 11. Questions for Dylan
 
@@ -374,3 +376,40 @@ Skipped (5): `analyse` has no example sentence; `food court`, `french beans`, `l
 **S3 scorer (2026-10-04):** `src/lib/speaking/envelopeScorer.ts` + `constants.ts`. Synthetic sentence (8 tone-burst words, target with 3 syllables, native 24 kHz, learner 48 kHz) scores: identical **100**, flattened target **89** (`stress_soft` + stress tip), ×1.15 slower **99**, one word left out **93** (`missing`), ×0.5 (twice as fast) **86**, ×1.6 **91**. Run time **2.9 ms** for a 5 s clip in Node/jsdom on the Mac (target < 150 ms on a mid-range phone; even 20× slower fits). **Watch at G3:** the §3 formula is lenient (50 points of envelope similarity stay high for anything with the same rhythm), so a dropped word or rushing still lands in bloom/fruit; if Dylan finds the marks too kind, scale the DTW cost (e.g. similarity = 1 − 2 × cost) in `constants.ts`.
 
 **S6 strings (2026-10-04):** 90 keys under `screens.speak` in all three locales. **Dylan, please check:** (1) the Vietnamese strings that are *not* in handover §8 (drafted by Claude): `header`, `close`, `accent`, `micButton`, `stopButton`, `view.label`, `waveLabel.*`, `mark.missing/rushed/slow`, `tip.missing/rushed/slow/flowed`, `playNative`, `playYou`, `done.sub` (changed: no topic), `done.gardenLabel`, `mic.*`, `denied.*`, `quiet.*`, `short.*`, `unsupported.*`, `audioFailed.*`, `soundGarden.*` ("Vườn âm thanh", "Ao sen"), `sayThis.*`; (2) the mic explainer wording in English (`mic.*`, handover §5 "draft and flag"); (3) all zh-CN (the file is a draft for native review, D6).
+
+## 16. QA matrix (S12, 2026-10-04)
+
+What the unattended run could check is automated (Vitest, mocked mic/API); everything that needs a real phone is for Dylan. ✅ = checked here, 📱 = Dylan on the device, — = not applicable.
+
+| Check | Automated | iPhone Safari (iOS 16+) | Home Screen app | Android Chrome | Desktop Chrome | Desktop Safari |
+| --- | --- | --- | --- | --- | --- | --- |
+| Record → replay, envelope (`/garden/_speaking`) | ✅ recorder / decode / envelope unit tests | 📱 G1 | 📱 | 📱 | 📱 | 📱 |
+| `.m4a` vs `.wav` offset (dev page "Measure offset") | ✅ estimator test (±21 ms) | 📱 note the ms | — | 📱 | 📱 | 📱 |
+| Full Pond session, 5 sentences, Done | ✅ `SpeakLive` flow test; Playwright spec (not run, S12-a) | 📱 G3 | 📱 | 📱 | 📱 | 📱 |
+| Marks fair? (own voice + a Vietnamese speaker) | ✅ synthetic scorer tests only | 📱 G3 | — | — | — | — |
+| Mic explainer → Allow; Not now | ✅ | 📱 first visit | 📱 (Home Screen apps ask again) | 📱 | 📱 | 📱 |
+| Mic denied → steps, Try again, Skip | ✅ | 📱 aA → Website Settings | 📱 | 📱 | 📱 | 📱 |
+| Too quiet / too short | ✅ | 📱 whisper; say one word | — | 📱 | 📱 | — |
+| No support (no MediaRecorder / mic) | ✅ | — | — | — | 📱 an old browser | — |
+| Audio failed (airplane mode before opening) | ✅ Retry / Next word | 📱 airplane mode | 📱 | 📱 | — | — |
+| Silent switch on: native clip still audible? | — | 📱 | 📱 | — | — | — |
+| Playback volume right after recording (iOS can route to the earpiece) | — | 📱 | 📱 | — | — | — |
+| Bluetooth mic / AirPods | — | 📱 | — | 📱 | — | — |
+| 0.75× (pitch kept) | ✅ player rate test | 📱 | — | 📱 | 📱 | 📱 |
+| Red mic indicator off after Stop / Cancel / leaving | ✅ release called | 📱 | 📱 | 📱 | — | — |
+| VoiceOver: waveforms, buttons, marks read sensibly | ✅ labels in tests | 📱 | — | — | — | 📱 |
+| Reduced motion: no pulsing ring / sweep | ✅ CSS `motion-safe` / media query | 📱 | — | — | 📱 | — |
+| Long Vietnamese strings (vi-VN UI) fit | — | 📱 | — | — | 📱 | — |
+| Sound Garden card on Missions (≥ 5 items) | ✅ | 📱 | — | — | 📱 | — |
+| "Say this one?" ≤ 3 per review, after the flip; Back to the card | ✅ rule, hook, card, single-mode tests | 📱 | — | 📱 | 📱 | — |
+
+**Run the Playwright spec** (signed-in fixture user from `ui/.env.e2e`, Chrome fake mic plays the fixture sentence, speaking API stubbed so nothing is written):
+`cd com.dygoacademy.automationtesting/ui && BASE_URL=https://www.dygoacademy.com npx playwright test tests/sounds.spec.ts --project=iphone-16`
+
+**Open issues / watch list**
+1. Scores are lenient (S3 note): a dropped word or rushing still reaches bloom/fruit on synthetic input. Tune `constants.ts` after G3.
+2. `garden:diff` for SP1–SP4 not run: no reference PNGs (S8-f).
+3. The drafted Vietnamese strings and the mic explainer need Dylan's check (S6); zh-CN is a draft.
+4. iOS after-recording playback volume and the silent switch are unknowns until G1/G3.
+5. The Sound patch (second half of the Sound Garden) isn't built (not in this run).
+6. New words still need a manual `npm run speaking-generate -- --all` (README); `analyse` has no example sentence.
