@@ -31,7 +31,7 @@ Already have Docker running and `.env` filled in? The whole loop is five command
 
 ```bash
 cp .env.example .env                      # then fill in the secrets — see step 1
-docker compose up -d                      # Postgres, Kong, Studio, Redis, RustFS
+docker compose up -d                      # Postgres, Kong, Studio, Redis, RustFS, speech scorer
 ./database/apply-migrations.sh            # schema + all seed data (empty database)
 cd com.dygoacademy.backend && npm install && npm run start:dev
 cd ../com.dygoacademy.frontend && npm install && npm run dev
@@ -126,7 +126,9 @@ docker compose ps
 
 First run pulls roughly 3 GB of images and takes a few minutes. Every service
 should reach `running` (most report `healthy`); `dygo_rustfs_createbucket` is a
-one-shot job and correctly shows `exited (0)`.
+one-shot job and correctly shows `exited (0)`. The speech scorer is built
+locally on the first run and downloads ~1.4 GB of models on its first start, so
+it reports `healthy` about 90 s later than the rest.
 
 | Service | Container | URL / Port | Purpose |
 | :--- | :--- | :--- | :--- |
@@ -138,6 +140,7 @@ one-shot job and correctly shows `exited (0)`.
 | Storage | `dygo_supabase_storage` | via Kong `/storage/v1/` | Object storage (S3 backend → RustFS) |
 | postgres-meta | `dygo_supabase_meta` | internal `:8080` | Backs Studio's schema browser |
 | Redis | `dygo_redis` | `localhost:6379` | BullMQ queues + SRS cache |
+| Speech scorer | `dygo_speech` | `127.0.0.1:8100` (this Mac only) | Checks a learner's recording against a sentence (words + sounds), free and local. See [Speech checking](#speech-checking-speech-scorer) |
 | RustFS | `dygo_rustfs` | http://localhost:9001 (console), `localhost:9100` (S3 API) | S3-compatible store behind Supabase Storage (login = `RUSTFS_ACCESS_KEY` / `RUSTFS_SECRET_KEY` in `.env`). Replaced MinIO on 2026-10-04; S3 port is 9100 because Homebrew php-fpm holds 9000 |
 
 Use `localhost`, not `0.0.0.0` — the latter is a bind address, and some browser
@@ -695,6 +698,103 @@ Notes:
   name, so a new voice makes new files and never overwrites old ones.
 - **Skipped words**: a word without an example sentence, or a multi-word entry
   ("food court"), is skipped and listed in the output.
+
+## Speech checking (speech scorer)
+
+Any feature that needs to know **how well a learner said something** uses the
+speech scorer: a Docker service on this Mac (`docker/speech`, container
+`dygo_speech`), free, no account or API key. It was built for Phase 13's
+speaking practice (G6: self-hosted instead of a paid service, see
+`docs/phase13-notes.md` §20), and anything else that listens to a learner
+(word pronunciation, shadowing, a future kids' mode) should use it too rather
+than add another service.
+
+What it does with one recording and the sentence that was meant:
+
+- **Words** (faster-whisper `base.en`): finds a left-out word, or a different
+  word ("migrate" said for "mitigate"), with word timings.
+- **Sounds** (wav2vec2 phoneme model + espeak + forced alignment): a 0–100
+  score for each word's sounds, so a mispronounced word shows even when the
+  right word was heard.
+- Result per word: `ok`, `unclear` (with `heard` when another word was heard)
+  or `missing`, plus a 0–100 total for the sentence.
+
+### Run and check it
+
+```bash
+docker compose up -d speech                       # first start: ~90 s to load the models
+curl -fsS http://127.0.0.1:8100/health            # {"ok":true} when ready (503 while loading)
+curl -s -F audio=@docker/speech/samples/missing-the.m4a \
+  -F "sentence=Planting more trees can help mitigate the effects of climate change." \
+  http://127.0.0.1:8100/check                     # → "the": "missing"
+docker logs dygo_speech --tail 20                 # timings and totals only, never audio or text
+```
+
+**Postman:** import `docker/speech/dygo-speech.postman_collection.json` in the
+Postman **desktop app on this Mac** (the API listens on 127.0.0.1 only, so the
+web app and phones can't reach it). It has Health and four Check requests with
+the sample clips in `docker/speech/samples/` (good speech, "the" left out,
+"migrate" for "mitigate", a Vietnamese voice). If the repo is somewhere else,
+change the collection variable `samplesDir`. To try your own voice, record the
+sentence in Voice Memos, AirDrop the `.m4a` to the Mac and pick it as `audio`
+(Body → form-data, key `audio` of type **File**, key `sentence` as Text).
+
+### API
+
+`POST http://127.0.0.1:8100/check`, multipart form:
+
+| Field | Value |
+| :--- | :--- |
+| `audio` | The recording as the browser made it: `.m4a` (iPhone Safari), `.webm` (Chrome) or `.wav`. ≤ 1 MB, 0.3–30 s. No conversion on the phone (decision S15-a). |
+| `sentence` | The text the learner was asked to say (≤ 500 characters). |
+
+```json
+{
+  "total": 89,
+  "heard_text": "Planting more trees can help mitigate effects of climate change.",
+  "duration_ms": 3500,
+  "latency_ms": 1650,
+  "words": [
+    { "index": 6, "text": "the", "score": 37, "status": "missing", "heard": null, "start": null, "end": null }
+  ]
+}
+```
+
+`words` has one entry per word of `sentence` (split on spaces), in order.
+Errors: **503** models still loading, **413** over 1 MB, **422** not audio /
+too short / too long / no sentence. Full details: `docker/speech/README.md`.
+
+### Rules for features that use it
+
+- **Call it from the backend only.** The browser never talks to it: it's bound
+  to `127.0.0.1` and must never get a Cloudflare tunnel route. The backend
+  reaches it at `http://127.0.0.1:8100` (from another container on
+  `dygo-network`: `http://speech:8000`). The backend endpoint for Phase 13 is
+  `POST /speaking/check` (S17, in progress), which wraps it behind a
+  `SpeechChecker` interface; reuse that rather than calling the scorer twice.
+- **Don't keep the audio.** The scorer holds it in memory only; callers must
+  not write it to disk, the database or logs either (Phase 13 D2).
+- **Time out and fall back.** Allow ~8 s; on a timeout or a 5xx show "Couldn't
+  check" (SP3's failed state) instead of hanging. One check runs at a time.
+- **Rate-limit per user** (S17: 60 checks an hour) so one learner can't tie up
+  the Mac.
+
+### Limits and tuning
+
+- **Speed:** CPU only (Docker on macOS can't use the GPU). A 4–6 s sentence
+  takes ~1.7–3.3 s, up to ~5 s when the Mac is busy.
+- **Capacity:** fine for beta on this Mac; for many learners at once it needs
+  its own machine (same container, change the URL).
+- **Memory:** ~0.8–1.5 GB (`mem_limit` 4 GB); models live in the `speech_models`
+  volume.
+- **Thresholds:** `UNCLEAR_SCORE` (60) and `MISSING_SCORE` (40) in
+  `docker/speech/app/matching.py` are first guesses, to be tuned with real
+  recordings (Phase 13 M4). Short words that people say more than one way
+  ("the" as /ði/ before a vowel) are listed in `VARIANTS` in the same file;
+  add to it when good speech gets flagged.
+- **Not caught:** words that sound the same ("affects" / "effects").
+- **After changing the code:** `docker compose build speech && docker compose up -d speech`;
+  unit tests: `docker run --rm --entrypoint python comdygoacademyenglish-speech -m pytest -q tests`.
 
 ## Documentation
 

@@ -493,3 +493,9 @@ Engineering-facing log of shipped fixes and changes, one dated entry per change.
 * **Files**: [`docker/speech/dygo-speech.postman_collection.json`](docker/speech/dygo-speech.postman_collection.json), `docker/speech/samples/*.m4a` (4 clips, macOS voices, 30–45 KB), [`docker/speech/README.md`](docker/speech/README.md) (*Try it in Postman*)
 * **What**: an importable collection (Health + four `POST /check` requests) and the clips it sends, so the scorer can be tried without curl.
 * **Why**: Dylan asked how to test the API with Postman (2026-10-04).
+
+### README: Speech checking (speech scorer) section
+* **Files**: [`README.md`](README.md) (Quick start comment, service table row, new *Speech checking (speech scorer)* section)
+* **What**: how to run and check `dygo_speech`, test it with curl and the Postman collection, the `POST /check` contract, rules for any feature that uses it (backend only, never tunnelled, no audio kept, timeout + "Couldn't check" fallback, per-user rate limit) and its limits / tuning knobs.
+* **Why**: Dylan, 2026-10-04: new features will use the scorer, so it belongs in the main README, not only in `docker/speech/README.md`.
+* **Verified**: the README's example `curl` returns `the: missing` (total 89).
