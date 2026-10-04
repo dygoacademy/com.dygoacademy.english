@@ -56,12 +56,21 @@ function sentence({
       const syl = dur / 3;
       const syllables = targetAmps.map((amp, k) => {
         if (!quiet) tone(t + k * syl, syl, amp * 0.8);
-        return { start: t + k * syl, end: t + (k + 1) * syl, stressed: k === 0 };
+        return {
+          start: t + k * syl,
+          end: t + (k + 1) * syl,
+          stressed: k === 0,
+        };
       });
       timings.words.push({ text: w.text, start: t, end: t + dur, syllables });
     } else {
       if (!quiet) tone(t, dur, w.amp);
-      timings.words.push({ text: w.text, start: t, end: t + dur, syllables: [] });
+      timings.words.push({
+        text: w.text,
+        start: t,
+        end: t + dur,
+        syllables: [],
+      });
     }
     t += dur + gap;
   });
@@ -90,7 +99,11 @@ describe('envelope scorer: the four handover tests', () => {
   });
 
   it('silence = seed with every word missing', () => {
-    const r = score({ samples: new Float32Array(48000 * 3), timings: native.timings, rate: 48000 });
+    const r = score({
+      samples: new Float32Array(48000 * 3),
+      timings: native.timings,
+      rate: 48000,
+    });
     expect(r.stage).toBe('seed');
     expect(r.score).toBeLessThan(40);
     expect(r.wordMarks).toHaveLength(WORDS.length);
@@ -100,7 +113,11 @@ describe('envelope scorer: the four handover tests', () => {
 
   it('flattened target syllable → stress_soft on the target, stress tip', () => {
     const r = score(sentence({ rate: 48000, targetAmps: [0.4, 0.4, 0.4] }));
-    expect(r.wordMarks[TARGET]).toEqual({ index: TARGET, ok: false, reason: 'stress_soft' });
+    expect(r.wordMarks[TARGET]).toEqual({
+      index: TARGET,
+      ok: false,
+      reason: 'stress_soft',
+    });
     expect(r.wordMarks.filter((m) => m.index !== TARGET).every((m) => m.ok)).toBe(true);
     expect(r.tipKey).toBe(TIP_KEYS.stress);
     expect(r.tipParams).toEqual({ word: 'mitigate', syllable: '0' });
@@ -129,7 +146,10 @@ describe('envelope scorer: other marks', () => {
   });
 
   it('runs a 5 s clip in under 150 ms', async () => {
-    const long = sentence({ rate: 48000, tailSeconds: 5 - native.timings.duration + 0.3 });
+    const long = sentence({
+      rate: 48000,
+      tailSeconds: 5 - native.timings.duration + 0.3,
+    });
     const t0 = performance.now();
     await envelopeScorer.score({
       native: native.samples,
@@ -143,6 +163,54 @@ describe('envelope scorer: other marks', () => {
       `envelope scorer: ${ms.toFixed(1)} ms for a ${(long.samples.length / 48000).toFixed(1)} s clip`,
     );
     expect(ms).toBeLessThan(150);
+  });
+});
+
+/**
+ * The learner starts late (G3, 2026-10-04): `lateSeconds` of room noise
+ * before the sentence, with the mic-tap click at the very start and a
+ * short click (phone handling) in the middle of the wait.
+ */
+function lateStart(lateSeconds: number, noiseRms = 0.012) {
+  const clean = sentence({ rate: 48000 });
+  const rate = clean.rate;
+  const lead = Math.round(lateSeconds * rate);
+  const samples = new Float32Array(lead + clean.samples.length);
+  samples.set(clean.samples, lead);
+  let seed = 7;
+  const rand = () => ((seed = (seed * 16807) % 2147483647) / 2147483647) * 2 - 1;
+  const amp = noiseRms * Math.sqrt(3); // uniform noise with this RMS
+  for (let i = 0; i < samples.length; i++) samples[i] += amp * rand();
+  const click = (at: number) => {
+    const a = Math.round(at * rate);
+    for (let i = a; i < a + Math.round(0.012 * rate); i++) samples[i] += 0.6 * rand();
+  };
+  click(0.03);
+  click(lateSeconds / 2);
+  return { samples, timings: clean.timings, rate };
+}
+
+describe('envelope scorer: late start, tap click and room noise', () => {
+  const clean = score(sentence({ rate: 48000 }));
+
+  it.each([1, 2])('starting %i s late scores within 5 points of on time', (late) => {
+    const r = score(lateStart(late));
+    expect(r.score).toBeGreaterThanOrEqual(clean.score - 5);
+    expect(r.wordMarks.every((m) => m.reason !== 'missing')).toBe(true);
+  });
+
+  it('measures only the voice, not the wait before it', () => {
+    const r = score(lateStart(2));
+    expect(Math.abs(r.userDurationMs - clean.userDurationMs)).toBeLessThanOrEqual(60);
+  });
+
+  it('room noise alone is still "nothing heard"', () => {
+    const noise = lateStart(0);
+    const r = score({
+      ...noise,
+      samples: lateStart(3).samples.slice(0, 48000 * 2),
+    });
+    expect(r.userDurationMs).toBe(0);
   });
 });
 

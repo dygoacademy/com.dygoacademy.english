@@ -6,7 +6,7 @@ import { useTranslations } from 'next-intl';
 
 import { GARDEN_ROUTES } from '@/constants/garden';
 import { useCreateSpeakingAttempt } from '@/hooks/useCreateSpeakingAttempt';
-import { useLiveLevels } from '@/hooks/useLiveLevels';
+import { LIVE_LEVELS_PER_SECOND, useLiveLevels } from '@/hooks/useLiveLevels';
 import { useNativeEnvelope } from '@/hooks/useNativeEnvelope';
 import { usePlayer } from '@/hooks/usePlayer';
 import { useSpeakingSession } from '@/hooks/useSpeakingSession';
@@ -26,7 +26,12 @@ import {
   type Recorder,
   type Recording,
 } from '@/lib/speaking/audio';
-import { MIC_EXPLAINED_KEY, MIN_VOICE_MS, POND_SESSION_SIZE } from '@/lib/speaking/constants';
+import {
+  COUNTDOWN_SECONDS,
+  MIC_EXPLAINED_KEY,
+  MIN_VOICE_MS,
+  POND_SESSION_SIZE,
+} from '@/lib/speaking/constants';
 import { envelopeScorer, type SpeakingResult } from '@/lib/speaking/envelopeScorer';
 import {
   forAccent,
@@ -34,6 +39,7 @@ import {
   recordingTargetMs,
   sessionPattern,
   speakReducer,
+  voiceEnded,
   type SpeakAction,
   type SpeakState,
 } from '@/lib/speaking/session';
@@ -122,6 +128,8 @@ export function SpeakFlow({
   const [support] = React.useState(() => speakingSupport());
   const [stream, setStream] = React.useState<MediaStream | null>(null);
   const [elapsedMs, setElapsedMs] = React.useState(0);
+  /** 3 · 2 · 1 before recording starts (G3-b); null once it's recording. */
+  const [countdown, setCountdown] = React.useState<number | null>(null);
   const [recording, setRecording] = React.useState<Recording | null>(null);
   const [recUrl, setRecUrl] = React.useState<string | null>(null);
   const [result, setResult] = React.useState<SpeakingResult | null>(null);
@@ -140,21 +148,42 @@ export function SpeakFlow({
   const item = items[Math.min(state.index, items.length - 1)];
   const url = item ? clipUrl(item, accent) : null;
   const native = useNativeEnvelope(url);
-  const live = useLiveLevels(stream, state?.phase === 'recording');
+  const capturing = state?.phase === 'recording' && countdown === null;
+  const live = useLiveLevels(stream, capturing);
 
   // Warm the phone's media cache with the session's clips (option 2).
   React.useEffect(() => {
     void prefetchMedia(items.map((i) => clipUrl(i, accent)));
   }, [items, accent]);
 
+  // Countdown: the sentence on screen, mic already open, then record.
+  React.useEffect(() => {
+    if (countdown === null) return;
+    const id = setTimeout(() => {
+      if (countdown > 1) {
+        setCountdown(countdown - 1);
+        return;
+      }
+      setCountdown(null);
+      recorder.current?.start();
+    }, 1000);
+    return () => clearTimeout(id);
+  }, [countdown]);
+
   // Recording clock.
   React.useEffect(() => {
-    if (state?.phase !== 'recording' || !stream) return;
+    if (!capturing || !stream) return;
     const started = performance.now();
     setElapsedMs(0);
     const id = setInterval(() => setElapsedMs(performance.now() - started), 100);
     return () => clearInterval(id);
-  }, [state?.phase, stream]);
+  }, [capturing, stream]);
+
+  // Stop by itself 1.5 s after the voice ends (G3-b).
+  React.useEffect(() => {
+    if (capturing && voiceEnded(live, LIVE_LEVELS_PER_SECOND)) void stopRecording();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [capturing, live]);
 
   // The learner's clip as a URL for "Play you"; revoked when replaced.
   React.useEffect(() => {
@@ -278,7 +307,7 @@ export function SpeakFlow({
       const r = createRecorder(s, { onAutoStop: (rec) => endRecording(rec) });
       recorder.current = r;
       setStream(s);
-      r.start();
+      setCountdown(COUNTDOWN_SECONDS); // starts the recorder when it ends
       dispatch({ type: 'record' });
     } catch (err) {
       setNotice(noticeForMicError((err as { kind?: MicErrorKind }).kind ?? 'failed'));
@@ -288,6 +317,7 @@ export function SpeakFlow({
   async function stopRecording() {
     const r = recorder.current;
     if (!r) return;
+    recorder.current = null; // the auto-stop and a tap can't both stop it
     try {
       endRecording(await r.stop());
     } catch {
@@ -297,6 +327,7 @@ export function SpeakFlow({
   }
 
   function cancelRecording() {
+    setCountdown(null);
     recorder.current?.cancel();
     endRecording(null);
     dispatch({ type: 'cancel' });
@@ -329,6 +360,7 @@ export function SpeakFlow({
         nativeLevels={levels}
         liveLevels={live}
         elapsedMs={elapsedMs}
+        countdown={countdown}
         targetMs={recordingTargetMs(timings?.duration ?? 0, MAX_RECORDING_MS)}
         onStop={() => void stopRecording()}
         onCancel={cancelRecording}

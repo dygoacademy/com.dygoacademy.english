@@ -12,6 +12,19 @@ export const SILENCE_GATE_DBFS = -45;
 export const SILENCE_GATE_RMS = 10 ** (SILENCE_GATE_DBFS / 20);
 /** Keep this much after the last loud frame (and before the first). */
 export const SILENCE_HANG_MS = 150;
+/**
+ * Finding the learner's voice in a recording (decision G3-a, 2026-10-04):
+ * a late start, the mic-tap click, a breath or room noise mustn't count as
+ * speech. Skip the first SPEECH_SKIP_MS (tap click, mic warm-up); the gate
+ * is the highest of SILENCE_GATE_RMS, the clip's own noise floor (5th
+ * percentile) + SPEECH_FLOOR_MARGIN_DB, and its peak (99th percentile) −
+ * SPEECH_PEAK_RANGE_DB; voice starts and ends with at least SPEECH_MIN_RUN_MS
+ * above the gate, so clicks don't count. The native clip keeps the plain gate.
+ */
+export const SPEECH_SKIP_MS = 150;
+export const SPEECH_FLOOR_MARGIN_DB = 10;
+export const SPEECH_PEAK_RANGE_DB = 30;
+export const SPEECH_MIN_RUN_MS = 120;
 /** Envelopes are normalised to this percentile of their own values. */
 export const ENVELOPE_NORM_PERCENTILE = 0.95;
 /** Sakoe-Chiba band for DTW, as a share of the longer envelope. */
@@ -86,6 +99,19 @@ export const TIP_KEYS = {
 } as const;
 
 // ── Sessions and offers ───────────────────────────────────────────────────
+
+/**
+ * The recording flow (decision G3-b, 2026-10-04, "like PTE"): one tap on
+ * the mic, a COUNTDOWN_SECONDS countdown with the sentence on screen, then
+ * recording, which stops by itself AUTO_STOP_SILENCE_MS after the voice
+ * ends. The follow-along highlight runs FOLLOW_ALONG_SLOWDOWN × slower than
+ * the native clip, and the timer's target is the native length ×
+ * RECORDING_TARGET_FACTOR (at most MAX_RECORDING_MS).
+ */
+export const COUNTDOWN_SECONDS = 3;
+export const AUTO_STOP_SILENCE_MS = 1500;
+export const FOLLOW_ALONG_SLOWDOWN = 1.5;
+export const RECORDING_TARGET_FACTOR = 2;
 
 /** Sentences in one Pond session. */
 export const POND_SESSION_SIZE = 5;

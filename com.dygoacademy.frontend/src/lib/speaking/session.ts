@@ -6,6 +6,17 @@
  */
 import type { SpeakingAccent, SpeakingSessionItem, SpeakingStage, SpeakingTimings } from '@/types';
 
+import {
+  AUTO_STOP_SILENCE_MS,
+  FOLLOW_ALONG_SLOWDOWN,
+  RECORDING_TARGET_FACTOR,
+  SILENCE_GATE_RMS,
+  SPEECH_FLOOR_MARGIN_DB,
+  SPEECH_MIN_RUN_MS,
+  SPEECH_PEAK_RANGE_DB,
+  SPEECH_SKIP_MS,
+} from './constants';
+
 export type SpeakPhase = 'listen' | 'recording' | 'compare' | 'done';
 
 export interface SpeakState {
@@ -47,7 +58,10 @@ export function speakReducer(state: SpeakState, action: SpeakAction): SpeakState
       if (prev && prev.score >= action.score) return state;
       return {
         ...state,
-        best: { ...state.best, [state.index]: { stage: action.stage, score: action.score } },
+        best: {
+          ...state.best,
+          [state.index]: { stage: action.stage, score: action.score },
+        },
       };
     }
     case 'tryAgain':
@@ -72,8 +86,10 @@ export function speakReducer(state: SpeakState, action: SpeakAction): SpeakState
 export function followAlongIndex(
   timings: SpeakingTimings | null | undefined,
   elapsedSeconds: number,
+  slowdown = FOLLOW_ALONG_SLOWDOWN,
 ): number {
   if (!timings) return -1;
+  elapsedSeconds /= slowdown;
   let last = -1;
   timings.words.forEach((w, i) => {
     if (w.start <= elapsedSeconds) last = i;
@@ -88,11 +104,44 @@ export function formatClock(ms: number): string {
 }
 
 /**
- * The time shown after the slash on SP2 ("0:02 / 0:05"): the native clip
- * plus half again, rounded up, at most the 8 s cap (decision S7-b).
+ * The time shown after the slash on SP2 ("0:02 / 0:06"): the native clip ×
+ * RECORDING_TARGET_FACTOR, rounded up, at most the cap (decision S7-b,
+ * ×2 since G3-b).
  */
 export function recordingTargetMs(nativeSeconds: number, capMs: number): number {
-  return Math.min(capMs, Math.ceil(nativeSeconds * 1.5) * 1000);
+  return Math.min(capMs, Math.ceil(nativeSeconds * RECORDING_TARGET_FACTOR) * 1000);
+}
+
+/**
+ * True once the learner has spoken and then been quiet for
+ * AUTO_STOP_SILENCE_MS: the recording stops by itself (decision G3-b).
+ * `levels` are the live mic bars (RMS, `barsPerSecond` a second) since
+ * recording started. Same idea as the scorer's `speechRange`: skip the
+ * tap click, gate from the room's own noise and the loudest bar, and only
+ * a run of SPEECH_MIN_RUN_MS above the gate counts as voice. Never true
+ * before any voice, so a late start just waits (up to MAX_RECORDING_MS).
+ */
+export function voiceEnded(levels: readonly number[], barsPerSecond: number): boolean {
+  const bars = (ms: number) => Math.max(1, Math.ceil((ms / 1000) * barsPerSecond));
+  const body = levels.slice(bars(SPEECH_SKIP_MS));
+  const quietBars = bars(AUTO_STOP_SILENCE_MS);
+  const minRun = bars(SPEECH_MIN_RUN_MS);
+  if (body.length < minRun + quietBars) return false;
+  const sorted = [...body].sort((a, b) => a - b);
+  const at = (p: number) => sorted[Math.floor(p * (sorted.length - 1))];
+  const gate = Math.max(
+    SILENCE_GATE_RMS,
+    at(0.05) * 10 ** (SPEECH_FLOOR_MARGIN_DB / 20),
+    at(1) * 10 ** (-SPEECH_PEAK_RANGE_DB / 20),
+  );
+  const tail = body.slice(body.length - quietBars);
+  if (tail.some((v) => v >= gate)) return false;
+  let run = 0;
+  for (const v of body.slice(0, body.length - quietBars)) {
+    run = v >= gate ? run + 1 : 0;
+    if (run >= minRun) return true;
+  }
+  return false;
 }
 
 /** The accent's clip, timings and IPA, each falling back to the other accent. */
@@ -123,7 +172,11 @@ const TIP_PRIORITY = [
  */
 export function sessionPattern(
   results: Record<number, { tipKey: string; tipParams?: Record<string, string> }>,
-): { index: number; tipKey: string; tipParams?: Record<string, string> } | null {
+): {
+  index: number;
+  tipKey: string;
+  tipParams?: Record<string, string>;
+} | null {
   const entries = Object.entries(results)
     .map(([i, r]) => ({ index: Number(i), ...r }))
     .filter((r) => TIP_PRIORITY.includes(r.tipKey));

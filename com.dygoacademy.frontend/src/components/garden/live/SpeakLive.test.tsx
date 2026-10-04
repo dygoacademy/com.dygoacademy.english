@@ -1,5 +1,5 @@
 import { act, fireEvent, screen, waitFor } from '@testing-library/react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { renderWithIntl } from '@/test/render';
 
@@ -12,6 +12,7 @@ import {
 const mutate = vi.fn();
 const prefetch = vi.fn();
 const recorderStop = vi.fn();
+const recorderStart = vi.fn();
 const release = vi.fn();
 const push = vi.fn();
 const retryNative = vi.fn();
@@ -22,6 +23,7 @@ const env = {
   micError: null as null | { kind: string },
   result: SPEAK_FIXTURE_RESULT,
   nativeError: false,
+  levels: [0.1, 0.2] as number[],
 };
 
 vi.mock('next/navigation', () => ({ useRouter: () => ({ push }) }));
@@ -51,7 +53,7 @@ vi.mock('@/hooks/useNativeEnvelope', () => ({
 }));
 vi.mock('@/hooks/useLiveLevels', () => ({
   LIVE_LEVELS_PER_SECOND: 20,
-  useLiveLevels: () => [0.1, 0.2],
+  useLiveLevels: (_s: unknown, active: boolean) => (active ? env.levels : []),
 }));
 vi.mock('@/lib/media-cache', () => ({ prefetchMedia: (...a: unknown[]) => prefetch(...a) }));
 vi.mock('@/lib/speaking/envelopeScorer', () => ({
@@ -69,7 +71,7 @@ vi.mock('@/lib/speaking/audio', async (orig) => ({
   decodeForScoring: () => Promise.resolve({ samples: new Float32Array(16000), sampleRate: 16000 }),
   createRecorder: () => ({
     kind: 'media-recorder',
-    start: vi.fn(),
+    start: recorderStart,
     cancel: vi.fn(),
     stop: () => {
       recorderStop();
@@ -79,6 +81,15 @@ vi.mock('@/lib/speaking/audio', async (orig) => ({
 }));
 
 import { SpeakFlow, SpeakLive } from './SpeakLive';
+
+/** The 3 · 2 · 1 before recording (G3-b). */
+async function countdown() {
+  for (let i = 0; i < 3; i++) {
+    await act(async () => {
+      vi.advanceTimersByTime(1000);
+    });
+  }
+}
 
 /** Renders and lets the mic-permission check settle. */
 async function renderLive() {
@@ -94,7 +105,11 @@ describe('SpeakLive (The Pond)', () => {
       micError: null,
       result: SPEAK_FIXTURE_RESULT,
       nativeError: false,
+      levels: [0.1, 0.2],
     });
+    vi.useFakeTimers({ shouldAdvanceTime: true, toFake: ['setTimeout', 'clearTimeout'] });
+    recorderStart.mockReset();
+    recorderStop.mockReset();
     window.localStorage.clear();
     push.mockReset();
     mutate.mockReset();
@@ -116,6 +131,7 @@ describe('SpeakLive (The Pond)', () => {
       await act(async () =>
         fireEvent.click(screen.getByRole('button', { name: 'Start speaking' })),
       );
+      await countdown();
       expect(screen.getByRole('button', { name: 'Stop recording' })).toBeTruthy();
       await act(async () =>
         fireEvent.click(screen.getByRole('button', { name: 'Stop recording' })),
@@ -141,13 +157,60 @@ describe('SpeakLive (The Pond)', () => {
   it('try again records the same sentence and saves another attempt', async () => {
     await renderLive();
     await act(async () => fireEvent.click(screen.getByRole('button', { name: 'Start speaking' })));
+    await countdown();
     await act(async () => fireEvent.click(screen.getByRole('button', { name: 'Stop recording' })));
     await waitFor(() => expect(screen.getByText('In bloom · 82% match')).toBeTruthy());
     await act(async () => fireEvent.click(screen.getByRole('button', { name: 'Try again' })));
+    await countdown();
     expect(screen.getByRole('button', { name: 'Stop recording' })).toBeTruthy();
     expect(screen.getByText('1/5')).toBeTruthy();
     await act(async () => fireEvent.click(screen.getByRole('button', { name: 'Stop recording' })));
     await waitFor(() => expect(mutate).toHaveBeenCalledTimes(2));
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it('counts down 3 · 2 · 1 with the sentence shown, then records', async () => {
+    await renderLive();
+    await act(async () => fireEvent.click(screen.getByRole('button', { name: 'Start speaking' })));
+    expect(screen.getByRole('status', { name: 'Recording starts in 3' })).toBeTruthy();
+    expect(screen.getByText('Get ready')).toBeTruthy();
+    expect(screen.queryByRole('button', { name: 'Stop recording' })).toBeNull();
+    expect(recorderStart).not.toHaveBeenCalled();
+    await act(async () => {
+      vi.advanceTimersByTime(1000);
+    });
+    expect(screen.getByRole('status', { name: 'Recording starts in 2' })).toBeTruthy();
+    for (let i = 0; i < 2; i++) {
+      await act(async () => {
+        vi.advanceTimersByTime(1000);
+      });
+    }
+    expect(recorderStart).toHaveBeenCalledTimes(1);
+    expect(screen.getByRole('button', { name: 'Stop recording' })).toBeTruthy();
+    expect(screen.getByText('It stops by itself when you finish')).toBeTruthy();
+  });
+
+  it('stops by itself 1.5 s after the voice ends, then scores', async () => {
+    const bars = (n: number, v: number) => Array.from({ length: n }, () => v);
+    env.levels = [...bars(10, 0.004), ...bars(40, 0.2), ...bars(30, 0.004)];
+    await renderLive();
+    await act(async () => fireEvent.click(screen.getByRole('button', { name: 'Start speaking' })));
+    await countdown();
+    await waitFor(() => expect(recorderStop).toHaveBeenCalledTimes(1));
+    await waitFor(() => expect(screen.getByText('In bloom · 82% match')).toBeTruthy());
+    expect(mutate).toHaveBeenCalledTimes(1);
+  });
+
+  it('cancel during the countdown never starts the recorder', async () => {
+    await renderLive();
+    await act(async () => fireEvent.click(screen.getByRole('button', { name: 'Start speaking' })));
+    fireEvent.click(screen.getByRole('button', { name: 'Cancel' }));
+    await countdown();
+    expect(recorderStart).not.toHaveBeenCalled();
+    expect(screen.getByRole('button', { name: 'Start speaking' })).toBeTruthy();
   });
 
   it('cancel goes back to listening', async () => {
@@ -160,6 +223,7 @@ describe('SpeakLive (The Pond)', () => {
 
   const record = async () => {
     await act(async () => fireEvent.click(screen.getByRole('button', { name: 'Start speaking' })));
+    await countdown();
     await act(async () => fireEvent.click(screen.getByRole('button', { name: 'Stop recording' })));
   };
 
@@ -198,6 +262,7 @@ describe('SpeakLive (The Pond)', () => {
     await act(async () =>
       fireEvent.click(screen.getByRole('button', { name: 'Allow microphone' })),
     );
+    await countdown();
     expect(screen.getByRole('button', { name: 'Stop recording' })).toBeTruthy();
     expect(window.localStorage.getItem('dygo:speak-mic-explained')).toBe('1');
   });

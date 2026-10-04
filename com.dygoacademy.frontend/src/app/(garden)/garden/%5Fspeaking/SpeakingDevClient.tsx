@@ -34,7 +34,7 @@ export const DEV_COPY = {
   intro: 'Phase 13 dev page. Nothing you record leaves this phone.',
   browser: 'This browser',
   record: '1 · Record and replay',
-  recordStart: 'Record (max 8 s)',
+  recordStart: 'Record (max 15 s)',
   recordStop: 'Stop',
   playMe: (rate: number) => `Play me ${rate}×`,
   play: (rate: number) => `Play ${rate}×`,

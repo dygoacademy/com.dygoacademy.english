@@ -15,8 +15,12 @@
 export const SPEAKING_SAMPLE_RATE = 16000;
 /** Envelope frames per second (handover §3 step 3). */
 export const ENVELOPE_FPS = 100;
-/** Recording auto-stops here (handover §4: cap at 8 s). */
-export const MAX_RECORDING_MS = 8000;
+/**
+ * Recording auto-stops here at the latest (handover §4 said 8 s; 15 s since
+ * decision G3-b, 2026-10-04: slow readers were cut off). Normally the
+ * recording stops earlier, when the voice ends (`voiceEnded`).
+ */
+export const MAX_RECORDING_MS = 15000;
 
 /**
  * Recorder formats, first supported wins. iOS Safari records `audio/mp4`

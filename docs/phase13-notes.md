@@ -413,3 +413,23 @@ What the unattended run could check is automated (Vitest, mocked mic/API); every
 4. ~~iOS after-recording playback volume and the silent switch are unknowns until G1/G3.~~ Checked at G1 (10-04): loud enough at 1× and 0.75×, plays with the silent switch on.
 5. The Sound patch (second half of the Sound Garden) isn't built (not in this run).
 6. New words still need a manual `npm run speaking-generate -- --all` (README); `analyse` has no example sentence.
+
+## 17. G3 · Recording flow "like PTE" and late starts (Dylan, 2026-10-04)
+
+Dylan's first Pond session on the iPhone: the recording screen came too fast to read the sentence, and starting 1–2 s late pulled the score far down although the reading was good.
+
+### G3-a · The scorer finds the learner's voice, not the first noise (decided with Dylan, 2026-10-04)
+
+Cause: `loudRange` took the first 10 ms frame above −45 dBFS as the start of speech. The mic-tap click, a breath or plain room noise on an iPhone is above that, so a late start counted 1–2 s of waiting as speech: pace points lost, DTW (band 25 %) couldn't line the words up, words marked missing. The synthetic tests had silent leads, so they never showed it.
+
+Fix (`speechRange`, learner's clip only; the native clip keeps `loudRange`): skip the first 150 ms; gate = highest of −45 dBFS, the clip's noise floor (5th percentile) + 10 dB, its peak (99th percentile) − 30 dB; voice starts and ends with ≥ 120 ms above the gate (clicks don't count). Constants `SPEECH_*` in `constants.ts`. Tests: 1 s and 2 s late with room noise (−38 dBFS) and two clicks score within 5 points of on time (were −6 and −14 on the synthetic sentence) and measure the same voice length; noise alone is still "nothing heard".
+
+### G3-b · One tap, 3 · 2 · 1, stops by itself (decided with Dylan, 2026-10-04)
+
+Dylan asked for a simple flow, like PTE Read Aloud (read, beep, record, stops after silence). Considered and dropped: press-and-hold to record (two ways to do one thing).
+
+- Tap the mic once → SP2 shows the whole sentence (no fading) with **3 · 2 · 1** (`COUNTDOWN_SECONDS`); the mic is already open, the recorder starts when the count ends. No stop button during the count; Cancel works.
+- Recording stops by itself 1.5 s after the voice ends (`voiceEnded`, same gate idea as G3-a on the live bars; never before any voice, so a late start just waits). Tap to stop still works. Hard cap 15 s (`MAX_RECORDING_MS`, was 8 s, handover §4).
+- Follow-along highlight 1.5× slower than the native clip (`FOLLOW_ALONG_SLOWDOWN`); timer target native × 2 (`RECORDING_TARGET_FACTOR`, was × 1.5, S7-b).
+- New strings `getReady`, `countdownLabel`, `readAfterCount`, `autoStop` in all three locales (vi and zh drafted by Claude).
+- Differs from the design files (SP2 has no countdown state) and from handover §4 (8 s cap). The `/garden/_speaking` dev page keeps its plain Record button, now max 15 s.

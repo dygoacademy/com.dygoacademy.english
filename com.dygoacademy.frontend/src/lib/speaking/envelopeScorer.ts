@@ -33,6 +33,10 @@ import {
   SILENCE_GATE_RMS,
   SILENCE_HANG_MS,
   SLOW_RATIO,
+  SPEECH_FLOOR_MARGIN_DB,
+  SPEECH_MIN_RUN_MS,
+  SPEECH_PEAK_RANGE_DB,
+  SPEECH_SKIP_MS,
   stageForScore,
   STRESS_SOFT_RATIO,
   TIP_KEYS,
@@ -76,7 +80,57 @@ export function loudRange(
   let last = env.length - 1;
   while (last > first && env[last] < SILENCE_GATE_RMS) last--;
   const hang = Math.round((SILENCE_HANG_MS / 1000) * fps);
-  return { start: Math.max(0, first - hang), end: Math.min(env.length, last + 1 + hang) };
+  return {
+    start: Math.max(0, first - hang),
+    end: Math.min(env.length, last + 1 + hang),
+  };
+}
+
+/**
+ * The learner's voice in their recording as frames [start, end), with the
+ * hang on both sides; null if there's no voice (decision G3-a). Unlike
+ * `loudRange`, ignores the first SPEECH_SKIP_MS, sets the gate from the
+ * clip's own noise floor and peak, and needs SPEECH_MIN_RUN_MS above it, so
+ * a late start, a tap click or room noise isn't measured as speech.
+ */
+export function speechRange(
+  env: number[],
+  fps = ENVELOPE_FPS,
+): { start: number; end: number } | null {
+  const skip = Math.min(env.length, Math.round((SPEECH_SKIP_MS / 1000) * fps));
+  const body = env.slice(skip);
+  if (body.length === 0) return null;
+  const sorted = [...body].sort((a, b) => a - b);
+  const at = (p: number) => sorted[Math.floor(p * (sorted.length - 1))];
+  const gate = Math.max(
+    SILENCE_GATE_RMS,
+    at(0.05) * 10 ** (SPEECH_FLOOR_MARGIN_DB / 20),
+    at(0.99) * 10 ** (-SPEECH_PEAK_RANGE_DB / 20),
+  );
+  const minRun = Math.max(1, Math.round((SPEECH_MIN_RUN_MS / 1000) * fps));
+
+  let first = -1;
+  for (let i = 0, run = 0; i < body.length; i++) {
+    run = body[i] >= gate ? run + 1 : 0;
+    if (run >= minRun) {
+      first = i - run + 1;
+      break;
+    }
+  }
+  if (first < 0) return null;
+  let last = first;
+  for (let i = body.length - 1, run = 0; i >= first; i--) {
+    run = body[i] >= gate ? run + 1 : 0;
+    if (run >= minRun) {
+      last = i + run - 1;
+      break;
+    }
+  }
+  const hang = Math.round((SILENCE_HANG_MS / 1000) * fps);
+  return {
+    start: Math.max(0, skip + first - hang),
+    end: Math.min(env.length, skip + last + 1 + hang),
+  };
 }
 
 function percentile(values: number[], p: number): number {
@@ -227,7 +281,7 @@ export function scoreSpeaking(input: ScorerInput): SpeakingResult {
     fps,
   );
   const nRange = loudRange(nativeRaw) ?? { start: 0, end: nativeRaw.length };
-  const uRange = loudRange(userRaw);
+  const uRange = speechRange(userRaw);
   const native = normalise(nativeRaw.slice(nRange.start, nRange.end));
   const toFrame = (seconds: number) => Math.round(seconds * fps) - nRange.start;
 
@@ -236,7 +290,11 @@ export function scoreSpeaking(input: ScorerInput): SpeakingResult {
     return {
       score: 0,
       stage: 'seed',
-      wordMarks: words.map((_, index) => ({ index, ok: false, reason: 'missing' })),
+      wordMarks: words.map((_, index) => ({
+        index,
+        ok: false,
+        reason: 'missing',
+      })),
       userDurationMs: 0,
       envelopes: { native, user: [] },
       tipKey: TIP_KEYS.missing,

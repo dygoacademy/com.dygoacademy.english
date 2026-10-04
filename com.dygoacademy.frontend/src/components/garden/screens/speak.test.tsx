@@ -116,9 +116,19 @@ describe('SpeakRecordingScreen (SP2)', () => {
     expect(screen.getByText('mitigate /ˈmɪt.ɪ.ɡeɪt/: push on mɪt')).toBeTruthy();
   });
 
+  it('countdown: the whole sentence shown, the number, no stop button yet', () => {
+    recording({ countdown: 2, elapsedMs: 0 });
+    expect(screen.getByRole('status', { name: 'Recording starts in 2' }).textContent).toBe('2');
+    expect(screen.getByText('Start reading when the count ends')).toBeTruthy();
+    expect(screen.queryByRole('button', { name: 'Stop recording' })).toBeNull();
+    expect(screen.getByRole('button', { name: 'Cancel' })).toBeTruthy();
+    const sentence = screen.getByText('Planting', { exact: false }).closest('p')!;
+    expect(sentence.querySelector('[data-faded]')).toBeNull();
+  });
+
   it('follows along: words not reached yet are faded', () => {
     const t = SPEAK_FIXTURE_ITEM.timings_us!;
-    recording({ elapsedMs: t.words[2].start * 1000 + 10 });
+    recording({ elapsedMs: t.words[2].start * 1.5 * 1000 + 10 }); // 1.5× slower (G3-b)
     const sentence = screen.getByText('Planting', { exact: false }).closest('p')!;
     const faded = within(sentence)
       .getAllByText(/./)
