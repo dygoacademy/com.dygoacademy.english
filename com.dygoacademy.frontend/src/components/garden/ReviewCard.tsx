@@ -217,7 +217,7 @@ function ChipList({ title, items }: { title: string; items?: readonly string[] |
 }
 
 /** Parts of speech the garden translates; anything else shows as stored. */
-const PARTS_OF_SPEECH = {
+export const PARTS_OF_SPEECH = {
   noun: 'noun',
   verb: 'verb',
   adjective: 'adjective',
@@ -232,7 +232,7 @@ const PARTS_OF_SPEECH = {
   idiom: 'idiom',
 } as const;
 
-function partOfSpeechLabel(
+export function partOfSpeechLabel(
   value: string,
   t: (key: (typeof PARTS_OF_SPEECH)[keyof typeof PARTS_OF_SPEECH]) => string,
 ): string {

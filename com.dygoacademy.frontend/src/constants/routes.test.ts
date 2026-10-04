@@ -43,7 +43,7 @@ describe('isProtectedPath', () => {
 
   it('lists every short URL', () => {
     expect(PROTECTED_PATH_PREFIXES).toEqual(
-      expect.arrayContaining(['/', '/garden', '/review', '/topics', '/missions', '/me', '/groups', '/quiz', '/join']),
+      expect.arrayContaining(['/', '/garden', '/review', '/topics', '/missions', '/me', '/groups', '/quiz', '/join', '/sounds']),
     );
   });
 

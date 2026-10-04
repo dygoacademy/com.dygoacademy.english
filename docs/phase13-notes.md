@@ -198,6 +198,11 @@ Whichever is chosen, syllable boundaries for the target word come from the IPA (
 | S6-b | Pond wording | Header "Speaking · The Pond" (no topic: the Pond mixes the learner's words), SP4 sub "Your voice watered your garden" | The handover's `{topic}` came from the dropped topic-bed entry |
 | S6-c | Staging with others' edits | Index = HEAD JSON + `screens.speak` (written with `git hash-object` / `update-index`); the working `en-US` / `vi-VN` files keep everyone's uncommitted edits plus the same keys | Compressed-run rule for G2 |
 | S6-d | Extra keys | Added now so later sessions don't touch the message files: T7 states (`mic`, `denied`, `quiet`, `short`, `unsupported`, `audioFailed`), tips beyond the stress one, mark reasons, waveform labels, Sound Garden card (`soundGarden`), "Say this one?" (`sayThis`) | — |
+| S7-a | `/sounds` | Goes straight into The Pond (no hub page): the Sound patch, the hub's other half, isn't in this run. Close → Missions tab | When the Sound patch is built, `/sounds` becomes the hub and The Pond moves under it |
+| S7-b | SP2 timer | "0:02 / 0:05": the part after the slash is the native clip × 1.5, rounded up, at most 8 s; recording still auto-stops at 8 s | The design shows 0:05 for a 3.3 s sentence |
+| S7-c | SP2 stress tip | Plain text (`stressTip` has arguments, not tags), with the stressed syllable in IPA ("push on mɪt") | Turning IPA into spelling ("MIT") isn't reliable; next-intl can't bold an argument without a tag |
+| S7-d | Follow-along | Words dark up to the one the native speaker would have reached at the elapsed time | No speech recognition in v1 |
+| S7-e | Mic errors on SP1 | For now one line above the mic (denied / unsupported / failed); the full T7 states come in S9 | — |
 
 ## 11. Questions for Dylan
 

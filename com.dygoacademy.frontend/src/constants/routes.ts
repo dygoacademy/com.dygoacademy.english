@@ -39,6 +39,8 @@ export const PROTECTED_PATH_PREFIXES = [
   '/groups',
   '/quiz',
   '/join',
+  // Phase 13 Sound Garden / The Pond.
+  '/sounds',
   // The garden home (Phase 12 UI-3 U3-5a): listing it lets middleware.ts
   // bounce through /login and come back with `next`. The dev/fixture
   // pages under it are carved out in PUBLIC_GARDEN_DEV_PREFIXES; old
