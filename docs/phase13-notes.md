@@ -408,13 +408,23 @@ What the unattended run could check is automated (Vitest, mocked mic/API); every
 | Long Vietnamese strings (vi-VN UI) fit | — | 📱 | — | — | 📱 | — |
 | Sound Garden card on Missions (≥ 5 items) | ✅ | 📱 | — | — | 📱 | — |
 | "Say this one?" ≤ 3 per review, after the flip; Back to the card | ✅ rule, hook, card, single-mode tests | 📱 | — | 📱 | 📱 | — |
+| **v2 (S19, 2026-10-05)** | | | | | | |
+| 3 · 2 · 1 (0.9 s a step), tap to skip, Cancel during the count | ✅ SpeakLive + FlowCheck tests; Playwright | 📱 | 📱 | 📱 | 📱 | 📱 |
+| Beep at the end of the count (`/garden/_speaking` → 3) | ✅ beep tests | 📱 silent switch **off**: hear it; **on**: expect silence (the clay mic is the cue) | 📱 | 📱 | 📱 | 📱 |
+| Vibration at the beep | ✅ called where supported | — (iOS Safari has none) | — | 📱 | — | — |
+| Beep not in the recording (dev page → 3 → "beep in clip") | ✅ `toneRms` + FlowCheck leak test | 📱 should say "no" | 📱 | 📱 | 📱 | 📱 |
+| Stops by itself 2 s after you finish; "not heard" after 8 s of nothing; 30 s cap | ✅ `voiceEnded` / `notHeard` tests; Playwright auto-stop | 📱 quiet room, then a noisy café | — | 📱 | 📱 | — |
+| Server check: checking → done, marks missing / heard "…" (UAT `server`) | ✅ merge + SpeakLive server tests; Playwright (stubbed) | 📱 G7 + calibration recordings (M4) | 📱 | 📱 | 📱 | 📱 |
+| Server check fails → "Couldn't check this one", Check again / Record again | ✅ SpeakLive + Playwright (503) | 📱 airplane mode after recording | 📱 | 📱 | — | — |
+| Mic explainer says "checked, then deleted" in `server` mode | ✅ | 📱 first visit (or a private tab) | 📱 | 📱 | 📱 | 📱 |
+| Check time (M4A upload + scorer) | ✅ 1.3–2.1 s end to end on the Mac (M3) | 📱 on 4G / Wi-Fi from Vietnam | — | 📱 | — | — |
 
-**Run the Playwright spec** (signed-in fixture user from `ui/.env.e2e`, Chrome fake mic plays the fixture sentence, speaking API stubbed so nothing is written):
+**Run the Playwright spec** (v2 since S19; signed-in fixture user from `ui/.env.e2e`, Chrome's fake mic plays the fixture sentence once so the auto-stop fires, speaking API incl. `/speaking/check` stubbed in the `{ success, data }` envelope so nothing is written and the scorer isn't called; Dylan runs it, since it signs in to the live site):
 `cd com.dygoacademy.automationtesting/ui && BASE_URL=https://www.dygoacademy.com npx playwright test tests/sounds.spec.ts --project=iphone-16`
 
 **Open issues / watch list**
-1. Scores are lenient (S3 note): a dropped word or rushing still reaches bloom/fruit on synthetic input. Tune `constants.ts` after G3.
-2. `garden:diff` for SP1–SP4 not run: no reference PNGs (S8-f).
+1. ~~Scores are lenient (S3 note)~~ Replaced by server checking (M5, 2026-10-05); still to calibrate (M4): a wrong target word can reach fruit.
+2. ~~`garden:diff` for SP1–SP4 not run~~ References exported (S14b); SP2 passes, SP3 0.5–1.4 %, no SP1 / SP4 fixture pages; S18b closed as is.
 3. The drafted Vietnamese strings and the mic explainer need Dylan's check (S6); zh-CN is a draft.
 4. ~~iOS after-recording playback volume and the silent switch are unknowns until G1/G3.~~ Checked at G1 (10-04): loud enough at 1× and 0.75×, plays with the silent switch on.
 5. The Sound patch (second half of the Sound Garden) isn't built (not in this run).
@@ -549,3 +559,9 @@ Table `api_usage_daily` (provider, UTC day, units; service_role only) and `Usage
 - **Google Cloud TTS** (`speaking-generate`): stops before the run passes `--max-usd` (default $2, `--yes` lifts it) and when today's total would pass `GOOGLE_TTS_DAILY_CHAR_LIMIT` (default 300000 chars, always on); a stopped run keeps what it made.
 - Verified: backend Jest 357/357 (5 new: cap SQL and errors, defaults, 80 % warning, capped enrichment job not retried); the cap SQL on the real database in a rolled-back transaction (2 calls pass, the 3rd over a cap of 2 is refused, an oversized first request is refused); the script with `--max-usd 0` stops before any TTS call and records nothing; dry run unchanged.
 - Still Dylan's (G5): Google Cloud budget alerts and quotas, the hard stop outside the app.
+
+### S19 · QA v2 (2026-10-05)
+
+- **Dev page** `/garden/_speaking` → **3 · Recording flow v2** (`FlowCheck.tsx`, moved from S15): runs the SP2 flow on its own and shows why it stopped (silence / not heard / 30 s cap / tap), the recording's length, format and size, and **beep in clip** (880 Hz level in the first 200 ms vs the whole clip; `toneRms`, Goertzel). For checking a phone step by step.
+- **Playwright** `ui/tests/sounds.spec.ts` brought to v2: the stubs now use the backend's `{ success, data }` envelope (the S12 version returned bare JSON, which the API client rejects, so it would have failed on its first run); `/speaking/check` stubbed (scorer never called); "Start recording"; the count tapped to skip; the fake mic plays once (`%noloop`) so the auto-stop is exercised; new tests for checking → marks (saved without `heard`) and for a 503 → "Couldn't check" → Check again. Type-checks; **not run here**: it signs in to the live site with the e2e account, which Claude doesn't do; Dylan runs the command above.
+- **QA matrix** rows for v2 added (above).

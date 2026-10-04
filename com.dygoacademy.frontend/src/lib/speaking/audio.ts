@@ -165,7 +165,10 @@ export interface SpeakingSupport {
 type AudioContextCtor = new (options?: AudioContextOptions) => AudioContext;
 
 function audioContextCtor(win: typeof globalThis = globalThis): AudioContextCtor | undefined {
-  const w = win as unknown as { AudioContext?: AudioContextCtor; webkitAudioContext?: AudioContextCtor };
+  const w = win as unknown as {
+    AudioContext?: AudioContextCtor;
+    webkitAudioContext?: AudioContextCtor;
+  };
   return w.AudioContext ?? w.webkitAudioContext;
 }
 
@@ -251,7 +254,9 @@ export function getAudioContext(win: typeof globalThis = globalThis): AudioConte
 }
 
 /** Creates/resumes the shared context. Call inside the tap handler (iOS). */
-export async function resumeAudioContext(win: typeof globalThis = globalThis): Promise<AudioContext> {
+export async function resumeAudioContext(
+  win: typeof globalThis = globalThis,
+): Promise<AudioContext> {
   const ctx = getAudioContext(win);
   if (ctx.state === 'suspended') await ctx.resume();
   return ctx;
@@ -356,7 +361,10 @@ function withAutoStop(recorder: Recorder, options: RecorderOptions): Recorder {
         timer = null;
         if (done) return;
         done = true;
-        void recorder.stop().then((r) => options.onAutoStop?.(r), () => undefined);
+        void recorder.stop().then(
+          (r) => options.onAutoStop?.(r),
+          () => undefined,
+        );
       }, maxMs);
     },
     stop() {
@@ -373,7 +381,11 @@ function withAutoStop(recorder: Recorder, options: RecorderOptions): Recorder {
   };
 }
 
-function mediaRecorder(stream: MediaStream, options: RecorderOptions, win: typeof globalThis): Recorder {
+function mediaRecorder(
+  stream: MediaStream,
+  options: RecorderOptions,
+  win: typeof globalThis,
+): Recorder {
   const MR = (win as unknown as { MediaRecorder: typeof MediaRecorder }).MediaRecorder;
   const now = options.now ?? (() => performance.now());
   const mime = pickRecorderMime((m) => MR.isTypeSupported(m));
@@ -394,7 +406,11 @@ function mediaRecorder(stream: MediaStream, options: RecorderOptions, win: typeo
         return new Promise<Recording>((resolve, reject) => {
           rec.onstop = () => {
             const mimeType = rec.mimeType || mime || chunks[0]?.type || 'audio/mp4';
-            resolve({ blob: new Blob(chunks, { type: mimeType }), mimeType, durationMs: now() - startedAt });
+            resolve({
+              blob: new Blob(chunks, { type: mimeType }),
+              mimeType,
+              durationMs: now() - startedAt,
+            });
           };
           rec.onerror = () => reject(new Error('recording failed'));
           if (rec.state === 'inactive') rec.onstop(new Event('stop'));
@@ -411,7 +427,11 @@ function mediaRecorder(stream: MediaStream, options: RecorderOptions, win: typeo
   );
 }
 
-function pcmRecorder(stream: MediaStream, options: RecorderOptions, win: typeof globalThis): Recorder {
+function pcmRecorder(
+  stream: MediaStream,
+  options: RecorderOptions,
+  win: typeof globalThis,
+): Recorder {
   const now = options.now ?? (() => performance.now());
   const ctx = getAudioContext(win);
   const source = ctx.createMediaStreamSource(stream);
@@ -453,6 +473,34 @@ function pcmRecorder(stream: MediaStream, options: RecorderOptions, win: typeof 
 }
 
 // ── Measuring ─────────────────────────────────────────────────────────────
+
+/**
+ * RMS (0..1) of the `hz` tone in samples[from, to) (Goertzel): how much of
+ * one pure tone is in a stretch of audio. The dev page uses it to check the
+ * 880 Hz start beep didn't leak into a recording (S19).
+ */
+export function toneRms(
+  samples: Float32Array,
+  sampleRate: number,
+  hz: number,
+  from = 0,
+  to = samples.length,
+): number {
+  const n = Math.max(0, Math.min(to, samples.length) - from);
+  if (n === 0) return 0;
+  const w = (2 * Math.PI * hz) / sampleRate;
+  const coeff = 2 * Math.cos(w);
+  let s1 = 0;
+  let s2 = 0;
+  for (let i = from; i < from + n; i++) {
+    const s0 = samples[i] + coeff * s1 - s2;
+    s2 = s1;
+    s1 = s0;
+  }
+  const power = s1 * s1 + s2 * s2 - coeff * s1 * s2;
+  // |X(f)| = A·n/2 for a sine of amplitude A, whose RMS is A/√2.
+  return (2 * Math.sqrt(Math.max(0, power))) / n / Math.SQRT2;
+}
 
 /** RMS (0..1) of one block of time-domain samples: one live level. */
 export function levelOf(block: Float32Array): number {

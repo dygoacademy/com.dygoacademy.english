@@ -7,6 +7,7 @@ import {
   encodeWav,
   estimateOffsetMs,
   levelOf,
+  toneRms,
   ENVELOPE_FPS,
   MAX_RECORDING_MS,
   MicError,
@@ -71,7 +72,9 @@ describe('resample', () => {
 describe('rmsEnvelope', () => {
   it('gives 100 frames a second', () => {
     expect(ENVELOPE_FPS).toBe(100);
-    expect(rmsEnvelope(new Float32Array(SPEAKING_SAMPLE_RATE * 2), SPEAKING_SAMPLE_RATE)).toHaveLength(200);
+    expect(
+      rmsEnvelope(new Float32Array(SPEAKING_SAMPLE_RATE * 2), SPEAKING_SAMPLE_RATE),
+    ).toHaveLength(200);
   });
 
   it('measures a sine at amplitude / √2 and silence at 0', () => {
@@ -111,7 +114,9 @@ describe('encodeWav', () => {
 
 describe('pickRecorderMime', () => {
   it('prefers mp4 (iOS Safari), then WebM/Opus, else null', () => {
-    expect(pickRecorderMime((m) => m === 'audio/mp4' || m.startsWith('audio/webm'))).toBe('audio/mp4');
+    expect(pickRecorderMime((m) => m === 'audio/mp4' || m.startsWith('audio/webm'))).toBe(
+      'audio/mp4',
+    );
     expect(pickRecorderMime((m) => m.startsWith('audio/webm'))).toBe('audio/webm;codecs=opus');
     expect(pickRecorderMime(() => false)).toBeNull();
     expect(pickRecorderMime(undefined)).toBeNull();
@@ -138,7 +143,10 @@ describe('speakingSupport', () => {
       recorder: 'pcm',
     });
     expect(speakingSupport({ navigator: nav } as never)).toEqual({ mic: true, recorder: null });
-    expect(speakingSupport({ navigator: fakeNav() } as never)).toEqual({ mic: false, recorder: null });
+    expect(speakingSupport({ navigator: fakeNav() } as never)).toEqual({
+      mic: false,
+      recorder: null,
+    });
   });
 });
 
@@ -195,7 +203,9 @@ describe('decodeToMono / decodeForScoring', () => {
     expect(mono.sampleRate).toBe(48000);
     expect(mono.samples[100]).toBeCloseTo(left[100], 6);
 
-    const scored = await decodeForScoring(new Blob([new Uint8Array(4)]), { decodeAudioData } as never);
+    const scored = await decodeForScoring(new Blob([new Uint8Array(4)]), {
+      decodeAudioData,
+    } as never);
     expect(scored.sampleRate).toBe(16000);
     expect(scored.samples).toHaveLength(8000);
   });
@@ -260,7 +270,9 @@ describe('createRecorder (MediaRecorder)', () => {
     rec.start();
     t = MAX_RECORDING_MS;
     await vi.advanceTimersByTimeAsync(MAX_RECORDING_MS);
-    expect(onAutoStop).toHaveBeenCalledWith(expect.objectContaining({ durationMs: MAX_RECORDING_MS }));
+    expect(onAutoStop).toHaveBeenCalledWith(
+      expect.objectContaining({ durationMs: MAX_RECORDING_MS }),
+    );
   });
 
   it('cancel gives no result and no auto-stop', async () => {
@@ -274,7 +286,9 @@ describe('createRecorder (MediaRecorder)', () => {
   });
 
   it('throws an unsupported MicError when nothing can record', () => {
-    expect(() => createRecorder({} as MediaStream, { win: { navigator: fakeNav() } as never })).toThrow(MicError);
+    expect(() =>
+      createRecorder({} as MediaStream, { win: { navigator: fakeNav() } as never }),
+    ).toThrow(MicError);
   });
 });
 
@@ -297,5 +311,30 @@ describe('levelOf / estimateOffsetMs', () => {
     expect(estimateOffsetMs(a, b, fps)).toBe(21);
     expect(estimateOffsetMs(b, a, fps)).toBe(-21);
     expect(estimateOffsetMs(a, a, fps)).toBe(0);
+  });
+});
+
+describe('toneRms (beep leak check, S19)', () => {
+  const RATE = 16000;
+  const sine = (hz: number, amp: number, seconds = 0.2) =>
+    Float32Array.from(
+      { length: RATE * seconds },
+      (_, i) => amp * Math.sin((2 * Math.PI * hz * i) / RATE),
+    );
+
+  it('measures a pure 880 Hz tone at its RMS', () => {
+    expect(toneRms(sine(880, 0.5), RATE, 880)).toBeCloseTo(0.5 / Math.SQRT2, 2);
+  });
+
+  it('ignores other frequencies and silence', () => {
+    expect(toneRms(sine(220, 0.5), RATE, 880)).toBeLessThan(0.01);
+    expect(toneRms(new Float32Array(3200), RATE, 880)).toBe(0);
+  });
+
+  it('looks only at the window asked for', () => {
+    const clip = new Float32Array(RATE);
+    clip.set(sine(880, 0.5, 0.1), 8000); // beep in the second half only
+    expect(toneRms(clip, RATE, 880, 0, 3200)).toBe(0);
+    expect(toneRms(clip, RATE, 880, 8000, 9600)).toBeGreaterThan(0.3);
   });
 });

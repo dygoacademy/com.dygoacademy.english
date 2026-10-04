@@ -25,6 +25,8 @@ import {
 } from '@/lib/speaking/audio';
 import type { SpeakingSession } from '@/types';
 
+import { FLOW_COPY, FlowCheck } from './FlowCheck';
+
 /**
  * Dev tool: English labels on purpose, kept here rather than in the
  * message files (see page.tsx and the phase notes, decision S2-a).
@@ -326,6 +328,10 @@ export function SpeakingDevClient() {
         {player.error && (
           <p className="mt-2 text-body-s text-primary-text">{DEV_COPY.playFailed(player.error)}</p>
         )}
+      </Section>
+
+      <Section title={FLOW_COPY.title}>
+        <FlowCheck />
       </Section>
     </>
   );
