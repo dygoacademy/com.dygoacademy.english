@@ -6,6 +6,23 @@ Nothing in this file has been deployed. Nothing on UAT, pm2 or the running serve
 
 ---
 
+## To do later
+
+Open items Dylan has parked, newest first. Tick them off here (and add a Change Log entry) when done.
+
+- [ ] **Cloudflare Cache Rule for `media.dygoacademy.com`** (added 2026-10-04). Until it's on, every audio play is served by the Mac (`cf-cache-status: DYNAMIC`) instead of Cloudflare's edge, so audio is slower far from Singapore and the Mac's upload carries all the traffic.
+  - Where: Cloudflare dashboard → dygoacademy.com → **Caching → Cache Rules → Create rule**.
+  - Rule: name `Media cache`; custom filter: Hostname equals `media.dygoacademy.com`; **Eligible for cache**; Edge TTL: *Use cache-control header if present, use default Cloudflare caching behavior if not*; Browser TTL: *Respect origin*; **Deploy**.
+  - Also turn on **Caching → Tiered Cache → Smart Tiered Caching** (free), so other Cloudflare cities fetch from Cloudflare, not the Mac.
+  - Check (run twice; the second run should show `HIT`):
+    `curl -sI https://media.dygoacademy.com/test/fixture-mitigate-us.wav | grep -iE "^HTTP|cf-cache-status"`
+- [ ] **Cloudflare response-header rule** `Access-Control-Allow-Origin: *` for `media.dygoacademy.com` (Rules → Transform Rules → Modify Response Header). The phone audio cache needs it for files Cloudflare has cached; do it together with the Cache Rule.
+- [ ] **Cloudflare WAF rule**: block anything but GET/HEAD/OPTIONS on `media.dygoacademy.com` (Security → WAF → Custom rules). RustFS already refuses unsigned writes, this stops them earlier.
+- [ ] **Cloudflare "Add visitor location headers"** managed transform, so the audio load-time log records cities, not just countries.
+- [ ] **Real-iPhone check** after the Cache Rule: play a word twice in Review (second play instant), then in airplane mode (still plays).
+
+Exact settings for all four Cloudflare rules: README → "Cloudflare dashboard rules". Done already: the bare-domain → www redirect (live, 301).
+
 ## 1. Stack (checked in the code)
 
 | Layer | What is there | Where |

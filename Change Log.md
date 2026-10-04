@@ -282,3 +282,8 @@ Engineering-facing log of shipped fixes and changes, one dated entry per change.
 * **What**: new section with the audio commands: `speaking-generate` (dry run, all, one topic, force, fixture), `audio-backfill`, `media-migrate`; where audio is stored, the `.m4a` + `.wav` pair, ffmpeg, `GOOGLE_TTS_API_KEY`, voices, cost, and that new words need a manual `speaking-generate` run for now.
 * **Why**: Dylan asked whether the speaking command was in the README; it wasn't.
 
+### Docs: "To do later" list in the Phase 13 notes
+* **Files**: [`docs/phase13-notes.md`](docs/phase13-notes.md)
+* **What**: a "To do later" checklist at the top of the notes. First item: the Cloudflare Cache Rule for `media.dygoacademy.com` (exact settings, Smart Tiered Caching, and the check command); then the CORS header rule, the WAF rule, visitor location headers, and the real-iPhone cache check.
+* **Why**: Dylan parked the Cloudflare cache setup for later and asked for it to be on the list.
+
