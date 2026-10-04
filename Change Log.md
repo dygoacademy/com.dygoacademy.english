@@ -277,3 +277,8 @@ Engineering-facing log of shipped fixes and changes, one dated entry per change.
 * **Verified**: all 276 timings pass `validateTimings` with a stressed target syllable; random sample of 12 clips: every word span contains speech, gaps are silent; public `.m4a` / `.wav` / `.json` URLs 200; live `/speaking/session` as the `alex` fixture returns 5 items (38 available), due words first.
 * **Skipped**: 5 words (1 without an example sentence, 4 multi-word entries the target matcher can't place yet); follow-up noted in the phase notes.
 
+### Docs: README "Audio and speaking content"
+* **Files**: [`README.md`](README.md)
+* **What**: new section with the audio commands: `speaking-generate` (dry run, all, one topic, force, fixture), `audio-backfill`, `media-migrate`; where audio is stored, the `.m4a` + `.wav` pair, ffmpeg, `GOOGLE_TTS_API_KEY`, voices, cost, and that new words need a manual `speaking-generate` run for now.
+* **Why**: Dylan asked whether the speaking command was in the README; it wasn't.
+

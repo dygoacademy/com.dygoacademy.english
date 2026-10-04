@@ -651,6 +651,51 @@ wipe and rebuild; the migrations are kept in `database/archive/`.)
 See [`phase 10 implementation plan.md`](phase%2010%20implementation%20plan.md)
 for the design, the customer-experience decisions and the test plan.
 
+## Audio and speaking content
+
+All app audio is stored in RustFS (bucket `media`) and served at
+`https://media.dygoacademy.com/<key>` (see "Production — public domain" and
+`src/config/storage-config.ts`). Every clip is stored as AAC `.m4a` (what the
+app plays) plus a `.wav` copy at the same key. Encoding needs **ffmpeg**
+(`brew install ffmpeg`); without it only the `.wav` is stored.
+
+| Audio | Made by | When |
+| :--- | :--- | :--- |
+| Word pronunciation (`master_lexicon.audio_url`) | Gemini TTS, in the enrichment worker | Automatically when a word is added |
+| Speaking sentences (`speaking_items`, Phase 13) | Google Cloud TTS (Neural2, UK + US, with word timings) | **By hand**, with `speaking-generate` below |
+
+Run these from `com.dygoacademy.backend/`. They read the root `.env`.
+
+```bash
+# Speaking sentences (Phase 13). Needs GOOGLE_TTS_API_KEY in the root .env
+# (Google Cloud project "Dygo", key restricted to the Cloud Text-to-Speech API).
+npm run speaking-generate -- --all --limit 200 --dry-run   # list what's missing + cost estimate, no TTS calls
+npm run speaking-generate -- --all --limit 200             # make it for every word that has no speaking audio yet
+npm run speaking-generate -- --topic <topic-id>            # only one topic's words
+npm run speaking-generate -- --topic <topic-id> --force    # remake (e.g. after changing a voice)
+npm run speaking-generate -- --fixture --out ../com.dygoacademy.frontend/public/audio/speaking-fixture  # dev test clip, no key needed
+
+# Word audio for words that have none (queues jobs for the running backend).
+npm run audio-backfill -- --dry-run
+npm run audio-backfill
+
+# One-off R2 → RustFS move (done 2026-10-04). Re-run is safe: copies only what's missing.
+npm run media-migrate -- --dry-run
+npm run media-migrate
+```
+
+Notes:
+
+- **New words don't get speaking audio automatically yet**: run
+  `speaking-generate -- --all` after adding words (each run only makes what's missing).
+- **Cost**: about 300 characters per clip, 2 clips per word. Google's first 1 million
+  Neural2 characters a month are free (the 138 words generated on 2026-10-04 used 73,000).
+- **Voices**: `en-GB-Neural2-C` and `en-US-Neural2-F` by default; override with
+  `SPEAKING_VOICE_UK` / `SPEAKING_VOICE_US` in `.env`. The voice is part of the file
+  name, so a new voice makes new files and never overwrites old ones.
+- **Skipped words**: a word without an example sentence, or a multi-word entry
+  ("food court"), is skipped and listed in the output.
+
 ## Documentation
 
 | Document | Contents |
