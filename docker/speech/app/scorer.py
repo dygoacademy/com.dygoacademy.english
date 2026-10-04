@@ -169,13 +169,16 @@ class Scorer:
 
     # ── check ─────────────────────────────────────────────────────────────
     def check(self, audio: np.ndarray, sentence: str) -> dict:
+        # `index` is the word's position in sentence.split(), as the app counts
+        # (a lone "—" or "…" has a position but isn't scored).
+        positions = [i for i, w in enumerate(sentence.split()) if normalise(w)]
         words = tokens(sentence)
         heard_f = self.pool.submit(self.heard_words, audio)
         sound_f = self.pool.submit(self.sound_scores, audio, words)
         heard, scores = heard_f.result(), sound_f.result()
         matches = match_words(words, heard)
         out_words, statuses = [], []
-        for idx, (w, sc, m) in enumerate(zip(words, scores, matches)):
+        for idx, w, sc, m in zip(positions, words, scores, matches):
             status, heard_word = word_status(sc, m)
             statuses.append(status)
             out_words.append(

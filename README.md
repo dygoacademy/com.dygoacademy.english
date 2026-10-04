@@ -760,7 +760,7 @@ sentence in Voice Memos, AirDrop the `.m4a` to the Mac and pick it as `audio`
 }
 ```
 
-`words` has one entry per word of `sentence` (split on spaces), in order.
+`words` has one entry per word of `sentence`, in order; `index` is the word's position in the sentence split on spaces (a lone "—" has a position but no entry).
 Errors: **503** models still loading, **413** over 1 MB, **422** not audio /
 too short / too long / no sentence. Full details: `docker/speech/README.md`.
 

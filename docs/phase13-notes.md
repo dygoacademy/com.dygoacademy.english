@@ -521,3 +521,13 @@ Dylan, 2026-10-04: paid services (Azure ≈ $1.80, SpeechSuper ≈ $6 per 1,000 
 | 2 s noise first | 100 | all ok |
 
 **Speed** (one check at a time, Mac under load 9–14 from other apps): 1.7–3.3 s typical, 5.3 s worst; under SP3's 8 s timeout. Phoneme model ≈ 2.5 s of it, Whisper ≈ 1.2 s, in parallel. Tried and dropped: int8 quantisation of the phoneme model (every word "unclear", 20–30 s); more threads (slower). Memory 0.8 GB idle. Unit tests (`tests/test_matching.py`) 6/6. Next: M3 = S17, the backend endpoint and `MacSpeechChecker`.
+
+### M3 · `POST /speaking/check` (S17), backend → speech scorer (2026-10-04)
+
+Dylan: the app calls the Dygo API, the API calls the scorer (option A). No Cloudflare change: `api.dygoacademy.com` is already tunnelled; the scorer stays on 127.0.0.1. Asked whether calling the scorer directly (B) would be faster or scale better: no, the extra hop is ~10–50 ms on the same Mac against 1.5–5 s of scoring, and A is where scaling happens later (several scorers behind `SPEECH_SCORER_URL`, a BullMQ queue, per-user limits, swapping the service without an app release).
+
+- `SpeechChecker` interface + `MacSpeechChecker` (multipart to `{SPEECH_SCORER_URL}/check`, `AbortSignal.timeout(SPEECH_CHECK_TIMEOUT_MS)`, default 8 s; logs status / timing only), `SpeechCheckService` (item's sentence read as the learner, upload checks), mapper to `{ score, stage, word_marks: missing / unclear + heard, user_duration_ms, check_ms }`, `SpeechCheckRateLimitGuard` (60 an hour per user, in-process like the sprint guard; move to Redis if the API is scaled out). Upload via multer's default memory storage (no `dest`), so nothing touches disk.
+- **Not saved here.** `speaking_attempts.word_marks` only allows `stress_soft / missing / rushed / slow`; saving `unclear` needs a migration (S18, with the `server` switch).
+- **Scorer change:** each word's `index` is now its position in `sentence.split()` (the app's numbering), so a lone "—" can't shift the marks.
+- Verified: backend Jest 352/352 (11 new), `tsc` + eslint clean; the real client + mapper against the running scorer: good 100 / fruit, "the" missing 89 / bloom, "migrate" 95 / fruit with mitigate unclear (heard "migrate"), Vietnamese voice 40 / sprout; garbage → 422, scorer down → 503; 1.3–2.1 s.
+- **For M4:** a wrong target word still reaches 95 / fruit; the total should weigh the target word (and `unclear` words) more.

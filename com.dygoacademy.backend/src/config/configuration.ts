@@ -40,6 +40,16 @@ export default () => ({
     geminiApiKey: process.env.GEMINI_API_KEY ?? '',
   },
 
+  // Phase 13 G6: the speech scorer (docker/speech, container dygo_speech) on
+  // this Mac. Only the backend calls it (127.0.0.1); `POST /speaking/check`
+  // forwards a recording and gives up after timeoutMs (SP3 shows "Couldn't
+  // check"). Unset = the local default; the scorer being down is a 503 per
+  // request, not a boot failure.
+  speech: {
+    scorerUrl: process.env.SPEECH_SCORER_URL || 'http://127.0.0.1:8100',
+    timeoutMs: parseInt(process.env.SPEECH_CHECK_TIMEOUT_MS || '8000', 10),
+  },
+
   // Module 6 (Web Push & Habit Scheduling) — VAPID identifies this server to
   // the browser's push service (FR-6.5). Empty strings, not a thrown error,
   // when unset — same "degrade, don't block boot" rule as `ai.geminiApiKey`:

@@ -78,3 +78,33 @@ export interface SpeakingWordLookup {
 
 /** At most this many ids per lookup (a review session has up to 20 cards). */
 export const SPEAKING_LOOKUP_MAX = 50;
+
+/** One word's mark from `POST /speaking/check` (handover v2 §3). */
+export interface SpeakingCheckMark {
+  index: number;
+  ok: boolean;
+  /** `missing`: not said; `unclear`: said unclearly, or `heard` as another word. */
+  reason: 'missing' | 'unclear' | null;
+  /** The word the scorer heard instead (`unclear` only), e.g. "migrate" for "mitigate". */
+  heard?: string;
+}
+
+/**
+ * `POST /speaking/check`: the speech scorer's verdict on one recording
+ * (Phase 13 S17, G6). Not saved here; the recording is never stored.
+ */
+export interface SpeakingCheckResult {
+  score: number;
+  stage: SpeakingStage;
+  /** One per word of the sentence (split on spaces), in order. */
+  word_marks: SpeakingCheckMark[];
+  /** Length of the recording. */
+  user_duration_ms: number;
+  /** How long the scorer took. */
+  check_ms: number;
+}
+
+/** Checks per learner per rolling hour (S17), so one learner can't tie up the scorer. */
+export const SPEAKING_CHECKS_PER_HOUR = 60;
+/** Largest recording accepted (a 30 s AAC clip is ~250 KB). */
+export const SPEAKING_CHECK_MAX_BYTES = 1_000_000;
