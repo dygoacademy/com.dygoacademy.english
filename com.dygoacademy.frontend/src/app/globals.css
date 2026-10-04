@@ -274,6 +274,22 @@
     --safe-left: env(safe-area-inset-left, 0px);
   }
 
+  /* Vietnamese: body text in Be Vietnam Pro only (2026-10-03). With the
+     DM Sans-first stack above, DM Sans drew the letters it can build from
+     a base letter and marks (ế, ỗ, ố…) and Be Vietnam Pro the rest (ệ, ộ, ư,
+     đ…), so one word mixed two fonts. The stacks are redefined too: a var()
+     inside a custom property resolves where it is declared, so changing
+     --font-body alone would not reach them. Not how the vi-VN references
+     were drawn, so those garden:diff boards no longer match pixel for pixel. */
+  [data-ui='garden']:lang(vi) {
+    --font-body: var(--font-be-vietnam-pro-vi), var(--font-be-vietnam-pro-latin-ext),
+      var(--font-be-vietnam-pro-latin), var(--font-dm-sans-latin-ext), var(--font-dm-sans-latin);
+    --font-stack-display: var(--font-display), var(--font-body), var(--font-cjk), serif;
+    --font-stack-body: var(--font-body), var(--font-cjk), sans-serif;
+    --font-stack-kids: var(--font-baloo-2-vi), var(--font-baloo-2-latin-ext), var(--font-baloo-2-latin),
+      var(--font-stack-body);
+  }
+
   /* The garden shell itself (tokens above also sit on :root since UI-8 U8-3,
      so pages outside GardenRoot — /search, error pages — get them too). */
   [data-ui='garden'] {
@@ -314,6 +330,26 @@
   [data-ui='garden'] :focus-visible {
     outline: 2px solid var(--color-forest);
     outline-offset: 2px;
+  }
+
+  /* Text fields are the exception: every browser (Safari, Chrome, Firefox)
+     treats a focused text input as :focus-visible even on mouse/tap, so
+     the ring above drew a second green box inside the field's own rounded
+     border (Register/Sign-in, 2026-10-03). Text fields already show focus
+     by turning their own border forest (focus:border-forest /
+     focus-within:border-forest), so suppress the outline for them only.
+     Checkboxes, radios, buttons and <select>s (the invisible pickers over
+     LanguageChip / GardenerRow rely on it) keep the keyboard ring. The selector
+     outranks the base rule's specificity, which matters because Tailwind
+     v3 layers are not native cascade layers. */
+  [data-ui='garden']
+    :is(
+      input:not([type='checkbox'], [type='radio'], [type='range'], [type='button'], [type='submit'], [type='reset'], [type='file'], [type='color']),
+      textarea,
+      [contenteditable='true']
+    ):is(:focus, :focus-visible) {
+    outline: none;
+    -webkit-tap-highlight-color: transparent;
   }
 
   /* §3 No double-tap zoom anywhere in the garden (pinch zoom still works).

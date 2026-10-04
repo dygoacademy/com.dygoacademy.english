@@ -7,6 +7,8 @@ import localFont from 'next/font/local';
  * - Body: **DM Sans** 400–700 (latin + latin-ext), with **Be Vietnam Pro**
  *   400–700 (vietnamese + latin-ext) as a per-glyph fallback, so Vietnamese
  *   letters DM Sans doesn't have (ả, ệ, ớ…) come from Be Vietnam Pro.
+ *   Vietnamese pages (`:lang(vi)`) use Be Vietnam Pro for all body text
+ *   instead (2026-10-03), see globals.css.
  * - Display: **Fraunces** variable with the optical-size axis (opsz 9–144,
  *   wght 100–900). The browser picks opsz from the font size
  *   (font-optical-sizing: auto), exactly as the canvas renders it.
@@ -66,6 +68,7 @@ export const beVietnamProVietnamese = localFont({
     { path: './fonts/be-vietnam-pro-vietnamese-500-normal.woff2', weight: '500', style: 'normal' },
     { path: './fonts/be-vietnam-pro-vietnamese-600-normal.woff2', weight: '600', style: 'normal' },
     { path: './fonts/be-vietnam-pro-vietnamese-700-normal.woff2', weight: '700', style: 'normal' },
+    { path: './fonts/be-vietnam-pro-vietnamese-800-normal.woff2', weight: '800', style: 'normal' },
   ],
   declarations: [
     {
@@ -86,6 +89,7 @@ export const beVietnamProLatinExt = localFont({
     { path: './fonts/be-vietnam-pro-latin-ext-500-normal.woff2', weight: '500', style: 'normal' },
     { path: './fonts/be-vietnam-pro-latin-ext-600-normal.woff2', weight: '600', style: 'normal' },
     { path: './fonts/be-vietnam-pro-latin-ext-700-normal.woff2', weight: '700', style: 'normal' },
+    { path: './fonts/be-vietnam-pro-latin-ext-800-normal.woff2', weight: '800', style: 'normal' },
   ],
   declarations: [
     {
@@ -98,6 +102,33 @@ export const beVietnamProLatinExt = localFont({
   adjustFontFallback: false,
   preload: false,
   variable: '--font-be-vietnam-pro-latin-ext',
+});
+
+/**
+ * Vietnamese pages set body text in Be Vietnam Pro only (globals.css,
+ * `:lang(vi)`), so the plain latin letters come from it too. Before, DM Sans
+ * drew the letters it can build (ế, ỗ, ố…) and Be Vietnam Pro the rest (ệ, ộ,
+ * ư…), mixing two fonts inside one word. 800 is the home page "free" tag.
+ */
+export const beVietnamProLatin = localFont({
+  src: [
+    { path: './fonts/be-vietnam-pro-latin-400-normal.woff2', weight: '400', style: 'normal' },
+    { path: './fonts/be-vietnam-pro-latin-500-normal.woff2', weight: '500', style: 'normal' },
+    { path: './fonts/be-vietnam-pro-latin-600-normal.woff2', weight: '600', style: 'normal' },
+    { path: './fonts/be-vietnam-pro-latin-700-normal.woff2', weight: '700', style: 'normal' },
+    { path: './fonts/be-vietnam-pro-latin-800-normal.woff2', weight: '800', style: 'normal' },
+  ],
+  declarations: [
+    {
+      prop: 'unicode-range',
+      value:
+        'U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD',
+    },
+  ],
+  display: 'swap',
+  adjustFontFallback: false,
+  preload: false,
+  variable: '--font-be-vietnam-pro-latin',
 });
 
 export const frauncesLatin = localFont({
@@ -193,6 +224,7 @@ export const gardenFontVariables = [
   dmSansLatinExt,
   beVietnamProVietnamese,
   beVietnamProLatinExt,
+  beVietnamProLatin,
   frauncesLatin,
   frauncesLatinExt,
   frauncesVietnamese,
