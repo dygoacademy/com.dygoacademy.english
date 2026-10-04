@@ -45,6 +45,10 @@ import {
   GalleryVine,
 } from './GalleryInteractive';
 import { GroupsGallery } from './GroupsGallery';
+import { SpeakingGallery } from './SpeakingGallery';
+
+/** Gallery-only English title until S6 adds the speaking strings (phase notes S4-b). */
+const SPEAKING_SECTION_TITLE = 'Speaking · waveforms';
 
 /** Rows for the stageFromSrs table: every state, plus mastered and leech overrides. */
 const STAGE_MAP_ROWS: Array<{ state: GardenFsrsState; mastered: boolean; leech: boolean }> = [
@@ -495,6 +499,11 @@ export default async function GardenGalleryPage() {
 
         <Section title={t('sections.groups')}>
           <GroupsGallery />
+        </Section>
+
+        {/* Phase 13 waveforms (S4); the title moves to the message files in S6. */}
+        <Section title={SPEAKING_SECTION_TITLE}>
+          <SpeakingGallery />
         </Section>
 
         <Section title={t('sections.toast')}>

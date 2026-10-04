@@ -188,6 +188,10 @@ Whichever is chosen, syllable boundaries for the target word come from the IPA (
 | S3-c | Pace curve | Full points at 0.85–1.2×, falling linearly to 0 at 0.4× and 2.0× | The handover gives only the best range |
 | S3-d | Stress score | `clamp(user ratio ÷ native ratio, 0, 1)`; full points when the target has one syllable; 0 when the target is missing | The handover gives only the `stress_soft` threshold |
 | S3-e | Tip params | `speak.tip.stress` → `{ word, syllable }` (index of the stressed syllable; the screen turns it into text from the IPA), `missing` → `{ words }`, `rushed` / `slow` → `{ word }`, `flowed` → none | Copy keys added in S6 |
+| S4-a | Waveform colours | Existing CSS variables, no new tokens: native `--stage-tree-canopy` (#7FA487), pale `--stage-sprout` (#B7D6AE), learner `--color-primary` (#B4552E), SP3 band `--color-gold-light` (#F2D28B), SP1 band `--color-on-forest-muted` (#DDE7DA), line `--color-border`, head `--color-text` (`WAVE_COLORS` in `waveformBars.ts`) | Every handover colour already exists; `globals.css` also has someone else's uncommitted edits. The app has no dark theme yet, so nothing to map there |
+| S4-b | Gallery labels | The speaking gallery section's labels are English constants until S6 | Keeps S4 off the message files (G2) |
+| S4-c | Playing sweep | CSS keyframes in a `<style>` inside the SVG, run once over the clip's length; hidden with `prefers-reduced-motion` | No `globals.css` change; the design's 2.2 s loop becomes the real clip length |
+| S4-d | Live bars | One learner bar per 1/72 of the native clip (mean of the 20/s live levels), full height at RMS 0.2, capped at 72 bars | Puts the learner's voice on the native timeline as SP2 shows; a slower learner runs to the end |
 
 ## 11. Questions for Dylan
 
