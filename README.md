@@ -31,7 +31,7 @@ Already have Docker running and `.env` filled in? The whole loop is five command
 
 ```bash
 cp .env.example .env                      # then fill in the secrets — see step 1
-docker compose up -d                      # Postgres, Kong, Studio, Redis, MinIO
+docker compose up -d                      # Postgres, Kong, Studio, Redis, RustFS
 ./database/apply-migrations.sh            # schema + all seed data (empty database)
 cd com.dygoacademy.backend && npm install && npm run start:dev
 cd ../com.dygoacademy.frontend && npm install && npm run dev
@@ -125,7 +125,7 @@ docker compose ps
 ```
 
 First run pulls roughly 3 GB of images and takes a few minutes. Every service
-should reach `running` (most report `healthy`); `dygo_minio_createbucket` is a
+should reach `running` (most report `healthy`); `dygo_rustfs_createbucket` is a
 one-shot job and correctly shows `exited (0)`.
 
 | Service | Container | URL / Port | Purpose |
@@ -135,10 +135,10 @@ one-shot job and correctly shows `exited (0)`.
 | Studio | `dygo_supabase_studio` | http://localhost:54323 | Database dashboard |
 | GoTrue | `dygo_supabase_auth` | via Kong `/auth/v1/` | Authentication |
 | PostgREST | `dygo_supabase_rest` | via Kong `/rest/v1/` | Auto-generated REST API |
-| Storage | `dygo_supabase_storage` | via Kong `/storage/v1/` | Object storage (S3 backend → MinIO) |
+| Storage | `dygo_supabase_storage` | via Kong `/storage/v1/` | Object storage (S3 backend → RustFS) |
 | postgres-meta | `dygo_supabase_meta` | internal `:8080` | Backs Studio's schema browser |
 | Redis | `dygo_redis` | `localhost:6379` | BullMQ queues + SRS cache |
-| MinIO | `dygo_minio` | http://localhost:9001 | Local S3 (console login = `MINIO_ACCESS_KEY` / `MINIO_SECRET_KEY`) |
+| RustFS | `dygo_rustfs` | http://localhost:9001 (console), `localhost:9100` (S3 API) | S3-compatible store behind Supabase Storage (login = `RUSTFS_ACCESS_KEY` / `RUSTFS_SECRET_KEY` in `.env`). Replaced MinIO on 2026-10-04; S3 port is 9100 because Homebrew php-fpm holds 9000 |
 
 Use `localhost`, not `0.0.0.0` — the latter is a bind address, and some browser
 APIs treat it as a non-secure context.
@@ -334,10 +334,10 @@ request, so every profile now uploads to the same real R2 bucket. The
 credentials live in the root `.env` (shared across all profiles, like
 `DATABASE_URL`/`SUPABASE_URL` already are), not in any `env-profiles/`
 file — see `.env`'s own storage section. One side-effect worth knowing:
-`docker-compose.yml`'s `minio` service is still there and still running —
-it backs Supabase's own Storage feature (`storage-api`), which is
-unrelated to this app's audio pipeline and wasn't touched. Only this app's
-own `StorageService` stopped pointing at it.
+`docker-compose.yml`'s local object store (MinIO until 2026-10-04, now
+RustFS) only backs Supabase's own Storage feature (`storage-api`), which is
+unrelated to this app's audio pipeline. MinIO was replaced because its
+community edition is unmaintained and its Docker images were removed.
 
 Before this change, only `prod.env` carried real R2 credentials while
 `local`/`stg` fell back to MinIO — but a copy-paste of the real credentials
@@ -539,7 +539,9 @@ metadata is corrupt. Check `df -h /` and `docker system df`, then
 Resumable (TUS) uploads to `/storage/v1/upload/resumable` currently return 500.
 Bucket listing and ordinary uploads work. Under investigation — the suspects
 are missing TUS environment variables and S3 multipart/ETag behaviour between
-storage-api and MinIO. Not a blocker for Phase 0 or 1.
+storage-api and the S3 store. Not a blocker for Phase 0 or 1. (Until 2026-10-04
+storage-api's S3 endpoint was `http://localhost:9000`, its own container, so it
+never reached MinIO at all; it now points at `http://rustfs:9000`. Re-test TUS.)
 
 ---
 
@@ -547,11 +549,11 @@ storage-api and MinIO. Not a blocker for Phase 0 or 1.
 
 ```
 DygoAcademy/
-├── docker-compose.yml              # Local Supabase, Redis & MinIO stack
+├── docker-compose.yml              # Local Supabase, Redis & RustFS stack
 ├── .env.example                    # Template — copy to .env, never commit .env
 ├── env-profiles/                   # local/stg/prod overlays — see "Running modes"
-│   ├── local.env(.example)         # localhost — no object storage override (MinIO)
-│   ├── stg.env(.example)           # LAN/tailscale IP — MinIO over that IP
+│   ├── local.env(.example)         # localhost — no object storage override
+│   ├── stg.env(.example)           # LAN/tailscale IP
 │   └── prod.env(.example)          # real domain + real Cloudflare R2 credentials
 ├── cloudflared-config.yml          # Cloudflare Tunnel ingress for production
 ├── ecosystem.config.js             # pm2 process file for production

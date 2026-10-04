@@ -66,7 +66,7 @@ DygoAcademy/
 ├── .env.example                               # Global environment variable template
 ├── .env                                       # Local active environment variables
 ├── .gitignore                                 # Git ignore configuration
-├── docker-compose.yml                         # Local Supabase, Redis & MinIO services
+├── docker-compose.yml                         # Local Supabase, Redis & RustFS services
 ├── README.md                                  # Repository overview and setup guide
 │
 ├── database/                                  # Database migrations, RLS & Seed fixtures

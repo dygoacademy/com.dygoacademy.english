@@ -31,7 +31,7 @@ The detail lives in these files, not here:
 ## Common commands
 
 ```bash
-docker compose up -d                       # local Supabase, Redis, MinIO
+docker compose up -d                       # local Supabase, Redis, RustFS
 ./database/apply-migrations.sh             # empty DB: schema + seeds
 ./database/apply-migrations.sh --test      # RLS test suite
 

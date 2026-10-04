@@ -68,8 +68,8 @@ Conflating them is how a roadmap quietly turns into a status report.
 > era) is real now — `src/ai/gemini-enrichment.service.ts` calls Gemini 1.5
 > Flash for the linguistic fields (structured JSON output, schema matches
 > tech spec §4.2 exactly) and Gemini's own TTS model for audio;
-> `src/storage/storage.service.ts` uploads the clip to R2/MinIO
-> (`@aws-sdk/client-s3`, both are S3-compatible) and returns the public URL.
+> `src/storage/storage.service.ts` uploads the clip to Cloudflare R2
+> (`@aws-sdk/client-s3`) and returns the public URL.
 > One deliberate deviation: audio is stored as `.wav`, not the `.mp3` §4.2
 > names — no MP3 encoder (ffmpeg/lame) is available in this sandbox, and WAV
 > needs zero dependencies while playing natively in every `<audio>` tag;
