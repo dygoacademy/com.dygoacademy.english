@@ -439,3 +439,39 @@ Dylan asked for a simple flow, like PTE Read Aloud (read, beep, record, stops af
 - Follow-along highlight 1.5× slower than the native clip (`FOLLOW_ALONG_SLOWDOWN`); timer target native × 2 (`RECORDING_TARGET_FACTOR`, was × 1.5, S7-b).
 - New strings `getReady`, `countdownLabel`, `readAfterCount`, `autoStop` in all three locales (vi and zh drafted by Claude).
 - Differs from the design files (SP2 has no countdown state) and from handover §4 (8 s cap). The `/garden/_speaking` dev page keeps its plain Record button, now max 15 s.
+
+## 19. SP2 / SP3 v2 UI (interactive session, 2026-10-04 evening)
+
+Built from `SpeakRecording.dc.html` / `SpeakCompare.dc.html` (handover v2) at Dylan's request, ahead of S15 / S16 / S18. Uncommitted and not deployed at the time of writing. Choices made:
+
+- **Check stays on the phone.** `lib/speaking/check.ts`: `localCheck` (the envelope scorer behind a `SpeechCheck` interface) with `withTimeout` (8 s → SP3 failed). The server check (S17 / S20) plugs in behind the same interface. Until then nothing is sent, so the mic explainer's "We don't save your recordings" stays true, and SP3's "Your recording is checked, then deleted." is true too (checked on the phone, dropped on leaving).
+- **Rushed / slow marks hidden.** Handover v2 has no rushed / slow; `forDisplay` shows those words as fine and turns a rushed / slow tip into "flowed well". The saved attempt keeps the scorer's marks (backend types unchanged).
+- **`unclear` + `heard` are display-only** (`ShownMark`) until the backend's word marks gain them in S17; the on-device check never produces them. The reference fixture uses them to match the canvas ("heard “affects”").
+- **Stressed syllable in spelling** ("push on MIT", "Say MIT-i-gate", "MIT is too soft", SP4 "TER"): `spellingSegments` shares the word's letters out in proportion to the IPA syllable lengths (no spelling dictionary). Exact for *mitigate*; may split oddly for long words (*biodiversity*).
+- **Waveform first.** SP3 draws both envelopes as soon as the clip decodes (`compareEnvelopes`, trimmed like the scorer), so nothing moves when the check returns.
+- **SP3 geometry from the canvas:** 322×92 overlay (bars 4–86), side-by-side rows 42 tall 50 apart, bands at y −4 / 100 tall, target .32, other words .18.
+- **Known canvas difference:** the header says "Speaking · The Pond" (D4: entry from Missions), the canvas "Speaking · Environment". Expect a small text diff on every SP reference.
+- **"Next word" works while checking** (canvas); a result that arrives after moving on is dropped and not saved.
+- New token `--color-speak-faded` (#9c8f78) for the checking sentence and missing words; keyframes `speak-pop` / `speak-shimmer` (still under reduced motion).
+
+### S15-a · No WAV on the phone: upload the recording as recorded (Dylan, 2026-10-04)
+
+The S15 row had a 16 kHz mono WAV encoder so the phone could upload what speech services "usually" take. Dropped: the phone sends the recording exactly as `MediaRecorder` made it, `audio/mp4` (AAC) on iPhone Safari and `audio/webm` (Opus) on Chrome; a 30 s AAC clip is a few hundred KB, under S17's 1 MB limit.
+
+- **S14 / G6:** the D3 comparison must list each service's accepted input formats; one that takes AAC and WebM/Opus directly is preferred.
+- **S17:** `POST /speaking/check` accepts `audio/mp4` and `audio/webm` (≤ 1 MB).
+- **S20:** if the chosen service only takes WAV/PCM, the backend converts with ffmpeg in memory (already a backend dependency for the `.m4a` encoding), never written to disk.
+- The PCM-to-WAV fallback recorder (browsers without `MediaRecorder`) stays; it already produces WAV.
+- Also moved: the `/garden/_speaking` countdown → beep → auto-stop test run goes to S19 (QA). The real flow on `/sounds` already does it.
+- Related, separate: the stored `.wav` copy of native clips is a to-do to remove (*To do later*).
+
+### S16 · Strings v2 (2026-10-04 evening)
+
+Handover §8 keys are in `screens.speak` in all three locales: `getReady`, `countdownHint`, `countdownButton` (aria), `startingSoon`, `pauseStops`, `checking`, `privacy`, `failed.title / body / checkAgain / recordAgain`, `mark.heard`, `mark.unclear`, `tip.also.both / missing / unclear`, `tip.stress.bodyShort`, `nativeAccent`, `playingShort`, `playNativeLabel`, `playYouLabel`. Removed (no longer used by the v2 screens): `timer`, `countdownLabel`, `readAfterCount`, `autoStop` (G3-b), `mark.rushed`, `mark.slow`, `playNative`. Kept: `tip.rushed` / `tip.slow`, because the on-phone scorer still gives them until S20.
+
+- **S16-a · "Not heard" reuses `quiet.title` + `quiet.body`** (Dylan, 2026-10-04). The handover's `speak.notHeard` ("We couldn't hear you. Move closer and try again.") is the same words as the existing T7 card, split into title and body, in all three locales. No new key.
+- **S16-b · Mic explainer stays "stays on this phone" until S20** (Dylan, 2026-10-04). `mic.private` ("We don't save your recordings. They stay on this phone…") is true while checking is on the phone (`local`). When S20 turns on `server`, the explainer shows `privacy` ("Your recording is checked, then deleted.") instead; no extra key needed.
+- **Screen-reader labels matched to the canvas** (aria-labels from `reference/SP*.html`): `micButton` en "Start recording" / vi "Bắt đầu ghi âm" (was "Start speaking" / "Bắt đầu nói"); vi `waveLabel.listen`, `waveLabel.live`, `view.label`; en + vi `waveLabel.overlay` (ends with a full stop, vi "màu đất nung"); `done.gardenLabel` says "Five plants…" / "Năm cây…" for 5, as on SP4. Still open for S18: the SP1 play button's own label ("Play native speaker" / "Nghe người bản xứ") isn't wired yet.
+- **Vietnamese visible text** on the canvas screens matches; the other Vietnamese lines are for states the canvas doesn't draw (mic, denied, quiet, short, unsupported, audio failed, Sound Garden, Say this one), drafted in S6 and still to be checked by Dylan.
+- **zh-CN drafted by Claude, for native review (D6):** `countdownHint`, `countdownButton`, `startingSoon`, `pauseStops`, `checking`, `privacy`, `failed.*`, `mark.heard`, `mark.unclear`, `tip.also.*`, `tip.stress.bodyShort`, `nativeAccent`, `playingShort`, `playNativeLabel`, `playYouLabel`, and the changed `micButton`, `waveLabel.overlay`, `done.gardenLabel`.
+- **Commit:** only the `screens.speak` part of each file (others' edits in `en-US.json` / `vi-VN.json` stay unstaged), and **together with the v2 code**, because the removed keys are still used by the committed v1 screens.

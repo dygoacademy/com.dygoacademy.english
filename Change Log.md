@@ -435,3 +435,8 @@ Engineering-facing log of shipped fixes and changes, one dated entry per change.
 * **Why**: Claude Design handover v2 (2026-10-04 18:21) and Dylan's G3 feedback (countdown didn't match the design). Built in an interactive session and live on UAT since the 19:24 deploy; committed now so git matches UAT.
 * **Verified**: the staged snapshot on its own (exported, without others' uncommitted edits): `tsc` clean, Vitest speaking / garden / i18n 433/433. Working tree: `next lint` clean on every changed file; full Vitest the same 66 known failures (others' uncommitted `messages/*.json`), no new ones. `garden:diff` on UAT: English SP2 countdown 0.06 % and recording 0.40 % pass; SP3 and all Vietnamese boards still fail (S18b).
 * **Not in this commit**: others' uncommitted work in the same files (Vietnamese Be Vietnam Pro body font in `globals.css` / `fonts.ts` + font files, `QuizScreen.tsx`, `package.json`, the rest of `en-US.json` / `vi-VN.json`).
+
+### Phase 13 plan: handover v2 sessions, decisions S15-a / S16-a / S16-b, status
+* **Files**: [`docs/phase13-schedule.md`](docs/phase13-schedule.md) (handover v2 section, rows S14–S20 and G6 / G7, S14b / S15 / S16 ticked, Session log), [`docs/phase13-notes.md`](docs/phase13-notes.md) (§19 v2 UI notes, S15-a, S16)
+* **What**: planning and status only. The v2 plan written this evening (server checking behind a `local` / `server` switch, S14–S20, gate G6 blocking); S15-a: no WAV on the phone, the recording is uploaded as recorded (S14 lists accepted formats, S17 takes `audio/mp4` / `audio/webm`, S20 converts on the backend only if needed), dev-page run moved to S19; S16-a / S16-b and the zh-CN review list; the 19:45 `garden:diff` results.
+* **Why**: keep the plan in git next to the v2 code (a14c1d1).
