@@ -407,3 +407,8 @@ Engineering-facing log of shipped fixes and changes, one dated entry per change.
 * **Why**: the compressed run's last checkpoint deploy (all checks green, 14:22 local).
 * **Verified live**: `www.dygoacademy.com` 200, `api.dygoacademy.com/api/v1/health` 200, `/sounds` signed out → 307 to login, `/speaking/words?topic_word_ids=…` signed out → 401 (route registered). Before the deploy: backend `tsc` clean and Jest 342/342; frontend `tsc` and `next lint` clean, Vitest 66 failed | 478 passed (the same 66 known failures).
 * **Needs Dylan**: the iPhone checks in the notes' QA matrix (§16), G1 and G3, the drafted Vietnamese strings (S6), and running `ui/tests/sounds.spec.ts`.
+
+### Phase 13 G1: iPhone Safari check recorded
+* **Files**: [`docs/phase13-schedule.md`](docs/phase13-schedule.md) (G1 ticked, Session log), [`docs/phase13-notes.md`](docs/phase13-notes.md) (§16 QA matrix, iPhone Safari column)
+* **What**: Dylan's results from `/garden/_speaking` on iPhone Safari: recording 8.01 s (183 KB) decodes to 8.02 s at 16 kHz; "Measure offset" shows **0 ms** between the `.m4a` and `.wav` copies (diligent 3176 ms, mitigate fixture 5565 ms, both 48 kHz).
+* **Why**: gate G1. 0 ms means the envelope scorer needs no AAC start-delay correction. Still open: playback volume and the silent switch on iPhone, and the desktop Chrome offset.

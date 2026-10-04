@@ -383,8 +383,8 @@ What the unattended run could check is automated (Vitest, mocked mic/API); every
 
 | Check | Automated | iPhone Safari (iOS 16+) | Home Screen app | Android Chrome | Desktop Chrome | Desktop Safari |
 | --- | --- | --- | --- | --- | --- | --- |
-| Record → replay, envelope (`/garden/_speaking`) | ✅ recorder / decode / envelope unit tests | 📱 G1 | 📱 | 📱 | 📱 | 📱 |
-| `.m4a` vs `.wav` offset (dev page "Measure offset") | ✅ estimator test (±21 ms) | 📱 note the ms | — | 📱 | 📱 | 📱 |
+| Record → replay, envelope (`/garden/_speaking`) | ✅ recorder / decode / envelope unit tests | ✅ G1 10-04: recorded 8.01 s (183 KB), decoded 8.02 s at 16 kHz; playback volume / silent switch not reported yet | 📱 | 📱 | 📱 | 📱 |
+| `.m4a` vs `.wav` offset (dev page "Measure offset") | ✅ estimator test (±21 ms) | ✅ G1 10-04: **0 ms** (diligent 3176 ms, mitigate fixture 5565 ms, both 48 kHz, same length) | — | 📱 | 📱 | 📱 |
 | Full Pond session, 5 sentences, Done | ✅ `SpeakLive` flow test; Playwright spec (not run, S12-a) | 📱 G3 | 📱 | 📱 | 📱 | 📱 |
 | Marks fair? (own voice + a Vietnamese speaker) | ✅ synthetic scorer tests only | 📱 G3 | — | — | — | — |
 | Mic explainer → Allow; Not now | ✅ | 📱 first visit | 📱 (Home Screen apps ask again) | 📱 | 📱 | 📱 |
