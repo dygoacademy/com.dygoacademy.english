@@ -45,7 +45,7 @@ Size: **S** ≈ half a usage window, **M** ≈ one full window. Dates are propos
 | ✅ **S4** | Thu 10-08 | T5a · Waveforms | `components/garden/speaking/Waveform.tsx`, `LiveWaveform.tsx`, `CompareWaveform.tsx` + gallery entries; tokens from the design files | Gallery shows them; matches `SpeakCompare.dc.html` waveform look | M | — |
 | ✅ **S5** | Fri 10-09 | T5b · Marks + stage | `WordMarks.tsx`, `StageScore.tsx` + gallery; component tests | Gallery + tests | S | — |
 | **G2** | before S6 | **Messages files clean** | The uncommitted `messages/*.json` edits (someone else's) committed or dropped | `git status messages/` clean | — | Dylan |
-| **S6** | Mon 10-12 | T8 · Strings | Handover §8 keys in `en-US.json`, `vi-VN.json`, `zh-CN.json` (zh drafted, flagged), mic-explainer copy drafted | All keys in 3 locales; i18n tests pass | S | G2 |
+| ✅ **S6** | Mon 10-12 | T8 · Strings | Handover §8 keys in `en-US.json`, `vi-VN.json`, `zh-CN.json` (zh drafted, flagged), mic-explainer copy drafted | All keys in 3 locales; i18n tests pass | S | G2 |
 | **S7** | Tue 10-13 | T6a · Pond flow, SP1 + SP2 | `/sounds` route (`routes.ts`, `GARDEN_ROUTES`), `live/SpeakLive.tsx` (state machine, `GET /speaking/session`, prefetch 5 clips), `SpeakListenScreen`, `SpeakRecordingScreen` + fixtures | SP1 → SP2 works with fixture data; tests | M | S1–S6 |
 | **S8** | Wed 10-14 | T6b · SP3 + SP4 | `SpeakCompareScreen` (scorer, marks, Try again / Next, `POST /speaking/attempts`), `SpeakDoneScreen`; fixtures; `garden:diff` en + vi; **Deploy** | Full Pond session on UAT | M | S7 |
 | **G3** | Wed–Thu | **Dylan: try the Pond** | Full 5-sentence session on iPhone, own voice + a Vietnamese speaker; "were the marks fair?" | Feedback noted | — | Dylan |
@@ -72,3 +72,4 @@ One line per session: date · session · result · next.
 - 2026-10-04 · S3 · done: envelope scorer + constants, 10 tests, 2.9 ms / 5 s clip; DTW step penalty added (S3-a); scores lenient, check at G3 · next: S4
 - 2026-10-04 · S4 · done: Waveform / LiveWaveform / CompareWaveform + gallery section, 8 tests; visual check vs design waits for the S8 deploy · next: S5
 - 2026-10-04 · S5 · done: WordMarks, StageScore, SpeakingPlant + gallery, 7 tests · next: S6 (G2 handled by staging only the new keys)
+- 2026-10-04 · S6 · done: 90 `screens.speak` keys × 3 locales, only the new keys staged (others' edits untouched) · next: S7

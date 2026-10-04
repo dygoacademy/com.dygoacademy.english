@@ -1123,6 +1123,142 @@
           "network": "密码没有保存成功。请检查网络后再试。"
         }
       }
+    },
+    "speak": {
+      "header": "口语 · 池塘",
+      "progress": "{n}/{total}",
+      "close": "关闭",
+      "saySentence": "说出这个句子",
+      "nativeSpeaker": "母语者",
+      "play": "播放",
+      "playing": "正在播放",
+      "accent": {
+        "uk": "英式",
+        "us": "美式"
+      },
+      "speed": {
+        "normal": "1×",
+        "slow": "0.75×"
+      },
+      "listenHint": "先听，再说出整句",
+      "micButton": "开始说",
+      "recording": "正在录音",
+      "timer": "{elapsed} / {max}",
+      "fillShape": "浅绿色的形状是母语者的声音。试着把它填满。",
+      "stressTip": "{word} {ipa}：重读 {syllable}",
+      "tapToStop": "点按停止",
+      "stopButton": "停止录音",
+      "cancel": "取消",
+      "yourSentence": "你的句子",
+      "durations": "{you} 秒 · 母语者 {native} 秒",
+      "view": {
+        "label": "波形视图",
+        "overlay": "叠加",
+        "stacked": "上下对比"
+      },
+      "legend": {
+        "native": "母语者",
+        "you": "你",
+        "needsWork": "需要练习"
+      },
+      "waveLabel": {
+        "listen": "母语者说这个句子的波形",
+        "live": "你的实时声音，叠在母语者的形状上",
+        "overlay": "你的句子（陶土色）叠在母语者（绿色）上",
+        "stacked": "上面是母语者，下面是你"
+      },
+      "mark": {
+        "stressSoft": "{syllable} 太轻了",
+        "missing": "没听到",
+        "rushed": "太快",
+        "slow": "太慢"
+      },
+      "stage": {
+        "seed": "种子",
+        "sprout": "发芽",
+        "bloom": "开花",
+        "fruit": "结果"
+      },
+      "match": "{stage} · 匹配 {pct}%",
+      "stageScale": "种子 · 发芽 · 开花 · <b>90% 结果</b>",
+      "tip": {
+        "stress": {
+          "title": "在 <b>{word}</b> 中，把 <b>{syllable}</b> 读得更重",
+          "body": "你把各个音节读得一样重。请说 {pattern}。句子的其余部分很流畅。"
+        },
+        "missing": {
+          "title": "每个词都要说",
+          "body": "我们没听到 {words}。请一口气说完整句。"
+        },
+        "rushed": {
+          "title": "{word} 说慢一点",
+          "body": "给 {word} 和母语者一样长的时间。"
+        },
+        "slow": {
+          "title": "{word} 说得连贯些",
+          "body": "你把 {word} 拖长了。请把它说成一个连贯的词。"
+        },
+        "flowed": {
+          "title": "很流畅",
+          "body": "你的节奏和母语者一致。继续下一句吧。"
+        }
+      },
+      "playNative": "母语者",
+      "playYou": "你",
+      "tryAgain": "再试一次",
+      "nextWord": "下一个词",
+      "done": {
+        "kicker": "口语练习完成",
+        "title": "{n, plural, other {你大声说了 # 个词}}",
+        "sub": "你的声音浇灌了你的花园",
+        "gardenLabel": "{n, plural, other {# 株植物，每个说过的词一株}}",
+        "pattern": "需要注意：",
+        "best": "{pct}%"
+      },
+      "backToGarden": "返回花园",
+      "mic": {
+        "title": "Dygo 需要使用你的麦克风",
+        "why": "为了把你的声音和母语者的放在一起对比，Dygo 会在你说话时聆听。",
+        "private": "我们不会保存你的录音。录音只留在这部手机上，离开后就会消失。",
+        "headphones": "在嘈杂的地方，戴上耳机会更好。",
+        "allow": "允许使用麦克风",
+        "notNow": "以后再说"
+      },
+      "denied": {
+        "title": "Dygo 的麦克风已关闭",
+        "body": "在 Safari 中：点按 aA → 网站设置 → 麦克风 → 允许，然后再试一次。",
+        "retry": "再试一次",
+        "skip": "跳过口语"
+      },
+      "quiet": {
+        "title": "我们没听到你的声音",
+        "body": "请靠近手机再试一次。"
+      },
+      "short": {
+        "title": "请说出整句",
+        "body": "录音太短，无法比较。请把每个词都说出来。"
+      },
+      "unsupported": {
+        "title": "此浏览器不支持口语练习",
+        "body": "请在手机上用 Safari 或 Chrome 打开 Dygo 来练习口语。"
+      },
+      "audioFailed": {
+        "title": "无法加载母语者音频",
+        "body": "请检查网络后重试。其他句子仍然可以使用。",
+        "retry": "重试",
+        "skip": "下一个词"
+      },
+      "soundGarden": {
+        "title": "声音花园",
+        "body": "大声说出你的单词，看看你的声音和母语者的对比。",
+        "pond": "池塘",
+        "pondBody": "{n, plural, other {# 个句子已准备好}}",
+        "open": "开始说"
+      },
+      "sayThis": {
+        "offer": "说说这个词？",
+        "close": "返回卡片"
+      }
     }
   }
 }

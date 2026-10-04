@@ -1119,6 +1119,142 @@
           "network": "We couldn't save your password. Check your connection and try again."
         }
       }
+    },
+    "speak": {
+      "header": "Speaking · The Pond",
+      "progress": "{n}/{total}",
+      "close": "Close",
+      "saySentence": "Say this sentence",
+      "nativeSpeaker": "Native speaker",
+      "play": "Play",
+      "playing": "Playing",
+      "accent": {
+        "uk": "UK",
+        "us": "US"
+      },
+      "speed": {
+        "normal": "1×",
+        "slow": "0.75×"
+      },
+      "listenHint": "Listen, then say the whole sentence",
+      "micButton": "Start speaking",
+      "recording": "Recording",
+      "timer": "{elapsed} / {max}",
+      "fillShape": "The pale green shape is the native speaker. Try to fill it.",
+      "stressTip": "{word} {ipa}: push on {syllable}",
+      "tapToStop": "Tap to stop",
+      "stopButton": "Stop recording",
+      "cancel": "Cancel",
+      "yourSentence": "Your sentence",
+      "durations": "{you}s · native {native}s",
+      "view": {
+        "label": "Waveform view",
+        "overlay": "Overlay",
+        "stacked": "Side by side"
+      },
+      "legend": {
+        "native": "Native",
+        "you": "You",
+        "needsWork": "Needs work"
+      },
+      "waveLabel": {
+        "listen": "Waveform of a native speaker saying the sentence",
+        "live": "Your voice, live, over the native shape",
+        "overlay": "Your sentence in clay over the native speaker in green",
+        "stacked": "Native speaker on top, you below"
+      },
+      "mark": {
+        "stressSoft": "{syllable} is too soft",
+        "missing": "not heard",
+        "rushed": "too fast",
+        "slow": "too slow"
+      },
+      "stage": {
+        "seed": "Seed",
+        "sprout": "Sprout",
+        "bloom": "In bloom",
+        "fruit": "Fruit"
+      },
+      "match": "{stage} · {pct}% match",
+      "stageScale": "Seed · Sprout · Bloom · <b>Fruit at 90%</b>",
+      "tip": {
+        "stress": {
+          "title": "In <b>{word}</b>, make <b>{syllable}</b> stronger",
+          "body": "You said its parts evenly. Say {pattern}. The rest of the sentence flowed well."
+        },
+        "missing": {
+          "title": "Say every word",
+          "body": "We didn't hear {words}. Say the whole sentence in one go."
+        },
+        "rushed": {
+          "title": "Slow down on {word}",
+          "body": "Give {word} as much time as the native speaker does."
+        },
+        "slow": {
+          "title": "Keep {word} moving",
+          "body": "You stretched {word}. Say it as one smooth word."
+        },
+        "flowed": {
+          "title": "That flowed well",
+          "body": "Your rhythm matched the native speaker. On to the next one."
+        }
+      },
+      "playNative": "Native",
+      "playYou": "You",
+      "tryAgain": "Try again",
+      "nextWord": "Next word",
+      "done": {
+        "kicker": "Speaking done",
+        "title": "{n, plural, one {You said # word out loud} other {You said # words out loud}}",
+        "sub": "Your voice watered your garden",
+        "gardenLabel": "{n, plural, one {One plant for the word you spoke} other {# plants, one for each word you spoke}}",
+        "pattern": "Pattern to watch:",
+        "best": "{pct}%"
+      },
+      "backToGarden": "Back to garden",
+      "mic": {
+        "title": "Dygo needs your microphone",
+        "why": "To put your voice next to a native speaker's, Dygo listens while you speak.",
+        "private": "We don't save your recordings. They stay on this phone and are gone when you leave.",
+        "headphones": "In a noisy place, headphones help.",
+        "allow": "Allow microphone",
+        "notNow": "Not now"
+      },
+      "denied": {
+        "title": "The microphone is off for Dygo",
+        "body": "In Safari: tap aA → Website Settings → Microphone → Allow, then try again.",
+        "retry": "Try again",
+        "skip": "Skip speaking"
+      },
+      "quiet": {
+        "title": "We couldn't hear you",
+        "body": "Move closer to the phone and try again."
+      },
+      "short": {
+        "title": "Say the whole sentence",
+        "body": "That was too short to compare. Say every word."
+      },
+      "unsupported": {
+        "title": "Speaking isn't available on this browser",
+        "body": "Open Dygo in Safari or Chrome on your phone to practise speaking."
+      },
+      "audioFailed": {
+        "title": "Couldn't load the native audio",
+        "body": "Check your connection and try again. The other sentences still work.",
+        "retry": "Retry",
+        "skip": "Next word"
+      },
+      "soundGarden": {
+        "title": "Sound Garden",
+        "body": "Say your words out loud and see your voice next to a native speaker.",
+        "pond": "The Pond",
+        "pondBody": "{n, plural, one {# sentence ready} other {# sentences ready}}",
+        "open": "Start speaking"
+      },
+      "sayThis": {
+        "offer": "Say this one?",
+        "close": "Back to the card"
+      }
     }
   }
 }

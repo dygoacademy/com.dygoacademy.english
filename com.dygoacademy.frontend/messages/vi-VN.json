@@ -1119,6 +1119,142 @@
           "network": "Chưa lưu được mật khẩu. Hãy kiểm tra kết nối và thử lại."
         }
       }
+    },
+    "speak": {
+      "header": "Luyện nói · Ao sen",
+      "progress": "{n}/{total}",
+      "close": "Đóng",
+      "saySentence": "Hãy nói câu này",
+      "nativeSpeaker": "Người bản xứ",
+      "play": "Phát",
+      "playing": "Đang phát",
+      "accent": {
+        "uk": "Anh",
+        "us": "Mỹ"
+      },
+      "speed": {
+        "normal": "1×",
+        "slow": "0.75×"
+      },
+      "listenHint": "Nghe, rồi nói cả câu",
+      "micButton": "Bắt đầu nói",
+      "recording": "Đang ghi âm",
+      "timer": "{elapsed} / {max}",
+      "fillShape": "Hình xanh nhạt là giọng người bản xứ. Hãy nói sao cho lấp đầy nó.",
+      "stressTip": "{word} {ipa}: nhấn mạnh vào {syllable}",
+      "tapToStop": "Chạm để dừng",
+      "stopButton": "Dừng ghi âm",
+      "cancel": "Hủy",
+      "yourSentence": "Câu của bạn",
+      "durations": "{you} giây · bản xứ {native} giây",
+      "view": {
+        "label": "Cách xem sóng âm",
+        "overlay": "Chồng lên",
+        "stacked": "Cạnh nhau"
+      },
+      "legend": {
+        "native": "Bản xứ",
+        "you": "Bạn",
+        "needsWork": "Cần luyện thêm"
+      },
+      "waveLabel": {
+        "listen": "Sóng âm của người bản xứ khi nói câu này",
+        "live": "Giọng bạn lúc này, chồng lên hình của người bản xứ",
+        "overlay": "Câu của bạn (màu đất) chồng lên giọng bản xứ (màu xanh)",
+        "stacked": "Người bản xứ ở trên, bạn ở dưới"
+      },
+      "mark": {
+        "stressSoft": "{syllable} còn nhẹ quá",
+        "missing": "chưa nghe thấy",
+        "rushed": "nhanh quá",
+        "slow": "chậm quá"
+      },
+      "stage": {
+        "seed": "Hạt",
+        "sprout": "Mầm",
+        "bloom": "Đang nở hoa",
+        "fruit": "Kết trái"
+      },
+      "match": "{stage} · khớp {pct}%",
+      "stageScale": "Hạt · Mầm · Nở hoa · <b>Kết trái từ 90%</b>",
+      "tip": {
+        "stress": {
+          "title": "Trong <b>{word}</b>, nhấn mạnh <b>{syllable}</b> hơn",
+          "body": "Bạn đọc các âm tiết đều nhau. Hãy nói {pattern}. Phần còn lại của câu rất trôi chảy."
+        },
+        "missing": {
+          "title": "Hãy nói đủ từng từ",
+          "body": "Chúng tôi chưa nghe thấy {words}. Hãy nói cả câu một lượt."
+        },
+        "rushed": {
+          "title": "Nói chậm lại ở từ {word}",
+          "body": "Hãy dành cho {word} thời gian như người bản xứ."
+        },
+        "slow": {
+          "title": "Nói {word} liền mạch hơn",
+          "body": "Bạn kéo dài {word}. Hãy nói nó thành một từ liền."
+        },
+        "flowed": {
+          "title": "Rất trôi chảy",
+          "body": "Nhịp điệu của bạn khớp với người bản xứ. Sang câu tiếp nhé."
+        }
+      },
+      "playNative": "Bản xứ",
+      "playYou": "Bạn",
+      "tryAgain": "Thử lại",
+      "nextWord": "Từ tiếp theo",
+      "done": {
+        "kicker": "Đã luyện nói xong",
+        "title": "{n, plural, other {Bạn đã nói to # từ}}",
+        "sub": "Giọng nói của bạn đã tưới khu vườn",
+        "gardenLabel": "{n, plural, other {# cây, mỗi cây cho một từ bạn đã nói}}",
+        "pattern": "Điều cần chú ý:",
+        "best": "{pct}%"
+      },
+      "backToGarden": "Về vườn",
+      "mic": {
+        "title": "Dygo cần dùng micrô của bạn",
+        "why": "Để đặt giọng bạn cạnh giọng người bản xứ, Dygo sẽ nghe khi bạn nói.",
+        "private": "Chúng tôi không lưu bản ghi âm. Bản ghi chỉ ở trên điện thoại này và sẽ mất khi bạn rời đi.",
+        "headphones": "Ở nơi ồn ào, hãy dùng tai nghe.",
+        "allow": "Cho phép micrô",
+        "notNow": "Để sau"
+      },
+      "denied": {
+        "title": "Micrô đang tắt với Dygo",
+        "body": "Trong Safari: chạm aA → Cài đặt trang web → Micrô → Cho phép, rồi thử lại.",
+        "retry": "Thử lại",
+        "skip": "Bỏ qua phần nói"
+      },
+      "quiet": {
+        "title": "Chúng tôi không nghe thấy bạn",
+        "body": "Hãy lại gần điện thoại hơn và thử lại."
+      },
+      "short": {
+        "title": "Hãy nói cả câu",
+        "body": "Bản ghi ngắn quá để so sánh. Hãy nói đủ từng từ."
+      },
+      "unsupported": {
+        "title": "Trình duyệt này chưa hỗ trợ luyện nói",
+        "body": "Hãy mở Dygo bằng Safari hoặc Chrome trên điện thoại để luyện nói."
+      },
+      "audioFailed": {
+        "title": "Không tải được âm thanh bản xứ",
+        "body": "Hãy kiểm tra kết nối rồi thử lại. Các câu khác vẫn dùng được.",
+        "retry": "Thử lại",
+        "skip": "Từ tiếp theo"
+      },
+      "soundGarden": {
+        "title": "Vườn âm thanh",
+        "body": "Nói to các từ của bạn và xem giọng mình cạnh giọng người bản xứ.",
+        "pond": "Ao sen",
+        "pondBody": "{n, plural, other {# câu đã sẵn sàng}}",
+        "open": "Bắt đầu nói"
+      },
+      "sayThis": {
+        "offer": "Nói thử từ này?",
+        "close": "Quay lại thẻ"
+      }
     }
   }
 }
