@@ -400,3 +400,10 @@ Engineering-facing log of shipped fixes and changes, one dated entry per change.
 * **What**: a signed-in Playwright spec for phone portrait viewports: a full 5-sentence Pond (record with Chrome's fake mic playing the fixture sentence, compare, next, Done, Back to garden), Try again and Cancel, each T7 state through `?state=`, and the Missions card (shown with 38 items and opening The Pond, absent with 4). The speaking API is stubbed in the browser, so it writes nothing. The QA matrix lists what is covered by tests and what needs Dylan on each device, plus the open issues.
 * **Why**: schedule row S12 (T10).
 * **Verified**: the spec type-checks (`tsc` in `ui/`) and lists 80 tests (run on the 3 phone-portrait projects, skipped on the rest). **Not run** (S12-a): its global setup signs in on the live site with the fixture password. No small fixes were needed from the read-through.
+
+### Deployed: Phase 13 S12 checkpoint (all sessions S0–S12 on UAT)
+* **Files**: [`docs/phase13-schedule.md`](docs/phase13-schedule.md) (S12 ticked, Session log)
+* **What**: deployed through `deploy/request.md` after S12 (all 4 steps OK). Built from the working tree, so others' uncommitted edits went out too, as in earlier deploys. New since the S8 deploy: the T7 states and `/sounds?state=` toggle, the Sound Garden card on Missions, "Say this one?" on review cards, `GET /speaking/words?topic_word_ids=…`.
+* **Why**: the compressed run's last checkpoint deploy (all checks green, 14:22 local).
+* **Verified live**: `www.dygoacademy.com` 200, `api.dygoacademy.com/api/v1/health` 200, `/sounds` signed out → 307 to login, `/speaking/words?topic_word_ids=…` signed out → 401 (route registered). Before the deploy: backend `tsc` clean and Jest 342/342; frontend `tsc` and `next lint` clean, Vitest 66 failed | 478 passed (the same 66 known failures).
+* **Needs Dylan**: the iPhone checks in the notes' QA matrix (§16), G1 and G3, the drafted Vietnamese strings (S6), and running `ui/tests/sounds.spec.ts`.
