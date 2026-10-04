@@ -7,7 +7,14 @@ import { forAccent } from '@/lib/speaking/session';
 
 import { SpeakListenScreen, type SpeakListenScreenProps } from './SpeakListenScreen';
 import { SpeakRecordingScreen, type SpeakRecordingScreenProps } from './SpeakRecordingScreen';
-import { SPEAK_FIXTURE_ITEM, SPEAK_FIXTURE_ITEM_VI, SPEAK_FIXTURE_SESSION } from './speakFixtures';
+import { SpeakCompareScreen, type SpeakCompareScreenProps } from './SpeakCompareScreen';
+import { SpeakDoneScreen } from './SpeakDoneScreen';
+import {
+  SPEAK_FIXTURE_ITEM,
+  SPEAK_FIXTURE_ITEM_VI,
+  SPEAK_FIXTURE_RESULT,
+  SPEAK_FIXTURE_SESSION,
+} from './speakFixtures';
 
 const ENV = Array.from({ length: 300 }, (_, i) => Math.abs(Math.sin(i / 8)));
 
@@ -135,5 +142,109 @@ describe('fixtures and clip choice', () => {
     expect(SPEAK_FIXTURE_SESSION.items).toHaveLength(5);
     expect(forAccent(SPEAK_FIXTURE_ITEM, 'UK').url).toMatch(/uk\.m4a$/);
     expect(forAccent({ ...SPEAK_FIXTURE_ITEM, audio_uk_url: null }, 'UK').url).toMatch(/us\.m4a$/);
+  });
+});
+
+function compare(over: Partial<SpeakCompareScreenProps> = {}) {
+  const props: SpeakCompareScreenProps = {
+    item: SPEAK_FIXTURE_ITEM,
+    index: 1,
+    total: 5,
+    closeHref: '/missions',
+    timings: SPEAK_FIXTURE_ITEM.timings_us,
+    ipa: SPEAK_FIXTURE_ITEM.ipa_us,
+    result: SPEAK_FIXTURE_RESULT,
+    view: 'overlay',
+    onView: vi.fn(),
+    playing: null,
+    onPlayNative: vi.fn(),
+    onPlayYou: vi.fn(),
+    onTryAgain: vi.fn(),
+    onNext: vi.fn(),
+    ...over,
+  };
+  renderWithIntl(<SpeakCompareScreen {...props} />);
+  return props;
+}
+
+describe('SpeakCompareScreen (SP3)', () => {
+  it('shows durations, the compare waveform, word marks, stage and tip', () => {
+    compare();
+    expect(screen.getByText('Your sentence')).toBeTruthy();
+    expect(screen.getByText(/3\.4s · native/)).toBeTruthy();
+    expect(screen.getByRole('img', { name: /in clay over the native/ })).toBeTruthy();
+    expect(screen.getByText('mɪt is too soft')).toBeTruthy();
+    expect(screen.getByText('In bloom · 82% match')).toBeTruthy();
+    expect(screen.getByText('Fruit at 90%').tagName).toBe('B');
+    const title = screen.getByText(
+      (_, el) => el?.textContent === 'In mitigate, make mɪt stronger' && el.tagName === 'SPAN',
+    );
+    expect(title.querySelectorAll('b')).toHaveLength(2);
+    expect(screen.getByText(/Say ˈmɪt-ɪ-ɡeɪt\./)).toBeTruthy();
+  });
+
+  it('switches view, plays native / you, tries again and goes next', () => {
+    const p = compare();
+    fireEvent.click(screen.getByRole('radio', { name: 'Side by side' }));
+    expect(p.onView).toHaveBeenCalledWith('stacked');
+    fireEvent.click(screen.getByRole('button', { name: 'Native' }));
+    fireEvent.click(screen.getByRole('button', { name: 'You' }));
+    expect(p.onPlayNative).toHaveBeenCalled();
+    expect(p.onPlayYou).toHaveBeenCalled();
+    fireEvent.click(screen.getByRole('button', { name: 'Try again' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Next word' }));
+    expect(p.onTryAgain).toHaveBeenCalled();
+    expect(p.onNext).toHaveBeenCalled();
+  });
+
+  it('shows a spinner while scoring and blocks Next', () => {
+    compare({ result: null });
+    expect(screen.getByRole('status')).toBeTruthy();
+    expect((screen.getByRole('button', { name: 'Next word' }) as HTMLButtonElement).disabled).toBe(
+      true,
+    );
+  });
+});
+
+describe('SpeakDoneScreen (SP4)', () => {
+  it('counts the words, draws a plant each, lists best scores and the pattern', () => {
+    renderWithIntl(
+      <SpeakDoneScreen
+        closeHref="/missions"
+        words={[
+          { word: 'drought', stage: 'fruit', pct: 94, levels: [0.2, 0.8, 0.4] },
+          { word: 'mitigate', stage: 'bloom', pct: 82, levels: [0.3, 0.9] },
+          { word: 'deteriorate', stage: 'sprout', pct: 58, levels: [0.5] },
+        ]}
+        pattern={{
+          tipKey: 'speak.tip.stress',
+          tipParams: { word: 'deteriorate', syllable: '1' },
+          ipa: '/dɪˈtɪə.ri.ə.reɪt/',
+        }}
+      />,
+    );
+    expect(screen.getByText('Speaking done')).toBeTruthy();
+    expect(screen.getByRole('heading', { name: 'You said 3 words out loud' })).toBeTruthy();
+    const garden = screen.getByRole('img', { name: '3 plants, one for each word you spoke' });
+    expect(garden.querySelectorAll('svg[data-stage]')).toHaveLength(3);
+    expect(screen.getByText('94%').className).toContain('bg-on-forest-muted');
+    expect(screen.getByText('58%').className).toContain('bg-gold-soft');
+    expect(screen.getByText('Pattern to watch:')).toBeTruthy();
+    expect(screen.getByText('tɪə', { selector: 'b' })).toBeTruthy();
+    expect(screen.getByRole('link', { name: 'Back to garden' }).getAttribute('href')).toBe(
+      '/missions',
+    );
+  });
+
+  it('says one word in the singular and has no pattern when all flowed', () => {
+    renderWithIntl(
+      <SpeakDoneScreen
+        closeHref="/missions"
+        words={[{ word: 'drought', stage: 'fruit', pct: 95, levels: [] }]}
+        pattern={null}
+      />,
+    );
+    expect(screen.getByRole('heading', { name: 'You said 1 word out loud' })).toBeTruthy();
+    expect(screen.queryByText('Pattern to watch:')).toBeNull();
   });
 });

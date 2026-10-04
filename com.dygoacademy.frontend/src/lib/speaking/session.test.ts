@@ -5,6 +5,7 @@ import {
   formatClock,
   initialSpeakState,
   recordingTargetMs,
+  sessionPattern,
   speakReducer,
   type SpeakAction,
   type SpeakState,
@@ -29,6 +30,8 @@ describe('speakReducer', () => {
     expect(s).toMatchObject({ phase: 'listen', index: 0 });
     const t = run(s, { type: 'record' }, { type: 'stopped' }, { type: 'tryAgain' });
     expect(t).toMatchObject({ phase: 'recording', index: 0 });
+    // a recording that can't be decoded sends compare back to listen
+    expect(run(t, { type: 'stopped' }, { type: 'cancel' }).phase).toBe('listen');
   });
 
   it('keeps the best score per sentence', () => {
@@ -74,5 +77,23 @@ describe('SP2 helpers', () => {
     expect(formatClock(65_000)).toBe('1:05');
     expect(recordingTargetMs(3.3, 8000)).toBe(5000);
     expect(recordingTargetMs(6, 8000)).toBe(8000);
+  });
+});
+
+describe('sessionPattern', () => {
+  it('picks the most common tip, ties by priority, none when all flowed', () => {
+    const flowed = { tipKey: 'speak.tip.flowed' };
+    expect(sessionPattern({ 0: flowed, 1: flowed })).toBeNull();
+    expect(
+      sessionPattern({
+        0: { tipKey: 'speak.tip.rushed', tipParams: { word: 'help' } },
+        1: { tipKey: 'speak.tip.rushed', tipParams: { word: 'trees' } },
+        2: { tipKey: 'speak.tip.stress', tipParams: { word: 'mitigate', syllable: '0' } },
+      }),
+    ).toEqual({ index: 0, tipKey: 'speak.tip.rushed', tipParams: { word: 'help' } });
+    expect(
+      sessionPattern({ 3: { tipKey: 'speak.tip.slow' }, 4: { tipKey: 'speak.tip.stress' } })
+        ?.tipKey,
+    ).toBe('speak.tip.stress');
   });
 });

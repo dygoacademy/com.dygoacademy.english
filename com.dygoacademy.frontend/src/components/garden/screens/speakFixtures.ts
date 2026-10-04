@@ -1,4 +1,5 @@
 import fixture from '../../../../public/audio/speaking-fixture/fixture-mitigate.json';
+import type { SpeakingResult } from '@/lib/speaking/envelopeScorer';
 import type { SpeakingSession, SpeakingSessionItem, SpeakingTimings } from '@/types';
 
 /**
@@ -71,4 +72,26 @@ export const SPEAK_FIXTURE_SESSION: SpeakingSession = {
       is_due: i < 2,
     })),
   ],
+};
+
+const wave = (n: number, shift = 0) =>
+  Array.from({ length: n }, (_, i) =>
+    Math.max(0.03, Math.abs(Math.sin((i + shift) / 9)) * (0.5 + 0.5 * Math.sin(i / 37))),
+  );
+
+/** An SP3 result like the design's: In bloom 82%, "mitigate" stress too soft. */
+export const SPEAK_FIXTURE_RESULT: SpeakingResult = {
+  score: 82,
+  stage: 'bloom',
+  wordMarks: SPEAK_FIXTURE_ITEM.sentence
+    .split(' ')
+    .map((_, index) => ({
+      index,
+      ok: index !== 5,
+      reason: index === 5 ? ('stress_soft' as const) : null,
+    })),
+  userDurationMs: 3400,
+  envelopes: { native: wave(330), user: wave(340, 4) },
+  tipKey: 'speak.tip.stress',
+  tipParams: { word: 'mitigate', syllable: '0' },
 };

@@ -36,7 +36,9 @@ export function speakReducer(state: SpeakState, action: SpeakAction): SpeakState
         ? { ...state, phase: 'recording' }
         : state;
     case 'cancel':
-      return state.phase === 'recording' ? { ...state, phase: 'listen' } : state;
+      return state.phase === 'recording' || state.phase === 'compare'
+        ? { ...state, phase: 'listen' }
+        : state;
     case 'stopped':
       return state.phase === 'recording' ? { ...state, phase: 'compare' } : state;
     case 'scored': {
@@ -104,4 +106,31 @@ export function forAccent(
     timings: uk ? (item.timings_uk ?? item.timings_us) : (item.timings_us ?? item.timings_uk),
     ipa: uk ? (item.ipa_uk ?? item.ipa_us) : (item.ipa_us ?? item.ipa_uk),
   };
+}
+
+/** Tip keys in the handover's priority order (§3 step 8). */
+const TIP_PRIORITY = [
+  'speak.tip.stress',
+  'speak.tip.missing',
+  'speak.tip.rushed',
+  'speak.tip.slow',
+];
+
+/**
+ * SP4 "Pattern to watch": the tip that came up most across the session's
+ * best attempts (ties by the handover's priority), with the sentence it
+ * came from; null when every sentence flowed well.
+ */
+export function sessionPattern(
+  results: Record<number, { tipKey: string; tipParams?: Record<string, string> }>,
+): { index: number; tipKey: string; tipParams?: Record<string, string> } | null {
+  const entries = Object.entries(results)
+    .map(([i, r]) => ({ index: Number(i), ...r }))
+    .filter((r) => TIP_PRIORITY.includes(r.tipKey));
+  if (entries.length === 0) return null;
+  const count = (key: string) => entries.filter((e) => e.tipKey === key).length;
+  const best = [...TIP_PRIORITY].sort(
+    (a, b) => count(b) - count(a) || TIP_PRIORITY.indexOf(a) - TIP_PRIORITY.indexOf(b),
+  )[0];
+  return entries.find((e) => e.tipKey === best) ?? null;
 }

@@ -203,6 +203,12 @@ Whichever is chosen, syllable boundaries for the target word come from the IPA (
 | S7-c | SP2 stress tip | Plain text (`stressTip` has arguments, not tags), with the stressed syllable in IPA ("push on mɪt") | Turning IPA into spelling ("MIT") isn't reliable; next-intl can't bold an argument without a tag |
 | S7-d | Follow-along | Words dark up to the one the native speaker would have reached at the elapsed time | No speech recognition in v1 |
 | S7-e | Mic errors on SP1 | For now one line above the mic (denied / unsupported / failed); the full T7 states come in S9 | — |
+| S8-a | Play button colours | SP3's Play Native / Play You backgrounds (#F1F6EF, #FBEFE9) and the clay border (#EBC7B6) stay as arbitrary values; the green border uses `--color-sprout-border` | No tokens for them yet, and `globals.css` has others' uncommitted edits |
+| S8-b | SP4 score pill | Green at ≥ 80 %, gold below (`DONE_GREEN_FROM`) | Matches the design (82 / 88 / 94 green, 58 / 71 gold) |
+| S8-c | SP4 pattern | The tip that came up most across the session's best attempts (ties by the handover's priority), shown as "Pattern to watch:" + that tip's title; none when all flowed | No separate pattern copy in §8 |
+| S8-d | Attempt saving | Fire-and-forget `POST /speaking/attempts` after each score (Try again = another row); a failed save isn't retried or shown | Attempts are history for the beta numbers; the learner's flow shouldn't stop for them |
+| S8-e | SP4 mini waveforms | The native envelope of each sentence | The design draws them green (native colour) |
+| S8-f | `garden:diff` | **Not run.** It needs `next dev` (not allowed in this folder) or production reference pages, and reference PNGs for SP1–SP4 that don't exist (the design is `.dc.html`; making PNGs means rendering them in Chrome) | Dylan: decide whether to add SP1–SP4 references; otherwise compare on the iPhone at G3 |
 
 ## 11. Questions for Dylan
 

@@ -4,6 +4,7 @@ import * as React from 'react';
 import { useTranslations } from 'next-intl';
 
 import { GARDEN_ROUTES } from '@/constants/garden';
+import { useCreateSpeakingAttempt } from '@/hooks/useCreateSpeakingAttempt';
 import { useLiveLevels } from '@/hooks/useLiveLevels';
 import { useNativeEnvelope } from '@/hooks/useNativeEnvelope';
 import { usePlayer } from '@/hooks/usePlayer';
@@ -11,6 +12,8 @@ import { useSpeakingSession } from '@/hooks/useSpeakingSession';
 import { prefetchMedia } from '@/lib/media-cache';
 import {
   createRecorder,
+  decodeForScoring,
+  getAudioContext,
   MAX_RECORDING_MS,
   releaseStream,
   requestMic,
@@ -21,16 +24,21 @@ import {
   type Recording,
 } from '@/lib/speaking/audio';
 import { POND_SESSION_SIZE } from '@/lib/speaking/constants';
+import { envelopeScorer, type SpeakingResult } from '@/lib/speaking/envelopeScorer';
 import {
   forAccent,
   initialSpeakState,
   recordingTargetMs,
+  sessionPattern,
   speakReducer,
   type SpeakAction,
   type SpeakState,
 } from '@/lib/speaking/session';
 import type { SpeakingAccent, SpeakingSessionItem } from '@/types';
 
+import type { CompareView } from '../speaking/CompareWaveform';
+import { SpeakCompareScreen } from '../screens/SpeakCompareScreen';
+import { SpeakDoneScreen } from '../screens/SpeakDoneScreen';
 import { SpeakListenScreen } from '../screens/SpeakListenScreen';
 import { SpeakRecordingScreen } from '../screens/SpeakRecordingScreen';
 import { LiveError, LiveLoading } from './LiveState';
@@ -41,9 +49,10 @@ const clipUrl = (item: SpeakingSessionItem, accent: SpeakingAccent) => forAccent
  * /sounds: The Pond (Phase 13 T6, plan §2). Real data: `GET
  * /speaking/session` (5 sentences, due → new → rest), taken once. The
  * five native clips of the chosen accent are prefetched into the phone's
- * media cache; each is decoded once for the waveforms (and, from S8, the
- * scorer). Listen (SP1) → Recording (SP2) → Compare (SP3, S8) → next or
- * Done (SP4, S8). The recording never leaves the phone (D2).
+ * media cache; each is decoded once for the waveforms and the scorer.
+ * Listen (SP1) → Recording (SP2) → Compare (SP3: scored on the phone, one
+ * `POST /speaking/attempts` per attempt) → next, or Done (SP4) after the
+ * last. The recording never leaves the phone (D2); nothing changes SRS (D5).
  */
 export function SpeakLive({ topicId }: { topicId?: string }) {
   const t = useTranslations('screens.speak');
@@ -57,7 +66,12 @@ export function SpeakLive({ topicId }: { topicId?: string }) {
   const [micError, setMicError] = React.useState<MicErrorKind | null>(null);
   const [stream, setStream] = React.useState<MediaStream | null>(null);
   const [elapsedMs, setElapsedMs] = React.useState(0);
-  const [, setRecording] = React.useState<Recording | null>(null);
+  const [recording, setRecording] = React.useState<Recording | null>(null);
+  const [recUrl, setRecUrl] = React.useState<string | null>(null);
+  const [result, setResult] = React.useState<SpeakingResult | null>(null);
+  const [best, setBest] = React.useState<Record<number, SpeakingResult>>({});
+  const [view, setView] = React.useState<CompareView>('overlay');
+  const saveAttempt = useCreateSpeakingAttempt();
   const recorder = React.useRef<Recorder | null>(null);
   const streamRef = React.useRef<MediaStream | null>(null);
   streamRef.current = stream;
@@ -92,6 +106,59 @@ export function SpeakLive({ topicId }: { topicId?: string }) {
     return () => clearInterval(id);
   }, [state?.phase, stream]);
 
+  // The learner's clip as a URL for "Play you"; revoked when replaced.
+  React.useEffect(() => {
+    if (!recording) {
+      setRecUrl(null);
+      return;
+    }
+    const u = URL.createObjectURL(recording.blob);
+    setRecUrl(u);
+    return () => URL.revokeObjectURL(u);
+  }, [recording]);
+
+  // Compare: score on the phone, then save the numbers (one row per attempt).
+  const clip = native.clip;
+  React.useEffect(() => {
+    if (state?.phase !== 'compare' || !recording || result || !clip || !item) return;
+    let alive = true;
+    const { timings } = forAccent(item, accent);
+    if (!timings) return;
+    void (async () => {
+      try {
+        const user = await decodeForScoring(recording.blob, getAudioContext());
+        const r = await envelopeScorer.score({
+          native: clip.pcm.samples,
+          nativeRate: clip.pcm.sampleRate,
+          timings,
+          user: user.samples,
+          userRate: user.sampleRate,
+          targetIndex: item.target_index,
+        });
+        if (!alive) return;
+        setResult(r);
+        dispatch({ type: 'scored', stage: r.stage, score: r.score });
+        const index = state.index;
+        setBest((b) => (b[index] && b[index].score >= r.score ? b : { ...b, [index]: r }));
+        saveAttempt.mutate({
+          item_id: item.id,
+          accent,
+          score: r.score,
+          stage: r.stage,
+          word_marks: r.wordMarks,
+          user_duration_ms: r.userDurationMs,
+        });
+      } catch {
+        // Couldn't decode the recording: back to SP1 to try again (T7 adds a message).
+        if (alive) dispatch({ type: 'cancel' });
+      }
+    })();
+    return () => {
+      alive = false;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [state?.phase, recording, result, clip, item, accent]);
+
   // Leaving the page: stop recording and release the mic (iOS indicator).
   React.useEffect(
     () => () => {
@@ -120,6 +187,8 @@ export function SpeakLive({ topicId }: { topicId?: string }) {
 
   async function startRecording() {
     setMicError(null);
+    setResult(null);
+    setRecording(null);
     player.stop();
     try {
       await resumeAudioContext(); // inside the tap (iOS)
@@ -236,6 +305,67 @@ export function SpeakLive({ topicId }: { topicId?: string }) {
     );
   }
 
-  // SP3 Compare and SP4 Done arrive in S8.
-  return <LiveLoading />;
+  if (state.phase === 'compare') {
+    const playingWhich =
+      url && player.isPlaying(url) ? 'native' : recUrl && player.isPlaying(recUrl) ? 'you' : null;
+    const playOne = (src: string | null) => {
+      if (!src) return;
+      if (player.isPlaying(src)) return player.stop();
+      setPlayKey((k) => k + 1);
+      void player.play(src, 1).catch(() => undefined);
+    };
+    return (
+      <SpeakCompareScreen
+        item={item}
+        index={state.index}
+        total={state.total}
+        closeHref={closeHref}
+        timings={timings}
+        ipa={ipa}
+        result={result}
+        view={view}
+        onView={setView}
+        playing={playingWhich}
+        playKey={playKey}
+        onPlayNative={() => playOne(url)}
+        onPlayYou={() => playOne(recUrl)}
+        onTryAgain={() => void startRecording()}
+        onNext={() => {
+          player.stop();
+          setResult(null);
+          setRecording(null);
+          dispatch({ type: 'next' });
+        }}
+      />
+    );
+  }
+
+  // SP4 Done: one plant per sentence spoken, its best stage and score.
+  const spoken = items
+    .map((it, index) => ({ it, index, r: best[index] }))
+    .filter((x): x is { it: SpeakingSessionItem; index: number; r: SpeakingResult } =>
+      Boolean(x.r),
+    );
+  const pattern = sessionPattern(Object.fromEntries(spoken.map((x) => [x.index, x.r])));
+  const patternItem = pattern ? items[pattern.index] : null;
+  return (
+    <SpeakDoneScreen
+      closeHref={closeHref}
+      words={spoken.map(({ it, r }) => ({
+        word: it.word,
+        stage: r.stage,
+        pct: r.score,
+        levels: r.envelopes.native,
+      }))}
+      pattern={
+        pattern && patternItem
+          ? {
+              tipKey: pattern.tipKey,
+              tipParams: pattern.tipParams,
+              ipa: forAccent(patternItem, accent).ipa,
+            }
+          : null
+      }
+    />
+  );
 }
