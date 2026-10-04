@@ -522,3 +522,8 @@ Engineering-facing log of shipped fixes and changes, one dated entry per change.
 * **What**: The Pond and "Say this one?" now send usable recordings to `POST /speaking/check` (the self-hosted speech scorer) and show its marks; the phone still screens silent / short recordings and judges target-word stress. Deployed 2026-10-05 06:49 (all 4 steps OK).
 * **Why**: Dylan asked to switch UAT now, before calibration (M4), to try it on the iPhone.
 * **Verified live**: the deployed bundle's check-mode default is "server" and it contains the upload to `/speaking/check`; www and API health 200; scorer healthy. **Rollback**: set `NEXT_PUBLIC_SPEECH_CHECK=local` in `env-profiles/prod.env` and redeploy.
+
+### Phase 13 status (2026-10-05 06:55)
+* **Files**: [`docs/phase13-schedule.md`](docs/phase13-schedule.md) (S14, S20 ticked, Session log); `phase 13 implementation plan.md` (v2.4 status block and task rows; the file stays uncommitted as before)
+* **What**: status only. S14 is covered by notes §20 (paid services compared, G6 self-hosted); S20 was done as M2–M5 (UAT on server checking since 06:49). Open: M4 calibration, S13 spend caps, G5 Google limits, S19 QA v2.
+* **Why**: Dylan asked for the Phase 13 status.
