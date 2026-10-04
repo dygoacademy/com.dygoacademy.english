@@ -48,6 +48,7 @@ Every column, constraint, index and policy below was read out of `pg_catalog` on
 | `push_subscriptions` | Notifications | VAPID Web Push endpoints per device. | one per device |
 | `speaking_items` | Speaking (Phase 13) | One sentence per word, with native UK/US audio keys and word timings. Shared by every bed with the word. | ≤ one per word |
 | `speaking_attempts` | Speaking (Phase 13) | One row per speaking Compare: score, stage, word marks. No audio. | append-only, grows with use |
+| `api_usage_daily` | Operations (Phase 13 S13) | Paid API usage per provider per UTC day, checked against the daily spend caps. | 2 rows a day |
 | `media_load_events` | Telemetry | Audio start time per play (tap → sound), cache hit, network, Cloudflare country/city. | one per play — prune old rows when no longer needed |
 
 ## 3. Entity relationships
@@ -830,7 +831,7 @@ One sentence per word (`master_lexicon`), with the native-speaker clips and thei
 
 One row per speaking Compare (SP3). Try again stores another row. The learner's recording is never stored (decision D2).
 
-> Phase 13: one row per speaking Compare (SP3). word_marks = [{index, ok, reason: stress_soft|missing|rushed|slow|null}]. No audio is stored (D2).
+> Phase 13: one entry per word of the sentence, {index, ok, reason}; reason: stress_soft|missing|rushed|slow|unclear|null (unclear: server check, S18). No audio and no transcript are stored (D2).
 
 **Written by** — The owning user only (insert). Rows are history: only `service_role` can update or delete them.
 
@@ -878,6 +879,31 @@ One row per speaking Compare (SP3). Try again stores another row. The learner's 
 - Owner-only, with no teacher exception (like `user_word_srs`). Group views are out of scope for Phase 13.
 - `accent` uses `UK` / `US` (the handover's values), while `profiles.english_variety` uses `en-GB` / `en-US`; the API maps between them.
 - No audio column on purpose (D2). Storing recordings later needs a privacy review and a new migration.
+
+#### `api_usage_daily`
+
+Phase 13 S13: how much of each paid Google API the app used per UTC day, so the backend can stop before a daily cap (`src/ai/usage-cap.service.ts`; `scripts/speaking-generate.ts` for Google Cloud TTS). Migration `20261005_api_usage_daily.sql`.
+
+**Written by** — `service_role` only (the backend and the speaking script). Learners can't read or write it.
+
+| Column | Type | Null | Default |
+| :--- | :--- | :---: | :--- |
+| `provider` | `text` | NO | — |
+| `day` | `date` | NO | — |
+| `units` | `bigint` | NO | `0` |
+| `updated_at` | `timestamp with time zone` | NO | `now()` |
+
+**Keys** — PRIMARY KEY `(provider, day)`. CHECK `provider in ('gemini', 'google_tts')`, CHECK `units >= 0`.
+
+**RLS** — enabled, no policies (nobody but `service_role`, which bypasses RLS).
+
+**Grants** — `authenticated`, `anon`: none. `service_role`: SELECT, INSERT, UPDATE.
+
+**Operational notes**
+
+- `units`: Gemini = calls (enrichment, translation, word audio, quiz explanations); `google_tts` = characters (SSML incl. marks).
+- One statement adds the units only if the day's total stays within the cap (`insert … on conflict do update … where units + new <= cap`), so racing calls can't both take the last unit; no row returned = over the cap, call skipped.
+- Caps: `GEMINI_DAILY_CALL_LIMIT` (default 1000), `GOOGLE_TTS_DAILY_CHAR_LIMIT` (default 300000).
 
 ---
 

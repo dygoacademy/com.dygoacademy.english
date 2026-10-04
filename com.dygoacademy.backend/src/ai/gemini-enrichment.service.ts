@@ -2,6 +2,8 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { GoogleGenAI, Type } from '@google/genai';
 
+import { UsageCapService } from './usage-cap.service';
+
 /** Mirrors tech spec §4.2's Gemini prompting output exactly. */
 export interface LexiconEntry {
   part_of_speech: string | null;
@@ -142,7 +144,23 @@ export class GeminiEnrichmentService {
   private readonly logger = new Logger(GeminiEnrichmentService.name);
   private client: GoogleGenAI | null = null;
 
-  constructor(private readonly config: ConfigService) {}
+  constructor(
+    private readonly config: ConfigService,
+    private readonly usage: UsageCapService,
+  ) {}
+
+  /**
+   * Every Gemini call goes through here: one unit of today's cap first
+   * (S13), then the SDK. Over the cap it throws UsageCapExceededError
+   * without calling Google.
+   */
+  private async generate(
+    request: Parameters<GoogleGenAI['models']['generateContent']>[0],
+  ): ReturnType<GoogleGenAI['models']['generateContent']> {
+    const client = this.getClient();
+    await this.usage.take('gemini');
+    return client.models.generateContent(request);
+  }
 
   /** Lazy — avoids constructing the SDK client (and needing a key) at boot for routes that never enrich. */
   private getClient(): GoogleGenAI {
@@ -177,7 +195,7 @@ export class GeminiEnrichmentService {
         `translates the first example sentence into that language.`,
     ].join('\n');
 
-    const response = await this.getClient().models.generateContent({
+    const response = await this.generate({
       model: TEXT_MODEL,
       contents: prompt,
       config: {
@@ -212,7 +230,10 @@ export class GeminiEnrichmentService {
    * just the two-locale translation object, reusing the schema's own
    * both-required guarantee.
    */
-  async translateMeaning(definitionEn: string, exampleSentence: string): Promise<TranslationsByLocale> {
+  async translateMeaning(
+    definitionEn: string,
+    exampleSentence: string,
+  ): Promise<TranslationsByLocale> {
     const prompt = [
       `You are a professional lexicographer localizing an English dictionary entry.`,
       `English definition: "${definitionEn}"`,
@@ -223,7 +244,7 @@ export class GeminiEnrichmentService {
         `language.`,
     ].join('\n');
 
-    const response = await this.getClient().models.generateContent({
+    const response = await this.generate({
       model: TEXT_MODEL,
       contents: prompt,
       config: {
@@ -252,7 +273,7 @@ export class GeminiEnrichmentService {
   }
 
   async synthesizeSpeech(word: string): Promise<SynthesizedAudio> {
-    const response = await this.getClient().models.generateContent({
+    const response = await this.generate({
       model: TTS_MODEL,
       contents: `Pronounce this word clearly, at a moderate learner-friendly pace: ${word}`,
       config: {
@@ -314,7 +335,7 @@ export class GeminiEnrichmentService {
       .filter(Boolean)
       .join('\n');
 
-    const response = await this.getClient().models.generateContent({
+    const response = await this.generate({
       model: TEXT_MODEL,
       contents: prompt,
       config: { temperature: 0.4 },

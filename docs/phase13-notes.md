@@ -541,3 +541,11 @@ Dylan: the app calls the Dygo API, the API calls the scorer (option A). No Cloud
 - **Saved attempt:** server score / stage / marks; `unclear` is now a valid reason (backend `SPEAKING_MARK_REASONS`; DB only checks for an array, migration `20261005_speaking_mark_unclear.sql` just updates the column comment). What the scorer `heard` is never saved. Local mode saves exactly as before.
 - **Mic explainer (S16-b):** in `server` mode it says "Your recording is checked, then deleted." instead of "stays on this phone".
 - Tests: frontend `check.test.ts` (merge, upload, mode) + 2 SpeakLive server-mode tests; Vitest 511 passed, the same 66 known failures; backend speaking 42/42; RLS suite passes.
+
+### S13 · Spend caps (2026-10-05)
+
+Table `api_usage_daily` (provider, UTC day, units; service_role only) and `UsageCapService.take()`: one statement adds the units only if the day stays within the cap, else `UsageCapExceededError` and no paid call.
+- **Gemini** (all four calls go through `GeminiEnrichmentService.generate`): `GEMINI_DAILY_CALL_LIMIT`, default 1000 calls a day (≈ 330 new words: enrich + translate + word audio). Over the cap a new word is marked FAILED at once ("Daily gemini limit reached …", BullMQ `UnrecoverableError`, no retries) and quiz explanations are left out (already caught). Warns in the log once a day at 80 %.
+- **Google Cloud TTS** (`speaking-generate`): stops before the run passes `--max-usd` (default $2, `--yes` lifts it) and when today's total would pass `GOOGLE_TTS_DAILY_CHAR_LIMIT` (default 300000 chars, always on); a stopped run keeps what it made.
+- Verified: backend Jest 357/357 (5 new: cap SQL and errors, defaults, 80 % warning, capped enrichment job not retried); the cap SQL on the real database in a rolled-back transaction (2 calls pass, the 3rd over a cap of 2 is refused, an oversized first request is refused); the script with `--max-usd 0` stops before any TTS call and records nothing; dry run unchanged.
+- Still Dylan's (G5): Google Cloud budget alerts and quotas, the hard stop outside the app.

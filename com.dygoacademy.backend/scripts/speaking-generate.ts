@@ -11,7 +11,10 @@
  *   npm run speaking-generate -- --fixture --out <dir>       # local test clip, no keys, no DB
  *
  * Options: --accents uk,us (default both) · --limit N (default 50) ·
- * --force (re-synthesize and overwrite audio that already exists).
+ * --force (re-synthesize and overwrite audio that already exists) ·
+ * --max-usd N (stop before this run's TTS passes $N at list price, default 2) ·
+ * --yes (no --max-usd stop; the daily cap GOOGLE_TTS_DAILY_CHAR_LIMIT,
+ * default 300000 chars, always applies). A stopped run keeps what it made.
  *
  * A speaking item belongs to the word (master_lexicon), shared by every bed
  * that has it; --topic just picks which words to do. For each word: take its
@@ -87,10 +90,14 @@ interface Args {
   force: boolean;
   fixture: boolean;
   out?: string;
+  /** Stop before this run's TTS would pass this many USD at list price (S13). */
+  maxUsd: number;
+  /** Skip the --max-usd stop (the daily cap still applies). */
+  yes: boolean;
 }
 
 function usage(): never {
-  console.log(fs.readFileSync(__filename, 'utf8').split('\n').slice(2, 14).join('\n'));
+  console.log(fs.readFileSync(__filename, 'utf8').split('\n').slice(2, 18).join('\n'));
   process.exit(0);
 }
 
@@ -102,6 +109,8 @@ function parseArgs(argv: string[]): Args {
     dryRun: false,
     force: false,
     fixture: false,
+    maxUsd: 2,
+    yes: false,
   };
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
@@ -114,6 +123,8 @@ function parseArgs(argv: string[]): Args {
     else if (a === '--force') args.force = true;
     else if (a === '--fixture') args.fixture = true;
     else if (a === '--out') args.out = argv[++i];
+    else if (a === '--max-usd') args.maxUsd = parseFloat(argv[++i]);
+    else if (a === '--yes') args.yes = true;
     else if (a === '--help' || a === '-h') usage();
     else throw new Error(`unknown option ${a} (see --help)`);
   }
@@ -122,6 +133,7 @@ function parseArgs(argv: string[]): Args {
     throw new Error('give --topic <uuid> or --all (or --fixture)');
   }
   if (args.fixture && !args.out) throw new Error('--fixture needs --out <dir>');
+  if (!(args.maxUsd >= 0)) throw new Error('--max-usd takes a number of dollars');
   return args;
 }
 
@@ -332,6 +344,11 @@ async function runTopic(args: Args, env: Record<string, string>): Promise<void> 
   await db.connect();
 
   let ttsChars = 0;
+  // S13 spend guards: this run's real TTS characters, the daily cap (counted
+  // in api_usage_daily with the backend's Gemini calls) and why we stopped.
+  let spentChars = 0;
+  const dailyCharLimit = parseInt(env.GOOGLE_TTS_DAILY_CHAR_LIMIT || '300000', 10);
+  let stopReason: string | null = null;
   let made = 0;
   let reused = 0;
   let skipped = 0;
@@ -408,6 +425,32 @@ async function runTopic(args: Args, env: Record<string, string>): Promise<void> 
           console.log(`  ! ${label}: stored timings invalid (${errors[0]}), regenerating`);
         }
         const chars = buildSsml(tokens).length;
+        if (!args.dryRun) {
+          const usd = (spentChars + chars) * PRICE_PER_CHAR;
+          if (!args.yes && usd > args.maxUsd) {
+            stopReason =
+              `the next clip would take this run past --max-usd $${args.maxUsd} ` +
+              `(≈ $${usd.toFixed(2)}); run again with a higher --max-usd, or --yes`;
+            break;
+          }
+          const taken = await db.query(
+            `insert into public.api_usage_daily (provider, day, units)
+             select 'google_tts', (now() at time zone 'utc')::date, $1
+              where $1 <= $2
+             on conflict (provider, day) do update
+               set units = public.api_usage_daily.units + excluded.units, updated_at = now()
+               where public.api_usage_daily.units + excluded.units <= $2
+             returning units`,
+            [chars, dailyCharLimit],
+          );
+          if (taken.rowCount === 0) {
+            stopReason =
+              `today's Google TTS limit is reached (${dailyCharLimit} chars, ` +
+              'GOOGLE_TTS_DAILY_CHAR_LIMIT); run again tomorrow (UTC)';
+            break;
+          }
+          spentChars += chars;
+        }
         ttsChars += chars;
         if (args.dryRun) {
           console.log(`  + ${label}: would synthesize ${chars} chars → ${keyFor('m4a')} (+ .wav)`);
@@ -483,6 +526,7 @@ async function runTopic(args: Args, env: Record<string, string>): Promise<void> 
           ],
         );
       }
+      if (stopReason) break;
     }
     await db.query(args.dryRun ? 'rollback' : 'commit');
   } catch (err) {
@@ -497,6 +541,13 @@ async function runTopic(args: Args, env: Record<string, string>): Promise<void> 
       `(SSML incl. marks) ${verb} ≈ $${(ttsChars * PRICE_PER_CHAR).toFixed(4)} at Neural2 list price ` +
       '(the first 1M chars a month are free).',
   );
+  if (stopReason) {
+    console.log(`Stopped early: ${stopReason}. What was made is kept; run again to continue.`);
+  } else if (args.dryRun && !args.yes && ttsChars * PRICE_PER_CHAR > args.maxUsd) {
+    console.log(
+      `Note: a real run stops at --max-usd $${args.maxUsd}; add --max-usd or --yes to do it all.`,
+    );
+  }
 }
 
 async function main(): Promise<void> {

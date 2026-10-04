@@ -1,7 +1,8 @@
 import { Test } from '@nestjs/testing';
-import { Job } from 'bullmq';
+import { Job, UnrecoverableError } from 'bullmq';
 
 import { GeminiEnrichmentService, LexiconEntry } from '../ai/gemini-enrichment.service';
+import { UsageCapExceededError } from '../ai/usage-cap.service';
 import { DatabaseService } from '../database/database.service';
 import {
   AudioBackfillJob,
@@ -209,6 +210,20 @@ describe('EnrichmentProcessor', () => {
     const failedCall = queryMock.mock.calls[1];
     expect(failedCall[0]).toMatch(/status = 'FAILED'/);
     expect(failedCall[1]).toEqual(['gemini 500', 'tw-1']);
+  });
+
+  it('over the daily Gemini cap (S13): FAILED on the first attempt, not retried', async () => {
+    queryMock.mockResolvedValueOnce([]); // dedup lookup: cache miss
+    enrichWordMock.mockRejectedValueOnce(new UsageCapExceededError('gemini', 1000));
+    queryMock.mockResolvedValueOnce([]); // FAILED update
+
+    const run = processor.process(makeJob({}, 0));
+    await expect(run).rejects.toBeInstanceOf(UnrecoverableError);
+    await expect(run).rejects.toThrow('Daily gemini limit reached (1000)');
+
+    const failedCall = queryMock.mock.calls[1];
+    expect(failedCall[0]).toMatch(/status = 'FAILED'/);
+    expect(failedCall[1][0]).toMatch(/Daily gemini limit reached/);
   });
 
   // ---------------------------------------------------------------------------

@@ -673,7 +673,7 @@ Run these from `com.dygoacademy.backend/`. They read the root `.env`.
 # Speaking sentences (Phase 13). Needs GOOGLE_TTS_API_KEY in the root .env
 # (Google Cloud project "Dygo", key restricted to the Cloud Text-to-Speech API).
 npm run speaking-generate -- --all --limit 200 --dry-run   # list what's missing + cost estimate, no TTS calls
-npm run speaking-generate -- --all --limit 200             # make it for every word that has no speaking audio yet
+npm run speaking-generate -- --all --limit 200             # make it for every word that has no speaking audio yet (stops at $2, see below)
 npm run speaking-generate -- --topic <topic-id>            # only one topic's words
 npm run speaking-generate -- --topic <topic-id> --force    # remake (e.g. after changing a voice)
 npm run speaking-generate -- --fixture --out ../com.dygoacademy.frontend/public/audio/speaking-fixture  # dev test clip, no key needed
@@ -689,6 +689,14 @@ npm run media-migrate
 
 Notes:
 
+- **Spend caps (Phase 13 S13)**: a run stops before its TTS would pass `--max-usd`
+  (default $2 at Neural2 list price; `--yes` lifts it) and when today's Google TTS total
+  reaches `GOOGLE_TTS_DAILY_CHAR_LIMIT` (default 300,000 characters, always on). A stopped
+  run keeps what it made; run it again to continue. The backend caps Gemini the same way
+  (`GEMINI_DAILY_CALL_LIMIT`, default 1,000 calls a day: enrichment, translations, word
+  audio, quiz explanations); over the cap a new word fails with "Daily gemini limit
+  reached" and quiz explanations are left out. Usage per day is in the `api_usage_daily`
+  table. These are app-side caps; also set budget alerts and quotas in Google Cloud (G5).
 - **New words don't get speaking audio automatically yet**: run
   `speaking-generate -- --all` after adding words (each run only makes what's missing).
 - **Cost**: about 300 characters per clip, 2 clips per word. Google's first 1 million

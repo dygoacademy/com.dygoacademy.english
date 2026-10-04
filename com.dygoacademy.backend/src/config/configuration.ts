@@ -45,6 +45,16 @@ export default () => ({
   // forwards a recording and gives up after timeoutMs (SP3 shows "Couldn't
   // check"). Unset = the local default; the scorer being down is a 503 per
   // request, not a boot failure.
+  // Phase 13 S13: daily caps on paid Google APIs (src/ai/usage-cap.service.ts,
+  // table api_usage_daily, UTC days). Gemini counts calls (enrichment,
+  // translation, word audio, quiz explanations); Google Cloud TTS counts
+  // characters (scripts/speaking-generate.ts). Over the cap the call is
+  // skipped, not made.
+  usage: {
+    geminiDailyCalls: parseInt(process.env.GEMINI_DAILY_CALL_LIMIT || '1000', 10),
+    googleTtsDailyChars: parseInt(process.env.GOOGLE_TTS_DAILY_CHAR_LIMIT || '300000', 10),
+  },
+
   speech: {
     scorerUrl: process.env.SPEECH_SCORER_URL || 'http://127.0.0.1:8100',
     timeoutMs: parseInt(process.env.SPEECH_CHECK_TIMEOUT_MS || '8000', 10),

@@ -1,8 +1,9 @@
 import { Processor, WorkerHost } from '@nestjs/bullmq';
 import { Logger } from '@nestjs/common';
-import { Job } from 'bullmq';
+import { Job, UnrecoverableError } from 'bullmq';
 
 import { GeminiEnrichmentService } from '../ai/gemini-enrichment.service';
+import { UsageCapExceededError } from '../ai/usage-cap.service';
 import { DatabaseService } from '../database/database.service';
 import {
   AUDIO_BACKFILL_JOB,
@@ -136,7 +137,10 @@ export class EnrichmentProcessor extends WorkerHost {
       );
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
-      const isFinalAttempt = job.attemptsMade + 1 >= (job.opts.attempts ?? 1);
+      // Over today's Gemini cap (S13): retrying won't help until tomorrow (UTC),
+      // so fail the word now instead of burning the retries.
+      const capped = err instanceof UsageCapExceededError;
+      const isFinalAttempt = capped || job.attemptsMade + 1 >= (job.opts.attempts ?? 1);
 
       if (isFinalAttempt) {
         this.logger.error(`enrichment permanently failed for "${word}": ${message}`);
@@ -157,7 +161,9 @@ export class EnrichmentProcessor extends WorkerHost {
       }
 
       // Rethrow regardless — BullMQ's own attempts/backoff (queues.module.ts)
-      // decides whether this becomes a retry or a terminal failure.
+      // decides whether this becomes a retry or a terminal failure; a capped
+      // job is marked unrecoverable so BullMQ doesn't retry it.
+      if (capped) throw new UnrecoverableError(message);
       throw err;
     }
   }
