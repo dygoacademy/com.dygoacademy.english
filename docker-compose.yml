@@ -262,6 +262,10 @@ services:
       RUSTFS_CONSOLE_ADDRESS: 0.0.0.0:9001
       RUSTFS_ACCESS_KEY: ${RUSTFS_ACCESS_KEY:-rustfsadmin}
       RUSTFS_SECRET_KEY: ${RUSTFS_SECRET_KEY:-rustfsadmin}
+      # Virtual-host style: media.dygoacademy.com/<key> → bucket `media`, so
+      # public URLs use the same keys as R2 (speaking/en/us/<md5>.wav).
+      # Internal clients (storage-api) keep using path style on rustfs:9000.
+      RUSTFS_SERVER_DOMAINS: dygoacademy.com
     volumes:
       - rustfs_data:/data
     healthcheck:
@@ -273,7 +277,9 @@ services:
       - dygo-network
 
   # ============================================================================
-  # 9. RustFS bucket bootstrap (one-shot): the bucket Supabase Storage uses
+  # 9. RustFS bucket bootstrap (one-shot): Supabase Storage's private bucket,
+  #    and `media` (public read-only, served at https://media.dygoacademy.com
+  #    through the Cloudflare Tunnel; see cloudflared-config.yml)
   # ============================================================================
   rustfs-createbucket:
     image: amazon/aws-cli:2.37.9
@@ -287,14 +293,20 @@ services:
       AWS_SECRET_ACCESS_KEY: ${RUSTFS_SECRET_KEY:-rustfsadmin}
       AWS_DEFAULT_REGION: ${STORAGE_REGION:-us-east-1}
       STORAGE_S3_BUCKET: ${STORAGE_S3_BUCKET:-supabase-storage}
+    volumes:
+      - ./docker/rustfs:/rustfs:ro
     entrypoint: >
       /bin/sh -c "
-      aws --endpoint-url http://rustfs:9000 s3api head-bucket --bucket $$STORAGE_S3_BUCKET 2>/dev/null ||
-      aws --endpoint-url http://rustfs:9000 s3api create-bucket --bucket $$STORAGE_S3_BUCKET &&
-      echo 'buckets ready:' && aws --endpoint-url http://rustfs:9000 s3 ls
+      set -e;
+      S3='aws --endpoint-url http://rustfs:9000 s3api';
+      for b in $$STORAGE_S3_BUCKET media; do $$S3 head-bucket --bucket $$b 2>/dev/null || $$S3 create-bucket --bucket $$b; done;
+      $$S3 put-bucket-policy --bucket media --policy file:///rustfs/media-policy.json;
+      $$S3 put-bucket-cors --bucket media --cors-configuration file:///rustfs/media-cors.json;
+      echo 'buckets ready:'; aws --endpoint-url http://rustfs:9000 s3 ls
       "
-    # Private bucket: nothing reads it anonymously. (MinIO's public
-    # `dygo-audio` bucket is gone: app audio has been R2-only since 2026-09-16.)
+    # supabase-storage stays private. `media` allows anonymous GetObject only
+    # (no listing, no writes): docker/rustfs/media-policy.json. CORS for the
+    # app's origins (waveforms fetch audio): docker/rustfs/media-cors.json.
     networks:
       - dygo-network
 

@@ -12,6 +12,11 @@
 #   www.dygoacademy.com      -> :3000 (frontend)
 #   api.dygoacademy.com      -> :3001 (backend)
 #   supabase.dygoacademy.com -> :8000 (Kong gateway)
+#   media.dygoacademy.com    -> :9100 (RustFS S3 API, bucket `media`, public
+#                               read-only; added 2026-10-04)
+#
+# dygoacademy.com (no www) is NOT routed here: a Cloudflare Redirect Rule
+# sends it to https://www.dygoacademy.com at the edge (README "Production").
 #
 # TUNNEL_ID / credentials-file below are placeholders -- fill them in after
 # running `cloudflared tunnel create dygo-academy` (see README "Production
@@ -29,4 +34,9 @@ ingress:
     service: http://localhost:3001
   - hostname: supabase.dygoacademy.com
     service: http://localhost:8000
+  # RustFS keeps the Host header (media.dygoacademy.com) and maps it to the
+  # `media` bucket (RUSTFS_SERVER_DOMAINS in docker-compose.yml). Writes need
+  # signed requests; Cloudflare rules (README) allow only GET/HEAD here.
+  - hostname: media.dygoacademy.com
+    service: http://localhost:9100
   - service: http_status:404

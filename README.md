@@ -418,8 +418,10 @@ cloudflared tunnel create dygo-academy
 cloudflared tunnel route dns dygo-academy www.dygoacademy.com
 cloudflared tunnel route dns dygo-academy api.dygoacademy.com
 cloudflared tunnel route dns dygo-academy supabase.dygoacademy.com
+cloudflared tunnel route dns dygo-academy media.dygoacademy.com   # RustFS `media` bucket (2026-10-04)
 # The bare domain -> www redirect is a Cloudflare dashboard rule
-# (Rules > Redirect Rules), not something cloudflared handles.
+# (Rules > Redirect Rules), not something cloudflared handles. See
+# "Cloudflare dashboard rules" below for that and the media.* rules.
 
 # 6. Build both apps (NEXT_PUBLIC_* values come from env-profiles/prod.env at this step).
 cd com.dygoacademy.backend && npm run build
@@ -431,6 +433,20 @@ cd ..
 pm2 start ecosystem.config.js
 pm2 save && pm2 startup   # survive a reboot — follow the command pm2 prints
 ```
+
+**Cloudflare dashboard rules** (zone `dygoacademy.com`; set by hand, no API token here):
+
+| Where in the dashboard | Rule | Why |
+| :--- | :--- | :--- |
+| Rules → Redirect Rules | If hostname equals `dygoacademy.com` → dynamic redirect to `concat("https://www.dygoacademy.com", http.request.uri.path)`, **301**, preserve query string | One canonical address. The backend's CORS allowlist and sign-in only know `www`, so the bare domain must redirect, not serve the app |
+| Caching → Cache Rules | If hostname equals `media.dygoacademy.com` → Eligible for cache; Edge TTL: use the origin's Cache-Control | `.wav` isn't cached by default; clips are uploaded as `public, max-age=31536000, immutable`, so after the first play Cloudflare serves them, not the Mac |
+| Rules → Transform Rules → Modify Response Header | If hostname equals `media.dygoacademy.com` → Set static `Access-Control-Allow-Origin: *` | A clip cached from a request without `Origin` has no CORS header; this adds it at the edge for every copy. Safe: the bucket is public and read-only |
+| Security → WAF → Custom rules | If `http.host eq "media.dygoacademy.com" and not http.request.method in {"GET" "HEAD" "OPTIONS"}` → Block | RustFS already refuses unsigned writes (403); this stops write and admin attempts before they reach the Mac |
+
+`media.dygoacademy.com/<key>` maps to RustFS bucket `media` (`RUSTFS_SERVER_DOMAINS` in
+`docker-compose.yml`), public for GetObject only (`docker/rustfs/media-policy.json`), CORS in
+`docker/rustfs/media-cors.json`. Keys mirror R2 (`speaking/en/us/<md5>.wav`), so a clip's
+fallback URL is the R2 URL with the host swapped.
 
 After step 5, DNS is a Cloudflare-managed CNAME to the tunnel rather than
 an A record at a fixed IP, so nothing here needs updating again if the

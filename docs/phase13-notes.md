@@ -274,3 +274,9 @@ What it does **not** fix: Cloudflare's normal network has no servers inside main
 
 Report: city, network (Wi-Fi / which mobile carrier), pass / fail and seconds for each row, and a screenshot of any error. Read it as: if 1 passes and 3 fails, the custom domain fixes it; if 1 also fails or is slow in China, we need the China CDN option.
 
+### 15a. Our own media host: `media.dygoacademy.com` (2026-10-04)
+
+Dylan chose `media.dygoacademy.com` for the server copy (RustFS on this Mac, through the Cloudflare Tunnel). Live and checked from the internet: `https://media.dygoacademy.com/test/fixture-mitigate-us.wav` → 200 `audio/wav` in ~0.14 s, byte ranges supported, anonymous PUT / listing → 403. Same keys as R2, so the fallback URL is the R2 URL with the host swapped. Testers in Vietnam and China can use that test URL for row 5 of the checklist above (it's on our domain now, before R2 gets its custom domain).
+
+Still to do in the Cloudflare dashboard (README "Cloudflare dashboard rules"): the bare-domain redirect (today `dygoacademy.com` returns HTTP 530), a Cache Rule for `media.*` (today `cf-cache-status: DYNAMIC`, so every play reaches the Mac), a response-header rule `Access-Control-Allow-Origin: *`, and a WAF rule allowing only GET/HEAD/OPTIONS. Not done yet: writing clips to RustFS as well as R2 (script + worker) and the fallback URLs in the API (§ "where do we save the audio").
+
