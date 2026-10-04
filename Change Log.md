@@ -533,3 +533,8 @@ Engineering-facing log of shipped fixes and changes, one dated entry per change.
 * **What**: before each paid call the app takes units from today's row in `api_usage_daily` (UTC; one statement, only within the cap) and skips the call when the cap is reached. Gemini: 1000 calls a day by default (`GEMINI_DAILY_CALL_LIMIT`); a capped new word fails at once without retries, quiz explanations are left out; a log warning at 80 %. Google Cloud TTS (`speaking-generate`): stops before passing `--max-usd` (default $2, `--yes` lifts it) and at `GOOGLE_TTS_DAILY_CHAR_LIMIT` (default 300000 chars), keeping what it made.
 * **Why**: Dylan asked for limits on Google TTS and Gemini so a bug or busy beta can't run up the bill (schedule S13, before beta).
 * **Verified**: backend Jest 357/357 (5 new), `tsc` and eslint clean; migration applied (learners denied access); the cap SQL on the real database (rolled back): within-cap calls pass, the over-cap call and an oversized first request are refused; `speaking-generate --max-usd 0` stops before any TTS call and records nothing. Not deployed.
+
+### Deployed: Phase 13 S13 spend caps to UAT
+* **Files**: [`docs/phase13-schedule.md`](docs/phase13-schedule.md) (Session log)
+* **What**: deploy through `deploy/request.md` (all 4 steps OK, 2026-10-05 07:18): the Gemini daily cap is now enforced by the live backend; `speaking-generate`'s caps apply whenever it runs.
+* **Verified live**: www and API health 200; the backend started cleanly (no errors in its log since the restart). Server speech checking unchanged.
