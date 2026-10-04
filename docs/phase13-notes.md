@@ -180,6 +180,9 @@ Whichever is chosen, syllable boundaries for the target word come from the IPA (
 | S1-a | Recorder format order | `audio/mp4` first, then WebM/Opus, WebM, Ogg/Opus (`RECORDER_MIME_CANDIDATES`) | iOS Safari records mp4; putting it first keeps newer Safari from picking WebM, whose decoding is newer there. Chrome will also pick mp4 where it supports it; the S2 dev page shows whether it decodes. One array to reorder |
 | S1-b | Resampler | Box-filter average when downsampling, linear interpolation when upsampling; no FIR filter | Enough for a 100 fps energy envelope; keeps the code small and fast |
 | S1-c | PCM fallback | `ScriptProcessorNode` (deprecated but everywhere) wrapped as 16-bit WAV, not an `AudioWorklet` | A worklet needs a separate module file served by Next; only used where `MediaRecorder` is missing |
+| S2-a | Dev page copy | `/garden/_speaking` labels are English only, in a `DEV_COPY` constant, not in `messages/*.json` | A dev tool for Dylan, not learner UI (like the `_tokens` test strings); keeps S2 off the message files until S6 |
+| S2-b | Dev page access | Signed-in only (under `/garden`, not added to `PUBLIC_GARDEN_DEV_PREFIXES`) | Avoids touching the auth path list; Dylan is signed in on his iPhone. It reads `GET /speaking/session` for a real clip |
+| S2-c | Player | One module-level `HTMLAudioElement` shared by every `usePlayer()` (`useSyncExternalStore`), not Web Audio | Plays `.m4a` URLs and recording `blob:` URLs the same way, streams, and keeps one clip at a time |
 
 ## 11. Questions for Dylan
 

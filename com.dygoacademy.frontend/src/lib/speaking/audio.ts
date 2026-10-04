@@ -447,3 +447,49 @@ function pcmRecorder(stream: MediaStream, options: RecorderOptions, win: typeof 
     options,
   );
 }
+
+// ── Measuring ─────────────────────────────────────────────────────────────
+
+/** RMS (0..1) of one block of time-domain samples: one live level. */
+export function levelOf(block: Float32Array): number {
+  if (block.length === 0) return 0;
+  let sum = 0;
+  for (let i = 0; i < block.length; i++) sum += block[i] * block[i];
+  return Math.sqrt(sum / block.length);
+}
+
+/**
+ * How much later `candidate` starts than `reference`, in ms (negative =
+ * earlier), from the best normalised cross-correlation of two envelopes at
+ * `fps` within ±`maxLagMs`. Used to see whether the AAC `.m4a` decodes
+ * shifted against its `.wav` (encoder delay), which would move the word
+ * timings.
+ */
+export function estimateOffsetMs(
+  reference: number[],
+  candidate: number[],
+  fps: number,
+  maxLagMs = 200,
+): number {
+  const maxLag = Math.round((maxLagMs / 1000) * fps);
+  let best = 0;
+  let bestScore = -Infinity;
+  for (let lag = -maxLag; lag <= maxLag; lag++) {
+    let dot = 0;
+    let ra = 0;
+    let rb = 0;
+    for (let i = 0; i < reference.length; i++) {
+      const j = i + lag;
+      if (j < 0 || j >= candidate.length) continue;
+      dot += reference[i] * candidate[j];
+      ra += reference[i] * reference[i];
+      rb += candidate[j] * candidate[j];
+    }
+    const score = ra > 0 && rb > 0 ? dot / Math.sqrt(ra * rb) : -Infinity;
+    if (score > bestScore) {
+      bestScore = score;
+      best = lag;
+    }
+  }
+  return (best / fps) * 1000;
+}

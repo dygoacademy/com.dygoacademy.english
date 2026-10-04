@@ -19,6 +19,12 @@ export const GARDEN_ROUTES = {
   tokens: '/garden/_tokens',
   /** Flag-only component gallery (UI-2); folder `%5Fgallery`, same reason. */
   gallery: '/garden/_gallery',
+  /**
+   * Phase 13 T3 dev page (record → replay → envelope, `.m4a` vs `.wav`
+   * offset) for Dylan's iPhone check; folder `%5Fspeaking`, same reason.
+   * Signed-in only (not in PUBLIC_GARDEN_DEV_PREFIXES).
+   */
+  speakingDev: '/garden/_speaking',
   /** A2 Review (watering) and A3 Mission complete. */
   review: '/review',
   reviewDone: '/review/done',

@@ -5,6 +5,8 @@ import {
   decodeForScoring,
   decodeToMono,
   encodeWav,
+  estimateOffsetMs,
+  levelOf,
   ENVELOPE_FPS,
   MAX_RECORDING_MS,
   MicError,
@@ -273,5 +275,27 @@ describe('createRecorder (MediaRecorder)', () => {
 
   it('throws an unsupported MicError when nothing can record', () => {
     expect(() => createRecorder({} as MediaStream, { win: { navigator: fakeNav() } as never })).toThrow(MicError);
+  });
+});
+
+describe('levelOf / estimateOffsetMs', () => {
+  it('gives the RMS of a block', () => {
+    expect(levelOf(new Float32Array([0.5, -0.5]))).toBeCloseTo(0.5);
+    expect(levelOf(new Float32Array(0))).toBe(0);
+  });
+
+  it('finds how much later a copy starts (encoder delay)', () => {
+    const rate = 16000;
+    const ref = new Float32Array(rate);
+    ref.set(sine(300, 0.2, rate), 3200); // bursts at 0.2 s and 0.6 s
+    ref.set(sine(500, 0.1, rate), 9600);
+    const delayed = new Float32Array(rate);
+    delayed.set(ref.subarray(0, rate - 336), 336); // 21 ms later
+    const fps = 1000;
+    const a = rmsEnvelope(ref, rate, fps);
+    const b = rmsEnvelope(delayed, rate, fps);
+    expect(estimateOffsetMs(a, b, fps)).toBe(21);
+    expect(estimateOffsetMs(b, a, fps)).toBe(-21);
+    expect(estimateOffsetMs(a, a, fps)).toBe(0);
   });
 });
