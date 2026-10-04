@@ -21,7 +21,7 @@ const fontCss =
   W4.map(w => face('DM Sans', w, f('dm-sans', `dm-sans-latin-${w}-normal.woff2`)) + face('DM Sans', w, f('dm-sans', `dm-sans-latin-ext-${w}-normal.woff2`), EXT)).join('') +
   // Baloo 2 (kids card on the home page); needs `npm i @fontsource/baloo-2` in tools/.
   (fs.existsSync(path.join(fontDir, 'baloo-2')) ? [700, 800].map(w => ['latin', 'latin-ext', 'vietnamese'].map(sub => face('Baloo 2', w, f('baloo-2', `baloo-2-${sub}-${w}-normal.woff2`))).join('')).join('') : '') +
-  W4.map(w => ['latin', 'latin-ext', 'vietnamese'].map(sub => face('Be Vietnam Pro', w, f('be-vietnam-pro', `be-vietnam-pro-${sub}-${w}-normal.woff2`))).join('')).join('');
+  [...W4, 800].map(w => ['latin', 'latin-ext', 'vietnamese'].map(sub => face('Be Vietnam Pro', w, f('be-vietnam-pro', `be-vietnam-pro-${sub}-${w}-normal.woff2`))).join('')).join('');
 
 // [file, output name, state overrides]
 // [source file, locale, output name, state overrides]
@@ -140,6 +140,16 @@ const JOBS = [
 const APP_FONT_STACK = new Set(['A7-topic-bed']);
 const withAppFontStack = (html) => html.replace(/'DM Sans',\s*sans-serif/g, "'DM Sans', 'Be Vietnam Pro', sans-serif");
 
+// Vietnamese references (2026-10-04): body text in Be Vietnam Pro only, the
+// same as the app since Dylan's 2026-10-03 fix (globals.css, `:lang(vi)`).
+// The canvas draws them DM Sans first ('DM Sans', 'Be Vietnam Pro'), so DM
+// Sans drew the letters it can build from a base letter and marks (ế, ỗ, ố)
+// and Be Vietnam Pro the rest (ệ, ộ, ư, đ): two fonts in one word, the bug
+// the app fix removed. Only the body stack changes; Fraunces and Baloo 2
+// headings stay as drawn. The canvas sources are untouched.
+const withVietnameseBody = (html) =>
+  html.replace(/'DM Sans',\s*(?:'Be Vietnam Pro',\s*)?sans-serif/g, "'Be Vietnam Pro', 'DM Sans', sans-serif");
+
 const RUNTIME = String.raw`
 (function (overrides) {
   class DCLogic { constructor(p){ this.props = p || {}; this.state = {}; } setState(p){ Object.assign(this.state, p); } forceUpdate(){} }
@@ -187,11 +197,12 @@ const RUNTIME = String.raw`
 (async () => {
   const browser = await chromium.launch({ executablePath: process.env.CHROME_PATH || undefined, channel: process.env.CHROME_PATH ? undefined : 'chrome' });
   const page = await browser.newPage({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 2 });
-  for (const [file, , name, overrides] of JOBS) {
+  for (const [file, locale, name, overrides] of JOBS) {
     const [W, H] = overrides.$size || [390, 844];
     await page.setViewportSize({ width: W, height: H });
     let html = fs.readFileSync(path.join(__dirname, '..', 'source', file), 'utf8').replace('<script src="./support.js"></script>', '');
     if (APP_FONT_STACK.has(name)) html = withAppFontStack(html);
+    if (locale === 'vi') html = withVietnameseBody(html);
     await page.setContent(html, { waitUntil: 'domcontentloaded' });
     await page.evaluate(`${RUNTIME}(${JSON.stringify(overrides)})`);
     await page.addStyleTag({ content: fontCss });
