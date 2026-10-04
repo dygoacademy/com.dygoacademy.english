@@ -111,7 +111,8 @@ export function SpeakLive({
   const streamRef = React.useRef<MediaStream | null>(null);
   streamRef.current = stream;
 
-  if (items === null && session.data) {
+  // Take the sentences once, from this visit's fetch (not an older cached list).
+  if (items === null && session.data && session.isFetchedAfterMount) {
     const taken = session.data.items.slice(0, POND_SESSION_SIZE);
     setItems(taken);
     setState(initialSpeakState(taken.length));

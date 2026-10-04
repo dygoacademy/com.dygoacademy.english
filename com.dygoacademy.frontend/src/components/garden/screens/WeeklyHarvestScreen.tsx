@@ -4,7 +4,7 @@ import { useTranslations } from 'next-intl';
 
 import { gcn } from '../cn';
 import { useGardenFormat } from '../format';
-import { RainBarrelIcon, SeedPackIcon } from '../icons';
+import { ChevronRightIcon, RainBarrelIcon, SeedPackIcon } from '../icons';
 import { WeekHarvest, type HarvestDay } from '../WeekHarvest';
 import { GardenTabBar, IPAD_NAV_COLUMN, SCREEN_CLASSES } from './GardenTabBar';
 
@@ -51,6 +51,12 @@ export interface WeeklyHarvestScreenProps {
     /** Initials; the live page has none (aggregates only), so the row is left out. */
     avatars: ReadonlyArray<{ text: string; tone: AvatarTone }>;
   } | null;
+  /**
+   * Phase 13 Sound Garden card (notes §14): shown when the learner has at
+   * least SOUND_GARDEN_MIN_ITEMS words with speaking audio; links to The
+   * Pond. Left out (undefined / null) on the canvas reference page.
+   */
+  soundGarden?: { itemCount: number; href: string } | null;
   stickyNav?: boolean;
 }
 
@@ -64,6 +70,18 @@ const AVATAR: Record<AvatarTone, string> = {
 const GROUP_CARD =
   'flex flex-col gap-1.5 rounded-card border border-border bg-surface p-[14px] text-text';
 
+/** A lotus on the pond: The Pond's mark on the Sound Garden card. */
+function PondIcon() {
+  return (
+    <svg width="40" height="40" viewBox="0 0 40 40" aria-hidden="true" className="shrink-0">
+      <ellipse cx="20" cy="29" rx="17" ry="6" fill="var(--color-water-soft)" />
+      <path d="M20 28 C14 27 11 22 13 17 C17 18 20 22 20 28 Z" fill="var(--stage-flower)" />
+      <path d="M20 28 C26 27 29 22 27 17 C23 18 20 22 20 28 Z" fill="var(--stage-flower)" />
+      <path d="M20 28 C17 23 17 16 20 11 C23 16 23 23 20 28 Z" fill="var(--color-gold-light)" />
+    </svg>
+  );
+}
+
 function ComingSoon({ children }: { children: React.ReactNode }) {
   return <p className="text-[13px] text-muted-foreground">{children}</p>;
 }
@@ -74,9 +92,11 @@ export function WeeklyHarvestScreen({
   goal,
   freezes,
   group,
+  soundGarden,
   stickyNav = true,
 }: WeeklyHarvestScreenProps) {
   const t = useTranslations('screens.harvest');
+  const speak = useTranslations('screens.speak.soundGarden');
   const f = useGardenFormat();
 
   const masteredPct = goal && goal.target > 0 ? Math.round((goal.mastered / goal.target) * 100) : 0;
@@ -119,6 +139,31 @@ export function WeeklyHarvestScreen({
         </span>
         <h1 className="font-display text-[28px] font-semibold leading-[1.1]">{t('title')}</h1>
       </header>
+
+      {soundGarden ? (
+        <Link
+          href={soundGarden.href}
+          data-testid="sound-garden-card"
+          className="mx-4 flex items-center gap-3 rounded-card border border-border bg-surface p-[14px] text-text"
+        >
+          <PondIcon />
+          <span className="flex flex-grow flex-col gap-0.5">
+            <span className="text-[15px] font-bold">{speak('title')}</span>
+            <span className="text-[12px] leading-[1.35] text-muted-foreground">
+              {speak('body')}
+            </span>
+            <span className="text-[13px] font-semibold text-forest">
+              {speak('pond')} · {speak('pondBody', { n: soundGarden.itemCount })}
+            </span>
+          </span>
+          <ChevronRightIcon
+            width={20}
+            height={20}
+            aria-hidden="true"
+            className="shrink-0 text-muted-foreground"
+          />
+        </Link>
+      ) : null}
 
       <section className="mx-4 flex flex-col gap-3 rounded-[24px] bg-forest p-4 text-on-forest">
         {harvest ? (

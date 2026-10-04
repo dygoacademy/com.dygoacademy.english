@@ -214,6 +214,8 @@ Whichever is chosen, syllable boundaries for the target word come from the IPA (
 | S9-c | Mic errors | `denied` and `no-device` / `failed` show the denied card (how to turn it on, Try again, Skip speaking → Missions); `unsupported` the no-support card | One card for "the mic isn't working" keeps the copy short |
 | S9-d | Audio failed | When the native clip can't be loaded or decoded: Retry (fetch again) or Next word (skip this sentence; SP4 lists only spoken ones); the mic is hidden because the attempt couldn't be scored | — |
 | S9-e | Dev toggle | `/sounds?state=mic\|denied\|quiet\|short\|unsupported\|audioFailed` opens SP1 showing that state (works on UAT, changes nothing else) | Screenshots for the notes: take them on the iPhone after the next deploy (none taken here: no browser on a dev server) |
+| S10-a | Card place and look | Between the week header and the harvest card on the Missions tab, in the existing card style, with a lotus mark, "Sound Garden", the body line and "The Pond · N sentences ready"; the whole card links to `/sounds`. Not on the canvas reference page (prop left out) | No design for the card exists; keeps A4's pixel diff unchanged |
+| S10-b | Fresh Pond per visit | `GET /speaking/session` is refetched on every mount (the Missions card and `/sounds` share it); The Pond takes its five sentences only from this visit's fetch | Otherwise a second Pond in the same visit would repeat the first five |
 
 ## 11. Questions for Dylan
 

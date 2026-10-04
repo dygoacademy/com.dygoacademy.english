@@ -22,7 +22,12 @@ const env = {
 
 vi.mock('next/navigation', () => ({ useRouter: () => ({ push }) }));
 vi.mock('@/hooks/useSpeakingSession', () => ({
-  useSpeakingSession: () => ({ data: SPEAK_FIXTURE_SESSION, isError: false, refetch: vi.fn() }),
+  useSpeakingSession: () => ({
+    data: SPEAK_FIXTURE_SESSION,
+    isFetchedAfterMount: true,
+    isError: false,
+    refetch: vi.fn(),
+  }),
 }));
 vi.mock('@/hooks/useCreateSpeakingAttempt', () => ({
   useCreateSpeakingAttempt: () => ({ mutate }),
