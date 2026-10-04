@@ -10,6 +10,12 @@ Nothing in this file has been deployed. Nothing on UAT, pm2 or the running serve
 
 Open items Dylan has parked, newest first. Tick them off here (and add a Change Log entry) when done.
 
+- [ ] **Stop storing the `.wav` copy; M4A only** (Dylan, 2026-10-04). Generated audio stays AAC `.m4a` (the only format the app links). The `.wav` copy was kept to check the AAC start offset, and G1 measured 0 ms on iPhone Safari and desktop Chrome, so it's no longer needed.
+  - Backend: `KEEP_WAV_COPY = false` in `src/storage/audio-encode.ts` (then drop the switch and the WAV branch in `storage.service.ts`; `.wav` only as the no-ffmpeg fallback, or make ffmpeg required); `scripts/speaking-generate.ts` and `scripts/media-migrate.ts` stop uploading the copy; update their specs.
+  - Frontend: remove "Measure offset" from the `/garden/_speaking` dev page and `estimateOffsetMs` in `src/lib/speaking/audio.ts` (+ tests); check `SpeakingGallery.tsx`, `constants/garden.ts` and `media-cache.test.ts` for `.wav` references.
+  - README: the audio storage section and the Cloudflare cache note (`.wav` lines).
+  - Existing `.wav` objects on `media.dygoacademy.com`: delete only after Dylan confirms (nothing links them).
+  - Not affected: the 16 kHz mono WAV the phone will upload to the speech service in v2 (S15 / S20); that's a recording format, not stored audio.
 - [ ] **Cloudflare Cache Rule for `media.dygoacademy.com`** (added 2026-10-04). Until it's on, every audio play is served by the Mac (`cf-cache-status: DYNAMIC`) instead of Cloudflare's edge, so audio is slower far from Singapore and the Mac's upload carries all the traffic.
   - Where: Cloudflare dashboard → dygoacademy.com → **Caching → Cache Rules → Create rule**.
   - Rule: name `Media cache`; custom filter: Hostname equals `media.dygoacademy.com`; **Eligible for cache**; Edge TTL: *Use cache-control header if present, use default Cloudflare caching behavior if not*; Browser TTL: *Respect origin*; **Deploy**.

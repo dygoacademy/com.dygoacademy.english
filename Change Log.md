@@ -423,3 +423,8 @@ Engineering-facing log of shipped fixes and changes, one dated entry per change.
 * **Files**: `docs/design/garden/source/Speak*.dc.html` (8, copied from `phase/phase 13/phase13-speaking-design/`, handover v2), [`docs/design/garden/tools/render.js`](docs/design/garden/tools/render.js) (14 SP jobs with state overrides), `docs/design/garden/reference/SP*.png` + `.html` (14), [`docs/design/garden/README.md`](docs/design/garden/README.md) (Screens rows)
 * **What**: the speaking screens get canvas references like every garden screen: `SP1-speak-listen`, `SP2-speak-countdown` (n = 3), `SP2-speak-recording`, `SP3-speak-checking` / `-done` / `-failed`, `SP4-speak-done`, each also `-vi`. Rendered with `node render.js ../reference SP` (animations frozen).
 * **Why**: schedule row S14b, master rule 13 (screens match the canvas, checked by `garden:diff`). Done ahead of S13/S14 because Dylan found the deployed countdown didn't match the new design (2026-10-04 evening).
+
+### Phase 13 notes: to do, stop storing the `.wav` copy (M4A only)
+* **Files**: [`docs/phase13-notes.md`](docs/phase13-notes.md) (*To do later*)
+* **What**: planning only, no code. New to-do: generated audio stays `.m4a`; the `.wav` copy and the offset-check code (`KEEP_WAV_COPY`, upload of the copy in `speaking-generate` / `media-migrate`, dev page "Measure offset", `estimateOffsetMs`, README lines) get removed later; existing `.wav` objects deleted only after Dylan confirms.
+* **Why**: Dylan, 2026-10-04: G1 measured 0 ms between `.m4a` and `.wav`, so the copy no longer has a purpose.
