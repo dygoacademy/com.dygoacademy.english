@@ -44,6 +44,10 @@ Exported from the canvas on 2026-09-26:
 | `AU2-create-account` | AU2 · Create account | `/register` | UI-A |
 | `AU3-create-account-invite` | AU3 · Create account from a group invite | `/register?next=/join/<token>` | UI-A |
 | `AU4-reset-password`, `AU4-reset-password-sent` | AU4 · Reset password, email form and "Check your inbox" | `/forgot-password` (and `/reset-password` in the same style) | UI-A |
+| `SP1-speak-listen` | SP1 · Listen (canvas page "Adult · Speaking", handover v2, 2026-10-04) | `/sounds` (The Pond) | Phase 13 |
+| `SP2-speak-countdown`, `SP2-speak-recording` | SP2 · Speaking: the 3 · 2 · 1 countdown (`phase: 'count'`, n = 3) and recording (`phase: 'speaking'`) | `/sounds` | Phase 13 |
+| `SP3-speak-checking`, `SP3-speak-done`, `SP3-speak-failed` | SP3 · Compare: checking, done and failed (`phase` override) | `/sounds` | Phase 13 |
+| `SP4-speak-done` | SP4 · Done | `/sounds` (after the fifth sentence) | Phase 13 |
 
 Every screen above also has a **Vietnamese reference**, `<name>-vi` (for example `A1-todays-garden-vi`, `GR3-tricky-patches-vi`): 24 English and 24 Vietnamese references in all (AU added 2026-09-29).
 

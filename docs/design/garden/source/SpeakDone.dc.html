@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Speak · Session done</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&amp;family=DM+Sans:wght@400;500;600;700&amp;display=swap">
+<style>
+body{margin:0;font-family:'DM Sans',sans-serif;background:#F4F1EA;color:#1C2B24}
+a{color:#B4552E}a:hover{color:#8A3E20}
+@keyframes sweep{0%{transform:scaleX(0)}100%{transform:scaleX(1)}}
+.sweep{transform-origin:0 0;animation:sweep 2.2s linear infinite}
+@keyframes head{0%{transform:translateX(0)}100%{transform:translateX(var(--w))}}
+.head{animation:head 2.2s linear infinite}
+@keyframes live{0%,100%{transform:scaleY(.35)}50%{transform:scaleY(1)}}
+.live{transform-box:fill-box;transform-origin:center;animation:live .9s ease-in-out infinite}
+@keyframes ring{0%{transform:scale(1);opacity:.55}100%{transform:scale(1.7);opacity:0}}
+.ring{animation:ring 1.4s ease-out infinite}
+@keyframes rise{0%{transform:translateY(8px);opacity:0}100%{transform:translateY(0);opacity:1}}
+.rise{animation:rise .25s ease-out}
+@keyframes breathe{0%,100%{transform:scale(1);opacity:.35}50%{transform:scale(1.25);opacity:0}}
+.breathe{animation:breathe 2.4s ease-in-out infinite}
+@keyframes dots{0%,80%,100%{opacity:.25}40%{opacity:1}}
+.dot{animation:dots 1.4s ease-in-out infinite}
+@keyframes grow{0%{transform:scaleY(.2)}60%{transform:scaleY(1)}100%{transform:scaleY(1)}}
+.grow{transform-box:fill-box;transform-origin:bottom;animation:grow 1.8s ease-out infinite}
+@keyframes pop{0%{transform:scale(.6);opacity:0}30%{transform:scale(1.08);opacity:1}100%{transform:scale(1);opacity:1}}
+.pop{animation:pop .9s ease-out}
+@keyframes shimmer{0%,100%{opacity:.55}50%{opacity:1}}
+.shim{animation:shimmer 1.2s ease-in-out infinite}
+@keyframes bloom{0%{transform:scale(.6);opacity:0}70%{transform:scale(1.06)}100%{transform:scale(1);opacity:1}}
+.bloom{animation:bloom .7s ease-out}
+.chip:hover{border-color:#B9AE96 !important}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; background: #F4F1EA; display: flex; flex-direction: column; gap: 14px; padding: 20px 16px 28px; font-family: 'DM Sans', sans-serif; color: #1C2B24; overflow: hidden; position: relative">
+<div style="display: flex; justify-content: flex-end"><a href="AdultHome.dc.html" aria-label="Close" style="width: 44px; height: 44px; border-radius: 22px; background: #FFFFFF; border: 1px solid #E3DDD0; display: flex; align-items: center; justify-content: center; color: #1C2B24; flex-shrink: 0"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M6 6 L18 18"></path><path d="M18 6 L6 18"></path></svg></a></div>
+<div style="display: flex; flex-direction: column; align-items: center; text-align: center; gap: 4px">
+<span style="font-size: 12px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: #3E7F5A">Speaking done</span>
+<span style="font-family: 'Fraunces', serif; font-weight: 600; font-size: 30px; line-height: 1.1">You said 5 words out loud</span>
+<span style="font-size: 15px; color: #5E6A62">Your voice watered the Environment bed</span>
+</div>
+<div style="border-radius: 24px; background: #24463A; padding: 12px 12px 0; overflow: hidden"><svg width="100%" viewBox="0 0 344 132" aria-label="Five plants, one for each word you spoke" style="display: block; height: auto"><rect x="0" y="118" width="344" height="14" fill="#1B372D"></rect><g transform="translate(14,-10)"><rect x="18" y="100" width="4" height="30" fill="#8A6A4F"></rect><circle cx="20" cy="88" r="18" fill="#7FA487"></circle><circle cx="8" cy="99" r="11" fill="#7FA487"></circle><circle cx="32" cy="99" r="11" fill="#7FA487"></circle><circle cx="13" cy="86" r="2.5" fill="#E0B04A"></circle><circle cx="27" cy="90" r="2.5" fill="#E0B04A"></circle><circle cx="19" cy="100" r="2.5" fill="#E0B04A"></circle></g><g transform="translate(80,-10)"><path d="M20 130 V94" stroke="#9CC39A" stroke-width="2.5"></path><path d="M20 118 C13 117 9 112 11 107 C17 107 20 112 20 118 Z" fill="#9CC39A"></path><circle cx="20" cy="82" r="5" fill="#E8A87C"></circle><circle cx="26" cy="87" r="5" fill="#E8A87C"></circle><circle cx="24" cy="94" r="5" fill="#E8A87C"></circle><circle cx="16" cy="94" r="5" fill="#E8A87C"></circle><circle cx="14" cy="87" r="5" fill="#E8A87C"></circle><circle cx="20" cy="89" r="4" fill="#F2D28B"></circle></g><g transform="translate(146,-10)"><path d="M20 130 V94" stroke="#9CC39A" stroke-width="2.5"></path><path d="M20 118 C13 117 9 112 11 107 C17 107 20 112 20 118 Z" fill="#9CC39A"></path><circle cx="20" cy="82" r="5" fill="#E8A87C"></circle><circle cx="26" cy="87" r="5" fill="#E8A87C"></circle><circle cx="24" cy="94" r="5" fill="#E8A87C"></circle><circle cx="16" cy="94" r="5" fill="#E8A87C"></circle><circle cx="14" cy="87" r="5" fill="#E8A87C"></circle><circle cx="20" cy="89" r="4" fill="#F2D28B"></circle></g><g transform="translate(212,-10)"><path d="M20 130 V110" stroke="#9CC39A" stroke-width="2.5"></path><path d="M20 118 C13 117 9 112 11 107 C17 107 20 112 20 118 Z" fill="#9CC39A"></path><path d="M20 114 C27 113 31 108 29 103 C23 103 20 108 20 114 Z" fill="#B7D6AE"></path></g><g transform="translate(278,-10)"><path d="M20 130 V94" stroke="#9CC39A" stroke-width="2.5"></path><path d="M20 118 C13 117 9 112 11 107 C17 107 20 112 20 118 Z" fill="#9CC39A"></path><circle cx="20" cy="82" r="5" fill="#E8A87C"></circle><circle cx="26" cy="87" r="5" fill="#E8A87C"></circle><circle cx="24" cy="94" r="5" fill="#E8A87C"></circle><circle cx="16" cy="94" r="5" fill="#E8A87C"></circle><circle cx="14" cy="87" r="5" fill="#E8A87C"></circle><circle cx="20" cy="89" r="4" fill="#F2D28B"></circle></g></svg></div>
+<div style="background: #FFFFFF; border: 1px solid #E3DDD0; border-radius: 22px; padding: 6px 16px"><div style="display: flex; align-items: center; gap: 12px; padding: 10px 0; ">
+<svg width="72" height="20" viewBox="0 0 72 20" aria-hidden="true"><rect x="0" y="8.5" width="2.5" height="3.1" rx="1.2" fill="#7FA487"></rect><rect x="4" y="7.1" width="2.5" height="5.8" rx="1.2" fill="#7FA487"></rect><rect x="8" y="4.4" width="2.5" height="11.1" rx="1.2" fill="#7FA487"></rect><rect x="12" y="3.3" width="2.5" height="13.3" rx="1.2" fill="#7FA487"></rect><rect x="16" y="1.4" width="2.5" height="17.2" rx="1.2" fill="#7FA487"></rect><rect x="20" y="1.0" width="2.5" height="18.0" rx="1.2" fill="#7FA487"></rect><rect x="24" y="2.5" width="2.5" height="15.0" rx="1.2" fill="#7FA487"></rect><rect x="28" y="2.7" width="2.5" height="14.7" rx="1.2" fill="#7FA487"></rect><rect x="32" y="4.2" width="2.5" height="11.7" rx="1.2" fill="#7FA487"></rect><rect x="36" y="5.1" width="2.5" height="9.8" rx="1.2" fill="#7FA487"></rect><rect x="40" y="6.5" width="2.5" height="7.0" rx="1.2" fill="#7FA487"></rect><rect x="44" y="5.1" width="2.5" height="9.7" rx="1.2" fill="#7FA487"></rect><rect x="48" y="4.8" width="2.5" height="10.5" rx="1.2" fill="#7FA487"></rect><rect x="52" y="2.3" width="2.5" height="15.3" rx="1.2" fill="#7FA487"></rect><rect x="56" y="3.9" width="2.5" height="12.2" rx="1.2" fill="#7FA487"></rect><rect x="60" y="7.0" width="2.5" height="6.0" rx="1.2" fill="#7FA487"></rect><rect x="64" y="7.4" width="2.5" height="5.1" rx="1.2" fill="#7FA487"></rect><rect x="68" y="8.8" width="2.5" height="2.5" rx="1.2" fill="#7FA487"></rect></svg>
+<span lang="en" style="flex-grow: 1; font-weight: 700; font-size: 16px">drought</span>
+<span style="font-size: 13px; font-weight: 700; padding: 3px 10px; border-radius: 10px; background: #DDE7DA; color: #24463A">94%</span>
+</div><div style="display: flex; align-items: center; gap: 12px; padding: 10px 0; border-top: 1px solid #EFEAE0;">
+<svg width="72" height="20" viewBox="0 0 72 20" aria-hidden="true"><rect x="0" y="8.4" width="2.5" height="3.1" rx="1.2" fill="#7FA487"></rect><rect x="4" y="7.0" width="2.5" height="6.1" rx="1.2" fill="#7FA487"></rect><rect x="8" y="5.0" width="2.5" height="10.0" rx="1.2" fill="#7FA487"></rect><rect x="12" y="4.4" width="2.5" height="11.3" rx="1.2" fill="#7FA487"></rect><rect x="16" y="3.4" width="2.5" height="13.1" rx="1.2" fill="#7FA487"></rect><rect x="20" y="1.2" width="2.5" height="17.6" rx="1.2" fill="#7FA487"></rect><rect x="24" y="2.1" width="2.5" height="15.8" rx="1.2" fill="#7FA487"></rect><rect x="28" y="1.6" width="2.5" height="16.7" rx="1.2" fill="#7FA487"></rect><rect x="32" y="4.0" width="2.5" height="12.0" rx="1.2" fill="#7FA487"></rect><rect x="36" y="5.5" width="2.5" height="9.0" rx="1.2" fill="#7FA487"></rect><rect x="40" y="5.6" width="2.5" height="8.9" rx="1.2" fill="#7FA487"></rect><rect x="44" y="4.3" width="2.5" height="11.5" rx="1.2" fill="#7FA487"></rect><rect x="48" y="4.6" width="2.5" height="10.8" rx="1.2" fill="#7FA487"></rect><rect x="52" y="3.5" width="2.5" height="13.0" rx="1.2" fill="#7FA487"></rect><rect x="56" y="5.3" width="2.5" height="9.4" rx="1.2" fill="#7FA487"></rect><rect x="60" y="5.5" width="2.5" height="9.0" rx="1.2" fill="#7FA487"></rect><rect x="64" y="8.3" width="2.5" height="3.5" rx="1.2" fill="#7FA487"></rect><rect x="68" y="8.8" width="2.5" height="2.4" rx="1.2" fill="#7FA487"></rect></svg>
+<span lang="en" style="flex-grow: 1; font-weight: 700; font-size: 16px">mitigate</span>
+<span style="font-size: 13px; font-weight: 700; padding: 3px 10px; border-radius: 10px; background: #DDE7DA; color: #24463A">82%</span>
+</div><div style="display: flex; align-items: center; gap: 12px; padding: 10px 0; border-top: 1px solid #EFEAE0;">
+<svg width="72" height="20" viewBox="0 0 72 20" aria-hidden="true"><rect x="0" y="8.6" width="2.5" height="2.9" rx="1.2" fill="#7FA487"></rect><rect x="4" y="6.9" width="2.5" height="6.1" rx="1.2" fill="#7FA487"></rect><rect x="8" y="4.9" width="2.5" height="10.1" rx="1.2" fill="#7FA487"></rect><rect x="12" y="2.1" width="2.5" height="15.8" rx="1.2" fill="#7FA487"></rect><rect x="16" y="2.7" width="2.5" height="14.5" rx="1.2" fill="#7FA487"></rect><rect x="20" y="1.9" width="2.5" height="16.3" rx="1.2" fill="#7FA487"></rect><rect x="24" y="2.7" width="2.5" height="14.7" rx="1.2" fill="#7FA487"></rect><rect x="28" y="3.7" width="2.5" height="12.7" rx="1.2" fill="#7FA487"></rect><rect x="32" y="3.9" width="2.5" height="12.2" rx="1.2" fill="#7FA487"></rect><rect x="36" y="6.4" width="2.5" height="7.2" rx="1.2" fill="#7FA487"></rect><rect x="40" y="5.6" width="2.5" height="8.8" rx="1.2" fill="#7FA487"></rect><rect x="44" y="5.4" width="2.5" height="9.3" rx="1.2" fill="#7FA487"></rect><rect x="48" y="4.1" width="2.5" height="11.7" rx="1.2" fill="#7FA487"></rect><rect x="52" y="3.5" width="2.5" height="12.9" rx="1.2" fill="#7FA487"></rect><rect x="56" y="3.5" width="2.5" height="13.0" rx="1.2" fill="#7FA487"></rect><rect x="60" y="6.0" width="2.5" height="8.0" rx="1.2" fill="#7FA487"></rect><rect x="64" y="8.3" width="2.5" height="3.4" rx="1.2" fill="#7FA487"></rect><rect x="68" y="9.0" width="2.5" height="2.0" rx="1.2" fill="#7FA487"></rect></svg>
+<span lang="en" style="flex-grow: 1; font-weight: 700; font-size: 16px">biodiversity</span>
+<span style="font-size: 13px; font-weight: 700; padding: 3px 10px; border-radius: 10px; background: #FBF4E4; color: #6B5215">71%</span>
+</div><div style="display: flex; align-items: center; gap: 12px; padding: 10px 0; border-top: 1px solid #EFEAE0;">
+<svg width="72" height="20" viewBox="0 0 72 20" aria-hidden="true"><rect x="0" y="8.7" width="2.5" height="2.7" rx="1.2" fill="#7FA487"></rect><rect x="4" y="6.9" width="2.5" height="6.2" rx="1.2" fill="#7FA487"></rect><rect x="8" y="5.0" width="2.5" height="10.0" rx="1.2" fill="#7FA487"></rect><rect x="12" y="1.8" width="2.5" height="16.4" rx="1.2" fill="#7FA487"></rect><rect x="16" y="2.4" width="2.5" height="15.2" rx="1.2" fill="#7FA487"></rect><rect x="20" y="1.7" width="2.5" height="16.5" rx="1.2" fill="#7FA487"></rect><rect x="24" y="1.0" width="2.5" height="18.0" rx="1.2" fill="#7FA487"></rect><rect x="28" y="2.2" width="2.5" height="15.7" rx="1.2" fill="#7FA487"></rect><rect x="32" y="5.0" width="2.5" height="10.0" rx="1.2" fill="#7FA487"></rect><rect x="36" y="5.3" width="2.5" height="9.4" rx="1.2" fill="#7FA487"></rect><rect x="40" y="5.9" width="2.5" height="8.2" rx="1.2" fill="#7FA487"></rect><rect x="44" y="4.0" width="2.5" height="12.1" rx="1.2" fill="#7FA487"></rect><rect x="48" y="4.7" width="2.5" height="10.6" rx="1.2" fill="#7FA487"></rect><rect x="52" y="4.2" width="2.5" height="11.6" rx="1.2" fill="#7FA487"></rect><rect x="56" y="3.3" width="2.5" height="13.3" rx="1.2" fill="#7FA487"></rect><rect x="60" y="6.4" width="2.5" height="7.1" rx="1.2" fill="#7FA487"></rect><rect x="64" y="8.1" width="2.5" height="3.8" rx="1.2" fill="#7FA487"></rect><rect x="68" y="8.8" width="2.5" height="2.4" rx="1.2" fill="#7FA487"></rect></svg>
+<span lang="en" style="flex-grow: 1; font-weight: 700; font-size: 16px">deteriorate</span>
+<span style="font-size: 13px; font-weight: 700; padding: 3px 10px; border-radius: 10px; background: #FBF4E4; color: #6B5215">58%</span>
+</div><div style="display: flex; align-items: center; gap: 12px; padding: 10px 0; border-top: 1px solid #EFEAE0;">
+<svg width="72" height="20" viewBox="0 0 72 20" aria-hidden="true"><rect x="0" y="8.1" width="2.5" height="3.7" rx="1.2" fill="#7FA487"></rect><rect x="4" y="7.8" width="2.5" height="4.5" rx="1.2" fill="#7FA487"></rect><rect x="8" y="4.8" width="2.5" height="10.3" rx="1.2" fill="#7FA487"></rect><rect x="12" y="4.3" width="2.5" height="11.4" rx="1.2" fill="#7FA487"></rect><rect x="16" y="1.0" width="2.5" height="18.0" rx="1.2" fill="#7FA487"></rect><rect x="20" y="2.8" width="2.5" height="14.4" rx="1.2" fill="#7FA487"></rect><rect x="24" y="1.0" width="2.5" height="18.0" rx="1.2" fill="#7FA487"></rect><rect x="28" y="2.1" width="2.5" height="15.9" rx="1.2" fill="#7FA487"></rect><rect x="32" y="3.6" width="2.5" height="12.8" rx="1.2" fill="#7FA487"></rect><rect x="36" y="4.7" width="2.5" height="10.6" rx="1.2" fill="#7FA487"></rect><rect x="40" y="6.2" width="2.5" height="7.6" rx="1.2" fill="#7FA487"></rect><rect x="44" y="5.1" width="2.5" height="9.9" rx="1.2" fill="#7FA487"></rect><rect x="48" y="2.9" width="2.5" height="14.2" rx="1.2" fill="#7FA487"></rect><rect x="52" y="4.0" width="2.5" height="12.0" rx="1.2" fill="#7FA487"></rect><rect x="56" y="5.0" width="2.5" height="10.0" rx="1.2" fill="#7FA487"></rect><rect x="60" y="6.7" width="2.5" height="6.7" rx="1.2" fill="#7FA487"></rect><rect x="64" y="7.6" width="2.5" height="4.9" rx="1.2" fill="#7FA487"></rect><rect x="68" y="8.8" width="2.5" height="2.4" rx="1.2" fill="#7FA487"></rect></svg>
+<span lang="en" style="flex-grow: 1; font-weight: 700; font-size: 16px">sustainable</span>
+<span style="font-size: 13px; font-weight: 700; padding: 3px 10px; border-radius: 10px; background: #DDE7DA; color: #24463A">88%</span>
+</div></div>
+<div style="display: flex; align-items: center; gap: 10px; background: #E3F0F8; border-radius: 16px; padding: 12px 14px; color: #1D4A68; font-size: 14px">
+<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M12 19 V5"></path><path d="M6 11 L12 5 L18 11"></path></svg>
+<span><b>Pattern to watch:</b> you say every part evenly. Find the loud one: de-<b>TE</b>-ri-o-rate</span>
+</div>
+<a href="AdultHome.dc.html" style="margin-top: auto; height: 58px; border-radius: 18px; background: #B4552E; color: #FFFFFF; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 17px; text-decoration: none; box-shadow: 0 4px 0 #7E3719">Back to garden</a>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

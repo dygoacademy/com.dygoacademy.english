@@ -114,6 +114,22 @@ const JOBS = [
   ['LandingV2PainFlippedVi.dc.html', 'vi', 'H3s-pain-flipped-vi', { $size: [390, 6471] }],
   ['LandingV2UsesTravel.dc.html', 'en', 'H3s-uses-travel', { $size: [390, 6547] }],
   ['LandingV2UsesTravelVi.dc.html', 'vi', 'H3s-uses-travel-vi', { $size: [390, 6471] }],
+  // Speaking (canvas page "Adult · Speaking", Phase 13 handover v2, 2026-10-04): SP1–SP4.
+  // componentDidMount doesn't run here, so each state is set by its overrides.
+  ['SpeakListen.dc.html', 'en', 'SP1-speak-listen', {}],
+  ['SpeakListenVi.dc.html', 'vi', 'SP1-speak-listen-vi', {}],
+  ['SpeakRecording.dc.html', 'en', 'SP2-speak-countdown', { n: 3, phase: 'count' }],
+  ['SpeakRecordingVi.dc.html', 'vi', 'SP2-speak-countdown-vi', { n: 3, phase: 'count' }],
+  ['SpeakRecording.dc.html', 'en', 'SP2-speak-recording', { phase: 'speaking' }],
+  ['SpeakRecordingVi.dc.html', 'vi', 'SP2-speak-recording-vi', { phase: 'speaking' }],
+  ['SpeakCompare.dc.html', 'en', 'SP3-speak-checking', { phase: 'checking' }],
+  ['SpeakCompareVi.dc.html', 'vi', 'SP3-speak-checking-vi', { phase: 'checking' }],
+  ['SpeakCompare.dc.html', 'en', 'SP3-speak-done', { phase: 'done' }],
+  ['SpeakCompareVi.dc.html', 'vi', 'SP3-speak-done-vi', { phase: 'done' }],
+  ['SpeakCompare.dc.html', 'en', 'SP3-speak-failed', { phase: 'failed' }],
+  ['SpeakCompareVi.dc.html', 'vi', 'SP3-speak-failed-vi', { phase: 'failed' }],
+  ['SpeakDone.dc.html', 'en', 'SP4-speak-done', {}],
+  ['SpeakDoneVi.dc.html', 'vi', 'SP4-speak-done-vi', {}],
 ].filter(([, , name]) => !FILTER || name.includes(FILTER));
 
 // English pages redrawn with the app's body stack (DM Sans, then Be Vietnam
