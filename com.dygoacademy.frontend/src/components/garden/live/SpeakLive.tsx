@@ -2,6 +2,7 @@
 
 import * as React from 'react';
 import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 
 import { GARDEN_ROUTES } from '@/constants/garden';
 import { useCreateSpeakingAttempt } from '@/hooks/useCreateSpeakingAttempt';
@@ -81,20 +82,40 @@ export function unusableAttempt(r: SpeakingResult): 'quiet' | 'short' | null {
   return null;
 }
 
-export function SpeakLive({
-  topicId,
-  forceNotice,
-}: {
-  topicId?: string;
+export interface SpeakFlowProps {
+  /** The sentences, taken once (The Pond: 5; "Say this one?": 1). */
+  items: SpeakingSessionItem[];
+  defaultAccent: SpeakingAccent;
+  /** Close goes here (The Pond: the Missions tab)… */
+  closeHref: string;
+  /** …or calls this instead ("Say this one?" sheet: back to the card). */
+  onClose?: () => void;
+  /** `single`: one sentence, SP1–SP3, Next closes; no SP4 (T9-a). */
+  mode?: 'pond' | 'single';
+  /** "Skip speaking" on the denied card. */
+  onSkipSpeaking: () => void;
+  /** T7 dev toggle. */
   forceNotice?: SpeakNoticeKind;
-}) {
-  const router = useRouter();
-  const session = useSpeakingSession(topicId);
+}
+
+/**
+ * SP1 → SP2 → SP3 (→ SP4) for a fixed list of sentences: The Pond's flow,
+ * also run for one card by the "Say this one?" sheet.
+ */
+export function SpeakFlow({
+  items,
+  defaultAccent,
+  closeHref,
+  onClose,
+  mode = 'pond',
+  onSkipSpeaking,
+  forceNotice,
+}: SpeakFlowProps) {
+  const t = useTranslations('screens.speak');
   const player = usePlayer();
 
-  const [items, setItems] = React.useState<SpeakingSessionItem[] | null>(null);
-  const [state, setState] = React.useState<SpeakState | null>(null);
-  const [accent, setAccent] = React.useState<SpeakingAccent>('US');
+  const [state, setState] = React.useState<SpeakState>(() => initialSpeakState(items.length));
+  const [accent, setAccent] = React.useState<SpeakingAccent>(defaultAccent);
   const [playKey, setPlayKey] = React.useState(0);
   const [notice, setNotice] = React.useState<SpeakNoticeKind | null>(forceNotice ?? null);
   const [permission, setPermission] = React.useState<MicPermission>('unknown');
@@ -111,26 +132,19 @@ export function SpeakLive({
   const streamRef = React.useRef<MediaStream | null>(null);
   streamRef.current = stream;
 
-  // Take the sentences once, from this visit's fetch (not an older cached list).
-  if (items === null && session.data && session.isFetchedAfterMount) {
-    const taken = session.data.items.slice(0, POND_SESSION_SIZE);
-    setItems(taken);
-    setState(initialSpeakState(taken.length));
-    setAccent(session.data.default_accent);
-  }
   const dispatch = React.useCallback(
-    (action: SpeakAction) => setState((s) => (s ? speakReducer(s, action) : s)),
+    (action: SpeakAction) => setState((s) => speakReducer(s, action)),
     [],
   );
 
-  const item = items && state ? items[Math.min(state.index, items.length - 1)] : null;
+  const item = items[Math.min(state.index, items.length - 1)];
   const url = item ? clipUrl(item, accent) : null;
   const native = useNativeEnvelope(url);
   const live = useLiveLevels(stream, state?.phase === 'recording');
 
   // Warm the phone's media cache with the session's clips (option 2).
   React.useEffect(() => {
-    if (items) void prefetchMedia(items.map((i) => clipUrl(i, accent)));
+    void prefetchMedia(items.map((i) => clipUrl(i, accent)));
   }, [items, accent]);
 
   // Recording clock.
@@ -298,13 +312,7 @@ export function SpeakLive({
     void player.play(url, player.rate).catch(() => undefined);
   }
 
-  if (!items || !state || !item) {
-    if (session.isError) return <LiveError onRetry={() => void session.refetch()} />;
-    if (items && items.length === 0) return <LiveError />;
-    return <LiveLoading />;
-  }
-
-  const closeHref = GARDEN_ROUTES.missions;
+  if (!item) return <LiveError />;
   const { timings, ipa } = forAccent(item, accent);
   const levels = native.clip?.envelope ?? null;
 
@@ -315,6 +323,7 @@ export function SpeakLive({
         index={state.index}
         total={state.total}
         closeHref={closeHref}
+        onClose={onClose}
         timings={timings}
         ipa={ipa}
         nativeLevels={levels}
@@ -349,7 +358,7 @@ export function SpeakLive({
           shown === 'mic'
             ? () => setNotice(null)
             : shown === 'denied'
-              ? () => router.push(closeHref)
+              ? onSkipSpeaking
               : shown === 'audioFailed'
                 ? () => dispatch({ type: 'next' })
                 : undefined
@@ -362,6 +371,7 @@ export function SpeakLive({
         index={state.index}
         total={state.total}
         closeHref={closeHref}
+        onClose={onClose}
         accent={accent}
         onAccent={(a) => {
           setAccent(a);
@@ -405,6 +415,7 @@ export function SpeakLive({
         index={state.index}
         total={state.total}
         closeHref={closeHref}
+        onClose={onClose}
         timings={timings}
         ipa={ipa}
         result={result}
@@ -415,8 +426,10 @@ export function SpeakLive({
         onPlayNative={() => playOne(url)}
         onPlayYou={() => playOne(recUrl)}
         onTryAgain={() => void startRecording()}
+        nextLabel={mode === 'single' ? t('sayThis.close') : undefined}
         onNext={() => {
           player.stop();
+          if (mode === 'single') return onClose?.();
           setResult(null);
           setRecording(null);
           dispatch({ type: 'next' });
@@ -451,6 +464,47 @@ export function SpeakLive({
             }
           : null
       }
+    />
+  );
+}
+
+/**
+ * /sounds: The Pond. Takes the session's sentences once, from this
+ * visit's fetch (not an older cached list), then runs SpeakFlow.
+ */
+export function SpeakLive({
+  topicId,
+  forceNotice,
+}: {
+  topicId?: string;
+  forceNotice?: SpeakNoticeKind;
+}) {
+  const router = useRouter();
+  const session = useSpeakingSession(topicId);
+  const [taken, setTaken] = React.useState<{
+    items: SpeakingSessionItem[];
+    accent: SpeakingAccent;
+  } | null>(null);
+
+  if (taken === null && session.data && session.isFetchedAfterMount) {
+    setTaken({
+      items: session.data.items.slice(0, POND_SESSION_SIZE),
+      accent: session.data.default_accent,
+    });
+  }
+
+  if (!taken) {
+    if (session.isError) return <LiveError onRetry={() => void session.refetch()} />;
+    return <LiveLoading />;
+  }
+  if (taken.items.length === 0) return <LiveError />;
+  return (
+    <SpeakFlow
+      items={taken.items}
+      defaultAccent={taken.accent}
+      closeHref={GARDEN_ROUTES.missions}
+      onSkipSpeaking={() => router.push(GARDEN_ROUTES.missions)}
+      forceNotice={forceNotice}
     />
   );
 }

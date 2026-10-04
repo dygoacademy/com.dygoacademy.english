@@ -15,6 +15,8 @@ export interface SpeakRecordingScreenProps {
   index: number;
   total: number;
   closeHref: string;
+  /** Close in place instead of following closeHref (the review sheet). */
+  onClose?: () => void;
   timings: SpeakingTimings | null;
   ipa: string | null;
   nativeLevels: readonly number[] | null;
@@ -36,7 +38,12 @@ export function SpeakRecordingScreen(props: SpeakRecordingScreenProps) {
 
   return (
     <div className="mx-auto flex min-h-screen-dvh w-full max-w-[560px] flex-col gap-[14px] bg-bg px-4 pb-7 pt-5 text-text">
-      <SpeakHeader index={props.index} total={props.total} closeHref={props.closeHref} />
+      <SpeakHeader
+        index={props.index}
+        total={props.total}
+        closeHref={props.closeHref}
+        onClose={props.onClose}
+      />
 
       <div className="flex flex-col gap-1.5 rounded-[22px] border border-border bg-surface px-4 pb-3.5 pt-3">
         <span className="text-[12px] font-bold uppercase tracking-[.08em] text-muted-foreground">

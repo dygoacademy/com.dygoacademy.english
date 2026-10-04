@@ -91,3 +91,10 @@ export interface SpeakingAttempt extends CreateSpeakingAttemptRequest {
   id: string;
   created_at: string;
 }
+
+/** `GET /api/v1/speaking/words?topic_word_ids=…`: which review cards can offer "Say this one?". */
+export interface SpeakingWordLookup {
+  topic_word_id: string;
+  item_id: string;
+  spoken_today: boolean;
+}

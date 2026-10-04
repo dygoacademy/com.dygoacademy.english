@@ -19,6 +19,8 @@ export interface SpeakListenScreenProps {
   index: number;
   total: number;
   closeHref: string;
+  /** Close in place instead of following closeHref (the review sheet). */
+  onClose?: () => void;
   accent: SpeakingAccent;
   onAccent: (accent: SpeakingAccent) => void;
   rate: PlayerRate;
@@ -85,7 +87,12 @@ export function SpeakListenScreen(props: SpeakListenScreenProps) {
 
   return (
     <div className="mx-auto flex min-h-screen-dvh w-full max-w-[560px] flex-col gap-[14px] bg-bg px-4 pb-7 pt-5 text-text">
-      <SpeakHeader index={props.index} total={props.total} closeHref={props.closeHref} />
+      <SpeakHeader
+        index={props.index}
+        total={props.total}
+        closeHref={props.closeHref}
+        onClose={props.onClose}
+      />
 
       <SpeakWordCard
         word={item.word}

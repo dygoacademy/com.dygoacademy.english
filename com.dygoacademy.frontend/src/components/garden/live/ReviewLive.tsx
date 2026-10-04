@@ -5,6 +5,7 @@ import { useTranslations } from 'next-intl';
 
 import { GARDEN_ROUTES } from '@/constants/garden';
 import { useRateWord } from '@/hooks/useRateWord';
+import { useSpeakOffers } from '@/hooks/useSpeakOffers';
 import { useStudySession } from '@/hooks/useStudySession';
 import { useTopics } from '@/hooks/useTopics';
 import { languageOf } from '@/i18n/config';
@@ -15,6 +16,7 @@ import { useGardenPreferences } from '../preferences';
 import type { Rating } from '../RatingBar';
 import { ReviewScreen } from '../screens/ReviewScreen';
 import { LiveError, LiveLoading } from './LiveState';
+import { SayThisSheet } from './SayThisSheet';
 
 /**
  * /review: watering (A2) on the existing study session.
@@ -28,6 +30,9 @@ import { LiveError, LiveLoading } from './LiveState';
  * it's simply absent for a word Gemini hasn't translated yet. Synonyms
  * come from the card's `synonyms`. At the end, "See your garden bloom"
  * carries this session's results to /review/done in the URL.
+ * Phase 13: after the flip, up to 3 cards a session offer "Say this one?"
+ * (rule T9-a, `useSpeakOffers`), which opens SP1–SP3 for that card's
+ * sentence over the card; rating is unaffected.
  */
 export function ReviewLive({ topicId }: { topicId?: string }) {
   const t = useTranslations('screens.review');
@@ -36,6 +41,7 @@ export function ReviewLive({ topicId }: { topicId?: string }) {
   const topics = useTopics();
   const rate = useRateWord();
   const { meaningLocale } = useGardenPreferences();
+  const speak = useTranslations('screens.speak');
 
   const [cards, setCards] = React.useState<DueCard[] | null>(null);
   const [index, setIndex] = React.useState(0);
@@ -46,6 +52,9 @@ export function ReviewLive({ topicId }: { topicId?: string }) {
   if (cards === null && session.data) {
     setCards(session.data.cards);
   }
+  // Phase 13 "Say this one?": up to 3 offers per session, picked once (T9-a).
+  const speakOffers = useSpeakOffers(cards);
+  const [sayThis, setSayThis] = React.useState<string | null>(null);
   React.useEffect(() => {
     if (cards !== null && startedAt.current === 0) startedAt.current = Date.now();
   }, [cards]);
@@ -78,56 +87,75 @@ export function ReviewLive({ topicId }: { topicId?: string }) {
   }
 
   return (
-    <ReviewScreen
-      state={finished ? 'finished' : revealed ? 'answer' : 'question'}
-      missionTitle={live('missionTitle', { count: total })}
-      done={Math.min(index, total)}
-      total={Math.max(total, 1)}
-      closeHref={GARDEN_ROUTES.home}
-      card={
-        card
-          ? {
-              word: card.source_word,
-              ipa: card.ipa_us ?? card.ipa_uk,
-              audioSrc: card.audio_url,
-              level: null,
-              topic: topicTitle ?? null,
-              partOfSpeech: card.part_of_speech,
-              meaning: card.definition_en ?? '',
-              meaningTranslation: card.meaning_translation
-                ? { text: card.meaning_translation, lang: languageOf(card.meaning_locale ?? 'en') }
-                : null,
-              meaningFirst: meaningLocale !== null,
-              example: card.example_sentences?.[0]?.sentence ?? null,
-              collocations: null,
-              synonyms: card.synonyms?.map((synonym) => synonym.word).filter(Boolean) ?? null,
-            }
-          : null
-      }
-      intervals={
-        card && card.interval_preview
-          ? {
-              again: card.interval_preview.AGAIN,
-              hard: card.interval_preview.HARD,
-              good: card.interval_preview.GOOD,
-              easy: card.interval_preview.EASY,
-            }
-          : null
-      }
-      onShowAnswer={() => setRevealed(true)}
-      onRate={(rating) => {
-        if (!card) return;
-        rate.mutate({
-          topicWordId: card.topic_word_id,
-          rating: rating.toUpperCase() as SrsRating,
-        });
-        setRatings((list) => [...list, { word: card.source_word, rating }]);
-        setRevealed(false);
-        setIndex((i) => i + 1);
-      }}
-      bloomHref={`${GARDEN_ROUTES.reviewDone}?${params.toString()}`}
-      secondaryAction={{ label: t('backToGarden'), href: GARDEN_ROUTES.home }}
-      emptyText={total === 0 ? t('empty') : undefined}
-    />
+    <>
+      <ReviewScreen
+        state={finished ? 'finished' : revealed ? 'answer' : 'question'}
+        missionTitle={live('missionTitle', { count: total })}
+        done={Math.min(index, total)}
+        total={Math.max(total, 1)}
+        closeHref={GARDEN_ROUTES.home}
+        card={
+          card
+            ? {
+                word: card.source_word,
+                ipa: card.ipa_us ?? card.ipa_uk,
+                audioSrc: card.audio_url,
+                level: null,
+                topic: topicTitle ?? null,
+                partOfSpeech: card.part_of_speech,
+                meaning: card.definition_en ?? '',
+                meaningTranslation: card.meaning_translation
+                  ? {
+                      text: card.meaning_translation,
+                      lang: languageOf(card.meaning_locale ?? 'en'),
+                    }
+                  : null,
+                meaningFirst: meaningLocale !== null,
+                example: card.example_sentences?.[0]?.sentence ?? null,
+                collocations: null,
+                synonyms: card.synonyms?.map((synonym) => synonym.word).filter(Boolean) ?? null,
+                speakOffer: speakOffers.offers.has(card.topic_word_id)
+                  ? { label: speak('sayThis.offer'), onClick: () => setSayThis(card.topic_word_id) }
+                  : null,
+              }
+            : null
+        }
+        intervals={
+          card && card.interval_preview
+            ? {
+                again: card.interval_preview.AGAIN,
+                hard: card.interval_preview.HARD,
+                good: card.interval_preview.GOOD,
+                easy: card.interval_preview.EASY,
+              }
+            : null
+        }
+        onShowAnswer={() => setRevealed(true)}
+        onRate={(rating) => {
+          if (!card) return;
+          rate.mutate({
+            topicWordId: card.topic_word_id,
+            rating: rating.toUpperCase() as SrsRating,
+          });
+          setRatings((list) => [...list, { word: card.source_word, rating }]);
+          setRevealed(false);
+          setIndex((i) => i + 1);
+        }}
+        bloomHref={`${GARDEN_ROUTES.reviewDone}?${params.toString()}`}
+        secondaryAction={{ label: t('backToGarden'), href: GARDEN_ROUTES.home }}
+        emptyText={total === 0 ? t('empty') : undefined}
+        keyboardShortcuts={sayThis === null}
+      />
+      {sayThis ? (
+        <SayThisSheet
+          topicWordId={sayThis}
+          onClose={() => setSayThis(null)}
+          onSkipSpeaking={() => {
+            speakOffers.hide();
+            setSayThis(null);
+          }}
+        />
+      ) : null}
+    </>
   );
 }

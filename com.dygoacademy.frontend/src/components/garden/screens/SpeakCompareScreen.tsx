@@ -18,6 +18,8 @@ export interface SpeakCompareScreenProps {
   index: number;
   total: number;
   closeHref: string;
+  /** Close in place instead of following closeHref (the review sheet). */
+  onClose?: () => void;
   timings: SpeakingTimings | null;
   ipa: string | null;
   /** Null while scoring. */
@@ -30,6 +32,8 @@ export interface SpeakCompareScreenProps {
   onPlayYou: () => void;
   onTryAgain: () => void;
   onNext: () => void;
+  /** Replaces "Next word" (the sheet: "Back to the card"). */
+  nextLabel?: string;
 }
 
 const PlayIcon = () => (
@@ -56,7 +60,12 @@ export function SpeakCompareScreen(props: SpeakCompareScreenProps) {
 
   return (
     <div className="mx-auto flex min-h-screen-dvh w-full max-w-[560px] flex-col gap-[14px] bg-bg px-4 pb-7 pt-5 text-text">
-      <SpeakHeader index={props.index} total={props.total} closeHref={props.closeHref} />
+      <SpeakHeader
+        index={props.index}
+        total={props.total}
+        closeHref={props.closeHref}
+        onClose={props.onClose}
+      />
 
       {result === null ? (
         <div role="status" className="flex flex-grow items-center justify-center">
@@ -189,7 +198,7 @@ export function SpeakCompareScreen(props: SpeakCompareScreenProps) {
           disabled={result === null}
           className="h-14 rounded-[18px] bg-primary text-[16px] font-bold text-white shadow-press-primary disabled:opacity-60"
         >
-          {t('nextWord')}
+          {props.nextLabel ?? t('nextWord')}
         </button>
       </div>
     </div>

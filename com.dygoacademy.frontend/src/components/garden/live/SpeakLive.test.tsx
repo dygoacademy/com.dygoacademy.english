@@ -3,7 +3,11 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { renderWithIntl } from '@/test/render';
 
-import { SPEAK_FIXTURE_RESULT, SPEAK_FIXTURE_SESSION } from '../screens/speakFixtures';
+import {
+  SPEAK_FIXTURE_ITEM,
+  SPEAK_FIXTURE_RESULT,
+  SPEAK_FIXTURE_SESSION,
+} from '../screens/speakFixtures';
 
 const mutate = vi.fn();
 const prefetch = vi.fn();
@@ -74,7 +78,7 @@ vi.mock('@/lib/speaking/audio', async (orig) => ({
   }),
 }));
 
-import { SpeakLive } from './SpeakLive';
+import { SpeakFlow, SpeakLive } from './SpeakLive';
 
 /** Renders and lets the mic-permission check settle. */
 async function renderLive() {
@@ -238,5 +242,29 @@ describe('SpeakLive (The Pond)', () => {
   it('dev toggle: forceNotice opens SP1 on that state', () => {
     renderWithIntl(<SpeakLive forceNotice="short" />);
     expect(screen.getByText('Say the whole sentence')).toBeTruthy();
+  });
+
+  it('single mode ("Say this one?"): one sentence, Back to the card closes, no SP4', async () => {
+    const onClose = vi.fn();
+    renderWithIntl(
+      <SpeakFlow
+        items={[SPEAK_FIXTURE_ITEM]}
+        defaultAccent="UK"
+        closeHref="/review"
+        onClose={onClose}
+        mode="single"
+        onSkipSpeaking={vi.fn()}
+      />,
+    );
+    await act(async () => {});
+    expect(screen.getByText('1/1')).toBeTruthy();
+    await record();
+    await waitFor(() => expect(screen.getByText('In bloom · 82% match')).toBeTruthy());
+    expect(mutate).toHaveBeenCalledWith(expect.objectContaining({ accent: 'UK' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Back to the card' }));
+    expect(onClose).toHaveBeenCalled();
+    expect(screen.queryByText(/out loud/)).toBeNull();
+    fireEvent.click(screen.getByRole('button', { name: 'Close' }));
+    expect(onClose).toHaveBeenCalledTimes(2);
   });
 });

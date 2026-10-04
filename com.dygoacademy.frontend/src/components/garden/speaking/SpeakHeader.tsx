@@ -12,22 +12,31 @@ export function SpeakHeader({
   index,
   total,
   closeHref,
+  onClose,
 }: {
   /** 0-based sentence index. */
   index: number;
   total: number;
   closeHref: string;
+  /** Instead of the link (the "Say this one?" sheet closes in place). */
+  onClose?: () => void;
 }) {
   const t = useTranslations('screens.speak');
   const n = Math.min(total, index + 1);
   const progress = t('progress', { n, total });
   return (
     <div className="flex items-center gap-3">
-      <IconButton asChild aria-label={t('close')}>
-        <Link href={closeHref}>
+      {onClose ? (
+        <IconButton aria-label={t('close')} onClick={onClose}>
           <CloseIcon width={20} height={20} />
-        </Link>
-      </IconButton>
+        </IconButton>
+      ) : (
+        <IconButton asChild aria-label={t('close')}>
+          <Link href={closeHref}>
+            <CloseIcon width={20} height={20} />
+          </Link>
+        </IconButton>
+      )}
       <div className="flex flex-grow flex-col gap-[5px]">
         <div className="flex justify-between text-[12px] font-semibold text-muted-foreground">
           <span>{t('header')}</span>

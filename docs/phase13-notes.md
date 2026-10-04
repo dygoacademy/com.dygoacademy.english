@@ -216,6 +216,10 @@ Whichever is chosen, syllable boundaries for the target word come from the IPA (
 | S9-e | Dev toggle | `/sounds?state=mic\|denied\|quiet\|short\|unsupported\|audioFailed` opens SP1 showing that state (works on UAT, changes nothing else) | Screenshots for the notes: take them on the iPhone after the next deploy (none taken here: no browser on a dev server) |
 | S10-a | Card place and look | Between the week header and the harvest card on the Missions tab, in the existing card style, with a lotus mark, "Sound Garden", the body line and "The Pond · N sentences ready"; the whole card links to `/sounds`. Not on the canvas reference page (prop left out) | No design for the card exists; keeps A4's pixel diff unchanged |
 | S10-b | Fresh Pond per visit | `GET /speaking/session` is refetched on every mount (the Missions card and `/sounds` share it); The Pond takes its five sentences only from this visit's fetch | Otherwise a second Pond in the same visit would repeat the first five |
+| S11-a | Offer button | A small "Say this one?" pill (mic icon) left of the audio button, only after the flip, on the up-to-3 picked cards; rating and keyboard shortcuts unaffected (shortcuts pause while the sheet is open) | No design for it; T9-a point 3 |
+| S11-b | The sheet | A full-screen layer over the review (SP1–SP3 for that sentence, `SpeakFlow` in single mode); Close, Escape or "Back to the card" return to the same card; the attempt is saved like The Pond's | The SP screens are phone-height layouts; a half sheet would crop them |
+| S11-c | When offers are off | No offers when the browser can't record, the mic permission reads `denied`, or the learner tapped "Skip speaking" in the sheet (rest of the session) | T9-a point 5 |
+| S11-d | S11 deploy | Not deployed after S11 although the row says so: the compressed run deploys only after S2, S8 and S12 | Run rules win |
 
 ## 11. Questions for Dylan
 
