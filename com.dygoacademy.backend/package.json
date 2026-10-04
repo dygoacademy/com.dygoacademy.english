@@ -21,6 +21,7 @@
     "audio-backfill": "node scripts/audio-backfill.js",
     "audio-backfill:local": "sh -c 'set -a; . ../env-profiles/local.env; set +a; node scripts/audio-backfill.js \"$@\"' --",
     "audio-backfill:prod": "sh -c 'set -a; . ../env-profiles/prod.env; set +a; node scripts/audio-backfill.js \"$@\"' --",
+    "media-migrate": "ts-node --transpile-only scripts/media-migrate.ts",
     "speaking-generate": "ts-node --transpile-only scripts/speaking-generate.ts",
     "speaking-generate:prod": "sh -c 'set -a; . ../env-profiles/prod.env; set +a; ts-node --transpile-only scripts/speaking-generate.ts \"$@\"' --",
     "translations-backfill": "node scripts/translations-backfill.js",
