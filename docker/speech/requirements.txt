@@ -1,0 +1,9 @@
+# torch / torchaudio come from the CPU index in the Dockerfile.
+transformers==4.46.3
+faster-whisper==1.1.1
+phonemizer==3.3.0
+numpy<2.3
+fastapi==0.115.6
+uvicorn[standard]==0.34.0
+python-multipart==0.0.20
+pytest==8.3.4

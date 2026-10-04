@@ -505,3 +505,19 @@ Dylan, 2026-10-04: paid services (Azure ≈ $1.80, SpeechSuper ≈ $6 per 1,000 
 - **Memory:** ~1.5 GB (Whisper) + ~1.5 GB (phonemes) of Docker's 9.5 GB; Supabase etc. use ~2.2 GB today.
 
 **Plan (replaces S20's paid service):** M2 scorer container (FastAPI `POST /check`: audio + sentence + target word → words ok / missing / unclear + heard, sound scores, stress, total; audio in memory only) next to Speaches in `docker-compose.yml`, `127.0.0.1` only, limits + health checks · M3 S17 with a `MacSpeechChecker` adapter · M4 calibration · M5 `NEXT_PUBLIC_SPEECH_CHECK=server`, deploy, iPhone try. Kept on the Mac for M2: images `speaches:latest-cpu`, `dygo-speech-spike-scorer`; volumes `dygo_speech_models` (Whisper, 634 MB), `dygo_speech_spike_hf` (phoneme model, 1.26 GB). Test containers stopped.
+
+### M2 · Scorer container (2026-10-04)
+
+`docker/speech/` (FastAPI `POST /check` + `GET /health`), service `speech` / `dygo_speech` in `docker-compose.yml` on `127.0.0.1:8100`, volume `speech_models`, `mem_limit` 4 GB, health check. Change from the spike: Whisper runs **inside** the scorer with faster-whisper (beam 1, int8) instead of the Speaches server, so one container and one API, and the fast mode Speaches doesn't expose. Spike images and volumes (`speaches`, `dygo-speech-spike-scorer`, `dygo_speech_models`, `dygo_speech_spike_hf`) are no longer needed.
+
+| Clip | Total | Marks |
+| --- | ---: | --- |
+| good US / UK / fixture | 100 / 100 / 99 | all ok ("the" /ði/ now accepted) |
+| "the" left out | 89 | the: missing |
+| "migrate" for "mitigate" | 95 | mitigate: unclear, heard "migrate" |
+| "affects" for "effects" | 98 | all ok (not caught; they sound the same) |
+| Vietnamese voice | 40 | 7 words unclear, heard "me", "to", "get", "a", "giant" |
+| Chinese voice | 91 | mitigate: unclear, heard "me" |
+| 2 s noise first | 100 | all ok |
+
+**Speed** (one check at a time, Mac under load 9–14 from other apps): 1.7–3.3 s typical, 5.3 s worst; under SP3's 8 s timeout. Phoneme model ≈ 2.5 s of it, Whisper ≈ 1.2 s, in parallel. Tried and dropped: int8 quantisation of the phoneme model (every word "unclear", 20–30 s); more threads (slower). Memory 0.8 GB idle. Unit tests (`tests/test_matching.py`) 6/6. Next: M3 = S17, the backend endpoint and `MacSpeechChecker`.

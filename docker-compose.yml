@@ -369,11 +369,41 @@ services:
     networks:
       - dygo-network
 
+  # ============================================================================
+  # 10. Speech scorer (Phase 13 G6, docs/phase13-notes.md §20)
+  # ============================================================================
+  # Checks a learner's recording against the sentence: faster-whisper for the
+  # words (left out / heard as another word) and a wav2vec2 phoneme model for
+  # each word's sounds. Free, on this Mac, CPU only. Only the backend calls it
+  # (127.0.0.1); audio stays in memory. Models (~1.4 GB) download into
+  # `speech_models` on first start, so the first health check takes a while.
+  speech:
+    build: ./docker/speech
+    container_name: dygo_speech
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8100:8000"
+    environment:
+      WHISPER_MODEL: base.en
+      MODEL_THREADS: "4"
+    volumes:
+      - speech_models:/models
+    mem_limit: 4g
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://127.0.0.1:8000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 60
+      start_period: 120s
+    networks:
+      - dygo-network
+
 volumes:
   supabase_db_data:
   db_config:
   redis_data:
   rustfs_data:
+  speech_models:
 
 networks:
   dygo-network:
