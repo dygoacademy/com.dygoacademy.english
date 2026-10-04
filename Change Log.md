@@ -271,3 +271,9 @@ Engineering-facing log of shipped fixes and changes, one dated entry per change.
 * **Verified live**: www 200, `/api/v1/health` 200; new routes registered at boot (`SpeakingController`, `TelemetryController`), 401 when signed out; as the `alex@dygo.test` fixture: `/speaking/session` → `{ item_count: 0, default_accent: "US", items: [] }`, `/speaking/words/<id>` → 404 (no items yet), `/telemetry/media` → recorded 1 with Cloudflare country `SG` (test row deleted); `www.dygoacademy.com/sw.js` contains the media cache; `npm run media-migrate` re-run: 0 URLs left on R2.
 * **Why**: Dylan asked to apply the migrations and deploy.
 
+### Generated: native UK + US speaking audio for 138 words (Phase 13 T2 done)
+* **Files**: [`docs/phase13-notes.md`](docs/phase13-notes.md) (record only; audio lives in RustFS, rows in `speaking_items`)
+* **What**: with Dylan's Google Cloud TTS key (Dygo project, restricted to Text-to-Speech), `npm run speaking-generate` made Neural2 clips for every READY word with a usable example sentence: first the Nature & Environment bed, then `--all`. 138 items, 276 clips (`en-GB-Neural2-C`, `en-US-Neural2-F`), each as AAC `.m4a`, `.wav` and timings `.json` under `speaking/en/<uk|us>/` on `media.dygoacademy.com`. 72,776 characters, inside the free monthly allowance.
+* **Verified**: all 276 timings pass `validateTimings` with a stressed target syllable; random sample of 12 clips: every word span contains speech, gaps are silent; public `.m4a` / `.wav` / `.json` URLs 200; live `/speaking/session` as the `alex` fixture returns 5 items (38 available), due words first.
+* **Skipped**: 5 words (1 without an example sentence, 4 multi-word entries the target matcher can't place yet); follow-up noted in the phase notes.
+
