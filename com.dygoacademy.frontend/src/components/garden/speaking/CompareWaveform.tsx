@@ -3,54 +3,56 @@ import { barHeight, barX, toBars, WAVE_BARS, WAVE_COLORS, WAVE_WIDTH } from './w
 
 export type CompareView = 'overlay' | 'stacked';
 
+/** An amber band over a word that needs work, as fractions of the native clip. */
+export interface CompareBand {
+  start: number;
+  end: number;
+  /** The target word: stronger amber (canvas opacity .32; other words .18). */
+  target: boolean;
+}
+
 export interface CompareWaveformProps {
-  /** Native and learner envelopes (the scorer's, 100 fps); each fills the width. */
+  /** Native and learner envelopes (100 fps); each fills the width. */
   native: readonly number[];
   user: readonly number[];
   view: CompareView;
-  /** The target word's span as fractions of the native clip; amber band. */
-  target?: { start: number; end: number } | null;
+  /** Words that need work; none while checking (handover v2 SP3). */
+  bands?: readonly CompareBand[];
   playingMs?: number | null;
   playKey?: string | number;
   label: string;
 }
 
-const H = 104;
-const ROW = 48;
-const ROW_GAP = 56;
+/** Measured from SpeakCompare.dc.html (handover v2, 2026-10-04). */
+const H = 92;
+const OVERLAY_MIN = 4;
+const OVERLAY_MAX = H - 6;
+const ROW = 42;
+const ROW_MIN = 3;
+const ROW_MAX = ROW - 6;
+const ROW_GAP = 50;
 
 /**
- * SP3 compare waveform (SpeakCompare.dc.html), 322×104. Overlay: pale
+ * SP3 compare waveform (SpeakCompare.dc.html), 322×92. Overlay: pale
  * native bars with thin clay learner bars on top. Side by side: native
- * (green) on top, learner (clay) below. Both views: amber target band.
+ * (green) on top, learner (clay) below. Amber bands mark the words that
+ * need work once the check is done.
  */
 export function CompareWaveform({
   native,
   user,
   view,
-  target,
+  bands = [],
   playingMs,
   playKey,
   label,
 }: CompareWaveformProps) {
   const n = toBars(native, WAVE_BARS);
   const u = toBars(user, WAVE_BARS);
-  const band = target ? (
-    <rect
-      data-testid="wave-target"
-      x={target.start * WAVE_WIDTH}
-      y={-4}
-      width={Math.max(0, (target.end - target.start) * WAVE_WIDTH)}
-      height={H + 8}
-      rx={8}
-      fill={WAVE_COLORS.targetCompare}
-      opacity={0.32}
-    />
-  ) : null;
 
   const row = (bars: number[], fill: string, key: string) =>
     bars.map((v, i) => {
-      const h = barHeight(v, 3, ROW);
+      const h = barHeight(v, ROW_MIN, ROW_MAX);
       return (
         <rect
           key={`${key}${i}`}
@@ -73,11 +75,23 @@ export function CompareWaveform({
       data-view={view}
       className="block h-auto overflow-visible"
     >
-      {band}
+      {bands.map((b, i) => (
+        <rect
+          key={`b${i}`}
+          data-testid={b.target ? 'wave-target' : 'wave-band'}
+          x={b.start * WAVE_WIDTH}
+          y={-4}
+          width={Math.max(0, (b.end - b.start) * WAVE_WIDTH)}
+          height={H + 8}
+          rx={8}
+          fill={WAVE_COLORS.targetCompare}
+          opacity={b.target ? 0.32 : 0.18}
+        />
+      ))}
       {view === 'overlay' ? (
         <>
           {n.map((v, i) => {
-            const h = barHeight(v, 5, H - 6);
+            const h = barHeight(v, OVERLAY_MIN, OVERLAY_MAX);
             return (
               <rect
                 key={`n${i}`}
@@ -91,7 +105,7 @@ export function CompareWaveform({
             );
           })}
           {u.map((v, i) => {
-            const h = barHeight(v, 5, H - 6);
+            const h = barHeight(v, OVERLAY_MIN, OVERLAY_MAX);
             return (
               <rect
                 key={`u${i}`}

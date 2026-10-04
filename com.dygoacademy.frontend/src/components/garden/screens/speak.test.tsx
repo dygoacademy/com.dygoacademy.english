@@ -13,6 +13,7 @@ import {
   SPEAK_FIXTURE_ITEM,
   SPEAK_FIXTURE_ITEM_VI,
   SPEAK_FIXTURE_RESULT,
+  SPEAK_FIXTURE_RESULT_CANVAS,
   SPEAK_FIXTURE_SESSION,
 } from './speakFixtures';
 
@@ -63,7 +64,7 @@ describe('SpeakListenScreen (SP1)', () => {
     expect(p.onRate).toHaveBeenCalledWith(0.75);
     fireEvent.click(screen.getByRole('button', { name: 'Play' }));
     expect(p.onPlay).toHaveBeenCalled();
-    fireEvent.click(screen.getByRole('button', { name: 'Start speaking' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Start recording' }));
     expect(p.onMic).toHaveBeenCalled();
   });
 
@@ -71,7 +72,7 @@ describe('SpeakListenScreen (SP1)', () => {
     listen({ playing: true, micAvailable: false, notice: <span>Mic is off</span> });
     expect(screen.getByRole('button', { name: 'Playing' })).toBeTruthy();
     expect(screen.getByTestId('wave-playhead')).toBeTruthy();
-    expect(screen.queryByRole('button', { name: 'Start speaking' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Start recording' })).toBeNull();
     expect(screen.getByText('Mic is off')).toBeTruthy();
   });
 
@@ -94,7 +95,7 @@ function recording(over: Partial<SpeakRecordingScreenProps> = {}) {
     nativeLevels: ENV,
     liveLevels: [0.1, 0.12, 0.08],
     elapsedMs: 2400,
-    targetMs: 5000,
+    onSkipCountdown: vi.fn(),
     onStop: vi.fn(),
     onCancel: vi.fn(),
     ...over,
@@ -104,23 +105,39 @@ function recording(over: Partial<SpeakRecordingScreenProps> = {}) {
 }
 
 describe('SpeakRecordingScreen (SP2)', () => {
-  it('shows the timer, live waveform, fill hint and stress tip', () => {
+  it('shows the elapsed time, live waveform, fill hint and stress tip', () => {
     recording();
     expect(screen.getByText('Recording')).toBeTruthy();
-    expect(screen.getByRole('timer').textContent).toBe('0:02 / 0:05');
+    expect(screen.getByRole('timer').textContent).toBe('0:02'); // no maximum (handover v2)
     expect(screen.getByRole('img', { name: /Your voice, live/ })).toBeTruthy();
     expect(screen.getAllByTestId('live-bar').length).toBeGreaterThan(0);
     expect(
       screen.getByText('The pale green shape is the native speaker. Try to fill it.'),
     ).toBeTruthy();
-    expect(screen.getByText('mitigate /ˈmɪt.ɪ.ɡeɪt/: push on mɪt')).toBeTruthy();
+    const tip = screen.getByText(
+      (_, el) => el?.textContent === 'mitigate /ˈmɪt.ɪ.ɡeɪt/: push on MIT' && el.tagName === 'SPAN',
+    );
+    expect([...tip.querySelectorAll('b')].map((b) => b.textContent)).toEqual([
+      'mitigate',
+      'mɪt',
+      'MIT',
+    ]);
+    expect(screen.getByText('or just pause, it stops by itself')).toBeTruthy();
   });
 
-  it('countdown: the whole sentence shown, the number, no stop button yet', () => {
-    recording({ countdown: 2, elapsedMs: 0 });
-    expect(screen.getByRole('status', { name: 'Recording starts in 2' }).textContent).toBe('2');
-    expect(screen.getByText('Start reading when the count ends')).toBeTruthy();
+  it('countdown: the number over the native shape, tap to start now, mic waiting', () => {
+    const p = recording({ countdown: 2, elapsedMs: 0 });
+    const count = screen.getByRole('button', {
+      name: 'Get ready. Recording starts after the beep. Tap to start now',
+    });
+    expect(within(count).getByText('2')).toBeTruthy();
+    expect(within(count).getByText('Get ready')).toBeTruthy();
+    expect(screen.getByText('Recording starts after the beep · tap to start now')).toBeTruthy();
+    expect(screen.getByText('Starting soon')).toBeTruthy();
+    expect(screen.queryByRole('timer')).toBeNull();
     expect(screen.queryByRole('button', { name: 'Stop recording' })).toBeNull();
+    fireEvent.click(count);
+    expect(p.onSkipCountdown).toHaveBeenCalled();
     expect(screen.getByRole('button', { name: 'Cancel' })).toBeTruthy();
     const sentence = screen.getByText('Planting', { exact: false }).closest('p')!;
     expect(sentence.querySelector('[data-faded]')).toBeNull();
@@ -163,12 +180,19 @@ function compare(over: Partial<SpeakCompareScreenProps> = {}) {
     closeHref: '/missions',
     timings: SPEAK_FIXTURE_ITEM.timings_us,
     ipa: SPEAK_FIXTURE_ITEM.ipa_us,
+    accent: 'UK',
+    envelopes: SPEAK_FIXTURE_RESULT.envelopes,
+    userDurationMs: 3400,
+    status: 'done',
     result: SPEAK_FIXTURE_RESULT,
+    initial: 'M',
     view: 'overlay',
     onView: vi.fn(),
     playing: null,
     onPlayNative: vi.fn(),
     onPlayYou: vi.fn(),
+    onCheckAgain: vi.fn(),
+    onRecordAgain: vi.fn(),
     onTryAgain: vi.fn(),
     onNext: vi.fn(),
     ...over,
@@ -183,22 +207,51 @@ describe('SpeakCompareScreen (SP3)', () => {
     expect(screen.getByText('Your sentence')).toBeTruthy();
     expect(screen.getByText(/3\.4s · native/)).toBeTruthy();
     expect(screen.getByRole('img', { name: /in clay over the native/ })).toBeTruthy();
-    expect(screen.getByText('mɪt is too soft')).toBeTruthy();
+    expect(screen.getByText('MIT is too soft')).toBeTruthy();
     expect(screen.getByText('In bloom · 82% match')).toBeTruthy();
     expect(screen.getByText('Fruit at 90%').tagName).toBe('B');
     const title = screen.getByText(
-      (_, el) => el?.textContent === 'In mitigate, make mɪt stronger' && el.tagName === 'SPAN',
+      (_, el) => el?.textContent === 'In mitigate, make MIT stronger' && el.tagName === 'SPAN',
     );
     expect(title.querySelectorAll('b')).toHaveLength(2);
-    expect(screen.getByText(/Say ˈmɪt-ɪ-ɡeɪt\./)).toBeTruthy();
+    expect(
+      screen.getByText(
+        (_, el) =>
+          el?.textContent ===
+            'You said its three parts evenly. Say MIT-i-gate. The rest of the sentence flowed well.' &&
+          el.tagName === 'SPAN',
+      ),
+    ).toBeTruthy();
+    expect(screen.getAllByTestId('wave-target')).toHaveLength(1);
+  });
+
+  it('done, like the canvas: missing struck through, heard "affects", bands, "Also keep…"', () => {
+    compare({ result: SPEAK_FIXTURE_RESULT_CANVAS });
+    expect(screen.getByText('In bloom · 76% match')).toBeTruthy();
+    expect(screen.getByText('missing')).toBeTruthy();
+    const struck = screen.getAllByText('the').find((el) => el.className.includes('line-through'));
+    expect(struck).toBeTruthy();
+    expect(screen.getByText('heard “affects”')).toBeTruthy();
+    expect(screen.getAllByTestId('wave-target')).toHaveLength(1);
+    expect(screen.getAllByTestId('wave-band')).toHaveLength(2);
+    expect(
+      screen.getByText(
+        (_, el) =>
+          el?.textContent ===
+            'You said its three parts evenly. Say MIT-i-gate. Also keep the, and say effects /ɪˈfekts/.' &&
+          el.tagName === 'SPAN',
+      ),
+    ).toBeTruthy();
   });
 
   it('switches view, plays native / you, tries again and goes next', () => {
     const p = compare();
     fireEvent.click(screen.getByRole('radio', { name: 'Side by side' }));
     expect(p.onView).toHaveBeenCalledWith('stacked');
-    fireEvent.click(screen.getByRole('button', { name: 'Native' }));
-    fireEvent.click(screen.getByRole('button', { name: 'You' }));
+    expect(screen.getByText('Native · UK')).toBeTruthy();
+    expect(screen.getByText('M')).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: 'Play the native speaker' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Play your recording' }));
     expect(p.onPlayNative).toHaveBeenCalled();
     expect(p.onPlayYou).toHaveBeenCalled();
     fireEvent.click(screen.getByRole('button', { name: 'Try again' }));
@@ -207,12 +260,32 @@ describe('SpeakCompareScreen (SP3)', () => {
     expect(p.onNext).toHaveBeenCalled();
   });
 
-  it('shows a spinner while scoring and blocks Next', () => {
-    compare({ result: null });
-    expect(screen.getByRole('status')).toBeTruthy();
-    expect((screen.getByRole('button', { name: 'Next word' }) as HTMLButtonElement).disabled).toBe(
-      true,
-    );
+  it('checking: waveforms and play at once, plain sentence, shimmer card, privacy line', () => {
+    const p = compare({ status: 'checking', result: null });
+    expect(screen.getByRole('img', { name: /in clay over the native/ })).toBeTruthy();
+    expect(screen.getByText(/3\.4s · native/)).toBeTruthy();
+    expect(within(screen.getByRole('status')).getByText('Checking your sentence…')).toBeTruthy();
+    expect(screen.getByText('Your recording is checked, then deleted.')).toBeTruthy();
+    expect(screen.getByText(SPEAK_FIXTURE_ITEM.sentence)).toBeTruthy();
+    expect(screen.queryByTestId('wave-target')).toBeNull();
+    expect(screen.queryByText(/% match/)).toBeNull();
+    fireEvent.click(screen.getByRole('button', { name: 'Play your recording' }));
+    expect(p.onPlayYou).toHaveBeenCalled();
+    fireEvent.click(screen.getByRole('button', { name: 'Next word' }));
+    expect(p.onNext).toHaveBeenCalled();
+  });
+
+  it("failed: Couldn't check this one, Check again / Record again", () => {
+    const p = compare({ status: 'failed', result: null });
+    const alert = screen.getByRole('alert');
+    expect(within(alert).getByText("Couldn't check this one")).toBeTruthy();
+    expect(
+      within(alert).getByText("The connection dropped. Your recording wasn't saved."),
+    ).toBeTruthy();
+    fireEvent.click(within(alert).getByRole('button', { name: 'Check again' }));
+    fireEvent.click(within(alert).getByRole('button', { name: 'Record again' }));
+    expect(p.onCheckAgain).toHaveBeenCalled();
+    expect(p.onRecordAgain).toHaveBeenCalled();
   });
 });
 
@@ -240,7 +313,7 @@ describe('SpeakDoneScreen (SP4)', () => {
     expect(screen.getByText('94%').className).toContain('bg-on-forest-muted');
     expect(screen.getByText('58%').className).toContain('bg-gold-soft');
     expect(screen.getByText('Pattern to watch:')).toBeTruthy();
-    expect(screen.getByText('tɪə', { selector: 'b' })).toBeTruthy();
+    expect(screen.getByText('TER', { selector: 'b' })).toBeTruthy(); // spelling, like the canvas
     expect(screen.getByRole('link', { name: 'Back to garden' }).getAttribute('href')).toBe(
       '/missions',
     );

@@ -9,7 +9,7 @@ import type { SpeakingAccent, SpeakingSessionItem, SpeakingStage, SpeakingTiming
 import {
   AUTO_STOP_SILENCE_MS,
   FOLLOW_ALONG_SLOWDOWN,
-  RECORDING_TARGET_FACTOR,
+  NOT_HEARD_MS,
   SILENCE_GATE_RMS,
   SPEECH_FLOOR_MARGIN_DB,
   SPEECH_MIN_RUN_MS,
@@ -104,29 +104,18 @@ export function formatClock(ms: number): string {
 }
 
 /**
- * The time shown after the slash on SP2 ("0:02 / 0:06"): the native clip ×
- * RECORDING_TARGET_FACTOR, rounded up, at most the cap (decision S7-b,
- * ×2 since G3-b).
+ * Where the voice is in the live mic bars (RMS, `barsPerSecond` a second,
+ * since recording started). Same idea as the scorer's `speechRange`: skip
+ * the tap click, gate from the room's own noise and the loudest bar, and
+ * only a run of SPEECH_MIN_RUN_MS above the gate counts as voice.
+ * `heard`: some voice so far; `quietBars`: bars since the last one above
+ * the gate.
  */
-export function recordingTargetMs(nativeSeconds: number, capMs: number): number {
-  return Math.min(capMs, Math.ceil(nativeSeconds * RECORDING_TARGET_FACTOR) * 1000);
-}
-
-/**
- * True once the learner has spoken and then been quiet for
- * AUTO_STOP_SILENCE_MS: the recording stops by itself (decision G3-b).
- * `levels` are the live mic bars (RMS, `barsPerSecond` a second) since
- * recording started. Same idea as the scorer's `speechRange`: skip the
- * tap click, gate from the room's own noise and the loudest bar, and only
- * a run of SPEECH_MIN_RUN_MS above the gate counts as voice. Never true
- * before any voice, so a late start just waits (up to MAX_RECORDING_MS).
- */
-export function voiceEnded(levels: readonly number[], barsPerSecond: number): boolean {
+function voiceState(levels: readonly number[], barsPerSecond: number) {
   const bars = (ms: number) => Math.max(1, Math.ceil((ms / 1000) * barsPerSecond));
   const body = levels.slice(bars(SPEECH_SKIP_MS));
-  const quietBars = bars(AUTO_STOP_SILENCE_MS);
   const minRun = bars(SPEECH_MIN_RUN_MS);
-  if (body.length < minRun + quietBars) return false;
+  if (body.length < minRun) return { heard: false, quietBars: body.length, bars };
   const sorted = [...body].sort((a, b) => a - b);
   const at = (p: number) => sorted[Math.floor(p * (sorted.length - 1))];
   const gate = Math.max(
@@ -134,14 +123,41 @@ export function voiceEnded(levels: readonly number[], barsPerSecond: number): bo
     at(0.05) * 10 ** (SPEECH_FLOOR_MARGIN_DB / 20),
     at(1) * 10 ** (-SPEECH_PEAK_RANGE_DB / 20),
   );
-  const tail = body.slice(body.length - quietBars);
-  if (tail.some((v) => v >= gate)) return false;
   let run = 0;
-  for (const v of body.slice(0, body.length - quietBars)) {
-    run = v >= gate ? run + 1 : 0;
-    if (run >= minRun) return true;
-  }
-  return false;
+  let heard = false;
+  let lastLoud = -1;
+  body.forEach((v, i) => {
+    if (v >= gate) {
+      lastLoud = i;
+      run += 1;
+      if (run >= minRun) heard = true;
+    } else {
+      run = 0;
+    }
+  });
+  return { heard, quietBars: body.length - 1 - lastLoud, bars };
+}
+
+/**
+ * True once the learner has spoken and then been quiet for
+ * AUTO_STOP_SILENCE_MS: the recording stops by itself (handover v2 §3.2).
+ * Never true before any voice, so a late start just waits (see `notHeard`).
+ */
+export function voiceEnded(levels: readonly number[], barsPerSecond: number): boolean {
+  const v = voiceState(levels, barsPerSecond);
+  return v.heard && v.quietBars >= v.bars(AUTO_STOP_SILENCE_MS);
+}
+
+/**
+ * True when NOT_HEARD_MS have passed since recording started and there
+ * was no voice at all: SP2 stops and says "We couldn't hear you".
+ */
+export function notHeard(
+  levels: readonly number[],
+  barsPerSecond: number,
+  elapsedMs: number,
+): boolean {
+  return elapsedMs >= NOT_HEARD_MS && !voiceState(levels, barsPerSecond).heard;
 }
 
 /** The accent's clip, timings and IPA, each falling back to the other accent. */

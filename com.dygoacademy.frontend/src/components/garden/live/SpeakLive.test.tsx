@@ -23,10 +23,15 @@ const env = {
   micError: null as null | { kind: string },
   result: SPEAK_FIXTURE_RESULT,
   nativeError: false,
+  /** The check rejects (SP3 → "Couldn't check this one"). */
+  checkFails: false,
   levels: [0.1, 0.2] as number[],
 };
 
 vi.mock('next/navigation', () => ({ useRouter: () => ({ push }) }));
+vi.mock('@/hooks/useCurrentUser', () => ({
+  useCurrentUser: () => ({ data: { email: 'minh@example.com', user_metadata: {} } }),
+}));
 vi.mock('@/hooks/useSpeakingSession', () => ({
   useSpeakingSession: () => ({
     data: SPEAK_FIXTURE_SESSION,
@@ -56,8 +61,11 @@ vi.mock('@/hooks/useLiveLevels', () => ({
   useLiveLevels: (_s: unknown, active: boolean) => (active ? env.levels : []),
 }));
 vi.mock('@/lib/media-cache', () => ({ prefetchMedia: (...a: unknown[]) => prefetch(...a) }));
-vi.mock('@/lib/speaking/envelopeScorer', () => ({
-  envelopeScorer: { score: () => Promise.resolve(env.result) },
+vi.mock('@/lib/speaking/envelopeScorer', async (orig) => ({
+  ...(await orig<typeof import('@/lib/speaking/envelopeScorer')>()),
+  envelopeScorer: {
+    score: () => (env.checkFails ? Promise.reject(new Error('down')) : Promise.resolve(env.result)),
+  },
 }));
 vi.mock('@/lib/speaking/audio', async (orig) => ({
   ...(await orig<typeof import('@/lib/speaking/audio')>()),
@@ -82,16 +90,26 @@ vi.mock('@/lib/speaking/audio', async (orig) => ({
 
 import { SpeakFlow, SpeakLive } from './SpeakLive';
 
-/** The 3 · 2 · 1 before recording (G3-b). */
+/** The 3 · 2 · 1 (0.9 s a step), the beep, then 150 ms until recording (handover v2 §3.2). */
 async function countdown() {
   for (let i = 0; i < 3; i++) {
     await act(async () => {
-      vi.advanceTimersByTime(1000);
+      vi.advanceTimersByTime(900);
     });
   }
+  await act(async () => {
+    vi.advanceTimersByTime(150);
+  });
 }
 
 /** Renders and lets the mic-permission check settle. */
+/** Start, count down, stop. */
+async function record() {
+  await act(async () => fireEvent.click(screen.getByRole('button', { name: 'Start recording' })));
+  await countdown();
+  await act(async () => fireEvent.click(screen.getByRole('button', { name: 'Stop recording' })));
+}
+
 async function renderLive() {
   renderWithIntl(<SpeakLive />);
   await act(async () => {});
@@ -105,6 +123,7 @@ describe('SpeakLive (The Pond)', () => {
       micError: null,
       result: SPEAK_FIXTURE_RESULT,
       nativeError: false,
+      checkFails: false,
       levels: [0.1, 0.2],
     });
     vi.useFakeTimers({ shouldAdvanceTime: true, toFake: ['setTimeout', 'clearTimeout'] });
@@ -129,7 +148,7 @@ describe('SpeakLive (The Pond)', () => {
 
     for (let i = 0; i < 5; i++) {
       await act(async () =>
-        fireEvent.click(screen.getByRole('button', { name: 'Start speaking' })),
+        fireEvent.click(screen.getByRole('button', { name: 'Start recording' })),
       );
       await countdown();
       expect(screen.getByRole('button', { name: 'Stop recording' })).toBeTruthy();
@@ -156,7 +175,7 @@ describe('SpeakLive (The Pond)', () => {
 
   it('try again records the same sentence and saves another attempt', async () => {
     await renderLive();
-    await act(async () => fireEvent.click(screen.getByRole('button', { name: 'Start speaking' })));
+    await act(async () => fireEvent.click(screen.getByRole('button', { name: 'Start recording' })));
     await countdown();
     await act(async () => fireEvent.click(screen.getByRole('button', { name: 'Stop recording' })));
     await waitFor(() => expect(screen.getByText('In bloom · 82% match')).toBeTruthy());
@@ -172,32 +191,77 @@ describe('SpeakLive (The Pond)', () => {
     vi.useRealTimers();
   });
 
-  it('counts down 3 · 2 · 1 with the sentence shown, then records', async () => {
+  const COUNT_BUTTON = 'Get ready. Recording starts after the beep. Tap to start now';
+
+  it('counts down 3 · 2 · 1 (0.9 s a step), beeps, records 150 ms later', async () => {
     await renderLive();
-    await act(async () => fireEvent.click(screen.getByRole('button', { name: 'Start speaking' })));
-    expect(screen.getByRole('status', { name: 'Recording starts in 3' })).toBeTruthy();
-    expect(screen.getByText('Get ready')).toBeTruthy();
+    await act(async () => fireEvent.click(screen.getByRole('button', { name: 'Start recording' })));
+    expect(screen.getByRole('button', { name: COUNT_BUTTON }).textContent).toContain('3');
+    expect(screen.getByText('Starting soon')).toBeTruthy();
     expect(screen.queryByRole('button', { name: 'Stop recording' })).toBeNull();
-    expect(recorderStart).not.toHaveBeenCalled();
     await act(async () => {
-      vi.advanceTimersByTime(1000);
+      vi.advanceTimersByTime(900);
     });
-    expect(screen.getByRole('status', { name: 'Recording starts in 2' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: COUNT_BUTTON }).textContent).toContain('2');
     for (let i = 0; i < 2; i++) {
       await act(async () => {
-        vi.advanceTimersByTime(1000);
+        vi.advanceTimersByTime(900);
       });
     }
-    expect(recorderStart).toHaveBeenCalledTimes(1);
     expect(screen.getByRole('button', { name: 'Stop recording' })).toBeTruthy();
-    expect(screen.getByText('It stops by itself when you finish')).toBeTruthy();
+    expect(recorderStart).not.toHaveBeenCalled(); // the beep isn't recorded
+    await act(async () => {
+      vi.advanceTimersByTime(150);
+    });
+    expect(recorderStart).toHaveBeenCalledTimes(1);
+    expect(screen.getByText('or just pause, it stops by itself')).toBeTruthy();
   });
 
-  it('stops by itself 1.5 s after the voice ends, then scores', async () => {
-    const bars = (n: number, v: number) => Array.from({ length: n }, () => v);
-    env.levels = [...bars(10, 0.004), ...bars(40, 0.2), ...bars(30, 0.004)];
+  it('tapping the countdown skips straight to the beep', async () => {
     await renderLive();
-    await act(async () => fireEvent.click(screen.getByRole('button', { name: 'Start speaking' })));
+    await act(async () => fireEvent.click(screen.getByRole('button', { name: 'Start recording' })));
+    await act(async () => fireEvent.click(screen.getByRole('button', { name: COUNT_BUTTON })));
+    expect(screen.getByRole('button', { name: 'Stop recording' })).toBeTruthy();
+    await act(async () => {
+      vi.advanceTimersByTime(150);
+    });
+    expect(recorderStart).toHaveBeenCalledTimes(1);
+  });
+
+  it('checking, then done: Compare opens at once and the result fills in', async () => {
+    let finish: (r: typeof SPEAK_FIXTURE_RESULT) => void = () => undefined;
+    const pending = new Promise<typeof SPEAK_FIXTURE_RESULT>((res) => (finish = res));
+    const { envelopeScorer } = await import('@/lib/speaking/envelopeScorer');
+    const spy = vi.spyOn(envelopeScorer, 'score').mockReturnValueOnce(pending);
+    await renderLive();
+    await record();
+    await waitFor(() => expect(screen.getByText('Checking your sentence…')).toBeTruthy());
+    expect(screen.getByText('Your recording is checked, then deleted.')).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Play your recording' })).toBeTruthy();
+    expect(mutate).not.toHaveBeenCalled();
+    await act(async () => finish(SPEAK_FIXTURE_RESULT));
+    await waitFor(() => expect(screen.getByText('In bloom · 82% match')).toBeTruthy());
+    expect(mutate).toHaveBeenCalledTimes(1);
+    spy.mockRestore();
+  });
+
+  it("failed: Couldn't check this one, then Check again succeeds", async () => {
+    env.checkFails = true;
+    await renderLive();
+    await record();
+    await waitFor(() => expect(screen.getByText("Couldn't check this one")).toBeTruthy());
+    expect(mutate).not.toHaveBeenCalled();
+    env.checkFails = false;
+    await act(async () => fireEvent.click(screen.getByRole('button', { name: 'Check again' })));
+    await waitFor(() => expect(screen.getByText('In bloom · 82% match')).toBeTruthy());
+    expect(mutate).toHaveBeenCalledTimes(1);
+  });
+
+  it('stops by itself 2 s after the voice ends, then checks', async () => {
+    const bars = (n: number, v: number) => Array.from({ length: n }, () => v);
+    env.levels = [...bars(10, 0.004), ...bars(40, 0.2), ...bars(40, 0.004)];
+    await renderLive();
+    await act(async () => fireEvent.click(screen.getByRole('button', { name: 'Start recording' })));
     await countdown();
     await waitFor(() => expect(recorderStop).toHaveBeenCalledTimes(1));
     await waitFor(() => expect(screen.getByText('In bloom · 82% match')).toBeTruthy());
@@ -206,26 +270,20 @@ describe('SpeakLive (The Pond)', () => {
 
   it('cancel during the countdown never starts the recorder', async () => {
     await renderLive();
-    await act(async () => fireEvent.click(screen.getByRole('button', { name: 'Start speaking' })));
+    await act(async () => fireEvent.click(screen.getByRole('button', { name: 'Start recording' })));
     fireEvent.click(screen.getByRole('button', { name: 'Cancel' }));
     await countdown();
     expect(recorderStart).not.toHaveBeenCalled();
-    expect(screen.getByRole('button', { name: 'Start speaking' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Start recording' })).toBeTruthy();
   });
 
   it('cancel goes back to listening', async () => {
     await renderLive();
-    await act(async () => fireEvent.click(screen.getByRole('button', { name: 'Start speaking' })));
+    await act(async () => fireEvent.click(screen.getByRole('button', { name: 'Start recording' })));
     fireEvent.click(screen.getByRole('button', { name: 'Cancel' }));
-    expect(screen.getByRole('button', { name: 'Start speaking' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Start recording' })).toBeTruthy();
     expect(mutate).not.toHaveBeenCalled();
   });
-
-  const record = async () => {
-    await act(async () => fireEvent.click(screen.getByRole('button', { name: 'Start speaking' })));
-    await countdown();
-    await act(async () => fireEvent.click(screen.getByRole('button', { name: 'Stop recording' })));
-  };
 
   it('too quiet: nothing heard → SP1 says so, nothing saved, mic still there', async () => {
     env.result = {
@@ -240,7 +298,7 @@ describe('SpeakLive (The Pond)', () => {
     await renderLive();
     await record();
     await waitFor(() => expect(screen.getByText("We couldn't hear you")).toBeTruthy());
-    expect(screen.getByRole('button', { name: 'Start speaking' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Start recording' })).toBeTruthy();
     expect(mutate).not.toHaveBeenCalled();
   });
 
@@ -255,10 +313,10 @@ describe('SpeakLive (The Pond)', () => {
   it('first time: the mic explainer, then Allow starts recording', async () => {
     env.permission = 'prompt';
     await renderLive();
-    fireEvent.click(screen.getByRole('button', { name: 'Start speaking' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Start recording' }));
     expect(screen.getByRole('dialog', { name: 'Dygo needs your microphone' })).toBeTruthy();
     expect(screen.getByText(/We don't save your recordings/)).toBeTruthy();
-    expect(screen.queryByRole('button', { name: 'Start speaking' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Start recording' })).toBeNull();
     await act(async () =>
       fireEvent.click(screen.getByRole('button', { name: 'Allow microphone' })),
     );
@@ -270,19 +328,19 @@ describe('SpeakLive (The Pond)', () => {
   it('Not now closes the explainer', async () => {
     env.permission = 'prompt';
     await renderLive();
-    fireEvent.click(screen.getByRole('button', { name: 'Start speaking' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Start recording' }));
     fireEvent.click(screen.getByRole('button', { name: 'Not now' }));
     expect(screen.queryByRole('dialog')).toBeNull();
-    expect(screen.getByRole('button', { name: 'Start speaking' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Start recording' })).toBeTruthy();
   });
 
   it('denied: how to turn it on, Try again, Skip speaking → Missions', async () => {
     env.micError = { kind: 'denied' };
     await renderLive();
-    await act(async () => fireEvent.click(screen.getByRole('button', { name: 'Start speaking' })));
+    await act(async () => fireEvent.click(screen.getByRole('button', { name: 'Start recording' })));
     expect(screen.getByText('The microphone is off for Dygo')).toBeTruthy();
     expect(screen.getByText(/Website Settings/)).toBeTruthy();
-    expect(screen.queryByRole('button', { name: 'Start speaking' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Start recording' })).toBeNull();
     fireEvent.click(screen.getByRole('button', { name: 'Skip speaking' }));
     expect(push).toHaveBeenCalledWith('/missions');
   });
@@ -291,7 +349,7 @@ describe('SpeakLive (The Pond)', () => {
     env.recorder = null;
     renderWithIntl(<SpeakLive />);
     expect(screen.getByText("Speaking isn't available on this browser")).toBeTruthy();
-    expect(screen.queryByRole('button', { name: 'Start speaking' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Start recording' })).toBeNull();
   });
 
   it('audio failed: Retry reloads the clip, Next word skips the sentence', () => {

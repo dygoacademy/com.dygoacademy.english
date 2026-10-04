@@ -29,8 +29,9 @@ const push = vi.fn();
 vi.mock('next/navigation', () => ({ useRouter: () => ({ push }) }));
 
 describe('reference fixtures', () => {
-  it('lists the 40 canvas references (12 adult screens, 7 group screens, 6 sign-in, 8 quiz, 7 home)', () => {
-    expect(REFERENCE_NAMES).toHaveLength(40);
+  it('lists the 45 canvas references (12 adult screens, 7 group screens, 6 sign-in, 8 quiz, 7 home, 5 speaking)', () => {
+    expect(REFERENCE_NAMES).toHaveLength(45);
+    expect(isReferenceName('SP3-speak-done')).toBe(true);
     expect(isReferenceName('H1-home-phone')).toBe(true);
     expect(isReferenceName('H2-home-desktop')).toBe(true);
     expect(isReferenceName('Q8-quiz-drill-done')).toBe(true);

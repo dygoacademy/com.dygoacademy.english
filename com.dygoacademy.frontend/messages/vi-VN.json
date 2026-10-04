@@ -1137,22 +1137,18 @@
         "slow": "0.75×"
       },
       "listenHint": "Nghe, rồi nói cả câu",
-      "micButton": "Bắt đầu nói",
+      "micButton": "Bắt đầu ghi âm",
       "recording": "Đang ghi âm",
-      "timer": "{elapsed} / {max}",
       "fillShape": "Hình xanh nhạt là giọng người bản xứ. Hãy nói sao cho lấp đầy nó.",
-      "stressTip": "{word} {ipa}: nhấn mạnh vào {syllable}",
+      "stressTip": "<b>{word}</b> {before}<b>{stressed}</b>{after}: nhấn mạnh vào <b>{syllable}</b>",
       "tapToStop": "Chạm để dừng",
       "getReady": "Chuẩn bị",
-      "countdownLabel": "Bắt đầu ghi âm sau {n}",
-      "readAfterCount": "Bắt đầu đọc khi đếm xong",
-      "autoStop": "Tự dừng khi bạn đọc xong",
       "stopButton": "Dừng ghi âm",
       "cancel": "Hủy",
       "yourSentence": "Câu của bạn",
       "durations": "{you} giây · bản xứ {native} giây",
       "view": {
-        "label": "Cách xem sóng âm",
+        "label": "Kiểu xem dạng sóng",
         "overlay": "Chồng lên",
         "stacked": "Cạnh nhau"
       },
@@ -1162,16 +1158,16 @@
         "needsWork": "Cần luyện thêm"
       },
       "waveLabel": {
-        "listen": "Sóng âm của người bản xứ khi nói câu này",
-        "live": "Giọng bạn lúc này, chồng lên hình của người bản xứ",
-        "overlay": "Câu của bạn (màu đất) chồng lên giọng bản xứ (màu xanh)",
+        "listen": "Dạng sóng giọng người bản xứ đọc câu",
+        "live": "Giọng bạn đang ghi, trên hình giọng người bản xứ",
+        "overlay": "Câu của bạn (màu đất nung) chồng lên giọng người bản xứ (màu xanh).",
         "stacked": "Người bản xứ ở trên, bạn ở dưới"
       },
       "mark": {
         "stressSoft": "{syllable} còn nhẹ quá",
-        "missing": "chưa nghe thấy",
-        "rushed": "nhanh quá",
-        "slow": "chậm quá"
+        "missing": "thiếu",
+        "heard": "nghe thành “{word}”",
+        "unclear": "chưa rõ"
       },
       "stage": {
         "seed": "Hạt",
@@ -1184,7 +1180,8 @@
       "tip": {
         "stress": {
           "title": "Trong <b>{word}</b>, nhấn mạnh <b>{syllable}</b> hơn",
-          "body": "Bạn đọc các âm tiết đều nhau. Hãy nói {pattern}. Phần còn lại của câu rất trôi chảy."
+          "body": "Bạn đọc {count, select, 2 {hai} 3 {ba} 4 {bốn} 5 {năm} 6 {sáu} other {các}} âm tiết đều nhau. Hãy nói {before}<b>{stressed}</b>{after}. Phần còn lại của câu rất trôi chảy.",
+          "bodyShort": "Bạn đọc {count, select, 2 {hai} 3 {ba} 4 {bốn} 5 {năm} 6 {sáu} other {các}} âm tiết đều nhau. Hãy nói {before}<b>{stressed}</b>{after}."
         },
         "missing": {
           "title": "Hãy nói đủ từng từ",
@@ -1201,9 +1198,13 @@
         "flowed": {
           "title": "Rất trôi chảy",
           "body": "Nhịp điệu của bạn khớp với người bản xứ. Sang câu tiếp nhé."
+        },
+        "also": {
+          "both": "Đừng bỏ <b>{missing}</b>, và đọc <b>{unclear}</b>{ipa, select, none {} other { là {ipa}}}.",
+          "missing": "Đừng bỏ <b>{missing}</b>.",
+          "unclear": "Hãy đọc <b>{unclear}</b>{ipa, select, none {} other { là {ipa}}}."
         }
       },
-      "playNative": "Bản xứ",
       "playYou": "Bạn",
       "tryAgain": "Thử lại",
       "nextWord": "Từ tiếp theo",
@@ -1211,7 +1212,7 @@
         "kicker": "Đã luyện nói xong",
         "title": "{n, plural, other {Bạn đã nói to # từ}}",
         "sub": "Giọng nói của bạn đã tưới khu vườn",
-        "gardenLabel": "{n, plural, other {# cây, mỗi cây cho một từ bạn đã nói}}",
+        "gardenLabel": "{n, plural, =5 {Năm cây, mỗi cây là một từ bạn đã nói} other {# cây, mỗi cây là một từ bạn đã nói}}",
         "pattern": "Điều cần chú ý:",
         "best": "{pct}%"
       },
@@ -1258,7 +1259,23 @@
       "sayThis": {
         "offer": "Nói thử từ này?",
         "close": "Quay lại thẻ"
-      }
+      },
+      "countdownHint": "Ghi âm bắt đầu sau tiếng bíp · chạm để bắt đầu ngay",
+      "countdownButton": "Chuẩn bị. Ghi âm bắt đầu sau tiếng bíp. Chạm để bắt đầu ngay",
+      "startingSoon": "Sắp bắt đầu",
+      "pauseStops": "hoặc chỉ cần ngừng, ghi âm sẽ tự dừng",
+      "checking": "Đang chấm câu của bạn…",
+      "privacy": "Bản ghi được chấm xong sẽ xóa ngay.",
+      "failed": {
+        "title": "Chưa chấm được câu này",
+        "body": "Mất kết nối. Bản ghi của bạn không được lưu.",
+        "checkAgain": "Chấm lại",
+        "recordAgain": "Ghi âm lại"
+      },
+      "nativeAccent": "Bản xứ · {accent}",
+      "playingShort": "Đang phát…",
+      "playNativeLabel": "Nghe người bản xứ",
+      "playYouLabel": "Nghe bản ghi của bạn"
     }
   }
 }

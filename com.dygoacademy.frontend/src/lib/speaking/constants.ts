@@ -101,17 +101,34 @@ export const TIP_KEYS = {
 // ── Sessions and offers ───────────────────────────────────────────────────
 
 /**
- * The recording flow (decision G3-b, 2026-10-04, "like PTE"): one tap on
- * the mic, a COUNTDOWN_SECONDS countdown with the sentence on screen, then
- * recording, which stops by itself AUTO_STOP_SILENCE_MS after the voice
- * ends. The follow-along highlight runs FOLLOW_ALONG_SLOWDOWN × slower than
- * the native clip, and the timer's target is the native length ×
- * RECORDING_TARGET_FACTOR (at most MAX_RECORDING_MS).
+ * The recording flow (handover v2 §3.2, 2026-10-04, "like PTE"): one tap
+ * on the mic, a COUNTDOWN_SECONDS countdown of COUNTDOWN_STEP_MS a step
+ * with the sentence on screen (tapping it skips to the beep), then a beep
+ * and a vibration; audio is kept from BEEP_GUARD_MS after the beep so the
+ * beep isn't in the clip. Recording stops by itself AUTO_STOP_SILENCE_MS
+ * after the voice ends, or after NOT_HEARD_MS with no voice at all ("We
+ * couldn't hear you"); MAX_RECORDING_MS (audio.ts) is only a safety cap.
+ * The follow-along highlight runs FOLLOW_ALONG_SLOWDOWN × slower than the
+ * native clip. SP2 shows the elapsed time only (no target).
  */
 export const COUNTDOWN_SECONDS = 3;
-export const AUTO_STOP_SILENCE_MS = 1500;
+export const COUNTDOWN_STEP_MS = 900;
+export const BEEP_GUARD_MS = 150;
+export const BEEP_HZ = 880;
+export const BEEP_MS = 120;
+export const VIBRATE_MS = 40;
+export const AUTO_STOP_SILENCE_MS = 2000;
+export const NOT_HEARD_MS = 8000;
 export const FOLLOW_ALONG_SLOWDOWN = 1.5;
-export const RECORDING_TARGET_FACTOR = 2;
+
+/**
+ * SP3 checking (handover v2 §3.2): Compare opens at once, the check runs
+ * in the background and fails after CHECK_TIMEOUT_MS ("Couldn't check
+ * this one"). Words below UNCLEAR_ACCURACY from a speech service are
+ * "unclear" (used from S20; the on-device check never reports it).
+ */
+export const CHECK_TIMEOUT_MS = 8000;
+export const UNCLEAR_ACCURACY = 60;
 
 /** Sentences in one Pond session. */
 export const POND_SESSION_SIZE = 5;

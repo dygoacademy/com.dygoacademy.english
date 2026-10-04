@@ -76,28 +76,34 @@ describe('LiveWaveform (SP2)', () => {
 });
 
 describe('CompareWaveform (SP3)', () => {
-  it('overlay: pale native + thin clay bars, amber band', () => {
+  it('overlay (322×92): pale native + thin clay bars, amber bands', () => {
     const { container } = render(
       <CompareWaveform
         native={ENV}
         user={ENV.slice(20)}
         view="overlay"
-        target={{ start: 0.39, end: 0.56 }}
+        bands={[
+          { start: 0.39, end: 0.56, target: true },
+          { start: 0.56, end: 0.62, target: false },
+        ]}
         label="cmp"
       />,
     );
+    expect(container.querySelector('svg')?.getAttribute('viewBox')).toBe('0 0 322 92');
     expect(container.querySelector('svg')?.getAttribute('data-view')).toBe('overlay');
     expect(container.querySelectorAll('rect[fill="var(--stage-sprout)"]')).toHaveLength(72);
     expect(
       container.querySelectorAll('rect[fill="var(--color-primary)"][width="1.6"]'),
     ).toHaveLength(72);
     expect(screen.getByTestId('wave-target').getAttribute('fill')).toBe('var(--color-gold-light)');
+    expect(screen.getByTestId('wave-target').getAttribute('opacity')).toBe('0.32');
+    expect(screen.getByTestId('wave-band').getAttribute('opacity')).toBe('0.18');
   });
 
-  it('side by side: native row on top, learner row 56 below', () => {
+  it('side by side: native row on top, learner row 50 below', () => {
     render(<CompareWaveform native={ENV} user={ENV} view="stacked" label="cmp" />);
     expect(screen.getByTestId('row-native').querySelectorAll('rect')).toHaveLength(72);
-    expect(screen.getByTestId('row-user').getAttribute('transform')).toBe('translate(0,56)');
+    expect(screen.getByTestId('row-user').getAttribute('transform')).toBe('translate(0,50)');
     expect(screen.queryByTestId('wave-target')).toBeNull();
   });
 });

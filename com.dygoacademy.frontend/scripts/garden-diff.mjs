@@ -89,6 +89,12 @@ const NAMES = [
   'H3s-plant-bloomed',
   'H3s-pain-flipped',
   'H3s-uses-travel',
+  // Phase 13 speaking (handover v2; SP1 / SP4 references exist, fixtures to come)
+  'SP2-speak-countdown',
+  'SP2-speak-recording',
+  'SP3-speak-checking',
+  'SP3-speak-done',
+  'SP3-speak-failed',
 ];
 
 /** Old short codes still accepted on the command line. */

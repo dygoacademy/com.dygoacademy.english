@@ -6,6 +6,7 @@ import { useTranslations } from 'next-intl';
 
 import { GARDEN_ROUTES } from '@/constants/garden';
 import { useCreateSpeakingAttempt } from '@/hooks/useCreateSpeakingAttempt';
+import { useCurrentUser } from '@/hooks/useCurrentUser';
 import { LIVE_LEVELS_PER_SECOND, useLiveLevels } from '@/hooks/useLiveLevels';
 import { useNativeEnvelope } from '@/hooks/useNativeEnvelope';
 import { usePlayer } from '@/hooks/usePlayer';
@@ -16,7 +17,6 @@ import {
   decodeForScoring,
   getAudioContext,
   micPermission,
-  MAX_RECORDING_MS,
   releaseStream,
   requestMic,
   resumeAudioContext,
@@ -26,17 +26,27 @@ import {
   type Recorder,
   type Recording,
 } from '@/lib/speaking/audio';
+import { beepAndVibrate } from '@/lib/speaking/beep';
 import {
+  forDisplay,
+  localCheck,
+  withTimeout,
+  type CheckStatus,
+  type ShownResult,
+} from '@/lib/speaking/check';
+import {
+  BEEP_GUARD_MS,
   COUNTDOWN_SECONDS,
+  COUNTDOWN_STEP_MS,
   MIC_EXPLAINED_KEY,
   MIN_VOICE_MS,
   POND_SESSION_SIZE,
 } from '@/lib/speaking/constants';
-import { envelopeScorer, type SpeakingResult } from '@/lib/speaking/envelopeScorer';
+import { compareEnvelopes, type SpeakingResult } from '@/lib/speaking/envelopeScorer';
 import {
   forAccent,
   initialSpeakState,
-  recordingTargetMs,
+  notHeard,
   sessionPattern,
   speakReducer,
   voiceEnded,
@@ -44,6 +54,8 @@ import {
   type SpeakState,
 } from '@/lib/speaking/session';
 import type { SpeakingAccent, SpeakingSessionItem } from '@/types';
+
+import { displayName } from './data';
 
 import type { CompareView } from '../speaking/CompareWaveform';
 import { noticeKeepsMic, SpeakNotice, type SpeakNoticeKind } from '../speaking/SpeakNotice';
@@ -60,9 +72,12 @@ const clipUrl = (item: SpeakingSessionItem, accent: SpeakingAccent) => forAccent
  * /speaking/session` (5 sentences, due → new → rest), taken once. The
  * five native clips of the chosen accent are prefetched into the phone's
  * media cache; each is decoded once for the waveforms and the scorer.
- * Listen (SP1) → Recording (SP2) → Compare (SP3: scored on the phone, one
- * `POST /speaking/attempts` per attempt) → next, or Done (SP4) after the
- * last. The recording never leaves the phone (D2); nothing changes SRS (D5).
+ * Listen (SP1) → Speaking (SP2: 3 · 2 · 1, beep, records until a pause)
+ * → Compare (SP3, handover v2: opens at once with the waveforms, the check
+ * runs in the background: checking → done | failed; one `POST
+ * /speaking/attempts` per checked attempt) → next, or Done (SP4) after the
+ * last. Until the server check (S20) the check runs on the phone
+ * (`localCheck`), so the recording never leaves it; nothing changes SRS (D5).
  */
 /** The T7 notice for a mic error. */
 function noticeForMicError(kind: MicErrorKind): SpeakNoticeKind {
@@ -128,17 +143,33 @@ export function SpeakFlow({
   const [support] = React.useState(() => speakingSupport());
   const [stream, setStream] = React.useState<MediaStream | null>(null);
   const [elapsedMs, setElapsedMs] = React.useState(0);
-  /** 3 · 2 · 1 before recording starts (G3-b); null once it's recording. */
+  /** 3 · 2 · 1 before the beep; null once it's past. */
   const [countdown, setCountdown] = React.useState<number | null>(null);
+  /** True once the recorder runs (BEEP_GUARD_MS after the beep). */
+  const [started, setStarted] = React.useState(false);
   const [recording, setRecording] = React.useState<Recording | null>(null);
   const [recUrl, setRecUrl] = React.useState<string | null>(null);
-  const [result, setResult] = React.useState<SpeakingResult | null>(null);
-  const [best, setBest] = React.useState<Record<number, SpeakingResult>>({});
+  /** SP3's drawing, made on the phone as soon as the recording stops. */
+  const [drawn, setDrawn] = React.useState<{
+    native: number[];
+    user: number[];
+    userDurationMs: number;
+    pcm: { samples: Float32Array; sampleRate: number };
+  } | null>(null);
+  const [checkStatus, setCheckStatus] = React.useState<CheckStatus>('checking');
+  /** Bumped by "Check again" to run the check once more. */
+  const [checkRun, setCheckRun] = React.useState(0);
+  const [result, setResult] = React.useState<ShownResult | null>(null);
+  const [best, setBest] = React.useState<Record<number, ShownResult>>({});
   const [view, setView] = React.useState<CompareView>('overlay');
   const saveAttempt = useCreateSpeakingAttempt();
   const recorder = React.useRef<Recorder | null>(null);
+  const beepGuard = React.useRef<ReturnType<typeof setTimeout> | null>(null);
   const streamRef = React.useRef<MediaStream | null>(null);
   streamRef.current = stream;
+  const user = useCurrentUser();
+  const name = displayName(user.data) ?? user.data?.email?.split('@')[0] ?? '';
+  const initial = (name.trim()[0] ?? t('playYou').trim()[0] ?? '').toUpperCase();
 
   const dispatch = React.useCallback(
     (action: SpeakAction) => setState((s) => speakReducer(s, action)),
@@ -148,7 +179,7 @@ export function SpeakFlow({
   const item = items[Math.min(state.index, items.length - 1)];
   const url = item ? clipUrl(item, accent) : null;
   const native = useNativeEnvelope(url);
-  const capturing = state?.phase === 'recording' && countdown === null;
+  const capturing = state?.phase === 'recording' && countdown === null && started;
   const live = useLiveLevels(stream, capturing);
 
   // Warm the phone's media cache with the session's clips (option 2).
@@ -156,19 +187,29 @@ export function SpeakFlow({
     void prefetchMedia(items.map((i) => clipUrl(i, accent)));
   }, [items, accent]);
 
-  // Countdown: the sentence on screen, mic already open, then record.
+  /**
+   * End of the countdown (or a tap on it): beep and buzz, then keep audio
+   * from BEEP_GUARD_MS later so the beep isn't in the clip (handover v2 §3.2).
+   */
+  const go = React.useCallback(() => {
+    setCountdown(null);
+    beepAndVibrate(getAudioContext());
+    beepGuard.current = setTimeout(() => {
+      beepGuard.current = null;
+      recorder.current?.start();
+      setStarted(true);
+    }, BEEP_GUARD_MS);
+  }, []);
+
+  // Countdown: the sentence on screen, mic already open, then the beep.
   React.useEffect(() => {
     if (countdown === null) return;
     const id = setTimeout(() => {
-      if (countdown > 1) {
-        setCountdown(countdown - 1);
-        return;
-      }
-      setCountdown(null);
-      recorder.current?.start();
-    }, 1000);
+      if (countdown > 1) setCountdown(countdown - 1);
+      else go();
+    }, COUNTDOWN_STEP_MS);
     return () => clearTimeout(id);
-  }, [countdown]);
+  }, [countdown, go]);
 
   // Recording clock.
   React.useEffect(() => {
@@ -179,11 +220,17 @@ export function SpeakFlow({
     return () => clearInterval(id);
   }, [capturing, stream]);
 
-  // Stop by itself 1.5 s after the voice ends (G3-b).
+  // Stop by itself 2 s after the voice ends; nothing heard after 8 s:
+  // "We couldn't hear you" (handover v2 §3.2).
   React.useEffect(() => {
-    if (capturing && voiceEnded(live, LIVE_LEVELS_PER_SECOND)) void stopRecording();
+    if (!capturing) return;
+    if (voiceEnded(live, LIVE_LEVELS_PER_SECOND)) void stopRecording();
+    else if (notHeard(live, LIVE_LEVELS_PER_SECOND, elapsedMs)) {
+      cancelRecording();
+      setNotice('quiet');
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [capturing, live]);
+  }, [capturing, live, elapsedMs]);
 
   // The learner's clip as a URL for "Play you"; revoked when replaced.
   React.useEffect(() => {
@@ -196,36 +243,70 @@ export function SpeakFlow({
     return () => URL.revokeObjectURL(u);
   }, [recording]);
 
-  // Compare: score on the phone, then save the numbers (one row per attempt).
+  // Compare opens at once: decode the clip and draw both waveforms.
   const clip = native.clip;
   React.useEffect(() => {
-    if (state?.phase !== 'compare' || !recording || result || !clip || !item) return;
+    if (state?.phase !== 'compare' || !recording || drawn || !clip) return;
+    let alive = true;
+    void (async () => {
+      try {
+        const pcm = await decodeForScoring(recording.blob, getAudioContext());
+        if (!alive) return;
+        const env = compareEnvelopes(
+          clip.pcm.samples,
+          clip.pcm.sampleRate,
+          pcm.samples,
+          pcm.sampleRate,
+        );
+        setDrawn({ ...env, pcm: { samples: pcm.samples, sampleRate: pcm.sampleRate } });
+      } catch {
+        // Couldn't decode the recording: back to SP1, as if nothing was heard.
+        if (!alive) return;
+        setNotice('quiet');
+        setRecording(null);
+        dispatch({ type: 'cancel' });
+      }
+    })();
+    return () => {
+      alive = false;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [state?.phase, recording, drawn, clip]);
+
+  // …then check it in the background: done, or failed after CHECK_TIMEOUT_MS.
+  React.useEffect(() => {
+    if (state?.phase !== 'compare' || !drawn || !clip || !item) return;
+    if (checkStatus !== 'checking') return;
     let alive = true;
     const { timings } = forAccent(item, accent);
     if (!timings) return;
     void (async () => {
       try {
-        const user = await decodeForScoring(recording.blob, getAudioContext());
-        const r = await envelopeScorer.score({
-          native: clip.pcm.samples,
-          nativeRate: clip.pcm.sampleRate,
-          timings,
-          user: user.samples,
-          userRate: user.sampleRate,
-          targetIndex: item.target_index,
-        });
+        const r = await withTimeout(
+          localCheck.check({
+            native: clip.pcm.samples,
+            nativeRate: clip.pcm.sampleRate,
+            timings,
+            user: drawn.pcm.samples,
+            userRate: drawn.pcm.sampleRate,
+            targetIndex: item.target_index,
+          }),
+        );
         if (!alive) return;
         const unusable = unusableAttempt(r);
         if (unusable) {
           setNotice(unusable);
           setRecording(null);
+          setDrawn(null);
           dispatch({ type: 'cancel' });
           return;
         }
-        setResult(r);
+        const shown = forDisplay(r);
+        setResult(shown);
+        setCheckStatus('done');
         dispatch({ type: 'scored', stage: r.stage, score: r.score });
         const index = state.index;
-        setBest((b) => (b[index] && b[index].score >= r.score ? b : { ...b, [index]: r }));
+        setBest((b) => (b[index] && b[index].score >= r.score ? b : { ...b, [index]: shown }));
         saveAttempt.mutate({
           item_id: item.id,
           accent,
@@ -235,21 +316,19 @@ export function SpeakFlow({
           user_duration_ms: r.userDurationMs,
         });
       } catch {
-        // Couldn't decode the recording: back to SP1, as if nothing was heard.
-        if (!alive) return;
-        setNotice('quiet');
-        dispatch({ type: 'cancel' });
+        if (alive) setCheckStatus('failed');
       }
     })();
     return () => {
       alive = false;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [state?.phase, recording, result, clip, item, accent]);
+  }, [state?.phase, drawn, clip, item, accent, checkStatus, checkRun]);
 
   // Leaving the page: stop recording and release the mic (iOS indicator).
   React.useEffect(
     () => () => {
+      if (beepGuard.current) clearTimeout(beepGuard.current);
       recorder.current?.cancel();
       releaseStream(streamRef.current);
       player.stop();
@@ -261,6 +340,7 @@ export function SpeakFlow({
   const endRecording = React.useCallback(
     (rec: Recording | null) => {
       recorder.current = null;
+      setStarted(false);
       setStream((s) => {
         releaseStream(s);
         return null;
@@ -300,6 +380,9 @@ export function SpeakFlow({
     setNotice(null);
     setResult(null);
     setRecording(null);
+    setDrawn(null);
+    setCheckStatus('checking');
+    setStarted(false);
     player.stop();
     try {
       await resumeAudioContext(); // inside the tap (iOS)
@@ -328,6 +411,9 @@ export function SpeakFlow({
 
   function cancelRecording() {
     setCountdown(null);
+    setStarted(false);
+    if (beepGuard.current) clearTimeout(beepGuard.current);
+    beepGuard.current = null;
     recorder.current?.cancel();
     endRecording(null);
     dispatch({ type: 'cancel' });
@@ -361,7 +447,7 @@ export function SpeakFlow({
         liveLevels={live}
         elapsedMs={elapsedMs}
         countdown={countdown}
-        targetMs={recordingTargetMs(timings?.duration ?? 0, MAX_RECORDING_MS)}
+        onSkipCountdown={go}
         onStop={() => void stopRecording()}
         onCancel={cancelRecording}
       />
@@ -450,13 +536,23 @@ export function SpeakFlow({
         onClose={onClose}
         timings={timings}
         ipa={ipa}
+        accent={accent}
+        envelopes={drawn ?? { native: native.clip?.envelope ?? [], user: [] }}
+        userDurationMs={drawn?.userDurationMs ?? recording?.durationMs ?? 0}
+        status={checkStatus}
         result={result}
+        initial={initial}
         view={view}
         onView={setView}
         playing={playingWhich}
         playKey={playKey}
         onPlayNative={() => playOne(url)}
         onPlayYou={() => playOne(recUrl)}
+        onCheckAgain={() => {
+          setCheckStatus('checking');
+          setCheckRun((n) => n + 1);
+        }}
+        onRecordAgain={() => void startRecording()}
         onTryAgain={() => void startRecording()}
         nextLabel={mode === 'single' ? t('sayThis.close') : undefined}
         onNext={() => {
@@ -464,6 +560,8 @@ export function SpeakFlow({
           if (mode === 'single') return onClose?.();
           setResult(null);
           setRecording(null);
+          setDrawn(null);
+          setCheckStatus('checking');
           dispatch({ type: 'next' });
         }}
       />
@@ -473,7 +571,7 @@ export function SpeakFlow({
   // SP4 Done: one plant per sentence spoken, its best stage and score.
   const spoken = items
     .map((it, index) => ({ it, index, r: best[index] }))
-    .filter((x): x is { it: SpeakingSessionItem; index: number; r: SpeakingResult } =>
+    .filter((x): x is { it: SpeakingSessionItem; index: number; r: ShownResult } =>
       Boolean(x.r),
     );
   const pattern = sessionPattern(Object.fromEntries(spoken.map((x) => [x.index, x.r])));

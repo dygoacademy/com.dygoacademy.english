@@ -67,6 +67,12 @@ export const REFERENCE_NAMES = [
   'H3s-plant-bloomed',
   'H3s-pain-flipped',
   'H3s-uses-travel',
+  // Phase 13 speaking (handover v2): sample data in speakReference.ts
+  'SP2-speak-countdown',
+  'SP2-speak-recording',
+  'SP3-speak-checking',
+  'SP3-speak-done',
+  'SP3-speak-failed',
 ] as const;
 export type ReferenceName = (typeof REFERENCE_NAMES)[number];
 

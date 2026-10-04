@@ -64,3 +64,45 @@ export function stressPattern(
 ): { syllable: string; stressed: boolean }[] {
   return ipaSegments(ipa).map(({ syllable, stressed }) => ({ syllable, stressed }));
 }
+
+/** IPA letters that count towards a syllable's length (marks and length signs don't). */
+const ipaLength = (syllable: string) => syllable.replace(/[ːˑ̀-ͯ]/g, '').length;
+
+/**
+ * The written word split like its IPA syllables, for the tips the canvas
+ * writes in spelling ("push on MIT", "Say MIT-i-gate"). There's no
+ * spelling dictionary, so each syllable gets a share of the letters in
+ * proportion to its IPA length (mɪt·ɪ·ɡeɪt → mit·i·gate). A phrase uses its
+ * first word, like `ipaSegments`. Empty when there's no IPA or word.
+ */
+export function spellingSegments(
+  word: string,
+  ipa: string | null | undefined,
+): { text: string; stressed: boolean }[] {
+  const written = (word.trim().split(/\s+/)[0] ?? '').replace(/[^\p{L}'-]/gu, '');
+  const segs = ipaSegments(ipa);
+  if (!written || segs.length === 0) return [];
+  if (segs.length === 1 || written.length < segs.length) {
+    return [{ text: written, stressed: true }];
+  }
+  const lengths = segs.map((s) => Math.max(1, ipaLength(s.syllable)));
+  const total = lengths.reduce((a, b) => a + b, 0);
+  const out: { text: string; stressed: boolean }[] = [];
+  let from = 0;
+  let sum = 0;
+  segs.forEach((s, i) => {
+    sum += lengths[i];
+    const left = segs.length - 1 - i; // syllables still to place, one letter each at least
+    let to = i === segs.length - 1 ? written.length : Math.round((sum / total) * written.length);
+    to = Math.min(written.length - left, Math.max(from + 1, to));
+    out.push({ text: written.slice(from, to), stressed: s.stressed });
+    from = to;
+  });
+  return out;
+}
+
+/** The stressed part of the written word in capitals ("MIT"), or null. */
+export function stressedSpelling(word: string, ipa: string | null | undefined): string | null {
+  const seg = spellingSegments(word, ipa).find((s) => s.stressed);
+  return seg ? seg.text.toUpperCase() : null;
+}

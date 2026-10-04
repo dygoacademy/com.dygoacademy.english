@@ -1137,16 +1137,12 @@
         "slow": "0.75×"
       },
       "listenHint": "Listen, then say the whole sentence",
-      "micButton": "Start speaking",
+      "micButton": "Start recording",
       "recording": "Recording",
-      "timer": "{elapsed} / {max}",
       "fillShape": "The pale green shape is the native speaker. Try to fill it.",
-      "stressTip": "{word} {ipa}: push on {syllable}",
+      "stressTip": "<b>{word}</b> {before}<b>{stressed}</b>{after}: push on <b>{syllable}</b>",
       "tapToStop": "Tap to stop",
       "getReady": "Get ready",
-      "countdownLabel": "Recording starts in {n}",
-      "readAfterCount": "Start reading when the count ends",
-      "autoStop": "It stops by itself when you finish",
       "stopButton": "Stop recording",
       "cancel": "Cancel",
       "yourSentence": "Your sentence",
@@ -1164,14 +1160,14 @@
       "waveLabel": {
         "listen": "Waveform of a native speaker saying the sentence",
         "live": "Your voice, live, over the native shape",
-        "overlay": "Your sentence in clay over the native speaker in green",
+        "overlay": "Your sentence in clay over the native speaker in green.",
         "stacked": "Native speaker on top, you below"
       },
       "mark": {
         "stressSoft": "{syllable} is too soft",
-        "missing": "not heard",
-        "rushed": "too fast",
-        "slow": "too slow"
+        "missing": "missing",
+        "heard": "heard “{word}”",
+        "unclear": "unclear"
       },
       "stage": {
         "seed": "Seed",
@@ -1184,7 +1180,8 @@
       "tip": {
         "stress": {
           "title": "In <b>{word}</b>, make <b>{syllable}</b> stronger",
-          "body": "You said its parts evenly. Say {pattern}. The rest of the sentence flowed well."
+          "body": "You said its {count, select, 2 {two parts} 3 {three parts} 4 {four parts} 5 {five parts} 6 {six parts} other {parts}} evenly. Say {before}<b>{stressed}</b>{after}. The rest of the sentence flowed well.",
+          "bodyShort": "You said its {count, select, 2 {two parts} 3 {three parts} 4 {four parts} 5 {five parts} 6 {six parts} other {parts}} evenly. Say {before}<b>{stressed}</b>{after}."
         },
         "missing": {
           "title": "Say every word",
@@ -1201,9 +1198,13 @@
         "flowed": {
           "title": "That flowed well",
           "body": "Your rhythm matched the native speaker. On to the next one."
+        },
+        "also": {
+          "both": "Also keep <b>{missing}</b>, and say <b>{unclear}</b>{ipa, select, none {} other { {ipa}}}.",
+          "missing": "Also keep <b>{missing}</b>.",
+          "unclear": "Also say <b>{unclear}</b>{ipa, select, none {} other { {ipa}}}."
         }
       },
-      "playNative": "Native",
       "playYou": "You",
       "tryAgain": "Try again",
       "nextWord": "Next word",
@@ -1211,7 +1212,7 @@
         "kicker": "Speaking done",
         "title": "{n, plural, one {You said # word out loud} other {You said # words out loud}}",
         "sub": "Your voice watered your garden",
-        "gardenLabel": "{n, plural, one {One plant for the word you spoke} other {# plants, one for each word you spoke}}",
+        "gardenLabel": "{n, plural, one {One plant for the word you spoke} =5 {Five plants, one for each word you spoke} other {# plants, one for each word you spoke}}",
         "pattern": "Pattern to watch:",
         "best": "{pct}%"
       },
@@ -1258,7 +1259,23 @@
       "sayThis": {
         "offer": "Say this one?",
         "close": "Back to the card"
-      }
+      },
+      "countdownHint": "Recording starts after the beep · tap to start now",
+      "countdownButton": "Get ready. Recording starts after the beep. Tap to start now",
+      "startingSoon": "Starting soon",
+      "pauseStops": "or just pause, it stops by itself",
+      "checking": "Checking your sentence…",
+      "privacy": "Your recording is checked, then deleted.",
+      "failed": {
+        "title": "Couldn't check this one",
+        "body": "The connection dropped. Your recording wasn't saved.",
+        "checkAgain": "Check again",
+        "recordAgain": "Record again"
+      },
+      "nativeAccent": "Native · {accent}",
+      "playingShort": "Playing…",
+      "playNativeLabel": "Play the native speaker",
+      "playYouLabel": "Play your recording"
     }
   }
 }

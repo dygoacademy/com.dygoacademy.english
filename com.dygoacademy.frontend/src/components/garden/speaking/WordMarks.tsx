@@ -1,18 +1,20 @@
-import type { SpeakingWordMark } from '@/types';
+import type { ShownMark } from '@/lib/speaking/check';
 
 export interface WordMarksProps {
   /** The sentence's tokens (as shown, punctuation kept). */
   words: readonly string[];
-  /** One mark per token, from the scorer. Missing marks show as fine. */
-  marks: readonly SpeakingWordMark[];
+  /** One mark per token, from the check. Missing marks show as fine. */
+  marks: readonly ShownMark[];
   /** Short reason under a word that needs work, e.g. "MIT is too soft" (from t()). */
-  reasonText: (mark: SpeakingWordMark, word: string) => string | null;
+  reasonText: (mark: ShownMark, word: string) => string | null;
 }
 
 /**
- * SP3 word marks (SpeakCompare.dc.html): every word of the sentence, green
- * underline when fine, amber box with a short reason when it needs work.
- * The sentence stays English whatever the UI language (lang="en").
+ * SP3 word marks (SpeakCompare.dc.html, handover v2): every word of the
+ * sentence. Fine: green underline. Needs work: amber box with a short
+ * reason ("MIT is too soft", "heard “affects”"). Missing: dashed box, the
+ * word struck through and faded, "missing" under it. The sentence stays
+ * English whatever the UI language (lang="en").
  */
 export function WordMarks({ words, marks, reasonText }: WordMarksProps) {
   const byIndex = new Map(marks.map((m) => [m.index, m]));
@@ -35,15 +37,28 @@ export function WordMarks({ words, marks, reasonText }: WordMarksProps) {
             </span>
           );
         }
+        const missing = mark.reason === 'missing';
         const reason = reasonText(mark, word);
         return (
           <span
             key={i}
             data-mark={mark.reason ?? 'needs-work'}
             className="inline-flex flex-col items-center rounded-lg bg-gold-soft px-1.5 leading-[1.25]"
-            style={{ border: '1.5px solid var(--stage-tree-fruit)' }}
+            style={{
+              border: missing
+                ? '1.5px dashed var(--color-locked-seed)'
+                : '1.5px solid var(--stage-tree-fruit)',
+            }}
           >
-            <span className="font-semibold text-gold-soft-text">{word}</span>
+            <span
+              className={
+                missing
+                  ? 'font-semibold text-speak-faded line-through'
+                  : 'font-semibold text-gold-soft-text'
+              }
+            >
+              {word}
+            </span>
             {reason && (
               <span className="font-sans text-[11px] font-bold text-gold-text">{reason}</span>
             )}

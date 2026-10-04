@@ -14,7 +14,8 @@ import {
   type CompareView,
 } from '@/components/garden/speaking';
 import { fetchAndDecode, getAudioContext, rmsEnvelope } from '@/lib/speaking/audio';
-import { SPEAKING_STAGES, type SpeakingTimings, type SpeakingWordMark } from '@/types';
+import type { ShownMark } from '@/lib/speaking/check';
+import { SPEAKING_STAGES, type SpeakingTimings } from '@/types';
 
 /**
  * Phase 13 speaking components on /garden/_gallery (T5, schedules S4–S5), with the
@@ -39,9 +40,10 @@ const COPY = {
   plants: 'SpeakingPlant · SP4 garden',
   reasons: {
     stress_soft: 'MIT is too soft',
-    missing: 'not heard',
-    rushed: 'too fast',
-    slow: 'too slow',
+    missing: 'missing',
+    unclear: 'unclear',
+    rushed: null,
+    slow: null,
   },
   stageTitle: { seed: 'Seed', sprout: 'Sprout', bloom: 'In bloom', fruit: 'Fruit' },
   match: (stage: string, pct: number) => `${stage} · ${pct}% match`,
@@ -49,9 +51,11 @@ const COPY = {
   scaleEnd: 'Fruit at 90%',
 } as const;
 
-const DEMO_MARKS: SpeakingWordMark[] = [
+/** The canvas example (SpeakCompare.dc.html, done). */
+const DEMO_MARKS: ShownMark[] = [
   { index: 5, ok: false, reason: 'stress_soft' },
-  { index: 9, ok: false, reason: 'rushed' },
+  { index: 6, ok: false, reason: 'missing' },
+  { index: 7, ok: false, reason: 'unclear', heard: 'affects', ipa: '/ɪˈfekts/' },
 ];
 const STAGE_PCT = { seed: 31, sprout: 58, bloom: 82, fruit: 94 } as const;
 
@@ -131,6 +135,10 @@ export function SpeakingGallery() {
   }
 
   const target = targetSpan(timings, TARGET);
+  const bands = DEMO_MARKS.flatMap((m) => {
+    const span = targetSpan(timings, m.index);
+    return span ? [{ ...span, target: m.index === TARGET }] : [];
+  });
   const playingMs = plays > 0 ? timings.duration * 1000 : null;
 
   return (
@@ -188,7 +196,7 @@ export function SpeakingGallery() {
           native={native}
           user={user}
           view={view}
-          target={target}
+          bands={bands}
           playingMs={playingMs}
           playKey={plays}
           label={COPY.compareLabel}
@@ -200,7 +208,9 @@ export function SpeakingGallery() {
         <WordMarks
           words={timings.words.map((w) => w.text)}
           marks={DEMO_MARKS}
-          reasonText={(m) => (m.reason ? COPY.reasons[m.reason] : null)}
+          reasonText={(m) =>
+            m.heard ? `heard “${m.heard}”` : m.reason ? COPY.reasons[m.reason] : null
+          }
         />
       </div>
 

@@ -4,7 +4,7 @@ import {
   followAlongIndex,
   formatClock,
   initialSpeakState,
-  recordingTargetMs,
+  notHeard,
   voiceEnded,
   sessionPattern,
   speakReducer,
@@ -78,15 +78,13 @@ describe('SP2 helpers', () => {
     expect(followAlongIndex(timings, 0.75)).toBe(1);
   });
 
-  it('formats the clock and the target time', () => {
+  it('formats the clock', () => {
     expect(formatClock(2400)).toBe('0:02');
     expect(formatClock(65_000)).toBe('1:05');
-    expect(recordingTargetMs(3.3, 15000)).toBe(7000);
-    expect(recordingTargetMs(9, 15000)).toBe(15000);
   });
 });
 
-describe('voiceEnded (auto-stop, G3-b)', () => {
+describe('voiceEnded (auto-stop, handover v2 §3.2)', () => {
   const PER_S = 20;
   const bars = (seconds: number, level: number) =>
     Array.from({ length: Math.round(seconds * PER_S) }, () => level);
@@ -101,13 +99,13 @@ describe('voiceEnded (auto-stop, G3-b)', () => {
     expect(voiceEnded([...bars(2, NOISE), ...bars(2, VOICE)], PER_S)).toBe(false);
   });
 
-  it('stops 1.5 s after the voice ends', () => {
+  it('stops 2 s after the voice ends', () => {
     const spoken = [...bars(1, NOISE), ...bars(2, VOICE)];
-    expect(voiceEnded([...spoken, ...bars(1.4, NOISE)], PER_S)).toBe(false);
-    expect(voiceEnded([...spoken, ...bars(1.5, NOISE)], PER_S)).toBe(true);
+    expect(voiceEnded([...spoken, ...bars(1.9, NOISE)], PER_S)).toBe(false);
+    expect(voiceEnded([...spoken, ...bars(2, NOISE)], PER_S)).toBe(true);
   });
 
-  it("a pause between words shorter than 1.5 s doesn't stop it", () => {
+  it("a pause between words shorter than 2 s doesn't stop it", () => {
     const levels = [
       ...bars(0.5, NOISE),
       ...bars(1, VOICE),
@@ -123,9 +121,25 @@ describe('voiceEnded (auto-stop, G3-b)', () => {
 
   it('works in a noisy room: noise sets the gate', () => {
     const noisy = 0.02; // above the −45 dBFS gate
-    const levels = [...bars(1, noisy), ...bars(2, VOICE), ...bars(1.5, noisy)];
+    const levels = [...bars(1, noisy), ...bars(2, VOICE), ...bars(2, noisy)];
     expect(voiceEnded(levels, PER_S)).toBe(true);
     expect(voiceEnded(bars(5, noisy), PER_S)).toBe(false);
+  });
+});
+
+describe('notHeard (no voice 8 s after the beep)', () => {
+  const PER_S = 20;
+  const bars = (seconds: number, level: number) =>
+    Array.from({ length: Math.round(seconds * PER_S) }, () => level);
+
+  it('only after 8 s, and only with no voice at all', () => {
+    expect(notHeard(bars(7.9, 0.004), PER_S, 7900)).toBe(false);
+    expect(notHeard(bars(8, 0.004), PER_S, 8000)).toBe(true);
+    expect(notHeard([...bars(6, 0.004), ...bars(2, 0.2)], PER_S, 8000)).toBe(false);
+  });
+
+  it('two tap clicks are still nothing heard', () => {
+    expect(notHeard([0.5, ...bars(4, 0.004), 0.5, ...bars(4, 0.004)], PER_S, 8100)).toBe(true);
   });
 });
 

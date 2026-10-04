@@ -264,6 +264,32 @@ function pacePoints(ratio: number): number {
 const clamp01 = (x: number) => Math.min(1, Math.max(0, x));
 
 /** The scorer as a pure function (synchronous; `envelopeScorer.score` wraps it). */
+/**
+ * The two envelopes SP3 draws, trimmed exactly like the scorer trims them
+ * (native: loud range; learner: voice range), plus the learner's voice
+ * length. Compare shows these at once, before the check comes back
+ * (handover v2 §1, SP3), so the waveform doesn't move when it does.
+ */
+export function compareEnvelopes(
+  native: Float32Array,
+  nativeRate: number,
+  user: Float32Array,
+  userRate: number,
+): { native: number[]; user: number[]; userDurationMs: number } {
+  const fps = ENVELOPE_FPS;
+  const env = (pcm: Float32Array, rate: number) =>
+    rmsEnvelope(resample(pcm, rate, SPEAKING_SAMPLE_RATE), SPEAKING_SAMPLE_RATE, fps);
+  const nativeRaw = env(native, nativeRate);
+  const userRaw = env(user, userRate);
+  const nRange = loudRange(nativeRaw) ?? { start: 0, end: nativeRaw.length };
+  const uRange = speechRange(userRaw);
+  return {
+    native: normalise(nativeRaw.slice(nRange.start, nRange.end)),
+    user: uRange ? normalise(userRaw.slice(uRange.start, uRange.end)) : [],
+    userDurationMs: uRange ? Math.round(((uRange.end - uRange.start) / fps) * 1000) : 0,
+  };
+}
+
 export function scoreSpeaking(input: ScorerInput): SpeakingResult {
   const fps = ENVELOPE_FPS;
   const words = input.timings.words;

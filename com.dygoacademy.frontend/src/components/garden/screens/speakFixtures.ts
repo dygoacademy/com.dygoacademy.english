@@ -1,4 +1,5 @@
 import fixture from '../../../../public/audio/speaking-fixture/fixture-mitigate.json';
+import type { ShownResult } from '@/lib/speaking/check';
 import type { SpeakingResult } from '@/lib/speaking/envelopeScorer';
 import type { SpeakingSession, SpeakingSessionItem, SpeakingTimings } from '@/types';
 
@@ -94,4 +95,26 @@ export const SPEAK_FIXTURE_RESULT: SpeakingResult = {
   envelopes: { native: wave(330), user: wave(340, 4) },
   tipKey: 'speak.tip.stress',
   tipParams: { word: 'mitigate', syllable: '0' },
+};
+
+/**
+ * SP3 "done" exactly as the canvas draws it (SpeakCompare.dc.html,
+ * handover v2): In bloom · 76%, "mitigate" stress too soft, "the"
+ * missing, "effects" heard as "affects". A speech-service result
+ * (`unclear` + `heard`), so the tip also names the other two words.
+ */
+export const SPEAK_FIXTURE_RESULT_CANVAS: ShownResult = {
+  ...SPEAK_FIXTURE_RESULT,
+  score: 76,
+  wordMarks: SPEAK_FIXTURE_ITEM.sentence
+    .split(' ')
+    .map((_, index) =>
+      index === 5
+        ? { index, ok: false, reason: 'stress_soft' as const }
+        : index === 6
+          ? { index, ok: false, reason: 'missing' as const }
+          : index === 7
+            ? { index, ok: false, reason: 'unclear' as const, heard: 'affects', ipa: '/ɪˈfekts/' }
+            : { index, ok: true, reason: null },
+    ),
 };

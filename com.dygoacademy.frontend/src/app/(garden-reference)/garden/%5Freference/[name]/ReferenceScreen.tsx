@@ -36,6 +36,7 @@ import { GARDEN_ROUTES } from '@/constants/garden';
 import type { AppLocale } from '@/i18n/config';
 
 import { GroupReferenceScreen } from './GroupReferenceScreen';
+import { SpeakReferenceScreen } from './SpeakReferenceScreen';
 
 /**
  * The screen for one reference page. A client component so every garden
@@ -203,6 +204,12 @@ function ReferenceScreenBody({ name, locale }: { name: ReferenceName; locale: Ap
           drillHref={GARDEN_ROUTES.reference('Q1-quiz-choose')}
         />
       );
+    case 'SP2-speak-countdown':
+    case 'SP2-speak-recording':
+    case 'SP3-speak-checking':
+    case 'SP3-speak-done':
+    case 'SP3-speak-failed':
+      return <SpeakReferenceScreen name={name} />;
     case 'GR1-shared-gardens':
     case 'GR2-group-garden':
     case 'GR3-tricky-patches':

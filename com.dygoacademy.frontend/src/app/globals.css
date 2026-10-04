@@ -149,6 +149,7 @@
     --color-locked-border: #cfc6b2;
     --color-locked-text: #4a4a40;
     --color-locked-seed: #c9a45a;
+    --color-speak-faded: #9c8f78; /* SP3 (Phase 13): sentence while checking, a missing word */
     --color-calendar-1: #c9dcc3; /* garden calendar, one mission */
     --color-avatar-flower-text: #5a2e14;
     --color-avatar-sprout-text: #1c3a22;

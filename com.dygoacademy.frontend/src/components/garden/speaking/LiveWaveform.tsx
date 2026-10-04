@@ -8,7 +8,10 @@ export interface LiveWaveformProps {
   nativeDuration: number;
   /** Live mic levels from useLiveLevels (LIVE_LEVELS_PER_SECOND a second). */
   liveLevels: readonly number[];
-  label: string;
+  /** Opacity of the pale native shape: .45 while recording, .3 behind the countdown (canvas). */
+  ghostOpacity?: number;
+  /** Accessible name; omit to hide the drawing (the countdown button names itself). */
+  label?: string;
 }
 
 const H = 170;
@@ -41,6 +44,7 @@ export function LiveWaveform({
   nativeLevels,
   nativeDuration,
   liveLevels,
+  ghostOpacity = 0.45,
   label,
 }: LiveWaveformProps) {
   const native = toBars(nativeLevels, WAVE_BARS);
@@ -49,8 +53,9 @@ export function LiveWaveform({
     <svg
       width="100%"
       viewBox={`0 0 ${WAVE_WIDTH} ${H}`}
-      role="img"
+      role={label ? 'img' : undefined}
       aria-label={label}
+      aria-hidden={label ? undefined : true}
       className="block h-auto"
     >
       <line x1={0} y1={H / 2} x2={WAVE_WIDTH} y2={H / 2} stroke={WAVE_COLORS.midline} />
@@ -59,7 +64,7 @@ export function LiveWaveform({
         return (
           <rect
             key={`n${i}`}
-            opacity={0.45}
+            opacity={ghostOpacity}
             x={barX(i, BAR_W)}
             y={(H - h) / 2}
             width={BAR_W}

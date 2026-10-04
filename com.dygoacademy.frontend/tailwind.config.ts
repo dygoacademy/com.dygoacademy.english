@@ -123,6 +123,7 @@ const config: Config = {
         placeholder: 'var(--color-placeholder)',
         scrim: 'var(--color-scrim)',
         'on-forest-line': 'var(--color-on-forest-line)',
+        'speak-faded': 'var(--color-speak-faded)',
         // §5.2 plant stages — one colour per SRS state.
         stage: {
           seed: 'var(--stage-seed)',

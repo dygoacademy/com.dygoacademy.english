@@ -1141,16 +1141,12 @@
         "slow": "0.75×"
       },
       "listenHint": "先听，再说出整句",
-      "micButton": "开始说",
+      "micButton": "开始录音",
       "recording": "正在录音",
-      "timer": "{elapsed} / {max}",
       "fillShape": "浅绿色的形状是母语者的声音。试着把它填满。",
-      "stressTip": "{word} {ipa}：重读 {syllable}",
+      "stressTip": "<b>{word}</b> {before}<b>{stressed}</b>{after}：重读 <b>{syllable}</b>",
       "tapToStop": "点按停止",
       "getReady": "准备",
-      "countdownLabel": "{n} 秒后开始录音",
-      "readAfterCount": "倒数结束后开始朗读",
-      "autoStop": "读完后会自动停止",
       "stopButton": "停止录音",
       "cancel": "取消",
       "yourSentence": "你的句子",
@@ -1168,14 +1164,14 @@
       "waveLabel": {
         "listen": "母语者说这个句子的波形",
         "live": "你的实时声音，叠在母语者的形状上",
-        "overlay": "你的句子（陶土色）叠在母语者（绿色）上",
+        "overlay": "你的句子（陶土色）叠在母语者（绿色）上。",
         "stacked": "上面是母语者，下面是你"
       },
       "mark": {
         "stressSoft": "{syllable} 太轻了",
-        "missing": "没听到",
-        "rushed": "太快",
-        "slow": "太慢"
+        "missing": "漏读",
+        "heard": "听成“{word}”",
+        "unclear": "不清楚"
       },
       "stage": {
         "seed": "种子",
@@ -1188,7 +1184,8 @@
       "tip": {
         "stress": {
           "title": "在 <b>{word}</b> 中，把 <b>{syllable}</b> 读得更重",
-          "body": "你把各个音节读得一样重。请说 {pattern}。句子的其余部分很流畅。"
+          "body": "你把它的 {count} 个音节读得一样重。请说 {before}<b>{stressed}</b>{after}。句子的其余部分很流畅。",
+          "bodyShort": "你把它的 {count} 个音节读得一样重。请说 {before}<b>{stressed}</b>{after}。"
         },
         "missing": {
           "title": "每个词都要说",
@@ -1205,9 +1202,13 @@
         "flowed": {
           "title": "很流畅",
           "body": "你的节奏和母语者一致。继续下一句吧。"
+        },
+        "also": {
+          "both": "另外别漏掉 <b>{missing}</b>，并把 <b>{unclear}</b> 读准{ipa, select, none {} other {（{ipa}）}}。",
+          "missing": "另外别漏掉 <b>{missing}</b>。",
+          "unclear": "另外把 <b>{unclear}</b> 读准{ipa, select, none {} other {（{ipa}）}}。"
         }
       },
-      "playNative": "母语者",
       "playYou": "你",
       "tryAgain": "再试一次",
       "nextWord": "下一个词",
@@ -1215,7 +1216,7 @@
         "kicker": "口语练习完成",
         "title": "{n, plural, other {你大声说了 # 个词}}",
         "sub": "你的声音浇灌了你的花园",
-        "gardenLabel": "{n, plural, other {# 株植物，每个说过的词一株}}",
+        "gardenLabel": "{n, plural, =5 {五株植物，每个说过的词一株} other {# 株植物，每个说过的词一株}}",
         "pattern": "需要注意：",
         "best": "{pct}%"
       },
@@ -1262,7 +1263,23 @@
       "sayThis": {
         "offer": "说说这个词？",
         "close": "返回卡片"
-      }
+      },
+      "countdownHint": "听到提示音后开始录音 · 点按立即开始",
+      "countdownButton": "准备。听到提示音后开始录音。点按立即开始",
+      "startingSoon": "即将开始",
+      "pauseStops": "或者停下来，录音会自动结束",
+      "checking": "正在检查你的句子…",
+      "privacy": "你的录音检查完就会删除。",
+      "failed": {
+        "title": "这句没能检查",
+        "body": "连接中断了。你的录音没有保存。",
+        "checkAgain": "再检查一次",
+        "recordAgain": "重新录音"
+      },
+      "nativeAccent": "母语者 · {accent}",
+      "playingShort": "正在播放…",
+      "playNativeLabel": "播放母语者的录音",
+      "playYouLabel": "播放你的录音"
     }
   }
 }
