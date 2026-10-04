@@ -456,3 +456,8 @@ Engineering-facing log of shipped fixes and changes, one dated entry per change.
 * **Files**: [`docs/design/garden/tools/render.js`](docs/design/garden/tools/render.js) (`withVietnameseBody`, Be Vietnam Pro 800), `docs/design/garden/reference/*-vi.png` + `.html` (47 boards), [`docs/design/garden/README.md`](docs/design/garden/README.md) (Languages)
 * **What**: every `vi` render job now draws body text `'Be Vietnam Pro', 'DM Sans', sans-serif` instead of the canvas's DM Sans-first stack; all 47 Vietnamese references re-exported (garden, groups, sign-in, quiz, home, speaking). Canvas sources unchanged; Fraunces / Baloo 2 headings unchanged.
 * **Why**: the app has drawn Vietnamese body text in Be Vietnam Pro only since Dylan's 2026-10-03 fix (previous entry), so every Vietnamese `garden:diff` board failed on the font alone. Dylan chose to keep the app fix and bring the references to it (2026-10-04).
+
+### Phase 13 status: `garden:diff` on UAT after the Vietnamese reference re-export
+* **Files**: [`docs/phase13-schedule.md`](docs/phase13-schedule.md) (Session log)
+* **What**: status only. Speaking: SP2 countdown and recording pass in English and Vietnamese; SP3 checking / done / failed fail in both (S18b). Most non-speaking garden boards fail in English as well as Vietnamese, so their drift isn't the font; flagged for a separate pass.
+* **Why**: step 4 of the font plan Dylan approved (2026-10-04).
