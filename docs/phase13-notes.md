@@ -227,6 +227,21 @@ This brings back v1.2's entry points (`phase 13 implementation plan.md` §14), r
 **Questions this raises (UI tasks, not built):**
 1. **Sound patch (12 drills)** was backlog B-3 in v2.0 (`final-t-d`, `final-s-plural`, `final-ed`, `final-k-g`, `th-t`, `th-s`, `sh-s`, `s-z`, `l-r`, `n-l`, `v-w`, `long-short-i`). Is it in Phase 13 now? It needs minimal-pair content and audio (the same Google pipeline can make it) and screens that aren't in the design files yet.
 2. **When does the Sound Garden card show?** Proposed default: when `item_count ≥ 5` (enough for one Pond session).
-3. **"≤ 3 cards":** at most 3 "Say this one?" offers per review session. Which cards: the first 3 that have a speaking item, or new/hard words first? Proposed default: the first 3 with an item.
+3. ~~Which 3 cards get "Say this one?"~~ **Dylan, 2026-10-04: "you can make it by yourself".** Decided, see T9-a below.
 4. **Does a Pond session count for anything** (a mission, the streak)? Default stays D5: visual only, no SRS change, no mission.
+
+### T9-a · Which flashcards offer "Say this one?" (decided by Claude, 2026-10-04)
+
+At most **3 cards per review session**, chosen once when the session's cards load, so the offers don't depend on how the learner rates:
+
+1. **Eligible:** the card's word has a speaking item, and the learner hasn't spoken that item today (no `speaking_attempts` row since local midnight), so the same word isn't offered again in a second session the same day.
+2. **Order of preference:** new words first (`is_new`): the first meeting is the best moment to learn the sound. Then forgotten words (`state = 'Relearning'` or `lapses > 0`). Then everything else. Ties go by the card's place in the queue. Take the first 3.
+3. **Where:** after the card is flipped (the learner has seen the meaning and heard the word), as a small optional button next to the audio button. It never blocks rating. Keyboard users can skip it.
+4. **Counts as used** once it's shown, whether the learner taps it or not, so a session never has more than 3 offers.
+5. **Not offered at all** when speaking isn't possible: no `MediaRecorder` / `getUserMedia`, or the microphone was denied earlier (the sheet's "Skip speaking" also hides the rest of the session's offers).
+6. The sheet runs SP1 → SP2 → SP3 for that one sentence and saves an attempt like The Pond. Closing it returns to the same card. It never changes the card's SRS grade (D5).
+
+Why these choices: new and forgotten words are where pronunciation help matters most; 3 per session keeps reviews quick (the backlog note for B-10 set the same cap); picking up front keeps it predictable and testable.
+
+**Implementation (T9):** the review screen needs to know which of its cards have an item and were spoken today. Add one batch endpoint, `GET /api/v1/speaking/words?topic_word_ids=…` → `[{ topic_word_id, item_id, spoken_today }]`, rather than changing the SRS due-card query. The choice itself is a pure function (`pickSpeakOffers(cards, lookup) → topic_word_ids`) with unit tests. The constant `SPEAK_OFFERS_PER_SESSION = 3` lives in `src/lib/speaking/constants.ts`.
 

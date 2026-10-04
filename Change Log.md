@@ -209,3 +209,10 @@ Engineering-facing log of shipped fixes and changes, one dated entry per change.
 * **Why**: one item per word lets any bed with the word use it, and both entry points work from the learner's words, not a bed.
 * **Verified**: `./database/apply-migrations.sh --test` passes (speaking assertions updated: no `topic_id`, unique per word). Merge tested in a throwaway database (two items for one word with an attempt each → one item, both attempts kept). The exact SQL the service sends, captured from it, run as Alex in a throwaway database: due → new → rest, topic filter, an unreadable word returns nothing. The script's word query and upsert (including a sentence change) run against the QA seed. Backend `tsc` clean, Jest 323/323, eslint clean; frontend `tsc` and `next lint` clean.
 * **Not done**: UI (T3+), applying the migrations to the real database, deploying. Open scope questions (Sound patch drills, when the card shows, which 3 cards) are in `docs/phase13-notes.md` §14.
+
+### Decided: which flashcards offer "Say this one?" (Phase 13, T9-a)
+* **Files**: [`docs/phase13-notes.md`](docs/phase13-notes.md)
+* **What**: up to 3 cards per review session, picked when the cards load: only words with a speaking item that the learner hasn't spoken today; new words first, then forgotten ones (`Relearning` or `lapses > 0`), then queue order. The button appears after the flip, never blocks rating, counts as used once shown, and is hidden when the browser can't record or the mic was denied. It never changes the SRS grade. T9 will add `GET /api/v1/speaking/words?topic_word_ids=…` and a pure `pickSpeakOffers` function, leaving the SRS due-card query alone.
+* **Why**: Dylan left question 3 (§14) to Claude; new and forgotten words are where pronunciation help matters most, and 3 per session keeps reviews quick.
+* **Behavior**: docs only, no code yet.
+
