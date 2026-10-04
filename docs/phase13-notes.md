@@ -209,6 +209,11 @@ Whichever is chosen, syllable boundaries for the target word come from the IPA (
 | S8-d | Attempt saving | Fire-and-forget `POST /speaking/attempts` after each score (Try again = another row); a failed save isn't retried or shown | Attempts are history for the beta numbers; the learner's flow shouldn't stop for them |
 | S8-e | SP4 mini waveforms | The native envelope of each sentence | The design draws them green (native colour) |
 | S8-f | `garden:diff` | **Not run.** It needs `next dev` (not allowed in this folder) or production reference pages, and reference PNGs for SP1–SP4 that don't exist (the design is `.dc.html`; making PNGs means rendering them in Chrome) | Dylan: decide whether to add SP1–SP4 references; otherwise compare on the iPhone at G3 |
+| S9-a | Too quiet / too short | Shown on SP1 above the mic (one tap to try again), not on SP2 as the plan says; the attempt isn't scored on screen or saved. Quiet = no voice or every word `missing`; short = under 0.8 s of voice (`MIN_VOICE_MS`) | SP2 is the live recording screen; an idle SP2 would need a second layout. A recording that can't be decoded counts as quiet |
+| S9-b | Mic explainer | Shown on the first mic tap when the browser doesn't already report the mic as granted and it wasn't accepted before (`localStorage` `dygo:speak-mic-explained`); Allow asks for the mic inside that tap | Safari has no permission query on older iOS, so "unknown" also shows it once |
+| S9-c | Mic errors | `denied` and `no-device` / `failed` show the denied card (how to turn it on, Try again, Skip speaking → Missions); `unsupported` the no-support card | One card for "the mic isn't working" keeps the copy short |
+| S9-d | Audio failed | When the native clip can't be loaded or decoded: Retry (fetch again) or Next word (skip this sentence; SP4 lists only spoken ones); the mic is hidden because the attempt couldn't be scored | — |
+| S9-e | Dev toggle | `/sounds?state=mic\|denied\|quiet\|short\|unsupported\|audioFailed` opens SP1 showing that state (works on UAT, changes nothing else) | Screenshots for the notes: take them on the iPhone after the next deploy (none taken here: no browser on a dev server) |
 
 ## 11. Questions for Dylan
 

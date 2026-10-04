@@ -1,7 +1,7 @@
 'use client';
 
 import * as React from 'react';
-import { useTranslations } from 'next-intl';
+import { useRouter } from 'next/navigation';
 
 import { GARDEN_ROUTES } from '@/constants/garden';
 import { useCreateSpeakingAttempt } from '@/hooks/useCreateSpeakingAttempt';
@@ -14,16 +14,18 @@ import {
   createRecorder,
   decodeForScoring,
   getAudioContext,
+  micPermission,
   MAX_RECORDING_MS,
   releaseStream,
   requestMic,
   resumeAudioContext,
   speakingSupport,
   type MicErrorKind,
+  type MicPermission,
   type Recorder,
   type Recording,
 } from '@/lib/speaking/audio';
-import { POND_SESSION_SIZE } from '@/lib/speaking/constants';
+import { MIC_EXPLAINED_KEY, MIN_VOICE_MS, POND_SESSION_SIZE } from '@/lib/speaking/constants';
 import { envelopeScorer, type SpeakingResult } from '@/lib/speaking/envelopeScorer';
 import {
   forAccent,
@@ -37,6 +39,7 @@ import {
 import type { SpeakingAccent, SpeakingSessionItem } from '@/types';
 
 import type { CompareView } from '../speaking/CompareWaveform';
+import { noticeKeepsMic, SpeakNotice, type SpeakNoticeKind } from '../speaking/SpeakNotice';
 import { SpeakCompareScreen } from '../screens/SpeakCompareScreen';
 import { SpeakDoneScreen } from '../screens/SpeakDoneScreen';
 import { SpeakListenScreen } from '../screens/SpeakListenScreen';
@@ -54,8 +57,38 @@ const clipUrl = (item: SpeakingSessionItem, accent: SpeakingAccent) => forAccent
  * `POST /speaking/attempts` per attempt) → next, or Done (SP4) after the
  * last. The recording never leaves the phone (D2); nothing changes SRS (D5).
  */
-export function SpeakLive({ topicId }: { topicId?: string }) {
-  const t = useTranslations('screens.speak');
+/** The T7 notice for a mic error. */
+function noticeForMicError(kind: MicErrorKind): SpeakNoticeKind {
+  return kind === 'unsupported' ? 'unsupported' : 'denied';
+}
+
+function micExplained(): boolean {
+  try {
+    return window.localStorage.getItem(MIC_EXPLAINED_KEY) === '1';
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Words with no voice at all, or less than MIN_VOICE_MS of it, aren't
+ * scored or saved: SP1 says "We couldn't hear you" / "Say the whole
+ * sentence" instead (T7, decision S9-a).
+ */
+export function unusableAttempt(r: SpeakingResult): 'quiet' | 'short' | null {
+  if (r.userDurationMs === 0 || r.wordMarks.every((m) => m.reason === 'missing')) return 'quiet';
+  if (r.userDurationMs < MIN_VOICE_MS) return 'short';
+  return null;
+}
+
+export function SpeakLive({
+  topicId,
+  forceNotice,
+}: {
+  topicId?: string;
+  forceNotice?: SpeakNoticeKind;
+}) {
+  const router = useRouter();
   const session = useSpeakingSession(topicId);
   const player = usePlayer();
 
@@ -63,7 +96,9 @@ export function SpeakLive({ topicId }: { topicId?: string }) {
   const [state, setState] = React.useState<SpeakState | null>(null);
   const [accent, setAccent] = React.useState<SpeakingAccent>('US');
   const [playKey, setPlayKey] = React.useState(0);
-  const [micError, setMicError] = React.useState<MicErrorKind | null>(null);
+  const [notice, setNotice] = React.useState<SpeakNoticeKind | null>(forceNotice ?? null);
+  const [permission, setPermission] = React.useState<MicPermission>('unknown');
+  const [support] = React.useState(() => speakingSupport());
   const [stream, setStream] = React.useState<MediaStream | null>(null);
   const [elapsedMs, setElapsedMs] = React.useState(0);
   const [recording, setRecording] = React.useState<Recording | null>(null);
@@ -136,6 +171,13 @@ export function SpeakLive({ topicId }: { topicId?: string }) {
           targetIndex: item.target_index,
         });
         if (!alive) return;
+        const unusable = unusableAttempt(r);
+        if (unusable) {
+          setNotice(unusable);
+          setRecording(null);
+          dispatch({ type: 'cancel' });
+          return;
+        }
         setResult(r);
         dispatch({ type: 'scored', stage: r.stage, score: r.score });
         const index = state.index;
@@ -149,8 +191,10 @@ export function SpeakLive({ topicId }: { topicId?: string }) {
           user_duration_ms: r.userDurationMs,
         });
       } catch {
-        // Couldn't decode the recording: back to SP1 to try again (T7 adds a message).
-        if (alive) dispatch({ type: 'cancel' });
+        // Couldn't decode the recording: back to SP1, as if nothing was heard.
+        if (!alive) return;
+        setNotice('quiet');
+        dispatch({ type: 'cancel' });
       }
     })();
     return () => {
@@ -185,8 +229,31 @@ export function SpeakLive({ topicId }: { topicId?: string }) {
     [dispatch],
   );
 
+  // Ask the browser (without prompting) whether the mic is already allowed.
+  React.useEffect(() => {
+    void micPermission().then(setPermission);
+  }, []);
+
+  /** Mic tap: the explainer first if the mic was never allowed or explained. */
+  function onMic() {
+    if (permission !== 'granted' && !micExplained()) {
+      setNotice('mic');
+      return;
+    }
+    void startRecording();
+  }
+
+  function allowMic() {
+    try {
+      window.localStorage.setItem(MIC_EXPLAINED_KEY, '1');
+    } catch {
+      // private mode: the explainer just shows again next time
+    }
+    void startRecording(); // still inside the Allow tap (iOS)
+  }
+
   async function startRecording() {
-    setMicError(null);
+    setNotice(null);
     setResult(null);
     setRecording(null);
     player.stop();
@@ -199,7 +266,7 @@ export function SpeakLive({ topicId }: { topicId?: string }) {
       r.start();
       dispatch({ type: 'record' });
     } catch (err) {
-      setMicError((err as { kind?: MicErrorKind }).kind ?? 'failed');
+      setNotice(noticeForMicError((err as { kind?: MicErrorKind }).kind ?? 'failed'));
     }
   }
 
@@ -232,7 +299,7 @@ export function SpeakLive({ topicId }: { topicId?: string }) {
 
   if (!items || !state || !item) {
     if (session.isError) return <LiveError onRetry={() => void session.refetch()} />;
-    if (items && items.length === 0) return <LiveError message={t('soundGarden.body')} />;
+    if (items && items.length === 0) return <LiveError />;
     return <LiveLoading />;
   }
 
@@ -260,16 +327,33 @@ export function SpeakLive({ topicId }: { topicId?: string }) {
   }
 
   if (state.phase === 'listen') {
-    const notice = micError ? (
-      <span role="alert" className="text-center text-[14px] font-semibold text-primary-text">
-        {t(
-          micError === 'denied'
-            ? 'denied.title'
-            : micError === 'unsupported'
-              ? 'unsupported.title'
-              : 'audioFailed.title',
-        )}
-      </span>
+    const shown: SpeakNoticeKind | null = !support.recorder
+      ? 'unsupported'
+      : native.error
+        ? 'audioFailed'
+        : notice;
+    const card = shown ? (
+      <SpeakNotice
+        kind={shown}
+        onPrimary={
+          shown === 'mic'
+            ? allowMic
+            : shown === 'denied'
+              ? () => void startRecording()
+              : shown === 'audioFailed'
+                ? native.retry
+                : undefined
+        }
+        onSecondary={
+          shown === 'mic'
+            ? () => setNotice(null)
+            : shown === 'denied'
+              ? () => router.push(closeHref)
+              : shown === 'audioFailed'
+                ? () => dispatch({ type: 'next' })
+                : undefined
+        }
+      />
     ) : undefined;
     return (
       <SpeakListenScreen
@@ -298,9 +382,9 @@ export function SpeakLive({ topicId }: { topicId?: string }) {
         onPlay={play}
         nativeLevels={levels}
         playKey={playKey}
-        onMic={() => void startRecording()}
-        micAvailable={speakingSupport().recorder !== null}
-        notice={notice}
+        onMic={onMic}
+        micAvailable={!shown || noticeKeepsMic(shown)}
+        notice={card}
       />
     );
   }

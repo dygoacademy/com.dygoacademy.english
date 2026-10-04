@@ -49,7 +49,7 @@ Size: **S** ≈ half a usage window, **M** ≈ one full window. Dates are propos
 | ✅ **S7** | Tue 10-13 | T6a · Pond flow, SP1 + SP2 | `/sounds` route (`routes.ts`, `GARDEN_ROUTES`), `live/SpeakLive.tsx` (state machine, `GET /speaking/session`, prefetch 5 clips), `SpeakListenScreen`, `SpeakRecordingScreen` + fixtures | SP1 → SP2 works with fixture data; tests | M | S1–S6 |
 | ✅ **S8** | Wed 10-14 | T6b · SP3 + SP4 | `SpeakCompareScreen` (scorer, marks, Try again / Next, `POST /speaking/attempts`), `SpeakDoneScreen`; fixtures; `garden:diff` en + vi; **Deploy** | Full Pond session on UAT | M | S7 |
 | **G3** | Wed–Thu | **Dylan: try the Pond** | Full 5-sentence session on iPhone, own voice + a Vietnamese speaker; "were the marks fair?" | Feedback noted | — | Dylan |
-| **S9** | Thu 10-15 | T7 · Extra states | Mic explainer, denied, too quiet, too short, no support, audio failed; dev toggle; component tests | Each state reachable + tested | M | S8 (G3 feedback may adjust thresholds) |
+| ✅ **S9** | Thu 10-15 | T7 · Extra states | Mic explainer, denied, too quiet, too short, no support, audio failed; dev toggle; component tests | Each state reachable + tested | M | S8 (G3 feedback may adjust thresholds) |
 | **S10** | Fri 10-16 | T9a · Sound Garden card | Missions tab card → `/sounds` (shown at ≥ 5 items, Q2 default) | Card on UAT | S | S8 |
 | **S11** | Mon 10-19 | T9b · "Say this one?" | Backend `GET /speaking/words?topic_word_ids=…` (+ spec), `pickSpeakOffers` (T9-a rule) + tests, sheet on the review card running SP1–SP3; **Deploy** | ≤ 3 offers per review on UAT | M | S10 |
 | **S12** | Tue 10-20 | T10 · QA | Playwright spec for `/sounds` (mic stubbed), QA matrix in the notes, fixes for anything small; **Deploy** | Checklist done, open issues listed | M | S11 |
@@ -75,3 +75,4 @@ One line per session: date · session · result · next.
 - 2026-10-04 · S6 · done: 90 `screens.speak` keys × 3 locales, only the new keys staged (others' edits untouched) · next: S7
 - 2026-10-04 · S7 · done: `/sounds` The Pond, SpeakLive state machine, SP1 + SP2 screens, fixtures, 17 tests · next: S8 (SP3, SP4, attempts, reference pages, deploy)
 - 2026-10-04 · S8 · done (e03aac9): SP3 Compare + SP4 Done, attempts saved, SpeakLive flow test; `garden:diff` not run (no SP reference PNGs, needs `next dev`, S8-f); **deployed 14:07**, www + API 200 · next: S9 (G3 iPhone check by Dylan doesn't block)
+- 2026-10-04 · S9 · done: SpeakNotice + all six states in SpeakLive, `/sounds?state=` dev toggle, 11 tests · next: S10

@@ -91,5 +91,23 @@ export const TIP_KEYS = {
 export const POND_SESSION_SIZE = 5;
 /** The Sound Garden card shows from this many items (Q2 default). */
 export const SOUND_GARDEN_MIN_ITEMS = 5;
+// ── Extra states (T7, plan §2) ────────────────────────────────────────────
+
+/** Under this much voice the attempt is "too short" (plan §2: < 0.8 s). */
+export const MIN_VOICE_MS = 800;
+/** The T7 states shown on SP1 (also the `/sounds?state=` dev toggle). */
+export const SPEAK_NOTICES = [
+  'mic',
+  'denied',
+  'quiet',
+  'short',
+  'unsupported',
+  'audioFailed',
+] as const;
+export type SpeakNoticeKind = (typeof SPEAK_NOTICES)[number];
+
+/** localStorage flag: the mic explainer was shown and accepted once. */
+export const MIC_EXPLAINED_KEY = 'dygo:speak-mic-explained';
+
 /** "Say this one?" offers per review session (T9-a). */
 export const SPEAK_OFFERS_PER_SESSION = 3;

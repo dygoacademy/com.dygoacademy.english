@@ -7,3 +7,4 @@ export { SpeakingPlant } from './SpeakingPlant';
 export { StageScore, type StageScoreProps } from './StageScore';
 export { WordMarks, type WordMarksProps } from './WordMarks';
 export { MiniWave } from './MiniWave';
+export { noticeKeepsMic, SpeakNotice, type SpeakNoticeKind } from './SpeakNotice';
