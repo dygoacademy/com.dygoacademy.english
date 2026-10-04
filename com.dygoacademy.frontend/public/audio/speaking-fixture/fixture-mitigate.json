@@ -1,0 +1,185 @@
+{
+  "id": "fixture-mitigate",
+  "word": "mitigate",
+  "sentence": "Planting more trees can help mitigate the effects of climate change.",
+  "target_index": 5,
+  "ipa_uk": "/ˈmɪt.ɪ.ɡeɪt/",
+  "ipa_us": "/ˈmɪt.ɪ.ɡeɪt/",
+  "note": "Phase 13 dev fixture: macOS say, one word at a time (robotic). Not for learners.",
+  "audio_uk_file": "fixture-mitigate-uk.wav",
+  "timings_uk": {
+    "duration": 6.17,
+    "words": [
+      {
+        "text": "Planting",
+        "start": 0.1,
+        "end": 0.742,
+        "syllables": []
+      },
+      {
+        "text": "more",
+        "start": 0.802,
+        "end": 1.239,
+        "syllables": []
+      },
+      {
+        "text": "trees",
+        "start": 1.299,
+        "end": 1.814,
+        "syllables": []
+      },
+      {
+        "text": "can",
+        "start": 1.874,
+        "end": 2.293,
+        "syllables": []
+      },
+      {
+        "text": "help",
+        "start": 2.353,
+        "end": 2.658,
+        "syllables": []
+      },
+      {
+        "text": "mitigate",
+        "start": 2.718,
+        "end": 3.307,
+        "syllables": [
+          {
+            "start": 2.718,
+            "end": 2.914,
+            "stressed": true
+          },
+          {
+            "start": 2.914,
+            "end": 3.111,
+            "stressed": false
+          },
+          {
+            "start": 3.111,
+            "end": 3.307,
+            "stressed": false
+          }
+        ]
+      },
+      {
+        "text": "the",
+        "start": 3.367,
+        "end": 3.583,
+        "syllables": []
+      },
+      {
+        "text": "effects",
+        "start": 3.643,
+        "end": 4.339,
+        "syllables": []
+      },
+      {
+        "text": "of",
+        "start": 4.399,
+        "end": 4.586,
+        "syllables": []
+      },
+      {
+        "text": "climate",
+        "start": 4.646,
+        "end": 5.171,
+        "syllables": []
+      },
+      {
+        "text": "change.",
+        "start": 5.231,
+        "end": 5.96,
+        "syllables": []
+      }
+    ]
+  },
+  "audio_us_file": "fixture-mitigate-us.wav",
+  "timings_us": {
+    "duration": 5.565,
+    "words": [
+      {
+        "text": "Planting",
+        "start": 0.1,
+        "end": 0.63,
+        "syllables": []
+      },
+      {
+        "text": "more",
+        "start": 0.69,
+        "end": 1.038,
+        "syllables": []
+      },
+      {
+        "text": "trees",
+        "start": 1.098,
+        "end": 1.541,
+        "syllables": []
+      },
+      {
+        "text": "can",
+        "start": 1.601,
+        "end": 1.993,
+        "syllables": []
+      },
+      {
+        "text": "help",
+        "start": 2.053,
+        "end": 2.357,
+        "syllables": []
+      },
+      {
+        "text": "mitigate",
+        "start": 2.417,
+        "end": 2.96,
+        "syllables": [
+          {
+            "start": 2.417,
+            "end": 2.598,
+            "stressed": true
+          },
+          {
+            "start": 2.598,
+            "end": 2.779,
+            "stressed": false
+          },
+          {
+            "start": 2.779,
+            "end": 2.96,
+            "stressed": false
+          }
+        ]
+      },
+      {
+        "text": "the",
+        "start": 3.02,
+        "end": 3.367,
+        "syllables": []
+      },
+      {
+        "text": "effects",
+        "start": 3.427,
+        "end": 4.059,
+        "syllables": []
+      },
+      {
+        "text": "of",
+        "start": 4.119,
+        "end": 4.322,
+        "syllables": []
+      },
+      {
+        "text": "climate",
+        "start": 4.382,
+        "end": 4.814,
+        "syllables": []
+      },
+      {
+        "text": "change.",
+        "start": 4.874,
+        "end": 5.355,
+        "syllables": []
+      }
+    ]
+  }
+}

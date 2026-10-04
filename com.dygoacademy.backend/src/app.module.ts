@@ -17,6 +17,7 @@ import { MissionsModule } from './modules/missions/missions.module';
 import { NotificationsModule } from './modules/notifications/notifications.module';
 import { ProfilesModule } from './modules/profiles/profiles.module';
 import { QuizModule } from './modules/quiz/quiz.module';
+import { SpeakingModule } from './modules/speaking/speaking.module';
 import { SrsModule } from './modules/srs/srs.module';
 import { TopicsModule } from './modules/topics/topics.module';
 import { WordsModule } from './modules/words/words.module';
@@ -50,6 +51,7 @@ import { NotificationProcessor } from './workers/notification.processor';
     AnalyticsModule,
     ProfilesModule,
     MissionsModule,
+    SpeakingModule,
   ],
   providers: [
     EnrichmentProcessor,

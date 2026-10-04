@@ -1,6 +1,6 @@
 # Phase 13 (Adult Speaking): working notes
 
-Started 2026-10-04 by an unattended run (T0 + T1 only). Source of truth: the handover `phase/phase 13/PHASE-13-SPEAKING-PLAN.md`; companion: `phase 13 implementation plan.md` v2.0. Where the repo differs from the handover, the repo's patterns win (CLAUDE.md master rules) and the difference is listed here.
+Started 2026-10-04 by an unattended run (T0 + T1); T2 the same day after Dylan picked D1 = B. Source of truth: the handover `phase/phase 13/PHASE-13-SPEAKING-PLAN.md`; companion: `phase 13 implementation plan.md` v2.0. Where the repo differs from the handover, the repo's patterns win (CLAUDE.md master rules) and the difference is listed here.
 
 Nothing in this file has been deployed. Nothing on UAT, pm2 or the running servers was touched or probed.
 
@@ -73,7 +73,7 @@ Nothing in this file has been deployed. Nothing on UAT, pm2 or the running serve
 
 ## 6. Decisions D1–D7: what the code tells us
 
-**D1 · Native audio + word timings (open, for Dylan).** Gemini TTS returns only PCM, no word boundaries. Generation is an offline script, so only the *files* need to reach China, not the provider. Options:
+**D1 · Native audio + word timings: decided 2026-10-04 by Dylan = B, Google Cloud TTS** (pricing and effort compared in §12). Gemini TTS returns only PCM, no word boundaries. Generation is an offline script, so only the *files* need to reach China, not the provider. Options:
 
 | Option | Timings | UK + US voices | Cost / effort | China note |
 | --- | --- | --- | --- | --- |
@@ -102,7 +102,7 @@ Whichever is chosen, syllable boundaries for the target word come from the IPA (
 | Task | Files |
 | --- | --- |
 | T1 (done) | `database/migrations/20261004_speaking.sql`, `database/tests/rls_speaking_test.sql`, `database/apply-migrations.sh`, `dygo_academy_database_dictionary.md` |
-| T2 | `com.dygoacademy.backend/scripts/speaking-generate.js` (backend scripts are plain `.js`, like `audio-backfill.js`), `src/modules/speaking/{speaking.module,speaking.controller,speaking.service}.ts` + specs, `src/storage/storage.service.ts` (a key builder for sentence clips), `app.module.ts`, `dygo_academy_api_surface.md`; frontend `src/types/speaking.ts`, `src/lib/api-client.ts` |
+| T2 (done, see §13) | `com.dygoacademy.backend/scripts/speaking-generate.ts`, `src/modules/speaking/**`, `src/storage/storage.service.ts`, `src/app.module.ts`, `package.json` (scripts), `dygo_academy_api_surface.md`; frontend `src/types/speaking.ts`, `src/types/index.ts`, `public/audio/speaking-fixture/` |
 | T3 | `src/lib/speaking/audio.ts`, `src/hooks/useLiveLevels.ts`, `src/hooks/usePlayer.ts` (or under `lib/speaking/`), tests, a dev page under the garden dev prefixes |
 | T4 | `src/lib/speaking/envelopeScorer.ts`, `src/lib/speaking/constants.ts`, tests |
 | T5 | `src/components/garden/speaking/{Waveform,LiveWaveform,CompareWaveform,WordMarks,StageScore}.tsx`, gallery page `src/app/(garden)/garden/_gallery/page.tsx` |
@@ -116,7 +116,8 @@ Whichever is chosen, syllable boundaries for the target word come from the IPA (
 
 | Risk | Note |
 | --- | --- |
-| D1 undecided | T2 and everything that needs real timings waits; T3–T5 can use a fixture item |
+| No Google key yet | Real clips wait for `GOOGLE_TTS_API_KEY`; T3–T5 use the fixture (`public/audio/speaking-fixture/`) |
+| Google gives word **starts** only | Word ends = next start pulled back over silence on the PCM; fine for v1 envelope scoring, worth eyeballing on the first real clips |
 | Audio from China | `r2.dev` URL is the weakest link (§3); the existing word audio has the same problem today |
 | R2 CORS (D7) | Without it the native waveform can't be drawn; playback alone still works |
 | Items are per topic, topics are per class | A learner's own "Environment" bed won't have items unless T2 seeds that exact topic (see Q2) |
@@ -143,19 +144,66 @@ Whichever is chosen, syllable boundaries for the target word come from the IPA (
 | T1-c | Deleting a word | `on delete restrict`, like `topic_words.lexicon_id` | Lexicon rows are never deleted in practice |
 | T1-d | Audio columns | Store R2 object **keys**, not URLs | Host can change (§3) without rewriting rows |
 | T1-e | Accents | Each accent optional, but path and timings come together, and at least one accent per item | D1 might give one voice first. Make both `not null` later if wanted |
-| T1-f | Timings check | Object with numeric `duration` and array `words`; full schema checked with zod in T2 | Keeps the DB check simple |
+| T1-f | Timings check | Object with numeric `duration` and array `words`; full schema checked in T2 (`validateTimings`, see T2-c) | Keeps the DB check simple |
 | T1-g | Attempts are history | No update / delete for learners | Same as retention tables; Try again = new row |
 | T1-h | `user_id` | References `profiles(id)`, default `auth.uid()` | Repo pattern |
 | T1-i | Accent values | `'UK'` / `'US'` (handover), not `en-GB` / `en-US` | API maps from `profiles.english_variety` |
 | T1-j | Teacher / group views of attempts | None (owner only) | Handover: admin/group views out of scope |
 | T1-k | `score`, `target_index` | `smallint` | Ranges are tiny |
+| T2-a | Google voices | `en-GB-Neural2-C`, `en-US-Neural2-F` (both female, like today's Kore), overridable with `SPEAKING_VOICE_UK` / `SPEAKING_VOICE_US` | Neural2 supports SSML `<mark>`; Chirp 3 HD doesn't take SSML, Studio is 10× the price. Listen to both and swap if you prefer others |
+| T2-b | Clip format | 24 kHz 16-bit mono WAV (`LINEAR16`) | No MP3 encoder delay shifting the timings; same `.wav` as word audio; ~140 KB per 3 s clip |
+| T2-c | Timings validation | Hand-written `validateTimings` instead of zod | The backend has no zod; adding a dependency for one shape wasn't worth it. Easy to swap |
+| T2-d | Script language | TypeScript run with `ts-node --transpile-only` (other scripts are plain `.js`) | It reuses `speaking-timings.ts` and `StorageService.speakingAudioKeyFor` from `src/` instead of copying them; no `nest build` needed (`dist/` is what pm2 runs) |
+| T2-e | Reuse after a DB reset | Timings JSON stored next to each clip in R2 (`.json`) | Rebuilding `speaking_items` costs no TTS |
+| T2-f | API auth | Google API key (REST), not a service account | Simplest for an offline script; restrict the key to the Text-to-Speech API |
+| T2-g | Sentence | The word's first `example_sentences` entry | Handover §2.1 |
+| T2-h | Session order | Due/new (no SRS row, `New`, or due now) first, then `next_due_at`, then item age | Handover T6 "due/new first" |
+| T2-i | Fixture | macOS `say` (Samantha US, Daniel UK), one word at a time, so word timings are exact | Robotic and slow (~6 s); only for building T3–T5 |
 
 ## 11. Questions for Dylan
 
-1. **D1:** which source for native audio + word timings (§6, options A–E)? Needed before T2.
+1. ~~D1~~ decided: B, Google Cloud TTS. **Next step for you:** create a Google Cloud API key with the Text-to-Speech API enabled (billing on), add `GOOGLE_TTS_API_KEY=` to the root `.env`, then run `npm run speaking-generate -- --topic <id> --dry-run` and without `--dry-run` (§13).
 2. **Items per bed or per word?** Topics belong to classes, so "the Environment bed" is one specific topic. Should speaking items instead be per word (`lexicon_id` + sentence, shared by every bed that contains the word), so any learner's bed with those words gets Speak? That needs `topic_id` to become optional (a one-line migration) and a different "≥ 5 items" count. T1 follows the handover (per bed).
 3. **Which topic is the Environment bed** to seed in T2 (UAT DB topic id)? In the seeds it's the QA "Nature & Environment" bed, which has drought, biodiversity and mitigate but not sustainable or deteriorate.
 4. **Audio host for China:** OK to move the R2 bucket behind a custom domain on `dygoacademy.com` (e.g. `audio.dygoacademy.com`)? Can someone test audio loading from Vietnam and mainland China?
 5. **D7 CORS:** can you add CORS rules on the R2 bucket for `https://www.dygoacademy.com`, `http://100.104.108.36:3000` and `http://localhost:3000` (GET, HEAD)? Or do you prefer a same-origin proxy?
 6. **TTS budget:** a rough monthly cap for UK + US sentence audio (2 clips per word)?
 7. The uncommitted `messages/*.json` edits in the working tree: whose are they, and should they be committed before T8 touches the same files?
+
+## 12. D1 options compared: pricing and effort (2026-10-04)
+
+List prices checked on the web on 2026-10-04 (third-party summaries where the vendor page didn't render); confirm in each console before paying.
+
+**Volume.** Two clips per word (UK + US), made once and cached in R2 (deterministic keys), so the bill is one-off per word, not per learner. A sentence is ~70 characters. Google bills the SSML input, and with a `<mark>` before every word that's up to ~270 characters per clip (upper bound; if marks aren't billed it's ~70).
+
+| | A. Azure TTS | D. ElevenLabs | **B. Google Cloud TTS (chosen)** |
+| --- | --- | --- | --- |
+| List price | Neural $16 / 1M chars; HD $22 / 1M | Flash/Turbo $0.04 / 1K chars ($40 / 1M); Multilingual v2 / v3 $0.08 / 1K ($80 / 1M); plans from $6/month (Starter) and $22/month (Creator) | Neural2 $16 / 1M chars; Standard/WaveNet $4 / 1M (no Neural quality); Chirp 3 HD $30 / 1M (no SSML, so no marks) |
+| Free each month | 0.5M chars | small free tier, not for commercial use | 1M chars on Neural2 |
+| Environment bed (20 words, 40 clips) | free | ≈ $0.11–0.22 | free (≈ 11K chars) |
+| 1,000 words (2,000 clips) | ≈ 140K chars → free | ≈ $6–11, or a $6–22 plan | ≈ 140K–540K chars → free |
+| 10,000 words (20,000 clips) | ≈ 1.4M chars → ≈ $14 | ≈ $56–112 | ≈ 1.4M–5.4M chars → ≈ $6–70 (after the free 1M) |
+| Word timings | `WordBoundary` events: start **and duration** per word (most exact) | `with-timestamps`: start/end per **character** (group into words) | `<mark>` timepoints: word **starts** only; ends estimated from silence (done) |
+| UK + US voices | many en-GB / en-US neural voices | British and American voices in the library; accent consistency varies by voice | Neural2 en-GB and en-US |
+| Voice quality | very good | best, most natural | good (Neural2) |
+| What's needed | Azure account, Speech resource (key + region), `microsoft-cognitiveservices-speech-sdk` | ElevenLabs account + key; REST only | Google Cloud project, billing, API key; REST only |
+| Effort from here | ~0.5–1 day: swap `synthesizeGoogle` for an Azure synthesizer; map boundary events (it also emits punctuation) to tokens | ~0.5–1 day: swap the synthesizer; group character times by token; ask for `pcm_24000` and wrap it as WAV | **Built** (§13). Missing: an API key |
+| Later fit | Same vendor as Azure Pronunciation Assessment (D3 / backlog B-0), which also runs in Azure China | none for scoring | Google is blocked in China, but generation is offline, so it doesn't matter |
+
+Only the synthesizer function in `scripts/speaking-generate.ts` is provider-specific: timings, validation, R2 keys, upsert and API are shared, so switching to A or D later costs about a day and doesn't change the database or the frontend.
+
+## 13. T2 · Content pipeline and API (2026-10-04)
+
+- **Script** `com.dygoacademy.backend/scripts/speaking-generate.ts` (`npm run speaking-generate`, `:prod`): for each READY word in `--topic`, takes the first example sentence, finds the target word (inflections OK: *contaminated*, *ecosystems*), asks Google Cloud TTS (`v1beta1 text:synthesize`, `LINEAR16`, `enableTimePointing: SSML_MARK`) for UK and US with a `<mark>` before every word, builds and validates the timings, uploads `speaking/en/<uk|us>/<md5(voice|sentence)>.wav` + `.json` to R2, and upserts `speaking_items` as `service_role`. `--dry-run` (lists clips and the cost, writes nothing), `--force` (otherwise never overwrites: an accent already in the DB is skipped, and clips already in R2 are reused with their stored timings), `--accents`, `--limit`.
+- **Timings** `src/modules/speaking/speaking-timings.ts`: SSML with marks, timepoints → word starts, word ends = next start trimmed over silence (−40 dBFS, 10 ms frames), target syllables from the IPA split evenly with primary stress (`ˈ`) marked, `validateTimings`, WAV read/write. 17 unit tests.
+- **API** `src/modules/speaking/`: `GET /api/v1/speaking/topics/:topicId/session` and `POST /api/v1/speaking/attempts` (documented in `dygo_academy_api_surface.md`). All queries run as the learner (`withUser`), so RLS decides access. 7 unit tests. The SQL was also run as Alex against a throwaway database built from the schema, fixtures and every migration: due word first, Vietnamese meaning joined, another tenant's topic hidden, attempt insert with `user_id` from `auth.uid()`.
+- **Frontend types** `src/types/speaking.ts` (snake_case, mirrors the backend), exported from `src/types/index.ts`. No API calls yet (T6).
+- **Fixture** `com.dygoacademy.frontend/public/audio/speaking-fixture/`: `fixture-mitigate-uk.wav`, `fixture-mitigate-us.wav` and `fixture-mitigate.json` (sentence, target index, IPA, timings), made with `npm run speaking-generate -- --fixture --out ../com.dygoacademy.frontend/public/audio/speaking-fixture`.
+- **Checks**: backend `tsc --noEmit` clean, Jest 321/321, eslint clean on the new files; frontend `tsc --noEmit` and `next lint` clean on the new types. The script's word query was run against the QA "Nature & Environment" bed in a throwaway database: 20 READY words, all with a sentence. Without a key, the script stops with "GOOGLE_TTS_API_KEY is not set… Nothing was generated."
+- **Not done (blocked on the key)**: no real clips, no `speaking_items` rows. The migration isn't applied to the real database yet either. To finish T2:
+  1. `./database/apply-migrations.sh --migrations` (applies `20261004_speaking.sql`).
+  2. Add `GOOGLE_TTS_API_KEY=` to the root `.env`.
+  3. `cd com.dygoacademy.backend && npm run speaking-generate -- --topic <Environment bed id> --dry-run`, then without `--dry-run`.
+  4. Restart the backend so the new `/speaking` routes load (the API code isn't deployed).
+- The QA seed's Environment bed has 20 words; the handover's 5 aren't all in it (`sustainable` is in another bed, `deteriorate` nowhere). The script makes items for every READY word in the bed (`--limit`), so the session picks 5 of them.
+

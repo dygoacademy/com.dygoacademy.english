@@ -41,6 +41,23 @@ export class StorageService {
     return `audio/${languageCode}/us/${hash}.wav`;
   }
 
+  /**
+   * Phase 13 speaking clip key: `speaking/[lang]/[uk|us]/md5(voice|sentence).wav`.
+   * Deterministic like `audioKeyFor`, and the voice is part of the hash, so
+   * changing the voice makes new files instead of silently replacing old
+   * ones. The timings JSON sits next to it (`.json`), so a database reset
+   * can rebuild `speaking_items` without paying for TTS again.
+   */
+  static speakingAudioKeyFor(
+    sentence: string,
+    accent: 'UK' | 'US',
+    voice: string,
+    languageCode = 'en',
+  ): string {
+    const hash = createHash('md5').update(`${voice}|${sentence.trim()}`).digest('hex');
+    return `speaking/${languageCode}/${accent.toLowerCase()}/${hash}.wav`;
+  }
+
   /** True if `key` already exists in the bucket (HEAD, no download). */
   async hasObject(key: string): Promise<boolean> {
     try {
