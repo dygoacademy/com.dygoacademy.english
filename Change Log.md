@@ -321,3 +321,8 @@ Engineering-facing log of shipped fixes and changes, one dated entry per change.
 * **Why**: the compressed run's checkpoint deploy after S2 (all checks green, 13:41 local).
 * **Verified live**: `www.dygoacademy.com` 200, `api.dygoacademy.com/api/v1/health` 200, `/garden/_speaking` signed out → 307 to login.
 * **Needs Dylan (G1)**: on the iPhone (Safari) and in desktop Chrome, open `https://www.dygoacademy.com/garden/_speaking` signed in: Record → Stop → Play me 1× / 0.75×, check the envelope appears, then "Measure offset" on a native clip and note the ms shown.
+
+### Phase 13 plan: spend guards for Gemini and Google Cloud TTS (S13 + G5)
+* **Files**: [`docs/phase13-schedule.md`](docs/phase13-schedule.md) (new rows S13, G5; G4 now also needs them); `phase 13 implementation plan.md` (new T11, file stays uncommitted)
+* **What**: planning only, no code. S13 adds daily caps in the backend before every paid Google call (Gemini enrichment / nuance / TTS, Google Cloud TTS), a usage table, env limits, and a `--max-usd` guard on `speaking-generate`. G5 is Dylan's Google Cloud console work: budget alerts, lower API quotas (the real hard stop), API key restrictions.
+* **Why**: Dylan asked for limits on Google TTS and Gemini before beta, so a bug or abuse can't run up the bill.
