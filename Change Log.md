@@ -466,3 +466,8 @@ Engineering-facing log of shipped fixes and changes, one dated entry per change.
 * **Files**: [`docs/phase13-schedule.md`](docs/phase13-schedule.md) (S18b ticked, Session log)
 * **What**: status only. Dylan closed the speaking pixel match without further work: SP2 passes in both languages; SP3's small differences (0.5–1.4 %) and the missing SP1 / SP4 fixture pages are accepted and listed in the Session log.
 * **Why**: Dylan, 2026-10-04: not worth more time now.
+
+### Phase 13 G7 done (Dylan)
+* **Files**: [`docs/phase13-schedule.md`](docs/phase13-schedule.md) (G7 ticked, Session log)
+* **What**: status only. Dylan tried v2 on the iPhone (on-phone checking, the UAT default; the server service, S20, isn't built yet). G6 still open.
+* **Why**: Dylan, 2026-10-04.
