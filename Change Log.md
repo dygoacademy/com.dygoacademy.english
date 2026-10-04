@@ -411,4 +411,4 @@ Engineering-facing log of shipped fixes and changes, one dated entry per change.
 ### Phase 13 G1: iPhone Safari check recorded
 * **Files**: [`docs/phase13-schedule.md`](docs/phase13-schedule.md) (G1 ticked, Session log), [`docs/phase13-notes.md`](docs/phase13-notes.md) (§16 QA matrix, iPhone Safari column)
 * **What**: Dylan's results from `/garden/_speaking` on iPhone Safari: recording 8.01 s (183 KB) decodes to 8.02 s at 16 kHz; "Measure offset" shows **0 ms** between the `.m4a` and `.wav` copies (diligent 3176 ms, mitigate fixture 5565 ms, both 48 kHz).
-* **Why**: gate G1. 0 ms means the envelope scorer needs no AAC start-delay correction. Still open: playback volume and the silent switch on iPhone, and the desktop Chrome offset.
+* **Why**: gate G1. 0 ms means the envelope scorer needs no AAC start-delay correction. Follow-up the same day: the envelope shows, Play me at 1× and 0.75× is loud enough and plays with the silent switch on, and desktop Chrome also measures 0 ms. Nothing left open for G1.

@@ -383,8 +383,8 @@ What the unattended run could check is automated (Vitest, mocked mic/API); every
 
 | Check | Automated | iPhone Safari (iOS 16+) | Home Screen app | Android Chrome | Desktop Chrome | Desktop Safari |
 | --- | --- | --- | --- | --- | --- | --- |
-| Record → replay, envelope (`/garden/_speaking`) | ✅ recorder / decode / envelope unit tests | ✅ G1 10-04: recorded 8.01 s (183 KB), decoded 8.02 s at 16 kHz; playback volume / silent switch not reported yet | 📱 | 📱 | 📱 | 📱 |
-| `.m4a` vs `.wav` offset (dev page "Measure offset") | ✅ estimator test (±21 ms) | ✅ G1 10-04: **0 ms** (diligent 3176 ms, mitigate fixture 5565 ms, both 48 kHz, same length) | — | 📱 | 📱 | 📱 |
+| Record → replay, envelope (`/garden/_speaking`) | ✅ recorder / decode / envelope unit tests | ✅ G1 10-04: recorded 8.01 s (183 KB), decoded 8.02 s at 16 kHz; envelope shown; Play me 1× and 0.75× loud enough, plays with the silent switch on | 📱 | 📱 | 📱 | 📱 |
+| `.m4a` vs `.wav` offset (dev page "Measure offset") | ✅ estimator test (±21 ms) | ✅ G1 10-04: **0 ms** (diligent 3176 ms, mitigate fixture 5565 ms, both 48 kHz, same length) | — | 📱 | ✅ G1 10-04: 0 ms | 📱 |
 | Full Pond session, 5 sentences, Done | ✅ `SpeakLive` flow test; Playwright spec (not run, S12-a) | 📱 G3 | 📱 | 📱 | 📱 | 📱 |
 | Marks fair? (own voice + a Vietnamese speaker) | ✅ synthetic scorer tests only | 📱 G3 | — | — | — | — |
 | Mic explainer → Allow; Not now | ✅ | 📱 first visit | 📱 (Home Screen apps ask again) | 📱 | 📱 | 📱 |
@@ -410,6 +410,6 @@ What the unattended run could check is automated (Vitest, mocked mic/API); every
 1. Scores are lenient (S3 note): a dropped word or rushing still reaches bloom/fruit on synthetic input. Tune `constants.ts` after G3.
 2. `garden:diff` for SP1–SP4 not run: no reference PNGs (S8-f).
 3. The drafted Vietnamese strings and the mic explainer need Dylan's check (S6); zh-CN is a draft.
-4. iOS after-recording playback volume and the silent switch are unknowns until G1/G3.
+4. ~~iOS after-recording playback volume and the silent switch are unknowns until G1/G3.~~ Checked at G1 (10-04): loud enough at 1× and 0.75×, plays with the silent switch on.
 5. The Sound patch (second half of the Sound Garden) isn't built (not in this run).
 6. New words still need a manual `npm run speaking-generate -- --all` (README); `analyse` has no example sentence.
