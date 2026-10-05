@@ -554,3 +554,8 @@ Engineering-facing log of shipped fixes and changes, one dated entry per change.
 * **Files**: [`docs/phase13-notes.md`](docs/phase13-notes.md) (§16 QA matrix, iPhone Safari), [`docs/phase13-schedule.md`](docs/phase13-schedule.md)
 * **What**: Dylan's results from `/garden/_speaking` section 3 on iPhone Safari: stopped by silence; 6.46 s AAC `.m4a`, 60.6 KB; decoded 6.45 s at 16 kHz; beep not in the clip (−153 dBFS in the first 200 ms). Silent switch on and a noisy place still to try.
 * **Why**: S19 device checks.
+
+### README: where the S13 spend caps are set
+* **Files**: [`README.md`](README.md) (Audio and speaking content); on this Mac only, the root `.env` (git-ignored) now lists `GEMINI_DAILY_CALL_LIMIT=1000` and `GOOGLE_TTS_DAILY_CHAR_LIMIT=300000`
+* **What**: the caps were only in `.env.example`, so Dylan couldn't find them in `.env`; they're now in `.env` at their defaults (no behaviour change), and the README says to restart the backend and that `env-profiles/prod.env` wins on UAT.
+* **Why**: Dylan, 2026-10-05.

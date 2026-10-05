@@ -697,6 +697,9 @@ Notes:
   audio, quiz explanations); over the cap a new word fails with "Daily gemini limit
   reached" and quiz explanations are left out. Usage per day is in the `api_usage_daily`
   table. These are app-side caps; also set budget alerts and quotas in Google Cloud (G5).
+  To change a cap, edit `GEMINI_DAILY_CALL_LIMIT` / `GOOGLE_TTS_DAILY_CHAR_LIMIT` in the root
+  `.env` (both listed there with the defaults) and run `pm2 restart dygo-backend`. On UAT the
+  backend also loads `env-profiles/prod.env` first, so a value set there wins.
 - **New words don't get speaking audio automatically yet**: run
   `speaking-generate -- --all` after adding words (each run only makes what's missing).
 - **Cost**: about 300 characters per clip, 2 clips per word. Google's first 1 million
