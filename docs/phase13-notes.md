@@ -580,5 +580,5 @@ Set: `docker/speech/calibration/` (7 real sentences from `speaking_items` incl. 
 - **M4-a (total):** target word 3×, unclear ≤ 50, any mistake ≤ 89, wrong / missing target ≤ 69, ok function words count 100. The backend now sends `target_index`.
 - **M4-b (marks):** function words judged by Whisper ("a" scored 8–22 on sound in good speech); sounds ≥ 85 overrule a Whisper mishearing ("months" → "onts", "for" → "from"); UK / US spellings match ("criticised").
 - Accents: the macOS Vietnamese / Chinese voices score 18–99 (mean ~62): synthetic, so judge on real speakers.
-- Still to do: **real recordings** (Dylan + a Vietnamese speaker) through `calibrate.py` with a hand-written `manifest.json`.
+- ✅ **Real speakers (2026-10-06):** Dylan tried The Pond with a Vietnamese speaker on UAT (server checking, M4 rules): working, marks judged fair. Real recordings can still go through `calibrate.py` (hand-written `manifest.json`) if a rule needs tuning later.
 

@@ -602,3 +602,8 @@ Engineering-facing log of shipped fixes and changes, one dated entry per change.
 * **Files**: [`docs/phase13-schedule.md`](docs/phase13-schedule.md) (Session log)
 * **What**: deploy through `deploy/request.md` (all 4 steps OK, 2026-10-05): the backend now sends the item's `target_index` to the speech scorer, so the M4 rules (target word 3×, sprout cap for a wrong target) apply to learners' checks.
 * **Verified live**: www and API health 200; the built backend contains the `target_index` field; no errors in the backend log since the restart; scorer healthy on the M4 rules.
+
+### Phase 13 M4 done: checked with a Vietnamese speaker
+* **Files**: [`docs/phase13-notes.md`](docs/phase13-notes.md) (§20 M4), [`docs/phase13-schedule.md`](docs/phase13-schedule.md)
+* **What**: status only. Dylan tried The Pond on UAT with a Vietnamese speaker (server checking with the M4 rules): working. Closes M4.
+* **Why**: the real-speaker step after the synthetic calibration (2026-10-06).
