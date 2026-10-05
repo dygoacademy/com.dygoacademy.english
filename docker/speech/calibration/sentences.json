@@ -1,0 +1,9 @@
+[
+  {"word": "mitigate", "target_index": 5, "wrong": "migrate", "sentence": "Planting more trees can help mitigate the effects of climate change."},
+  {"word": "catastrophe", "target_index": 8, "wrong": "category", "sentence": "The oil spill was described as an environmental catastrophe."},
+  {"word": "inevitable", "target_index": 9, "wrong": "invisible", "sentence": "With sales falling for months, the factory closure felt inevitable."},
+  {"word": "gradually", "target_index": 2, "wrong": "greatly", "sentence": "Her English gradually improved after months of daily practice."},
+  {"word": "innovative", "target_index": 1, "wrong": "imitative", "sentence": "Their innovative approach to recycling won a national award."},
+  {"word": "arbitrary", "target_index": 4, "wrong": "ordinary", "sentence": "The judge criticized the arbitrary way the fines were decided."},
+  {"word": "pumpkin", "target_index": 7, "wrong": "napkin", "sentence": "We carved a scary face into the pumpkin for Halloween."}
+]

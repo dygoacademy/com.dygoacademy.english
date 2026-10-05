@@ -591,3 +591,9 @@ Engineering-facing log of shipped fixes and changes, one dated entry per change.
 * **Files**: [`docs/phase13-schedule.md`](docs/phase13-schedule.md) (G5 ticked, Session log)
 * **What**: status only. Dylan set the Google Cloud budget alerts, API quotas and key restrictions (the hard stop outside the app, next to the S13 caps).
 * **Why**: Dylan, 2026-10-05.
+
+### Phase 13 M4: speech scoring calibrated (target word weighs more, fewer false flags)
+* **Files**: [`docker/speech/app/matching.py`](docker/speech/app/matching.py) (`word_status`, `canon`, `total_score`, `FUNCTION_WORDS`, `HEARD_TRUST_SCORE`, caps), `app/scorer.py`, `app/main.py` (`target_index` form field), `tests/test_matching.py`; new [`docker/speech/calibration/`](docker/speech/calibration/) (`sentences.json`, `make_set.py`, `calibrate.py`); backend `speech-checker.ts`, `speech-check.service.ts` (+ spec; sends the item's `target_index`), `speaking.types.ts` (formatting); `docker/speech/README.md`; `README.md`; `docs/phase13-notes.md`; `docs/phase13-schedule.md`
+* **What**: M4-a, the sentence total: the target word counts 3×, an unclear word at most 50, an ok function word 100; any mistake caps it at 89 (no fruit), a wrong or missing target word at 69 (sprout). M4-b, the word marks: function words are judged by Whisper (too short for the sound model), confident sounds (≥ 85) overrule a Whisper mishearing, UK / US spellings match. A calibration set and script to re-check after any change.
+* **Why**: a wrong target word ("migrate" for "mitigate") still reached 95 / fruit (M3 note), and once marks counted, 15/35 good recordings had a word wrongly flagged.
+* **Verified**: 63 calibration clips through the live scorer: good speech 33/35 fruit (min 89), false flags 2/35 (was 15/35); skipped word caught 6/7; wrong target word caught 7/7, all 69; 1.2 s median. Scorer tests 11/11; backend Jest 357/357, `tsc` and eslint clean. Scorer restarted with the new rules; backend deploy follows.

@@ -100,7 +100,7 @@ describe('SpeechCheckService', () => {
   }
 
   it("checks the item's sentence (read as the learner) and returns the marks", async () => {
-    const queryAs = jest.fn().mockResolvedValue([{ sentence: SENTENCE }]);
+    const queryAs = jest.fn().mockResolvedValue([{ sentence: SENTENCE, target_index: 5 }]);
     const check = jest.fn().mockResolvedValue(scorer({ 6: { status: 'missing' } }));
     const service = await make(queryAs, check);
     const r = await service.check('user-1', 'item-1', audio());
@@ -110,6 +110,7 @@ describe('SpeechCheckService', () => {
     expect(check).toHaveBeenCalledWith(
       expect.objectContaining({ mimetype: 'audio/mp4' }),
       SENTENCE,
+      5, // the target word weighs more in the scorer's total (M4-a)
     );
     expect(r.word_marks[6].reason).toBe('missing');
   });

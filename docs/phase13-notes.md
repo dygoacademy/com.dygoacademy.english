@@ -565,3 +565,20 @@ Table `api_usage_daily` (provider, UTC day, units; service_role only) and `Usage
 - **Dev page** `/garden/_speaking` → **3 · Recording flow v2** (`FlowCheck.tsx`, moved from S15): runs the SP2 flow on its own and shows why it stopped (silence / not heard / 30 s cap / tap), the recording's length, format and size, and **beep in clip** (880 Hz level in the first 200 ms vs the whole clip; `toneRms`, Goertzel). For checking a phone step by step.
 - **Playwright** `ui/tests/sounds.spec.ts` brought to v2: the stubs now use the backend's `{ success, data }` envelope (the S12 version returned bare JSON, which the API client rejects, so it would have failed on its first run); `/speaking/check` stubbed (scorer never called); "Start recording"; the count tapped to skip; the fake mic plays once (`%noloop`) so the auto-stop is exercised; new tests for checking → marks (saved without `heard`) and for a 503 → "Couldn't check" → Check again. Type-checks; **not run here**: it signs in to the live site with the e2e account, which Claude doesn't do; Dylan runs the command above.
 - **QA matrix** rows for v2 added (above).
+
+### M4 · Calibration (2026-10-05)
+
+Set: `docker/speech/calibration/` (7 real sentences from `speaking_items` incl. the fixture × good US / UK / AU, fast, slow, Vietnamese and Chinese macOS voices, a skipped non-target word, a near-miss target word such as "category" for "catastrophe"), 63 clips as AAC m4a; `calibrate.py` reports per kind.
+
+| | Before M4 | After M4 |
+| --- | --- | --- |
+| Good speech: fruit | 23/35 (plain mean) | 33/35 (min 89) |
+| Good speech: a word wrongly flagged | 15/35 (once marks counted) | 2/35 |
+| Skipped word caught as missing | 5/7 | 6/7 (the 7th flagged as unclear) |
+| Wrong target word caught | 7/7, but 4 still fruit | 7/7, all 69 (sprout) |
+
+- **M4-a (total):** target word 3×, unclear ≤ 50, any mistake ≤ 89, wrong / missing target ≤ 69, ok function words count 100. The backend now sends `target_index`.
+- **M4-b (marks):** function words judged by Whisper ("a" scored 8–22 on sound in good speech); sounds ≥ 85 overrule a Whisper mishearing ("months" → "onts", "for" → "from"); UK / US spellings match ("criticised").
+- Accents: the macOS Vietnamese / Chinese voices score 18–99 (mean ~62): synthetic, so judge on real speakers.
+- Still to do: **real recordings** (Dylan + a Vietnamese speaker) through `calibrate.py` with a hand-written `manifest.json`.
+

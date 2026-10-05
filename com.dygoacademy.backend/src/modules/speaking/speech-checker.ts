@@ -36,7 +36,8 @@ export interface SpeechAudio {
 }
 
 export interface SpeechChecker {
-  check(audio: SpeechAudio, sentence: string): Promise<ScorerResult>;
+  /** `targetIndex`: the practised word's position in sentence.split() (it weighs more, M4-a). */
+  check(audio: SpeechAudio, sentence: string, targetIndex?: number): Promise<ScorerResult>;
 }
 
 /** Why a check failed, for the endpoint's status code. */
@@ -61,7 +62,7 @@ export class MacSpeechChecker implements SpeechChecker {
 
   constructor(private readonly config: ConfigService) {}
 
-  async check(audio: SpeechAudio, sentence: string): Promise<ScorerResult> {
+  async check(audio: SpeechAudio, sentence: string, targetIndex?: number): Promise<ScorerResult> {
     const url = `${this.config.get<string>('speech.scorerUrl')}/check`;
     const timeoutMs = this.config.get<number>('speech.timeoutMs') ?? 8000;
     const form = new FormData();
@@ -71,6 +72,7 @@ export class MacSpeechChecker implements SpeechChecker {
       audio.filename,
     );
     form.append('sentence', sentence);
+    if (targetIndex !== undefined) form.append('target_index', String(targetIndex));
 
     let res: Response;
     try {

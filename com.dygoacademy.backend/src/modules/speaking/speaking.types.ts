@@ -6,7 +6,13 @@ export type { SpeakingAccent, SpeakingTimings } from './speaking-timings';
 export const SPEAKING_ACCENTS = ['UK', 'US'] as const;
 export const SPEAKING_STAGES = ['seed', 'sprout', 'bloom', 'fruit'] as const;
 /** `unclear` comes from the server check (S18); `rushed` / `slow` only from the on-device one. */
-export const SPEAKING_MARK_REASONS = ['stress_soft', 'missing', 'rushed', 'slow', 'unclear'] as const;
+export const SPEAKING_MARK_REASONS = [
+  'stress_soft',
+  'missing',
+  'rushed',
+  'slow',
+  'unclear',
+] as const;
 export type SpeakingStage = (typeof SPEAKING_STAGES)[number];
 export type SpeakingMarkReason = (typeof SPEAKING_MARK_REASONS)[number];
 

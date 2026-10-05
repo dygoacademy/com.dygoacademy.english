@@ -800,9 +800,12 @@ too short / too long / no sentence. Full details: `docker/speech/README.md`.
   its own machine (same container, change the URL).
 - **Memory:** ~0.8–1.5 GB (`mem_limit` 4 GB); models live in the `speech_models`
   volume.
-- **Thresholds:** `UNCLEAR_SCORE` (60) and `MISSING_SCORE` (40) in
-  `docker/speech/app/matching.py` are first guesses, to be tuned with real
-  recordings (Phase 13 M4). Short words that people say more than one way
+- **Rules and thresholds** (M4, calibrated 2026-10-05): the target word counts 3×,
+  a wrong or missing target word caps the sentence at 69 (sprout), any mistake at 89
+  (no fruit); function words are judged by Whisper; very confident sounds overrule a
+  Whisper mishearing (`HEARD_TRUST_SCORE` 85); UK / US spellings match. All in
+  `docker/speech/app/matching.py`; re-check with `docker/speech/calibration/`
+  (see `docker/speech/README.md`). Short words that people say more than one way
   ("the" as /ði/ before a vowel) are listed in `VARIANTS` in the same file;
   add to it when good speech gets flagged.
 - **Not caught:** words that sound the same ("affects" / "effects").

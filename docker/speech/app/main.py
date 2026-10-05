@@ -47,7 +47,12 @@ def health() -> dict:
 
 
 @app.post("/check")
-def check(audio: UploadFile = File(...), sentence: str = Form(...)) -> dict:
+def check(
+    audio: UploadFile = File(...),
+    sentence: str = Form(...),
+    # The practised word's position in sentence.split(): weighs more (M4-a).
+    target_index: int | None = Form(None),
+) -> dict:
     scorer: Scorer | None = state["scorer"]
     if scorer is None:
         raise HTTPException(503, detail="loading models")
@@ -63,7 +68,7 @@ def check(audio: UploadFile = File(...), sentence: str = Form(...)) -> dict:
         raise HTTPException(422, detail=str(err)) from None
     del data
     with lock:
-        result = scorer.check(pcm, sentence)
+        result = scorer.check(pcm, sentence, target_index)
     result["latency_ms"] = round((time.time() - t) * 1000)
     log.info("check duration_ms=%s latency_ms=%s total=%s", result["duration_ms"], result["latency_ms"], result["total"])
     return result

@@ -42,16 +42,16 @@ export class SpeechCheckService {
       throw new UnprocessableEntityException('Send the recording as m4a, webm or wav');
     }
 
-    const rows = await this.db.queryAs<{ sentence: string }>(
+    const rows = await this.db.queryAs<{ sentence: string; target_index: number }>(
       userId,
-      'select sentence from public.speaking_items where id = $1',
+      'select sentence, target_index from public.speaking_items where id = $1',
       [itemId],
     );
     const sentence = rows[0]?.sentence;
     if (!sentence) throw new NotFoundException('Speaking item not found');
 
     try {
-      const raw = await this.checker.check(audio, sentence);
+      const raw = await this.checker.check(audio, sentence, rows[0].target_index);
       return toCheckResult(raw, sentence.trim().split(/\s+/).length);
     } catch (err) {
       if (err instanceof SpeechCheckError) {
