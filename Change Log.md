@@ -570,3 +570,8 @@ Engineering-facing log of shipped fixes and changes, one dated entry per change.
 * **What**: `/garden/_speaking` section 3 shows, while recording, what the auto-stop sees: voice heard, quiet time against the 2 s it waits for, noise floor, sound gate and loudest level (dBFS); the result adds "auto-stop saw" with the longest quiet stretch after speaking. Dev page only; learners unaffected.
 * **Why**: Dylan's two noisy-room tests on the iPhone ended with a tap, so it wasn't clear whether background sound kept the auto-stop from firing. Noted while adding it: one loud bar resets the quiet time (a 120 ms run is needed to count as voice, but not to break the silence), a likely cause in noise; to be decided from his numbers.
 * **Verified**: frontend speaking + dev-page tests 74/74 (3 new diagnostics tests incl. the blip case), `tsc` and lint clean.
+
+### Phase 13: auto-stop confirmed in a noisy place (iPhone)
+* **Files**: [`docs/phase13-notes.md`](docs/phase13-notes.md) (§16 QA matrix), [`docs/phase13-schedule.md`](docs/phase13-schedule.md)
+* **What**: with the new diagnostics, Dylan's noisy-place run stopped by silence after 2.0 s of quiet (noise floor −83 dBFS after iOS noise suppression, gate −40, loudest −10 dBFS). The two earlier taps came before 2 s. No change to the auto-stop.
+* **Why**: closes the open question from the noisy-room tests.
