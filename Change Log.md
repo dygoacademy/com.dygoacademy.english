@@ -559,3 +559,8 @@ Engineering-facing log of shipped fixes and changes, one dated entry per change.
 * **Files**: [`README.md`](README.md) (Audio and speaking content); on this Mac only, the root `.env` (git-ignored) now lists `GEMINI_DAILY_CALL_LIMIT=1000` and `GOOGLE_TTS_DAILY_CHAR_LIMIT=300000`
 * **What**: the caps were only in `.env.example`, so Dylan couldn't find them in `.env`; they're now in `.env` at their defaults (no behaviour change), and the README says to restart the backend and that `env-profiles/prod.env` wins on UAT.
 * **Why**: Dylan, 2026-10-05.
+
+### UAT env: speech scorer URL in `env-profiles/prod.env`
+* **Files**: [`README.md`](README.md) (Speech checking → Rules); on this Mac only, `env-profiles/prod.env` (git-ignored): `SPEECH_SCORER_URL=http://127.0.0.1:8100`, `SPEECH_CHECK_TIMEOUT_MS=8000`
+* **What**: the scorer address and timeout are now written in the UAT env profile next to `NEXT_PUBLIC_SPEECH_CHECK=server`, instead of relying on the code defaults (same values, no restart needed).
+* **Why**: Dylan asked for the speech scorer URL in the production env (2026-10-05).

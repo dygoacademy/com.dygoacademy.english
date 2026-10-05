@@ -779,8 +779,10 @@ too short / too long / no sentence. Full details: `docker/speech/README.md`.
 
 - **Call it from the backend only.** The browser never talks to it: it's bound
   to `127.0.0.1` and must never get a Cloudflare tunnel route. The backend
-  reaches it at `http://127.0.0.1:8100` (from another container on
-  `dygo-network`: `http://speech:8000`). The backend endpoint for Phase 13 is
+  reaches it at `SPEECH_SCORER_URL` (UAT: `http://127.0.0.1:8100` in
+  `env-profiles/prod.env`, with `SPEECH_CHECK_TIMEOUT_MS=8000`; from another
+  container on `dygo-network`: `http://speech:8000`). After changing either,
+  `pm2 restart dygo-backend`. The backend endpoint for Phase 13 is
   `POST /speaking/check` (S17, in progress), which wraps it behind a
   `SpeechChecker` interface; reuse that rather than calling the scorer twice.
 - **Don't keep the audio.** The scorer holds it in memory only; callers must
