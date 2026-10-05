@@ -6,9 +6,7 @@ import { GARDEN_ROUTES } from '@/constants/garden';
 import { useGroupGarden } from '@/hooks/useGroupGarden';
 import { useGroups } from '@/hooks/useGroups';
 import { useWeekMissions } from '@/hooks/useMissions';
-import { useSpeakingSession } from '@/hooks/useSpeakingSession';
 import { useSrsStats } from '@/hooks/useSrsStats';
-import { SOUND_GARDEN_MIN_ITEMS } from '@/lib/speaking/constants';
 
 import { WeeklyHarvestScreen } from '../screens/WeeklyHarvestScreen';
 import { todayIn, useGardenFormat, weekDays } from '../format';
@@ -24,9 +22,6 @@ import { weekHarvest } from './data';
  * shared `['groups']` query) with its garden's totals (GET
  * /groups/:id/garden: watered today, gardeners, shared words), and links
  * to that garden. No group, or its garden not loaded (yet): no card.
- * Phase 13: the Sound Garden card shows once the learner has at least
- * SOUND_GARDEN_MIN_ITEMS words with speaking audio (`item_count` from GET
- * /speaking/session); loading or failing: no card.
  */
 export function HarvestLive() {
   const timeZone = useTimeZone();
@@ -37,7 +32,6 @@ export function HarvestLive() {
   const freezes = useSrsStats().data?.freezes;
   const groupId = useGroups().data?.[0]?.id ?? '';
   const garden = useGroupGarden(groupId, timeZone).data;
-  const itemCount = useSpeakingSession().data?.item_count ?? 0;
   return (
     <WeeklyHarvestScreen
       weekStart={days[0]}
@@ -55,9 +49,6 @@ export function HarvestLive() {
               avatars: [],
             }
           : null
-      }
-      soundGarden={
-        itemCount >= SOUND_GARDEN_MIN_ITEMS ? { itemCount, href: GARDEN_ROUTES.sounds } : null
       }
     />
   );

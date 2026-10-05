@@ -582,3 +582,12 @@ Set: `docker/speech/calibration/` (7 real sentences from `speaking_items` incl. 
 - Accents: the macOS Vietnamese / Chinese voices score 18–99 (mean ~62): synthetic, so judge on real speakers.
 - ✅ **Real speakers (2026-10-06):** Dylan tried The Pond with a Vietnamese speaker on UAT (server checking, M4 rules): working, marks judged fair. Real recordings can still go through `calibrate.py` (hand-written `manifest.json`) if a rule needs tuning later.
 
+## 21. Speaking entry points removed for a redesign (Dylan, 2026-10-06)
+
+Dylan plans to redesign where speaking is started from. Removed from the app:
+- **"Say this one?"** on the flipped review card (T9-a, S11): `ReviewCard`'s `speakOffer` prop and button (the card markup is back to exactly what it was before S11), `ReviewLive`'s offer wiring, `SayThisSheet`, `useSpeakOffers`, `lib/speaking/offers.ts` and their tests, `SPEAK_OFFERS_PER_SESSION`.
+- **The Sound Garden card** on the Missions tab (S10): `WeeklyHarvestScreen` and `HarvestLive` restored to the pre-S10 files, its test, `SOUND_GARDEN_MIN_ITEMS`.
+- The Playwright "Entry points" tests.
+
+Kept, for the redesign to use: The Pond at `/sounds` (open the URL directly), `SpeakFlow` with its `single` mode (one sentence, as the sheet used it), the backend `GET /speaking/words` and `/speaking/words/:topicWordId` (now not called), the `screens.speak.sayThis.*` / `soundGarden.*` strings (`soundGarden.title` is still the `/sounds` page title), server checking, the scorer.
+

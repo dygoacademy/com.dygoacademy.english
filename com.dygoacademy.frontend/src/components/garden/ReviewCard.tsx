@@ -42,11 +42,6 @@ export interface ReviewCardProps {
   collocations?: readonly string[] | null;
   /** Synonym chips under "Synonyms" (canvas A2), from `master_lexicon.synonyms`. */
   synonyms?: readonly string[] | null;
-  /**
-   * Phase 13 "Say this one?" (T9-a): a small optional button next to the
-   * audio button, shown only after the flip. Never blocks rating.
-   */
-  speakOffer?: { label: string; onClick: () => void } | null;
   className?: string;
 }
 
@@ -85,7 +80,6 @@ export function ReviewCard({
   example,
   collocations,
   synonyms,
-  speakOffer,
   className,
 }: ReviewCardProps) {
   const t = useTranslations('components.review');
@@ -135,33 +129,7 @@ export function ReviewCard({
           </span>
           {ipa ? <span className="text-[16px] text-muted-foreground">{ipa}</span> : null}
         </div>
-        <div className="flex shrink-0 items-center gap-2">
-          {revealed && speakOffer ? (
-            <button
-              type="button"
-              onClick={speakOffer.onClick}
-              className="flex h-11 items-center gap-1.5 rounded-[22px] border border-border bg-surface px-3.5 text-[14px] font-semibold text-primary-text"
-            >
-              <svg
-                width="18"
-                height="18"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2.2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                aria-hidden="true"
-              >
-                <rect x="9" y="3" width="6" height="11" rx="3" />
-                <path d="M5 11 A7 7 0 0 0 19 11" />
-                <path d="M12 18 V21" />
-              </svg>
-              {speakOffer.label}
-            </button>
-          ) : null}
-          <AudioButton src={audioSrc} label={t('play', { word })} />
-        </div>
+        <AudioButton src={audioSrc} label={t('play', { word })} />
       </div>
 
       {revealed ? (

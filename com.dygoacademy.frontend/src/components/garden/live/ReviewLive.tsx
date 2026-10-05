@@ -5,7 +5,6 @@ import { useTranslations } from 'next-intl';
 
 import { GARDEN_ROUTES } from '@/constants/garden';
 import { useRateWord } from '@/hooks/useRateWord';
-import { useSpeakOffers } from '@/hooks/useSpeakOffers';
 import { useStudySession } from '@/hooks/useStudySession';
 import { useTopics } from '@/hooks/useTopics';
 import { languageOf } from '@/i18n/config';
@@ -16,7 +15,6 @@ import { useGardenPreferences } from '../preferences';
 import type { Rating } from '../RatingBar';
 import { ReviewScreen } from '../screens/ReviewScreen';
 import { LiveError, LiveLoading } from './LiveState';
-import { SayThisSheet } from './SayThisSheet';
 
 /**
  * /review: watering (A2) on the existing study session.
@@ -30,9 +28,8 @@ import { SayThisSheet } from './SayThisSheet';
  * it's simply absent for a word Gemini hasn't translated yet. Synonyms
  * come from the card's `synonyms`. At the end, "See your garden bloom"
  * carries this session's results to /review/done in the URL.
- * Phase 13: after the flip, up to 3 cards a session offer "Say this one?"
- * (rule T9-a, `useSpeakOffers`), which opens SP1–SP3 for that card's
- * sentence over the card; rating is unaffected.
+ * (Phase 13's "Say this one?" offer was removed on 2026-10-06 for the
+ * speaking entry-point redesign; The Pond is still at /sounds.)
  */
 export function ReviewLive({ topicId }: { topicId?: string }) {
   const t = useTranslations('screens.review');
@@ -41,7 +38,6 @@ export function ReviewLive({ topicId }: { topicId?: string }) {
   const topics = useTopics();
   const rate = useRateWord();
   const { meaningLocale } = useGardenPreferences();
-  const speak = useTranslations('screens.speak');
 
   const [cards, setCards] = React.useState<DueCard[] | null>(null);
   const [index, setIndex] = React.useState(0);
@@ -52,9 +48,6 @@ export function ReviewLive({ topicId }: { topicId?: string }) {
   if (cards === null && session.data) {
     setCards(session.data.cards);
   }
-  // Phase 13 "Say this one?": up to 3 offers per session, picked once (T9-a).
-  const speakOffers = useSpeakOffers(cards);
-  const [sayThis, setSayThis] = React.useState<string | null>(null);
   React.useEffect(() => {
     if (cards !== null && startedAt.current === 0) startedAt.current = Date.now();
   }, [cards]);
@@ -114,9 +107,6 @@ export function ReviewLive({ topicId }: { topicId?: string }) {
                 example: card.example_sentences?.[0]?.sentence ?? null,
                 collocations: null,
                 synonyms: card.synonyms?.map((synonym) => synonym.word).filter(Boolean) ?? null,
-                speakOffer: speakOffers.offers.has(card.topic_word_id)
-                  ? { label: speak('sayThis.offer'), onClick: () => setSayThis(card.topic_word_id) }
-                  : null,
               }
             : null
         }
@@ -144,18 +134,7 @@ export function ReviewLive({ topicId }: { topicId?: string }) {
         bloomHref={`${GARDEN_ROUTES.reviewDone}?${params.toString()}`}
         secondaryAction={{ label: t('backToGarden'), href: GARDEN_ROUTES.home }}
         emptyText={total === 0 ? t('empty') : undefined}
-        keyboardShortcuts={sayThis === null}
       />
-      {sayThis ? (
-        <SayThisSheet
-          topicWordId={sayThis}
-          onClose={() => setSayThis(null)}
-          onSkipSpeaking={() => {
-            speakOffers.hide();
-            setSayThis(null);
-          }}
-        />
-      ) : null}
     </>
   );
 }
