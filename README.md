@@ -716,7 +716,7 @@ Any feature that needs to know **how well a learner said something** uses the
 speech scorer: a Docker service on this Mac (`docker/speech`, container
 `dygo_speech`), free, no account or API key. It was built for Phase 13's
 speaking practice (G6: self-hosted instead of a paid service, see
-`docs/phase13-notes.md` §20), and anything else that listens to a learner
+`phase/phase 13/PHASE-13-RECORD.md` §20), and anything else that listens to a learner
 (word pronunciation, shadowing, a future kids' mode) should use it too rather
 than add another service.
 

@@ -7,7 +7,7 @@
  * (PushDispatchService's `payload.url`, an absolute URL so this file needs
  * no knowledge of the frontend's own origin).
  *
- * Media cache (option 2, docs/phase13-notes.md §15): audio from
+ * Media cache (option 2, phase/phase 13/PHASE-13-RECORD.md §15b): audio from
  * media.dygoacademy.com is immutable (keyed by content hash), so it's
  * served cache-first from Cache Storage `dygo-media-v1` (newest
  * MEDIA_CACHE_MAX files kept). Replays are instant and work offline.

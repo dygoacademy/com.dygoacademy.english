@@ -1,6 +1,6 @@
 # Speech scorer (`dygo_speech`)
 
-Checks a learner's recording against the sentence, on this Mac, for free (Phase 13 G6, `docs/phase13-notes.md` §20). Only the backend calls it.
+Checks a learner's recording against the sentence, on this Mac, for free (Phase 13 G6, `phase/phase 13/PHASE-13-RECORD.md` §20). Only the backend calls it.
 
 - **Words**: faster-whisper `base.en` (int8, beam 1) → a left-out word, or another word heard ("migrate" for "mitigate").
 - **Sounds**: `facebook/wav2vec2-lv-60-espeak-cv-ft` + espeak (en-us) + forced alignment → a 0–100 score per word (Goodness of Pronunciation). Short words accept their common variants (`VARIANTS` in `app/matching.py`, e.g. "the" as /ði/ before a vowel).

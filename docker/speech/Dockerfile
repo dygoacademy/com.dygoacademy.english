@@ -1,4 +1,4 @@
-# Dygo speech scorer (Phase 13 G6, docs/phase13-notes.md §20).
+# Dygo speech scorer (Phase 13 G6, phase/phase 13/PHASE-13-RECORD.md §20).
 # CPU only: Docker on macOS can't use the M2 GPU. Models download into the
 # /models volume on first start (≈ 1.4 GB), not into the image.
 FROM python:3.11-slim

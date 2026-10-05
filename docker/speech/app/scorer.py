@@ -1,4 +1,4 @@
-"""Speech checking with two local models (Phase 13 G6, notes §20).
+"""Speech checking with two local models (Phase 13 G6, phase/phase 13/PHASE-13-RECORD.md §20).
 
 - Words: faster-whisper (`base.en`, int8, beam 1) says what was said, with
   word timings, so a left-out word or another word ("migrate") shows up.

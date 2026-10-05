@@ -44,7 +44,7 @@ export const GARDEN_ROUTES = {
   /** A8 Me. */
   me: '/me',
   /**
-   * Phase 13 Sound Garden (notes §14): The Pond, five sentences said out
+   * Phase 13 (phase/phase 13/PHASE-13-RECORD.md): The Pond, five sentences said out
    * loud. Reached from the Missions tab card. The Sound patch drills would
    * be a second part of this page; not built (not in this phase's run).
    */

@@ -769,7 +769,7 @@ VAPID Web Push endpoints per device.
 
 ### Speaking (Phase 13)
 
-Added by `database/migrations/20261004_speaking.sql` (2026-10-04, Phase 13 T1) and made per word by `20261004_speaking_per_word.sql` (same day: speaking starts from the Missions tab and flashcards, not a bed). Written by hand from the migration, not introspected. RLS assertions: `database/tests/rls_speaking_test.sql` (run by `./database/apply-migrations.sh --test`). Design notes: `docs/phase13-notes.md`.
+Added by `database/migrations/20261004_speaking.sql` (2026-10-04, Phase 13 T1) and made per word by `20261004_speaking_per_word.sql` (same day: speaking starts from the Missions tab and flashcards, not a bed). Written by hand from the migration, not introspected. RLS assertions: `database/tests/rls_speaking_test.sql` (run by `./database/apply-migrations.sh --test`). Design notes: `phase/phase 13/PHASE-13-RECORD.md`.
 
 #### `speaking_items`
 

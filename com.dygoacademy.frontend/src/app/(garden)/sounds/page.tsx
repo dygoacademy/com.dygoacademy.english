@@ -5,7 +5,7 @@ import { SpeakLive } from '@/components/garden/live/SpeakLive';
 import { SPEAK_NOTICES, type SpeakNoticeKind } from '@/lib/speaking/constants';
 
 /**
- * Phase 13 Sound Garden → The Pond (notes §14). `?topic=<id>` limits it to
+ * Phase 13 The Pond (its entry points were removed 2026-10-06 for a redesign). `?topic=<id>` limits it to
  * one bed's words. Dev toggle (T7): `?state=mic|denied|quiet|short|
  * unsupported|audioFailed` opens SP1 showing that state, so each one can be
  * checked on a phone; it changes nothing else.

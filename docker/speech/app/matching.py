@@ -3,7 +3,7 @@
 `match_words` lines up what Whisper heard with the reference sentence;
 `word_status` turns a word's sound score plus that match into the mark the
 app shows (ok / missing / unclear, with `heard` for a different word).
-Thresholds are first guesses from spike M1 (notes §20) and are tuned in M4
+Thresholds come from spike M1 and the M4 calibration (phase/phase 13/PHASE-13-RECORD.md §20) and are tuned in M4
 with real recordings.
 """
 

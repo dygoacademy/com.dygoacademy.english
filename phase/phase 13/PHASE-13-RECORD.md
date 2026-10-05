@@ -1,10 +1,20 @@
-# Phase 13 (Adult Speaking): working notes
+# Phase 13 · Speaking: record
 
-Started 2026-10-04 by an unattended run (T0 + T1); T2 the same day after Dylan picked D1 = B. Source of truth: the handover `phase/phase 13/PHASE-13-SPEAKING-PLAN.md`; companion: `phase 13 implementation plan.md` v2.0. Where the repo differs from the handover, the repo's patterns win (CLAUDE.md master rules) and the difference is listed here.
+What was decided and checked in Phase 13, moved here on 2026-10-06 from `docs/phase13-notes.md` and `docs/phase13-schedule.md` (both deleted then; the full files, including day-one discovery and answered questions, are in git history, last version in commit `0e47e01`). What to build is in `PHASE-13-SPEAKING-PLAN.md` (the handover) and `phase13-speaking-design/`; the plan and status are in `phase 13 implementation plan.md` (repo root). Section numbers like "§16" in older commits and the Change Log refer to the deleted notes; their content is below under the same titles.
 
-Nothing in this file has been deployed. Nothing on UAT, pm2 or the running servers was touched or probed.
+## Status (2026-10-06)
 
----
+All Phase 13 build work is done and live on UAT: The Pond at `/sounds` (v2 recording flow: 3 · 2 · 1, beep, stops on a pause), server speech checking through `POST /api/v1/speaking/check` → the self-hosted speech scorer (`docker/speech`, calibrated in M4, checked with a Vietnamese speaker), spend caps (S13 in the app, G5 in Google Cloud). The entry points ("Say this one?" on review cards, the Sound Garden card on Missions) were removed on 2026-10-06 for a redesign (§21 below). Open: the Vietnamese / Chinese text reviews, one Pond sentence with the silent switch on, the Playwright run, and the to-do list below.
+
+## Decisions D1–D7 (outcomes)
+
+- **D1** native audio + word timings: **Google Cloud TTS** (Neural2, SSML `<mark>` timepoints), made offline by `scripts/speaking-generate.ts`.
+- **D2** recordings: never stored. Handover v2: sent, checked, dropped (`POST /speaking/check` keeps it in memory only); no audio or transcript in `speaking_attempts`.
+- **D3** scoring: on the phone first (envelope scorer), since 2026-10-05 the **self-hosted speech scorer** (G6); the phone still screens silent recordings and judges target-word stress.
+- **D4** entry points: Missions card + "Say this one?" (2026-10-04), **both removed 2026-10-06** for a redesign; `/sounds` stays.
+- **D5** garden effect: visual only; attempts saved; no SRS change, no mission.
+- **D6** zh-CN: drafted by Claude, flagged for a native review.
+- **D7** CORS on the media host: `media.dygoacademy.com` sends `Access-Control-Allow-Origin` for www; the Cloudflare response-header rule is on the to-do list.
 
 ## To do later
 
@@ -28,135 +38,6 @@ Open items Dylan has parked, newest first. Tick them off here (and add a Change 
 - [ ] **Real-iPhone check** after the Cache Rule: play a word twice in Review (second play instant), then in airplane mode (still plays).
 
 Exact settings for all four Cloudflare rules: README → "Cloudflare dashboard rules". Done already: the bare-domain → www redirect (live, 301).
-
-## 1. Stack (checked in the code)
-
-| Layer | What is there | Where |
-| --- | --- | --- |
-| Frontend | Next.js 15 App Router, React 19, `next-intl` ~4.4, Tailwind | `com.dygoacademy.frontend/` |
-| Frontend routes | Route groups `(garden)`, `(auth)`, `(home)`…; paths in `src/constants/routes.ts` (protected prefixes) and `src/constants/garden.ts` (`GARDEN_ROUTES`, e.g. `quiz(topicId)`) | master rule 4 |
-| Frontend data | All calls through `src/lib/api-client.ts`; hand-written snake_case types in `src/types/*.ts` mirroring the backend | master rule 3 |
-| Garden screens | Presentational `components/garden/screens/*Screen.tsx` + data wrappers `components/garden/live/*Live.tsx` + fixtures for `garden:diff` | |
-| i18n | `messages/en-US.json`, `vi-VN.json`, `zh-CN.json` (all three on every UI text change) | master rule 5 |
-| Backend | NestJS (port 3001), BullMQ workers, `modules/<name>/{controller,service,module}.ts` (e.g. `modules/missions/`) | `com.dygoacademy.backend/` |
-| Database | Postgres 17 (supabase/postgres image) + GoTrue auth. No browser Supabase client for data: the API runs each request through `DatabaseService.withUser` (sets the JWT per transaction) and RLS does access control | `database/`, master rule 1 |
-| Storage | Cloudflare R2 via the S3 SDK, `storage/storage.service.ts`; key `audio/<lang>/us/<md5(word)>.wav`; public base `R2_PUBLIC_URL` | |
-| Word audio | Gemini TTS `gemini-2.5-flash-preview-tts`, voice `Kore`, 24 kHz PCM wrapped as WAV, **US only**, one clip per word; generated in `workers/enrichment.processor.ts`, backfilled by `scripts/audio-backfill.js` | `ai/gemini-enrichment.service.ts` |
-| Native wrapper | **None.** No Capacitor/Cordova config, no `ios/` or `android/`, no web app manifest. `public/sw.js` is only for Web Push. So no `NSMicrophoneUsageDescription` work; Phase 13 runs in mobile Safari / Chrome | |
-| Hosting | One Mac under pm2, exposed by a Cloudflare Tunnel: `www.dygoacademy.com` → :3000, `api.dygoacademy.com` → :3001 (`cloudflared-config.yml`) | |
-
-### Tests
-
-| Suite | Command | Notes |
-| --- | --- | --- |
-| Backend unit | `cd com.dygoacademy.backend && npm test` (Jest 29, ts-jest) | specs next to the code |
-| Frontend unit | `cd com.dygoacademy.frontend && npm test` (Vitest 5, jsdom; `src/**/*.test.{ts,tsx}`), `npm run typecheck:test`, `npm run lint` | never `next dev` in this folder (master rule 10) |
-| RLS | `./database/apply-migrations.sh --test` | builds a throwaway DB `dygo_rls_scratch` in the `dygo_supabase_db` container from the stub + schema + core fixtures, then runs `rls_test.sql`, the retention migration + test, and (from T1) the speaking migration + test; drops it at exit |
-| Visual | `npm run garden:diff -- --base <url> --locale en-US,vi-VN` | pass ≤ 0.5% |
-| E2E | `com.dygoacademy.automationtesting/ui` (Playwright) | |
-
-## 2. How the Review "Listen" button gets audio today
-
-1. `modules/srs/srs.service.ts` selects `ml.audio_url` from `master_lexicon` into each due card (`audio_url: string | null`, mirrored in `src/types/srs.ts`).
-2. `components/garden/live/ReviewLive.tsx` passes `card.audio_url` as `audioSrc` to `ReviewScreen` → `ReviewCard` → `components/garden/AudioButton.tsx`.
-3. `AudioButton` plays it with a plain `new Audio(src)` (`playbackRate` prop supported). If loading fails it turns into an "Audio unavailable, tap to retry" pill (built for a blocked CDN).
-
-`master_lexicon.audio_url` is a **full public URL** (`<R2_PUBLIC_URL>/audio/en/us/<md5>.wav`), so the host is baked into every row. The word clip is the word alone, not a sentence, and has no timings, so it can't be reused for speaking items. Only the R2 upload code (`StorageService.upload`, `hasObject`) can be reused.
-
-## 3. Where audio is served from, and China
-
-- `R2_PUBLIC_URL` in the backend `.env` is an **`https://pub-….r2.dev`** address: R2's public development URL, not a custom domain.
-- Cloudflare documents `r2.dev` as meant for development: rate-limited and without caching/WAF features. It's widely reported to be unreliable or blocked from mainland China. **Not verified from China** (I can't test that here).
-- The app itself is on `www.dygoacademy.com` through a Cloudflare Tunnel (Cloudflare's global network, not its China network), so its own reachability from China is also unverified.
-- Generating audio is **not** a China question: T2 runs offline as a script on Dylan's Mac. Only *serving* the files matters for learners.
-- Suggestion for Dylan, not done: connect a custom domain on the `dygoacademy.com` zone to the bucket (e.g. `audio.dygoacademy.com`). Audio then goes through the same Cloudflare zone as the app (if the app loads in China, so does the audio), it gets edge caching, and CORS (D7) is set on the bucket. Because `speaking_items` stores object **keys**, not URLs (T1), changing the domain later means changing one env var. Existing `master_lexicon.audio_url` rows would need a one-off URL rewrite.
-
-## 4. Data facts (for T1/T2)
-
-- Words: `master_lexicon` (global, unique `(normalized_word, language_code)`, `ipa_us`, `ipa_uk`, `cefr_level` enum, `part_of_speech`, `definition_en`, `audio_url`, `example_sentences` jsonb `[{sentence, level, translation_hint}]`). RLS: select for everyone signed in; writes by `service_role` only.
-- Beds: `topics` (belongs to a `group`, private unless `is_public`). Words are placed in beds through `topic_words` (`topic_id`, `lexicon_id` nullable until enriched, `status`). **Every learner/class has its own topics**: there's no global "Environment bed".
-- In the seeds, the QA tenant has a private topic **"Nature & Environment"** (`c0c0c0c0-0000-0000-0000-000000000005`, `seeds/04_qa_words.sql`) containing `drought`, `biodiversity` and `mitigate` (sentence "Planting more trees…", matching the handover). `sustainable` is in "Business & Professional English" (`…003`). **`deteriorate` isn't in any seed.** Each seeded word has one example sentence. I didn't query the production database, so which real topic is "the Environment bed" is unknown (question Q3).
-- SRS state is per user in `user_word_srs` (`fsrs_state`: New/Learning/Review/Relearning); the API's due cards carry `is_new` and `state` (`src/types/srs.ts`), enough to pick "due/new first" in T6.
-- Missions: `daily_missions.type` has a check constraint `('REVIEW_DUE','LEARN_NEW','QUIZ')`. A future SPEAK mission (backlog B-2) needs a migration. Not in v1 (D5).
-
-## 5. Differences between the handover and the repo
-
-| Handover assumes | Repo has | What we do |
-| --- | --- | --- |
-| Supabase Storage | Cloudflare R2 bucket via `StorageService`, public `r2.dev` URL | Native clips go to R2 under new deterministic keys (e.g. `speaking/en/<uk\|us>/<md5(sentence)>.<ext>`, decided in T2). `speaking_items` stores keys, the API builds URLs |
-| TTS with word timings | Gemini TTS, no word timings, US voice only | D1 open, options in §6 |
-| `en.json` / `vi.json` | `messages/en-US.json`, `vi-VN.json`, `zh-CN.json`; master rule 5 = all three | T8 adds the §8 keys to all three; zh-CN drafted and flagged (D6). T0–T1 add no strings |
-| Generated Supabase types; browser reads tables | NestJS API + RLS via `withUser`; hand-written snake_case types | T2 adds `GET /speaking/topics/:topicId/session` and `POST /speaking/attempts` in a `modules/speaking/` module and `src/types/speaking.ts` (fields exactly as the columns: `audio_uk_url`, `timings_us`, `target_index`, `word_marks`, `user_duration_ms`…). No endpoints or types added in this run |
-| `word_id` → words table | `master_lexicon` | Column is `lexicon_id`, same name as in `topic_words` |
-| `user_id` → `auth.users` | Every per-user table references `public.profiles(id)` | `speaking_attempts.user_id` references `profiles(id)`, default `auth.uid()` |
-| Speak button on the topic bed (A7), `/speak/[topicId]` | **Changed by Dylan 2026-10-04 (§14):** no topic-bed entry. Speaking starts from the Missions tab (Sound Garden → The Pond) and from a flashcard ("Say this one?"); quiz has none | Items are per word; routes and screens follow §14 |
-| `lib/speaking/*` | Frontend code lives under `src/` | `src/lib/speaking/{audio,envelopeScorer,constants}.ts` |
-| Native wrapper may exist | None | Skip `NSMicrophoneUsageDescription`; plain Safari permission prompt |
-| Accent values `UK`/`US` | `profiles.english_variety` uses `en-GB`/`en-US` | Kept `UK`/`US` in the speaking tables as the handover says; the API maps `en-GB → UK`, `en-US → US` to pick the default chip |
-
-## 6. Decisions D1–D7: what the code tells us
-
-**D1 · Native audio + word timings: decided 2026-10-04 by Dylan = B, Google Cloud TTS** (pricing and effort compared in §12). Gemini TTS returns only PCM, no word boundaries. Generation is an offline script, so only the *files* need to reach China, not the provider. Options:
-
-| Option | Timings | UK + US voices | Cost / effort | China note |
-| --- | --- | --- | --- | --- |
-| A. Azure AI Speech TTS | `WordBoundary` events with offset + duration per word (built in) | Yes, many en-GB and en-US neural voices | Pay per character; a new key and SDK in the backend | Generation offline, so not an issue. Azure also runs Speech in its China cloud (21Vianet), which matters only if D3 later picks Azure Pronunciation Assessment |
-| B. Google Cloud TTS | SSML `<mark>` timepoints (`enableTimePointing`, v1beta1): put a mark before every word | Yes, en-GB and en-US voices (not every voice family supports SSML marks; check the chosen voice) | Pay per character; new GCP key | Google is blocked in China, but generation is offline |
-| C. Amazon Polly | "Speech marks" (word start offsets) from a second request with the same text | Yes, en-GB and en-US neural voices | Pay per character; AWS key; two calls per clip | AWS has China regions; not needed offline |
-| D. ElevenLabs | `with-timestamps` endpoint gives per-character times (group into words) | Yes, British and American voices | Pricier per character | Not needed offline |
-| E. Forced alignment on Gemini audio | Run an aligner on the clip + known sentence: Montreal Forced Aligner, or WhisperX / wav2vec2 alignment | Kore is US only. A UK voice needs a second provider, or prompting Gemini for a British accent (not reliable) | No new paid provider; adds a Python tool to the Mac; ~20–50 ms word accuracy on clean TTS is plenty for v1 | All local |
-
-Whichever is chosen, syllable boundaries for the target word come from the IPA (`ˈ` and `.` in `ipa_uk` / `ipa_us`), split evenly inside the word's time range (handover §2.1).
-
-**D2 · Store recordings?** Default no. T1 has no audio column on `speaking_attempts`, only numbers.
-
-**D3 · Scoring source.** Default: the on-device envelope scorer (T4). Nothing in the repo constrains it.
-
-**D4 · Entry point: decided by Dylan 2026-10-04, see §14.** Missions tab → "Sound Garden" card → `/sounds` (The Pond + Sound patch); flashcard → "Say this one?" sheet (≤ 3 cards); quiz → nothing. Not a Speak button on the topic bed.
-
-**D5 · Garden effect.** Default: visual only on SP4, attempts saved, no SRS change, no mission. `daily_missions.type`'s check constraint would block a SPEAK mission without a migration anyway.
-
-**D6 · zh-CN strings.** Master rule 5 requires them. Default: draft from English, flag for native review (T8).
-
-**D7 · R2 CORS.** Nothing in the repo sets bucket CORS (no `PutBucketCors`, no Cloudflare config file), and the docs don't mention it. Today's `<audio>` playback doesn't need CORS, so it may never have been set. **Treat it as not set.** The waveform's `fetch` + `decodeAudioData` needs `Access-Control-Allow-Origin` for `https://www.dygoacademy.com`, the stg origin `http://100.104.108.36:3000` (`env-profiles/stg.env`) and `http://localhost:3000`. Set this in the Cloudflare dashboard (Dylan), or serve speaking audio through a same-origin proxy (costs bandwidth on the Mac). Not checked against the live bucket (no server probing in this run).
-
-## 7. Files T1–T10 will touch
-
-| Task | Files |
-| --- | --- |
-| T1 (done) | `database/migrations/20261004_speaking.sql`, `database/tests/rls_speaking_test.sql`, `database/apply-migrations.sh`, `dygo_academy_database_dictionary.md` |
-| T2 (done, see §13) | `com.dygoacademy.backend/scripts/speaking-generate.ts`, `src/modules/speaking/**`, `src/storage/storage.service.ts`, `src/app.module.ts`, `package.json` (scripts), `dygo_academy_api_surface.md`; frontend `src/types/speaking.ts`, `src/types/index.ts`, `public/audio/speaking-fixture/` |
-| T3 | `src/lib/speaking/audio.ts`, `src/hooks/useLiveLevels.ts`, `src/hooks/usePlayer.ts` (or under `lib/speaking/`), tests, a dev page under the garden dev prefixes |
-| T4 | `src/lib/speaking/envelopeScorer.ts`, `src/lib/speaking/constants.ts`, tests |
-| T5 | `src/components/garden/speaking/{Waveform,LiveWaveform,CompareWaveform,WordMarks,StageScore}.tsx`, gallery page `src/app/(garden)/garden/_gallery/page.tsx` |
-| T6 | `/sounds` (The Pond) per §14 instead of `/speak/[topicId]`: `src/app/(garden)/sounds/**`, `components/garden/screens/Speak{Listen,Recording,Compare,Done}Screen.tsx`, `components/garden/live/SpeakLive.tsx`, fixtures, `src/constants/routes.ts`, `src/constants/garden.ts` |
-| T7 | the screens above + tests |
-| T8 | `messages/en-US.json`, `vi-VN.json`, `zh-CN.json` |
-| T9 | Sound Garden card on the Missions tab, and "Say this one?" on the review card (`ReviewCard.tsx` / `ReviewScreen.tsx`, `live/ReviewLive.tsx`) instead of `TopicBedScreen.tsx` |
-| T10 | this file, a Playwright spec under `com.dygoacademy.automationtesting/ui` |
-
-## 8. Risks
-
-| Risk | Note |
-| --- | --- |
-| No Google key yet | Real clips wait for `GOOGLE_TTS_API_KEY`; T3–T5 use the fixture (`public/audio/speaking-fixture/`) |
-| Google gives word **starts** only | Word ends = next start pulled back over silence on the PCM; fine for v1 envelope scoring, worth eyeballing on the first real clips |
-| Audio from China | `r2.dev` URL is the weakest link (§3); the existing word audio has the same problem today |
-| R2 CORS (D7) | Without it the native waveform can't be drawn; playback alone still works |
-| Pond scope = Review's new-card scope | Every READY word the learner can read, which includes other people's **public** topics (same as `SrsService.findDue`). If The Pond should only use words already in their garden, it's a one-line change |
-| `deteriorate` missing | The handover's 5 Environment words aren't all in one seeded bed |
-| iOS Safari recording quirks | `audio/mp4` from MediaRecorder, AudioContext must start in a tap, mic indicator must be released; test on a real iPhone at T3 |
-| No local dev server | `next dev` is banned in the frontend folder; device checks happen on UAT after Dylan deploys, or in a separate copy of the folder |
-| Uncommitted work in the tree | `messages/*.json`, `QuizScreen.tsx` etc. have someone else's uncommitted edits (and the automationtesting deletions). T8 will touch the same message files: commit or stash them first |
-
-## 9. T1 · Database (2026-10-04)
-
-- Migration `database/migrations/20261004_speaking.sql`: `speaking_items` and `speaking_attempts` with the handover's columns mapped to the repo (§5), check constraints, RLS, grants, and indexes `speaking_items(topic_id)` (+ `lexicon_id` for the FK) and `speaking_attempts(user_id, item_id, created_at desc)`.
-- RLS: `speaking_items`: select for any signed-in user (`using (true)`, like `master_lexicon`), no write grants for learners; writes only by `service_role`. `speaking_attempts`: select and insert only where `user_id = auth.uid()`; no update or delete (no grant, no policy). Nothing for `anon`.
-- Test `database/tests/rls_speaking_test.sql`, wired into `apply-migrations.sh --test` after the retention test. **Result: passed** (`./database/apply-migrations.sh --test`, exit 0, "Phase 13 T1 speaking RLS assertions: all passed."; 30 assertions: shape, item constraints, anon, items readable by learners in two tenants, no learner or teacher can insert/update/delete items, owner insert with defaulted `user_id`, attempt constraints, Priya / Sarah (teacher) / Dana can't read Alex's attempts, Priya can't insert for Alex, nobody can update or delete attempts).
-- Also checked: the whole chain (stub + schema + every file in `migrations/`) applies cleanly in a separate throwaway DB, dropped afterwards. The real database was not touched; the migration is **not applied** to it (Dylan runs `./database/apply-migrations.sh --migrations` when ready).
-- Bug caught by the test: the first version of the timings shape check let `{"words": []}` (no `duration`) through, because `jsonb_typeof(null) = 'number'` is NULL and a NULL check passes. Fixed with `is not distinct from`.
-- Types: no generated types in this repo. The frontend type file `src/types/speaking.ts` is written by hand in T2 with the API, snake_case, mirroring the response (not the raw table: the API returns URLs, not R2 keys).
 
 ## 10. Decisions taken with defaults
 
@@ -229,127 +110,7 @@ Whichever is chosen, syllable boundaries for the target word come from the IPA (
 | S12-a | Playwright spec not run | `ui/tests/sounds.spec.ts` is written and type-checked, not run: its global setup signs the fixture user in on the live site, and this unattended run doesn't enter passwords on a non-local host | Dylan runs it (command in §16) |
 | S12-b | Master schedule line | Not added: `dygo_academy_master_project_schedule.md` has someone else's uncommitted edits | Add the Phase 13 line when that file is committed |
 
-## 11. Questions for Dylan
-
-1. ~~D1~~ decided: B, Google Cloud TTS. **Next step for you:** create a Google Cloud API key with the Text-to-Speech API enabled (billing on), add `GOOGLE_TTS_API_KEY=` to the root `.env`, then run `npm run speaking-generate -- --topic <id> --dry-run` and without `--dry-run` (§13).
-2. ~~Items per bed or per word?~~ **Answered 2026-10-04:** entry from the Missions tab and flashcards (§14), so items are **per word**. Done in `20261004_speaking_per_word.sql`.
-3. ~~Which topic is the Environment bed?~~ No longer needed: items are per word. Run the script with `--topic <id>` for one bed's words, or `--all` for every word without an item.
-4. **Audio host for China:** custom domain: benefits explained to Dylan 2026-10-04 (§15), his decision pending. **Testing from Vietnam and China: yes** (Dylan, 2026-10-04); checklist in §15.
-5. **D7 CORS:** can you add CORS rules on the R2 bucket for `https://www.dygoacademy.com`, `http://100.104.108.36:3000` and `http://localhost:3000` (GET, HEAD)? Or do you prefer a same-origin proxy?
-6. **TTS budget:** a rough monthly cap for UK + US sentence audio (2 clips per word)?
-7. The uncommitted `messages/*.json` edits in the working tree: whose are they, and should they be committed before T8 touches the same files?
-
-## 12. D1 options compared: pricing and effort (2026-10-04)
-
-List prices checked on the web on 2026-10-04 (third-party summaries where the vendor page didn't render); confirm in each console before paying.
-
-**Volume.** Two clips per word (UK + US), made once and cached in R2 (deterministic keys), so the bill is one-off per word, not per learner. A sentence is ~70 characters. Google bills the SSML input, and with a `<mark>` before every word that's up to ~270 characters per clip (upper bound; if marks aren't billed it's ~70).
-
-| | A. Azure TTS | D. ElevenLabs | **B. Google Cloud TTS (chosen)** |
-| --- | --- | --- | --- |
-| List price | Neural $16 / 1M chars; HD $22 / 1M | Flash/Turbo $0.04 / 1K chars ($40 / 1M); Multilingual v2 / v3 $0.08 / 1K ($80 / 1M); plans from $6/month (Starter) and $22/month (Creator) | Neural2 $16 / 1M chars; Standard/WaveNet $4 / 1M (no Neural quality); Chirp 3 HD $30 / 1M (no SSML, so no marks) |
-| Free each month | 0.5M chars | small free tier, not for commercial use | 1M chars on Neural2 |
-| Environment bed (20 words, 40 clips) | free | ≈ $0.11–0.22 | free (≈ 11K chars) |
-| 1,000 words (2,000 clips) | ≈ 140K chars → free | ≈ $6–11, or a $6–22 plan | ≈ 140K–540K chars → free |
-| 10,000 words (20,000 clips) | ≈ 1.4M chars → ≈ $14 | ≈ $56–112 | ≈ 1.4M–5.4M chars → ≈ $6–70 (after the free 1M) |
-| Word timings | `WordBoundary` events: start **and duration** per word (most exact) | `with-timestamps`: start/end per **character** (group into words) | `<mark>` timepoints: word **starts** only; ends estimated from silence (done) |
-| UK + US voices | many en-GB / en-US neural voices | British and American voices in the library; accent consistency varies by voice | Neural2 en-GB and en-US |
-| Voice quality | very good | best, most natural | good (Neural2) |
-| What's needed | Azure account, Speech resource (key + region), `microsoft-cognitiveservices-speech-sdk` | ElevenLabs account + key; REST only | Google Cloud project, billing, API key; REST only |
-| Effort from here | ~0.5–1 day: swap `synthesizeGoogle` for an Azure synthesizer; map boundary events (it also emits punctuation) to tokens | ~0.5–1 day: swap the synthesizer; group character times by token; ask for `pcm_24000` and wrap it as WAV | **Built** (§13). Missing: an API key |
-| Later fit | Same vendor as Azure Pronunciation Assessment (D3 / backlog B-0), which also runs in Azure China | none for scoring | Google is blocked in China, but generation is offline, so it doesn't matter |
-
-Only the synthesizer function in `scripts/speaking-generate.ts` is provider-specific: timings, validation, R2 keys, upsert and API are shared, so switching to A or D later costs about a day and doesn't change the database or the frontend.
-
-## 13. T2 · Content pipeline and API (2026-10-04)
-
-- **Script** `com.dygoacademy.backend/scripts/speaking-generate.ts` (`npm run speaking-generate`, `:prod`): for each READY word in `--topic`, takes the first example sentence, finds the target word (inflections OK: *contaminated*, *ecosystems*), asks Google Cloud TTS (`v1beta1 text:synthesize`, `LINEAR16`, `enableTimePointing: SSML_MARK`) for UK and US with a `<mark>` before every word, builds and validates the timings, uploads `speaking/en/<uk|us>/<md5(voice|sentence)>.wav` + `.json` to R2, and upserts `speaking_items` as `service_role`. `--dry-run` (lists clips and the cost, writes nothing), `--force` (otherwise never overwrites: an accent already in the DB is skipped, and clips already in R2 are reused with their stored timings), `--accents`, `--limit`.
-- **Timings** `src/modules/speaking/speaking-timings.ts`: SSML with marks, timepoints → word starts, word ends = next start trimmed over silence (−40 dBFS, 10 ms frames), target syllables from the IPA split evenly with primary stress (`ˈ`) marked, `validateTimings`, WAV read/write. 17 unit tests.
-- **API** `src/modules/speaking/`: `GET /api/v1/speaking/session` (The Pond; optional `?topic_id=`), `GET /api/v1/speaking/words/:topicWordId` ("Say this one?") and `POST /api/v1/speaking/attempts` (documented in `dygo_academy_api_surface.md`). All queries run as the learner (`withUser`), so RLS decides access. 9 unit tests. The exact SQL the service sends (captured from it) was run as Alex against a throwaway database built from the schema, fixtures and every migration: due word first, then a new word, then the rest; Vietnamese meaning joined; the topic filter works; a word he can't read returns nothing; attempt insert takes `user_id` from `auth.uid()`.
-- **Frontend types** `src/types/speaking.ts` (snake_case, mirrors the backend), exported from `src/types/index.ts`. No API calls yet (T6).
-- **Fixture** `com.dygoacademy.frontend/public/audio/speaking-fixture/`: `fixture-mitigate-uk.wav`, `fixture-mitigate-us.wav` and `fixture-mitigate.json` (sentence, target index, IPA, timings), made with `npm run speaking-generate -- --fixture --out ../com.dygoacademy.frontend/public/audio/speaking-fixture`.
-- **Checks**: backend `tsc --noEmit` clean, Jest 321/321, eslint clean on the new files; frontend `tsc --noEmit` and `next lint` clean on the new types. The script's word query was run against the QA "Nature & Environment" bed in a throwaway database: 20 READY words, all with a sentence. Without a key, the script stops with "GOOGLE_TTS_API_KEY is not set… Nothing was generated."
-- **Not done (blocked on the key)**: no real clips, no `speaking_items` rows. The migration isn't applied to the real database yet either. To finish T2:
-  1. `./database/apply-migrations.sh --migrations` (applies `20261004_speaking.sql`).
-  2. Add `GOOGLE_TTS_API_KEY=` to the root `.env`.
-  3. `cd com.dygoacademy.backend && npm run speaking-generate -- --topic <Environment bed id> --dry-run`, then without `--dry-run`.
-  4. Restart the backend so the new `/speaking` routes load (the API code isn't deployed).
-- The QA seed's Environment bed has 20 words; the handover's 5 aren't all in it (`sustainable` is in another bed, `deteriorate` nowhere). The script makes items for every READY word in the bed (`--limit`), so the session picks 5 of them.
-
-## 14. Entry points (Dylan, 2026-10-04, answer to Q2)
-
-```
-Missions tab ── "Sound Garden" card ─────► Sound Garden (/sounds)
-                                             ├─ 🪷 The Pond: shadowing with the two waveforms
-                                             └─ 🌱 Sound patch: the 12 sound drills
-Flashcard ── "Say this one?" (≤ 3 cards) ─► shadow sheet over the card
-Quiz ── nothing
-```
-
-This brings back v1.2's entry points (`phase 13 implementation plan.md` §14), replacing the handover's D4 (a Speak button on the topic bed, `/speak/[topicId]`). The Pond is the handover's SP1–SP4 flow; the "Say this one?" sheet runs SP1–SP3 for one card (v2.0 backlog B-10).
-
-**Done now (data and API only, no UI):**
-- `database/migrations/20261004_speaking_per_word.sql`: `speaking_items` loses `topic_id`; one item per word (`unique (lexicon_id)`). Duplicates are merged into the oldest item and their attempts moved onto it (tested: two items for one word, an attempt on each → one item, both attempts kept). RLS test updated (`--test` passes).
-- API: `GET /speaking/session` (The Pond: the learner's words with items, due → new → rest, optional `?topic_id=`), `GET /speaking/words/:topicWordId` (the flashcard sheet; `topic_word_id` is what `DueCard` already has). The topic-scoped `GET /speaking/topics/:topicId/session` is removed.
-- Script: items per word; `--topic` picks a bed's words, `--all` every READY word without an item. If a word's sentence changes, the other accent's old clip is dropped instead of kept with the wrong sentence (tested).
-
-**Questions this raises (UI tasks, not built):**
-1. **Sound patch (12 drills)** was backlog B-3 in v2.0 (`final-t-d`, `final-s-plural`, `final-ed`, `final-k-g`, `th-t`, `th-s`, `sh-s`, `s-z`, `l-r`, `n-l`, `v-w`, `long-short-i`). Is it in Phase 13 now? It needs minimal-pair content and audio (the same Google pipeline can make it) and screens that aren't in the design files yet.
-2. **When does the Sound Garden card show?** Proposed default: when `item_count ≥ 5` (enough for one Pond session).
-3. ~~Which 3 cards get "Say this one?"~~ **Dylan, 2026-10-04: "you can make it by yourself".** Decided, see T9-a below.
-4. **Does a Pond session count for anything** (a mission, the streak)? Default stays D5: visual only, no SRS change, no mission.
-
-### T9-a · Which flashcards offer "Say this one?" (decided by Claude, 2026-10-04)
-
-At most **3 cards per review session**, chosen once when the session's cards load, so the offers don't depend on how the learner rates:
-
-1. **Eligible:** the card's word has a speaking item, and the learner hasn't spoken that item today (no `speaking_attempts` row since local midnight), so the same word isn't offered again in a second session the same day.
-2. **Order of preference:** new words first (`is_new`): the first meeting is the best moment to learn the sound. Then forgotten words (`state = 'Relearning'` or `lapses > 0`). Then everything else. Ties go by the card's place in the queue. Take the first 3.
-3. **Where:** after the card is flipped (the learner has seen the meaning and heard the word), as a small optional button next to the audio button. It never blocks rating. Keyboard users can skip it.
-4. **Counts as used** once it's shown, whether the learner taps it or not, so a session never has more than 3 offers.
-5. **Not offered at all** when speaking isn't possible: no `MediaRecorder` / `getUserMedia`, or the microphone was denied earlier (the sheet's "Skip speaking" also hides the rest of the session's offers).
-6. The sheet runs SP1 → SP2 → SP3 for that one sentence and saves an attempt like The Pond. Closing it returns to the same card. It never changes the card's SRS grade (D5).
-
-Why these choices: new and forgotten words are where pronunciation help matters most; 3 per session keeps reviews quick (the backlog note for B-10 set the same cap); picking up front keeps it predictable and testable.
-
-**Implementation (T9):** the review screen needs to know which of its cards have an item and were spoken today. Add one batch endpoint, `GET /api/v1/speaking/words?topic_word_ids=…` → `[{ topic_word_id, item_id, spoken_today }]`, rather than changing the SRS due-card query. The choice itself is a pure function (`pickSpeakOffers(cards, lookup) → topic_word_ids`) with unit tests. The constant `SPEAK_OFFERS_PER_SESSION = 3` lives in `src/lib/speaking/constants.ts`.
-
-## 15. Audio host: custom domain, and the Vietnam / China test (2026-10-04)
-
-**Why move the bucket behind `audio.dygoacademy.com`** (today: `https://pub-….r2.dev`):
-
-| | `r2.dev` (today) | Custom domain |
-| --- | --- | --- |
-| Meant for | Development (Cloudflare's own wording); rate-limited | Production |
-| Edge cache | None: every play goes to the bucket | Cloudflare cache, so a clip is served from the city nearest the learner after the first play. Our clips are already sent as `immutable` |
-| Reachability | A shared `*.r2.dev` name; reported blocked or unreliable in mainland China | Same zone and network as `www.dygoacademy.com`: if the app loads, the audio loads |
-| Control | Almost none | Cache rules, hotlink protection, analytics, WAF, like the rest of the zone |
-| Name | Tied to a random bucket id | Ours; we can move storage later without changing URLs |
-| Cost | Free (R2 has no egress fees) | Free too; the domain is already on Cloudflare (the tunnel uses it) |
-
-What it does **not** fix: Cloudflare's normal network has no servers inside mainland China, so the app and the audio are both served from nearby regions (Hong Kong, Singapore, Tokyo). For fast, reliable China delivery the options are Cloudflare's China Network (Enterprise plan + an ICP licence) or a China CDN. The test below shows whether that's needed.
-
-**Steps if Dylan says yes:** R2 → bucket → Settings → Custom Domains → add `audio.dygoacademy.com`; set `R2_PUBLIC_URL=https://audio.dygoacademy.com`; one SQL update to rewrite the host in existing `master_lexicon.audio_url` rows (speaking items store keys, so they need nothing); set the bucket CORS rules (D7); turn off the `r2.dev` URL once nothing uses it.
-
-**Test checklist (testers in Vietnam and mainland China).** Each on a phone, once on Wi-Fi and once on mobile data, no VPN:
-
-| # | Do | Note |
-| --- | --- | --- |
-| 1 | Open `https://www.dygoacademy.com` and sign in | Loads? Seconds to the garden? |
-| 2 | Review → tap the speaker on 5 different words | Plays every time? "Audio unavailable" shown? Delay before sound |
-| 3 | Open one word's audio URL directly (Dylan sends one `r2.dev` link from `master_lexicon.audio_url`) | Plays? Seconds to start |
-| 4 | Open `https://www.dygoacademy.com/audio/speaking-fixture/fixture-mitigate-us.wav` (served by the app itself, after the next deploy) | Plays? Compare with 3: same origin as the app vs `r2.dev` |
-| 5 | After the custom domain exists: the same clip on `https://audio.dygoacademy.com/…` | Plays? Seconds to start |
-
-Report: city, network (Wi-Fi / which mobile carrier), pass / fail and seconds for each row, and a screenshot of any error. Read it as: if 1 passes and 3 fails, the custom domain fixes it; if 1 also fails or is slow in China, we need the China CDN option.
-
-### 15a. Our own media host: `media.dygoacademy.com` (2026-10-04)
-
-Dylan chose `media.dygoacademy.com` for the server copy (RustFS on this Mac, through the Cloudflare Tunnel). Live and checked from the internet: `https://media.dygoacademy.com/test/fixture-mitigate-us.wav` → 200 `audio/wav` in ~0.14 s, byte ranges supported, anonymous PUT / listing → 403. Same keys as R2, so the fallback URL is the R2 URL with the host swapped. Testers in Vietnam and China can use that test URL for row 5 of the checklist above (it's on our domain now, before R2 gets its custom domain).
-
-Still to do in the Cloudflare dashboard (README "Cloudflare dashboard rules"): the bare-domain redirect (today `dygoacademy.com` returns HTTP 530), a Cache Rule for `media.*` (today `cf-cache-status: DYNAMIC`, so every play reaches the Mac), a response-header rule `Access-Control-Allow-Origin: *`, and a WAF rule allowing only GET/HEAD/OPTIONS. Not done yet: writing clips to RustFS as well as R2 (script + worker) and the fallback URLs in the API (§ "where do we save the audio").
-
-### 15b. Option 2 built (2026-10-04)
+## 15b. Media host: option 2 built (2026-10-04)
 
 - **Store:** app media is in RustFS (`STORAGE_PROVIDER=rustfs`, default), public at `https://media.dygoacademy.com/<key>`. Each clip is stored as AAC `.m4a` (linked, ~6–7× smaller) and the original `.wav` at the same key (`KEEP_WAV_COPY`, kept for the WAV support period, Dylan). Existing word audio was moved from R2 (124 files) and the 19 `master_lexicon.audio_url` values now point at `.m4a` on `media.dygoacademy.com`.
 - **Phone:** the service worker caches media cache-first (range requests served from the cache for iOS Safari); Review prefetches the next 3 cards' audio. The speaking screens (T6) will prefetch their 5 clips the same way (`prefetchMedia`).
@@ -370,18 +131,6 @@ select coalesce(country, '?') as country, coalesce(city, '?') as city,
 ```
 
 - **Needs Dylan:** deploy (backend: RustFS storage, AAC, telemetry endpoint; frontend: service worker, prefetch, logging); apply migrations `20261004_speaking*.sql` and `20261004_media_load_events.sql` (`./database/apply-migrations.sh --migrations`); after the deploy, `npm run media-migrate` once more for words added meanwhile; Cloudflare rules (README table) incl. the CORS header rule, which the phone cache relies on for files Cloudflare cached; real-iPhone check of playback from the cache.
-
-**Applied and deployed 2026-10-04 (Dylan asked):** migrations `20261004_media_load_events`, `20261004_speaking`, `20261004_speaking_per_word` applied to the real database (28 → 31 tables, all with RLS; grants checked: `speaking_items` SELECT, `speaking_attempts` SELECT+INSERT, `media_load_events` INSERT only, nothing for anon). Deployed via `deploy/request.md` (all 4 steps OK; working tree incl. others' uncommitted edits). Live checks: www 200, API health 200, `/speaking/session` and `/telemetry/media` 401 signed out; as the `alex@dygo.test` fixture: session `{ item_count: 0 }` (no speaking audio yet), telemetry stored with Cloudflare country `SG` (test row deleted); `sw.js` serves the media cache; `media-migrate` re-run: nothing left on R2 URLs. Still open: Google TTS key (speaking audio), Cloudflare cache / CORS / WAF / visitor-location rules, real-iPhone check of cached playback.
-
-**Speaking audio generated 2026-10-04** (Google Cloud TTS key in the root `.env`, Dygo project, key restricted to the Text-to-Speech API): first the Nature & Environment bed (40 clips, 19 s), then `--all`: **138 words × UK + US = 276 clips**, each stored as `.m4a` + `.wav` + `.json` in RustFS. 72,776 characters in total, inside the 1M free Neural2 characters a month (≈ $1.16 at list price). Checks: all 276 timings valid, every target word has a stressed syllable; clips 1.86–5.87 s (median 3.82 s); energy check on 12 random clips: all 123 word spans contain speech and the gaps between words are silent; `mitigate` US: 3 syllables, stress on the first. Live API as `alex@dygo.test`: `item_count` 38, a 5-item Pond session, due words first, `media.dygoacademy.com` URLs.
-
-Skipped (5): `analyse` has no example sentence; `food court`, `french beans`, `long beans`, `hello world` are multi-word entries and `findTargetIndex` only matches one token. Follow-up: support a target that spans several tokens (e.g. `target_index` + `target_length`, or mark the phrase's first word), or give those words single-word sentences.
-
-**S0 (2026-10-04):** multi-word entries supported (`findTargetIndex` matches the phrase, `targetIpaFor`; 2 new tests). `speaking-generate --all` then made 12 clips: `food court`, `french beans`, `long beans`, `hello world`, plus `compensation` and `dissatisfaction` (added since T2). 3,406 SSML chars (free tier). **144 words have speaking audio; only `analyse` (no example sentence) is left.** Spot check: `.m4a` 200 on `media.dygoacademy.com`, `food` / `french` targets with one stressed syllable.
-
-**S3 scorer (2026-10-04):** `src/lib/speaking/envelopeScorer.ts` + `constants.ts`. Synthetic sentence (8 tone-burst words, target with 3 syllables, native 24 kHz, learner 48 kHz) scores: identical **100**, flattened target **89** (`stress_soft` + stress tip), ×1.15 slower **99**, one word left out **93** (`missing`), ×0.5 (twice as fast) **86**, ×1.6 **91**. Run time **2.9 ms** for a 5 s clip in Node/jsdom on the Mac (target < 150 ms on a mid-range phone; even 20× slower fits). **Watch at G3:** the §3 formula is lenient (50 points of envelope similarity stay high for anything with the same rhythm), so a dropped word or rushing still lands in bloom/fruit; if Dylan finds the marks too kind, scale the DTW cost (e.g. similarity = 1 − 2 × cost) in `constants.ts`.
-
-**S6 strings (2026-10-04):** 90 keys under `screens.speak` in all three locales. **Dylan, please check:** (1) the Vietnamese strings that are *not* in handover §8 (drafted by Claude): `header`, `close`, `accent`, `micButton`, `stopButton`, `view.label`, `waveLabel.*`, `mark.missing/rushed/slow`, `tip.missing/rushed/slow/flowed`, `playNative`, `playYou`, `done.sub` (changed: no topic), `done.gardenLabel`, `mic.*`, `denied.*`, `quiet.*`, `short.*`, `unsupported.*`, `audioFailed.*`, `soundGarden.*` ("Vườn âm thanh", "Ao sen"), `sayThis.*`; (2) the mic explainer wording in English (`mic.*`, handover §5 "draft and flag"); (3) all zh-CN (the file is a draft for native review, D6).
 
 ## 16. QA matrix (S12, 2026-10-04)
 
@@ -490,7 +239,7 @@ Handover §8 keys are in `screens.speak` in all three locales: `getReady`, `coun
 
 Dylan, 2026-10-04: paid services (Azure ≈ $1.80, SpeechSuper ≈ $6 per 1,000 checks) cost too much for now; Google can't score pronunciation and is blocked in mainland China. **G6 = self-hosted on the UAT Mac, in Docker, behind an API.** S17 (`POST /speaking/check` + `SpeechChecker`) stays; S20 becomes "Mac scorer" (steps M2–M5 below).
 
-**Spike M1** (Mac M2, 16 GB; Docker Desktop 8 CPUs / 9.5 GB, CPU only, no GPU in Docker on macOS). Nine test clips made with macOS voices, as AAC `.m4a` like an iPhone (30–48 KB for 4–6 s): good US / UK, the fixture clip, "the" left out, "mitigate" → "migrate", "effects" → "affects", Vietnamese voice (Linh), Chinese voice (Tingting), 2 s of noise before speaking. Code: `docs/phase13-speech-spike/` (`Dockerfile`, `gop.py`).
+**Spike M1** (Mac M2, 16 GB; Docker Desktop 8 CPUs / 9.5 GB, CPU only, no GPU in Docker on macOS). Nine test clips made with macOS voices, as AAC `.m4a` like an iPhone (30–48 KB for 4–6 s): good US / UK, the fixture clip, "the" left out, "mitigate" → "migrate", "effects" → "affects", Vietnamese voice (Linh), Chinese voice (Tingting), 2 s of noise before speaking. Spike code (`Dockerfile`, `gop.py`) was in `docs/phase13-speech-spike/`, deleted 2026-10-06 (in git history; replaced by `docker/speech/`).
 
 1. **Words, Whisper** in `ghcr.io/speaches-ai/speaches:latest-cpu` (arm64, OpenAI-style `POST /v1/audio/transcriptions`, word timings), `127.0.0.1` only, int8, 6 threads, 3 GB.
    - `small.en`: right on every clip (missing "the", "migrate", accents misheard plausibly, late start found at 1.65 s) but **6–12 s** a clip: too slow.
@@ -591,3 +340,57 @@ Dylan plans to redesign where speaking is started from. Removed from the app:
 
 Kept, for the redesign to use: The Pond at `/sounds` (open the URL directly), `SpeakFlow` with its `single` mode (one sentence, as the sheet used it), the backend `GET /speaking/words` and `/speaking/words/:topicWordId` (now not called), the `screens.speak.sayThis.*` / `soundGarden.*` strings (`soundGarden.title` is still the `/sounds` page title), server checking, the scorer.
 
+## Session log (from `docs/phase13-schedule.md`)
+
+One line per session: date · session · result · next.
+
+- 2026-10-04 · T0–T2 (+ option 2 media, deploy) · done, see notes §9, §13, §15b · next: S0 / S1
+- 2026-10-04 · S0 · done (f2b159f): multi-word targets, 12 new clips, 144 words with audio (only `analyse` left), plan file synced (uncommitted) · next: S1
+- 2026-10-04 · S1 · done: `src/lib/speaking/audio.ts` + 19 tests · next: S2
+- 2026-10-04 · S2 · done (8624b2a): `useLiveLevels`, `usePlayer`, dev page `/garden/_speaking`; **deployed 13:41**, www + API 200 · next: S3 (G1 iPhone check by Dylan doesn't block)
+- 2026-10-04 · S3 · done: envelope scorer + constants, 10 tests, 2.9 ms / 5 s clip; DTW step penalty added (S3-a); scores lenient, check at G3 · next: S4
+- 2026-10-04 · S4 · done: Waveform / LiveWaveform / CompareWaveform + gallery section, 8 tests; visual check vs design waits for the S8 deploy · next: S5
+- 2026-10-04 · S5 · done: WordMarks, StageScore, SpeakingPlant + gallery, 7 tests · next: S6 (G2 handled by staging only the new keys)
+- 2026-10-04 · S6 · done: 90 `screens.speak` keys × 3 locales, only the new keys staged (others' edits untouched) · next: S7
+- 2026-10-04 · S7 · done: `/sounds` The Pond, SpeakLive state machine, SP1 + SP2 screens, fixtures, 17 tests · next: S8 (SP3, SP4, attempts, reference pages, deploy)
+- 2026-10-04 · S8 · done (e03aac9): SP3 Compare + SP4 Done, attempts saved, SpeakLive flow test; `garden:diff` not run (no SP reference PNGs, needs `next dev`, S8-f); **deployed 14:07**, www + API 200 · next: S9 (G3 iPhone check by Dylan doesn't block)
+- 2026-10-04 · S9 · done: SpeakNotice + all six states in SpeakLive, `/sounds?state=` dev toggle, 11 tests · next: S10
+- 2026-10-04 · S10 · done: Sound Garden card on Missions (≥ 5 items) → `/sounds`; fresh session per visit · next: S11
+- 2026-10-04 · S11 · done (f7190b1 + this commit): lookup endpoint, `pickSpeakOffers`, "Say this one?" button + sheet (SpeakFlow single mode); deploy left to S12 per run rules · next: S12
+- 2026-10-04 · S12 · done (4439c70): Playwright spec for `/sounds` (written, not run: S12-a), QA matrix + open issues in notes §16; **deployed 14:22**, www + API 200 · next: Dylan's device checks (G1, G3) and beta (G4); all sessions S0–S12 done
+- 2026-10-04 · G1 (Dylan, iPhone Safari) · done: record 8.01 s → decode 8.02 s at 16 kHz; `.m4a` vs `.wav` offset **0 ms** on both clips, so the scorer needs no AAC correction · later the same day: envelope shows, Play me 1× / 0.75× loud enough and plays with the silent switch on, desktop Chrome offset 0 ms too · next: G3, G5, S13
+- 2026-10-04 · G3 (Dylan, iPhone) · first Pond session: recording screen too fast to read, and a 1–2 s late start scored far too low · fixed the same day (notes §17): scorer ignores the wait, tap click and room noise (G3-a); one tap → 3 · 2 · 1 → records → stops by itself 1.5 s after the voice (G3-b); deployed for Dylan to try again · next: G3 again on the iPhone, then S13, G5
+- 2026-10-04 · canvas rule for speaking (Dylan) · SP screens follow `docs/design/garden/README.md`: S14b exports 14 references, S18 adds fixture pages, S18b pixel-diffs them on UAT (≤ 0.5%); deploy after S18b too · next: S13
+- 2026-10-04 · handover v2 (Dylan, 18:21) · server checking, SP2 countdown + beep, SP3 checking / done / failed; D3 = compare first; sessions S14–S20 and gates G6 (blocking), G7 added; the unattended run's stop rule fixed so S13 runs (it stopped after S12) · next: S13
+- 2026-10-04 · S14b · done by another session (1082d47): 14 SP references, sources, render jobs, README rows; row not ticked there · next: S13
+- 2026-10-04 · SP2 / SP3 v2 UI (interactive, Dylan asked; **uncommitted**, not deployed) · covers most of **S15** (countdown 0.9 s + tap to skip, beep + vibration, record 150 ms after the beep, auto-stop 2 s, not heard 8 s, 30 s cap; WAV upload encoder and the dev-page update not done), **S16** (handover §8 keys in 3 locales; vi from the canvas, zh drafted) and the UI half of **S18** (new SP2, SP3 checking / done / failed, missing / heard marks, amber bands, "Also keep…" tip, play buttons with accent and initial; check through `localCheck` with an 8 s timeout, no `local` / `server` switch yet; fixture pages for SP2 ×2 and SP3 ×3). Not done: S13, S14, S17, S18's switch, S18b diff (needs a deploy), SP1 / SP4 fixture pages. Notes §19 · next: Dylan reviews, commit, deploy, then S18b diff
+- 2026-10-04 19:45 · status (Dylan asked) · S14b ticked (1082d47). `garden:diff` on UAT after the 19:24 deploy (which built the uncommitted SP2 / SP3 v2 work): en SP2 countdown 0.06 % ✅, SP2 recording 0.40 % ✅, SP3 checking 0.53 %, done 1.08 %, failed 1.39 % ❌; vi all ❌ (SP2 countdown 1.6 %, recording 2.4 %, SP3 2.8–5.1 %; the countdown hint wraps to 2 lines, header topic and stress tip differ). SP1 / SP4 not diffed (no fixture pages yet). New to-do: stop storing the `.wav` copy, M4A only (notes *To do later*, a856bce). Scheduled task is off · next: commit the v2 work, fix the vi / SP3 diffs (S18b), finish S15 (WAV upload encoder, dev page), then S13, S14, S17
+- 2026-10-04 19:50 · S15 · done (Dylan): countdown 0.9 s + tap to skip, beep + vibration, record 150 ms after the beep, auto-stop 2 s, not heard 8 s, 30 s cap, tests (uncommitted with the rest of the v2 work, on UAT since 19:24). **Decision S15-a (Dylan): no WAV on the phone**: the WAV upload converter is dropped, the recording is sent as recorded (M4A / WebM); S14 must check each service accepts those, S17 takes them, S20 converts on the backend only if the chosen service needs it. Dev-page run moved to S19 · next: commit the v2 work, then S18b diffs
+- 2026-10-04 20:00 · S16 · done (uncommitted): §8 keys in 3 locales, 7 old keys removed, screen-reader labels matched to the canvas (vi + `micButton`, `waveLabel.overlay`, `done.gardenLabel`), decisions S16-a (not heard = `quiet.*`) and S16-b (mic explainer changes in S20), zh drafts listed for review (notes S16). Tests: speaking + i18n 133/133, full Vitest the same 66 known failures. Must be committed with the v2 code (removed keys are used by the committed v1 screens) · next: commit the v2 work, S18b
+- 2026-10-04 20:10 · commit (Dylan asked) · v2 work committed: a14c1d1 (S15 flow, S16 strings, S18 UI; only `screens.speak` of the message files and one CSS token, others' edits left unstaged) + this schedule / notes commit; git now matches UAT for speaking · next: S18b (vi boards and SP3), S18's `local` / `server` switch, then S13, S14, S17
+- 2026-10-04 20:35 · Vietnamese font (Dylan) · Dylan's 10-03 Be Vietnam Pro body font committed (20e41d9), the missed speaking animations too (845f4d0); all 47 `-vi` references re-exported with the same body font (d503b1d, README *Languages*). `garden:diff` on UAT, every screen: **speaking** en SP2 countdown 0.06 % / recording 0.40 % ✅, vi 0.12 % / 0.46 % ✅; SP3 checking / done / failed ❌ in both (en 0.53 / 1.08 / 1.39 %, vi 0.57 / 1.06 / 1.42 %). **Not Phase 13:** most other garden boards fail in English too (A3–A5 9–19 %, GR1/GR3/GR7 5–10 %, AU2–AU4 5–8 %, home v2 ~12 %), so they have drifted on UAT since the 09-26 pass, not because of the font; needs its own pass · next: S18b (SP3 en + vi, SP1 / SP4 fixtures), deploy
+- 2026-10-04 20:50 · S18b · **closed by Dylan as is** (don't spend more time on it): SP2 countdown / recording pass in en + vi (0.06 / 0.40 %, 0.12 / 0.46 %); accepted with known differences: SP3 checking / done / failed (en 0.53 / 1.08 / 1.39 %, vi 0.57 / 1.06 / 1.42 %: header topic "The Pond" vs canvas "Environment", bottom buttons a few px off, word-mark chip widths, failed-card height); SP1 / SP4 have no fixture pages (SP1 play-button label and the bold "MIT" stress tip not wired) · next: S18's `local` / `server` switch, S13, S14, S17
+- 2026-10-04 21:00 · G7 · **done (Dylan)**: tried v2 on the iPhone. Tried with on-phone checking (`local`, the UAT default) since S20 isn't built; no feedback recorded yet. Still open: **G6** (Dylan said "Google TTS"; asked whether that means keep Google TTS for native audio, use Google Speech-to-Text for checking, or stay on-phone) · next: G6 answer, S18 switch, S13
+- 2026-10-04 21:05 · G4 · **beta approved by Dylan** ("that is fine for me"), ahead of its listed dependencies: beta runs with on-phone checking (`local`; G6 open, S17 / S20 not built), **without the S13 spend caps and the G5 Google Cloud limits**, and UAT is still the 19:24 build (later commits, e.g. the S16 label fixes, not deployed) · next: deploy for beta when Dylan says so; S13 + G5 first is recommended
+- 2026-10-04 21:45 · G6 / M1 · **G6 = self-hosted on the Mac, Docker + API** (Dylan: paid services cost too much). Spike M1 done (notes §20): Whisper `base.en` in Speaches 2.2–3.9 s, wav2vec2 phoneme scores 1.3–3.9 s on CPU; catches the missing word, "migrate", the Chinese voice's "mitigate", Vietnamese voice scores 39; late start not penalised. **Go**, with parallel calls to get under 4 s and calibration for "the" /ði/ · next: M2 scorer container, M3 = S17 adapter
+- 2026-10-04 22:10 · M2 · done: `docker/speech` scorer (FastAPI, faster-whisper base.en + wav2vec2 phonemes, in parallel), service `speech` on 127.0.0.1:8100; all 9 test clips marked right (missing "the", heard "migrate", accents), "the" /ði/ false flag fixed; 1.7–3.3 s typical, 5.3 s worst; tests 6/6 (notes §20 M2) · next: M3 (S17 endpoint + MacSpeechChecker)
+- 2026-10-04 · M3 = S17 · done: `POST /speaking/check` (multipart audio + item_id + accent) → `MacSpeechChecker` → speech scorer; 60/hour/user, 8 s timeout → 503, nothing stored; real end to end 1.3–2.1 s with correct marks (notes §20 M3). Not deployed; not saved as an attempt yet (`unclear` needs a migration, S18) · next: S18 `server` switch + attempts migration, M4 calibration (target word weighs more)
+- 2026-10-05 06:24 · deploy (Dylan asked) · M3 `POST /speaking/check`, S16 labels, the Vietnamese font, speaking animations (7611bea + working tree). All 4 steps OK; www + API health 200; `POST /speaking/check` without a token → 401 (route live); scorer healthy. Signed-in check left to Dylan in Postman (minted tokens are local-only). The app still checks on the phone until the S18 switch · next: S18 switch + attempts migration, M4
+- 2026-10-05 · S18 switch · done: `NEXT_PUBLIC_SPEECH_CHECK` (`local` default, `server` = upload to `/speaking/check` after the phone's quiet / short check, server marks + phone stress), `tip.unclear` in 3 locales, `unclear` saved (no `heard`), mic text per mode, migration 20261005 (comment only, applied). UAT still `local` · next: M4 calibration, then M5 (switch to `server`, deploy, iPhone try)
+- 2026-10-05 06:49 · M5 (before M4, Dylan asked) · UAT switched to **server** checking: `NEXT_PUBLIC_SPEECH_CHECK=server` in `env-profiles/prod.env` (git-ignored, this Mac), deployed (all 4 steps OK); the deployed bundle's mode default is "server"; www / API 200, `/sounds` 307 to login signed out, scorer healthy. Thresholds not calibrated yet (a wrong target word can still reach fruit) · next: Dylan tries it on the iPhone, M4 calibration with his recordings. Rollback: set it back to `local` and redeploy
+- 2026-10-05 06:55 · status (Dylan asked) · **S14** ticked: covered by notes §20 (paid options compared, G6 = self-hosted); **S20** ticked: done as M2–M5 (scorer container, `POST /speaking/check`, switch, UAT on `server` since 06:49). Open: **M4** calibration (needs Dylan's recordings), **S13** spend caps, **G5** Google limits, **S19** QA v2 · next: Dylan's iPhone try in server mode
+- 2026-10-05 · S13 · done: `api_usage_daily` + `UsageCapService` (Gemini 1000 calls/day; capped words fail at once, no retries; quiz explanations skipped), `speaking-generate` `--max-usd` (default $2) / `--yes` + daily TTS cap 300000 chars; migration applied; Jest 357/357. Not deployed yet · next: deploy, G5 (Dylan), M4 calibration, S19
+- 2026-10-05 07:18 · deploy · S13 spend caps live (708fa15): all 4 steps OK, www + API 200, backend started with no errors; the app still checks speech on the server · next: G5 (Dylan), M4 calibration, S19
+- 2026-10-05 · S19 · done: dev page section 3 (v2 flow run, stop reason, beep-leak check via `toneRms`), Playwright `sounds.spec.ts` on v2 (envelope bug fixed, `/speaking/check` stubbed, auto-stop, checking / failed tests; type-checks, not run: signs in to the live site, Dylan runs it), QA matrix v2 rows (notes §16, §20 S19). Vitest 516 passed, same 66 known failures · next: deploy; Dylan: iPhone + dev page + Playwright run, G5, M4 recordings
+- 2026-10-05 07:24 · deploy · S19 dev-page flow check live (1cdea22): all 4 steps OK, www + API 200, `/garden/_speaking` 307 to login signed out, section 3 in the deployed bundle
+- 2026-10-05 · iPhone check (Dylan, dev page section 3) · auto-stop by silence ✅, AAC m4a 6.46 s / 60.6 KB (well under the 1 MB upload limit) ✅, decoded 6.45 s at 16 kHz ✅, beep not in the clip ✅ (−153 dBFS in the first 200 ms). Still to try: silent switch on, a noisy place. (An earlier "getUserMedia is not available" came from how the page was opened, not the app; fine in Safari.)
+- 2026-10-05 · dev page auto-stop diagnostics: Dylan's two noisy-room runs both ended by tap (150.1 KB / 6.50 s, 96.9 KB / 4.38 s; no beep leak). Section 3 now shows live quiet time vs 2 s, floor, gate, loudest, and the longest quiet after speaking, to see whether noise blocks the auto-stop (suspect: one loud bar resets the quiet time) · next: Dylan re-runs in the noisy place
+- 2026-10-05 · noisy-place re-check (Dylan, dev page diagnostics) · auto-stop works: stopped by silence after 2.0 s quiet; floor −83 dBFS (iOS noise suppression), gate −40, loudest −10; beep not in the clip. The earlier taps came before 2 s. No change to the auto-stop rule (the single-blip reset wasn't seen) · still to try: silent switch on
+- 2026-10-05 · silent-switch bug (Dylan's iPhone): with the switch on the live meter read only zeros, so SP2 ended with "We couldn't hear you" although the voice was recorded. Fixed: iOS Audio Session `play-and-record` while recording (back to `auto` after), and a dead meter never triggers "not heard" (tap / 30 s cap instead) · next: deploy, Dylan re-checks with the switch on
+- 2026-10-05 · silent switch re-check (Dylan, after 5e5852c) · ✅ meter live with the switch on (floor −84, gate −41, loudest −11 dBFS), stopped by silence, 11.48 s / 262.3 KB, beep not in the clip: the Audio Session fix works on his iOS (the dead-meter net wasn't needed) · next: one Pond sentence with the switch on; M4 recordings; G5
+- 2026-10-05 · G5 · done (Dylan): Google Cloud budget alerts / quotas / key restrictions set in the console (details not recorded here) · next: M4 calibration recordings; one Pond sentence with the silent switch on
+- 2026-10-05 · M4 · calibrated on 63 synthetic clips (notes §20 M4): rules M4-a (target 3×, caps 69 / 89) and M4-b (function words by Whisper, trust sounds ≥ 85, UK/US spellings); good 33/35 fruit with 2/35 false flags (was 15/35), wrong target 7/7 sprout (was 4/7 fruit). Scorer live; backend sends `target_index` (deploy). Real recordings still to run through `calibrate.py`
+- 2026-10-05 · deploy · M4 live (81dd0ff): backend sends `target_index`, scorer on the M4 rules; www + API 200
+- 2026-10-06 · M4 · **done**: Dylan tried The Pond with a Vietnamese speaker on UAT (server checking, M4 rules): working. Phase 13 build work complete; open: Vietnamese / Chinese text reviews, the optional Playwright run, one Pond sentence with the silent switch on
+- 2026-10-06 · entry points removed (Dylan, redesign) · "Say this one?" on review cards and the Sound Garden card on Missions taken out (notes §21); `/sounds`, the speaking API and the scorer stay. Vitest 514 passed with the same 66 known failures · next: deploy; the redesign
+- 2026-10-06 06:58 · deploy · entry points removed on UAT (0e47e01): all 4 steps OK; www + API 200; `/sounds` still served (307 to login signed out); neither entry point's code is in the deployed bundle
