@@ -613,3 +613,8 @@ Engineering-facing log of shipped fixes and changes, one dated entry per change.
 * **What**: the "Say this one?" button on flipped review cards and the Sound Garden card on the Missions tab are gone; the review card's markup is exactly as before S11. Kept for the redesign: The Pond at `/sounds`, `SpeakFlow` (incl. single-sentence mode), the backend `/speaking/words` endpoints (now unused), the speaking strings, server checking and the scorer.
 * **Why**: Dylan is redesigning where speaking is started from (2026-10-06).
 * **Verified**: frontend `tsc` and lint clean; Vitest 514 passed with the same 66 known failures; the Playwright spec type-checks (80 cases listed).
+
+### Deployed: speaking entry points removed on UAT
+* **Files**: [`docs/phase13-schedule.md`](docs/phase13-schedule.md) (Session log)
+* **What**: deploy through `deploy/request.md` (all 4 steps OK, 2026-10-06 06:58): no "Say this one?" on review cards and no Sound Garden card on Missions; The Pond still at `/sounds`.
+* **Verified live**: www and API health 200; `/sounds` redirects to login when signed out (route still there); neither entry point's code is in the deployed bundle.

@@ -139,3 +139,4 @@ One line per session: date · session · result · next.
 - 2026-10-05 · deploy · M4 live (81dd0ff): backend sends `target_index`, scorer on the M4 rules; www + API 200
 - 2026-10-06 · M4 · **done**: Dylan tried The Pond with a Vietnamese speaker on UAT (server checking, M4 rules): working. Phase 13 build work complete; open: Vietnamese / Chinese text reviews, the optional Playwright run, one Pond sentence with the silent switch on
 - 2026-10-06 · entry points removed (Dylan, redesign) · "Say this one?" on review cards and the Sound Garden card on Missions taken out (notes §21); `/sounds`, the speaking API and the scorer stay. Vitest 514 passed with the same 66 known failures · next: deploy; the redesign
+- 2026-10-06 06:58 · deploy · entry points removed on UAT (0e47e01): all 4 steps OK; www + API 200; `/sounds` still served (307 to login signed out); neither entry point's code is in the deployed bundle
