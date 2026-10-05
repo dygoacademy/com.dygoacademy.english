@@ -175,6 +175,7 @@ export function speechDiagnostics(levels: readonly number[], barsPerSecond: numb
     }
   }
   return {
+    meterDead: meterDead(levels, barsPerSecond),
     heard: v.heard,
     quietMs: v.heard ? v.quietBars * msPerBar : 0,
     targetMs: AUTO_STOP_SILENCE_MS,
@@ -204,7 +205,19 @@ export function notHeard(
   barsPerSecond: number,
   elapsedMs: number,
 ): boolean {
+  if (meterDead(levels, barsPerSecond)) return false; // can't judge: wait for a tap or the cap
   return elapsedMs >= NOT_HEARD_MS && !voiceState(levels, barsPerSecond).heard;
+}
+
+/**
+ * True when the live levels are exact zeros for over a second: a real mic
+ * always has some room noise, so the meter itself isn't getting audio (iOS
+ * with the silent switch on and no Audio Session API, 2026-10-05). Then the
+ * auto-stop can't judge silence: `notHeard` stays false, the recording runs
+ * until a tap or MAX_RECORDING_MS, and the recording is still checked.
+ */
+export function meterDead(levels: readonly number[], barsPerSecond: number): boolean {
+  return levels.length >= barsPerSecond && levels.every((v) => v === 0);
 }
 
 /** The accent's clip, timings and IPA, each falling back to the other accent. */

@@ -238,6 +238,29 @@ export async function requestMic(
 /** Stops every track so the browser's mic indicator turns off. */
 export function releaseStream(stream: MediaStream | null | undefined): void {
   stream?.getTracks().forEach((t) => t.stop());
+  setAudioSession('auto');
+}
+
+/**
+ * iOS (Safari 16.4+) Audio Session API: `play-and-record` while recording,
+ * so the silent switch doesn't mute Web Audio. Without it, with the switch
+ * on, iOS silenced the beep and the live levels (AnalyserNode) read only
+ * zeros, so SP2 said "We couldn't hear you" while MediaRecorder had the
+ * voice (Dylan's iPhone, 2026-10-05). Back to `auto` when the mic is
+ * released, so playback uses the normal route (speaker, not the earpiece).
+ * No-op where the API doesn't exist.
+ */
+export function setAudioSession(
+  type: 'play-and-record' | 'auto',
+  nav: unknown = typeof navigator !== 'undefined' ? navigator : undefined,
+): void {
+  const session = (nav as { audioSession?: { type: string } } | undefined)?.audioSession;
+  if (!session) return;
+  try {
+    session.type = type;
+  } catch {
+    // an older implementation that refuses the type: nothing to do
+  }
 }
 
 // ── AudioContext ──────────────────────────────────────────────────────────
@@ -257,8 +280,11 @@ export function getAudioContext(win: typeof globalThis = globalThis): AudioConte
 export async function resumeAudioContext(
   win: typeof globalThis = globalThis,
 ): Promise<AudioContext> {
+  // Inside the tap that starts recording: tell iOS first (silent switch).
+  setAudioSession('play-and-record', (win as { navigator?: Navigator }).navigator);
   const ctx = getAudioContext(win);
-  if (ctx.state === 'suspended') await ctx.resume();
+  // `interrupted` (iOS, e.g. after a call or a switch change) resumes like `suspended`.
+  if ((ctx.state as string) !== 'running') await ctx.resume();
   return ctx;
 }
 

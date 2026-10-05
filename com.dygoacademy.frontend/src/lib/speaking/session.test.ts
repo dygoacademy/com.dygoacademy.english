@@ -5,6 +5,7 @@ import {
   formatClock,
   initialSpeakState,
   notHeard,
+  meterDead,
   speechDiagnostics,
   voiceEnded,
   sessionPattern,
@@ -199,5 +200,28 @@ describe('speechDiagnostics (dev page, S19)', () => {
     );
     expect(d.quietMs).toBe(500);
     expect(d.longestQuietMs).toBe(1000);
+  });
+});
+
+describe('meterDead (iOS silent switch, 2026-10-05)', () => {
+  const PER_S = 20;
+  const zeros = (seconds: number) => Array.from({ length: seconds * PER_S }, () => 0);
+
+  it('exact zeros for over a second = the meter gets no audio', () => {
+    expect(meterDead(zeros(2), PER_S)).toBe(true);
+    expect(meterDead(zeros(0.5), PER_S)).toBe(false);
+    expect(meterDead([...zeros(2), 0.0001], PER_S)).toBe(false); // a real mic has room noise
+  });
+
+  it('a dead meter never says "We couldn\'t hear you"', () => {
+    expect(notHeard(zeros(9), PER_S, 9000)).toBe(false);
+    expect(
+      notHeard(
+        Array.from({ length: 180 }, () => 0.002),
+        PER_S,
+        9000,
+      ),
+    ).toBe(true);
+    expect(speechDiagnostics(zeros(9), PER_S).meterDead).toBe(true);
   });
 });

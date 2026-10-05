@@ -7,13 +7,14 @@ import {
   encodeWav,
   estimateOffsetMs,
   levelOf,
+  releaseStream,
+  setAudioSession,
   toneRms,
   ENVELOPE_FPS,
   MAX_RECORDING_MS,
   MicError,
   micPermission,
   pickRecorderMime,
-  releaseStream,
   requestMic,
   resample,
   rmsEnvelope,
@@ -336,5 +337,25 @@ describe('toneRms (beep leak check, S19)', () => {
     clip.set(sine(880, 0.5, 0.1), 8000); // beep in the second half only
     expect(toneRms(clip, RATE, 880, 0, 3200)).toBe(0);
     expect(toneRms(clip, RATE, 880, 8000, 9600)).toBeGreaterThan(0.3);
+  });
+});
+
+describe('setAudioSession (iOS silent switch)', () => {
+  it('sets the type where the API exists, and is a no-op where it does not', () => {
+    const nav = { audioSession: { type: 'auto' } };
+    setAudioSession('play-and-record', nav);
+    expect(nav.audioSession.type).toBe('play-and-record');
+    expect(() => setAudioSession('auto', {})).not.toThrow();
+    expect(() => setAudioSession('auto', undefined)).not.toThrow();
+  });
+
+  it('releasing the mic goes back to auto', () => {
+    const nav = { audioSession: { type: 'play-and-record' } };
+    vi.stubGlobal('navigator', nav);
+    const stop = vi.fn();
+    releaseStream({ getTracks: () => [{ stop }] } as unknown as MediaStream);
+    expect(stop).toHaveBeenCalled();
+    expect(nav.audioSession.type).toBe('auto');
+    vi.unstubAllGlobals();
   });
 });

@@ -46,11 +46,13 @@ export const FLOW_COPY = {
   decodedValue: (seconds: number) => `${seconds.toFixed(2)} s at 16 kHz`,
   /** Live while recording: what the auto-stop sees. */
   liveLine: (d: Diagnostics) =>
+    (d.meterDead ? 'LIVE METER DEAD (only zeros: auto-stop off, tap to stop) · ' : '') +
     `voice heard ${d.heard ? '✓' : '–'} · quiet for ${(d.quietMs / 1000).toFixed(1)} / ` +
     `${(d.targetMs / 1000).toFixed(1)} s · noise floor ${fmtDb(d.floorDb)} · ` +
     `sound gate ${fmtDb(d.gateDb)} · loudest ${fmtDb(d.peakDb)}`,
   autoStop: 'auto-stop saw',
   autoStopValue: (d: Diagnostics) =>
+    (d.meterDead ? 'live meter DEAD (only zeros) · ' : '') +
     `voice heard ${d.heard ? 'yes' : 'no'} · longest quiet after speaking ` +
     `${(d.longestQuietMs / 1000).toFixed(1)} s (needs ${(d.targetMs / 1000).toFixed(1)}) · ` +
     `floor ${fmtDb(d.floorDb)} · gate ${fmtDb(d.gateDb)} · loudest ${fmtDb(d.peakDb)}`,
