@@ -586,3 +586,8 @@ Engineering-facing log of shipped fixes and changes, one dated entry per change.
 * **Files**: [`docs/phase13-notes.md`](docs/phase13-notes.md) (§16 QA matrix), [`docs/phase13-schedule.md`](docs/phase13-schedule.md)
 * **What**: Dylan's re-check with the silent switch on after 5e5852c: the live meter gets audio (floor −84, loudest −11 dBFS), the recording stopped by silence, beep not in the clip. The Audio Session setting works on his iOS; the dead-meter safety net stays for older versions.
 * **Why**: closes the silent-switch bug found the same day.
+
+### Phase 13 G5 done (Dylan)
+* **Files**: [`docs/phase13-schedule.md`](docs/phase13-schedule.md) (G5 ticked, Session log)
+* **What**: status only. Dylan set the Google Cloud budget alerts, API quotas and key restrictions (the hard stop outside the app, next to the S13 caps).
+* **Why**: Dylan, 2026-10-05.
