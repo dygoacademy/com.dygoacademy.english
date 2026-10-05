@@ -597,3 +597,8 @@ Engineering-facing log of shipped fixes and changes, one dated entry per change.
 * **What**: M4-a, the sentence total: the target word counts 3×, an unclear word at most 50, an ok function word 100; any mistake caps it at 89 (no fruit), a wrong or missing target word at 69 (sprout). M4-b, the word marks: function words are judged by Whisper (too short for the sound model), confident sounds (≥ 85) overrule a Whisper mishearing, UK / US spellings match. A calibration set and script to re-check after any change.
 * **Why**: a wrong target word ("migrate" for "mitigate") still reached 95 / fruit (M3 note), and once marks counted, 15/35 good recordings had a word wrongly flagged.
 * **Verified**: 63 calibration clips through the live scorer: good speech 33/35 fruit (min 89), false flags 2/35 (was 15/35); skipped word caught 6/7; wrong target word caught 7/7, all 69; 1.2 s median. Scorer tests 11/11; backend Jest 357/357, `tsc` and eslint clean. Scorer restarted with the new rules; backend deploy follows.
+
+### Deployed: Phase 13 M4 to UAT
+* **Files**: [`docs/phase13-schedule.md`](docs/phase13-schedule.md) (Session log)
+* **What**: deploy through `deploy/request.md` (all 4 steps OK, 2026-10-05): the backend now sends the item's `target_index` to the speech scorer, so the M4 rules (target word 3×, sprout cap for a wrong target) apply to learners' checks.
+* **Verified live**: www and API health 200; the built backend contains the `target_index` field; no errors in the backend log since the restart; scorer healthy on the M4 rules.
