@@ -23,7 +23,7 @@ import {
   COUNTDOWN_STEP_MS,
   SILENCE_GATE_RMS,
 } from '@/lib/speaking/constants';
-import { notHeard, voiceEnded } from '@/lib/speaking/session';
+import { notHeard, speechDiagnostics, voiceEnded } from '@/lib/speaking/session';
 
 /** Dev tool copy, English on purpose (decision S2-a). */
 export const FLOW_COPY = {
@@ -44,11 +44,26 @@ export const FLOW_COPY = {
   recordedValue: (seconds: number, mime: string, kb: number) =>
     `${seconds.toFixed(2)} s · ${mime} · ${kb.toFixed(1)} KB`,
   decodedValue: (seconds: number) => `${seconds.toFixed(2)} s at 16 kHz`,
+  /** Live while recording: what the auto-stop sees. */
+  liveLine: (d: Diagnostics) =>
+    `voice heard ${d.heard ? '✓' : '–'} · quiet for ${(d.quietMs / 1000).toFixed(1)} / ` +
+    `${(d.targetMs / 1000).toFixed(1)} s · noise floor ${fmtDb(d.floorDb)} · ` +
+    `sound gate ${fmtDb(d.gateDb)} · loudest ${fmtDb(d.peakDb)}`,
+  autoStop: 'auto-stop saw',
+  autoStopValue: (d: Diagnostics) =>
+    `voice heard ${d.heard ? 'yes' : 'no'} · longest quiet after speaking ` +
+    `${(d.longestQuietMs / 1000).toFixed(1)} s (needs ${(d.targetMs / 1000).toFixed(1)}) · ` +
+    `floor ${fmtDb(d.floorDb)} · gate ${fmtDb(d.gateDb)} · loudest ${fmtDb(d.peakDb)}`,
   beepValue: (leaked: boolean, first: string, whole: string) =>
     `${leaked ? 'YES, leaked' : 'no'} (880 Hz first 200 ms ${first}, whole clip ${whole})`,
 } as const;
 
 type StopReason = 'silence' | 'not heard' | '30 s cap' | 'tap';
+type Diagnostics = ReturnType<typeof speechDiagnostics>;
+
+function fmtDb(db: number): string {
+  return Number.isFinite(db) ? `${db.toFixed(0)} dBFS` : '—';
+}
 
 interface FlowResult {
   reason: StopReason;
@@ -59,6 +74,8 @@ interface FlowResult {
   /** The whole clip's 880 Hz RMS, in dBFS, for comparison. */
   restDb: number;
   leaked: boolean;
+  /** What the auto-stop saw over the whole recording. */
+  diagnostics: Diagnostics;
 }
 
 const dbfs = (rms: number) => (rms > 0 ? 20 * Math.log10(rms) : -Infinity);
@@ -80,6 +97,8 @@ export function FlowCheck() {
   const recorder = useRef<Recorder | null>(null);
   const stopping = useRef(false);
   const live = useLiveLevels(stream, startedAt !== null);
+  const liveRef = useRef<number[]>([]);
+  liveRef.current = live;
 
   // 3 · 2 · 1 at COUNTDOWN_STEP_MS a step, then go().
   useEffect(() => {
@@ -147,6 +166,7 @@ export function FlowCheck() {
   }
 
   async function done(rec: Recording, reason: StopReason) {
+    const diagnostics = speechDiagnostics(liveRef.current, LIVE_LEVELS_PER_SECOND);
     recorder.current = null;
     setStartedAt(null);
     setStream((s) => {
@@ -166,6 +186,7 @@ export function FlowCheck() {
         restDb: dbfs(rest),
         // Leak = the tone at the start is above the silence gate and well above the clip's own 880 Hz.
         leaked: beep > SILENCE_GATE_RMS && beep > rest * 2,
+        diagnostics,
       });
     } catch (err) {
       setError(`decode failed: ${(err as Error).message}`);
@@ -195,7 +216,14 @@ export function FlowCheck() {
       {count !== null && (
         <p className="mt-2 font-display text-display-s">{FLOW_COPY.counting(count)}</p>
       )}
-      {startedAt !== null && <p className="mt-2">{FLOW_COPY.recording(elapsed / 1000)}</p>}
+      {startedAt !== null && (
+        <>
+          <p className="mt-2">{FLOW_COPY.recording(elapsed / 1000)}</p>
+          <p className="text-body-s text-muted-foreground" data-testid="flow-live">
+            {FLOW_COPY.liveLine(speechDiagnostics(live, LIVE_LEVELS_PER_SECOND))}
+          </p>
+        </>
+      )}
       {error && <p className="mt-2 text-body-s text-primary-text">{error}</p>}
       {result && (
         <dl
@@ -214,6 +242,8 @@ export function FlowCheck() {
           </dd>
           <dt className="text-muted-foreground">{FLOW_COPY.decoded}</dt>
           <dd>{FLOW_COPY.decodedValue(result.decodedSeconds)}</dd>
+          <dt className="text-muted-foreground">{FLOW_COPY.autoStop}</dt>
+          <dd>{FLOW_COPY.autoStopValue(result.diagnostics)}</dd>
           <dt className="text-muted-foreground">{FLOW_COPY.beepInClip}</dt>
           <dd className={result.leaked ? 'font-bold text-primary-text' : undefined}>
             {FLOW_COPY.beepValue(result.leaked, fmt(result.beepDb), fmt(result.restDb))}

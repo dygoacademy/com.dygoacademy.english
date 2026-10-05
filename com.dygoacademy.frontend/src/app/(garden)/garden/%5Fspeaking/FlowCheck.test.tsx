@@ -43,6 +43,7 @@ async function runToRecording() {
     vi.advanceTimersByTime(200);
   });
   expect(recorderStart).toHaveBeenCalledTimes(1);
+  expect(screen.getByTestId('flow-live').textContent).toContain('quiet for 0.0 / 2.0 s');
 }
 
 describe('FlowCheck (dev page, S19)', () => {
@@ -61,6 +62,7 @@ describe('FlowCheck (dev page, S19)', () => {
     expect(result.textContent).toContain('tap');
     expect(result.textContent).toContain('3.20 s · audio/mp4');
     expect(result.textContent).toContain('beep in clipno');
+    expect(result.textContent).toContain('auto-stop sawvoice heard no');
   });
 
   it('flags a beep that leaked into the first 200 ms', async () => {

@@ -5,6 +5,7 @@ import {
   formatClock,
   initialSpeakState,
   notHeard,
+  speechDiagnostics,
   voiceEnded,
   sessionPattern,
   speakReducer,
@@ -167,5 +168,36 @@ describe('sessionPattern', () => {
         4: { tipKey: 'speak.tip.stress' },
       })?.tipKey,
     ).toBe('speak.tip.stress');
+  });
+});
+
+describe('speechDiagnostics (dev page, S19)', () => {
+  const PER_S = 20;
+  const bars = (seconds: number, level: number) =>
+    Array.from({ length: Math.round(seconds * PER_S) }, () => level);
+
+  it('reports voice, quiet time against the 2 s target, gate and floor', () => {
+    const d = speechDiagnostics([...bars(1, 0.004), ...bars(2, 0.2), ...bars(1.5, 0.004)], PER_S);
+    expect(d.heard).toBe(true);
+    expect(d.quietMs).toBe(1500);
+    expect(d.targetMs).toBe(2000);
+    expect(d.longestQuietMs).toBe(1500);
+    expect(d.floorDb).toBeCloseTo(20 * Math.log10(0.004), 0);
+    expect(d.gateDb).toBeGreaterThan(d.floorDb);
+  });
+
+  it('nothing heard yet: no quiet time counted', () => {
+    const d = speechDiagnostics(bars(3, 0.004), PER_S);
+    expect(d.heard).toBe(false);
+    expect(d.quietMs).toBe(0);
+  });
+
+  it('a loud blip in the quiet resets the quiet time (what noise does)', () => {
+    const d = speechDiagnostics(
+      [...bars(1, 0.004), ...bars(2, 0.2), ...bars(1, 0.004), 0.2, ...bars(0.5, 0.004)],
+      PER_S,
+    );
+    expect(d.quietMs).toBe(500);
+    expect(d.longestQuietMs).toBe(1000);
   });
 });

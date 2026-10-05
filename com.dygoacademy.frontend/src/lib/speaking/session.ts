@@ -139,6 +139,53 @@ function voiceState(levels: readonly number[], barsPerSecond: number) {
 }
 
 /**
+ * What the auto-stop sees (dev page, S19): whether voice was heard, how
+ * long it has been quiet against the AUTO_STOP_SILENCE_MS it waits for, the
+ * gate a bar must reach to count as sound, the room's noise floor (5th
+ * percentile) and the loudest bar, in dBFS; plus the longest quiet stretch
+ * after voice. If `quietMs` never reaches the target while the speaker is
+ * silent, background sound above `gateDb` is what keeps it recording.
+ */
+export function speechDiagnostics(levels: readonly number[], barsPerSecond: number) {
+  const msPerBar = 1000 / barsPerSecond;
+  const db = (v: number) => (v > 0 ? 20 * Math.log10(v) : -Infinity);
+  const v = voiceState(levels, barsPerSecond);
+  const body = levels.slice(v.bars(SPEECH_SKIP_MS));
+  const sorted = [...body].sort((a, b) => a - b);
+  const at = (p: number) => (sorted.length ? sorted[Math.floor(p * (sorted.length - 1))] : 0);
+  const gate = Math.max(
+    SILENCE_GATE_RMS,
+    at(0.05) * 10 ** (SPEECH_FLOOR_MARGIN_DB / 20),
+    at(1) * 10 ** (-SPEECH_PEAK_RANGE_DB / 20),
+  );
+  // Longest run below the gate after the first voice (a run of SPEECH_MIN_RUN_MS).
+  const minRun = v.bars(SPEECH_MIN_RUN_MS);
+  let run = 0;
+  let voiced = false;
+  let quiet = 0;
+  let longest = 0;
+  for (const level of body) {
+    if (level >= gate) {
+      run += 1;
+      if (run >= minRun) voiced = true;
+      quiet = 0;
+    } else {
+      run = 0;
+      if (voiced) longest = Math.max(longest, ++quiet);
+    }
+  }
+  return {
+    heard: v.heard,
+    quietMs: v.heard ? v.quietBars * msPerBar : 0,
+    targetMs: AUTO_STOP_SILENCE_MS,
+    longestQuietMs: longest * msPerBar,
+    gateDb: db(gate),
+    floorDb: db(at(0.05)),
+    peakDb: db(at(1)),
+  };
+}
+
+/**
  * True once the learner has spoken and then been quiet for
  * AUTO_STOP_SILENCE_MS: the recording stops by itself (handover v2 §3.2).
  * Never true before any voice, so a late start just waits (see `notHeard`).

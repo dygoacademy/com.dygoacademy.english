@@ -564,3 +564,9 @@ Engineering-facing log of shipped fixes and changes, one dated entry per change.
 * **Files**: [`README.md`](README.md) (Speech checking → Rules); on this Mac only, `env-profiles/prod.env` (git-ignored): `SPEECH_SCORER_URL=http://127.0.0.1:8100`, `SPEECH_CHECK_TIMEOUT_MS=8000`
 * **What**: the scorer address and timeout are now written in the UAT env profile next to `NEXT_PUBLIC_SPEECH_CHECK=server`, instead of relying on the code defaults (same values, no restart needed).
 * **Why**: Dylan asked for the speech scorer URL in the production env (2026-10-05).
+
+### Dev page: live auto-stop diagnostics (Phase 13 S19 follow-up)
+* **Files**: `com.dygoacademy.frontend/` [`src/lib/speaking/session.ts`](com.dygoacademy.frontend/src/lib/speaking/session.ts) (`speechDiagnostics`) + test, [`src/app/(garden)/garden/%5Fspeaking/FlowCheck.tsx`](com.dygoacademy.frontend/src/app/(garden)/garden/%5Fspeaking/FlowCheck.tsx) + test; `docs/phase13-schedule.md`
+* **What**: `/garden/_speaking` section 3 shows, while recording, what the auto-stop sees: voice heard, quiet time against the 2 s it waits for, noise floor, sound gate and loudest level (dBFS); the result adds "auto-stop saw" with the longest quiet stretch after speaking. Dev page only; learners unaffected.
+* **Why**: Dylan's two noisy-room tests on the iPhone ended with a tap, so it wasn't clear whether background sound kept the auto-stop from firing. Noted while adding it: one loud bar resets the quiet time (a 120 ms run is needed to count as voice, but not to break the silence), a likely cause in noise; to be decided from his numbers.
+* **Verified**: frontend speaking + dev-page tests 74/74 (3 new diagnostics tests incl. the blip case), `tsc` and lint clean.
