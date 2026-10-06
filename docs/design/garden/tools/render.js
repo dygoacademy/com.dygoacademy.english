@@ -130,6 +130,16 @@ const JOBS = [
   ['SpeakCompareVi.dc.html', 'vi', 'SP3-speak-failed-vi', { phase: 'failed' }],
   ['SpeakDone.dc.html', 'en', 'SP4-speak-done', {}],
   ['SpeakDoneVi.dc.html', 'vi', 'SP4-speak-done-vi', {}],
+  // Speaking entry points (changelog SE1/SE2/SE5/SE6, approved 2026-10-06; boards
+  // drafted by Claude Code on top of A1/A7/GR3, for Dylan to confirm).
+  ['EntryHome.dc.html', 'en', 'SE1-entry-home', {}],
+  ['EntryHomeVi.dc.html', 'vi', 'SE1-entry-home-vi', {}],
+  ['EntryBed.dc.html', 'en', 'SE2-entry-bed', {}],
+  ['EntryBedVi.dc.html', 'vi', 'SE2-entry-bed-vi', {}],
+  ['EntryHarvest.dc.html', 'en', 'SE5-entry-harvest', {}],
+  ['EntryHarvestVi.dc.html', 'vi', 'SE5-entry-harvest-vi', {}],
+  ['EntryEcho.dc.html', 'en', 'SE6-entry-echo', {}],
+  ['EntryEchoVi.dc.html', 'vi', 'SE6-entry-echo-vi', {}],
 ].filter(([, , name]) => !FILTER || name.includes(FILTER));
 
 // English pages redrawn with the app's body stack (DM Sans, then Be Vietnam
@@ -137,7 +147,7 @@ const JOBS = [
 // of the English canvas's 'DM Sans', sans-serif (system fallback for those
 // letters). Only screens whose English page shows Vietnamese text need it.
 // A7-topic-bed: redrawn 2026-09-27 (Dylan's font decision, 2026-09-26).
-const APP_FONT_STACK = new Set(['A7-topic-bed']);
+const APP_FONT_STACK = new Set(['A7-topic-bed', 'SE2-entry-bed', 'SE5-entry-harvest']);
 const withAppFontStack = (html) => html.replace(/'DM Sans',\s*sans-serif/g, "'DM Sans', 'Be Vietnam Pro', sans-serif");
 
 // Vietnamese references (2026-10-04): body text in Be Vietnam Pro only, the

@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<title>Thu hoạch bằng giọng nói</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<!-- Drafted by Claude Code 2026-10-06 from the changelog entry (SE5), on top of AdultTopicDetailVi.dc.html. For Dylan to confirm. -->
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&amp;family=DM+Sans:wght@400;500;600;700&amp;family=Be+Vietnam+Pro:wght@400;500;600;700&amp;display=swap">
+<style>
+body{margin:0;font-family:'DM Sans','Be Vietnam Pro',sans-serif;background:#F4F1EA;color:#1C2B24}
+a{color:#B4552E}a:hover{color:#8A3E20}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; background: #F4F1EA; display: flex; flex-direction: column; gap: 14px; padding: 20px 16px 0; font-family: 'DM Sans', 'Be Vietnam Pro', sans-serif; color: #1C2B24; overflow: hidden">
+
+<div style="display: flex; align-items: center; gap: 12px">
+<a href="AdultTopicsVi.dc.html" aria-label="Quay lại chủ đề" style="width: 44px; height: 44px; border-radius: 22px; background: #FFFFFF; border: 1px solid #E3DDD0; display: flex; align-items: center; justify-content: center; color: #1C2B24; flex-shrink: 0"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5 L8 12 L15 19"></path></svg></a>
+<div style="flex-grow: 1; display: flex; flex-direction: column">
+<span style="font-family: 'Fraunces', serif; font-weight: 600; font-size: 26px; line-height: 1.1">Môi trường</span>
+<span style="font-size: 13px; color: #5E6A62">IELTS Academic · B2–C1 · 48 từ</span>
+</div>
+<button aria-label="Tùy chọn chủ đề" style="width: 44px; height: 44px; border-radius: 22px; background: #FFFFFF; border: 1px solid #E3DDD0; display: flex; align-items: center; justify-content: center; color: #1C2B24; cursor: pointer"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="5" cy="12" r="2"></circle><circle cx="12" cy="12" r="2"></circle><circle cx="19" cy="12" r="2"></circle></svg></button>
+</div>
+
+<div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px">
+<sc-for list="{{tabs}}" as="tab" hint-placeholder-count="4">
+<button onClick="{{tab.pick}}" aria-pressed="{{tab.pressed}}" style="height: 92px; border-radius: 18px; border: 2px solid {{tab.border}}; background: {{tab.bg}}; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; gap: 2px; padding: 0 0 8px; cursor: pointer; font-family: 'DM Sans', 'Be Vietnam Pro', sans-serif; color: {{tab.color}}">
+<sc-if value="{{tab.isSeed}}" hint-placeholder-val="{{false}}"><svg width="34" height="34" viewBox="0 0 40 40" aria-hidden="true"><ellipse cx="20" cy="34" rx="12" ry="3" fill="#C9BCA2"></ellipse><ellipse cx="20" cy="30" rx="5" ry="3.5" fill="#6B5040"></ellipse><path d="M20 27 C20 24 22 22 24 21" stroke="#7FA487" stroke-width="2" fill="none" stroke-linecap="round"></path></svg></sc-if>
+<sc-if value="{{tab.isSprout}}" hint-placeholder-val="{{false}}"><svg width="34" height="34" viewBox="0 0 40 40" aria-hidden="true"><ellipse cx="20" cy="36" rx="12" ry="3" fill="#C9BCA2"></ellipse><path d="M20 35 V20" stroke="#7FA487" stroke-width="2.5"></path><path d="M20 28 C14 27 11 23 13 19 C18 19 20 23 20 28 Z" fill="#9CC39A"></path><path d="M20 25 C26 24 29 20 27 16 C22 16 20 20 20 25 Z" fill="#B7D6AE"></path></svg></sc-if>
+<sc-if value="{{tab.isFlower}}" hint-placeholder-val="{{false}}"><svg width="34" height="40" viewBox="0 0 40 52" aria-hidden="true"><ellipse cx="20" cy="48" rx="12" ry="3" fill="#C9BCA2"></ellipse><path d="M20 47 V20" stroke="#7FA487" stroke-width="2.5"></path><circle cx="20" cy="10" r="5" fill="#E8A87C"></circle><circle cx="26" cy="15" r="5" fill="#E8A87C"></circle><circle cx="24" cy="22" r="5" fill="#E8A87C"></circle><circle cx="16" cy="22" r="5" fill="#E8A87C"></circle><circle cx="14" cy="15" r="5" fill="#E8A87C"></circle><circle cx="20" cy="17" r="4" fill="#F2D28B"></circle></svg></sc-if>
+<sc-if value="{{tab.isTree}}" hint-placeholder-val="{{false}}"><svg width="36" height="44" viewBox="0 0 44 56" aria-hidden="true"><ellipse cx="22" cy="52" rx="13" ry="3" fill="#C9BCA2"></ellipse><rect x="20" y="30" width="4" height="22" fill="#8A6A4F"></rect><circle cx="22" cy="20" r="15" fill="#7FA487"></circle><circle cx="11" cy="29" r="9" fill="#7FA487"></circle><circle cx="33" cy="29" r="9" fill="#7FA487"></circle><circle cx="16" cy="18" r="3" fill="#E0B04A"></circle><circle cx="28" cy="22" r="3" fill="#E0B04A"></circle></svg></sc-if>
+<span style="font-family: 'Fraunces', serif; font-weight: 600; font-size: 18px; line-height: 1">{{tab.count}}</span>
+<span style="font-size: 12px; font-weight: 600">{{tab.label}}</span>
+</button>
+</sc-for>
+</div>
+
+<div style="display: flex; gap: 8px">
+<a href="AdultReviewVi.dc.html" style="flex-grow: 1; height: 52px; border-radius: 16px; background: #B4552E; color: #FFFFFF; display: flex; align-items: center; justify-content: center; gap: 8px; font-weight: 700; font-size: 16px; text-decoration: none; box-shadow: 0 4px 0 #7E3719">
+<svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2 C12 2 4 11 4 15 A8 8 0 0 0 20 15 C20 11 12 2 12 2 Z" fill="#FFFFFF"></path></svg>
+Tưới 6 từ</a>
+<a href="AdultQuizVi.dc.html" style="height: 52px; padding: 0 16px; border-radius: 16px; background: #FFFFFF; border: 1px solid #E3DDD0; color: #24463A; display: flex; align-items: center; font-weight: 700; font-size: 15px; text-decoration: none">Kiểm tra</a>
+<button aria-label="Thêm từ" style="width: 52px; height: 52px; border-radius: 16px; background: #FFFFFF; border: 1px solid #E3DDD0; color: #24463A; display: flex; align-items: center; justify-content: center; cursor: pointer"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M12 5 V19"></path><path d="M5 12 H19"></path></svg></button>
+</div>
+
+<div style="background: #FFFFFF; border: 1px solid #E3DDD0; border-radius: 22px; padding: 12px 14px 6px; display: flex; flex-direction: column; gap: 4px">
+<div style="display: flex; justify-content: space-between; align-items: baseline"><span style="font-family: 'Fraunces', serif; font-weight: 600; font-size: 18px">Sẵn sàng thu hoạch</span><span style="font-size: 12px; font-weight: 600; color: #9A6E14">3 hoa</span></div>
+<span style="font-size: 13px; color: #5E6A62; margin-bottom: 4px">Nói đúng từ đã chín (90%+) để hái quả. Lịch tưới không đổi.</span>
+<div style="display: flex; align-items: center; gap: 10px; padding: 6px 0; border-top: 1px solid #F0EBE0">
+<span style="width: 36px; height: 36px; border-radius: 12px; background: #F4F1EA; display: flex; align-items: flex-end; justify-content: center; flex-shrink: 0; overflow: hidden"><svg width="26" height="30" viewBox="0 0 44 56" aria-hidden="true"><rect x="20" y="30" width="4" height="26" fill="#8A6A4F"></rect><circle cx="22" cy="20" r="15" fill="#7FA487"></circle><circle cx="11" cy="29" r="9" fill="#7FA487"></circle><circle cx="33" cy="29" r="9" fill="#7FA487"></circle><circle cx="16" cy="18" r="3" fill="#E0B04A"></circle><circle cx="28" cy="22" r="3" fill="#E0B04A"></circle></svg></span>
+<span style="flex-grow: 1; display: flex; flex-direction: column; min-width: 0"><span style="font-weight: 700; font-size: 15px">mitigate</span><span style="font-size: 13px; color: #5E6A62; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">giảm nhẹ, làm dịu bớt</span></span>
+<span style="height: 32px; padding: 0 10px; border-radius: 16px; background: #FBF4E4; border: 1px solid #EFD9A6; color: #6B5215; display: flex; align-items: center; font-size: 12px; font-weight: 700; flex-shrink: 0">Đã hái · 94%</span>
+</div>
+<div style="display: flex; align-items: center; gap: 10px; padding: 6px 0; border-top: 1px solid #F0EBE0">
+<span style="width: 36px; height: 36px; border-radius: 12px; background: #F4F1EA; display: flex; align-items: flex-end; justify-content: center; flex-shrink: 0; overflow: hidden"><svg width="26" height="32" viewBox="0 0 40 52" aria-hidden="true"><path d="M20 52 V20" stroke="#7FA487" stroke-width="2.5"></path><circle cx="20" cy="10" r="5" fill="#E8A87C"></circle><circle cx="26" cy="15" r="5" fill="#E8A87C"></circle><circle cx="24" cy="22" r="5" fill="#E8A87C"></circle><circle cx="16" cy="22" r="5" fill="#E8A87C"></circle><circle cx="14" cy="15" r="5" fill="#E8A87C"></circle><circle cx="20" cy="17" r="4" fill="#F2D28B"></circle></svg></span>
+<span style="flex-grow: 1; display: flex; flex-direction: column; min-width: 0"><span style="font-weight: 700; font-size: 15px">deforestation</span><span style="font-size: 13px; color: #5E6A62; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">nạn phá rừng</span></span>
+<button aria-label="Nói deforestation" style="width: 44px; height: 44px; border-radius: 22px; border: none; background: #B4552E; display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; box-shadow: 0 3px 0 #7E3719"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"></rect><path d="M5 11 A7 7 0 0 0 19 11"></path><path d="M12 18 V21"></path></svg></button>
+</div>
+<div style="display: flex; align-items: center; gap: 10px; padding: 6px 0; border-top: 1px solid #F0EBE0">
+<span style="width: 36px; height: 36px; border-radius: 12px; background: #F4F1EA; display: flex; align-items: flex-end; justify-content: center; flex-shrink: 0; overflow: hidden"><svg width="26" height="32" viewBox="0 0 40 52" aria-hidden="true"><path d="M20 52 V20" stroke="#7FA487" stroke-width="2.5"></path><circle cx="20" cy="10" r="5" fill="#E8A87C"></circle><circle cx="26" cy="15" r="5" fill="#E8A87C"></circle><circle cx="24" cy="22" r="5" fill="#E8A87C"></circle><circle cx="16" cy="22" r="5" fill="#E8A87C"></circle><circle cx="14" cy="15" r="5" fill="#E8A87C"></circle><circle cx="20" cy="17" r="4" fill="#F2D28B"></circle></svg></span>
+<span style="flex-grow: 1; display: flex; flex-direction: column; min-width: 0"><span style="font-weight: 700; font-size: 15px">ecosystem</span><span style="font-size: 13px; color: #5E6A62; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">hệ sinh thái</span></span>
+<button aria-label="Nói ecosystem" style="width: 44px; height: 44px; border-radius: 22px; border: none; background: #B4552E; display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; box-shadow: 0 3px 0 #7E3719"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"></rect><path d="M5 11 A7 7 0 0 0 19 11"></path><path d="M12 18 V21"></path></svg></button>
+</div>
+</div>
+
+<div style="display: flex; justify-content: space-between; align-items: baseline">
+<span style="font-family: 'Fraunces', serif; font-weight: 600; font-size: 18px">{{listTitle}}</span>
+<span style="font-size: 12px; color: #5E6A62">Xếp theo lần tưới tiếp theo</span>
+</div>
+
+<div style="flex-grow: 1; display: flex; flex-direction: column; gap: 8px; overflow: hidden">
+<sc-for list="{{words}}" as="w" hint-placeholder-count="6">
+<div style="min-height: 60px; box-sizing: border-box; background: {{w.bg}}; border: 1px solid {{w.border}}; border-radius: 16px; padding: 8px 12px 8px 8px; display: flex; align-items: center; gap: 10px">
+<span style="width: 40px; height: 40px; border-radius: 12px; background: #F4F1EA; display: flex; align-items: flex-end; justify-content: center; flex-shrink: 0; overflow: hidden">
+<sc-if value="{{w.isSeed}}" hint-placeholder-val="{{false}}"><svg width="30" height="30" viewBox="0 0 40 40" aria-label="hạt giống"><ellipse cx="20" cy="33" rx="6" ry="4" fill="#6B5040"></ellipse><path d="M20 30 C20 26 22 24 25 23" stroke="#7FA487" stroke-width="2.4" fill="none" stroke-linecap="round"></path></svg></sc-if>
+<sc-if value="{{w.isSprout}}" hint-placeholder-val="{{false}}"><svg width="30" height="30" viewBox="0 0 40 40" aria-label="mầm"><path d="M20 40 V22" stroke="#7FA487" stroke-width="2.5"></path><path d="M20 30 C14 29 11 25 13 21 C18 21 20 25 20 30 Z" fill="#9CC39A"></path><path d="M20 27 C26 26 29 22 27 18 C22 18 20 22 20 27 Z" fill="#B7D6AE"></path></svg></sc-if>
+<sc-if value="{{w.isWilt}}" hint-placeholder-val="{{false}}"><svg width="30" height="30" viewBox="0 0 40 40" aria-label="đang héo"><path d="M20 40 C20 30 22 26 28 24" stroke="#A89F6B" stroke-width="2.5" fill="none"></path><path d="M21 33 C15 35 10 33 8 28 C14 26 19 28 21 33 Z" fill="#A89F6B"></path><path d="M26 25 C32 28 35 32 35 37 C29 36 27 31 26 25 Z" fill="#A89F6B"></path></svg></sc-if>
+<sc-if value="{{w.isFlower}}" hint-placeholder-val="{{false}}"><svg width="30" height="36" viewBox="0 0 40 52" aria-label="hoa"><path d="M20 52 V20" stroke="#7FA487" stroke-width="2.5"></path><circle cx="20" cy="10" r="5" fill="#E8A87C"></circle><circle cx="26" cy="15" r="5" fill="#E8A87C"></circle><circle cx="24" cy="22" r="5" fill="#E8A87C"></circle><circle cx="16" cy="22" r="5" fill="#E8A87C"></circle><circle cx="14" cy="15" r="5" fill="#E8A87C"></circle><circle cx="20" cy="17" r="4" fill="#F2D28B"></circle></svg></sc-if>
+<sc-if value="{{w.isTree}}" hint-placeholder-val="{{false}}"><svg width="34" height="38" viewBox="0 0 44 56" aria-label="cây ăn trái"><rect x="20" y="30" width="4" height="26" fill="#8A6A4F"></rect><circle cx="22" cy="20" r="15" fill="#7FA487"></circle><circle cx="11" cy="29" r="9" fill="#7FA487"></circle><circle cx="33" cy="29" r="9" fill="#7FA487"></circle><circle cx="16" cy="18" r="3" fill="#E0B04A"></circle><circle cx="28" cy="22" r="3" fill="#E0B04A"></circle></svg></sc-if>
+</span>
+<span style="flex-grow: 1; display: flex; flex-direction: column; min-width: 0">
+<span style="font-weight: 700; font-size: 15px">{{w.word}}</span>
+<span style="font-size: 13px; color: #5E6A62; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{w.vi}}</span>
+</span>
+<span style="font-size: 12px; font-weight: 700; color: {{w.dueColor}}; text-align: right; flex-shrink: 0">{{w.due}}</span>
+</div>
+</sc-for>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { stage: null };
+  }
+  renderVals() {
+    const sel = this.state.stage;
+    const all = [
+      { word: 'drought', vi: 'hạn hán · từ khó, quên 5 lần', stage: 'sprout', wilt: true, due: 'Cần tưới', order: 0 },
+      { word: 'deteriorate', vi: 'xấu đi, suy giảm', stage: 'sprout', due: 'Cần tưới', order: 1 },
+      { word: 'mitigate', vi: 'giảm nhẹ, làm dịu bớt', stage: 'flower', due: 'Cần tưới', order: 2 },
+      { word: 'conservation', vi: 'sự bảo tồn', stage: 'sprout', due: 'Cần tưới', order: 3 },
+      { word: 'biodiversity', vi: 'đa dạng sinh học', stage: 'seed', due: 'Mới', order: 4 },
+      { word: 'carbon footprint', vi: 'lượng khí thải carbon', stage: 'seed', due: 'Mới', order: 5 },
+      { word: 'deforestation', vi: 'nạn phá rừng', stage: 'flower', due: '3 ngày nữa', order: 6 },
+      { word: 'ecosystem', vi: 'hệ sinh thái', stage: 'flower', due: '5 ngày nữa', order: 7 },
+      { word: 'renewable', vi: 'có thể tái tạo', stage: 'tree', due: '9 ngày nữa', order: 8 },
+      { word: 'sustainable', vi: 'bền vững', stage: 'tree', due: '12 ngày nữa', order: 9 },
+      { word: 'emissions', vi: 'khí thải', stage: 'tree', due: '20 ngày nữa', order: 10 }
+    ];
+    const counts = { seed: 12, sprout: 11, flower: 7, tree: 18 };
+    const names = { seed: 'Hạt', sprout: 'Mầm', flower: 'Hoa', tree: 'Kết trái' };
+    const tabs = ['seed', 'sprout', 'flower', 'tree'].map((id) => {
+      const on = sel === id;
+      return {
+        count: counts[id], label: names[id],
+        isSeed: id === 'seed', isSprout: id === 'sprout', isFlower: id === 'flower', isTree: id === 'tree',
+        bg: on ? '#24463A' : '#FFFFFF',
+        border: on ? '#24463A' : '#E3DDD0',
+        color: on ? '#FFFFFF' : '#1C2B24',
+        pressed: on ? 'true' : 'false',
+        pick: () => this.setState({ stage: on ? null : id })
+      };
+    });
+    const words = all
+      .filter((w) => !sel || w.stage === sel)
+      .map((w) => {
+        const dueNow = w.due === 'Cần tưới';
+        return {
+          word: w.word, vi: w.vi, due: w.due,
+          isSeed: w.stage === 'seed',
+          isSprout: w.stage === 'sprout' && !w.wilt,
+          isWilt: !!w.wilt,
+          isFlower: w.stage === 'flower',
+          isTree: w.stage === 'tree',
+          bg: w.wilt ? '#FBF4E4' : '#FFFFFF',
+          border: w.wilt ? '#EFD9A6' : '#E3DDD0',
+          dueColor: dueNow ? '#1D6A9A' : (w.due === 'Mới' ? '#9A6E14' : '#5E6A62')
+        };
+      });
+    return {
+      tabs,
+      words,
+      listTitle: sel ? names[sel] + ' trong luống này' : 'Tất cả từ'
+    };
+  }
+}
+</script>
+</body>
+</html>
