@@ -652,3 +652,8 @@ Engineering-facing log of shipped fixes and changes, one dated entry per change.
 * **Files**: [`docs/design/garden/CHANGELOG.md`](docs/design/garden/CHANGELOG.md)
 * **What**: SE1 Home speaking mission, SE2 Topic bed Speak, SE5 Harvest by voice, SE6 Echo challenge → *Approved*; D-5 answered (they replace A1 / A7 / GR3). Recorded for Dylan, who approved in chat.
 * **Why**: Dylan, 2026-10-06. Building waits for the `Entry*.dc.html` files and the D-3 / D-4 answers.
+
+### Design decisions D-3 and D-4 (Dylan)
+* **Files**: [`docs/design/garden/CHANGELOG.md`](docs/design/garden/CHANGELOG.md) (§2.3, §3), [`docs/design/QUESTIONS.md`](docs/design/QUESTIONS.md) (Q-4)
+* **What**: D-3: Harvest by voice turns a ripe word into Fruit at 90%+ and doesn't change review dates (speaking stays visual only, D5). D-4: the Echo challenge shows totals only (GR3's promise). Design files still to come from Dylan.
+* **Why**: Dylan, 2026-10-06, before the speaking entry points are built.

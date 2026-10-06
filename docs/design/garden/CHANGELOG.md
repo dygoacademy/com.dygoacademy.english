@@ -150,8 +150,8 @@ All iPad screens: sidebar (Garden · Missions · Topics · Groups · Me + Shared
 |---|---|---|
 | D-1 | Speech-recognition service: must work from Vietnam + mainland China; cost per check | SP2, SP3 |
 | D-2 | "Native speaker" vs "Native accent / Giọng bản xứ" wording while audio is text-to-speech | SP1, SP3 |
-| D-3 | Harvest by voice: which score harvests (Bloom 70%+ or Fruit 90%+)? Does it change review dates? | SE5 |
-| D-4 | Echo challenge: show each gardener's stage, or totals only (GR3 promises "totals only")? | SE6 |
+| D-3 | ~~Harvest by voice: which score harvests (Bloom 70%+ or Fruit 90%+)? Does it change review dates?~~ **Fruit 90%+, no change to review dates** (speaking stays visual only, D5) (Dylan, 2026-10-06) | SE5 |
+| D-4 | ~~Echo challenge: show each gardener's stage, or totals only?~~ **Totals only**, keeping GR3's promise (Dylan, 2026-10-06) | SE6 |
 | D-5 | ~~When approved, SE1/SE2/SE5/SE6 replace A1 / A7 / GR3 — confirm~~ **Yes** (Dylan, 2026-10-06) | SE1–SE6 |
 
 ### 2.4 Removed screens
@@ -169,7 +169,7 @@ All iPad screens: sidebar (Garden · Missions · Topics · Groups · Me + Shared
 Newest first. Format: `### YYYY-MM-DD — title` then lines tagged **Added / Changed / Removed / Decision**, with screen IDs and status.
 
 ### 2026-10-06 — Speaking entry points approved (Dylan)
-- **Changed** SE1, SE2, SE5, SE6: *For approval* → *Approved* (Dylan in chat, 2026-10-06). **Decision** D-5: yes, they replace A1 / A7 / GR3. Still open before building: D-3 (SE5), D-4 (SE6); the `Entry*.dc.html` files (EN + VI) aren't in the repo yet.
+- **Changed** SE1, SE2, SE5, SE6: *For approval* → *Approved* (Dylan in chat, 2026-10-06). **Decision** D-5: yes, they replace A1 / A7 / GR3. **Decision** D-3: Fruit at 90%+, review dates unchanged. **Decision** D-4: Echo shows totals only. Waiting for the `Entry*.dc.html` files (EN + VI), which Dylan will add to `docs/design/garden/source/`.
 
 ### 2026-10-06 — Build status filled in (Claude Code)
 - **Changed** AU1–AU4, A1–A8, GR1–GR7, Q1–Q8, SP1–SP4: status → *Built*, with commits in the Build status column (§2). H3 / H4 / H3s are built and live although still *For approval*; the iPad boards are partly built behind a flag. Not built: SE1 / SE2 / SE5 / SE6 (*For approval*), iSP1 / iSP3, Kids K1–K4 (not in this web app). Questions about this file: `docs/design/QUESTIONS.md`.
