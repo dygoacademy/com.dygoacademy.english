@@ -102,10 +102,10 @@ Every row has an English file and a Vietnamese twin (`…Vi.dc.html`) unless not
 | SP2 | Speaking (3·2·1·beep) | `SpeakRecording` | Built | Sentence stays visible. **Countdown 3 · 2 · 1** over the empty waveform ("Get ready · Recording starts after the beep · tap to start now"); tap skips. Beep + haptic, mic turns clay, recording starts just after the beep. Then: follow-along sentence, live clay waveform over pale native shape, elapsed time only (**no time limit**), stress tip, Stop; "or just pause, it stops by itself" (~2 s silence). Cancel → SP1. | SP3, SP1 | v2 S15 `a14c1d1`; silent-switch fix `5e5852c`; pixel diff en 0.06 / 0.40 %, vi 0.12 / 0.46 % (pass) |
 | SP3 | Compare (result fills in) | `SpeakCompare` | Built | Opens immediately after stop. Waveforms + replay work at once. Result area has 3 states: **checking** (shimmer + "Checking your sentence…" + "Your recording is checked, then deleted."), **done** (word marks: green = fine; amber `MIT is too soft`; dashed + struck `missing`; `heard "affects"`; amber bands on waveform; garden-stage score "In bloom · 76% match"; one tip), **failed** (inline card: Check again / Record again). Overlay / Side by side switch. Replay buttons: **Native · UK** (globe avatar) and **You** (learner's initial avatar). Try again → SP2, Next word. Design file has a `result` tweak (auto/checking/done/failed) for review only. | SP2, SP1, SP4 | v2 S18 `a14c1d1`, server check `be6a008`, scoring M4 `81dd0ff`; pixel diff 0.5–1.4 % accepted (S18b) |
 | SP4 | Speaking done | `SpeakDone` | Built | One plant per sentence (best stage), list with mini waveform + best %, one "Pattern to watch", Back to garden. | A1 | Phase 13 S8 `e03aac9`; no fixture page yet |
-| SE1 | Entry · Home speaking mission | `EntryHome` | For approval | A1 with the 3rd mission as **"Say 3 ripe words · 2 min"** (clay mic, light clay highlight), still counts to Golden Bloom; rotates with Collocation challenge. | SP1 | |
-| SE2 | Entry · Topic bed Speak | `EntryBed` | For approval | A7 with a full-width **"Speak · 5 sentences from this bed"** row under Water / Quiz / + . | SP1 | |
-| SE5 | Entry · Harvest by voice | `EntryHarvest` | For approval | A7 with a **"Ready to harvest"** card: ripe Flower words, each with a mic; saying it well turns it into Fruit. | SP1 | |
-| SE6 | Entry · Echo challenge | `EntryEcho` | For approval | GR3 with an **Echo challenge** card (trickiest word, each gardener's best stage, "3 of 5 done", Say it). Tricky list trimmed to 2 rows. | SP1 | |
+| SE1 | Entry · Home speaking mission | `EntryHome` | Approved | A1 with the 3rd mission as **"Say 3 ripe words · 2 min"** (clay mic, light clay highlight), still counts to Golden Bloom; rotates with Collocation challenge. | SP1 | |
+| SE2 | Entry · Topic bed Speak | `EntryBed` | Approved | A7 with a full-width **"Speak · 5 sentences from this bed"** row under Water / Quiz / + . | SP1 | |
+| SE5 | Entry · Harvest by voice | `EntryHarvest` | Approved | A7 with a **"Ready to harvest"** card: ripe Flower words, each with a mic; saying it well turns it into Fruit. | SP1 | |
+| SE6 | Entry · Echo challenge | `EntryEcho` | Approved | GR3 with an **Echo challenge** card (trickiest word, each gardener's best stage, "3 of 5 done", Say it). Tricky list trimmed to 2 rows. | SP1 | |
 
 #### Public home page — page "Home Page"
 | ID | Screen | File | Status | What's on it | Build status |
@@ -152,7 +152,7 @@ All iPad screens: sidebar (Garden · Missions · Topics · Groups · Me + Shared
 | D-2 | "Native speaker" vs "Native accent / Giọng bản xứ" wording while audio is text-to-speech | SP1, SP3 |
 | D-3 | Harvest by voice: which score harvests (Bloom 70%+ or Fruit 90%+)? Does it change review dates? | SE5 |
 | D-4 | Echo challenge: show each gardener's stage, or totals only (GR3 promises "totals only")? | SE6 |
-| D-5 | When approved, SE1/SE2/SE5/SE6 replace A1 / A7 / GR3 — confirm | SE1–SE6 |
+| D-5 | ~~When approved, SE1/SE2/SE5/SE6 replace A1 / A7 / GR3 — confirm~~ **Yes** (Dylan, 2026-10-06) | SE1–SE6 |
 
 ### 2.4 Removed screens
 | ID | Screen | Removed | Replaced by |
@@ -167,6 +167,9 @@ All iPad screens: sidebar (Garden · Missions · Topics · Groups · Me + Shared
 ## 3. Changelog
 
 Newest first. Format: `### YYYY-MM-DD — title` then lines tagged **Added / Changed / Removed / Decision**, with screen IDs and status.
+
+### 2026-10-06 — Speaking entry points approved (Dylan)
+- **Changed** SE1, SE2, SE5, SE6: *For approval* → *Approved* (Dylan in chat, 2026-10-06). **Decision** D-5: yes, they replace A1 / A7 / GR3. Still open before building: D-3 (SE5), D-4 (SE6); the `Entry*.dc.html` files (EN + VI) aren't in the repo yet.
 
 ### 2026-10-06 — Build status filled in (Claude Code)
 - **Changed** AU1–AU4, A1–A8, GR1–GR7, Q1–Q8, SP1–SP4: status → *Built*, with commits in the Build status column (§2). H3 / H4 / H3s are built and live although still *For approval*; the iPad boards are partly built behind a flag. Not built: SE1 / SE2 / SE5 / SE6 (*For approval*), iSP1 / iSP3, Kids K1–K4 (not in this web app). Questions about this file: `docs/design/QUESTIONS.md`.

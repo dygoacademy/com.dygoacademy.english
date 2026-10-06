@@ -647,3 +647,8 @@ Engineering-facing log of shipped fixes and changes, one dated entry per change.
 * **Files**: [`phase/phase 13/PHASE-13-RECORD.md`](phase/phase%2013/PHASE-13-RECORD.md) (Status); `phase 13 implementation plan.md` (status block, still uncommitted as before)
 * **What**: status only. All Phase 13 build work live on UAT, now with the speech-check queue; open items listed for Dylan and Claude.
 * **Why**: Dylan asked for the Phase 13 status.
+
+### Design changelog: speaking entry points approved
+* **Files**: [`docs/design/garden/CHANGELOG.md`](docs/design/garden/CHANGELOG.md)
+* **What**: SE1 Home speaking mission, SE2 Topic bed Speak, SE5 Harvest by voice, SE6 Echo challenge → *Approved*; D-5 answered (they replace A1 / A7 / GR3). Recorded for Dylan, who approved in chat.
+* **Why**: Dylan, 2026-10-06. Building waits for the `Entry*.dc.html` files and the D-3 / D-4 answers.
