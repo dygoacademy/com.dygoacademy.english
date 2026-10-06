@@ -57,7 +57,20 @@ export default () => ({
 
   speech: {
     scorerUrl: process.env.SPEECH_SCORER_URL || 'http://127.0.0.1:8100',
+    // Queue v1 (2026-10-06): every scorer the worker may use, comma-separated;
+    // one check at a time each. Falls back to SPEECH_SCORER_URL.
+    scorerUrls: (
+      process.env.SPEECH_SCORER_URLS ||
+      process.env.SPEECH_SCORER_URL ||
+      'http://127.0.0.1:8100'
+    )
+      .split(',')
+      .map((u) => u.trim())
+      .filter(Boolean),
     timeoutMs: parseInt(process.env.SPEECH_CHECK_TIMEOUT_MS || '8000', 10),
+    // Above this estimated wait (s) a new check is refused as "busy" (503)
+    // and the app shows its own quick result instead.
+    busyEtaSeconds: parseInt(process.env.SPEECH_BUSY_ETA_SECONDS || '15', 10),
   },
 
   // Module 6 (Web Push & Habit Scheduling) — VAPID identifies this server to

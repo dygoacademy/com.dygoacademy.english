@@ -777,27 +777,34 @@ too short / too long / no sentence. Full details: `docker/speech/README.md`.
 
 ### Rules for features that use it
 
-- **Call it from the backend only.** The browser never talks to it: it's bound
-  to `127.0.0.1` and must never get a Cloudflare tunnel route. The backend
-  reaches it at `SPEECH_SCORER_URL` (UAT: `http://127.0.0.1:8100` in
-  `env-profiles/prod.env`, with `SPEECH_CHECK_TIMEOUT_MS=8000`; from another
-  container on `dygo-network`: `http://speech:8000`). After changing either,
-  `pm2 restart dygo-backend`. The backend endpoint for Phase 13 is
-  `POST /speaking/check` (S17, in progress), which wraps it behind a
-  `SpeechChecker` interface; reuse that rather than calling the scorer twice.
-- **Don't keep the audio.** The scorer holds it in memory only; callers must
-  not write it to disk, the database or logs either (Phase 13 D2).
-- **Time out and fall back.** Allow ~8 s; on a timeout or a 5xx show "Couldn't
-  check" (SP3's failed state) instead of hanging. One check runs at a time.
-- **Rate-limit per user** (S17: 60 checks an hour) so one learner can't tie up
-  the Mac.
+- **Go through the backend's queue.** The browser never talks to a scorer:
+  scorers are bound to `127.0.0.1` and must never get a Cloudflare tunnel
+  route. The app calls `POST /api/v1/speaking/check` (answers at once with a
+  `check_id`) and polls `GET /api/v1/speaking/check/:id`; a BullMQ worker in the
+  backend (`speech-check-queue`, `SpeechCheckProcessor`) sends each recording to
+  a free scorer from `SPEECH_SCORER_URLS` (UAT: `http://127.0.0.1:8100,http://127.0.0.1:8101`
+  in `env-profiles/prod.env`, the `speech` and `speech-2` containers). Add a
+  scorer (another container, or another machine over a private network) by adding
+  its URL there and `pm2 restart dygo-backend`. Reuse this endpoint rather than
+  calling a scorer from a new feature.
+- **Don't keep the audio.** It stays in the API process's memory
+  (`SpeechCheckStore`): the queued job carries ids only, because Redis saves to
+  disk; a waiting recording is dropped after 60 s, results after 10 min (Phase 13 D2).
+- **Busy and failures.** When the wait for a new check would pass
+  `SPEECH_BUSY_ETA_SECONDS` (15), the API answers 503 and the app shows its own
+  quick result ("Quick check on this phone"). A failed check (scorer down,
+  over `SPEECH_CHECK_TIMEOUT_MS`, bad audio) shows "Couldn't check this one";
+  the app gives up after 30 s in all.
+- **Rate-limit per user** (60 checks an hour) so one learner can't tie up the scorers.
 
 ### Limits and tuning
 
 - **Speed:** CPU only (Docker on macOS can't use the GPU). A 4–6 s sentence
   takes ~1.7–3.3 s, up to ~5 s when the Mac is busy.
-- **Capacity:** fine for beta on this Mac; for many learners at once it needs
-  its own machine (same container, change the URL).
+- **Capacity** (measured 2026-10-06, M2): 2 scorers × 2 threads (`MODEL_THREADS`) check
+  ~0.8 recordings a second (6 in 7.2 s), ~50 a minute: fine for ~100 learners at
+  once. More scorers on the same Mac add little (the CPU is the limit); grow with a
+  faster model or another machine added to `SPEECH_SCORER_URLS`.
 - **Memory:** ~0.8–1.5 GB (`mem_limit` 4 GB); models live in the `speech_models`
   volume.
 - **Rules and thresholds** (M4, calibrated 2026-10-05): the target word counts 3×,
@@ -809,7 +816,7 @@ too short / too long / no sentence. Full details: `docker/speech/README.md`.
   ("the" as /ði/ before a vowel) are listed in `VARIANTS` in the same file;
   add to it when good speech gets flagged.
 - **Not caught:** words that sound the same ("affects" / "effects").
-- **After changing the code:** `docker compose build speech && docker compose up -d speech`;
+- **After changing the code:** `docker compose build speech && docker compose up -d speech speech-2`;
   unit tests: `docker run --rm --entrypoint python comdygoacademyenglish-speech -m pytest -q tests`.
 
 ## Documentation

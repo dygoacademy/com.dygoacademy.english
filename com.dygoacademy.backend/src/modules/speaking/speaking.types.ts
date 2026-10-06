@@ -115,3 +115,28 @@ export interface SpeakingCheckResult {
 export const SPEAKING_CHECKS_PER_HOUR = 60;
 /** Largest recording accepted (a 30 s AAC clip is ~250 KB). */
 export const SPEAKING_CHECK_MAX_BYTES = 1_000_000;
+
+/** Where a queued speech check is (queue v1, 2026-10-06). */
+export type SpeakingCheckStatus = 'queued' | 'checking' | 'done' | 'failed';
+
+/** `POST /speaking/check` (202): the check is queued; poll `GET /speaking/check/:id`. */
+export interface SpeakingCheckQueued {
+  check_id: string;
+  status: 'queued';
+  /** Checks ahead of this one (waiting + running). */
+  position: number;
+  /** Rough wait in seconds. */
+  eta_s: number;
+}
+
+/** `GET /speaking/check/:id`: the check's state, with the result once done. */
+export interface SpeakingCheckState {
+  check_id: string;
+  status: SpeakingCheckStatus;
+  result?: SpeakingCheckResult;
+  /** When failed: `bad_audio`, `timeout`, `unavailable` or `expired`. */
+  reason?: string;
+}
+
+/** Seconds a scorer takes per check under load (measured 2026-10-06: 2 scorers × 2 threads on the M2), for `eta_s` and the busy check. */
+export const SPEECH_CHECK_AVG_SECONDS = 2.5;

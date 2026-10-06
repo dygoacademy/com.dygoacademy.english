@@ -1270,6 +1270,7 @@
       "pauseStops": "hoặc chỉ cần ngừng, ghi âm sẽ tự dừng",
       "checking": "Đang chấm câu của bạn…",
       "privacy": "Bản ghi được chấm xong sẽ xóa ngay.",
+      "quickCheck": "Chấm nhanh trên điện thoại: máy chấm đang bận.",
       "failed": {
         "title": "Chưa chấm được câu này",
         "body": "Mất kết nối. Bản ghi của bạn không được lưu.",

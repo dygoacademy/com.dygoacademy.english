@@ -1270,6 +1270,7 @@
       "pauseStops": "or just pause, it stops by itself",
       "checking": "Checking your sentence…",
       "privacy": "Your recording is checked, then deleted.",
+      "quickCheck": "Quick check on this phone: the checker was busy.",
       "failed": {
         "title": "Couldn't check this one",
         "body": "The connection dropped. Your recording wasn't saved.",

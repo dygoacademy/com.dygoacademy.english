@@ -191,6 +191,12 @@ export function SpeakCompareScreen(props: SpeakCompareScreenProps) {
             title={t('match', { stage: t(`stage.${result.stage}`), pct: result.score })}
             scale={t.rich('stageScale', { b: (chunks) => <b>{chunks}</b> })}
           />
+          {result.quick ? (
+            // Queue v1: the server was busy, so this is the phone's own check.
+            <p className="-mt-1 text-[13px] text-muted-foreground" data-testid="quick-check">
+              {t('quickCheck')}
+            </p>
+          ) : null}
           {tip ? (
             <div className="flex flex-col gap-1 rounded-[18px] border border-gold-border bg-gold-soft px-3.5 py-3 text-gold-soft-text">
               <span className="text-[15px] font-bold">{tip.title}</span>

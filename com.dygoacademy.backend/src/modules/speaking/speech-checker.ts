@@ -37,7 +37,13 @@ export interface SpeechAudio {
 
 export interface SpeechChecker {
   /** `targetIndex`: the practised word's position in sentence.split() (it weighs more, M4-a). */
-  check(audio: SpeechAudio, sentence: string, targetIndex?: number): Promise<ScorerResult>;
+  check(
+    audio: SpeechAudio,
+    sentence: string,
+    targetIndex?: number,
+    /** Which scorer (queue v1 picks one from the pool); default `speech.scorerUrl`. */
+    scorerUrl?: string,
+  ): Promise<ScorerResult>;
 }
 
 /** Why a check failed, for the endpoint's status code. */
@@ -62,8 +68,13 @@ export class MacSpeechChecker implements SpeechChecker {
 
   constructor(private readonly config: ConfigService) {}
 
-  async check(audio: SpeechAudio, sentence: string, targetIndex?: number): Promise<ScorerResult> {
-    const url = `${this.config.get<string>('speech.scorerUrl')}/check`;
+  async check(
+    audio: SpeechAudio,
+    sentence: string,
+    targetIndex?: number,
+    scorerUrl?: string,
+  ): Promise<ScorerResult> {
+    const url = `${scorerUrl ?? this.config.get<string>('speech.scorerUrl')}/check`;
     const timeoutMs = this.config.get<number>('speech.timeoutMs') ?? 8000;
     const form = new FormData();
     form.append(

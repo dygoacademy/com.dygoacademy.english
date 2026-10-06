@@ -4,6 +4,7 @@ import {
   Get,
   HttpCode,
   Param,
+  ParseUUIDPipe,
   Post,
   Query,
   UploadedFile,
@@ -29,7 +30,8 @@ import { SpeakingService } from './speaking.service';
 import {
   SPEAKING_CHECK_MAX_BYTES,
   SpeakingAttempt,
-  SpeakingCheckResult,
+  SpeakingCheckQueued,
+  SpeakingCheckState,
   SpeakingSession,
   SpeakingWordItem,
   SpeakingWordLookup,
@@ -117,7 +119,7 @@ export class SpeakingController {
   }
 
   @Post('check')
-  @HttpCode(200)
+  @HttpCode(202)
   @UseGuards(SpeechCheckRateLimitGuard)
   @UseInterceptors(
     // No `dest` / `storage`: multer keeps the file in memory (`buffer`), never on disk.
@@ -136,20 +138,22 @@ export class SpeakingController {
     },
   })
   @ApiOperation({
-    summary: "Check a learner's recording against the item's sentence (Phase 13 S17)",
+    summary: "Queue a check of a learner's recording against the item's sentence (Phase 13)",
     description:
-      'The speech scorer on the server (G6, self-hosted) marks each word missing / unclear ' +
-      '(with what it heard) / fine and gives a 0–100 score and garden stage. The recording ' +
-      'is held in memory only: never stored or logged. Not saved as an attempt. 413 over ' +
-      '1 MB, 422 not m4a / webm / wav or not usable audio, 404 unknown item_id, 429 over 60 ' +
-      'checks an hour, 503 when the scorer is busy, down or takes over 8 s.',
+      'Answers at once (202) with a check_id, the checks ahead (position) and a rough wait ' +
+      '(eta_s); poll GET /speaking/check/:id for the result. The speech scorer on the server ' +
+      '(G6, self-hosted) marks each word missing / unclear (with what it heard) / fine and ' +
+      'gives a 0–100 score and garden stage. The recording is held in memory only: never ' +
+      'stored, queued in Redis or logged. Not saved as an attempt. 413 over 1 MB, 422 not ' +
+      'm4a / webm / wav, 404 unknown item_id, 429 over 60 checks an hour, 503 busy (the wait ' +
+      'would pass SPEECH_BUSY_ETA_SECONDS): the app then shows its own quick result.',
   })
   async check(
     @CurrentUser('id') userId: string,
     @Body() dto: CheckSpeechDto,
     @UploadedFile() audio?: UploadedAudio,
-  ): Promise<SpeakingCheckResult> {
-    return this.speechCheck.check(
+  ): Promise<SpeakingCheckQueued> {
+    return this.speechCheck.enqueue(
       userId,
       dto.item_id,
       audio && {
@@ -158,5 +162,20 @@ export class SpeakingController {
         filename: audio.originalname || 'recording',
       },
     );
+  }
+
+  @Get('check/:checkId')
+  @ApiOperation({
+    summary: 'A queued speech check: queued / checking / done (with the result) / failed',
+    description:
+      'Polled by the app while SP3 shows "Checking your sentence…". Only the learner who ' +
+      'sent the recording can read it; 404 for anyone else, an unknown id, or after 10 ' +
+      'minutes. failed carries a reason: bad_audio, timeout, unavailable or expired.',
+  })
+  checkStatus(
+    @CurrentUser('id') userId: string,
+    @Param('checkId', new ParseUUIDPipe()) checkId: string,
+  ): SpeakingCheckState {
+    return this.speechCheck.status(userId, checkId);
   }
 }

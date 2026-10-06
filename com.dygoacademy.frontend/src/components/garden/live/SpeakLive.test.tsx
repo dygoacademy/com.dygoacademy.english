@@ -63,7 +63,24 @@ vi.mock('@/hooks/useLiveLevels', () => ({
 vi.mock('@/lib/media-cache', () => ({ prefetchMedia: (...a: unknown[]) => prefetch(...a) }));
 // S18: the server check posts through the API client (which reads env on load).
 const upload = vi.fn();
-vi.mock('@/lib/api-client', () => ({ apiClient: { upload: (...a: unknown[]) => upload(...a) } }));
+const apiGet = vi.fn();
+vi.mock('@/lib/api-client', () => {
+  class ApiError extends Error {
+    constructor(
+      message: string,
+      public readonly status: number,
+    ) {
+      super(message);
+    }
+  }
+  return {
+    ApiError,
+    apiClient: {
+      upload: (...a: unknown[]) => upload(...a),
+      get: (...a: unknown[]) => apiGet(...a),
+    },
+  };
+});
 vi.mock('@/lib/speaking/envelopeScorer', async (orig) => ({
   ...(await orig<typeof import('@/lib/speaking/envelopeScorer')>()),
   envelopeScorer: {
@@ -194,6 +211,7 @@ describe('SpeakLive (The Pond)', () => {
     vi.useRealTimers();
     vi.unstubAllEnvs();
     upload.mockReset();
+    apiGet.mockReset();
   });
 
   const COUNT_BUTTON = 'Get ready. Recording starts after the beep. Tap to start now';
@@ -276,18 +294,23 @@ describe('SpeakLive (The Pond)', () => {
   it('server mode (S18): uploads the recording, shows its marks, saves them without "heard"', async () => {
     vi.stubEnv('NEXT_PUBLIC_SPEECH_CHECK', 'server');
     const words = SPEAK_FIXTURE_ITEM.sentence.split(' ');
-    upload.mockResolvedValue({
-      score: 64,
-      stage: 'sprout',
-      word_marks: words.map((_, index) =>
-        index === 6
-          ? { index, ok: false, reason: 'missing' }
-          : index === 7
-            ? { index, ok: false, reason: 'unclear', heard: 'affects' }
-            : { index, ok: true, reason: null },
-      ),
-      user_duration_ms: 3500,
-      check_ms: 1500,
+    upload.mockResolvedValue({ check_id: 'c1', status: 'queued', position: 0, eta_s: 3 });
+    apiGet.mockResolvedValue({
+      check_id: 'c1',
+      status: 'done',
+      result: {
+        score: 64,
+        stage: 'sprout',
+        word_marks: words.map((_, index) =>
+          index === 6
+            ? { index, ok: false, reason: 'missing' }
+            : index === 7
+              ? { index, ok: false, reason: 'unclear', heard: 'affects' }
+              : { index, ok: true, reason: null },
+        ),
+        user_duration_ms: 3500,
+        check_ms: 1500,
+      },
     });
     await renderLive();
     await act(async () => fireEvent.click(screen.getByRole('button', { name: 'Start recording' })));
@@ -313,6 +336,22 @@ describe('SpeakLive (The Pond)', () => {
     await act(async () => fireEvent.click(screen.getByRole('button', { name: 'Stop recording' })));
     await waitFor(() => expect(screen.getByText("Couldn't check this one")).toBeTruthy());
     expect(mutate).not.toHaveBeenCalled();
+  });
+
+  it("server busy: shows the phone's own result as a quick check and saves its marks", async () => {
+    vi.stubEnv('NEXT_PUBLIC_SPEECH_CHECK', 'server');
+    const { ApiError } = await import('@/lib/api-client');
+    upload.mockRejectedValue(new ApiError('Speech checking is busy', 503));
+    await renderLive();
+    await act(async () => fireEvent.click(screen.getByRole('button', { name: 'Start recording' })));
+    await countdown();
+    await act(async () => fireEvent.click(screen.getByRole('button', { name: 'Stop recording' })));
+    await waitFor(() => expect(screen.getByTestId('quick-check')).toBeTruthy());
+    expect(screen.getByText('Quick check on this phone: the checker was busy.')).toBeTruthy();
+    expect(screen.getByText('In bloom · 82% match')).toBeTruthy();
+    await waitFor(() => expect(mutate).toHaveBeenCalledTimes(1));
+    expect(mutate.mock.calls[0][0]).toMatchObject({ score: 82, stage: 'bloom' });
+    expect(apiGet).not.toHaveBeenCalled();
   });
 
   it('cancel during the countdown never starts the recorder', async () => {

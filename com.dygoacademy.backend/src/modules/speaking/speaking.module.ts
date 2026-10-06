@@ -2,7 +2,9 @@ import { Module } from '@nestjs/common';
 
 import { SpeakingController } from './speaking.controller';
 import { SpeakingService } from './speaking.service';
+import { SpeechCheckProcessor } from './speech-check.processor';
 import { SpeechCheckRateLimitGuard } from './speech-check-rate-limit.guard';
+import { SpeechCheckStore } from './speech-check.store';
 import { SpeechCheckService } from './speech-check.service';
 import { MacSpeechChecker, SPEECH_CHECKER } from './speech-checker';
 
@@ -17,6 +19,9 @@ import { MacSpeechChecker, SPEECH_CHECKER } from './speech-checker';
   providers: [
     SpeakingService,
     SpeechCheckService,
+    SpeechCheckStore,
+    // Queue v1 (2026-10-06): runs queued checks on the scorers in SPEECH_SCORER_URLS.
+    SpeechCheckProcessor,
     SpeechCheckRateLimitGuard,
     // G6: the self-hosted scorer on this Mac; swap the class to change service.
     { provide: SPEECH_CHECKER, useClass: MacSpeechChecker },

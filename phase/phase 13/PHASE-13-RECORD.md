@@ -340,6 +340,17 @@ Dylan plans to redesign where speaking is started from. Removed from the app:
 
 Kept, for the redesign to use: The Pond at `/sounds` (open the URL directly), `SpeakFlow` with its `single` mode (one sentence, as the sheet used it), the backend `GET /speaking/words` and `/speaking/words/:topicWordId` (now not called), the `screens.speak.sayThis.*` / `soundGarden.*` strings (`soundGarden.title` is still the `/sounds` page title), server checking, the scorer.
 
+## 22. Speech-check queue v1 (2026-10-06)
+
+Dylan: the app may wait a few seconds, but the backend must never be blocked; keep the scorer on the MacBook; Cloudflare later. Asked "queue in the speech service or the backend?": **backend** (BullMQ already runs enrichment; it knows the user, item and limits; works for any scorer behind `SpeechChecker`; remote scorers need only an HTTP address, Redis stays private; scorers stay stateless).
+
+- `POST /speaking/check` → 202 `{ check_id, position, eta_s }`; `GET /speaking/check/:id` → queued / checking / done (+ result) / failed (+ reason), owner only.
+- `speech-check-queue` job = ids + sentence + target index, **never audio**: the recording waits in `SpeechCheckStore` (API memory; 60 s for audio, 10 min for results), because Redis saves to disk. One API process (UAT); several would need a non-persistent shared store.
+- `SpeechCheckProcessor`: concurrency = number of scorers (`SPEECH_SCORER_URLS`), one check per scorer (`ScorerPool`), never throws (no retry; the app shows "Couldn't check").
+- Busy: estimated wait (`(ahead + 1) / scorers × 2.5 s`) over `SPEECH_BUSY_ETA_SECONDS` (15) → 503 → the app shows the phone's own result as a **quick check** (new `screens.speak.quickCheck`, en / vi / zh) and saves its marks as in local mode. The app polls every 0.8 s and gives up after 30 s.
+- Scorers: `speech` (8100) and new `speech-2` (8101), `MODEL_THREADS` 4 → 2. Measured with the real queue, store, worker and scorers (6 recordings at once): 1 scorer × 4 threads 9.7 s, 1 × 2 threads 7.9 s, **2 × 2 threads 7.2 s** (~0.8 checks/s, ~50 a minute): enough for ~100 learners at once. A second scorer on the same Mac adds little (CPU-bound); growth = a faster model or another machine.
+- Incident: while adding `quickCheck`, a script truncated `messages/en-US.json` (which held others' uncommitted edits) before an insert check failed. Restored the same minute from the last deploy's build (`.next/server/chunks/…`, built from the working tree at 06:58): 983 keys, 335 differing from git, as measured before, so nothing lost (formatting normalised to 2-space JSON). Scripts now build the full new text before opening a file for writing.
+
 ## Session log (from `docs/phase13-schedule.md`)
 
 One line per session: date · session · result · next.

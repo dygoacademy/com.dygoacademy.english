@@ -334,11 +334,13 @@ export function SpeakFlow({
           stage: shown.stage,
           // Marks only: what the scorer `heard` is never stored.
           // Local mode keeps the scorer's own marks (rushed / slow too).
-          word_marks: (server ? shown.wordMarks : r.wordMarks).map(({ index: i, ok, reason }) => ({
-            index: i,
-            ok,
-            reason,
-          })),
+          word_marks: (server && !shown.quick ? shown.wordMarks : r.wordMarks).map(
+            ({ index: i, ok, reason }) => ({
+              index: i,
+              ok,
+              reason,
+            }),
+          ),
           user_duration_ms: shown.userDurationMs,
         });
       } catch {

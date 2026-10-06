@@ -385,7 +385,32 @@ services:
       - "127.0.0.1:8100:8000"
     environment:
       WHISPER_MODEL: base.en
-      MODEL_THREADS: "4"
+      MODEL_THREADS: "2"
+    volumes:
+      - speech_models:/models
+    mem_limit: 4g
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://127.0.0.1:8000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 60
+      start_period: 120s
+    networks:
+      - dygo-network
+
+  # Second speech scorer (queue v1, 2026-10-06): the backend's speech-check
+  # worker sends one check at a time to each scorer in SPEECH_SCORER_URLS, so
+  # two scorers check two recordings at once. Same image and model volume as
+  # `speech` (models load from the volume, nothing downloads twice).
+  speech-2:
+    build: ./docker/speech
+    container_name: dygo_speech_2
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8101:8000"
+    environment:
+      WHISPER_MODEL: base.en
+      MODEL_THREADS: "2"
     volumes:
       - speech_models:/models
     mem_limit: 4g

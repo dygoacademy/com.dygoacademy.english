@@ -126,11 +126,14 @@ export const FOLLOW_ALONG_SLOWDOWN = 1.5;
 /**
  * SP3 checking (handover v2 §3.2): Compare opens at once, the check runs
  * in the background and fails after CHECK_TIMEOUT_MS ("Couldn't check
- * this one"). The server check (S18) gets SERVER_CHECK_TIMEOUT_MS: the
- * backend gives the scorer 8 s, plus the upload.
+ * this one"). The server check (S18) gets SERVER_CHECK_TIMEOUT_MS in all,
+ * queue wait included (queue v1: the backend refuses new checks as busy
+ * once the wait would pass ~15 s, and a check itself takes up to 8 s).
  */
 export const CHECK_TIMEOUT_MS = 8000;
-export const SERVER_CHECK_TIMEOUT_MS = 10000;
+export const SERVER_CHECK_TIMEOUT_MS = 30000;
+/** How often SP3 asks for a queued check's result (queue v1, 2026-10-06). */
+export const CHECK_POLL_MS = 800;
 
 /**
  * Where SP3's check runs (S18): `local` = the on-device envelope scorer

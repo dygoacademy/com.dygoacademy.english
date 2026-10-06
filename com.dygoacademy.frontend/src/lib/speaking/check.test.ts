@@ -3,7 +3,21 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { SpeakingCheckResult } from '@/types';
 
 const upload = vi.fn();
-vi.mock('@/lib/api-client', () => ({ apiClient: { upload: (...a: unknown[]) => upload(...a) } }));
+const get = vi.fn();
+vi.mock('@/lib/api-client', () => {
+  class ApiError extends Error {
+    constructor(
+      message: string,
+      public readonly status: number,
+    ) {
+      super(message);
+    }
+  }
+  return {
+    ApiError,
+    apiClient: { upload: (...a: unknown[]) => upload(...a), get: (...a: unknown[]) => get(...a) },
+  };
+});
 
 import { mergeServerResult, serverCheck } from './check';
 import { speechCheckMode, TIP_KEYS } from './constants';
@@ -99,55 +113,83 @@ describe('mergeServerResult (S18)', () => {
   });
 });
 
-describe('serverCheck', () => {
-  afterEach(() => upload.mockReset());
+describe('serverCheck (queue v1)', () => {
+  afterEach(() => {
+    upload.mockReset();
+    get.mockReset();
+  });
+  const req = (type = 'audio/mp4') => ({
+    recording: new Blob(['m4a'], { type }),
+    itemId: 'item-1',
+    accent: 'UK' as const,
+    sentence: SENTENCE,
+    targetIndex: TARGET,
+  });
+  const queued = { check_id: 'c1', status: 'queued', position: 1, eta_s: 3 };
 
-  it('uploads the recording as recorded with item and accent, then merges', async () => {
-    upload.mockResolvedValue(server({ 6: { ok: false, reason: 'missing' } }));
-    const recording = new Blob(['m4a'], { type: 'audio/mp4' });
-    const r = await serverCheck(
-      { recording, itemId: 'item-1', accent: 'UK', sentence: SENTENCE, targetIndex: TARGET },
-      local(),
-    );
+  it('sends the recording as recorded, polls the check until done, then merges', async () => {
+    upload.mockResolvedValue(queued);
+    get
+      .mockResolvedValueOnce({ check_id: 'c1', status: 'queued' })
+      .mockResolvedValueOnce({ check_id: 'c1', status: 'checking' })
+      .mockResolvedValueOnce({
+        check_id: 'c1',
+        status: 'done',
+        result: server({ 6: { ok: false, reason: 'missing' } }),
+      });
+    const r = await serverCheck(req(), local(), { pollMs: 1 });
     const [path, form] = upload.mock.calls[0] as [string, FormData];
     expect(path).toBe('/speaking/check');
     expect((form.get('audio') as File).name).toBe('recording.m4a');
     expect(form.get('item_id')).toBe('item-1');
     expect(form.get('accent')).toBe('UK');
+    expect(get).toHaveBeenCalledWith('/speaking/check/c1');
+    expect(get).toHaveBeenCalledTimes(3);
     expect(r.wordMarks[6].reason).toBe('missing');
+    expect(r.quick).toBeUndefined();
   });
 
   it('names a Chrome recording .webm', async () => {
-    upload.mockResolvedValue(server());
-    await serverCheck(
-      {
-        recording: new Blob(['x'], { type: 'audio/webm;codecs=opus' }),
-        itemId: 'i',
-        accent: 'US',
-        sentence: SENTENCE,
-        targetIndex: TARGET,
-      },
-      local(),
-    );
+    upload.mockResolvedValue(queued);
+    get.mockResolvedValue({ check_id: 'c1', status: 'done', result: server() });
+    await serverCheck(req('audio/webm;codecs=opus'), local(), { pollMs: 1 });
     expect(((upload.mock.calls[0][1] as FormData).get('audio') as File).name).toBe(
       'recording.webm',
     );
   });
 
-  it('rejects when the API fails (→ SP3 "Couldn\'t check")', async () => {
-    upload.mockRejectedValue(new Error('503'));
-    await expect(
-      serverCheck(
-        {
-          recording: new Blob(['x'], { type: 'audio/mp4' }),
-          itemId: 'i',
-          accent: 'US',
-          sentence: SENTENCE,
-          targetIndex: TARGET,
-        },
-        local(),
-      ),
-    ).rejects.toThrow('503');
+  it("busy (503 on send): the phone's own result, marked quick, nothing polled", async () => {
+    const { ApiError } = await import('@/lib/api-client');
+    upload.mockRejectedValue(new ApiError('Speech checking is busy', 503));
+    const r = await serverCheck(req(), local('stress_soft'), { pollMs: 1 });
+    expect(r.quick).toBe(true);
+    expect(r.score).toBe(82);
+    expect(r.wordMarks[TARGET].reason).toBe('stress_soft');
+    expect(get).not.toHaveBeenCalled();
+  });
+
+  it('a failed check rejects (→ SP3 "Couldn\'t check")', async () => {
+    upload.mockResolvedValue(queued);
+    get.mockResolvedValue({ check_id: 'c1', status: 'failed', reason: 'timeout' });
+    await expect(serverCheck(req(), local(), { pollMs: 1 })).rejects.toThrow(
+      'check failed: timeout',
+    );
+  });
+
+  it('other send errors reject', async () => {
+    upload.mockRejectedValue(new Error('network'));
+    await expect(serverCheck(req(), local(), { pollMs: 1 })).rejects.toThrow('network');
+  });
+
+  it('gives up after the timeout and stops polling', async () => {
+    upload.mockResolvedValue(queued);
+    get.mockResolvedValue({ check_id: 'c1', status: 'queued' });
+    await expect(serverCheck(req(), local(), { pollMs: 5, timeoutMs: 40 })).rejects.toThrow(
+      'check timed out',
+    );
+    const calls = get.mock.calls.length;
+    await new Promise((resolve) => setTimeout(resolve, 40));
+    expect(get.mock.calls.length).toBeLessThanOrEqual(calls + 1);
   });
 });
 

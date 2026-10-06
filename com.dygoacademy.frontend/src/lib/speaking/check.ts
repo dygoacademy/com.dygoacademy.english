@@ -1,12 +1,14 @@
-import { apiClient } from '@/lib/api-client';
+import { ApiError, apiClient } from '@/lib/api-client';
 import type {
   SpeakingAccent,
+  SpeakingCheckQueued,
   SpeakingCheckResult,
+  SpeakingCheckState,
   SpeakingMarkReason,
   SpeakingWordMark,
 } from '@/types';
 
-import { CHECK_TIMEOUT_MS, SERVER_CHECK_TIMEOUT_MS, TIP_KEYS } from './constants';
+import { CHECK_POLL_MS, CHECK_TIMEOUT_MS, SERVER_CHECK_TIMEOUT_MS, TIP_KEYS } from './constants';
 import { envelopeScorer, type ScorerInput, type SpeakingResult } from './envelopeScorer';
 
 /**
@@ -60,7 +62,11 @@ export type ShownMark = Omit<SpeakingWordMark, 'reason'> & {
   ipa?: string;
 };
 
-export type ShownResult = Omit<SpeakingResult, 'wordMarks'> & { wordMarks: ShownMark[] };
+export type ShownResult = Omit<SpeakingResult, 'wordMarks'> & {
+  wordMarks: ShownMark[];
+  /** The server was busy: this is the phone's own quick check (queue v1). */
+  quick?: boolean;
+};
 
 /**
  * The result as SP3 v2 shows it. Handover v2 drops the `rushed` / `slow`
@@ -149,10 +155,14 @@ export function mergeServerResult(
 }
 
 /**
- * S18 `server` mode: sends the recording as recorded (S15-a: m4a on
- * iPhone, webm on Chrome) to `POST /speaking/check` and merges the reply
- * with the on-device result. Rejects (→ SP3 "Couldn't check") on a network
- * error, a 4xx/5xx or after SERVER_CHECK_TIMEOUT_MS.
+ * S18 `server` mode, queued (v1, 2026-10-06): sends the recording as
+ * recorded (S15-a: m4a on iPhone, webm on Chrome) to `POST
+ * /speaking/check`, which answers at once with a check id; then asks
+ * `GET /speaking/check/:id` every CHECK_POLL_MS while SP3 shows "Checking
+ * your sentence…", and merges the result with the on-device one. When the
+ * server is busy (503 on send) it returns the phone's own result marked
+ * `quick`. Rejects (→ "Couldn't check this one") when the check fails, on
+ * a network or other API error, or after SERVER_CHECK_TIMEOUT_MS.
  */
 export async function serverCheck(
   req: {
@@ -163,6 +173,7 @@ export async function serverCheck(
     targetIndex: number;
   },
   local: SpeakingResult,
+  opts: { pollMs?: number; timeoutMs?: number } = {},
 ): Promise<ShownResult> {
   const form = new FormData();
   const ext = req.recording.type.includes('webm')
@@ -173,9 +184,34 @@ export async function serverCheck(
   form.append('audio', req.recording, `recording.${ext}`);
   form.append('item_id', req.itemId);
   form.append('accent', req.accent);
-  const server = await withTimeout(
-    apiClient.upload<SpeakingCheckResult>('/speaking/check', form),
-    SERVER_CHECK_TIMEOUT_MS,
-  );
-  return mergeServerResult(server, local, req.sentence.trim().split(/\s+/), req.targetIndex);
+  const pollMs = opts.pollMs ?? CHECK_POLL_MS;
+  let stopped = false; // set once the timeout (or the result) ends the wait
+  const work = async (): Promise<ShownResult> => {
+    let queued: SpeakingCheckQueued;
+    try {
+      queued = await apiClient.upload<SpeakingCheckQueued>('/speaking/check', form);
+    } catch (err) {
+      if (err instanceof ApiError && err.status === 503)
+        return { ...forDisplay(local), quick: true };
+      throw err;
+    }
+    while (!stopped) {
+      await new Promise((resolve) => setTimeout(resolve, pollMs));
+      if (stopped) break;
+      const state = await apiClient.get<SpeakingCheckState>(`/speaking/check/${queued.check_id}`);
+      if (state.status === 'done' && state.result) {
+        return mergeServerResult(
+          state.result,
+          local,
+          req.sentence.trim().split(/\s+/),
+          req.targetIndex,
+        );
+      }
+      if (state.status === 'failed') throw new Error(`check failed: ${state.reason ?? 'unknown'}`);
+    }
+    throw new Error('check timed out');
+  };
+  return withTimeout(work(), opts.timeoutMs ?? SERVER_CHECK_TIMEOUT_MS).finally(() => {
+    stopped = true;
+  });
 }

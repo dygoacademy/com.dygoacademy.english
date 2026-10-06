@@ -123,3 +123,19 @@ export interface SpeakingCheckResult {
   user_duration_ms: number;
   check_ms: number;
 }
+
+/** `POST /api/v1/speaking/check` (202, queue v1): the check is queued; poll its id. */
+export interface SpeakingCheckQueued {
+  check_id: string;
+  status: 'queued';
+  position: number;
+  eta_s: number;
+}
+
+/** `GET /api/v1/speaking/check/:id`: where a queued check is, with the result once done. */
+export interface SpeakingCheckState {
+  check_id: string;
+  status: 'queued' | 'checking' | 'done' | 'failed';
+  result?: SpeakingCheckResult;
+  reason?: string;
+}

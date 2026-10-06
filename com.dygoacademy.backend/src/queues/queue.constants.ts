@@ -2,6 +2,8 @@
 export const ENRICHMENT_QUEUE = 'enrichment-queue';
 export const NOTIFICATION_QUEUE = 'notification-queue';
 export const MAINTENANCE_QUEUE = 'maintenance-queue';
+/** Phase 13 speech checks (2026-10-06): one job per recording, ids only, never audio. */
+export const SPEECH_CHECK_QUEUE = 'speech-check-queue';
 
 /** Job names. */
 export const ENRICH_WORD_JOB = 'enrich-word';
@@ -11,6 +13,7 @@ export const AUDIO_BACKFILL_JOB = 'audio-backfill';
 export const TRANSLATIONS_BACKFILL_JOB = 'translations-backfill';
 export const NOTIFICATION_TICK_JOB = 'notification-tick';
 export const PARTITION_MAINTENANCE_JOB = 'partition-maintenance';
+export const SPEECH_CHECK_JOB = 'speech-check';
 
 /** Scheduler ids — stable, so a restart updates the schedule instead of duplicating it. */
 export const NOTIFICATION_TICK_SCHEDULER = 'notification-tick-every-15m';
@@ -47,4 +50,16 @@ export interface NotificationCronJob {
 export interface PartitionMaintenanceJob {
   /** How many months beyond the current one to keep provisioned. */
   monthsAhead: number;
+}
+
+/**
+ * A queued speech check. Ids and text only: the recording stays in the API
+ * process's memory (SpeechCheckStore) and never goes into Redis, which
+ * saves to disk (Phase 13 D2: recordings are never stored).
+ */
+export interface SpeechCheckJob {
+  checkId: string;
+  userId: string;
+  sentence: string;
+  targetIndex: number;
 }
