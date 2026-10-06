@@ -642,3 +642,8 @@ Engineering-facing log of shipped fixes and changes, one dated entry per change.
 * **Files**: [`phase/phase 13/PHASE-13-RECORD.md`](phase/phase%2013/PHASE-13-RECORD.md) (session log)
 * **What**: deploy through `deploy/request.md` (all 4 steps OK, 2026-10-06 22:50): checks are queued and polled; two scorers on the Mac; busy → the phone's quick result.
 * **Verified live**: www and API health 200; both check routes mapped and require login (401 without a token); the BullMQ worker is attached to `speech-check-queue`; both scorers healthy; the deployed frontend polls `/speaking/check/:id` and has the quick-check text; no backend errors since the restart.
+
+### Phase 13 status (2026-10-06, 23:00)
+* **Files**: [`phase/phase 13/PHASE-13-RECORD.md`](phase/phase%2013/PHASE-13-RECORD.md) (Status); `phase 13 implementation plan.md` (status block, still uncommitted as before)
+* **What**: status only. All Phase 13 build work live on UAT, now with the speech-check queue; open items listed for Dylan and Claude.
+* **Why**: Dylan asked for the Phase 13 status.

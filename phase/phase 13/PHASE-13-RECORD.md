@@ -2,9 +2,11 @@
 
 What was decided and checked in Phase 13, moved here on 2026-10-06 from `docs/phase13-notes.md` and `docs/phase13-schedule.md` (both deleted then; the full files, including day-one discovery and answered questions, are in git history, last version in commit `0e47e01`). What to build is in `PHASE-13-SPEAKING-PLAN.md` (the handover) and `phase13-speaking-design/`; the plan and status are in `phase 13 implementation plan.md` (repo root). Section numbers like "§16" in older commits and the Change Log refer to the deleted notes; their content is below under the same titles.
 
-## Status (2026-10-06)
+## Status (2026-10-06, 23:00)
 
-All Phase 13 build work is done and live on UAT: The Pond at `/sounds` (v2 recording flow: 3 · 2 · 1, beep, stops on a pause), server speech checking through `POST /api/v1/speaking/check` → the self-hosted speech scorer (`docker/speech`, calibrated in M4, checked with a Vietnamese speaker), spend caps (S13 in the app, G5 in Google Cloud). The entry points ("Say this one?" on review cards, the Sound Garden card on Missions) were removed on 2026-10-06 for a redesign (§21 below). Open: the Vietnamese / Chinese text reviews, one Pond sentence with the silent switch on, the Playwright run, and the to-do list below.
+**Built and live on UAT:** The Pond at `/sounds` (v2 recording flow: 3 · 2 · 1, beep, stops on a pause; works with the silent switch on and in noise), **server checking through a queue** (queue v1, §22: `POST /speaking/check` answers at once, the app polls; two self-hosted scorers on the Mac, ~50 checks a minute; busy → the phone's quick result), scoring calibrated (M4) and checked with a Vietnamese speaker, spend caps (S13 in the app, G5 in Google Cloud). The entry points ("Say this one?", the Sound Garden card) were removed on 2026-10-06 for a redesign (§21); the new ones (SE1 / SE2 / SE5 / SE6) are *For approval* in `docs/design/garden/CHANGELOG.md`, with questions in `docs/design/QUESTIONS.md`.
+
+**Open:** Dylan: approve SE1–SE6 and add their `Entry*.dc.html`, answer D-3 to D-5 and Q-1 to Q-11, fix `SPEECH_SCORER_URL` (8000 → 8100) in `env-profiles/prod.env`, the Cloudflare media rules (later), Vietnamese / Chinese text reviews, the Playwright run. Claude (when asked): two-step results (phone first, then server marks), UAT database backups, stop storing the `.wav` copy, build the approved entry points.
 
 ## Decisions D1–D7 (outcomes)
 
