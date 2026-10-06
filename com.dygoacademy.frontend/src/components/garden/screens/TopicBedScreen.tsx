@@ -243,7 +243,7 @@ export function TopicBedScreen({
           <p className="mb-1 text-[13px] leading-[17px] text-muted-foreground">
             {t('harvest.body')}
           </p>
-          <ul>
+          <ul className="flex flex-col gap-1">
             {harvest.words.map((w) => (
               <li key={w.id} className="flex items-center gap-[10px] border-t border-border py-1.5">
                 <span

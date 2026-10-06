@@ -681,5 +681,5 @@ Engineering-facing log of shipped fixes and changes, one dated entry per change.
 
 ### SE5 / SE6: explicit line heights to match the boards
 * **Files**: [`TopicBedScreen.tsx`](com.dygoacademy.frontend/src/components/garden/screens/TopicBedScreen.tsx), [`TendGardenScreen.tsx`](com.dygoacademy.frontend/src/components/garden/screens/TendGardenScreen.tsx)
-* **What**: "Ready to harvest" and Echo challenge text use the boards' explicit line heights (23 / 20 / 18 / 17 / 16 px).
+* **What**: "Ready to harvest" and Echo challenge text use the boards' explicit line heights (23 / 20 / 18 / 17 / 16 px); harvest rows have the board's 4 px gap.
 * **Why**: first UAT `garden:diff` of SE5 / SE6 showed rows a few px off from line-height differences.
