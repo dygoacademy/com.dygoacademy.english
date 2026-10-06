@@ -678,3 +678,8 @@ Engineering-facing log of shipped fixes and changes, one dated entry per change.
 * **Files**: `docs/design/garden/source/Entry*.dc.html`, `reference/SE*-entry-*.png/.html`
 * **What**: the added blocks (SE1 row, SE2 Speak row, SE5 card, SE6 card) don't shrink when the board's column overflows (`flex-shrink: 0`; the SE2 row was drawn 37 px tall instead of 52); SE5 / SE6 text has explicit line heights (font metrics differed by 1–5 px per line between the canvas render and the app), and the "Picked" pill is 32 px including its border.
 * **Why**: `garden:diff` on UAT (2026-10-06) showed the boards, not the app, were off; the app is changed to the same explicit line heights in the next commit.
+
+### SE5 / SE6: explicit line heights to match the boards
+* **Files**: [`TopicBedScreen.tsx`](com.dygoacademy.frontend/src/components/garden/screens/TopicBedScreen.tsx), [`TendGardenScreen.tsx`](com.dygoacademy.frontend/src/components/garden/screens/TendGardenScreen.tsx)
+* **What**: "Ready to harvest" and Echo challenge text use the boards' explicit line heights (23 / 20 / 18 / 17 / 16 px).
+* **Why**: first UAT `garden:diff` of SE5 / SE6 showed rows a few px off from line-height differences.

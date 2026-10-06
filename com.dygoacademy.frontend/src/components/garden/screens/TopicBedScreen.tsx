@@ -230,14 +230,19 @@ export function TopicBedScreen({
           className="flex flex-col gap-1 rounded-[22px] border border-border bg-surface px-[14px] pb-1.5 pt-3"
         >
           <div className="flex items-baseline justify-between">
-            <h2 id="bed-harvest-title" className="font-display text-[18px] font-semibold">
+            <h2
+              id="bed-harvest-title"
+              className="font-display text-[18px] font-semibold leading-[23px]"
+            >
               {t('harvest.title')}
             </h2>
-            <span className="text-[12px] font-semibold text-gold-text">
+            <span className="text-[12px] font-semibold leading-4 text-gold-text">
               {t('harvest.count', { count: harvest.count })}
             </span>
           </div>
-          <p className="mb-1 text-[13px] text-muted-foreground">{t('harvest.body')}</p>
+          <p className="mb-1 text-[13px] leading-[17px] text-muted-foreground">
+            {t('harvest.body')}
+          </p>
           <ul>
             {harvest.words.map((w) => (
               <li key={w.id} className="flex items-center gap-[10px] border-t border-border py-1.5">
@@ -248,12 +253,12 @@ export function TopicBedScreen({
                   <PlantGlyph stage={w.picked === null ? 'flower' : 'tree'} size={26} />
                 </span>
                 <span className="flex min-w-0 flex-grow flex-col">
-                  <span lang="en" className="text-[15px] font-bold">
+                  <span lang="en" className="text-[15px] font-bold leading-5">
                     {w.word}
                   </span>
                   <span
                     lang={w.meaningLang}
-                    className="truncate text-[13px] text-muted-foreground"
+                    className="truncate text-[13px] leading-[17px] text-muted-foreground"
                   >
                     {w.meaning}
                   </span>

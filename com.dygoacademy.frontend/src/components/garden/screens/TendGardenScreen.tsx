@@ -179,10 +179,10 @@ export function TendGardenScreen({
               className="mx-4 flex flex-col gap-2.5 rounded-[22px] border border-primary-border bg-primary-soft px-4 py-[14px]"
             >
               <div className="flex items-baseline justify-between">
-                <h2 id="echo-title" className="font-display text-[18px] font-semibold">
+                <h2 id="echo-title" className="font-display text-[18px] font-semibold leading-[23px]">
                   {t('echoTitle')}
                 </h2>
-                <span className="text-[12px] text-muted-foreground">{t('echoWindow')}</span>
+                <span className="text-[12px] leading-4 text-muted-foreground">{t('echoWindow')}</span>
               </div>
               <div className="flex items-center gap-3">
                 <span
@@ -192,7 +192,7 @@ export function TendGardenScreen({
                   <MicIcon width={24} height={24} />
                 </span>
                 <div className="flex flex-col">
-                  <span className="text-[12px] font-semibold text-primary-text">
+                  <span className="text-[12px] font-semibold leading-4 text-primary-text">
                     {t('echoKicker')}
                   </span>
                   <span
@@ -202,14 +202,14 @@ export function TendGardenScreen({
                     {tricky.echo.word}
                   </span>
                   {tricky.echo.ipa ? (
-                    <span lang="en" className="text-[13px] text-muted-foreground">
+                    <span lang="en" className="text-[13px] leading-[17px] text-muted-foreground">
                       {tricky.echo.ipa}
                     </span>
                   ) : null}
                 </div>
               </div>
               <div className="flex flex-col gap-[5px]">
-                <span className="text-[14px] font-bold">
+                <span className="text-[14px] font-bold leading-[18px]">
                   {t('echoDone', { done: tricky.echo.done, total: tricky.echo.members })}
                 </span>
                 <div
@@ -232,7 +232,7 @@ export function TendGardenScreen({
                     />
                   ) : null}
                 </div>
-                <span className="text-[12px] text-muted-foreground">{t('echoNote')}</span>
+                <span className="text-[12px] leading-4 text-muted-foreground">{t('echoNote')}</span>
               </div>
               <Link
                 href={tricky.echo.href}
