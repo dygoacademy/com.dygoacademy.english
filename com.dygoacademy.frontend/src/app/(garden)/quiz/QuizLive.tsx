@@ -26,7 +26,9 @@ import { addMissed, type MissedWord } from './results';
  * to the topic), POST /quizzes/:id/answer, GET /quizzes/:id/hint (TEXT
  * items only; the answer carries the app language so a wrong answer's
  * explanation comes back in it). The item list is taken once so a refetch can't reorder it
- * mid-quiz; the hint resets per question.
+ * mid-quiz; the hint resets per question. The last answer is sent with
+ * `final: true`, which completes the day's QUIZ mission (2026-10-07: it
+ * was never sent, so the mission could not be done).
  *
  * U5-6: when every item is answered, QuizResultScreen shows the score,
  * the missed words ("need water") and "Back to bed". `mode="leech"`
@@ -96,6 +98,7 @@ export function QuizLive({ topicId, mode }: { topicId?: string; mode?: 'leech' }
   }
 
   const item = items[index];
+  const isLast = index === items.length - 1;
   const topicTitle = isDrill
     ? t('drillTitle')
     : (topics.data?.find((topic) => topic.id === item.topicId)?.title ?? null);
@@ -110,7 +113,13 @@ export function QuizLive({ topicId, mode }: { topicId?: string; mode?: 'leech' }
   function handleSubmit(answer: string) {
     setFailed(false);
     submit.mutate(
-      { itemId: item.id, answer, hintUsed: hint.data != null, locale },
+      {
+        itemId: item.id,
+        answer,
+        hintUsed: hint.data != null,
+        locale,
+        final: isLast,
+      },
       {
         onSuccess: (res) => {
           setResult(res);
@@ -143,7 +152,7 @@ export function QuizLive({ topicId, mode }: { topicId?: string; mode?: 'leech' }
       onNext={handleNext}
       submitting={submit.isPending}
       errorText={failed ? t('error') : null}
-      isLast={index === items.length - 1}
+      isLast={isLast}
     />
   );
 }

@@ -16,6 +16,11 @@ export interface SubmitQuizAnswerInput {
    * explanation comes back in it; the classic quiz never sends it (English).
    */
   locale?: string;
+  /**
+   * The quiz's last answer: the backend counts the quiz as finished (the
+   * QUIZ daily mission) only when this is true.
+   */
+  final?: boolean;
 }
 
 /**
@@ -29,12 +34,13 @@ export function useSubmitQuizAnswer() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ itemId, answer, responseMs, hintUsed, locale }: SubmitQuizAnswerInput) =>
+    mutationFn: ({ itemId, answer, responseMs, hintUsed, locale, final }: SubmitQuizAnswerInput) =>
       apiClient.post<QuizAnswerResult>(`/quizzes/${encodeURIComponent(itemId)}/answer`, {
         answer,
         responseMs,
         hintUsed,
         locale,
+        ...(final ? { final: true } : {}),
       }),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ['srs'] });

@@ -688,3 +688,9 @@ Engineering-facing log of shipped fixes and changes, one dated entry per change.
 * **Files**: [`phase/phase 13/PHASE-13-RECORD.md`](phase/phase%2013/PHASE-13-RECORD.md) §23
 * **What**: UAT deploy and `garden:diff` results for SE1 / SE2 / SE5 / SE6.
 * **Why**: record what passed and why the rest fails (pre-existing text differences on the base screens).
+
+### Fixed: finishing a quiz never completed the QUIZ daily mission
+* **Files**: [`QuizLive.tsx`](com.dygoacademy.frontend/src/app/(garden)/quiz/QuizLive.tsx), [`useSubmitQuizAnswer.ts`](com.dygoacademy.frontend/src/hooks/useSubmitQuizAnswer.ts) + new test
+* **What**: the last answer of a garden quiz (and leech drill) is sent with `final: true`, which the backend has always required to count a finished quiz (`SrsService` → QUIZ mission). The app never sent it.
+* **Why**: Dylan asked how to finish a quiz (2026-10-07). UAT showed 208 quiz answers but all 13 QUIZ missions at progress 0, so the Golden Bloom was impossible on quiz days. Counts from this deploy on; past days unchanged.
+* **Verified**: frontend 591 tests and `tsc` on HEAD + this change; `next lint` clean.
