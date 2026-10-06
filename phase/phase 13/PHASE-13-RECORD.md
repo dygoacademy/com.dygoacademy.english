@@ -362,7 +362,8 @@ Dylan approved the four entry points from the design changelog and asked Claude 
 - **SE5 Ready to harvest**: ripe (Flower) words with a speaking item, each with a mic → `/sounds?word=…&harvest=1&back=<bed>` (one sentence, single mode). `POST /speaking/attempts` with `harvest: true` and 90%+ stores a `speaking_harvests` row (once per word); that word shows "Picked · 94%" as Fruit for the day. No SRS change.
 - **SE6 Echo challenge** on GR3 (admins): `GET /groups/:id/echo` → the most-missed word of the last 7 days that has an item, "3 of 5 gardeners done" (SECURITY DEFINER `group_echo_challenge`, ADMIN only, no user ids); Say it → `/sounds?word=…&back=<tend>`; tricky list trimmed to 2 rows.
 - `/sounds` gains `word`, `harvest` and `back` (app paths only) parameters.
-- Tests: backend 374, frontend 590 (HEAD + this change), RLS suite + 16 new checks. `garden:diff` for SE1/SE2/SE5/SE6 runs against UAT after the deploy.
+- Tests: backend 374, frontend 590 (HEAD + this change), RLS suite + 16 new checks.
+- Deployed to UAT 2026-10-06 (migration applied with `apply-migrations.sh --migrations`). `garden:diff` on UAT: **SE2 0.11% and SE5 0.11% pass** (en-US) after fixing the boards (blocks shrinking, line heights) and the app (line heights, row gap). SE1 2.09% / SE6 9.70% and every `-vi` board fail by the same amount as their base screens A1 (2.32%) / GR3 (9.74%) / A7-vi (1.36%) / A1-vi (24.7%): the uncommitted text reviews in the working tree (deployed with it) change copy above the new blocks. Re-run once those texts are settled.
 
 ## Session log (from `docs/phase13-schedule.md`)
 

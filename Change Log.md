@@ -683,3 +683,8 @@ Engineering-facing log of shipped fixes and changes, one dated entry per change.
 * **Files**: [`TopicBedScreen.tsx`](com.dygoacademy.frontend/src/components/garden/screens/TopicBedScreen.tsx), [`TendGardenScreen.tsx`](com.dygoacademy.frontend/src/components/garden/screens/TendGardenScreen.tsx)
 * **What**: "Ready to harvest" and Echo challenge text use the boards' explicit line heights (23 / 20 / 18 / 17 / 16 px); harvest rows have the board's 4 px gap.
 * **Why**: first UAT `garden:diff` of SE5 / SE6 showed rows a few px off from line-height differences.
+
+### Phase 13 record: SE garden:diff results
+* **Files**: [`phase/phase 13/PHASE-13-RECORD.md`](phase/phase%2013/PHASE-13-RECORD.md) §23
+* **What**: UAT deploy and `garden:diff` results for SE1 / SE2 / SE5 / SE6.
+* **Why**: record what passed and why the rest fails (pre-existing text differences on the base screens).
