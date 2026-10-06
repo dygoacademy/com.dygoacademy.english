@@ -56,14 +56,10 @@ export default () => ({
   },
 
   speech: {
-    scorerUrl: process.env.SPEECH_SCORER_URL || 'http://127.0.0.1:8100',
-    // Queue v1 (2026-10-06): every scorer the worker may use, comma-separated;
-    // one check at a time each. Falls back to SPEECH_SCORER_URL.
-    scorerUrls: (
-      process.env.SPEECH_SCORER_URLS ||
-      process.env.SPEECH_SCORER_URL ||
-      'http://127.0.0.1:8100'
-    )
+    // Queue v1 (2026-10-06): every scorer the worker may use, comma-separated
+    // (one is fine); one check at a time each. The single SPEECH_SCORER_URL
+    // was removed 2026-10-07.
+    scorerUrls: (process.env.SPEECH_SCORER_URLS || 'http://127.0.0.1:8100')
       .split(',')
       .map((u) => u.trim())
       .filter(Boolean),

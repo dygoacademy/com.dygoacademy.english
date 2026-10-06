@@ -40,9 +40,9 @@ export interface SpeechChecker {
   check(
     audio: SpeechAudio,
     sentence: string,
-    targetIndex?: number,
-    /** Which scorer (queue v1 picks one from the pool); default `speech.scorerUrl`. */
-    scorerUrl?: string,
+    targetIndex: number | undefined,
+    /** Which scorer: the queue worker picks a free one from SPEECH_SCORER_URLS. */
+    scorerUrl: string,
   ): Promise<ScorerResult>;
 }
 
@@ -71,10 +71,10 @@ export class MacSpeechChecker implements SpeechChecker {
   async check(
     audio: SpeechAudio,
     sentence: string,
-    targetIndex?: number,
-    scorerUrl?: string,
+    targetIndex: number | undefined,
+    scorerUrl: string,
   ): Promise<ScorerResult> {
-    const url = `${scorerUrl ?? this.config.get<string>('speech.scorerUrl')}/check`;
+    const url = `${scorerUrl}/check`;
     const timeoutMs = this.config.get<number>('speech.timeoutMs') ?? 8000;
     const form = new FormData();
     form.append(

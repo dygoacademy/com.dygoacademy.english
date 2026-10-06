@@ -694,3 +694,9 @@ Engineering-facing log of shipped fixes and changes, one dated entry per change.
 * **What**: the last answer of a garden quiz (and leech drill) is sent with `final: true`, which the backend has always required to count a finished quiz (`SrsService` → QUIZ mission). The app never sent it.
 * **Why**: Dylan asked how to finish a quiz (2026-10-07). UAT showed 208 quiz answers but all 13 QUIZ missions at progress 0, so the Golden Bloom was impossible on quiz days. Counts from this deploy on; past days unchanged.
 * **Verified**: frontend 591 tests and `tsc` on HEAD + this change; `next lint` clean.
+
+### Removed: SPEECH_SCORER_URL (only SPEECH_SCORER_URLS now)
+* **Files**: [`configuration.ts`](com.dygoacademy.backend/src/config/configuration.ts), [`speech-checker.ts`](com.dygoacademy.backend/src/modules/speaking/speech-checker.ts), [`.env.example`](.env.example), `env-profiles/prod.env` (not in git: the one line deleted), Phase 13 record
+* **What**: the backend reads only `SPEECH_SCORER_URLS` (comma-separated, one is fine; default `http://127.0.0.1:8100`). The single-URL setting and the checker's fallback to it are gone; the queue worker always names the scorer. UAT's stale `SPEECH_SCORER_URL=http://127.0.0.1:8000` line is removed, which closes Dylan's "fix 8000 → 8100" item.
+* **Why**: Dylan, 2026-10-07: two settings for the same thing, one of them wrong and unused since queue v1.
+* **Verified**: backend `tsc`, speaking tests (53), eslint.
