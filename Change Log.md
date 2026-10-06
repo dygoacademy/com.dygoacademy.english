@@ -662,3 +662,8 @@ Engineering-facing log of shipped fixes and changes, one dated entry per change.
 * **Files**: `docs/design/garden/source/Entry{Home,Bed,Harvest,Echo}.dc.html` + `…Vi.dc.html`, [`tools/render.js`](docs/design/garden/tools/render.js) (8 jobs; SE2 / SE5 English use the app font stack like A7), `reference/SE*-entry-*.png/.html`, [`docs/design/garden/CHANGELOG.md`](docs/design/garden/CHANGELOG.md) (Build status column), [`docs/design/QUESTIONS.md`](docs/design/QUESTIONS.md) (Q-10)
 * **What**: the four approved speaking entry points drawn as boards on top of A1 / A7 / GR3, with design-system values only: Home 3rd mission "Say 3 ripe words · 2 min" (clay mic, light clay row); Topic bed "Speak · 5 sentences from this bed" row under Water / Quiz / +; "Ready to harvest" card (ripe Flower words, mic each, 90%+ → Fruit, watering dates unchanged, D-3); Echo challenge card (trickiest word, totals only, Say it, D-4), tricky list trimmed to 2 rows. Each file is marked as a Claude Code draft.
 * **Why**: Dylan approved the entry points and asked Claude Code to draw the boards itself (2026-10-06). Master rule 13: boards and references first, committed on their own, then the build.
+
+### Design: SE5 board divider on the palette
+* **Files**: `docs/design/garden/source/EntryHarvest(Vi).dc.html`, `reference/SE5-entry-harvest(-vi).png/.html`
+* **What**: the "Ready to harvest" row dividers use the design-system border `#E3DDD0` (was `#F0EBE0`, not a garden colour); the row plant glyphs are drawn at the app glyph's 26 px size (26 × 31 flower, 26 × 29 tree).
+* **Why**: every value on a board must come from the design system, so the build has a token for it.
