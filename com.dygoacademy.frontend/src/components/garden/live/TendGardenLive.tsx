@@ -6,6 +6,7 @@ import { useTimeZone, useTranslations } from 'next-intl';
 
 import { GARDEN_ROUTES } from '@/constants/garden';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
+import { useEchoChallenge } from '@/hooks/useEchoChallenge';
 import { useGroupRainDay, useTrickyPatches } from '@/hooks/useGroupGarden';
 import { useGroupMembers, useRemoveMember, useUpdateMemberRole } from '@/hooks/useGroupMembers';
 import { useDeleteGroup, useGroups, useUpdateGroup } from '@/hooks/useGroups';
@@ -51,6 +52,8 @@ export function TendGardenLive({ groupId, tab }: { groupId: string; tab: 'tricky
   const members = useGroupMembers(admin ? groupId : '');
   const invites = useInvites(admin ? groupId : '');
   const tricky = useTrickyPatches(groupId, admin && tab === 'tricky');
+  // Phase 13 SE6: the Echo challenge (GET /groups/:id/echo, totals only).
+  const echo = useEchoChallenge(groupId, admin && tab === 'tricky');
   const sprint = useTriggerSprint(groupId);
   const rain = useGroupRainDay(groupId, admin && tab === 'tricky');
   const updateRole = useUpdateMemberRole(groupId);
@@ -135,6 +138,18 @@ export function TendGardenLive({ groupId, tab }: { groupId: string; tab: 'tricky
           gardeners: row.gardeners,
         })),
         message: tricky.isPending ? t('loadingTricky') : tricky.isError ? t('actionFailed') : null,
+        echo: echo.data?.echo
+          ? {
+              word: echo.data.echo.word,
+              ipa: echo.data.echo.ipa_us ?? echo.data.echo.ipa_uk,
+              done: echo.data.echo.done_count,
+              members: echo.data.echo.member_count,
+              href: GARDEN_ROUTES.speak({
+                word: echo.data.echo.topic_word_id,
+                back: manage(groupId, 'tricky'),
+              }),
+            }
+          : null,
         rainDay: {
           members: Math.max(0, roster.length - 1),
           size,

@@ -29,8 +29,9 @@ const push = vi.fn();
 vi.mock('next/navigation', () => ({ useRouter: () => ({ push }) }));
 
 describe('reference fixtures', () => {
-  it('lists the 45 canvas references (12 adult screens, 7 group screens, 6 sign-in, 8 quiz, 7 home, 5 speaking)', () => {
-    expect(REFERENCE_NAMES).toHaveLength(45);
+  it('lists the 49 canvas references (12 adult screens, 7 group screens, 6 sign-in, 8 quiz, 7 home, 5 speaking, 4 speaking entry points)', () => {
+    expect(REFERENCE_NAMES).toHaveLength(49);
+    expect(isReferenceName('SE5-entry-harvest')).toBe(true);
     expect(isReferenceName('SP3-speak-done')).toBe(true);
     expect(isReferenceName('H1-home-phone')).toBe(true);
     expect(isReferenceName('H2-home-desktop')).toBe(true);
@@ -257,6 +258,39 @@ describe('TopicBedScreen', () => {
     expect(within(list).getAllByRole('listitem')).toHaveLength(3);
     fireEvent.click(sprouts);
     expect(screen.getByRole('heading', { name: 'All words' })).toBeTruthy();
+  });
+
+  it('SE2: shows the Speak row only when the bed has sentences', () => {
+    const { unmount } = renderWithIntl(
+      <TopicBedScreen {...props} speak={{ count: 5, href: '/sounds?topic=t1' }} />,
+    );
+    const speak = screen.getByRole('link', { name: /Speak · 5 sentences from this bed/ });
+    expect(speak.getAttribute('href')).toBe('/sounds?topic=t1');
+    unmount();
+    renderWithIntl(<TopicBedScreen {...props} speak={null} />);
+    expect(screen.queryByRole('link', { name: /Speak/ })).toBeNull();
+  });
+
+  it('SE5: lists ripe words with a mic each, and picked ones with their score', () => {
+    renderWithIntl(
+      <TopicBedScreen
+        {...props}
+        harvest={{
+          count: 3,
+          words: [
+            { id: 'a', word: 'mitigate', meaning: 'giảm nhẹ', picked: 94, href: '/sounds?word=a' },
+            { id: 'b', word: 'ecosystem', meaning: 'hệ sinh thái', picked: null, href: '/sounds?word=b' },
+          ],
+        }}
+      />,
+    );
+    const card = screen.getByRole('region', { name: 'Ready to harvest' });
+    expect(within(card).getByText('3 flowers')).toBeTruthy();
+    expect(within(card).getByText('Picked · 94%')).toBeTruthy();
+    expect(within(card).queryByRole('link', { name: 'Say mitigate' })).toBeNull();
+    expect(within(card).getByRole('link', { name: 'Say ecosystem' }).getAttribute('href')).toBe(
+      '/sounds?word=b',
+    );
   });
 
   it("can't filter when stage counts are unknown", () => {

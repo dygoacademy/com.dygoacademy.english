@@ -186,17 +186,51 @@ describe('SpeakingService.createAttempt', () => {
     user_duration_ms: 3100,
   };
 
+  /** Answers by SQL: timezone, spoken-today check, insert, missions, harvest. */
+  function fakeClient(
+    opts: { spoken?: boolean; harvestRows?: unknown[]; insertError?: Error } = {},
+  ) {
+    const answer = (sql: string): { rows: unknown[] } => {
+      if (sql.includes('select timezone from public.profiles'))
+        return { rows: [{ timezone: 'UTC' }] };
+      if (sql.includes('as spoken')) return { rows: [{ spoken: opts.spoken ?? false }] };
+      if (sql.includes('insert into public.speaking_attempts')) {
+        if (opts.insertError) throw opts.insertError;
+        return { rows: [{ id: 'att-1', ...dto, created_at: 'now' }] };
+      }
+      if (sql.includes('select count(*) as n from public.daily_missions'))
+        return { rows: [{ n: '3' }] };
+      if (sql.includes('insert into public.speaking_harvests'))
+        return { rows: opts.harvestRows ?? [] };
+      return { rows: [] };
+    };
+    const query = jest.fn((sql: string, params?: unknown[]) => {
+      void params;
+      try {
+        return Promise.resolve(answer(sql));
+      } catch (err) {
+        return Promise.reject(err as Error);
+      }
+    });
+    const withUser = jest.fn((_u: string, work: (c: { query: typeof query }) => unknown) =>
+      work({ query }),
+    );
+    return { query, withUser };
+  }
+
   it('inserts as the learner (user_id comes from auth.uid(), not the body)', async () => {
-    const queryAs = jest.fn().mockResolvedValue([{ id: 'att-1', ...dto, created_at: 'now' }]);
-    const service = await makeService({ queryAs });
+    const { query, withUser } = fakeClient();
+    const service = await makeService({ withUser });
 
     const result = await service.createAttempt('user-1', dto);
 
-    expect(result.id).toBe('att-1');
-    const [userId, sql, params] = queryAs.mock.calls[0];
-    expect(userId).toBe('user-1');
-    expect(sql).not.toMatch(/user_id/);
-    expect(params).toEqual([
+    expect(result).toMatchObject({ id: 'att-1', harvested: false });
+    expect(withUser.mock.calls[0][0]).toBe('user-1');
+    const insert = query.mock.calls.find(([sql]) =>
+      sql.includes('insert into public.speaking_attempts'),
+    )!;
+    expect(insert[0]).not.toMatch(/user_id/);
+    expect(insert[1]).toEqual([
       'item-1',
       'US',
       82,
@@ -206,17 +240,80 @@ describe('SpeakingService.createAttempt', () => {
     ]);
   });
 
+  it("bumps the SPEAK mission on the day's first attempt at a sentence, not on a repeat", async () => {
+    const first = fakeClient({ spoken: false });
+    await (await makeService({ withUser: first.withUser })).createAttempt('user-1', dto);
+    const bump = first.query.mock.calls.find(([sql]) =>
+      sql.includes('update public.daily_missions'),
+    );
+    expect(bump?.[1]).toEqual(['user-1', expect.any(String), 'SPEAK']);
+
+    const again = fakeClient({ spoken: true });
+    await (await makeService({ withUser: again.withUser })).createAttempt('user-1', dto);
+    expect(again.query.mock.calls.some(([sql]) => sql.includes('daily_missions'))).toBe(false);
+  });
+
+  it('harvests only when asked and at 90%+', async () => {
+    const low = fakeClient({ harvestRows: [{ id: 'h1' }] });
+    const lowRes = await (
+      await makeService({ withUser: low.withUser })
+    ).createAttempt('user-1', {
+      ...dto,
+      harvest: true,
+    });
+    expect(lowRes.harvested).toBe(false);
+    expect(low.query.mock.calls.some(([sql]) => sql.includes('speaking_harvests'))).toBe(false);
+
+    const high = fakeClient({ harvestRows: [{ id: 'h1' }] });
+    const highRes = await (
+      await makeService({ withUser: high.withUser })
+    ).createAttempt('user-1', {
+      ...dto,
+      score: 94,
+      stage: 'fruit' as const,
+      harvest: true,
+    });
+    expect(highRes.harvested).toBe(true);
+    const insert = high.query.mock.calls.find(([sql]) => sql.includes('speaking_harvests'))!;
+    expect(insert[0]).toContain('on conflict (user_id, lexicon_id) do nothing');
+    expect(insert[1]).toEqual(['item-1', 94]);
+  });
+
   it('404s for an unknown item', async () => {
-    const queryAs = jest.fn().mockRejectedValue(Object.assign(new Error('fk'), { code: '23503' }));
-    const service = await makeService({ queryAs });
+    const { withUser } = fakeClient({
+      insertError: Object.assign(new Error('fk'), { code: '23503' }),
+    });
+    const service = await makeService({ withUser });
     await expect(service.createAttempt('user-1', dto)).rejects.toBeInstanceOf(NotFoundException);
   });
 
   it('rethrows other database errors', async () => {
+    const { withUser } = fakeClient({
+      insertError: Object.assign(new Error('boom'), { code: '23514' }),
+    });
+    const service = await makeService({ withUser });
+    await expect(service.createAttempt('user-1', dto)).rejects.toThrow('boom');
+  });
+});
+
+describe('SpeakingService.harvest (SE5)', () => {
+  it("reads the bed's speakable words with the learner's harvests", async () => {
     const queryAs = jest
       .fn()
-      .mockRejectedValue(Object.assign(new Error('boom'), { code: '23514' }));
+      .mockResolvedValue([
+        { topic_word_id: 'tw-1', item_id: 'item-1', harvested_score: 94, harvested_at: 'now' },
+      ]);
     const service = await makeService({ queryAs });
-    await expect(service.createAttempt('user-1', dto)).rejects.toThrow('boom');
+
+    const rows = await service.harvest('user-1', TOPIC_ID);
+
+    expect(rows).toHaveLength(1);
+    expect(queryAs.mock.calls[0][1]).toContain('speaking_harvests');
+    expect(queryAs.mock.calls[0][2]).toEqual([TOPIC_ID]);
+  });
+
+  it('404s for a malformed topic id', async () => {
+    const service = await makeService({ queryAs: jest.fn() });
+    await expect(service.harvest('user-1', 'nope')).rejects.toBeInstanceOf(NotFoundException);
   });
 });

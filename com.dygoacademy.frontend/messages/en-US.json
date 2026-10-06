@@ -394,7 +394,9 @@
         "valueCount": "{done}/{total}",
         "progressWater": "{done} of {total} words watered",
         "progressPlant": "{done} of {total} words planted",
-        "notStarted": "Not started"
+        "notStarted": "Not started",
+        "speak": "Say {count, plural, one {# ripe word} other {# ripe words}}",
+        "progressSpeak": "{done} of {total} words said"
       },
       "action": {
         "continue": "Continue mission",
@@ -775,6 +777,15 @@
         "submit": "Plant word",
         "adding": "Planting…",
         "error": "Couldn’t add this word. Try again."
+      },
+      "speak": "Speak",
+      "speakSentences": "{count, plural, one {# sentence} other {# sentences}} from this bed",
+      "harvest": {
+        "title": "Ready to harvest",
+        "count": "{count, plural, one {# flower} other {# flowers}}",
+        "body": "Say a ripe word well (90%+) to pick its fruit. Watering dates stay the same.",
+        "picked": "Picked · {score}%",
+        "say": "Say {word}"
       }
     },
     "me": {
@@ -920,7 +931,13 @@
         "deleteConfirm": "Delete {name}? Its shared beds and words go with it. This can't be undone.",
         "adminOnly": "Only the garden's admins can tend it.",
         "backToGarden": "Back to the garden",
-        "loadingTricky": "Finding the tricky patches…"
+        "loadingTricky": "Finding the tricky patches…",
+        "echoTitle": "Echo challenge",
+        "echoWindow": "this week",
+        "echoKicker": "The garden's trickiest word",
+        "echoDone": "{done} of {total, plural, one {# gardener} other {# gardeners}} done",
+        "echoNote": "Totals only, never names.",
+        "echoSay": "Say it"
       },
       "invite": {
         "title": "Invite gardeners",

@@ -5,8 +5,11 @@ import { SpeakLive } from '@/components/garden/live/SpeakLive';
 import { SPEAK_NOTICES, type SpeakNoticeKind } from '@/lib/speaking/constants';
 
 /**
- * Phase 13 The Pond (its entry points were removed 2026-10-06 for a redesign). `?topic=<id>` limits it to
- * one bed's words. Dev toggle (T7): `?state=mic|denied|quiet|short|
+ * Phase 13 The Pond. Entry points (2026-10-06 redesign): the Home SPEAK
+ * mission (SE1), a bed's Speak row (SE2, `?topic=<id>`: that bed's words),
+ * "Ready to harvest" (SE5, `?word=<topic word id>&harvest=1`) and the Echo
+ * challenge (SE6, `?word=`). `?back=<path>` is where Close goes (an app
+ * path only). Dev toggle (T7): `?state=mic|denied|quiet|short|
  * unsupported|audioFailed` opens SP1 showing that state, so each one can be
  * checked on a phone; it changes nothing else.
  */
@@ -20,13 +23,20 @@ export default async function SoundsPage({
 }: {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
-  const { topic, state } = await searchParams;
+  const { topic, word, harvest, back, state } = await searchParams;
   const topicId = typeof topic === 'string' && topic ? topic : undefined;
+  const wordId = typeof word === 'string' && word ? word : undefined;
+  // Only a path in this app: never another site (open redirect).
+  const backHref =
+    typeof back === 'string' && back.startsWith('/') && !back.startsWith('//') && !back.startsWith('/\\') ? back : undefined;
   const forceNotice = SPEAK_NOTICES.find((kind) => kind === state) as SpeakNoticeKind | undefined;
   return (
     <SpeakLive
-      key={`${topicId ?? 'all'}:${forceNotice ?? ''}`}
+      key={`${topicId ?? 'all'}:${wordId ?? ''}:${forceNotice ?? ''}`}
       topicId={topicId}
+      wordId={wordId}
+      harvest={harvest === '1'}
+      backHref={backHref}
       forceNotice={forceNotice}
     />
   );

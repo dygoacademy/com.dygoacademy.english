@@ -146,6 +146,9 @@ run_rls_suite() {
   # Option 2 audio load times (insert-own only, nobody signed in reads).
   run_file "$DIR/migrations/20261004_media_load_events.sql" "$scratch"
   run_file "$DIR/tests/rls_media_load_events_test.sql" "$scratch"
+  # Phase 13 speaking entry points (SPEAK missions, harvests, Echo totals).
+  run_file "$DIR/migrations/20261006_speaking_entry_points.sql" "$scratch"
+  run_file "$DIR/tests/rls_speaking_entry_test.sql" "$scratch"
 }
 
 # -----------------------------------------------------------------------------

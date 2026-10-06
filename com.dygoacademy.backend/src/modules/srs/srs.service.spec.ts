@@ -355,15 +355,17 @@ describe('SrsService.rate (Phase 10 — FSRS)', () => {
       const queryMock = txMock({ state: null });
       queryMock
         .mockResolvedValueOnce({ rows: [{ n: '0' }] }) // no rows yet
-        .mockResolvedValueOnce({ rows: [{ n: '4' }] }); // 4 due
+        .mockResolvedValueOnce({ rows: [{ n: '4' }] }) // 4 due
+        .mockResolvedValueOnce({ rows: [{ n: '0' }] }); // 2026-09-01 is a speak day: 0 speakable words
       const service = await makeService(jest.fn(), withUserOf(queryMock));
 
       await service.rate('user-1', { topicWordId: 'w1', rating: 'GOOD' }, NOW);
 
       const calls = missionSql(queryMock);
-      expect(calls[2][0]).toContain('insert into public.daily_missions');
-      expect(calls[2][1]).toEqual(['user-1', '2026-09-01', 4, 5, 1]);
-      expect(calls[3][1]).toEqual(['user-1', '2026-09-01', 'LEARN_NEW']);
+      expect(calls[2][0]).toContain('speaking_items');
+      expect(calls[3][0]).toContain('insert into public.daily_missions');
+      expect(calls[3][1]).toEqual(['user-1', '2026-09-01', 4, 5, 'QUIZ', 1]);
+      expect(calls[4][1]).toEqual(['user-1', '2026-09-01', 'LEARN_NEW']);
     });
 
     it('an ungraded review does not touch missions', async () => {

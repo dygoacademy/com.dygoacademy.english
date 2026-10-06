@@ -11,6 +11,7 @@ import { LIVE_LEVELS_PER_SECOND, useLiveLevels } from '@/hooks/useLiveLevels';
 import { useNativeEnvelope } from '@/hooks/useNativeEnvelope';
 import { usePlayer } from '@/hooks/usePlayer';
 import { useSpeakingSession } from '@/hooks/useSpeakingSession';
+import { useSpeakingWord } from '@/hooks/useSpeakingWord';
 import { prefetchMedia } from '@/lib/media-cache';
 import {
   createRecorder,
@@ -119,6 +120,8 @@ export interface SpeakFlowProps {
   mode?: 'pond' | 'single';
   /** "Skip speaking" on the denied card. */
   onSkipSpeaking: () => void;
+  /** SE5 "Ready to harvest": attempts ask to harvest the word (the API keeps 90%+ only). */
+  harvest?: boolean;
   /** T7 dev toggle. */
   forceNotice?: SpeakNoticeKind;
 }
@@ -134,6 +137,7 @@ export function SpeakFlow({
   onClose,
   mode = 'pond',
   onSkipSpeaking,
+  harvest = false,
   forceNotice,
 }: SpeakFlowProps) {
   const t = useTranslations('screens.speak');
@@ -342,6 +346,7 @@ export function SpeakFlow({
             }),
           ),
           user_duration_ms: shown.userDurationMs,
+          ...(harvest ? { harvest: true } : {}),
         });
       } catch {
         if (alive) setCheckStatus('failed');
@@ -626,13 +631,45 @@ export function SpeakFlow({
 
 /**
  * /sounds: The Pond. Takes the session's sentences once, from this
- * visit's fetch (not an older cached list), then runs SpeakFlow.
+ * visit's fetch (not an older cached list), then runs SpeakFlow. With
+ * `wordId` (SE5 harvest, SE6 Echo) it runs one word's sentence instead
+ * (single mode: Next closes). Close goes to `backHref`, else the bed
+ * (`topicId`), else the Missions tab.
  */
 export function SpeakLive({
   topicId,
+  wordId,
+  harvest = false,
+  backHref,
   forceNotice,
 }: {
   topicId?: string;
+  wordId?: string;
+  harvest?: boolean;
+  backHref?: string;
+  forceNotice?: SpeakNoticeKind;
+}) {
+  const closeHref =
+    backHref ?? (topicId ? GARDEN_ROUTES.topic(topicId) : GARDEN_ROUTES.missions);
+  return wordId ? (
+    <SpeakWordLive
+      wordId={wordId}
+      harvest={harvest}
+      closeHref={closeHref}
+      forceNotice={forceNotice}
+    />
+  ) : (
+    <SpeakPondLive topicId={topicId} closeHref={closeHref} forceNotice={forceNotice} />
+  );
+}
+
+function SpeakPondLive({
+  topicId,
+  closeHref,
+  forceNotice,
+}: {
+  topicId?: string;
+  closeHref: string;
   forceNotice?: SpeakNoticeKind;
 }) {
   const router = useRouter();
@@ -658,8 +695,41 @@ export function SpeakLive({
     <SpeakFlow
       items={taken.items}
       defaultAccent={taken.accent}
-      closeHref={GARDEN_ROUTES.missions}
-      onSkipSpeaking={() => router.push(GARDEN_ROUTES.missions)}
+      closeHref={closeHref}
+      onSkipSpeaking={() => router.push(closeHref)}
+      forceNotice={forceNotice}
+    />
+  );
+}
+
+function SpeakWordLive({
+  wordId,
+  harvest,
+  closeHref,
+  forceNotice,
+}: {
+  wordId: string;
+  harvest: boolean;
+  closeHref: string;
+  forceNotice?: SpeakNoticeKind;
+}) {
+  const router = useRouter();
+  const word = useSpeakingWord(wordId);
+  const items = React.useMemo(() => (word.data ? [word.data.item] : null), [word.data]);
+
+  if (!items || !word.data) {
+    if (word.isError) return <LiveError onRetry={() => void word.refetch()} />;
+    return <LiveLoading />;
+  }
+  return (
+    <SpeakFlow
+      items={items}
+      defaultAccent={word.data.default_accent}
+      closeHref={closeHref}
+      onClose={() => router.push(closeHref)}
+      mode="single"
+      harvest={harvest}
+      onSkipSpeaking={() => router.push(closeHref)}
       forceNotice={forceNotice}
     />
   );

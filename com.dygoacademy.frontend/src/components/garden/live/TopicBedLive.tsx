@@ -4,14 +4,18 @@ import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 
 import { GARDEN_ROUTES } from '@/constants/garden';
+import { useSpeakingHarvest } from '@/hooks/useSpeakingHarvest';
+import { useSpeakingSession } from '@/hooks/useSpeakingSession';
 import { useStudySession } from '@/hooks/useStudySession';
 import { useTopic } from '@/hooks/useTopic';
 import { languageOf } from '@/i18n/config';
+import { POND_SESSION_SIZE } from '@/lib/speaking/constants';
+import { toLocalDateString } from '@/lib/timezone';
 
 import { AddWordSheet } from '../AddWordSheet';
 import { useGardenPreferences } from '../preferences';
 import { TopicBedScreen } from '../screens/TopicBedScreen';
-import { toBedWords, type GardenTopicWord } from './data';
+import { harvestCard, toBedWords, type GardenTopicWord } from './data';
 import { LiveError, LiveLoading } from './LiveState';
 import { TopicBedsSidebar } from './SidebarLists';
 
@@ -36,6 +40,12 @@ import { TopicBedsSidebar } from './SidebarLists';
  * U5-6: Quiz opens the garden quiz for this bed (/quiz?topic=…),
  * and wilting rows open the leech drill (…&mode=leech), which comes back
  * to this bed.
+ *
+ * Phase 13 SE2: "Speak · N sentences from this bed" opens this bed's Pond
+ * (GET /speaking/session?topic_id=…; hidden when no word has a speaking
+ * item). SE5: "Ready to harvest" lists the ripe words with a speaking item
+ * (GET /speaking/harvest); each mic opens that word's sentence in harvest
+ * mode, and both come back here.
  */
 export function TopicBedLive({ topicId }: { topicId: string }) {
   const t = useTranslations('screens.bed');
@@ -45,6 +55,8 @@ export function TopicBedLive({ topicId }: { topicId: string }) {
   // bed never showed "Water N due".
   const due = useStudySession(topicId, 'STANDARD', 100);
   const [adding, setAdding] = useState(false);
+  const speaking = useSpeakingSession(topicId);
+  const harvests = useSpeakingHarvest(topicId);
 
   if (topic.isPending) return <LiveLoading />;
   if (topic.isError || !topic.data) {
@@ -66,6 +78,11 @@ export function TopicBedLive({ topicId }: { topicId: string }) {
     new Date(),
   );
   const dueCount = [...dueById.values()].length;
+  const bedHref = GARDEN_ROUTES.topic(topicId);
+  const speakCount = Math.min(speaking.data?.item_count ?? 0, POND_SESSION_SIZE);
+  const harvest = harvestCard(words, harvests.data, toLocalDateString(new Date()), (id) =>
+    GARDEN_ROUTES.speak({ word: id, harvest: true, back: bedHref }),
+  );
 
   return (
     <>
@@ -84,7 +101,13 @@ export function TopicBedLive({ topicId }: { topicId: string }) {
             : null
         }
         quizHref={GARDEN_ROUTES.quiz(topicId)}
-        addWordHref={GARDEN_ROUTES.topic(topicId)}
+        addWordHref={bedHref}
+        speak={
+          speakCount > 0
+            ? { count: speakCount, href: GARDEN_ROUTES.speak({ topic: topicId, back: bedHref }) }
+            : null
+        }
+        harvest={harvest}
         onAddWord={() => setAdding(true)}
         wiltingHref={GARDEN_ROUTES.quiz(topicId, 'leech')}
         sidebar={<TopicBedsSidebar activeId={topicId} />}

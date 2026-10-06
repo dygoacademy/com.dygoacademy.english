@@ -2,14 +2,17 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { PoolClient } from 'pg';
 
 import { DatabaseService } from '../../database/database.service';
+import { recordMissionProgress } from '../missions/missions.store';
 import { resolveUserTimezone } from '../srs/srs.service';
 import { StorageService } from '../../storage/storage.service';
 import { CreateSpeakingAttemptDto } from './dto/create-attempt.dto';
 import {
+  HARVEST_MIN_SCORE,
   SPEAKING_LOOKUP_MAX,
   SPEAKING_SESSION_SIZE,
   SpeakingAccent,
   SpeakingAttempt,
+  SpeakingHarvestWord,
   SpeakingSession,
   SpeakingSessionItem,
   SpeakingTimings,
@@ -186,25 +189,60 @@ export class SpeakingService {
     });
   }
 
-  /** Saves one Compare result. Try again saves another row (both are kept). */
+  /**
+   * Saves one Compare result. Try again saves another row (both are kept).
+   * SE1: the first attempt on a sentence in the learner's day bumps the
+   * SPEAK mission (a no-op on days without one). SE5: with `harvest` and a
+   * score of 90+, the word is saved as harvested (once; never touches SRS).
+   */
   async createAttempt(userId: string, dto: CreateSpeakingAttemptDto): Promise<SpeakingAttempt> {
     try {
-      const rows = await this.db.queryAs<SpeakingAttempt>(
-        userId,
-        `insert into public.speaking_attempts
-           (item_id, accent, score, stage, word_marks, user_duration_ms)
-         values ($1, $2, $3, $4, $5::jsonb, $6)
-         returning id, item_id, accent, score, stage, word_marks, user_duration_ms, created_at`,
-        [
-          dto.item_id,
-          dto.accent,
-          dto.score,
-          dto.stage,
-          JSON.stringify(dto.word_marks.map(({ index, ok, reason }) => ({ index, ok, reason }))),
-          dto.user_duration_ms,
-        ],
-      );
-      return rows[0];
+      return await this.db.withUser(userId, async (client) => {
+        const timezone = await resolveUserTimezone(
+          async <T extends Record<string, unknown>>(text: string, params: unknown[]) =>
+            (await client.query<T>(text, params)).rows,
+          userId,
+          dto.tz,
+        );
+        const before = await client.query<{ spoken: boolean }>(
+          `select exists (
+             select 1 from public.speaking_attempts a
+              where a.item_id = $1
+                and a.user_id = auth.uid()
+                and a.created_at >= (date_trunc('day', now() at time zone $2) at time zone $2)
+           ) as spoken`,
+          [dto.item_id, timezone],
+        );
+        const inserted = await client.query<Omit<SpeakingAttempt, 'harvested'>>(
+          `insert into public.speaking_attempts
+             (item_id, accent, score, stage, word_marks, user_duration_ms)
+           values ($1, $2, $3, $4, $5::jsonb, $6)
+           returning id, item_id, accent, score, stage, word_marks, user_duration_ms, created_at`,
+          [
+            dto.item_id,
+            dto.accent,
+            dto.score,
+            dto.stage,
+            JSON.stringify(dto.word_marks.map(({ index, ok, reason }) => ({ index, ok, reason }))),
+            dto.user_duration_ms,
+          ],
+        );
+        if (!before.rows[0]?.spoken) {
+          await recordMissionProgress(client, userId, timezone, new Date(), 'SPEAK');
+        }
+        let harvested = false;
+        if (dto.harvest && dto.score >= HARVEST_MIN_SCORE) {
+          const res = await client.query(
+            `insert into public.speaking_harvests (lexicon_id, score)
+             select si.lexicon_id, $2 from public.speaking_items si where si.id = $1
+             on conflict (user_id, lexicon_id) do nothing
+             returning id`,
+            [dto.item_id, dto.score],
+          );
+          harvested = res.rows.length > 0;
+        }
+        return { ...inserted.rows[0], harvested };
+      });
     } catch (err) {
       // 23503: item_id doesn't exist.
       if ((err as { code?: string }).code === '23503') {
@@ -212,6 +250,28 @@ export class SpeakingService {
       }
       throw err;
     }
+  }
+
+  /**
+   * SE5 "Ready to harvest": the bed's words that have a speaking item, with
+   * whether (and how well) the learner harvested each. The app picks the
+   * ripe (Flower) ones from the bed's own stages. RLS scopes topic_words
+   * and speaking_harvests to the learner.
+   */
+  async harvest(userId: string, topicId: string): Promise<SpeakingHarvestWord[]> {
+    if (!UUID_SHAPE.test(topicId)) throw new NotFoundException('Topic not found');
+    return this.db.queryAs<SpeakingHarvestWord>(
+      userId,
+      `select tw.id as topic_word_id, si.id as item_id,
+              h.score as harvested_score, h.created_at as harvested_at
+         from public.topic_words tw
+         join public.speaking_items si on si.lexicon_id = tw.lexicon_id
+         left join public.speaking_harvests h
+                on h.lexicon_id = tw.lexicon_id and h.user_id = auth.uid()
+        where tw.topic_id = $1 and tw.status = 'READY'
+        order by tw.created_at, tw.id`,
+      [topicId],
+    );
   }
 
   /** From profiles.english_variety: en-GB → UK, anything else → US. */

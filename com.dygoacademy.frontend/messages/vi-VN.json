@@ -394,7 +394,9 @@
         "valueCount": "{done}/{total}",
         "progressWater": "Đã tưới {done}/{total} từ",
         "progressPlant": "Đã gieo {done}/{total} từ",
-        "notStarted": "Chưa bắt đầu"
+        "notStarted": "Chưa bắt đầu",
+        "speak": "Nói {count} từ đã chín",
+        "progressSpeak": "Đã nói {done}/{total} từ"
       },
       "action": {
         "continue": "Tiếp tục nhiệm vụ",
@@ -775,6 +777,15 @@
         "submit": "Gieo từ",
         "adding": "Đang gieo…",
         "error": "Không thêm được từ này. Hãy thử lại."
+      },
+      "speak": "Nói",
+      "speakSentences": "{count} câu từ luống này",
+      "harvest": {
+        "title": "Sẵn sàng thu hoạch",
+        "count": "{count} hoa",
+        "body": "Nói đúng từ đã chín (90%+) để hái quả. Lịch tưới không đổi.",
+        "picked": "Đã hái · {score}%",
+        "say": "Nói {word}"
       }
     },
     "me": {
@@ -920,7 +931,13 @@
         "deleteConfirm": "Xóa {name}? Các luống chung và từ trong đó cũng bị xóa. Không thể hoàn tác.",
         "adminOnly": "Chỉ quản trị của vườn mới chăm vườn được.",
         "backToGarden": "Quay lại vườn",
-        "loadingTricky": "Đang tìm chỗ khó…"
+        "loadingTricky": "Đang tìm chỗ khó…",
+        "echoTitle": "Thử thách Echo",
+        "echoWindow": "tuần này",
+        "echoKicker": "Từ khó nhất của vườn",
+        "echoDone": "{done}/{total} người đã xong",
+        "echoNote": "Chỉ hiện tổng số, không hiện tên.",
+        "echoSay": "Nói thử"
       },
       "invite": {
         "title": "Mời bạn cùng vườn",

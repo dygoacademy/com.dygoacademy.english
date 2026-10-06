@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
+import { toLocalDateString } from '@/lib/timezone';
 import type { SrsStats } from '@/types';
 
 import {
@@ -9,6 +10,7 @@ import {
   freezeStreak,
   gardenPlants,
   greetingFor,
+  harvestCard,
   liveMissions,
   liveMissionsSummary,
   meCalendar,
@@ -225,6 +227,26 @@ describe('live missions (U6-5)', () => {
     expect(liveMissionsSummary(all, href)).toEqual({ done: 3, total: 3, next: null });
   });
 
+  it('SE1: a SPEAK mission is a speak row to The Pond, and the next mission on A3', () => {
+    const speakDay = {
+      ...today,
+      missions: [today.missions[0], today.missions[1], { type: 'SPEAK' as const, target: 3, progress: 1, done: false }],
+    };
+    expect(liveMissions(speakDay, href)[2]).toEqual({
+      kind: 'speak',
+      done: 1,
+      total: 3,
+      minutes: null,
+      href: '/sounds',
+    });
+    expect(liveMissionsSummary(speakDay, href).next).toEqual({
+      mission: 'speak',
+      minutes: null,
+      href: '/sounds',
+      count: 3,
+    });
+  });
+
   it('links the quiz to the most-due bed, or all beds when nothing is due', () => {
     const topics = [
       { id: 't1', due_count: '3' },
@@ -375,5 +397,43 @@ describe('doneReminder (U6-7b)', () => {
       on: false,
     });
     expect(doneReminder(upcoming, '2026-10-03', undefined)).toBeNull();
+  });
+});
+
+describe('harvestCard (SE5)', () => {
+  const word = (id: string, stage: 'flower' | 'sprout', wilting = false) => ({
+    id,
+    word: id,
+    meaning: '',
+    stage,
+    wilting,
+    due: { tone: 'new' as const },
+  });
+  const words = [word('a', 'flower'), word('b', 'flower'), word('c', 'sprout'), word('d', 'flower', true), word('e', 'flower'), word('f', 'flower')];
+  const now = new Date();
+  const harvests = [
+    { topic_word_id: 'a', item_id: 'i1', harvested_score: null, harvested_at: null },
+    { topic_word_id: 'b', item_id: 'i2', harvested_score: 95, harvested_at: now.toISOString() },
+    { topic_word_id: 'c', item_id: 'i3', harvested_score: null, harvested_at: null },
+    { topic_word_id: 'd', item_id: 'i4', harvested_score: null, harvested_at: null },
+    { topic_word_id: 'e', item_id: 'i5', harvested_score: 91, harvested_at: '2020-01-01T00:00:00Z' },
+    { topic_word_id: 'f', item_id: 'i6', harvested_score: null, harvested_at: null },
+  ];
+  const today = toLocalDateString(now);
+
+  it("puts today's picks first, then unharvested ripe words; skips the rest", () => {
+    const card = harvestCard(words, harvests, today, (id) => `/sounds?word=${id}`)!;
+    expect(card.count).toBe(3);
+    expect(card.words.map((w) => [w.id, w.picked])).toEqual([
+      ['b', 95],
+      ['a', null],
+      ['f', null],
+    ]);
+    expect(card.words[1].href).toBe('/sounds?word=a');
+  });
+
+  it('is null with no data or nothing ripe', () => {
+    expect(harvestCard(words, undefined, today, String)).toBeNull();
+    expect(harvestCard([word('c', 'sprout')], harvests, today, String)).toBeNull();
   });
 });

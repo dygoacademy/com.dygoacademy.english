@@ -274,6 +274,59 @@ describe('GroupGardenService.trickyPatches (GR3)', () => {
   });
 });
 
+describe('GroupGardenService.echoChallenge (SE6)', () => {
+  it('is 403 for a non-admin and never reaches the aggregate', async () => {
+    const queryAs = jest.fn().mockResolvedValueOnce([{ allowed: false }]);
+    const service = await makeService(queryAs);
+
+    await expect(service.echoChallenge('user-1', 'g1')).rejects.toBeInstanceOf(ForbiddenException);
+    expect(queryAs).toHaveBeenCalledTimes(1);
+  });
+
+  it('returns the trickiest speakable word with totals only (last 7 days)', async () => {
+    const queryAs = jest
+      .fn()
+      .mockResolvedValueOnce([{ allowed: true }])
+      .mockResolvedValueOnce([
+        {
+          topic_word_id: 'w1',
+          word: 'deteriorate',
+          ipa_uk: '/dɪˈtɪə.ri.ə.reɪt/',
+          ipa_us: null,
+          done_count: '3',
+          member_count: '5',
+        },
+      ]);
+    const service = await makeService(queryAs);
+
+    const echo = await service.echoChallenge('user-1', 'g1');
+
+    expect(echo).toEqual({
+      topic_word_id: 'w1',
+      word: 'deteriorate',
+      ipa_uk: '/dɪˈtɪə.ri.ə.reɪt/',
+      ipa_us: null,
+      done_count: 3,
+      member_count: 5,
+    });
+    const [, sql, params] = queryAs.mock.calls[1];
+    expect(sql).toMatch(
+      /public\.group_echo_challenge\(\$1, now\(\) - make_interval\(days => \$2\)\)/,
+    );
+    expect(params).toEqual(['g1', 7]);
+    expectNoPersonalKeys([echo]);
+  });
+
+  it('is null when no missed word can be spoken', async () => {
+    const queryAs = jest
+      .fn()
+      .mockResolvedValueOnce([{ allowed: true }])
+      .mockResolvedValueOnce([]);
+    const service = await makeService(queryAs);
+    await expect(service.echoChallenge('user-1', 'g1')).resolves.toBeNull();
+  });
+});
+
 describe('GroupGardenService.invitePreview (GR6)', () => {
   it('returns the preview without member data', async () => {
     const queryAs = jest.fn().mockResolvedValue([

@@ -3,6 +3,7 @@
  * fetching: the live components pass in what the existing hooks returned.
  */
 import type {
+  SpeakingHarvestWord,
   SrsStageCounts,
   SrsStats,
   StudySchedule,
@@ -13,13 +14,14 @@ import type {
 import { GARDEN_ROUTES } from '@/constants/garden';
 import type { MissionDay, TodayMissions } from '@/hooks/useMissions';
 import type { MyKeepsakes } from '@/hooks/useProfile';
+import { toLocalDateString } from '@/lib/timezone';
 
 import { parseClock, type ClockTime } from '../format';
 import type { CalendarLevel } from '../GardenCalendar';
 import type { HeroPlant } from '../HeroGardenCard';
 import { stageFromSrs, type GardenFsrsState } from '../plantStage';
 import type { KeepsakeItem } from '../screens/MeScreen';
-import type { BedStage, TopicBedWord } from '../screens/TopicBedScreen';
+import type { BedStage, HarvestWord, TopicBedWord } from '../screens/TopicBedScreen';
 import type { TopicsScreenTopic } from '../screens/TopicsScreen';
 import type { Greeting, MissionItem } from '../screens/TodaysGardenScreen';
 import type { WeeklyHarvestScreenProps } from '../screens/WeeklyHarvestScreen';
@@ -103,28 +105,49 @@ export function missionsSummary(mission: { done: number; total: number }): {
 
 /**
  * UI-6 (U6-5): A1's mission rows from `GET /missions/today`, in the API's
- * order (REVIEW_DUE, LEARN_NEW, QUIZ). Progress is capped at the target so
- * extra reviews don't overflow the bar; QUIZ links to `quizHref`.
+ * order (REVIEW_DUE, LEARN_NEW, then QUIZ or SPEAK). Progress is capped at
+ * the target so extra reviews don't overflow the bar; QUIZ links to
+ * `quizHref`, SPEAK (Phase 13 SE1) to The Pond.
  */
 export function liveMissions(today: TodayMissions, quizHref: string): MissionItem[] {
   return today.missions.map((m): MissionItem => {
     if (m.type === 'QUIZ') return { kind: 'challenge', minutes: null, done: m.done, href: quizHref };
     const total = Math.max(0, m.target);
     const done = m.done ? total : Math.min(Math.max(0, m.progress), total);
+    if (m.type === 'SPEAK') {
+      return { kind: 'speak', done, total, minutes: null, href: GARDEN_ROUTES.sounds };
+    }
     return { kind: m.type === 'REVIEW_DUE' ? 'water' : 'plant', done, total };
   });
 }
 
-/** UI-6 (U6-5): A3's Golden Bloom card; the next mission is the quiz while it's open. */
+/**
+ * UI-6 (U6-5): A3's Golden Bloom card; the next mission is the quiz, or
+ * the SPEAK mission (SE1), while it's open.
+ */
 export function liveMissionsSummary(
   today: TodayMissions,
   quizHref: string,
-): { done: number; total: number; next: { mission: 'challenge'; minutes: null; href: string } | null } {
-  const quizOpen = today.missions.some((m) => m.type === 'QUIZ' && !m.done);
+): {
+  done: number;
+  total: number;
+  next: {
+    mission: 'challenge' | 'speak';
+    minutes: null;
+    href: string;
+    count?: number;
+  } | null;
+} {
+  const quiz = today.missions.find((m) => m.type === 'QUIZ' && !m.done);
+  const speak = today.missions.find((m) => m.type === 'SPEAK' && !m.done);
   return {
     done: today.missions.filter((m) => m.done).length,
     total: today.missions.length,
-    next: quizOpen ? { mission: 'challenge', minutes: null, href: quizHref } : null,
+    next: quiz
+      ? { mission: 'challenge', minutes: null, href: quizHref }
+      : speak
+        ? { mission: 'speak', minutes: null, href: GARDEN_ROUTES.sounds, count: speak.target }
+        : null,
   };
 }
 
@@ -641,4 +664,42 @@ export function meKeepsakes(keepsakes: MyKeepsakes, slots = 4): KeepsakeItem[] {
         : { type: 'blooms', count: k.value },
   );
   return [...earned.slice(Math.max(0, earned.length - (slots - nextItem.length))), ...nextItem];
+}
+
+/** SE5 shows at most this many rows. */
+export const HARVEST_ROWS = 3;
+
+/**
+ * SE5 "Ready to harvest" from the bed's words (their SRS stages) and
+ * `GET /speaking/harvest`: the ripe words (Flower, not wilting) that have
+ * a speaking item and aren't harvested yet, after the ones harvested today
+ * (shown as "Picked"). Words harvested before today drop off. `count` =
+ * all of them, the rows stop at HARVEST_ROWS. Null when there's nothing.
+ */
+export function harvestCard(
+  words: readonly TopicBedWord[],
+  harvests: readonly SpeakingHarvestWord[] | undefined,
+  today: string,
+  hrefFor: (topicWordId: string) => string,
+): { count: number; words: HarvestWord[] } | null {
+  if (!harvests) return null;
+  const byWord = new Map(harvests.map((h) => [h.topic_word_id, h]));
+  const picked: HarvestWord[] = [];
+  const ripe: HarvestWord[] = [];
+  for (const word of words) {
+    const h = byWord.get(word.id);
+    if (!h || word.stage !== 'flower' || word.wilting) continue;
+    const row = {
+      id: word.id,
+      word: word.word,
+      meaning: word.meaning,
+      meaningLang: word.meaningLang,
+      href: hrefFor(word.id),
+    };
+    if (h.harvested_score === null) ripe.push({ ...row, picked: null });
+    else if (toLocalDateString(new Date(h.harvested_at ?? 0)) === today)
+      picked.push({ ...row, picked: h.harvested_score });
+  }
+  const all = [...picked, ...ripe];
+  return all.length > 0 ? { count: all.length, words: all.slice(0, HARVEST_ROWS) } : null;
 }

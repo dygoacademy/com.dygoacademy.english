@@ -2,7 +2,7 @@ import { Test } from '@nestjs/testing';
 
 import { DatabaseService } from '../../database/database.service';
 import { MissionsService } from './missions.service';
-import { localDateOf } from './missions.store';
+import { isSpeakDay, localDateOf } from './missions.store';
 
 async function makeService(db: Partial<Record<'queryAs' | 'withUser', jest.Mock>>) {
   const moduleRef = await Test.createTestingModule({
@@ -42,7 +42,7 @@ describe('MissionsService (UI-6 U6-2)', () => {
     const res = await service.today('user-1', undefined, NOW);
 
     expect(query.mock.calls[3][0]).toContain('insert into public.daily_missions');
-    expect(query.mock.calls[3][1]).toEqual(['user-1', '2026-10-02', 0, 5, 1]);
+    expect(query.mock.calls[3][1]).toEqual(['user-1', '2026-10-02', 0, 5, 'QUIZ', 1]);
     expect(res.date).toBe('2026-10-02');
     expect(res.missions.map((m) => [m.type, m.progress, m.target, m.done])).toEqual([
       ['REVIEW_DUE', 1, 1, true],
@@ -50,6 +50,52 @@ describe('MissionsService (UI-6 U6-2)', () => {
       ['QUIZ', 0, 1, false],
     ]);
     expect(res.goldenBloom).toBe(false);
+  });
+
+  it('isSpeakDay alternates by local date', () => {
+    expect(isSpeakDay('2026-10-01')).toBe(true);
+    expect(isSpeakDay('2026-10-02')).toBe(false);
+    expect(isSpeakDay('2026-10-07')).toBe(true);
+  });
+
+  it('on a speak day the 3rd mission is SPEAK (target 3) when 3+ words can be spoken', async () => {
+    const query = jest
+      .fn()
+      .mockResolvedValueOnce({ rows: [{ timezone: 'UTC' }] })
+      .mockResolvedValueOnce({ rows: [{ n: '0' }] }) // no rows yet
+      .mockResolvedValueOnce({ rows: [{ n: '4' }] }) // 4 due
+      .mockResolvedValueOnce({ rows: [{ n: '12' }] }) // 12 speakable words
+      .mockResolvedValueOnce({ rows: [] }) // insert
+      .mockResolvedValueOnce({
+        rows: [
+          { type: 'SPEAK', target: 3, progress: 1, completed_at: null },
+          { type: 'REVIEW_DUE', target: 4, progress: 0, completed_at: null },
+          { type: 'LEARN_NEW', target: 5, progress: 0, completed_at: null },
+        ],
+      });
+    const service = await makeService({ withUser: withUserOf(query) });
+
+    const res = await service.today('user-1', undefined, new Date('2026-10-07T09:00:00Z'));
+
+    expect(query.mock.calls[3][0]).toContain('speaking_items');
+    expect(query.mock.calls[4][1]).toEqual(['user-1', '2026-10-07', 4, 5, 'SPEAK', 3]);
+    expect(res.missions.map((m) => m.type)).toEqual(['REVIEW_DUE', 'LEARN_NEW', 'SPEAK']);
+  });
+
+  it('on a speak day with fewer than 3 speakable words the 3rd mission stays QUIZ', async () => {
+    const query = jest
+      .fn()
+      .mockResolvedValueOnce({ rows: [{ timezone: 'UTC' }] })
+      .mockResolvedValueOnce({ rows: [{ n: '0' }] })
+      .mockResolvedValueOnce({ rows: [{ n: '0' }] })
+      .mockResolvedValueOnce({ rows: [{ n: '2' }] })
+      .mockResolvedValueOnce({ rows: [] })
+      .mockResolvedValueOnce({ rows: [] });
+    const service = await makeService({ withUser: withUserOf(query) });
+
+    await service.today('user-1', undefined, new Date('2026-10-07T09:00:00Z'));
+
+    expect(query.mock.calls[4][1]).toEqual(['user-1', '2026-10-07', 0, 5, 'QUIZ', 1]);
   });
 
   it('today() does not re-create rows and reports a Golden Bloom when all 3 are done', async () => {

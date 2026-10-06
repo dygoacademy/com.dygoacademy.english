@@ -18,6 +18,7 @@ import { CreateInviteDto } from './dto/create-invite.dto';
 import { UpdateGroupDto } from './dto/update-group.dto';
 import { UpdateMemberRoleDto } from './dto/update-member-role.dto';
 import {
+  EchoChallenge,
   GroupGarden,
   GroupGardenCounts,
   GroupGardenService,
@@ -163,6 +164,21 @@ export class GroupsController {
     @Query('limit') limit?: string,
   ): Promise<TrickyPatch[]> {
     return this.gardenService.trickyPatches(userId, groupId, days, limit);
+  }
+
+  @Get(':id/echo')
+  @ApiOperation({
+    summary: 'Echo challenge: the trickiest word to say (Phase 13 SE6, GR3)',
+    description:
+      'ADMIN only (403). The most-missed word of the last 7 days that has a speaking item, ' +
+      'with done_count (gardeners who spoke it in that time) and member_count. Totals only, ' +
+      'never who. `{ echo: null }` when no such word.',
+  })
+  async echoChallenge(
+    @CurrentUser('id') userId: string,
+    @Param('id') groupId: string,
+  ): Promise<{ echo: EchoChallenge | null }> {
+    return { echo: await this.gardenService.echoChallenge(userId, groupId) };
   }
 
   @Get(':id/members')

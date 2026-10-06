@@ -11,6 +11,7 @@ import {
   BellIcon,
   ChallengeIcon,
   GoldenBloomIcon,
+  MicIcon,
   MoonIcon,
   PlantIcon,
   WaterIcon,
@@ -35,7 +36,13 @@ export type MissionItem =
   | { kind: 'thirsty'; done: number; total: number }
   | { kind: 'plant'; done: number; total: number }
   /** `minutes` null: no time estimate (live data); `href` links the row while not done. */
-  | { kind: 'challenge'; minutes: number | null; done: boolean; href?: string };
+  | { kind: 'challenge'; minutes: number | null; done: boolean; href?: string }
+  /**
+   * Phase 13 SE1 (`reference/SE1-entry-home`): "Say 3 ripe words", on a
+   * light clay row linking to The Pond while not done. `minutes` shows
+   * before any word is said (null: the count instead).
+   */
+  | { kind: 'speak'; done: number; total: number; minutes: number | null; href?: string };
 
 export interface TodaysGardenScreenProps {
   /** Today, as a calendar day (format.ts `calendarDay` / `todayIn`). */
@@ -209,6 +216,40 @@ export function TodaysGardenScreen({
 function Mission({ item }: { item: MissionItem }) {
   const t = useTranslations('screens.home.missions');
   const status = missionStatus(item);
+  if (item.kind === 'speak') {
+    const row = (
+      <MissionRow
+        tone="speak"
+        icon={<MicIcon width={20} height={20} />}
+        title={t('speak', { count: item.total })}
+        value={item.done}
+        max={item.total}
+        valueLabel={
+          status === 'done'
+            ? t('valueDone')
+            : item.done === 0 && item.minutes !== null
+              ? t('valueMinutes', { count: item.minutes })
+              : t('valueCount', { done: item.done, total: item.total })
+        }
+        progressText={
+          item.done === 0
+            ? t('notStarted')
+            : t('progressSpeak', { done: item.done, total: item.total })
+        }
+        status={status}
+      />
+    );
+    return item.href && status !== 'done' ? (
+      <Link
+        href={item.href}
+        className="-mx-2 -my-1 block rounded-control border border-primary-border bg-primary-soft px-2 py-1.5 text-text"
+      >
+        {row}
+      </Link>
+    ) : (
+      row
+    );
+  }
   if (item.kind === 'challenge') {
     const row = (
       <MissionRow

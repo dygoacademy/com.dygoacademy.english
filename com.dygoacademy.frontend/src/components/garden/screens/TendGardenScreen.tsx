@@ -7,7 +7,7 @@ import { useTranslations } from 'next-intl';
 import { gcn } from '../cn';
 import { GardenerRow, type GardenerRowProps } from '../GardenerRow';
 import { LinkIcon, RainCloud } from '../groupArt';
-import { BackIcon } from '../icons';
+import { BackIcon, MicIcon } from '../icons';
 import { IconButton } from '../IconButton';
 import { TrickyPatchRow } from '../TrickyPatchRow';
 import { GardenTabBar, IPAD_NAV_COLUMN, SCREEN_CLASSES } from './GardenTabBar';
@@ -19,7 +19,10 @@ import { GardenTabBar, IPAD_NAV_COLUMN, SCREEN_CLASSES } from './GardenTabBar';
  * Header (back, "Tend the garden", the garden's name) → two tabs:
  * - **Tricky patches** (GR3): the words the garden missed most in the last
  *   7 days, as totals (never one person's answers), then "Call a rain
- *   day": words per gardener (5 / 10 / 20) and the push.
+ *   day": words per gardener (5 / 10 / 20) and the push. Phase 13 SE6
+ *   (`reference/SE6-entry-echo`): with an Echo challenge the list stops
+ *   at 2 rows and the Echo card (the trickiest word to say, "3 of 5
+ *   gardeners done": totals only, D-4) sits before the rain day.
  * - **Gardeners** (GR4): the roster with a role picker per gardener, what
  *   each role can do, and the live invite links with Invite.
  *
@@ -27,6 +30,8 @@ import { GardenTabBar, IPAD_NAV_COLUMN, SCREEN_CLASSES } from './GardenTabBar';
  * own URL and the back button works. `children` is drawn last (sheets).
  */
 export const RAIN_DAY_SIZES = [5, 10, 20] as const;
+/** SE6: tricky patches shown above the Echo challenge. */
+export const ECHO_TRICKY_ROWS = 2;
 export type RainDaySize = (typeof RAIN_DAY_SIZES)[number];
 
 export interface TendGardenScreenProps {
@@ -52,6 +57,15 @@ export interface TendGardenScreenProps {
     };
     /** Shown instead of the rows while loading or on error. */
     message?: string | null;
+    /** SE6: the trickiest word to say; null / omitted hides the card. */
+    echo?: {
+      word: string;
+      ipa: string | null;
+      done: number;
+      members: number;
+      /** The speaking flow for the word. */
+      href: string;
+    } | null;
   };
   gardeners?: {
     rows: ReadonlyArray<GardenerRowProps & { id: string }>;
@@ -147,7 +161,7 @@ export function TendGardenScreen({
               <p className="py-3 text-[13px] text-muted-foreground">{t('trickyEmpty')}</p>
             ) : (
               <ul className="flex flex-col">
-                {tricky.rows.map((row) => (
+                {(tricky.echo ? tricky.rows.slice(0, ECHO_TRICKY_ROWS) : tricky.rows).map((row) => (
                   <TrickyPatchRow
                     key={row.word}
                     word={row.word}
@@ -158,6 +172,77 @@ export function TendGardenScreen({
               </ul>
             )}
           </section>
+
+          {tricky.echo ? (
+            <section
+              aria-labelledby="echo-title"
+              className="mx-4 flex flex-col gap-2.5 rounded-[22px] border border-primary-border bg-primary-soft px-4 py-[14px]"
+            >
+              <div className="flex items-baseline justify-between">
+                <h2 id="echo-title" className="font-display text-[18px] font-semibold">
+                  {t('echoTitle')}
+                </h2>
+                <span className="text-[12px] text-muted-foreground">{t('echoWindow')}</span>
+              </div>
+              <div className="flex items-center gap-3">
+                <span
+                  aria-hidden="true"
+                  className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-primary text-surface"
+                >
+                  <MicIcon width={24} height={24} />
+                </span>
+                <div className="flex flex-col">
+                  <span className="text-[12px] font-semibold text-primary-text">
+                    {t('echoKicker')}
+                  </span>
+                  <span
+                    lang="en"
+                    className="font-display text-[24px] font-semibold leading-[1.15]"
+                  >
+                    {tricky.echo.word}
+                  </span>
+                  {tricky.echo.ipa ? (
+                    <span lang="en" className="text-[13px] text-muted-foreground">
+                      {tricky.echo.ipa}
+                    </span>
+                  ) : null}
+                </div>
+              </div>
+              <div className="flex flex-col gap-[5px]">
+                <span className="text-[14px] font-bold">
+                  {t('echoDone', { done: tricky.echo.done, total: tricky.echo.members })}
+                </span>
+                <div
+                  role="progressbar"
+                  aria-valuemin={0}
+                  aria-valuemax={Math.max(1, tricky.echo.members)}
+                  aria-valuenow={tricky.echo.done}
+                  aria-valuetext={t('echoDone', {
+                    done: tricky.echo.done,
+                    total: tricky.echo.members,
+                  })}
+                  className="h-1.5 rounded-[3px] bg-primary-border"
+                >
+                  {tricky.echo.done > 0 ? (
+                    <div
+                      className="h-1.5 rounded-[3px] bg-primary"
+                      style={{
+                        width: `${Math.round((Math.min(tricky.echo.done, tricky.echo.members) / Math.max(1, tricky.echo.members)) * 100)}%`,
+                      }}
+                    />
+                  ) : null}
+                </div>
+                <span className="text-[12px] text-muted-foreground">{t('echoNote')}</span>
+              </div>
+              <Link
+                href={tricky.echo.href}
+                className="flex h-[52px] items-center justify-center gap-2 rounded-control bg-primary text-[16px] font-bold text-white shadow-press-primary transition-transform duration-press ease-garden active:translate-y-[2px]"
+              >
+                <MicIcon width={20} height={20} />
+                {t('echoSay')}
+              </Link>
+            </section>
+          ) : null}
 
           <section className="mx-4 flex flex-col gap-3 rounded-[22px] bg-forest p-4 text-on-forest">
             <div className="flex items-center gap-2.5">

@@ -353,6 +353,17 @@ Dylan: the app may wait a few seconds, but the backend must never be blocked; ke
 - Scorers: `speech` (8100) and new `speech-2` (8101), `MODEL_THREADS` 4 → 2. Measured with the real queue, store, worker and scorers (6 recordings at once): 1 scorer × 4 threads 9.7 s, 1 × 2 threads 7.9 s, **2 × 2 threads 7.2 s** (~0.8 checks/s, ~50 a minute): enough for ~100 learners at once. A second scorer on the same Mac adds little (CPU-bound); growth = a faster model or another machine.
 - Incident: while adding `quickCheck`, a script truncated `messages/en-US.json` (which held others' uncommitted edits) before an insert check failed. Restored the same minute from the last deploy's build (`.next/server/chunks/…`, built from the working tree at 06:58): 983 keys, 335 differing from git, as measured before, so nothing lost (formatting normalised to 2-space JSON). Scripts now build the full new text before opening a file for writing.
 
+## 23. New speaking entry points SE1 / SE2 / SE5 / SE6 (2026-10-06)
+
+Dylan approved the four entry points from the design changelog and asked Claude Code to draw the boards (`docs/design/garden/source/Entry*.dc.html`, EN + VI; references `SE*-entry-*`), then build them. Decisions: D-3 Fruit at 90%+, review dates unchanged (D5 stands); D-4 Echo shows totals only; D-5 they replace A1 / A7 / GR3.
+
+- **SE1 Home speaking mission** "Say 3 ripe words": a new mission type `SPEAK` (migration `20261006_speaking_entry_points.sql`). On odd days (days since 1970-01-01 of the local date) it takes QUIZ's place as the 3rd mission, when the learner has 3+ words with a speaking item; the day's first attempt at each sentence counts. Light clay row on A1 linking to The Pond; next mission on A3.
+- **SE2 Topic bed Speak**: "Speak · N sentences from this bed" under Water / Quiz / + opens `/sounds?topic=…&back=<bed>` (hidden when no word in the bed has an item).
+- **SE5 Ready to harvest**: ripe (Flower) words with a speaking item, each with a mic → `/sounds?word=…&harvest=1&back=<bed>` (one sentence, single mode). `POST /speaking/attempts` with `harvest: true` and 90%+ stores a `speaking_harvests` row (once per word); that word shows "Picked · 94%" as Fruit for the day. No SRS change.
+- **SE6 Echo challenge** on GR3 (admins): `GET /groups/:id/echo` → the most-missed word of the last 7 days that has an item, "3 of 5 gardeners done" (SECURITY DEFINER `group_echo_challenge`, ADMIN only, no user ids); Say it → `/sounds?word=…&back=<tend>`; tricky list trimmed to 2 rows.
+- `/sounds` gains `word`, `harvest` and `back` (app paths only) parameters.
+- Tests: backend 374, frontend 590 (HEAD + this change), RLS suite + 16 new checks. `garden:diff` for SE1/SE2/SE5/SE6 runs against UAT after the deploy.
+
 ## Session log (from `docs/phase13-schedule.md`)
 
 One line per session: date · session · result · next.

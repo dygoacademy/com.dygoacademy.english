@@ -10,12 +10,14 @@ import { SignInScreen } from '@/components/garden/auth/SignInScreen';
 import { GroupsTabProvider } from '@/components/garden/groupsTab';
 import {
   ACCOUNT,
+  ENTRY,
   FORGOT_PASSWORD,
   HOME_REFERENCE,
   QUIZ,
   QUIZ_RESULT,
   REGISTER,
   SIGN_IN,
+  entryHarvest,
   referenceFixtures,
   type ReferenceName,
 } from '@/components/garden/screens/fixtures';
@@ -75,6 +77,18 @@ function ReferenceScreenBody({ name, locale }: { name: ReferenceName; locale: Ap
       return (
         <TodaysGardenScreen
           {...HOME}
+          action={{ ...HOME.action, href: GARDEN_ROUTES.review }}
+          stickyNav={false}
+        />
+      );
+    case 'SE1-entry-home':
+      return (
+        <TodaysGardenScreen
+          {...HOME}
+          missions={[
+            ...HOME.missions.slice(0, 2),
+            { ...ENTRY.homeSpeak, href: GARDEN_ROUTES.reference('SE2-entry-bed') },
+          ]}
           action={{ ...HOME.action, href: GARDEN_ROUTES.review }}
           stickyNav={false}
         />
@@ -156,6 +170,21 @@ function ReferenceScreenBody({ name, locale }: { name: ReferenceName; locale: Ap
           optionsHref={GARDEN_ROUTES.topics}
         />
       );
+    case 'SE2-entry-bed':
+    case 'SE5-entry-harvest':
+      return (
+        <TopicBedScreen
+          {...BED}
+          backHref={GARDEN_ROUTES.reference('A6-topics')}
+          water={{ ...BED.water, href: GARDEN_ROUTES.review }}
+          quizHref={GARDEN_ROUTES.review}
+          addWordHref={GARDEN_ROUTES.topics}
+          optionsHref={GARDEN_ROUTES.topics}
+          {...(name === 'SE2-entry-bed'
+            ? { speak: { ...ENTRY.bedSpeak, href: GARDEN_ROUTES.reference('SE5-entry-harvest') } }
+            : { harvest: entryHarvest(BED.words, GARDEN_ROUTES.reference('SE2-entry-bed')) })}
+        />
+      );
     case 'A8-me':
     case 'A8-me-account':
       return (
@@ -217,6 +246,7 @@ function ReferenceScreenBody({ name, locale }: { name: ReferenceName; locale: Ap
     case 'GR5-invite':
     case 'GR6-join':
     case 'GR7-create':
+    case 'SE6-entry-echo':
       return <GroupReferenceScreen name={name} locale={locale} />;
     case 'AU1-sign-in':
     case 'AU1-sign-in-error':

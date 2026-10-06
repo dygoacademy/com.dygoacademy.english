@@ -49,6 +49,20 @@ export const GARDEN_ROUTES = {
    * be a second part of this page; not built (not in this phase's run).
    */
   sounds: '/sounds',
+  /**
+   * The speaking flow from an entry point (SE2 / SE5 / SE6): one bed's Pond
+   * (`topic`), or one word (`word`, with `harvest` for "Ready to harvest");
+   * `back` is where Close and the last Next go.
+   */
+  speak: (opts: { topic?: string; word?: string; harvest?: boolean; back?: string }) => {
+    const params = new URLSearchParams();
+    if (opts.topic) params.set('topic', opts.topic);
+    if (opts.word) params.set('word', opts.word);
+    if (opts.harvest) params.set('harvest', '1');
+    if (opts.back) params.set('back', opts.back);
+    const query = params.toString();
+    return query ? `/sounds?${query}` : '/sounds';
+  },
   /** UI-G shared gardens: GR1 list, GR2 a garden, GR3/GR4 tend (admins), GR6 join. */
   groups: '/groups',
   group: (id: string) => `/groups/${encodeURIComponent(id)}`,

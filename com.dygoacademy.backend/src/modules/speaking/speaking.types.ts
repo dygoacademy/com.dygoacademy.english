@@ -70,6 +70,20 @@ export interface SpeakingAttempt {
   word_marks: { index: number; ok: boolean; reason: SpeakingMarkReason | null }[];
   user_duration_ms: number;
   created_at: string;
+  /** SE5: true when this attempt harvested the word (asked, 90%+, not harvested before). */
+  harvested: boolean;
+}
+
+/** SE5: harvest needs this score (D-3: Fruit at 90%+). */
+export const HARVEST_MIN_SCORE = 90;
+
+/** `GET /speaking/harvest?topic_id=`: a bed's words with a speaking item, and which are harvested. */
+export interface SpeakingHarvestWord {
+  topic_word_id: string;
+  item_id: string;
+  /** Score it was harvested with; null = not harvested. */
+  harvested_score: number | null;
+  harvested_at: string | null;
 }
 
 /**

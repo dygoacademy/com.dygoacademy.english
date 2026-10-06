@@ -137,6 +137,8 @@
     --color-on-forest-muted: #dde7da; /* legend text on forest */
     --color-gold-wash: #f6ead2; /* challenge mission icon well */
     --color-gold-border: #efd9a6;
+    --color-primary-soft: #fbefe9; /* speaking entry rows and cards (SE1/SE2/SE6) */
+    --color-primary-border: #ebc7b6;
     --color-sprout-border: #c9d8c4; /* collocation chips */
     --color-example-text: #2e3a33; /* example sentence */
     --color-water-due: #1d6a9a; /* "Due now" in word rows */

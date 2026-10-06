@@ -49,6 +49,17 @@ export function SpeakerIcon(props: IconProps) {
   );
 }
 
+/** Microphone (speaking entry points; same as SP1–SP3). Canvas: stroke 2.2. */
+export function MicIcon(props: IconProps) {
+  return (
+    <StrokeIcon strokeWidth="2.2" {...props}>
+      <rect x="9" y="3" width="6" height="11" rx="3" />
+      <path d="M5 11 A7 7 0 0 0 19 11" />
+      <path d="M12 18 V21" />
+    </StrokeIcon>
+  );
+}
+
 /** Speaker, no sound (not in the canvas; same speaker with a cross). */
 export function SpeakerOffIcon(props: IconProps) {
   return (

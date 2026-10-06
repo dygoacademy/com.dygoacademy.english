@@ -827,6 +827,32 @@ One sentence per word (`master_lexicon`), with the native-speaker clips and thei
 
 ---
 
+#### `speaking_harvests`
+
+Phase 13 SE5 (2026-10-06): a ripe word the learner said at 90%+ from a bed's "Ready to harvest" card. Shown as picked fruit; never changes SRS (D5). One row per learner and word.
+
+**Written by** — The owning user only (insert, via `POST /speaking/attempts` with `harvest: true`). No update or delete grants for learners.
+
+| Column | Type | Null | Default |
+| :--- | :--- | :---: | :--- |
+| `id` | `uuid` | NO | `gen_random_uuid()` |
+| `user_id` | `uuid` | NO | `auth.uid()` |
+| `lexicon_id` | `uuid` | NO | — |
+| `score` | `smallint` | NO | — |
+| `created_at` | `timestamp with time zone` | NO | `now()` |
+
+**Keys** — `speaking_harvests_pkey` (id); `speaking_harvests_one_per_word` UNIQUE (user_id, lexicon_id); `user_id` → `profiles(id)` and `lexicon_id` → `master_lexicon(id)`, both ON DELETE CASCADE.
+
+**Checks** — `speaking_harvests_score_check`: `score between 90 and 100`.
+
+**RLS policies** — RLS enabled: `speaking_harvests_select_own` (SELECT, authenticated, `user_id = auth.uid()`), `speaking_harvests_insert_own` (INSERT, authenticated, `user_id = auth.uid()`).
+
+**Related function** — `group_echo_challenge(p_group_id, p_since)` (SE6, SECURITY DEFINER, ADMIN only): the group's most-missed word since `p_since` that has a speaking item, with `done_count` (gardeners who spoke it since then) and `member_count`. Totals only.
+
+`daily_missions.type` also accepts `SPEAK` (SE1) since the same migration.
+
+---
+
 #### `speaking_attempts`
 
 One row per speaking Compare (SP3). Try again stores another row. The learner's recording is never stored (decision D2).

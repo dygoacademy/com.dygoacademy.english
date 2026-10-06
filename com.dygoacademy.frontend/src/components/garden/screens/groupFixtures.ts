@@ -21,6 +21,8 @@ export const GROUP_REFERENCE_NAMES = [
   'GR5-invite',
   'GR6-join',
   'GR7-create',
+  // Phase 13 SE6: GR3 with the Echo challenge (ENTRY.echo in fixtures.ts)
+  'SE6-entry-echo',
 ] as const;
 export type GroupReferenceName = (typeof GROUP_REFERENCE_NAMES)[number];
 

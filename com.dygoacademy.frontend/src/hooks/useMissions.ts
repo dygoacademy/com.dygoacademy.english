@@ -5,8 +5,11 @@ import { useQuery } from '@tanstack/react-query';
 import { apiClient } from '@/lib/api-client';
 import { getResolvedTimezone } from '@/lib/timezone';
 
-/** UI-6 daily mission types (backend `modules/missions/missions.store.ts`). */
-export type MissionType = 'REVIEW_DUE' | 'LEARN_NEW' | 'QUIZ';
+/**
+ * UI-6 daily mission types (backend `modules/missions/missions.store.ts`).
+ * SPEAK (Phase 13 SE1) takes QUIZ's place as the 3rd mission on alternate days.
+ */
+export type MissionType = 'REVIEW_DUE' | 'LEARN_NEW' | 'QUIZ' | 'SPEAK';
 
 export interface DailyMission {
   type: MissionType;

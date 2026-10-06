@@ -33,8 +33,14 @@ export interface MissionCompleteScreenProps {
   missions: {
     done: number;
     total: number;
-    /** The next mission to do (only the collocation challenge so far). */
-    next: { mission: 'challenge'; minutes: number | null; href: string } | null;
+    /** The next mission to do: the collocation challenge, or the SPEAK mission (SE1). */
+    next: {
+      mission: 'challenge' | 'speak';
+      minutes: number | null;
+      href: string;
+      /** Words to say, for `speak`. */
+      count?: number;
+    } | null;
   } | null;
   /** The reminder row; null hides it. */
   reminder: { ripening: number; time: ClockTime; on: boolean } | null;
@@ -171,9 +177,11 @@ export function MissionCompleteScreen({
                   })}
                 >
                   {missions.next.minutes === null
-                    ? missionNames(missions.next.mission)
+                    ? missionNames(missions.next.mission, { count: missions.next.count ?? 0 })
                     : t('nextMission', {
-                        title: missionNames(missions.next.mission),
+                        title: missionNames(missions.next.mission, {
+                          count: missions.next.count ?? 0,
+                        }),
                         minutes: missions.next.minutes,
                       })}
                 </Link>

@@ -1,4 +1,4 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import {
   ArrayMaxSize,
@@ -6,7 +6,10 @@ import {
   IsBoolean,
   IsIn,
   IsInt,
+  IsOptional,
+  IsString,
   IsUUID,
+  MaxLength,
   Max,
   Min,
   ValidateIf,
@@ -75,4 +78,22 @@ export class CreateSpeakingAttemptDto {
   @Min(0)
   @Max(120000)
   user_duration_ms!: number;
+
+  @ApiPropertyOptional({
+    description:
+      'SE5 "Ready to harvest": at 90%+ the word is saved as harvested (visual only, no SRS ' +
+      'change). Ignored below 90.',
+  })
+  @IsOptional()
+  @IsBoolean()
+  harvest?: boolean;
+
+  @ApiPropertyOptional({
+    description:
+      "The device's IANA time zone, for the SPEAK mission's day when the profile has none.",
+  })
+  @IsOptional()
+  @IsString()
+  @MaxLength(64)
+  tz?: string;
 }

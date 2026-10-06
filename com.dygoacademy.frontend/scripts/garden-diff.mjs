@@ -95,6 +95,11 @@ const NAMES = [
   'SP3-speak-checking',
   'SP3-speak-done',
   'SP3-speak-failed',
+  // Phase 13 speaking entry points (boards drafted by Claude Code, 2026-10-06)
+  'SE1-entry-home',
+  'SE2-entry-bed',
+  'SE5-entry-harvest',
+  'SE6-entry-echo',
 ];
 
 /** Old short codes still accepted on the command line. */

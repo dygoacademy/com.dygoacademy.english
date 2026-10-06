@@ -92,6 +92,26 @@ describe('TendGardenScreen', () => {
     expect(screen.getByText('Sends a push to 5 gardeners · tricky words first')).toBeTruthy();
   });
 
+  it('SE6: the Echo challenge shows totals only and trims tricky patches to 2 rows', () => {
+    renderWithIntl(
+      <TendGardenScreen
+        {...base}
+        tab="tricky"
+        tricky={{
+          rows: fx.tricky.rows,
+          rainDay: { members: 5, size: 10, last: null },
+          echo: { word: 'deteriorate', ipa: '/dɪˈtɪəriəreɪt/', done: 3, members: 5, href: '/sounds?word=w1' },
+        }}
+      />,
+    );
+    const echo = screen.getByRole('region', { name: 'Echo challenge' });
+    expect(within(echo).getByText('3 of 5 gardeners done')).toBeTruthy();
+    expect(within(echo).getByText('Totals only, never names.')).toBeTruthy();
+    expect(within(echo).getByRole('link', { name: 'Say it' }).getAttribute('href')).toBe('/sounds?word=w1');
+    const tricky = screen.getByRole('tabpanel', { name: 'Tricky patches' });
+    expect(within(tricky).getAllByRole('listitem')).toHaveLength(2);
+  });
+
   it('lists gardeners with the role legend and the invite links', () => {
     renderWithIntl(
       <TendGardenScreen

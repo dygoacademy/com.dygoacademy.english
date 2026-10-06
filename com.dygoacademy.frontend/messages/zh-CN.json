@@ -398,7 +398,9 @@
         "valueCount": "{done}/{total}",
         "progressWater": "已浇水 {done}/{total} 个单词",
         "progressPlant": "已种下 {done}/{total} 个单词",
-        "notStarted": "未开始"
+        "notStarted": "未开始",
+        "speak": "说出 {count} 个成熟的单词",
+        "progressSpeak": "已说 {done}/{total} 个单词"
       },
       "action": {
         "continue": "继续任务",
@@ -779,6 +781,15 @@
         "submit": "种下单词",
         "adding": "正在种下…",
         "error": "无法添加这个单词，请重试。"
+      },
+      "speak": "开口说",
+      "speakSentences": "这个花圃里的 {count} 个句子",
+      "harvest": {
+        "title": "可以收获了",
+        "count": "{count} 朵花",
+        "body": "把成熟的单词说好（90% 以上）就能摘下果实。浇水日期不变。",
+        "picked": "已摘 · {score}%",
+        "say": "说 {word}"
       }
     },
     "me": {
@@ -924,7 +935,13 @@
         "deleteConfirm": "删除{name}？其中的共享花圃和单词也会一并删除，且无法恢复。",
         "adminOnly": "只有花园管理员可以照料花园。",
         "backToGarden": "返回花园",
-        "loadingTricky": "正在查找难点…"
+        "loadingTricky": "正在查找难点…",
+        "echoTitle": "回声挑战",
+        "echoWindow": "本周",
+        "echoKicker": "花园里最难的单词",
+        "echoDone": "{total} 位园丁中已有 {done} 位完成",
+        "echoNote": "只显示总数，从不显示名字。",
+        "echoSay": "说一说"
       },
       "invite": {
         "title": "邀请园丁",

@@ -9,8 +9,9 @@ import { buttonClassName } from '../buttonStyles';
 import { gcn } from '../cn';
 import { EmptyState } from '../EmptyState';
 import { useGardenFormat } from '../format';
-import { BackIcon, MoreIcon, PlusIcon, WaterIcon } from '../icons';
+import { BackIcon, ChevronRightIcon, MicIcon, MoreIcon, PlusIcon, WaterIcon } from '../icons';
 import { IconButton } from '../IconButton';
+import { PlantGlyph } from '../PlantGlyph';
 import { StageTile } from '../StageTile';
 import { WordRow } from '../WordRow';
 import { GardenTabBar, IPAD_NAV_COLUMN, SCREEN_CLASSES } from './GardenTabBar';
@@ -25,7 +26,9 @@ import { GardenTabBar, IPAD_NAV_COLUMN, SCREEN_CLASSES } from './GardenTabBar';
  * master–detail view, this bed being the detail.
  *
  * Header (Back, title + meta, options) → four stage tiles that filter the
- * list (tap again to clear) → Water / Quiz / Add word → the word list.
+ * list (tap again to clear) → Water / Quiz / Add word → the "Speak" row
+ * (SE2, `reference/SE2-entry-bed`) → "Ready to harvest" (SE5,
+ * `reference/SE5-entry-harvest`) → the word list.
  * Stages come from the API in UI-5; until then `stageCounts` is null, the
  * tiles show "—" and can't filter, and every word shows as a sprout
  * unless the caller knows better.
@@ -46,6 +49,18 @@ export interface TopicBedWord {
   due: { tone: 'now' } | { tone: 'new' } | { tone: 'later'; days: number | null };
 }
 
+/** SE5: a ripe word on "Ready to harvest": a mic to say it, or its picked score. */
+export interface HarvestWord {
+  id: string;
+  word: string;
+  meaning: string;
+  meaningLang?: string;
+  /** Score it was harvested with (shown as Fruit, "Picked · 94%"); null = still a Flower. */
+  picked: number | null;
+  /** The speaking flow for this word (harvest mode). */
+  href: string;
+}
+
 export interface TopicBedScreenProps {
   title: string;
   /** "IELTS Academic · B2–C1 · 48 words": each part optional but the count. */
@@ -61,6 +76,16 @@ export interface TopicBedScreenProps {
   /** Opens the Add word sheet in place; when omitted, + goes to `addWordHref`. */
   onAddWord?: () => void;
   optionsHref?: string;
+  /**
+   * SE2 (Phase 13): "Speak · 5 sentences from this bed", The Pond for this
+   * bed. Null / omitted hides it (no word here has a speaking item).
+   */
+  speak?: { count: number; href: string } | null;
+  /**
+   * SE5 (Phase 13): ripe words to say for their fruit (90%+, no SRS change,
+   * D-3). `count` = flowers on the card. Null / omitted / empty hides it.
+   */
+  harvest?: { count: number; words: readonly HarvestWord[] } | null;
   /** Wilting rows link here (the leech drill, U5-6); omitted = static rows. */
   wiltingHref?: string;
   /** Master list under the iPad sidebar's tabs at `lg` (the topic beds). */
@@ -79,6 +104,8 @@ export function TopicBedScreen({
   addWordHref,
   onAddWord,
   optionsHref,
+  speak,
+  harvest,
   wiltingHref,
   sidebar,
 }: TopicBedScreenProps) {
@@ -174,6 +201,81 @@ export function TopicBedScreen({
           <PlusIcon width={20} height={20} />
         </IconButton>
       </div>
+
+      {speak ? (
+        <Link
+          href={speak.href}
+          className="box-border flex h-[52px] items-center gap-[10px] rounded-control border border-primary-border bg-primary-soft pl-2 pr-3 text-text"
+        >
+          <span
+            aria-hidden="true"
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary text-surface"
+          >
+            <MicIcon width={18} height={18} />
+          </span>
+          <span className="flex-grow text-[15px]">
+            <b className="text-primary">{t('speak')}</b>
+            <span className="text-muted-foreground">
+              {topicsT('separator')}
+              {t('speakSentences', { count: speak.count })}
+            </span>
+          </span>
+          <ChevronRightIcon width={20} height={20} className="text-primary" />
+        </Link>
+      ) : null}
+
+      {harvest && harvest.words.length > 0 ? (
+        <section
+          aria-labelledby="bed-harvest-title"
+          className="flex flex-col gap-1 rounded-[22px] border border-border bg-surface px-[14px] pb-1.5 pt-3"
+        >
+          <div className="flex items-baseline justify-between">
+            <h2 id="bed-harvest-title" className="font-display text-[18px] font-semibold">
+              {t('harvest.title')}
+            </h2>
+            <span className="text-[12px] font-semibold text-gold-text">
+              {t('harvest.count', { count: harvest.count })}
+            </span>
+          </div>
+          <p className="mb-1 text-[13px] text-muted-foreground">{t('harvest.body')}</p>
+          <ul>
+            {harvest.words.map((w) => (
+              <li key={w.id} className="flex items-center gap-[10px] border-t border-border py-1.5">
+                <span
+                  aria-hidden="true"
+                  className="flex h-9 w-9 shrink-0 items-end justify-center overflow-hidden rounded-tile bg-background"
+                >
+                  <PlantGlyph stage={w.picked === null ? 'flower' : 'tree'} size={26} />
+                </span>
+                <span className="flex min-w-0 flex-grow flex-col">
+                  <span lang="en" className="text-[15px] font-bold">
+                    {w.word}
+                  </span>
+                  <span
+                    lang={w.meaningLang}
+                    className="truncate text-[13px] text-muted-foreground"
+                  >
+                    {w.meaning}
+                  </span>
+                </span>
+                {w.picked === null ? (
+                  <Link
+                    href={w.href}
+                    aria-label={t('harvest.say', { word: w.word })}
+                    className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-primary text-surface shadow-[0_3px_0_var(--color-primary-shadow)]"
+                  >
+                    <MicIcon width={20} height={20} />
+                  </Link>
+                ) : (
+                  <span className="flex h-8 shrink-0 items-center rounded-full border border-gold-border bg-gold-soft px-2.5 text-[12px] font-bold text-gold-soft-text">
+                    {t('harvest.picked', { score: w.picked })}
+                  </span>
+                )}
+              </li>
+            ))}
+          </ul>
+        </section>
+      ) : null}
 
       <div className="flex items-baseline justify-between">
         <h2 className="font-display text-[18px] font-semibold">

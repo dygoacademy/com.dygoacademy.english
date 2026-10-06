@@ -91,12 +91,37 @@ export interface CreateSpeakingAttemptRequest {
   stage: SpeakingStage;
   word_marks: SpeakingWordMark[];
   user_duration_ms: number;
+  /** SE5 "Ready to harvest": harvest the word at 90%+ (visual only, no SRS change). */
+  harvest?: boolean;
+  /** The device time zone, for the SPEAK mission's day (SE1). */
+  tz?: string;
 }
 
 /** `POST /api/v1/speaking/attempts` response. */
-export interface SpeakingAttempt extends CreateSpeakingAttemptRequest {
+export interface SpeakingAttempt extends Omit<CreateSpeakingAttemptRequest, 'harvest' | 'tz'> {
   id: string;
   created_at: string;
+  /** SE5: this attempt harvested the word. */
+  harvested: boolean;
+}
+
+/** `GET /api/v1/speaking/harvest?topic_id=` (SE5): a bed's speakable words and their harvests. */
+export interface SpeakingHarvestWord {
+  topic_word_id: string;
+  item_id: string;
+  /** Score it was harvested with; null = not harvested. */
+  harvested_score: number | null;
+  harvested_at: string | null;
+}
+
+/** `GET /api/v1/groups/:id/echo` (SE6): the trickiest speakable word, totals only. */
+export interface EchoChallenge {
+  topic_word_id: string;
+  word: string;
+  ipa_uk: string | null;
+  ipa_us: string | null;
+  done_count: number;
+  member_count: number;
 }
 
 /** `GET /api/v1/speaking/words?topic_word_ids=…`: which review cards can offer "Say this one?". */

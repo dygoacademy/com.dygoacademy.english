@@ -3,6 +3,7 @@ import { Injectable } from '@nestjs/common';
 import { DatabaseService } from '../../database/database.service';
 import { resolveUserTimezone } from '../srs/srs.service';
 import {
+  MISSIONS_PER_DAY,
   MISSION_TYPES,
   Mission,
   MissionClient,
@@ -65,7 +66,7 @@ export class MissionsService {
       return {
         date,
         missions,
-        goldenBloom: missions.length === MISSION_TYPES.length && missions.every((m) => m.done),
+        goldenBloom: missions.length === MISSIONS_PER_DAY && missions.every((m) => m.done),
       };
     });
   }
@@ -95,7 +96,7 @@ export class MissionsService {
     const doneBy = new Map(rows.map((r) => [r.local_date, Number(r.done)]));
     return dates.map((date) => {
       const done = doneBy.get(date) ?? 0;
-      return { date, done, goldenBloom: done >= MISSION_TYPES.length };
+      return { date, done, goldenBloom: done >= MISSIONS_PER_DAY };
     });
   }
 }

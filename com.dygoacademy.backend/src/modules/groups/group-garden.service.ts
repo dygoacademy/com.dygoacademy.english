@@ -102,6 +102,16 @@ export interface InvitePreview {
 const PG_INVITE_NOT_FOUND = 'P0002';
 const PG_INVITE_NO_LONGER_VALID = '22023';
 
+/** `GET /groups/:id/echo` (Phase 13 SE6, GR3): the group's trickiest speakable word and totals only. */
+export interface EchoChallenge {
+  topic_word_id: string;
+  word: string;
+  ipa_uk: string | null;
+  ipa_us: string | null;
+  done_count: number;
+  member_count: number;
+}
+
 export const TRICKY_DEFAULT_DAYS = 7;
 export const TRICKY_DEFAULT_LIMIT = 5;
 
@@ -296,6 +306,39 @@ export class GroupGardenService {
       misses: num(row.misses),
       gardeners: num(row.gardeners),
     }));
+  }
+
+  /**
+   * SE6 Echo challenge (GR3): the group's most-missed word in the last 7
+   * days that has a speaking item, and how many gardeners said it in that
+   * time out of how many. Totals only, never who (D-4). ADMIN only, like
+   * tricky patches. Null when no missed word can be spoken.
+   */
+  async echoChallenge(userId: string, groupId: string): Promise<EchoChallenge | null> {
+    const [{ allowed }] = await this.db.queryAs<{ allowed: boolean }>(
+      userId,
+      `select public.has_group_role($1, 'ADMIN') as allowed`,
+      [groupId],
+    );
+    if (!allowed) {
+      throw new ForbiddenException('Only a group ADMIN can see the Echo challenge.');
+    }
+    const rows = await this.db.queryAs<Record<string, string | null>>(
+      userId,
+      `select topic_word_id, word, ipa_uk, ipa_us, done_count, member_count
+         from public.group_echo_challenge($1, now() - make_interval(days => $2))`,
+      [groupId, TRICKY_DEFAULT_DAYS],
+    );
+    const row = rows[0];
+    if (!row) return null;
+    return {
+      topic_word_id: row.topic_word_id as string,
+      word: row.word as string,
+      ipa_uk: row.ipa_uk,
+      ipa_us: row.ipa_us,
+      done_count: num(row.done_count),
+      member_count: num(row.member_count),
+    };
   }
 
   /** GR6: invite preview. 404 unknown token, 410 revoked / expired / used up. */

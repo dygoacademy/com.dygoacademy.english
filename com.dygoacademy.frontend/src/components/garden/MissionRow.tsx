@@ -9,7 +9,8 @@ import { CheckIcon } from './icons';
  * and the value on the right (13px), over a 6px progress bar.
  *
  * - `tone` colours the icon well: water (blue wash), gold (the
- *   challenge), plant (sprout wash).
+ *   challenge), plant (sprout wash), speak (clay well with a white icon
+ *   and a light clay track: the SE1 speaking mission).
  * - done: the well turns forest with a white check, the title is muted
  *   and struck through, the value is green, and the whole bar is green.
  *
@@ -18,7 +19,7 @@ import { CheckIcon } from './icons';
  * never the only signal. Render it inside an <li>.
  */
 export type MissionStatus = 'todo' | 'inProgress' | 'done';
-export type MissionTone = 'water' | 'gold' | 'plant';
+export type MissionTone = 'water' | 'gold' | 'plant' | 'speak';
 
 export interface MissionRowProps {
   /** Decorative 20px icon, e.g. <WaterIcon />. Replaced by a check when done. */
@@ -39,6 +40,7 @@ const WELL: Record<MissionTone, string> = {
   water: 'bg-water-soft',
   gold: 'bg-gold-wash',
   plant: 'bg-rating-good',
+  speak: 'bg-primary text-surface',
 };
 
 export function MissionRow({
@@ -91,11 +93,17 @@ export function MissionRow({
           aria-valuemax={safeMax}
           aria-valuenow={clamped}
           aria-valuetext={progressText}
-          className={gcn('h-1.5 rounded-[3px]', done ? 'bg-success' : 'bg-track')}
+          className={gcn(
+            'h-1.5 rounded-[3px]',
+            done ? 'bg-success' : tone === 'speak' ? 'bg-primary-border' : 'bg-track',
+          )}
         >
           {!done && percent > 0 ? (
             <div
-              className="h-1.5 rounded-[3px] bg-water transition-[width] duration-quick ease-garden"
+              className={gcn(
+                'h-1.5 rounded-[3px] transition-[width] duration-quick ease-garden',
+                tone === 'speak' ? 'bg-primary' : 'bg-water',
+              )}
               style={{ width: `${percent}%` }}
             />
           ) : null}

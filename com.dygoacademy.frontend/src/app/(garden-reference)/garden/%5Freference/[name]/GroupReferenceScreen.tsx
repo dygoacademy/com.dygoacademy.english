@@ -8,6 +8,7 @@ import {
   CreateGardenSheetScreen,
   InviteSheetScreen,
 } from '@/components/garden/screens/GroupSheetScreens';
+import { ENTRY } from '@/components/garden/screens/fixtures';
 import { groupFixtures, type GroupReferenceName } from '@/components/garden/screens/groupFixtures';
 import { JoinGardenScreen } from '@/components/garden/screens/JoinGardenScreen';
 import { SharedGardensScreen } from '@/components/garden/screens/SharedGardensScreen';
@@ -76,16 +77,21 @@ export function GroupReferenceScreen({
         />
       );
     case 'GR3-tricky-patches':
+    case 'SE6-entry-echo':
     case 'GR4-gardeners':
       return (
         <TendGardenScreen
-          tab={name === 'GR3-tricky-patches' ? 'tricky' : 'gardeners'}
+          tab={name === 'GR4-gardeners' ? 'gardeners' : 'tricky'}
           groupName={fx.garden.name}
           backHref={ref('GR2-group-garden')}
           trickyHref={ref('GR3-tricky-patches')}
           gardenersHref={ref('GR4-gardeners')}
           tricky={{
             rows: fx.tricky.rows,
+            echo:
+              name === 'SE6-entry-echo'
+                ? { ...ENTRY.echo, href: ref('GR3-tricky-patches') }
+                : null,
             rainDay: {
               members: fx.tricky.members,
               size: fx.tricky.size,

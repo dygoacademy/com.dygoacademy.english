@@ -13,7 +13,7 @@ import { calendarDay, weekDays } from '../format';
 import type { CalendarLevel } from '../GardenCalendar';
 import type { HeroPlant } from '../HeroGardenCard';
 import type { KeepsakeItem } from './MeScreen';
-import type { BedStage, TopicBedWord } from './TopicBedScreen';
+import type { BedStage, HarvestWord, TopicBedWord } from './TopicBedScreen';
 import type { TopicsScreenTopic } from './TopicsScreen';
 import type { QuizResultScreenProps } from './QuizResultScreen';
 import type { QuizScreenProps } from './QuizScreen';
@@ -73,6 +73,11 @@ export const REFERENCE_NAMES = [
   'SP3-speak-checking',
   'SP3-speak-done',
   'SP3-speak-failed',
+  // Phase 13 speaking entry points (SE1/SE2/SE5/SE6): sample data in ENTRY below
+  'SE1-entry-home',
+  'SE2-entry-bed',
+  'SE5-entry-harvest',
+  'SE6-entry-echo',
 ] as const;
 export type ReferenceName = (typeof REFERENCE_NAMES)[number];
 
@@ -338,6 +343,46 @@ export const BED = {
     due: due === 'new' ? { tone: 'new' } : due === 0 ? { tone: 'now' } : { tone: 'later', days: due },
   })),
 };
+
+/**
+ * EntryHome / EntryBed / EntryHarvest / EntryEcho (Phase 13 SE1 / SE2 / SE5
+ * / SE6): A1, A7 and GR3 plus the speaking entry point. Harvest rows are
+ * BED words by id (meanings follow the locale); picked = its score.
+ */
+export const ENTRY = {
+  homeSpeak: { kind: 'speak', done: 0, total: 3, minutes: 2 } satisfies MissionItem,
+  bedSpeak: { count: 5 },
+  harvest: {
+    count: 3,
+    words: [
+      ['mitigate', 94],
+      ['deforestation', null],
+      ['ecosystem', null],
+    ] as const,
+  },
+  echo: { word: 'deteriorate', ipa: '/dɪˈtɪəriəreɪt/', done: 3, members: 5 },
+};
+
+/** ENTRY.harvest as HarvestWords from the locale's bed words. */
+export function entryHarvest(
+  words: readonly TopicBedWord[],
+  href: string,
+): { count: number; words: HarvestWord[] } {
+  return {
+    count: ENTRY.harvest.count,
+    words: ENTRY.harvest.words.map(([id, picked]) => {
+      const word = words.find((w) => w.id === id)!;
+      return {
+        id,
+        word: word.word,
+        meaning: word.meaning,
+        meaningLang: word.meaningLang,
+        picked,
+        href,
+      };
+    }),
+  };
+}
 
 /** AdultMe.dc.html: the calendar uses the canvas's own formula. */
 function canvasCalendar(): Array<Array<CalendarLevel | null>> {

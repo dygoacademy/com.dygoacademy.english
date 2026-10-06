@@ -32,6 +32,7 @@ import {
   SpeakingAttempt,
   SpeakingCheckQueued,
   SpeakingCheckState,
+  SpeakingHarvestWord,
   SpeakingSession,
   SpeakingWordItem,
   SpeakingWordLookup,
@@ -104,12 +105,30 @@ export class SpeakingController {
     return this.speaking.forWord(userId, topicWordId);
   }
 
+  @Get('harvest')
+  @ApiOperation({
+    summary: '"Ready to harvest" on a topic bed (Phase 13 SE5)',
+    description:
+      "The bed's words that have a speaking item, with harvested_score / harvested_at when the " +
+      'learner harvested the word (a 90%+ attempt sent with harvest: true). Visual only: ' +
+      'harvesting never changes SRS. 404 for a malformed topic_id.',
+  })
+  @ApiQuery({ name: 'topic_id', required: true })
+  async harvest(
+    @CurrentUser('id') userId: string,
+    @Query('topic_id') topicId?: string,
+  ): Promise<SpeakingHarvestWord[]> {
+    return this.speaking.harvest(userId, topicId ?? '');
+  }
+
   @Post('attempts')
   @ApiOperation({
     summary: 'Save one speaking Compare result (Phase 13)',
     description:
       "Score, garden stage and per-word marks from the on-device scorer. The learner's " +
-      'recording is never uploaded (D2). Try again = another row. 404 for an unknown item_id.',
+      'recording is never uploaded (D2). Try again = another row. 404 for an unknown item_id. ' +
+      "The first attempt on a sentence in the learner's day counts toward the SPEAK mission " +
+      '(SE1); with harvest: true and a score of 90+, the word is harvested (SE5, no SRS change).',
   })
   async createAttempt(
     @CurrentUser('id') userId: string,
