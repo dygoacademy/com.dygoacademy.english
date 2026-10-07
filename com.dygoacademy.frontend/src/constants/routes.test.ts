@@ -17,6 +17,8 @@ describe('isProtectedPath', () => {
     '/groups/g1/manage',
     '/quiz',
     '/join/t',
+    '/welcome/level',
+    '/welcome/ready',
     // Old garden paths are redirected first, but stay protected anyway.
     '/garden/me',
   ])('protects garden path %s', (path) => {
@@ -43,7 +45,7 @@ describe('isProtectedPath', () => {
 
   it('lists every short URL', () => {
     expect(PROTECTED_PATH_PREFIXES).toEqual(
-      expect.arrayContaining(['/', '/garden', '/review', '/topics', '/missions', '/me', '/groups', '/quiz', '/join', '/sounds']),
+      expect.arrayContaining(['/', '/garden', '/review', '/topics', '/missions', '/me', '/groups', '/quiz', '/join', '/sounds', '/welcome']),
     );
   });
 

@@ -1298,6 +1298,95 @@
       "playingShort": "Đang phát…",
       "playNativeLabel": "Nghe người bản xứ",
       "playYouLabel": "Nghe bản ghi của bạn"
+    },
+    "onboarding": {
+      "back": "Quay lại",
+      "skip": "Bỏ qua",
+      "continue": "Tiếp tục",
+      "progress": "Bước {step}/{total}",
+      "progressDone": "Đã xong cả bốn bước",
+      "saveError": "Chưa lưu được. Hãy kiểm tra kết nối rồi thử lại.",
+      "level": {
+        "metaTitle": "Trình độ",
+        "title": "Tiếng Anh của bạn đang ở mức nào?",
+        "subtitle": "Chọn câu giống bạn nhất.",
+        "notSure": "Chưa chắc? Bắt đầu ở B1",
+        "options": {
+          "A2": "Tôi có thể kể về một ngày của mình và hỏi những câu đơn giản.",
+          "B1": "Tôi hiểu được ý chính của một cuộc trò chuyện hay một bài viết ngắn.",
+          "B2": "Tôi có thể bàn về hầu hết các chủ đề và đọc tin tức mà không cần nhiều trợ giúp.",
+          "C1": "Tôi đọc được văn bản học thuật và diễn đạt đúng điều mình muốn nói."
+        }
+      },
+      "goal": {
+        "metaTitle": "Mục tiêu",
+        "title": "Bạn đang vun trồng cho mục tiêu nào?",
+        "subtitle": "Mục tiêu quyết định từ nào chín trước.",
+        "options": {
+          "IELTS": {
+            "title": "IELTS",
+            "detail": "Học thuật hoặc Tổng quát"
+          },
+          "PTE": {
+            "title": "PTE",
+            "detail": "PTE Học thuật"
+          },
+          "LIFE": {
+            "title": "Cho cuộc sống",
+            "detail": "Công việc, du lịch và tiếng Anh hằng ngày"
+          }
+        },
+        "target": {
+          "IELTS": "Band mục tiêu",
+          "PTE": "Điểm mục tiêu"
+        },
+        "lower": "Giảm mục tiêu",
+        "raise": "Tăng mục tiêu"
+      },
+      "bed": {
+        "metaTitle": "Chủ đề đầu tiên",
+        "title": "Chọn gói hạt giống đầu tiên",
+        "subtitle": "Gói này sẽ thành luống đầu tiên trong vườn của bạn. Bạn có thể thêm luống bất cứ lúc nào.",
+        "plant": "Gieo luống này",
+        "empty": "Chưa có chủ đề nào để gieo. Bạn có thể thêm từ của riêng mình trong Chủ đề.",
+        "words": "{count, plural, other {# từ}}"
+      },
+      "reminder": {
+        "metaTitle": "Giờ nhắc",
+        "title": "Khi nào chúng tôi nên nhắc bạn?",
+        "subtitle": "Kéo mặt trời đến giờ bạn muốn tưới từ.",
+        "pick": "Chọn giờ",
+        "confirm": "Nhắc tôi lúc {time}",
+        "slider": "Giờ nhắc",
+        "morning": "Sáng",
+        "night": "Đêm",
+        "presets": {
+          "morning": "Sáng · {time}",
+          "lunch": "Trưa · {time}",
+          "evening": "Tối · {time}",
+          "night": "Đêm · {time}"
+        },
+        "notice": {
+          "denied": "Trình duyệt này đang tắt thông báo, nên chúng tôi đã lưu giờ của bạn nhưng chưa bật nhắc. Bạn có thể bật sau trong mục Tôi.",
+          "unsupported": "Trình duyệt này không hiện được lời nhắc. Giờ của bạn đã được lưu; hãy bật nhắc trong mục Tôi từ một trình duyệt hỗ trợ.",
+          "error": "Chưa lưu được giờ nhắc. Bạn có thể đặt sau trong mục Tôi."
+        }
+      },
+      "ready": {
+        "metaTitle": "Vườn đã sẵn sàng",
+        "title": "Vườn của bạn đã sẵn sàng",
+        "subtitle": "Những hạt giống đầu tiên đã được gieo.",
+        "water": "Tưới những từ đầu tiên",
+        "none": "Chưa đặt",
+        "level": "Trình độ",
+        "levelValue": "{level}",
+        "goal": "Mục tiêu",
+        "goalWithBand": "{goal} · {band}",
+        "bed": "Luống đầu tiên",
+        "reminder": "Nhắc nhở",
+        "reminderOff": "Tắt",
+        "editLater": "Bạn có thể đổi bất kỳ mục nào sau này trong mục Tôi."
+      }
     }
   }
 }

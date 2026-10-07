@@ -1298,6 +1298,95 @@
       "playingShort": "Playing…",
       "playNativeLabel": "Play the native speaker",
       "playYouLabel": "Play your recording"
+    },
+    "onboarding": {
+      "back": "Back",
+      "skip": "Skip",
+      "continue": "Continue",
+      "progress": "Step {step} of {total}",
+      "progressDone": "All four steps done",
+      "saveError": "We couldn't save that. Check your connection and try again.",
+      "level": {
+        "metaTitle": "Your level",
+        "title": "How much English do you have?",
+        "subtitle": "Pick the sentence that sounds most like you.",
+        "notSure": "Not sure? Start at B1",
+        "options": {
+          "A2": "I can talk about my day and ask simple questions.",
+          "B1": "I can follow the main points of a conversation or a short article.",
+          "B2": "I can discuss most topics and read the news without much help.",
+          "C1": "I can read academic texts and say exactly what I mean."
+        }
+      },
+      "goal": {
+        "metaTitle": "Your goal",
+        "title": "What are you growing towards?",
+        "subtitle": "Your goal decides which words ripen first.",
+        "options": {
+          "IELTS": {
+            "title": "IELTS",
+            "detail": "Academic or General Training"
+          },
+          "PTE": {
+            "title": "PTE",
+            "detail": "PTE Academic"
+          },
+          "LIFE": {
+            "title": "Just for life",
+            "detail": "Work, travel and everyday English"
+          }
+        },
+        "target": {
+          "IELTS": "Target band",
+          "PTE": "Target score"
+        },
+        "lower": "Lower target",
+        "raise": "Raise target"
+      },
+      "bed": {
+        "metaTitle": "First topic",
+        "title": "Pick your first seed packet",
+        "subtitle": "It becomes the first bed in your garden. You can add more any time.",
+        "plant": "Plant this bed",
+        "empty": "No topics to plant yet. You can add your own words from Topics.",
+        "words": "{count, plural, one {# word} other {# words}}"
+      },
+      "reminder": {
+        "metaTitle": "Reminder time",
+        "title": "When should we remind you?",
+        "subtitle": "Drag the sun to the time you'd like to water your words.",
+        "pick": "Pick a time",
+        "confirm": "Remind me at {time}",
+        "slider": "Reminder time",
+        "morning": "Morning",
+        "night": "Night",
+        "presets": {
+          "morning": "Morning · {time}",
+          "lunch": "Lunch · {time}",
+          "evening": "Evening · {time}",
+          "night": "Night · {time}"
+        },
+        "notice": {
+          "denied": "Notifications are off in this browser, so we saved your time without reminders. You can turn them on later in Me.",
+          "unsupported": "This browser can't show reminders. We saved your time; turn reminders on in Me from a browser that can.",
+          "error": "We couldn't save your reminder. You can set it later in Me."
+        }
+      },
+      "ready": {
+        "metaTitle": "Garden ready",
+        "title": "Your garden is ready",
+        "subtitle": "Your first seeds are planted.",
+        "water": "Water your first words",
+        "none": "Not set",
+        "level": "Level",
+        "levelValue": "{level}",
+        "goal": "Goal",
+        "goalWithBand": "{goal} · {band}",
+        "bed": "First bed",
+        "reminder": "Reminder",
+        "reminderOff": "Off",
+        "editLater": "You can change any of these later in Me."
+      }
     }
   }
 }

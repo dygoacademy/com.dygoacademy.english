@@ -1302,6 +1302,95 @@
       "playingShort": "正在播放…",
       "playNativeLabel": "播放母语者的录音",
       "playYouLabel": "播放你的录音"
+    },
+    "onboarding": {
+      "back": "返回",
+      "skip": "跳过",
+      "continue": "继续",
+      "progress": "第 {step} 步，共 {total} 步",
+      "progressDone": "四个步骤都完成了",
+      "saveError": "没能保存。请检查网络后重试。",
+      "level": {
+        "metaTitle": "你的水平",
+        "title": "你的英语水平如何？",
+        "subtitle": "选出最像你的一句话。",
+        "notSure": "不确定？从 B1 开始",
+        "options": {
+          "A2": "我能聊聊自己的一天，也能问简单的问题。",
+          "B1": "我能听懂对话或短文的主要内容。",
+          "B2": "我能讨论大多数话题，不太费力就能读新闻。",
+          "C1": "我能读懂学术文章，并准确表达自己的意思。"
+        }
+      },
+      "goal": {
+        "metaTitle": "你的目标",
+        "title": "你在为什么目标而种植？",
+        "subtitle": "目标决定哪些单词先成熟。",
+        "options": {
+          "IELTS": {
+            "title": "雅思 IELTS",
+            "detail": "学术类或培训类"
+          },
+          "PTE": {
+            "title": "PTE",
+            "detail": "PTE 学术英语"
+          },
+          "LIFE": {
+            "title": "日常生活",
+            "detail": "工作、旅行和日常英语"
+          }
+        },
+        "target": {
+          "IELTS": "目标分数",
+          "PTE": "目标分数"
+        },
+        "lower": "降低目标",
+        "raise": "提高目标"
+      },
+      "bed": {
+        "metaTitle": "第一个主题",
+        "title": "选你的第一包种子",
+        "subtitle": "它会成为你花园里的第一个花圃。之后随时可以再添。",
+        "plant": "种下这个花圃",
+        "empty": "还没有可以种的主题。你可以在“主题”里添加自己的单词。",
+        "words": "{count, plural, other {# 个单词}}"
+      },
+      "reminder": {
+        "metaTitle": "提醒时间",
+        "title": "我们什么时候提醒你？",
+        "subtitle": "把太阳拖到你想浇灌单词的时间。",
+        "pick": "选择时间",
+        "confirm": "在 {time} 提醒我",
+        "slider": "提醒时间",
+        "morning": "早上",
+        "night": "夜晚",
+        "presets": {
+          "morning": "早上 · {time}",
+          "lunch": "午间 · {time}",
+          "evening": "傍晚 · {time}",
+          "night": "夜晚 · {time}"
+        },
+        "notice": {
+          "denied": "这个浏览器关闭了通知，所以我们保存了时间但没有开启提醒。之后可以在“我的”里开启。",
+          "unsupported": "这个浏览器无法显示提醒。时间已保存；请在支持提醒的浏览器里，到“我的”开启提醒。",
+          "error": "没能保存提醒。之后可以在“我的”里设置。"
+        }
+      },
+      "ready": {
+        "metaTitle": "花园已就绪",
+        "title": "你的花园准备好了",
+        "subtitle": "第一批种子已经种下。",
+        "water": "浇灌你的第一批单词",
+        "none": "未设置",
+        "level": "水平",
+        "levelValue": "{level}",
+        "goal": "目标",
+        "goalWithBand": "{goal} · {band}",
+        "bed": "第一个花圃",
+        "reminder": "提醒",
+        "reminderOff": "关闭",
+        "editLater": "这些之后都可以在“我的”里修改。"
+      }
     }
   }
 }
