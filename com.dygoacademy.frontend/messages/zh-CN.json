@@ -416,7 +416,8 @@
           "features": "功能",
           "howItWorks": "使用方法",
           "questions": "常见问题",
-          "forParents": "家长专区"
+          "forParents": "家长专区",
+          "speaking": "口语练习"
         },
         "signIn": "登录",
         "createAccount": "创建账户",
@@ -425,7 +426,9 @@
           "lead": "每个单词都配有真实例句和用你的语言写的清楚解释。然后，Dygo 会在你快要忘记之前再次提醒你。每天只需 5 分钟。",
           "start": "创建免费账户",
           "haveAccount": "我已有账户",
-          "languages": "支持 English、Tiếng Việt 和简体中文"
+          "languages": "支持 English、Tiếng Việt 和简体中文",
+          "pillNew": "新",
+          "pill": "跟母语者练口语"
         },
         "plant": {
           "inputLabel": "种下一个单词",
@@ -614,6 +617,10 @@
             "kids": {
               "q": "有儿童版吗？",
               "a": "儿童花园即将推出。目前 Dygo 面向青少年和成人。"
+            },
+            "speaking": {
+              "q": "口语练习怎么用？我的声音会被保存吗？",
+              "a": "先听母语者读一句含有你单词的句子，再自己说一遍。Dygo 会对比两者，指出需要练习的地方，让你的单词从种子长到结果。你的录音检查完就会删除。"
             }
           }
         },
@@ -627,6 +634,48 @@
           "terms": "条款",
           "privacy": "隐私",
           "copyright": "© 2026 Dygo Academy"
+        },
+        "speak": {
+          "overline": "口语练习",
+          "title": "听一听，说一说，看它开花。",
+          "lead": "每个单词都配有一句母语者朗读的例句。你跟着说，Dygo 把你的声音和母语者的放在一起，让你看到哪里需要改进。",
+          "steps": {
+            "listen": {
+              "title": "听",
+              "text": "听母语者用英音或美音读一句含有你单词的真实句子。"
+            },
+            "say": {
+              "title": "说",
+              "text": "点麦克风，大声读出这句话。不限时，没压力。"
+            },
+            "compare": {
+              "title": "对比",
+              "text": "看你的声音叠在母语者的声音上，哪里需要练习，以及你的单词长到了哪一步。"
+            }
+          },
+          "privacy": "你的录音检查完就会删除。",
+          "demo": {
+            "say": "说出这句话",
+            "native": "母语者 · 英式",
+            "play": "播放",
+            "playLabel": "播放母语者的朗读",
+            "waveNative": "母语者朗读这句话的波形",
+            "waveCompare": "学习者的句子（陶土色）叠在母语者（绿色）上",
+            "micLabel": "试着说这句话",
+            "tapMic": "点麦克风试一试",
+            "listening": "正在听…",
+            "legend": {
+              "native": "母语者",
+              "you": "你",
+              "needsWork": "需要练习"
+            },
+            "match": "开花 · 匹配 {pct}%",
+            "scale": "种子 · 发芽 · 开花 · <b>90% 结果</b>",
+            "tip": "MIT 读得太轻。重读：MIT-i-gate。",
+            "tryAgain": "再试一次",
+            "practise": "免费练习",
+            "sample": "演示使用一位学习者的示例结果。本页面不会使用你的麦克风。"
+          }
         }
       }
     },

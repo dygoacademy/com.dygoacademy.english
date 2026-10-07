@@ -412,7 +412,8 @@
           "features": "Features",
           "howItWorks": "How it works",
           "questions": "Questions",
-          "forParents": "For parents"
+          "forParents": "For parents",
+          "speaking": "Speaking"
         },
         "signIn": "Sign in",
         "createAccount": "Create account",
@@ -421,7 +422,9 @@
           "lead": "Every word comes with real example sentences and a clear explanation in your language. Then Dygo brings it back right before you’d forget it. Just 5 minutes a day.",
           "start": "Create free account",
           "haveAccount": "I already have an account",
-          "languages": "Available in English, Tiếng Việt and 简体中文"
+          "languages": "Available in English, Tiếng Việt and 简体中文",
+          "pillNew": "New",
+          "pill": "Speaking practice with a native speaker"
         },
         "plant": {
           "inputLabel": "Plant a word",
@@ -610,6 +613,10 @@
             "kids": {
               "q": "Is there a version for children?",
               "a": "A garden for kids is coming soon. For now, Dygo is designed for teens and adults."
+            },
+            "speaking": {
+              "q": "How does speaking practice work? Is my voice kept?",
+              "a": "Listen to a native speaker say a sentence with your word, then say it yourself. Dygo compares the two, shows the part that needs work and grows your word from seed to fruit. Your recording is checked, then deleted."
             }
           }
         },
@@ -623,6 +630,48 @@
           "terms": "Terms",
           "privacy": "Privacy",
           "copyright": "© 2026 Dygo Academy"
+        },
+        "speak": {
+          "overline": "Speaking practice",
+          "title": "Hear it. Say it. Watch it bloom.",
+          "lead": "Every word comes with a sentence read by a native speaker. Say it yourself, and Dygo puts your voice next to theirs so you can see what to fix.",
+          "steps": {
+            "listen": {
+              "title": "Listen",
+              "text": "Hear a native speaker say a real sentence with your word, in a UK or US accent."
+            },
+            "say": {
+              "title": "Say it",
+              "text": "Tap the mic and read the sentence aloud. No time limit, no pressure."
+            },
+            "compare": {
+              "title": "Compare",
+              "text": "See your voice over theirs, the part that needs work, and how far your word has grown."
+            }
+          },
+          "privacy": "Your recording is checked, then deleted.",
+          "demo": {
+            "say": "Say this sentence",
+            "native": "Native · UK",
+            "play": "Play",
+            "playLabel": "Play the native speaker",
+            "waveNative": "Waveform of a native speaker saying the sentence",
+            "waveCompare": "A learner's sentence in clay over the native speaker in green",
+            "micLabel": "Try saying the sentence",
+            "tapMic": "Tap the mic to try it",
+            "listening": "Listening…",
+            "legend": {
+              "native": "Native",
+              "you": "You",
+              "needsWork": "Needs work"
+            },
+            "match": "In bloom · {pct}% match",
+            "scale": "Seed · Sprout · Bloom · <b>Fruit at 90%</b>",
+            "tip": "MIT is too soft. Say it louder: MIT-i-gate.",
+            "tryAgain": "Try again",
+            "practise": "Practise free",
+            "sample": "Demo with a sample learner's result. Your microphone isn't used on this page."
+          }
         }
       }
     },

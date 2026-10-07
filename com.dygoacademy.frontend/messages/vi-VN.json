@@ -412,7 +412,8 @@
           "features": "Tính năng",
           "howItWorks": "Cách hoạt động",
           "questions": "Câu hỏi",
-          "forParents": "Phụ huynh"
+          "forParents": "Phụ huynh",
+          "speaking": "Luyện nói"
         },
         "signIn": "Đăng nhập",
         "createAccount": "Tạo tài khoản",
@@ -421,7 +422,9 @@
           "lead": "Dygo cho mỗi từ câu ví dụ thật, giải thích bằng tiếng Việt, rồi nhắc lại ngay trước khi bạn quên. Mỗi ngày 5 phút.",
           "start": "Tạo tài khoản miễn phí",
           "haveAccount": "Tôi đã có tài khoản",
-          "languages": "Có English, Tiếng Việt và 简体中文"
+          "languages": "Có English, Tiếng Việt và 简体中文",
+          "pillNew": "Mới",
+          "pill": "Luyện nói cùng người bản xứ"
         },
         "plant": {
           "inputLabel": "Gieo một từ",
@@ -610,6 +613,10 @@
             "kids": {
               "q": "Có phiên bản cho trẻ em không?",
               "a": "Khu vườn cho trẻ em sắp ra mắt. Hiện tại Dygo dành cho thanh thiếu niên và người lớn."
+            },
+            "speaking": {
+              "q": "Luyện nói hoạt động thế nào? Giọng của tôi có bị lưu không?",
+              "a": "Nghe người bản xứ đọc một câu có từ của bạn, rồi tự nói lại. Dygo so sánh hai giọng, chỉ ra chỗ cần luyện và giúp từ của bạn lớn từ hạt đến kết trái. Bản ghi được chấm xong sẽ xóa ngay."
             }
           }
         },
@@ -623,6 +630,48 @@
           "terms": "Điều khoản",
           "privacy": "Quyền riêng tư",
           "copyright": "© 2026 Dygo Academy"
+        },
+        "speak": {
+          "overline": "Luyện nói",
+          "title": "Nghe. Nói. Nhìn từ nở hoa.",
+          "lead": "Mỗi từ đi kèm một câu do người bản xứ đọc. Bạn tự nói lại, Dygo đặt giọng bạn cạnh giọng họ để bạn thấy chỗ cần sửa.",
+          "steps": {
+            "listen": {
+              "title": "Nghe",
+              "text": "Nghe người bản xứ đọc một câu thật có từ của bạn, giọng Anh hoặc Mỹ."
+            },
+            "say": {
+              "title": "Nói",
+              "text": "Chạm mic và đọc to câu đó. Không giới hạn thời gian, không áp lực."
+            },
+            "compare": {
+              "title": "So sánh",
+              "text": "Xem giọng bạn chồng lên giọng họ, chỗ cần luyện thêm và từ của bạn đã lớn đến đâu."
+            }
+          },
+          "privacy": "Bản ghi được chấm xong sẽ xóa ngay.",
+          "demo": {
+            "say": "Nói câu này",
+            "native": "Bản xứ · Anh",
+            "play": "Phát",
+            "playLabel": "Phát giọng người bản xứ",
+            "waveNative": "Dạng sóng giọng người bản xứ đọc câu này",
+            "waveCompare": "Câu của một người học (màu đất) chồng lên giọng người bản xứ (màu xanh)",
+            "micLabel": "Thử nói câu này",
+            "tapMic": "Chạm mic để thử",
+            "listening": "Đang nghe…",
+            "legend": {
+              "native": "Bản xứ",
+              "you": "Bạn",
+              "needsWork": "Cần luyện"
+            },
+            "match": "Đang nở hoa · khớp {pct}%",
+            "scale": "Hạt · Mầm · Nở hoa · <b>Kết trái từ 90%</b>",
+            "tip": "MIT hơi nhỏ. Nhấn mạnh hơn: MIT-i-gate.",
+            "tryAgain": "Thử lại",
+            "practise": "Luyện miễn phí",
+            "sample": "Bản demo với kết quả mẫu của một người học. Trang này không dùng micro của bạn."
+          }
         }
       }
     },
