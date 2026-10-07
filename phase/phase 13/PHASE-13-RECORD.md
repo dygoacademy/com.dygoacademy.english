@@ -2,19 +2,26 @@
 
 What was decided and checked in Phase 13, moved here on 2026-10-06 from `docs/phase13-notes.md` and `docs/phase13-schedule.md` (both deleted then; the full files, including day-one discovery and answered questions, are in git history, last version in commit `0e47e01`). What to build is in `PHASE-13-SPEAKING-PLAN.md` (the handover) and `phase13-speaking-design/`; the plan and status are in `phase 13 implementation plan.md` (repo root). Section numbers like "§16" in older commits and the Change Log refer to the deleted notes; their content is below under the same titles.
 
-## Status (2026-10-06, 23:00)
+## Status (2026-10-07, 07:00)
 
-**Built and live on UAT:** The Pond at `/sounds` (v2 recording flow: 3 · 2 · 1, beep, stops on a pause; works with the silent switch on and in noise), **server checking through a queue** (queue v1, §22: `POST /speaking/check` answers at once, the app polls; two self-hosted scorers on the Mac, ~50 checks a minute; busy → the phone's quick result), scoring calibrated (M4) and checked with a Vietnamese speaker, spend caps (S13 in the app, G5 in Google Cloud). The entry points ("Say this one?", the Sound Garden card) were removed on 2026-10-06 for a redesign (§21); the new ones (SE1 / SE2 / SE5 / SE6) are *For approval* in `docs/design/garden/CHANGELOG.md`, with questions in `docs/design/QUESTIONS.md`.
+**Built and live on UAT:**
+- The Pond at `/sounds` (v2 recording flow: 3 · 2 · 1, beep, stops on a pause; works with the silent switch on and in noise).
+- **Server checking through a queue** (queue v1, §22): two self-hosted scorers on the Mac, ~50 checks a minute; busy → the phone's quick result. Scorers are set only by `SPEECH_SCORER_URLS` (the single `SPEECH_SCORER_URL` was removed 2026-10-07).
+- Scoring calibrated (M4) and checked with a Vietnamese speaker; spend caps (S13 in the app, G5 in Google Cloud).
+- **New entry points (§23), deployed 2026-10-06:** SE1 "Say 3 ripe words" mission on Home (odd days, instead of the quiz), SE2 a bed's Speak row, SE5 "Ready to harvest" (90%+ → Fruit, no SRS change), SE6 Echo challenge on Tend the garden (totals only). Boards drawn by Claude Code (`Entry*.dc.html`). `garden:diff`: SE2 and SE5 pass (0.11%); SE1 / SE6 and the `-vi` boards fail by the same amount as their base screens A1 / GR3 / A7-vi, because of the uncommitted text reviews.
+- **Fixed 2026-10-07:** finishing a quiz now completes the QUIZ mission (the last answer never sent `final: true`; 13 QUIZ missions had stayed at 0).
 
-**Open:** Dylan: approve SE1–SE6 and add their `Entry*.dc.html`, answer D-3 to D-5 and Q-1 to Q-11, the Cloudflare media rules (later), Vietnamese / Chinese text reviews, the Playwright run. Claude (when asked): two-step results (phone first, then server marks), UAT database backups, stop storing the `.wav` copy, build the approved entry points.
+**Open:**
+- Dylan: confirm the SE board drafts; answer Q-1 to Q-11 in `docs/design/QUESTIONS.md` (Q-4 and Q-10 done); finish and commit the Vietnamese / Chinese text reviews (they are in the working tree and deployed, and fail 66 older frontend tests and the A1 / GR3 / `-vi` diffs until committed with matching tests); the Cloudflare media rules (later); the Playwright run.
+- Claude (when asked): re-run `garden:diff` for SE1 / SE6 / `-vi` once the texts are settled; two-step results (phone first, then server marks); UAT database backups; stop storing the `.wav` copy.
 
 ## Decisions D1–D7 (outcomes)
 
 - **D1** native audio + word timings: **Google Cloud TTS** (Neural2, SSML `<mark>` timepoints), made offline by `scripts/speaking-generate.ts`.
 - **D2** recordings: never stored. Handover v2: sent, checked, dropped (`POST /speaking/check` keeps it in memory only); no audio or transcript in `speaking_attempts`.
 - **D3** scoring: on the phone first (envelope scorer), since 2026-10-05 the **self-hosted speech scorer** (G6); the phone still screens silent recordings and judges target-word stress.
-- **D4** entry points: Missions card + "Say this one?" (2026-10-04), **both removed 2026-10-06** for a redesign; `/sounds` stays.
-- **D5** garden effect: visual only; attempts saved; no SRS change, no mission.
+- **D4** entry points: Missions card + "Say this one?" (2026-10-04), both removed 2026-10-06; replaced the same day by **SE1 / SE2 / SE5 / SE6** (§23).
+- **D5** garden effect: visual only; attempts saved; no SRS change. Since SE1 (2026-10-06) speaking counts toward the SPEAK daily mission, and SE5 harvests are visual (D-3).
 - **D6** zh-CN: drafted by Claude, flagged for a native review.
 - **D7** CORS on the media host: `media.dygoacademy.com` sends `Access-Control-Allow-Origin` for www; the Cloudflare response-header rule is on the to-do list.
 

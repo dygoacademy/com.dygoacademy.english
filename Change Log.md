@@ -700,3 +700,18 @@ Engineering-facing log of shipped fixes and changes, one dated entry per change.
 * **What**: the backend reads only `SPEECH_SCORER_URLS` (comma-separated, one is fine; default `http://127.0.0.1:8100`). The single-URL setting and the checker's fallback to it are gone; the queue worker always names the scorer. UAT's stale `SPEECH_SCORER_URL=http://127.0.0.1:8000` line is removed, which closes Dylan's "fix 8000 → 8100" item.
 * **Why**: Dylan, 2026-10-07: two settings for the same thing, one of them wrong and unused since queue v1.
 * **Verified**: backend `tsc`, speaking tests (53), eslint.
+
+## 2026-10-07
+
+### Fixed: Me shows the learner's real name and time "in the garden"
+* **Files**: [`src/modules/srs/srs.service.ts`](com.dygoacademy.backend/src/modules/srs/srs.service.ts), [`src/components/garden/live/data.ts`](com.dygoacademy.frontend/src/components/garden/live/data.ts), [`MeLive.tsx`](com.dygoacademy.frontend/src/components/garden/live/MeLive.tsx), [`HomeLive.tsx`](com.dygoacademy.frontend/src/components/garden/live/HomeLive.tsx), [`SpeakLive.tsx`](com.dygoacademy.frontend/src/components/garden/live/SpeakLive.tsx), [`src/types/srs.ts`](com.dygoacademy.frontend/src/types/srs.ts), plus their specs.
+* **What**:
+  1. `displayName` now prefers `profiles.display_name` (sent as `SrsStats.display_name`) over Supabase user metadata. Me, Home's greeting and Speak pass it in.
+  2. `GET /srs/stats` returns `garden_minutes` (`computeGardenMinutes`): time spent learning, worked out from `review_logs` and `speaking_attempts` timestamps. Gaps of up to 5 minutes between events count; a longer pause starts a new session, whose first event adds only its own duration (capped at 60 s). Me's "in the garden" tile shows it in hours (one decimal under 10 h).
+* **Why**: Reported on Me: Sarah's name showed as "sarah" (her name is only in `profiles.display_name`, so Me fell back to the email) and "in the garden" was a hard-coded "—" because nothing tracked time.
+* **Verified**: backend `jest src/modules/srs src/workers` (114 passed), `tsc --noEmit` clean in both apps. Frontend vitest not run (run it on the Mac). The SQL has not been run against a real database yet.
+
+### Phase 13 status (2026-10-07)
+* **Files**: [`phase/phase 13/PHASE-13-RECORD.md`](phase/phase%2013/PHASE-13-RECORD.md) (Status, D4, D5)
+* **What**: status only: SE entry points live, quiz-mission fix, scorer setting cleanup; open items for Dylan and Claude.
+* **Why**: Dylan asked for the Phase 13 status.
