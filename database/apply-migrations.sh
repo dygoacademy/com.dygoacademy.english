@@ -28,7 +28,7 @@ CONTAINER="${DYGO_DB_CONTAINER:-dygo_supabase_db}"
 DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 BASELINE_TAG="00_baseline_2026-09-25"
 # Seed order matters: 02 needs 01; 04 and 05 need 03.
-SEEDS=(01_core_fixtures 02_tier_ladder 03_qa_tenant 04_qa_words 05_hello_world_word)
+SEEDS=(01_core_fixtures 02_tier_ladder 03_qa_tenant 04_qa_words 05_hello_world_word 06_onboarded_fixtures)
 
 # psql against database $1 (default: postgres), reading SQL from stdin.
 psql_db() {
@@ -149,6 +149,9 @@ run_rls_suite() {
   # Phase 13 speaking entry points (SPEAK missions, harvests, Echo totals).
   run_file "$DIR/migrations/20261006_speaking_entry_points.sql" "$scratch"
   run_file "$DIR/tests/rls_speaking_entry_test.sql" "$scratch"
+  # Onboarding OB1–OB5: profile columns + backfill of the fixtures as onboarded.
+  run_file "$DIR/migrations/20261008_onboarding.sql" "$scratch"
+  run_file "$DIR/tests/rls_onboarding_test.sql" "$scratch"
 }
 
 # -----------------------------------------------------------------------------

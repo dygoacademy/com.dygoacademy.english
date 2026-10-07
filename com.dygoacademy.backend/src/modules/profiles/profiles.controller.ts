@@ -2,8 +2,9 @@ import { Body, Controller, Get, Patch, Query } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
+import { UpdateOnboardingDto } from './dto/update-onboarding.dto';
 import { UpdateProfileDto } from './dto/update-profile.dto';
-import { Keepsakes, ProfileLanguage, ProfilesService } from './profiles.service';
+import { Keepsakes, Onboarding, ProfileLanguage, ProfilesService } from './profiles.service';
 
 @ApiBearerAuth()
 @ApiTags('profiles')
@@ -35,6 +36,33 @@ export class ProfilesController {
     @Body() dto: UpdateProfileDto,
   ): Promise<ProfileLanguage> {
     return this.profilesService.updateMine(userId, dto);
+  }
+
+  @Get('me/onboarding')
+  @ApiOperation({
+    summary: "The caller's onboarding choices (OB1–OB5)",
+    description:
+      '`{ onboarded_at, cefr_level, study_goal, target_band, first_topic_id }`. ' +
+      '`onboarded_at` null = not finished (the garden home opens OB1). Own row only.',
+  })
+  async getOnboarding(@CurrentUser('id') userId: string): Promise<Onboarding> {
+    return this.profilesService.getOnboarding(userId);
+  }
+
+  @Patch('me/onboarding')
+  @ApiOperation({
+    summary: "Save the caller's onboarding choices; `complete` finishes onboarding",
+    description:
+      'snake_case body, every field optional: `cefr_level` (A2, B1, B2, C1), `study_goal` ' +
+      '(IELTS, PTE, LIFE) with `target_band` (IELTS 4–9 in 0.5, PTE 30–90; null / none for LIFE), ' +
+      '`first_topic_id` (a topic the caller can see, else 404; null clears), `complete: true` ' +
+      '(sets onboarded_at once). Empty body 400. Own row only (profiles_update_self).',
+  })
+  async updateOnboarding(
+    @CurrentUser('id') userId: string,
+    @Body() dto: UpdateOnboardingDto,
+  ): Promise<Onboarding> {
+    return this.profilesService.updateOnboarding(userId, dto);
   }
 }
 
