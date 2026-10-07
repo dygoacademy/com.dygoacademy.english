@@ -164,9 +164,15 @@ Application-level user record, 1:1 with `auth.users`.
 | `timezone` | `text` | NO | `'UTC'` |
 | `created_at` | `timestamp with time zone` | NO | `now()` |
 | `updated_at` | `timestamp with time zone` | NO | `now()` |
+| `onboarded_at` | `timestamp with time zone` | yes | — (onboarding, `20261008_onboarding.sql`) |
+| `cefr_level` | `cefr_level` | yes | — (OB1) |
+| `study_goal` | `text` | yes | — (OB2) |
+| `target_band` | `numeric(3,1)` | yes | — (OB2) |
+| `first_topic_id` | `uuid` | yes | — (OB3) |
 
 **Keys**
 
+- `profiles_first_topic_id_fkey` — FOREIGN KEY: `FOREIGN KEY (first_topic_id) REFERENCES topics(id) ON DELETE SET NULL` (`20261008_onboarding.sql`)
 - `profiles_pkey` — PRIMARY KEY: `PRIMARY KEY (id)`
 - `profiles_id_fkey` — FOREIGN KEY: `FOREIGN KEY (id) REFERENCES auth.users(id) ON DELETE CASCADE`
 - `profiles_tenant_id_fkey` — FOREIGN KEY: `FOREIGN KEY (tenant_id) REFERENCES tenants(id) ON DELETE SET NULL`
@@ -175,6 +181,8 @@ Application-level user record, 1:1 with `auth.users`.
 
 - `profiles_daily_srs_goal_check` — `CHECK (((daily_srs_goal >= 1) AND (daily_srs_goal <= 500)))`
 - `profiles_email_lowercase` — `CHECK ((email = lower(email)))`
+- `profiles_study_goal_check` — `CHECK (study_goal IN ('IELTS', 'PTE', 'LIFE'))` (`20261008_onboarding.sql`)
+- `profiles_target_band_check` — null, or IELTS 4.0–9.0 in half bands, or PTE 30–90 whole points (none for LIFE) (`20261008_onboarding.sql`)
 
 **Indexes** (beyond those backing keys)
 
@@ -195,6 +203,7 @@ Application-level user record, 1:1 with `auth.users`.
 - `tenant_id` is nullable and `ON DELETE SET NULL`: a user can exist before joining a tenant, and deleting a tenant orphans rather than destroys its people.
 - `profiles_email_lowercase` rejects mixed-case email. Normalise before insert.
 - `timezone` is an IANA string, not an offset. The notification cron matches local time against it so DST is handled by PostgreSQL rather than by stored arithmetic that silently drifts twice a year.
+- Onboarding OB1–OB5 (`20261008_onboarding.sql`, 2026-10-08): `onboarded_at` null = the learner hasn't finished onboarding, and the garden home (`/garden`) sends them to OB1 (`/welcome/level`). The migration backfills every existing row with `onboarded_at = created_at`, so only accounts created afterwards start at null; `seeds/06_onboarded_fixtures.sql` does the same for seeded accounts on a fresh build. `cefr_level` (A2–C1 offered, Skip = B1), `study_goal` + `target_band`, `first_topic_id` are the OB1–OB3 choices, written by `PATCH /api/v1/profiles/me/onboarding` under `profiles_update_self`. Like every profile column, they are readable by people in the same tenant (`profiles_select_self_or_tenant`). The OB4 reminder lives in `study_schedules`, not here.
 
 ---
 

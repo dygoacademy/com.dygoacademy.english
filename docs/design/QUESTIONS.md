@@ -2,6 +2,18 @@
 
 Things in `docs/design/garden/CHANGELOG.md` that are unclear, or that differ from what is built, written down instead of guessed (CHANGELOG "How to use this file", rule 5). Newest first. When one is answered, note the answer and date here and update the changelog.
 
+## 2026-10-08 · Onboarding OB1–OB5, built ahead of the boards (Claude Code)
+
+Dylan asked (2026-10-07) for OB1–OB5 to be built while they are still *For approval*. They are on branch `feature/onboarding-ob1-ob5`, not merged; see `ONBOARDING-REPORT.md` there. The OB rows of the design changelog are not committed yet (only in the main working tree), so their Build status column is not filled in on the branch. Once that section is committed, set it to "built on branch feature/onboarding-ob1-ob5, not yet verified against boards".
+
+| # | The changelog says | What the branch does | Question / suggestion |
+|---|---|---|---|
+| Q-12 | OB1–OB5 boards `Onboard*.dc.html` (EN + VI) | The boards are not in `docs/design/garden/source/`, so the screens follow AU2 and the garden tokens; no reference pages, no `garden:diff`. | Add the boards (and approve them), then the screens are rebuilt from `reference/OB*.html`. |
+| Q-13 | **D-7** OB1 "Not sure? 2-min level check" | No check is built: "Not sure? Start at B1" and Skip both save B1. | Decide D-7. |
+| Q-14 | OB3 "the one you pick becomes the first bed in A6" | The pick is saved as `profiles.first_topic_id`; A6 is unchanged (a new learner already sees the library topics there). It is not copied into a group of their own. | Should A6 put the first bed at the top, or should picking it copy the topic into the learner's own bed? |
+| Q-15 | OB2 target "decides which words ripen first" | The goal and band are saved (`study_goal`, `target_band`); review order is unchanged for now. | What should the target change: new-word order by CEFR, A4's "Road to Band N", or both? |
+| Q-16 | AU3 invite sign-up → GR2 | An invite sign-up still goes straight to its group; they meet OB1 the first time they open the Garden tab. | Fine, or should invited learners skip onboarding entirely? |
+
 ## 2026-10-06 · From the first read of the changelog (Claude Code)
 
 | # | The changelog says | What the app / repo does | Question / suggestion |
