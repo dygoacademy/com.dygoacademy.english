@@ -1,7 +1,9 @@
 import type { Metadata, Viewport } from 'next';
+import { headers } from 'next/headers';
 
 import { QueryProvider } from '@/components/layout/QueryProvider';
 import { ThemeProvider } from '@/components/layout/ThemeProvider';
+import { normalizeLocale, URL_LOCALE_HEADER } from '@/i18n/config';
 
 import './globals.css';
 
@@ -29,9 +31,13 @@ export const viewport: Viewport = {
   initialScale: 1,
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  // The home pages (`/`, `/vi`, `/zh`) declare their language for search
+  // engines; every other page keeps "en" here and sets its own `lang` on
+  // the garden root.
+  const homeLocale = normalizeLocale((await headers()).get(URL_LOCALE_HEADER));
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang={homeLocale ?? 'en'} suppressHydrationWarning>
       <body>
         {/* Pinned to light regardless of OS/browser dark-mode setting — the
             app's dark palette (bg-card etc.) was rendering every card/form

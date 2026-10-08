@@ -8,7 +8,9 @@ import { loadMessages } from './messages';
  *
  * The app language comes from the profile's `ui_locale`, then the
  * `dygo_locale` cookie, then `Accept-Language`, then English (see
- * `config.ts`). No locale segment in the URL. next-intl is handed the
+ * `config.ts`). No locale segment in the URL, except the public home
+ * page (`/vi`, `/zh`), whose URL language wins (`URL_LOCALE_HEADER`, set
+ * by middleware). next-intl is handed the
  * *formatting* locale (en-US, vi-VN or zh-CN) so every
  * `useFormatter()` call formats for the learner's region, plus the
  * learner's time zone.

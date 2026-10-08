@@ -20,6 +20,7 @@
  * (the public home page at "/" replaced it); "/search" now redirects to "/".
  */
 
+import { DEFAULT_LOCALE, LOCALES, type AppLocale } from '@/i18n/config';
 import { GARDEN_REFERENCE_PREFIX, GARDEN_ROUTES } from './garden';
 
 /** Paths that require a signed-in session. Prefix-matched. */
@@ -70,6 +71,34 @@ export const ROUTES = {
   login: '/login',
   register: '/register',
 } as const;
+
+/**
+ * The public home page in each language (SEO, 2026-10-07): `/` is English
+ * and the `x-default`, `/vi` and `/zh` the translations. The language
+ * comes from the URL, not the cookie, so crawlers index all three.
+ */
+export const HOME_LOCALE_PATHS: Record<AppLocale, string> = {
+  'en-US': ROUTES.home,
+  'vi-VN': '/vi',
+  'zh-CN': '/zh',
+};
+
+/** The language of a home page path (`/`, `/vi`, `/zh`), or null for any other path. */
+export function homeLocaleOf(pathname: string): AppLocale | null {
+  const entry = Object.entries(HOME_LOCALE_PATHS).find(([, path]) => path === pathname);
+  return entry ? (entry[0] as AppLocale) : null;
+}
+
+/** hreflang → path for the three home pages, plus `x-default` (English). */
+export function homeAlternates(): Record<string, string> {
+  const languages: Record<string, string> = {};
+  for (const locale of LOCALES) languages[locale] = HOME_LOCALE_PATHS[locale];
+  languages['x-default'] = HOME_LOCALE_PATHS[DEFAULT_LOCALE];
+  return languages;
+}
+
+/** Canonical site origin for metadata, hreflang and the sitemap. */
+export const SITE_URL = 'https://www.dygoacademy.com';
 
 function matchesPrefix(pathname: string, prefix: string): boolean {
   return pathname === prefix || pathname.startsWith(`${prefix}/`);

@@ -35,6 +35,9 @@ export type LanguageCode = 'en' | 'vi' | 'zh';
 export const LOCALE_COOKIE = 'dygo_locale';
 export const LOCALE_COOKIE_MAX_AGE = 60 * 60 * 24 * 365;
 
+/** Set by middleware on the home pages (`/`, `/vi`, `/zh`): the language their URL names. */
+export const URL_LOCALE_HEADER = 'x-dygo-url-locale';
+
 /**
  * The day is measured in this zone when the profile has never stored one
  * (`profiles.timezone` defaults to the literal 'UTC', the schema's "never

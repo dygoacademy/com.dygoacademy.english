@@ -17,6 +17,7 @@ import { createServerSupabaseClient } from '@/lib/supabase/server';
 import {
   DEFAULT_TIME_ZONE,
   LOCALE_COOKIE,
+  URL_LOCALE_HEADER,
   formattingLocale,
   normalizeLocale,
   normalizeMeaningLocale,
@@ -78,11 +79,14 @@ export const getGardenLocaleContext = cache(async (): Promise<GardenLocaleContex
     getGardenUser(),
   ]);
   const storedZone = storedTimeZone(profile?.timezone);
-  const appLocale = resolveAppLocale({
-    profile: profile?.ui_locale,
-    cookie: cookieStore.get(LOCALE_COOKIE)?.value,
-    acceptLanguage: headerList.get('accept-language'),
-  });
+  // A home page URL names its language (`/vi`); nothing else overrides it.
+  const appLocale =
+    normalizeLocale(headerList.get(URL_LOCALE_HEADER)) ??
+    resolveAppLocale({
+      profile: profile?.ui_locale,
+      cookie: cookieStore.get(LOCALE_COOKIE)?.value,
+      acceptLanguage: headerList.get('accept-language'),
+    });
   const timeZone = storedZone ?? DEFAULT_TIME_ZONE;
   const meaningLocale = normalizeMeaningLocale(profile?.meaning_locale);
   return {
