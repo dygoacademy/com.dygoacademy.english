@@ -2,7 +2,7 @@
 
 Location in the repo: `docs/design/CHANGELOG.md`
 Design source of truth: the **Dygo Word Garden** design canvas (owner: Dylan).
-Last updated: **2026-10-06**
+Last updated: **2026-10-08**
 
 ---
 
@@ -52,32 +52,50 @@ Every row has an English file and a Vietnamese twin (`…Vi.dc.html`) unless not
 
 ### 2.1 Phone (iPhone)
 
-#### Sign in — page "Adult · Sign in"
+#### Authentication — page "Adult · Authentication"
 | ID | Screen | File | Status | What's on it | Goes to | Build status |
 |---|---|---|---|---|---|---|
 | AU1 | Sign in | `AdultLogin` | Built | Email + password (Supabase `signInWithPassword`), no Google sign-in (blocked in China). Language chip top-right sets `dygo_locale` before sign-in. Show/Hide password, error state. | AU2, AU4, A1 | UI-A A-2 `a1b8332` (pixel fix `7068a9e`) |
 | AU2 | Create account | `AdultRegister` | Built | Name, email, password (`signUp`); name is saved to the profile so the garden greets people by name. Terms / Privacy line. | A1, AU1 | UI-A A-3 `38665d9` |
 | AU3 | Create account from an invite | `AdultRegisterInvite` | Built | Invite banner (from `?next=/join/…`), then straight into the group garden. | GR2, AU1 | UI-A A-3 `38665d9` |
 | AU4 | Reset password | `AdultForgot` | Built | `resetPasswordForEmail` + set-new-password page. Sent state. | AU1 | UI-A A-4 `7a5e342` |
+| AU5 | Set a new password | `AuthNewPassword` | For approval | Page the reset email opens (`updateUser({password})`). Password + confirm; strength shown as a plant (seed → sprout → flower → fruit tree) as rules are met (8+ chars, a number, not your email). States: form, **expired link** (send a fresh link), done ("Password changed" → Sign in). Design tweak `state` = form / expired. | AU1 | Not built |
 
-#### Adult core — page "Adult"
+#### Onboarding — page "Adult · Onboarding" (after AU2 Create account)
 | ID | Screen | File | Status | What's on it | Goes to | Build status |
 |---|---|---|---|---|---|---|
-| A1 | Today's Garden (Home) | `AdultHome` | Built | Greeting + streak. Garden card (every word as a plant, counts: thirsty / ripe / wilting). **3 daily missions** (review due, learn new, 1 quiz) → finishing all 3 grows the **Golden Bloom**. "Continue mission" button. "Tomorrow 7:30 · N words ripen". | A2, tabs | UI-4 `4b701fd`, `6e7eb53`; iPad home `48912ed` |
+| OB1 | Your level | `OnboardLevel` | For approval | 4-step plant progress header (seed → fruit tree, one stage per step). CEFR picked by "I can…" sentences (A2–C1), not letters. "Not sure? 2-min level check" link (check itself not designed, D-7). Skip → B1. | OB2 | Not built |
+| OB2 | Target band | `OnboardGoal` | For approval | IELTS / PTE / just for life; target band; decides which words ripen first. | OB3 | Not built |
+| OB3 | First topic | `OnboardBed` | For approval | Topics as seed packets; the one you pick becomes the first bed in A6. | OB4 | Not built |
+| OB4 | Reminder time | `OnboardReminder` | For approval | Drag the sun along a morning → night arc; presets. Asks the OS for notifications only after a time is chosen. Skip allowed. | OB5 | Not built |
+| OB5 | Garden ready | `OnboardReady` | For approval | First seeds planted (animation), summary of the 4 choices (all editable in Me A8b–A8d), "Water your first words". | A1 | Not built |
+
+#### Adult core — pages "Adult · Garden" (A1, A5), "Adult · Review" (A2, A3), "Adult · Missions" (A4), "Adult · Topics" (A6, A7), "Adult · Me" (A8)
+| ID | Screen | File | Status | What's on it | Goes to | Build status |
+|---|---|---|---|---|---|---|
+| A1 | Today's Garden (Home) | `AdultHome` | Built | Greeting + streak. Garden card (every word as a plant, counts: thirsty / ripe / wilting). **3 daily missions** (review due, learn new, 1 quiz) → finishing all 3 grows the **Golden Bloom**. "Continue mission" button. "Tomorrow 7:30 · N words ripen". **Speaking mission (2026-10-07, merged from SE1):** 3rd mission can be "Say 3 ripe words · 2 min" (clay mic row) → SP1; still counts to Golden Bloom. | A2, tabs | UI-4 `4b701fd`, `6e7eb53`; iPad home `48912ed` |
+| A1b | All watered (nothing due) | `AdultAllWatered` | For approval | Empty state of A1: calm full garden, "Nothing to water today", next ripening time, optional extras (learn 5 new, speak, quiz). Streak still counts. | A1 extras, tabs | Not built |
 | A2 | Watering (Review) | `AdultReview` | Built | Flashcard: word (Fraunces), IPA, CEFR, topic, meaning (English; Vietnamese meaning first when app language is vi), example, synonyms. 4 ratings with next interval: Again / Hard / Good / Easy. Vine progress = mission progress. | A3, A1 | UI-4; keyboard shortcuts U7-3 `51b6180`. Phase 13 "Say this one?" added S11 `bc38bff`, removed 2026-10-06 `0e47e01` |
 | A3 | Mission Complete | `AdultBloom` | Built | Bloom animation, stats, streak +1, "1 mission left for Golden Bloom" with a 3-min button, reminder toggle for when words ripen. | A1, A2 | UI-4 `6e7eb53`; reminder switch UI-6 U6-7b `c96515a` |
 | A4 | Weekly Harvest | `AdultMissions` | Built | 7 day-plants (0–3 missions each), full week unlocks a seed pack, Road to Band 7 (mastered / target), rain barrel (streak freezes), study-group card → GR2. | GR2, tabs | UI-6. Phase 13 Sound Garden card added S10 `1968f24`, removed 2026-10-06 `0e47e01` |
 | A5 | Welcome Back | `AdultComeback` | Built | No guilt: streak freeze kept the streak; wilting = most overdue only; "Quick revive, 5 min"; escape hatch "Water all 42". | A2, tabs | UI-6 |
 | A6 | Topics (Beds) | `AdultTopics` | Built | Each topic = a garden bed: stage icon, fruit/flower/sprout bar, due badge, locked seed pack. Filters: All / IELTS Academic / Mine. | A7, tabs | UI-5 (wrap-up `58ab14f`) |
-| A7 | Topic Bed | `AdultTopicDetail` | Built | 4 stage tiles (New / Learning / Review / Mastered, tap to filter), words sorted by next due, wilting = leech. Water N due, Quiz, + Add word. | A2, Q1, A6 | UI-5 (wrap-up `58ab14f`); Quiz + leech drill U5-6 `5f016d7` |
-| A8 | Me | `AdultMe` | Built | Garden calendar (16 weeks), keepsakes, settings (daily goal, reminder time, meaning language), Family → kid's garden. Gear → Account sheet (who's signed in + Sign out). | Kids, AU1, tabs | UI-6; Account sheet SO-1 `e8fea77` |
+| A6b | Search | `AdultSearch` | For approval | From the search button on A6. Live results grouped by bed, matched letters highlighted, stage icon per word; "Not in your garden yet" row → Plant (A7b); recent searches when empty. | A7, A7b | Not built |
+| A6c | No topics yet | `AdultTopicsEmpty` | For approval | Empty bed field + 3 suggested seed packets and "Browse all topics". | A7 | Not built |
+| A7 | Topic Bed | `AdultTopicDetail` | Built | 4 stage tiles (New / Learning / Review / Mastered, tap to filter), words sorted by next due, wilting = leech. Water N due, Quiz, + Add word. **Speaking (2026-10-07, merged from SE2 + SE5):** full-width "Speak · 5 sentences from this bed" row under Water / Quiz / + → SP1; "Ready to harvest" card above the word list (ripe flowers, each with a mic; Fruit at 90%+, D-3). | A2, Q1, A6 | UI-5 (wrap-up `58ab14f`); Quiz + leech drill U5-6 `5f016d7` |
+| A7b | Add word | `AdultAddWord` | For approval | Bottom sheet from + on A7. Type a word → meaning + IPA filled in; pick a bed (chips); Plant → seed drops into the bed (planted state). | A7 | Not built |
+| A8 | Me | `AdultMe` | Built | Garden calendar (16 weeks), keepsakes, settings (daily goal → A8b, reminder time → A8c, meaning language → A8d; links added 2026-10-07), Family → kid's garden. Gear → Account sheet (who's signed in + Sign out). | Kids, AU1, tabs | UI-6; Account sheet SO-1 `e8fea77` |
+| A8b | Daily goal | `AdultDailyGoal` | For approval | Three pots: Light / Steady / Intense (words + minutes a day), minutes per week, when your target band ripens **[ETA]**. | A8 | Not built |
+| A8c | Reminder time | `AdultReminder` | For approval | Master toggle, sun arc (same as OB4), presets, smart time, days of week, push / email, quiet hours. | A8 | Not built |
+| A8d | Meaning language | `AdultMeaningLang` | For approval | English only / Tiếng Việt / 中文 (coming soon); "Recall first" toggle hides the translation until tapped; live card preview. | A8 | Not built |
 
 #### Groups — page "Adult · Groups"
 | ID | Screen | File | Status | What's on it | Goes to | Build status |
 |---|---|---|---|---|---|---|
 | GR1 | Shared Gardens | `AdultGroups` | Built | Group list with your role and your due words in shared beds; rain-day banner; Start a garden; Join with a link. | GR2, GR6, GR7 | UI-G (2) `f064042`, live (5) `92e86bb`; rain day banner RD-4 `97ad9c1` |
+| GR1b | Not in any group | `AdultGroupsEmpty` | For approval | Empty Groups tab: shared-garden illustration, Join with a code / link, Start a garden. Assumes the Groups tab stays visible for learners with no group (D-6). | GR6, GR7 | Not built |
 | GR2 | Group Garden | `AdultGroupGarden` | Built | Group totals only (never one person's progress), shared beds → A7, gardener avatars + Invite, admin gear → GR3/GR4. | A7, GR3, GR5 | UI-G (2) `f064042`, live (5) `92e86bb` |
-| GR3 | Tricky Patches + Rain Day | `AdultGroupTricky` | Built | Most-missed words (totals only); Call a rain day: words per gardener, Start rain day → sent state. | GR2, GR4 | UI-G (2) `f064042`; rain day RD-1–RD-4 (`97ad9c1`) |
+| GR3 | Tricky Patches + Rain Day | `AdultGroupTricky` | Built | Most-missed words (totals only); Call a rain day: words per gardener, Start rain day → sent state. **Echo challenge (2026-10-07, merged from SE6):** card between the tricky list (now top 2) and Rain day; Say it → SP1. Totals only (D-4). | GR2, GR4 | UI-G (2) `f064042`; rain day RD-1–RD-4 (`97ad9c1`) |
 | GR4 | Gardeners & Roles | `AdultGroupRoster` | Built | Roster, role menu (Admin / Editor / Viewer), active invite links → GR5. | GR5 | UI-G (2) `f064042` |
 | GR5 | Invite sheet | `AdultGroupInvite` | Built | Role, expiry, max uses; token shown once → copy/share. | GR4 | UI-G (2) `f064042` |
 | GR6 | Join a Garden | `AdultGroupJoin` | Built | `/join/[token]`: group preview, "your own progress stays private". | GR2, A1 | UI-G (2) `f064042` |
@@ -98,21 +116,23 @@ Every row has an English file and a Vietnamese twin (`…Vi.dc.html`) unless not
 #### Speaking (Phase 13) — page "Adult · Speaking"
 | ID | Screen | File | Status | What's on it | Goes to | Build status |
 |---|---|---|---|---|---|---|
+| SP0 | Mic permission | `SpeakMic` | For approval | Before the first SP2 only. Why we need the mic + "recordings are checked, then deleted"; Allow. Denied state → how to turn it on in Settings, and "Listen only for now". Design tweak `state` = ask / denied. | SP2, SP1 | Not built |
 | SP1 | Listen | `SpeakListen` | Built | Compact word card (word 28 px + IPA with stressed syllable in amber, C1/verb tags, meaning — VI: Vietnamese meaning first). **"Say this sentence"** card (22 px, target word highlighted). Native-speaker card: sentence waveform (target word band tinted), Play, UK/US and 1× / 0.75× chips. Clay mic button. No timer on this screen. | SP2, A7 | Phase 13 S7 `0bdec5e`, v2 `a14c1d1`; no fixture page yet (S18b closed as is) |
 | SP2 | Speaking (3·2·1·beep) | `SpeakRecording` | Built | Sentence stays visible. **Countdown 3 · 2 · 1** over the empty waveform ("Get ready · Recording starts after the beep · tap to start now"); tap skips. Beep + haptic, mic turns clay, recording starts just after the beep. Then: follow-along sentence, live clay waveform over pale native shape, elapsed time only (**no time limit**), stress tip, Stop; "or just pause, it stops by itself" (~2 s silence). Cancel → SP1. | SP3, SP1 | v2 S15 `a14c1d1`; silent-switch fix `5e5852c`; pixel diff en 0.06 / 0.40 %, vi 0.12 / 0.46 % (pass) |
+| SP2b | Couldn't hear you | `SpeakNotHeard` | For approval | Silence or too quiet. Live mic-check bars ("say anything"), 3 tips, Try again; no stage lost. | SP2 | Not built |
 | SP3 | Compare (result fills in) | `SpeakCompare` | Built | Opens immediately after stop. Waveforms + replay work at once. Result area has 3 states: **checking** (shimmer + "Checking your sentence…" + "Your recording is checked, then deleted."), **done** (word marks: green = fine; amber `MIT is too soft`; dashed + struck `missing`; `heard "affects"`; amber bands on waveform; garden-stage score "In bloom · 76% match"; one tip), **failed** (inline card: Check again / Record again). Overlay / Side by side switch. Replay buttons: **Native · UK** (globe avatar) and **You** (learner's initial avatar). Try again → SP2, Next word. Design file has a `result` tweak (auto/checking/done/failed) for review only. | SP2, SP1, SP4 | v2 S18 `a14c1d1`, server check `be6a008`, scoring M4 `81dd0ff`; pixel diff 0.5–1.4 % accepted (S18b) |
 | SP4 | Speaking done | `SpeakDone` | Built | One plant per sentence (best stage), list with mini waveform + best %, one "Pattern to watch", Back to garden. | A1 | Phase 13 S8 `e03aac9`; no fixture page yet |
-| SE1 | Entry · Home speaking mission | `EntryHome` | Approved | A1 with the 3rd mission as **"Say 3 ripe words · 2 min"** (clay mic, light clay highlight), still counts to Golden Bloom; rotates with Collocation challenge. | SP1 || Board drafted by Claude Code 2026-10-06 (EN + VI, `reference/SE1-entry-home`), built 2026-10-06 (see `Change Log.md`, "Speaking entry points SE1 / SE2 / SE5 / SE6"); `garden:diff` after the UAT deploy. |
-| SE2 | Entry · Topic bed Speak | `EntryBed` | Approved | A7 with a full-width **"Speak · 5 sentences from this bed"** row under Water / Quiz / + . | SP1 || Board drafted by Claude Code 2026-10-06 (EN + VI, `reference/SE2-entry-bed`), built 2026-10-06 (see `Change Log.md`, "Speaking entry points SE1 / SE2 / SE5 / SE6"); `garden:diff` after the UAT deploy. |
-| SE5 | Entry · Harvest by voice | `EntryHarvest` | Approved | A7 with a **"Ready to harvest"** card: ripe Flower words, each with a mic; saying it well turns it into Fruit. | SP1 || Board drafted by Claude Code 2026-10-06 (EN + VI, `reference/SE5-entry-harvest`), built 2026-10-06 (see `Change Log.md`, "Speaking entry points SE1 / SE2 / SE5 / SE6"); `garden:diff` after the UAT deploy. |
-| SE6 | Entry · Echo challenge | `EntryEcho` | Approved | GR3 with an **Echo challenge** card (trickiest word, each gardener's best stage, "3 of 5 done", Say it). Tricky list trimmed to 2 rows. | SP1 || Board drafted by Claude Code 2026-10-06 (EN + VI, `reference/SE6-entry-echo`), built 2026-10-06 (see `Change Log.md`, "Speaking entry points SE1 / SE2 / SE5 / SE6"); `garden:diff` after the UAT deploy. |
+| SE1 | Entry · Home speaking mission | `EntryHome` | Approved | A1 with the 3rd mission as **"Say 3 ripe words · 2 min"** (clay mic, light clay highlight), still counts to Golden Bloom; rotates with Collocation challenge. **2026-10-07: merged into A1 on the canvas; this board was removed (see A1).** | SP1 || Board drafted by Claude Code 2026-10-06 (EN + VI, `reference/SE1-entry-home`), built 2026-10-06 (see `Change Log.md`, "Speaking entry points SE1 / SE2 / SE5 / SE6"); `garden:diff` after the UAT deploy. |
+| SE2 | Entry · Topic bed Speak | `EntryBed` | Approved | A7 with a full-width **"Speak · 5 sentences from this bed"** row under Water / Quiz / + . **2026-10-07: merged into A7 on the canvas; this board was removed (see A7).** | SP1 || Board drafted by Claude Code 2026-10-06 (EN + VI, `reference/SE2-entry-bed`), built 2026-10-06 (see `Change Log.md`, "Speaking entry points SE1 / SE2 / SE5 / SE6"); `garden:diff` after the UAT deploy. |
+| SE5 | Entry · Harvest by voice | `EntryHarvest` | Approved | A7 with a **"Ready to harvest"** card: ripe Flower words, each with a mic; saying it well turns it into Fruit. **2026-10-07: merged into A7 on the canvas; this board was removed (see A7).** | SP1 || Board drafted by Claude Code 2026-10-06 (EN + VI, `reference/SE5-entry-harvest`), built 2026-10-06 (see `Change Log.md`, "Speaking entry points SE1 / SE2 / SE5 / SE6"); `garden:diff` after the UAT deploy. |
+| SE6 | Entry · Echo challenge | `EntryEcho` | Approved | GR3 with an **Echo challenge** card (trickiest word, each gardener's best stage, "3 of 5 done", Say it). Tricky list trimmed to 2 rows. **2026-10-07: merged into GR3 on the canvas; this board was removed (see GR3).** | SP1 || Board drafted by Claude Code 2026-10-06 (EN + VI, `reference/SE6-entry-echo`), built 2026-10-06 (see `Change Log.md`, "Speaking entry points SE1 / SE2 / SE5 / SE6"); `garden:diff` after the UAT deploy. |
 
-#### Public home page — page "Home Page"
+#### Landing page — page "Landing Page"
 | ID | Screen | File | Status | What's on it | Build status |
 |---|---|---|---|---|---|
-| H3 | Home v2 · phone | `LandingV2Phone` | For approval | Marketing only, no backend calls. Order: header · Plant a word (type or tap a chip → pot blooms → word card → Save this word → Create account) · Sound familiar? (4 flip cards) · How your words grow · What do you need English for? (5 chips; Work/Travel/Daily life = Coming soon) · Features · For parents · Questions · Seed packet · footer. | Built ahead of approval: Home HP-11 `9b4ee0d`, `9cb4617` (live) |
-| H4 | Home v2 · desktop | `LandingV2Desktop` | For approval | Same sections, 1280 wide; hero keeps Create free account + I have an account. | Built ahead of approval: Home HP-11 `9b4ee0d`, `9cb4617` (live) |
-| H3s | State variants | `LandingV2PlantBloomed`, `LandingV2PainFlipped`, `LandingV2UsesTravel` | For approval | Plant-a-word bloomed (deadline), pain card flipped, Travel = Coming soon. | Built ahead of approval: Home HP-11 `9b4ee0d` (live) |
+| H3 | Landing · Phone | `LandingV2Phone` | For approval | Marketing only, no backend calls. Order: header · Plant a word (type or tap a chip → pot blooms → word card → Save this word → Create account) · Sound familiar? (4 flip cards) · How your words grow · What do you need English for? (5 chips; Work/Travel/Daily life = Coming soon) · Features · For parents · Questions · Seed packet · footer. **Speaking (2026-10-07, For approval):** new section "Hear it. Say it. Watch it bloom." after How your words grow — demo card (sentence with *mitigate*, native waveform, Native · UK; mic → Listening… → compare: your waveform over native, amber MIT band, "In bloom · 76% match", Try again / Practise free → AU2), 3 steps Listen / Say it / Compare, privacy line; new FAQ "How does speaking practice work? Is my voice kept?". Real recording vs sample: D-8. | Built ahead of approval: Home HP-11 `9b4ee0d`, `9cb4617` (live). Speaking section built 2026-10-07 from this row's text (boards not in `source/` yet, so no `garden:diff`); demo uses a sample result, no mic (D-8), Play hidden until a real native clip exists |
+| H4 | Landing · Desktop | `LandingV2Desktop` | For approval | Same sections, 1280 wide; hero keeps Create free account + I have an account. **Speaking (2026-10-07):** same section as two columns (text + steps left, demo card right); nav gets a "Speaking" link (no dot). | Built ahead of approval: Home HP-11 `9b4ee0d`, `9cb4617` (live). Speaking section + nav link built 2026-10-07 (see H3) |
+| H3s | State variants | `LandingV2PlantBloomed`, `LandingV2PainFlipped`, `LandingV2UsesTravel`, `LandingV2SpeakCompared` (new 2026-10-07) | For approval | Plant-a-word bloomed (deadline), pain card flipped, Travel = Coming soon, Speaking demo in its compared state. | Built ahead of approval: Home HP-11 `9b4ee0d` (live) |
 
 #### Kids — page "Kids" (English only)
 | ID | Screen | File | Status | What's on it | Build status |
@@ -152,6 +172,9 @@ All iPad screens: sidebar (Garden · Missions · Topics · Groups · Me + Shared
 | D-2 | "Native speaker" vs "Native accent / Giọng bản xứ" wording while audio is text-to-speech | SP1, SP3 |
 | D-3 | ~~Harvest by voice: which score harvests (Bloom 70%+ or Fruit 90%+)? Does it change review dates?~~ **Fruit 90%+, no change to review dates** (speaking stays visual only, D5) (Dylan, 2026-10-06) | SE5 |
 | D-4 | ~~Echo challenge: show each gardener's stage, or totals only?~~ **Totals only**, keeping GR3's promise (Dylan, 2026-10-06) | SE6 |
+| D-6 | Learners with no group: keep the Groups tab with the GR1b empty state, or hide it (4 tabs, older rule)? | GR1b, tab bar |
+| D-7 | OB1 "Not sure?": build a 2-minute level check, or start at B1 and adjust from reviews? | OB1 |
+| D-8 | Home page "Try it now": really record (mic permission + one free check per visitor) or play a pre-recorded learner sample? Copy "No sign-up needed for this demo" fits the real recording. | H3, H4 #speak |
 | D-5 | ~~When approved, SE1/SE2/SE5/SE6 replace A1 / A7 / GR3 — confirm~~ **Yes** (Dylan, 2026-10-06) | SE1–SE6 |
 
 ### 2.4 Removed screens
@@ -161,12 +184,39 @@ All iPad screens: sidebar (Garden · Missions · Topics · Groups · Me + Shared
 | SP2a | Ready (listening, voice-activated start) | 2026-10-06 | SP2 countdown |
 | SP2c | Checking (own screen) | 2026-10-06 | SP3 checking state |
 | SP2d | Couldn't check (own screen) | 2026-10-06 | SP3 failed state |
+| SE1, SE2, SE5, SE6 | Entry-point variant boards | 2026-10-07 | Merged into A1, A7, GR3 |
 
 ---
 
 ## 3. Changelog
 
 Newest first. Format: `### YYYY-MM-DD — title` then lines tagged **Added / Changed / Removed / Decision**, with screen IDs and status.
+
+### 2026-10-08 — "Home Page" renamed "Landing Page"
+- **Changed** Canvas page "Home Page" → **"Landing Page"**; boards H3 "Home v2 · phone" → **"Landing · Phone"**, H4 "Home v2 · desktop" → **"Landing · Desktop"** (VI: "Landing · Điện thoại", "Landing · Máy tính"). Names only: IDs (H3, H4, H3s), files (`LandingV2*`) and the design are unchanged (Dylan).
+- **Changed** `docs/design/garden`: `source/LandingV2*.dc.html` updated to the current canvas (Speaking section, no hero pill / nav dot) + new `LandingV2SpeakCompared(Vi)`; `tools/render.js` Landing jobs (new sizes, new `H3s-speaking-compared`); `reference/H3-*`, `H3s-*`, `H4-*` re-rendered (EN + VI). Reference files renamed `H3-home-v2-phone(-vi)` → **`H3-landing-v2-phone(-vi)`** and `H4-home-v2-desktop(-vi)` → **`H4-landing-v2-desktop(-vi)`** (.html + .png); `render.js` and README updated. **For Claude Code:** rename the matching `garden:diff` fixture names / routes (`/garden/_reference/H3-home-v2-phone` → `/garden/_reference/H3-landing-v2-phone`, same for H4).
+
+### 2026-10-08 — Home page: hero pill and nav dot removed
+- **Removed** H3 / H4 / H3s (EN + VI): the hero pill "NEW · Speaking practice with a native speaker →" and the clay dot on the desktop "Speaking" nav link (Dylan). The Speaking section, nav link and FAQ stay. Page heights: H3 390 × 7423 (VI 7373), H4 1280 × 5063 (VI 4867). *For approval.*
+
+### 2026-10-07 — Home page: Speaking (For approval)
+- **Added** H3 / H4 / H3s (EN + VI): desktop nav link "Speaking", section `#speak` with an interactive demo card + 3 steps + privacy line, FAQ "How does speaking practice work? Is my voice kept?". New board `LandingV2SpeakCompared` (done state). *For approval.*
+- **Decision needed** D-8 (real recording or pre-recorded sample on the public page).
+
+### 2026-10-07 — Missing screens (For approval)
+- **Added** Onboarding, new page "Adult · Onboarding": OB1 Level · OB2 Target band · OB3 First topic · OB4 Reminder time · OB5 Garden ready (EN + VI). AU2 Create account → OB1.
+- **Added** AU5 Set a new password (strength plant, expired-link state).
+- **Added** SP0 Mic permission (ask / denied), SP2b Couldn't hear you (mic-check bars).
+- **Added** A7b Add word (sheet from + on A7), A6b Search (from the search button on A6).
+- **Added** A8b Daily goal, A8c Reminder time, A8d Meaning language (opened from the A8 settings rows).
+- **Added** Empty states A1b All watered, A6c No topics yet, GR1b Not in any group.
+- **Changed** Links only, no layout change: AU2 → OB1, A6 search → A6b, A7 + → A7b, A8 settings rows → A8b / A8c / A8d. *Approved (links follow the new screens).*
+- **Decision needed** D-6 (Groups tab with no group), D-7 (level check on OB1). Phone only; no iPad versions yet.
+
+### 2026-10-07 — Canvas reorganised by feature; entry points merged
+- **Changed** Canvas pages are now one per feature, each holding phone + iPad in English + Vietnamese: Home Page · Adult · Authentication · Adult · Onboarding · Adult · Garden · Adult · Topics · Adult · Review · Adult · Quiz · Adult · Missions · Adult · Groups · Adult · Speaking · Adult · Me · Kids. Screen IDs and files are unchanged.
+- **Changed** A1 now includes the speaking mission (was SE1); A7 the Speak row + Ready to harvest card (was SE2 + SE5); GR3 the Echo challenge card (was SE6). EN + VI. *Approved.*
+- **Removed** SE1, SE2, SE5, SE6 variant boards (merged above). Build status of the SE rows unchanged.
 
 ### 2026-10-06 — Speaking entry points approved (Dylan)
 - **Changed** SE1, SE2, SE5, SE6: *For approval* → *Approved* (Dylan in chat, 2026-10-06). **Decision** D-5: yes, they replace A1 / A7 / GR3. **Decision** D-3: Fruit at 90%+, review dates unchanged. **Decision** D-4: Echo shows totals only. Waiting for the `Entry*.dc.html` files (EN + VI), which Dylan will add to `docs/design/garden/source/`.

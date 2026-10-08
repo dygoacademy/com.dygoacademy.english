@@ -1,20 +1,20 @@
 {
   "garden": {
     "home": {
-      "title": "Vườn Từ"
+      "title": "Khu Vườn Từ Vựng"
     },
     "pages": {
-      "review": "Tưới cây",
-      "done": "Hoàn thành nhiệm vụ",
-      "missions": "Thu hoạch tuần",
-      "topics": "Chủ đề",
-      "me": "Tôi",
-      "topic": "Luống chủ đề",
-      "groups": "Vườn chung",
-      "group": "Vườn chung",
-      "manage": "Chăm vườn",
-      "join": "Tham gia vườn",
-      "quiz": "Kiểm tra"
+      "review": "Đến Giờ Tưới Nước",
+      "done": "Tuyệt Vời, Xong Rồi!",
+      "missions": "Thu Hoạch Hàng Tuần",
+      "topics": "Chủ Đề",
+      "me": "Hồ Sơ Của Mình",
+      "topic": "Luống Từ Vựng",
+      "groups": "Khu Vườn Chung",
+      "group": "Khu Vườn Chung",
+      "manage": "Chăm Sóc Vườn",
+      "join": "Gia Nhập Vườn",
+      "quiz": "Đố Vui"
     },
     "update": {
       "available": "Đã có phiên bản Dygo mới.",
@@ -23,156 +23,156 @@
     }
   },
   "tokens": {
-    "metaTitle": "Token của vườn",
-    "title": "Token của vườn",
-    "intro": "Mọi token màu, kiểu chữ, bo góc, bóng đổ và chuyển động trong hệ thiết kế Vườn Từ, kèm chuỗi thử tiếng Anh, tiếng Trung và tiếng Việt. Chỉ hiện khi bật cờ vườn.",
+    "metaTitle": "Garden Tokens",
+    "title": "Garden Tokens",
+    "intro": "Toàn bộ token về màu sắc, kiểu chữ, góc bo, đổ bóng và hiệu ứng chuyển động trong hệ thống thiết kế Khu Vườn Từ Vựng, kèm các chuỗi văn bản thử nghiệm bằng tiếng Anh, tiếng Trung và tiếng Việt. Chỉ hiển thị khi bật cờ garden.",
     "sizeClass": {
-      "label": "Cỡ màn hình:",
-      "compact": "gọn (dưới 600px)",
-      "medium": "vừa (600–1023px)",
-      "expanded": "rộng (từ 1024px)",
-      "short": "thấp (cao dưới 500px)"
+      "label": "Kích thước giao diện:",
+      "compact": "nhỏ gọn (dưới 600px)",
+      "medium": "trung bình (600–1023px)",
+      "expanded": "mở rộng (từ 1024px trở lên)",
+      "short": "ngắn (chiều cao dưới 500px)"
     },
     "sections": {
-      "colour": "Màu",
-      "stages": "Giai đoạn cây",
+      "colour": "Màu sắc",
+      "stages": "Giai đoạn phát triển",
       "ratings": "Nút đánh giá",
-      "fonts": "Phông chữ",
-      "type": "Thang chữ",
-      "overline": "Nhãn nhỏ bằng tiếng Trung",
+      "fonts": "Kiểu chữ",
+      "type": "Tỷ lệ chữ",
+      "overline": "Overline (Tiếng Trung)",
       "spacing": "Khoảng cách",
-      "radius": "Bo góc",
+      "radius": "Góc bo",
       "elevation": "Độ nổi",
       "motion": "Chuyển động",
-      "safeArea": "Vùng an toàn và chiều cao đầy đủ",
-      "widths": "Độ rộng nội dung"
+      "safeArea": "Vùng an toàn và chiều cao tối đa",
+      "widths": "Chiều rộng nội dung"
     },
     "notes": {
-      "swatch": "Ô màu dùng biến CSS; mã hex bên cạnh chép từ đặc tả. Nếu hai màu trông khác nhau thì token sai.",
-      "overline": "Kiểu nhãn với lớp overline. Tiếng Anh viết hoa, giãn chữ; tiếng Trung giữ nguyên, không giãn.",
-      "motion": "Rê chuột hoặc focus vào ô để xem từng thời lượng. Khi bật giảm chuyển động, hiệu ứng nở chỉ còn mờ dần 150ms và các vòng lặp nền dừng lại.",
-      "safeArea": "Khung trang này chừa vùng an toàn và cao ít nhất 100dvh. Trên iPhone có Face ID, các dải màu cho thấy phần tai thỏ và thanh home.",
-      "widths": "Mỗi thanh là một bậc GARDEN_CONTENT_WIDTH: rộng hết màn hình trên iPhone, có giới hạn trên iPad.",
-      "fonts": "DM Sans (chữ thường) với Be Vietnam Pro cho các chữ tiếng Việt DM Sans không có, và Fraunces với trục cỡ quang học (tiêu đề). Cả ba là file woff2 tự lưu trữ, giống hệt bản dùng để xuất mẫu canvas."
+      "swatch": "Mẫu màu sử dụng biến CSS; mã hex bên cạnh được sao chép từ bản thiết kế. Nếu chúng trông khác nhau, token đã bị sai.",
+      "overline": "Kiểu nhãn với class overline. Tiếng Anh được viết hoa toàn bộ và có khoảng cách chữ; Tiếng Trung giữ nguyên chữ thường và không có khoảng cách.",
+      "motion": "Di chuột qua hoặc focus vào các ô để xem thời lượng mỗi hiệu ứng. Khi bật chế độ giảm chuyển động, hiệu ứng nở hoa sẽ giảm xuống còn 150ms mờ dần và vòng lặp môi trường sẽ dừng lại.",
+      "safeArea": "Khung trang này được đệm bởi vùng an toàn và cao ít nhất 100dvh. Trên iPhone có Face ID, các dải màu cho thấy vùng rãnh (notch) và thanh home indicator.",
+      "widths": "Mỗi thanh biểu thị một mức GARDEN_CONTENT_WIDTH: chiều rộng tối đa trên iPhone, được giới hạn trên iPad.",
+      "fonts": "DM Sans (cho phần thân bài) kết hợp với Be Vietnam Pro cho các chữ cái tiếng Việt mà DM Sans không có, và Fraunces với trục kích thước quang học (cho tiêu đề lớn). Cả ba đều là tệp woff2 tự lưu trữ, giống hệt các tệp được dùng để render hình ảnh tham chiếu."
     },
     "sample": {
       "button": "Tưới 12 từ",
-      "pressMe": "Nhấn thử"
+      "pressMe": "Chạm vào mình đi!"
     }
   },
   "gallery": {
-    "metaTitle": "Thành phần của vườn",
-    "title": "Thành phần của vườn",
-    "intro": "Mọi thành phần Vườn Từ đã làm, ở mọi trạng thái. So với bản thiết kế ở 390px. Chỉ hiện khi bật cờ vườn.",
-    "pending": "Mọi thành phần UI-2 đã xong. Cổng G1 so trang này với bản thiết kế cạnh nhau ở 390px.",
+    "metaTitle": "Thành Phần Khu Vườn",
+    "title": "Thành Phần Khu Vườn",
+    "intro": "Mọi thành phần của Khu Vườn Từ Vựng đã được xây dựng, trong mọi trạng thái. So sánh với bản thiết kế mockup ở kích thước 390px. Chỉ hiển thị khi bật cờ garden.",
+    "pending": "Mọi thành phần UI-2 đã được hoàn thiện. Gate G1 sẽ so sánh trang này với các mockup đặt cạnh nhau ở 390px.",
     "sections": {
-      "buttons": "Nút",
+      "buttons": "Nút bấm",
       "iconButtons": "Nút biểu tượng",
       "chips": "Chip",
       "cards": "Thẻ",
-      "stats": "Ô số liệu",
+      "stats": "Ô thống kê",
       "switches": "Công tắc",
       "vine": "Dây leo tiến độ",
-      "plants": "Hình cây",
-      "stageMapping": "Trạng thái SRS sang giai đoạn cây",
+      "plants": "Biểu tượng cây",
+      "stageMapping": "Ánh xạ trạng thái SRS sang giai đoạn cây",
       "ratingBar": "Thanh đánh giá",
       "audio": "Nút âm thanh",
       "reviewCard": "Thẻ ôn tập",
-      "missionRow": "Dòng nhiệm vụ",
-      "hero": "Thẻ vườn chính",
+      "missionRow": "Hàng nhiệm vụ",
+      "hero": "Thẻ khu vườn chính",
       "stageTile": "Ô giai đoạn",
-      "wordRow": "Dòng từ",
-      "tabBar": "Thanh tab dưới",
-      "ipadNav": "Điều hướng iPad (thanh bên hẹp và thanh bên)",
-      "sheet": "Bảng trượt",
-      "toast": "Thông báo nhanh",
-      "groups": "Vườn chung (UI-G)"
+      "wordRow": "Hàng từ vựng",
+      "tabBar": "Thanh tab dưới cùng",
+      "ipadNav": "Điều hướng iPad (thanh ray và thanh bên)",
+      "sheet": "Bảng dưới cùng (Bottom sheet)",
+      "toast": "Thông báo ngắn (Toast)",
+      "groups": "Khu vườn chung (UI-G)"
     },
     "states": {
       "default": "Mặc định",
-      "disabled": "Vô hiệu",
-      "loading": "Đang tải",
+      "disabled": "Vô hiệu hóa",
+      "loading": "Đang tải...",
       "secondLine": "Có dòng thứ hai",
       "long": "Nhãn dài",
       "off": "Tắt",
       "on": "Bật",
-      "tappable": "Chạm được (liên kết)",
+      "tappable": "Có thể chạm (liên kết)",
       "static": "Tĩnh",
-      "sizes": "Mọi giai đoạn ở cỡ 24, 32, 40, 56 và 72",
-      "labelled": "Có nhãn (role img) ở cỡ 56",
-      "drip": "Nhỏ giọt (nền, dừng khi giảm chuyển động)",
-      "bloom": "Nở hoa (chạy một lần)",
-      "interactive": "Tương tác: chạm, hoặc bấm 1–4 trên bàn phím",
-      "saving": "Vô hiệu khi đang lưu",
-      "lastRating": "Đánh giá gần nhất: {rating}",
+      "sizes": "Mọi giai đoạn ở kích thước 24, 32, 40, 56 và 72",
+      "labelled": "Có nhãn (role img) ở kích thước 56",
+      "drip": "Nhỏ giọt (môi trường, dừng khi bật giảm chuyển động)",
+      "bloom": "Nở rộ (phát một lần)",
+      "interactive": "Tương tác: chạm, hoặc nhấn 1–4 trên bàn phím",
+      "saving": "Vô hiệu hóa khi đang lưu",
+      "lastRating": "Đánh giá lần cuối: {rating}",
       "noRating": "Chưa có đánh giá",
-      "idle": "Sẵn sàng (chạm để phát một âm thử ngắn)",
-      "audioError": "Không phát được âm thanh (chạm để thử lại)",
-      "audioFails": "File hỏng: chạm, nút sẽ chuyển sang trạng thái không phát được",
-      "noAudio": "Từ này chưa có âm thanh",
+      "idle": "Sẵn sàng (chạm để nghe âm thanh thử nghiệm ngắn)",
+      "audioError": "Không có âm thanh (chạm để thử lại)",
+      "audioFails": "Tệp bị lỗi: chạm vào, và nút sẽ chuyển sang trạng thái không có âm thanh",
+      "noAudio": "Không có âm thanh cho từ này",
       "hidden": "Ẩn đáp án",
       "shown": "Hiện đáp án",
       "toggle": "Tương tác",
-      "longContent": "Từ dài, dòng nghĩa tiếng Việt, không có âm thanh",
-      "todo": "Chưa làm",
-      "inProgress": "Đang làm",
-      "done": "Xong",
+      "longContent": "Từ dài, có dòng nghĩa tiếng Việt, không có âm thanh",
+      "todo": "Cần làm",
+      "inProgress": "Đang thực hiện",
+      "done": "Đã xong",
       "normal": "Bình thường",
-      "comeback": "Quay lại",
-      "dueNow": "Cần tưới",
+      "comeback": "Chào mừng trở lại",
+      "dueNow": "Đến hạn ngay",
       "wilting": "Đang héo",
-      "link": "Cả dòng là liên kết",
-      "activeGarden": "Đang ở Vườn",
-      "activeTopics": "Đang ở Chủ đề",
-      "sheetHint": "Mở thành bảng trượt từ dưới lên trên iPhone (kéo tay nắm xuống để đóng) và bảng ở giữa từ 600px.",
+      "link": "Cả hàng là một liên kết",
+      "activeGarden": "Khu vườn đang hoạt động",
+      "activeTopics": "Chủ đề đang hoạt động",
+      "sheetHint": "Mở dưới dạng bảng dưới cùng trên iPhone (kéo thanh nắm xuống để đóng) và bảng căn giữa từ kích thước 600px.",
       "info": "Thông tin",
       "success": "Thành công",
-      "toastLive": "Trực tiếp: hiện 3 giây (dưới cùng trên iPhone, trên cùng từ 600px)",
-      "groupCards": "Thẻ vườn: vai trò, bạn cùng vườn và từ bạn cần ôn",
-      "roles": "Nhãn vai trò",
-      "rainForest": "Ngày mưa trong danh sách vườn",
-      "rainWater": "Ngày mưa trong một vườn",
-      "tricky": "Chỗ khó (chỉ tổng số)",
-      "gardeners": "Bạn cùng vườn với bộ chọn vai trò (hàng của bạn bị khóa ở đây)",
-      "invite": "Bảng mời (tương tác; link chỉ là mẫu)",
-      "rail": "Thanh bên hẹp, 600–1023px",
-      "sidebar": "Thanh bên, từ 1024px"
+      "toastLive": "Trực tiếp: hiển thị trong 3 giây (dưới cùng trên iPhone, trên cùng từ 600px)",
+      "groupCards": "Thẻ nhóm: vai trò của bạn, các người làm vườn và số từ đến hạn của bạn",
+      "roles": "Huy hiệu vai trò",
+      "rainForest": "Ngày mưa trong danh sách khu vườn",
+      "rainWater": "Ngày mưa trong một khu vườn",
+      "tricky": "Luống từ khó nhằn (chỉ hiển thị tổng)",
+      "gardeners": "Người làm vườn với bộ chọn vai trò (hàng của bạn bị khóa ở đây)",
+      "invite": "Bảng mời (tương tác; liên kết chỉ là mẫu)",
+      "rail": "Thanh ray bên hông, 600–1023px",
+      "sidebar": "Thanh bên, từ 1024px trở lên"
     },
     "sample": {
       "water": "Tưới 12 từ",
       "waterSecond": "Khoảng 4 phút",
-      "showAnswer": "Xem đáp án",
+      "showAnswer": "Hiện đáp án",
       "addWord": "Thêm một từ",
-      "longLabel": "Tiếp tục thử thách cụm từ hôm nay và tưới các từ đang cần nước",
+      "longLabel": "Hãy tham gia thử thách cụm từ hôm nay và tiếp nước cho những từ đang khát của bạn nhé!",
       "back": "Quay lại",
       "close": "Đóng",
       "play": "Nghe phát âm",
       "chipAll": "Tất cả",
-      "chipDue": "Cần tưới",
+      "chipDue": "Đến hạn",
       "chipWilting": "Đang héo",
-      "cardTitle": "Môi trường",
+      "cardTitle": "Môi trường (Environment)",
       "cardBody": "48 từ · 6 từ đến hạn hôm nay",
       "statGrowing": "từ đang lớn",
-      "statStreak": "ngày liên tiếp",
-      "statMastered": "đã chín",
-      "reminders": "Nhắc hằng ngày",
+      "statStreak": "ngày chăm chỉ",
+      "statMastered": "trĩu quả",
+      "reminders": "Nhắc nhở hàng ngày",
       "sound": "Âm thanh",
       "vineText": "Đã tưới {done}/{total} từ",
-      "replayBloom": "Xem lại hiệu ứng nở",
+      "replayBloom": "Xem lại hoa nở",
       "mapState": "fsrs_state",
       "mapMastered": "mastered_at",
       "mapLeech": "is_leech",
       "mapStage": "Giai đoạn",
       "yes": "có",
       "no": "không",
-      "set": "có giá trị",
-      "null": "null",
+      "set": "đã đặt",
+      "null": "trống",
       "reviewWord": "sustainable",
       "reviewIpa": "/səˈsteɪnəbl/",
       "reviewLevel": "B2",
-      "reviewTopic": "Môi trường",
+      "reviewTopic": "Môi trường (Environment)",
       "reviewPos": "tính từ",
-      "reviewMeaning": "able to continue for a long time without harming the environment",
+      "reviewMeaning": "có thể duy trì trong thời gian dài mà không làm hại môi trường",
       "reviewTranslation": "bền vững",
       "reviewExample": "The city wants a more sustainable transport system by 2030.",
       "reviewCollocation1": "sustainable development",
@@ -183,89 +183,89 @@
       "longLevel": "C1",
       "longTopic": "Kinh doanh và thương mại toàn cầu",
       "longPos": "danh từ",
-      "longMeaning": "the process of planning a product so that it can be adapted to many languages and regions",
+      "longMeaning": "quá trình lên kế hoạch để một sản phẩm có thể thích ứng với nhiều ngôn ngữ và khu vực",
       "longTranslation": "quá trình quốc tế hoá sản phẩm để phù hợp với nhiều ngôn ngữ và khu vực",
       "longExample": "Internationalisation made it easy to launch the app in Vietnam and Singapore.",
       "hideAnswer": "Ẩn đáp án",
-      "missionWater": "Tưới 18 từ cần tưới",
+      "missionWater": "Tưới 18 từ đang khát",
       "missionPlant": "Gieo 3 từ mới",
       "missionChallenge": "Thử thách cụm từ",
       "missionWaterProgress": "Đã tưới {done}/{total} từ",
       "missionPlantProgress": "Đã gieo {done}/{total} từ",
-      "missionChallengeProgress": "Xong {done}/{total} thử thách",
-      "heroOverline": "Vườn hôm nay",
-      "heroTitle": "18 cây đang cần tưới",
-      "heroSubtitle": "Khoảng 6 phút để tưới hết",
-      "heroComebackOverline": "Chào mừng trở lại",
-      "heroComebackTitle": "Vườn nhớ bạn đấy",
-      "heroComebackSubtitle": "Trời đã mưa khi bạn vắng nhà. Hãy bắt đầu với 10 từ dễ quên nhất.",
+      "missionChallengeProgress": "Hoàn thành {done}/{total} thử thách",
+      "heroOverline": "Khu vườn hôm nay",
+      "heroTitle": "18 cây đang khát nước!",
+      "heroSubtitle": "Mất khoảng 6 phút để tưới cho chúng",
+      "heroComebackOverline": "Chào mừng trở lại!",
+      "heroComebackTitle": "Khu vườn rất nhớ bạn!",
+      "heroComebackSubtitle": "Trời đã đổ mưa khi bạn đi vắng. Hãy bắt đầu với 10 từ đang 'kêu cứu' nhất nhé.",
       "heroAction": "Tưới 18 từ",
       "heroComebackAction": "Tưới 10 từ",
-      "stageSeeds": "Hạt",
-      "stageSprouts": "Mầm",
-      "stageFlowers": "Hoa",
-      "stageRipe": "Đã chín",
+      "stageSeeds": "Hạt giống",
+      "stageSprouts": "Chồi non",
+      "stageFlowers": "Đóa hoa",
+      "stageRipe": "Trĩu quả",
       "stageWilting": "Đang héo",
-      "stageThirsty": "Cần tưới",
-      "wordMeaning": "able to continue for a long time",
-      "wordDueNow": "Cần tưới",
-      "wordInDays": "3 ngày nữa",
-      "wordWilting": "Cần giúp",
+      "stageThirsty": "Đang khát",
+      "wordMeaning": "có thể duy trì trong thời gian dài",
+      "wordDueNow": "Đến hạn ngay",
+      "wordInDays": "trong 3 ngày",
+      "wordWilting": "Cần chăm sóc ngay",
       "word2": "commute",
-      "word2Meaning": "to travel regularly between home and work",
+      "word2Meaning": "đi lại thường xuyên giữa nhà và nơi làm việc",
       "word3": "notwithstanding",
-      "word3Meaning": "in spite of something; although this is true, the plan will still go ahead",
+      "word3Meaning": "mặc dù vậy; dẫu điều này là thật thì kế hoạch vẫn sẽ được tiến hành",
       "openSheet": "Mở bảng",
       "openLongSheet": "Mở bảng dài",
       "sheetTitle": "Thêm một từ",
-      "sheetDescription": "Từ sẽ được gieo thành hạt trong Môi trường.",
-      "sheetBody": "Tìm một từ, hoặc tự nhập từ kèm nghĩa. Bạn có thể chuyển nó sang chủ đề khác sau.",
-      "sheetLongLine": "Dòng {n} của một bảng dài, cuộn bên trong bảng.",
-      "sheetAction": "Gieo từ",
-      "toastInfo": "Đã đặt nhắc lúc 7:30 mỗi sáng",
-      "toastSuccess": "Đã gieo vào Môi trường",
-      "showInfoToast": "Hiện thông báo thông tin",
+      "sheetDescription": "Đã gieo một hạt giống vào luống Môi trường (Environment).",
+      "sheetBody": "Tìm kiếm một từ, hoặc tự gõ từ của bạn kèm theo nghĩa. Bạn có thể chuyển nó sang luống khác bất cứ lúc nào!",
+      "sheetLongLine": "Dòng {n} của một bảng nội dung dài có thể cuộn được bên trong bảng.",
+      "sheetAction": "Gieo ngay!",
+      "toastInfo": "Đã đặt lời nhắc lúc 7:30 sáng mỗi ngày",
+      "toastSuccess": "Đã trồng vào luống Môi trường!",
+      "showInfoToast": "Hiện thông báo",
       "showSuccessToast": "Hiện thông báo thành công"
     }
   },
   "components": {
     "plant": {
-      "seed": "hạt giống",
-      "sprout": "mầm",
-      "flower": "hoa",
-      "tree": "cây ăn trái",
-      "wilting": "đang héo",
-      "thirsty": "cần tưới"
+      "seed": "Hạt giống",
+      "sprout": "Chồi non",
+      "flower": "Đóa hoa",
+      "tree": "Cây ra quả",
+      "wilting": "Đang héo",
+      "thirsty": "Đang khát"
     },
     "rating": {
-      "groupLabel": "Bạn nhớ từ này đến đâu?",
-      "again": "Học lại",
-      "hard": "Khó",
-      "good": "Tốt",
-      "easy": "Dễ",
+      "groupLabel": "Từ này thấm vào đầu bạn cỡ nào rồi?",
+      "again": "Quên béng",
+      "hard": "Khó nhằn",
+      "good": "Ổn áp",
+      "easy": "Quá dễ!",
       "interval": {
         "lessThanMinute": "< 1 phút",
         "minutes": "{count} phút",
         "hours": "{count} giờ",
-        "days": "{count} ngày",
-        "months": "{count} tháng"
+        "days": "{count, plural, one {# ngày} other {# ngày}}",
+        "months": "{count, plural, one {# tháng} other {# tháng}}"
       }
     },
     "audio": {
       "play": "Nghe phát âm",
-      "none": "Từ này chưa có âm thanh",
-      "unavailable": "Không phát được âm thanh",
-      "unavailableRetry": "Không phát được âm thanh, chạm để thử lại"
+      "none": "Chưa có âm thanh cho từ này",
+      "unavailable": "Không tải được âm thanh",
+      "unavailableRetry": "Không tải được âm thanh, chạm để thử lại"
     },
     "review": {
       "cardLabel": "Thẻ ôn tập: {word}",
-      "tags": "Thông tin từ",
+      "tags": "Chi tiết từ vựng",
       "play": "Nghe phát âm từ {word}",
-      "meaning": "Nghĩa",
+      "meaning": "Ý nghĩa",
       "example": "Ví dụ",
       "collocations": "Cụm từ đi kèm",
       "synonyms": "Từ đồng nghĩa",
-      "hiddenHint": "Nói to nghĩa của từ,<br></br>rồi kiểm tra.",
+      "hiddenHint": "Hãy đọc to nghĩa của từ,<br></br>sau đó kiểm tra đáp án nhé!",
       "quoted": "“{text}”"
     },
     "partOfSpeech": {
@@ -277,7 +277,7 @@
       "preposition": "giới từ",
       "conjunction": "liên từ",
       "interjection": "thán từ",
-      "determiner": "hạn định từ",
+      "determiner": "từ hạn định",
       "phrase": "cụm từ",
       "phrasalVerb": "cụm động từ",
       "idiom": "thành ngữ"
@@ -285,116 +285,116 @@
     "mission": {
       "status": {
         "todo": "Chưa bắt đầu",
-        "inProgress": "Đang làm",
-        "done": "Xong"
+        "inProgress": "Đang thực hiện",
+        "done": "Đã xong"
       },
       "statusSuffix": ", {status}"
     },
     "hero": {
-      "legend": "Vườn của bạn theo giai đoạn",
-      "scene": "Khu vườn với cây ở nhiều giai đoạn",
-      "comebackScene": "Khu vườn có cây đang héo và một đám mây mưa"
+      "legend": "Giai đoạn cây trong vườn",
+      "scene": "Khu vườn với các cây ở những giai đoạn khác nhau",
+      "comebackScene": "Khu vườn với những cây đang héo và một đám mây mưa"
     },
     "tabBar": {
-      "label": "Chính",
+      "label": "Điều hướng chính",
       "garden": "Vườn",
       "missions": "Nhiệm vụ",
       "topics": "Chủ đề",
-      "me": "Tôi",
+      "me": "Hồ sơ",
       "groups": "Nhóm"
     },
     "sheet": {
       "close": "Đóng"
     },
     "language": {
-      "title": "Ngôn ngữ",
-      "description": "Ngôn ngữ của ứng dụng và nghĩa hiển thị thêm trên thẻ ôn tập.",
+      "title": "Cài đặt Ngôn ngữ",
+      "description": "Chọn ngôn ngữ ứng dụng của bạn và ngôn ngữ dịch trên thẻ ôn tập.",
       "appLanguage": "Ngôn ngữ ứng dụng",
-      "meaningLanguage": "Nghĩa hiển thị",
-      "meaningHint": "Luôn hiện định nghĩa tiếng Anh.",
+      "meaningLanguage": "Giải nghĩa hiển thị bằng",
+      "meaningHint": "Luôn bao gồm định nghĩa bằng tiếng Anh.",
       "names": {
-        "en-US": "English",
+        "en-US": "Tiếng Anh (English)",
         "vi-VN": "Tiếng Việt",
-        "zh-CN": "简体中文"
+        "zh-CN": "Tiếng Trung (简体中文)"
       },
-      "meaningWith": "{language} + English",
+      "meaningWith": "{language} + Tiếng Anh",
       "meaningNone": "Chỉ tiếng Anh",
       "saving": "Đang lưu…",
-      "error": "Chưa lưu được. Hãy kiểm tra kết nối và thử lại.",
-      "variety": "Kiểu tiếng Anh",
-      "varietyHint": "Cách viết và phát âm trong vườn của bạn.",
-      "varietyUS": "Tiếng Anh Mỹ",
-      "varietyUK": "Tiếng Anh Anh"
+      "error": "Không thể lưu thay đổi. Vui lòng kiểm tra kết nối và thử lại.",
+      "variety": "Giọng tiếng Anh",
+      "varietyHint": "Kiểu chính tả và phát âm trong toàn bộ khu vườn của bạn.",
+      "varietyUS": "Tiếng Anh Mỹ 🇺🇸",
+      "varietyUK": "Tiếng Anh Anh 🇬🇧"
     },
     "account": {
       "title": "Tài khoản",
-      "signedInAs": "Đang đăng nhập: {email}",
+      "signedInAs": "Đăng nhập bằng {email}",
       "signOut": "Đăng xuất",
       "signingOut": "Đang đăng xuất…",
       "cancel": "Hủy",
-      "error": "Chưa đăng xuất được. Kiểm tra kết nối rồi thử lại."
+      "error": "Không thể đăng xuất. Vui lòng kiểm tra kết nối và thử lại."
     },
     "groups": {
       "roles": {
-        "ADMIN": "Quản trị",
-        "WRITE": "Biên tập",
-        "READ": "Thành viên"
+        "ADMIN": "Quản trị viên",
+        "WRITE": "Người chỉnh sửa",
+        "READ": "Người xem"
       },
       "roleHints": {
         "ADMIN": "Quản lý thành viên, lời mời và ngày mưa",
-        "WRITE": "Thêm luống và từ",
-        "READ": "Tưới các luống chung"
+        "WRITE": "Thêm luống chủ đề và từ vựng",
+        "READ": "Tưới nước cho các luống chung"
       },
-      "dueForYou": "{count} từ cần ôn",
-      "allWatered": "Đã tưới xong",
-      "water": "Tưới",
-      "rainDayToday": "Hôm nay là ngày mưa",
+      "dueForYou": "Bạn có {count} từ đến hạn",
+      "allWatered": "Đã tưới hết!",
+      "water": "Tưới nước",
+      "rainDayToday": "Hôm nay là Ngày Mưa 🌧️",
       "you": "(bạn)",
       "changeRole": "Đổi vai trò của {name}",
       "remove": "Xóa khỏi vườn"
     },
     "dailyGoal": {
-      "title": "Mục tiêu ngày",
-      "description": "Bạn muốn dành bao lâu trong vườn mỗi ngày.",
+      "title": "Mục Tiêu Hàng Ngày",
+      "description": "Thời gian bạn muốn dành ra cho khu vườn mỗi ngày.",
       "legend": "Số phút mỗi ngày",
       "minutes": "{count} phút",
       "saving": "Đang lưu…",
-      "error": "Chưa lưu được. Hãy kiểm tra kết nối và thử lại."
+      "error": "Không thể lưu thay đổi. Vui lòng kiểm tra kết nối và thử lại."
     }
   },
   "screens": {
     "home": {
       "greeting": {
-        "morning": "Chào {name}",
-        "afternoon": "Chào {name}",
-        "evening": "Chào {name}"
+        "morning": "Chào buổi sáng, {name}! ☀️",
+        "afternoon": "Chào buổi chiều, {name}! 👋",
+        "evening": "Chào buổi tối, {name}! 🌙"
       },
       "greetingNoName": {
-        "morning": "Xin chào",
-        "afternoon": "Xin chào",
-        "evening": "Xin chào"
+        "morning": "Chào buổi sáng! ☀️",
+        "afternoon": "Chào buổi chiều! 👋",
+        "evening": "Chào buổi tối! 🌙"
       },
-      "streakUnit": "{count, plural, other {ngày}}",
-      "streakLabel": "Chuỗi {count} ngày",
-      "heroOverline": "Vườn của bạn",
-      "heroTitle": "{count} từ đang lớn",
+      "streakUnit": "{count, plural, one {ngày} other {ngày}}",
+      "streakLabel": "Chuỗi {count, plural, one {# ngày} other {# ngày}}",
+      "heroOverline": "Khu vườn của bạn",
+      "heroTitle": "Có {count, plural, one {# từ} other {# từ}} đang lớn lên",
       "legend": {
-        "thirsty": "{count, number} cần tưới",
-        "ripe": "{count, number} đã chín",
-        "wilting": "{count, number} đang héo"
+        "thirsty": "{count, number} từ khát",
+        "ripe": "{count, number} trĩu quả",
+        "wilting": "{count, number} sắp héo"
       },
       "missions": {
         "title": "Nhiệm vụ hôm nay",
-        "progress": "Xong {done}/{total}",
-        "comingSoon": "Nhiệm vụ hằng ngày sắp có. Trong lúc chờ, hãy tưới các từ đến hạn bên dưới.",
-        "goldenBloom": "Hoàn thành cả {total} để nở <b>Hoa Vàng hôm nay</b>",
-        "goldenBloomOne": "Hoàn thành để nở <b>Hoa Vàng hôm nay</b>",
-        "goldenBloomEarned": "<b>Hoa Vàng hôm nay</b> đã nở",
-        "water": "Tưới {count} từ đến hạn",
-        "thirsty": "Tưới các từ cần tưới hôm nay",
-        "plant": "Gieo {count} từ mới",
+        "progress": "Đã xong {done}/{total}",
+        "comingSoon": "Nhiệm vụ hàng ngày sắp ra mắt nhé! Trong lúc chờ, hãy tưới nước cho các cây đến hạn bên dưới nha.",
+        "goldenBloom": "Hoàn thành đủ {total} để <b>Đóa Hoa Vàng</b> hôm nay nở rộ nhé 🌸",
+        "goldenBloomOne": "Hoàn thành nốt để <b>Đóa Hoa Vàng</b> hôm nay nở rộ nào 🌸",
+        "goldenBloomEarned": "<b>Đóa Hoa Vàng</b> hôm nay đã nở rộ rồi! 🎉",
+        "water": "Tưới {count, plural, one {# từ đến hạn} other {# từ đến hạn}}",
+        "thirsty": "Tưới những từ đang khát hôm nay",
+        "plant": "Gieo {count, plural, one {# từ mới} other {# từ mới}}",
         "challenge": "Thử thách cụm từ",
-        "valueDone": "Xong",
+        "valueDone": "Đã xong!",
         "valueMinutes": "{count} phút",
         "valueCount": "{done}/{total}",
         "progressWater": "Đã tưới {done}/{total} từ",
@@ -404,220 +404,220 @@
         "progressSpeak": "Đã nói {done}/{total} từ"
       },
       "action": {
-        "continue": "Tiếp tục nhiệm vụ",
-        "start": "Tưới vườn",
-        "detail": "Còn {count} từ · khoảng {minutes} phút",
-        "detailNoTime": "Còn {count} từ"
+        "continue": "Tiếp tục thôi!",
+        "start": "Tưới cây nào",
+        "detail": "Còn {count, plural, one {# từ} other {# từ}} · khoảng {minutes} phút",
+        "detailNoTime": "Còn {count, plural, one {# từ} other {# từ}}"
       },
-      "ripens": "Ngày mai {time} · <b>{count} từ sẽ chín</b>",
+      "ripens": "Ngày mai {time} · <b>Sẽ có {count, plural, one {# từ} other {# từ}} trĩu quả</b>",
       "public": {
-        "metaTitle": "Dygo · Học từ và biết cách dùng",
+        "metaTitle": "Dygo · Học từ vựng tiếng Anh và thực sự biết cách dùng",
         "nav": {
           "label": "Trên trang này",
           "features": "Tính năng",
           "howItWorks": "Cách hoạt động",
-          "questions": "Câu hỏi",
-          "forParents": "Phụ huynh",
+          "questions": "Câu hỏi thường gặp",
+          "forParents": "Dành cho phụ huynh",
           "speaking": "Luyện nói"
         },
         "signIn": "Đăng nhập",
         "createAccount": "Tạo tài khoản",
         "hero": {
-          "title": "Học từ. Biết cách dùng. Nhớ mãi.",
-          "lead": "Dygo cho mỗi từ câu ví dụ thật, giải thích bằng tiếng Việt, rồi nhắc lại ngay trước khi bạn quên. Mỗi ngày 5 phút.",
+          "title": "Học một từ. Dùng cho đúng. Nhớ mãi mãi.",
+          "lead": "Mỗi từ đều đi kèm ví dụ thực tế và giải thích rõ ràng bằng ngôn ngữ của bạn. Dygo sẽ mang chúng trở lại ngay trước khi bạn sắp quên. Chỉ cần 5 phút mỗi ngày là đủ!",
           "start": "Tạo tài khoản miễn phí",
-          "haveAccount": "Tôi đã có tài khoản",
-          "languages": "Có English, Tiếng Việt và 简体中文",
+          "haveAccount": "Mình đã có tài khoản rồi",
+          "languages": "Có sẵn bằng tiếng Anh, Tiếng Việt và Tiếng Trung",
           "pillNew": "Mới",
           "pill": "Luyện nói cùng người bản xứ"
         },
         "plant": {
           "inputLabel": "Gieo một từ",
-          "placeholder": "Gõ một từ bạn hay quên…",
-          "button": "Gieo",
+          "placeholder": "Một từ bạn hay quên béng đi...",
+          "button": "Gieo ngay!",
           "try": "Thử:",
           "chipsLabel": "Thử một từ",
           "synonyms": "Từ đồng nghĩa",
-          "bird": "Mình sẽ nhắc bạn trước khi bạn quên. Giữ từ này nhé?",
-          "save": "Lưu từ này — miễn phí",
-          "unknown": "Dygo sẽ trồng “{word}” cho bạn sau khi bạn đăng ký."
+          "bird": "Mình sẽ nhắc bạn trước khi từ này trôi tuột khỏi trí nhớ. Bạn có muốn lưu lại không?",
+          "save": "Lưu từ này — hoàn toàn miễn phí!",
+          "unknown": "Tụi mình sẽ bắt đầu gieo từ “{word}” cho bạn ngay khi bạn đăng ký nhé!"
         },
         "pains": {
-          "title": "Nghe quen không?",
-          "lead": "Chạm vào thẻ để xem Dygo giúp gì.",
+          "title": "Nghe quen quen phải không?",
+          "lead": "Chạm vào thẻ để xem Dygo giúp việc học trở nên nhẹ nhàng như thế nào nhé.",
           "hint": "Chạm để xem Dygo giúp gì",
-          "helps": "Dygo giúp bạn",
+          "helps": "Cách Dygo giúp bạn",
           "cards": {
             "use": {
-              "front": "“Tôi biết nghĩa nhưng không biết dùng.”",
-              "back": "Mỗi từ đều có câu ví dụ thật, từ đồng nghĩa và bài điền từ để luyện."
+              "front": "“Mình biết nghĩa của từ đó, nhưng chẳng biết dùng sao cho đúng.”",
+              "back": "Mỗi từ đều đi kèm câu ví dụ thực tế, từ đồng nghĩa và bài tập điền vào chỗ trống."
             },
             "forget": {
-              "front": "“Học hôm nay, tuần sau đã quên.”",
-              "back": "Dygo nhắc lại từng từ ngay trước khi bạn kịp quên."
+              "front": "“Học một từ hôm nay, sang tuần hoàn toàn quên sạch.”",
+              "back": "Dygo sẽ mang từ đó quay lại ngay vào lúc bạn sắp quên nó đi."
             },
             "language": {
-              "front": "“Giải thích toàn tiếng Anh, khó hiểu quá.”",
-              "back": "Nghĩa bằng tiếng Việt hoặc tiếng Trung khi bạn cần, chỉ tiếng Anh khi bạn không cần."
+              "front": "“Đọc giải thích toàn bằng tiếng Anh làm mình rối rắm quá.”",
+              "back": "Xem ngay nghĩa bằng tiếng Việt hoặc tiếng Trung khi cần, và chuyển sang chế độ 100% tiếng Anh bất cứ khi nào bạn sẵn sàng."
             },
             "habit": {
-              "front": "“Hăng hái 3 ngày rồi bỏ.”",
-              "back": "Chỉ 5 phút mỗi ngày, 3 nhiệm vụ nhỏ, và thùng nước mưa giữ chuỗi ngày khi bạn bận."
+              "front": "“Mình bắt đầu rất hăng hái, nhưng được ba bữa là bỏ cuộc.”",
+              "back": "Chỉ 5 phút và 3 nhiệm vụ siêu nhanh mỗi ngày. Vào những ngày quá bận rộn, Thùng Hứng Mưa sẽ bảo vệ chuỗi ngày chăm chỉ của bạn!"
             }
           }
         },
         "how": {
-          "title": "Từ vựng của bạn lớn lên thế nào",
-          "lead": "Mỗi từ bạn học là một cái cây. Mỗi lần ôn mà bạn vẫn nhớ, cây lớn thêm một bậc, và Dygo đợi lâu hơn một chút trước lần tưới tiếp theo.",
+          "title": "Cách từ vựng của bạn lớn lên",
+          "lead": "Hãy xem mỗi từ như một cái cây. Mỗi lần bạn ôn tập và trả lời đúng, nó sẽ lớn mạnh hơn—và Dygo sẽ đợi lâu hơn một chút trước lần tưới tiếp theo.",
           "stage": "Giai đoạn {n}",
-          "reviews": "Lịch tưới:",
-          "growsWhen": "Lớn lên khi:",
-          "staysIf": "Giữ được khi:",
+          "reviews": "Ôn tập:",
+          "growsWhen": "Sẽ lớn lên khi:",
+          "staysIf": "Dừng lại nếu:",
           "stages": {
             "seed": {
-              "name": "Hạt",
-              "means": "Từ mới bạn vừa gieo.",
-              "reviews": "chưa cần tưới, chờ bạn bắt đầu.",
-              "grows": "bạn học từ này lần đầu tiên."
+              "name": "Hạt giống",
+              "means": "Một từ mới tinh bạn vừa thêm vào.",
+              "reviews": "Chưa có—nó đang đợi bạn đó!",
+              "grows": "Bạn học nó lần đầu tiên."
             },
             "sprout": {
-              "name": "Mầm",
-              "means": "Bạn đang học từ này.",
-              "reviews": "thường xuyên: ôn lại trong ngày hoặc ngày hôm sau.",
-              "grows": "bạn nhớ được vài lần."
+              "name": "Chồi non",
+              "means": "Bạn vẫn đang làm quen với nó.",
+              "reviews": "Thường xuyên, có thể vào cuối ngày hôm đó hoặc ngày hôm sau.",
+              "grows": "Bạn trả lời đúng vài lần liên tiếp."
             },
             "flower": {
-              "name": "Hoa",
-              "means": "Bạn đã nhớ từ này.",
-              "reviews": "vài ngày một lần, rồi một đến hai tuần một lần.",
-              "grows": "bạn vẫn nhớ dù khoảng cách ôn dài hơn."
+              "name": "Đóa hoa",
+              "means": "Bạn đã nắm khá vững rồi đấy.",
+              "reviews": "Vài ngày một lần, sau đó là một đến hai tuần một lần.",
+              "grows": "Bạn tiếp tục trả lời đúng và khoảng cách ôn tập sẽ giãn ra."
             },
             "fruiting": {
-              "name": "Kết trái",
-              "means": "Bạn đã thuộc từ này.",
-              "reviews": "thỉnh thoảng ghé thăm, cách nhau vài tuần.",
-              "grows": "bạn tiếp tục nhớ. Phần lớn từ đến đây sau khoảng 4 lần ôn tốt."
+              "name": "Trĩu quả",
+              "means": "Bạn đã thuộc nằm lòng rồi!",
+              "reviews": "Rất hiếm—chỉ khoảng vài tuần một lần.",
+              "grows": "Bạn vẫn trả lời đúng. Hầu hết các từ đạt đến giai đoạn này sau 4 lần ôn tập tốt!"
             }
           },
           "spread": {
-            "title": "Cây càng lớn, lần tưới càng thưa",
+            "title": "Thời gian ôn tập sẽ giãn ra khi từ của bạn lớn lên",
             "today": "Hôm nay",
             "later": "Vài tuần sau",
-            "text": "Ôn lại ngay trước lúc sắp quên giúp từ nhớ lâu, nên 5 phút của bạn dành cho đúng những từ cần ôn."
+            "text": "Ôn tập lại một từ ngay trước khi bạn quên chính là bí quyết để nhớ nó mãi mãi. Bằng cách này, 5 phút của bạn sẽ được dành trọn cho những từ thực sự cần thiết."
           },
           "tips": {
             "drop": {
-              "title": "Giọt nước = cần tưới hôm nay",
-              "text": "Từ có giọt nước là từ cần ôn hôm nay. Dygo tự chọn cho bạn, không cần lên kế hoạch."
+              "title": "Biểu tượng giọt nước có nghĩa là đã đến hạn",
+              "text": "Những từ có giọt nước cần được ôn lại hôm nay. Dygo sẽ tự động gom chúng lại cho bạn, bạn không cần phải tự lên kế hoạch gì cả."
             },
             "forgot": {
-              "title": "Quên một từ? Không sao",
-              "text": "Cây quay lại thành mầm và được tưới vài lần cho đến khi bạn nhớ lại."
+              "title": "Lỡ quên một từ? Đừng lo nhé!",
+              "text": "Nó sẽ quay trở lại thành một chồi non và xuất hiện thêm vài lần nữa cho đến khi in sâu vào tâm trí bạn."
             }
           }
         },
         "uses": {
           "title": "Bạn học tiếng Anh để làm gì?",
-          "lead": "Trồng những từ cho cuộc sống của bạn.",
+          "lead": "Hãy nuôi dưỡng những từ vựng quan trọng nhất đối với bạn.",
           "soon": "Sắp ra mắt",
-          "soonLine": "Bắt đầu với từ của riêng bạn.",
-          "addWord": "Thêm từ",
-          "button": "Bắt đầu luống này",
+          "soonLine": "Trong lúc đó, hãy tự tạo danh sách từ vựng của riêng bạn nhé!",
+          "addWord": "Thêm một từ",
+          "button": "Bắt đầu với những từ này",
           "beds": {
             "work": {
-              "name": "Công việc",
-              "line": "Từ vựng cho email, cuộc họp và khách hàng."
+              "name": "Công việc & Kinh doanh",
+              "line": "Các từ vựng chuyên dùng cho email, cuộc họp và trò chuyện với khách hàng."
             },
             "study": {
               "name": "Học tập & IELTS",
-              "line": "Kho từ IELTS Academic đã sẵn sàng để gieo."
+              "line": "Danh sách từ vựng IELTS Học thuật đã sẵn sàng dành cho bạn."
             },
             "travel": {
-              "name": "Du lịch",
-              "line": "Tự tin giao tiếp trong chuyến đi tới."
+              "name": "Du lịch & Khám phá",
+              "line": "Giao tiếp cực tự tin cho chuyến đi tiếp theo của bạn."
             },
             "daily": {
-              "name": "Đời sống",
-              "line": "Những từ bạn cần mỗi ngày."
+              "name": "Đời sống hàng ngày",
+              "line": "Những từ thông dụng để mua sắm, đặt lịch hẹn và tán gẫu."
             },
             "own": {
-              "name": "Từ của tôi",
-              "line": "Thêm bất kỳ từ nào bạn gặp, kèm nghĩa và ví dụ của riêng bạn.",
-              "lineAi": "Thêm bất kỳ từ nào bạn gặp. Dygo sẽ thêm nghĩa và ví dụ."
+              "name": "Từ Vựng Của Mình",
+              "line": "Lưu bất kỳ từ nào bạn bắt gặp, kèm theo định nghĩa và ví dụ của riêng bạn.",
+              "lineAi": "Lưu bất kỳ từ nào bạn bắt gặp—Dygo sẽ tự động điền nghĩa và ví dụ cho bạn!"
             }
           }
         },
         "features": {
-          "title": "Mọi thứ để vốn từ lớn lên",
+          "title": "Mọi thứ bạn cần để mở rộng vốn từ",
           "watering": {
-            "title": "Tưới mỗi ngày",
-            "text": "Ôn những từ đến hạn hôm nay. Chọn mức độ bạn nhớ, Dygo sẽ hẹn lần tưới tiếp theo."
+            "title": "Tưới Nước Hàng Ngày",
+            "text": "Ôn tập các từ đến hạn hôm nay. Hãy cho Dygo biết bạn nhớ từ đó dễ dàng đến mức nào, ứng dụng sẽ tự động lên lịch hoàn hảo cho lần ôn tiếp theo."
           },
           "quizzes": {
-            "title": "Kiểm tra",
-            "text": "Chọn từ đúng, đồng nghĩa, điền vào chỗ trống, nghe và viết. Từ sai sẽ quay lại, không có dấu ✕ đỏ."
+            "title": "Đố Vui Cực Cuốn",
+            "text": "Chọn từ đúng, ghép từ đồng nghĩa, điền vào chỗ trống, hay nghe và viết lại. Nếu làm sai, từ đó sẽ quay lại nhẹ nhàng mà không có dấu X đỏ đáng sợ nào cả!"
           },
           "beds": {
-            "title": "Luống chủ đề",
-            "text": "Bộ từ IELTS Academic và luống của riêng bạn, kèm câu ví dụ, phát âm và từ đồng nghĩa."
+            "title": "Luống Chủ Đề",
+            "text": "Các danh sách IELTS Học thuật chọn lọc cộng với những luống từ do chính bạn tự tạo—đầy đủ âm thanh, ví dụ và từ đồng nghĩa."
           },
           "missions": {
-            "title": "Nhiệm vụ và Hoa Vàng",
-            "text": "Ba nhiệm vụ nhỏ mỗi ngày. Hoàn thành cả ba để nở Hoa Vàng; thùng nước mưa giữ chuỗi ngày khi bạn bận."
+            "title": "Nhiệm Vụ & Đóa Hoa Vàng",
+            "text": "Hoàn thành 3 nhiệm vụ siêu tốc mỗi ngày để mở khóa Đóa Hoa Vàng, và nhờ cậy vào Thùng Hứng Mưa để bảo vệ chuỗi ngày học của bạn khi quá bận rộn."
           },
           "shared": {
-            "title": "Vườn chung",
-            "text": "Học cùng lớp hoặc bạn bè. Xem cả nhóm tiến bộ ra sao, không bao giờ lộ tiến độ riêng của ai."
+            "title": "Khu Vườn Chung",
+            "text": "Học cùng bạn bè hay bạn cùng lớp. Theo dõi khí thế học tập của cả nhóm trong khi tiến trình học cá nhân của mọi người vẫn được giữ kín 100%."
           },
           "language": {
-            "title": "Ngôn ngữ của bạn",
-            "text": "Nghĩa bằng tiếng Việt hoặc tiếng Trung khi bạn cần, chỉ tiếng Anh khi bạn muốn."
+            "title": "Bằng Ngôn Ngữ Của Bạn",
+            "text": "Nhận ngay giải thích rõ ràng bằng tiếng Việt hoặc tiếng Trung khi cần hỗ trợ, hoặc chuyển sang 100% tiếng Anh khi bạn đã sẵn sàng."
           }
         },
         "parents": {
-          "overline": "Dành cho phụ huynh",
+          "overline": "Dành Cho Phụ Huynh",
           "soon": "Sắp ra mắt",
-          "title": "Một khu vườn cho trẻ em",
-          "lead": "Trẻ học những từ tiếng Anh đầu tiên qua hình ảnh, âm thanh và chú chim Dygo. Nút bấm to, buổi học ngắn, hướng dẫn bằng tiếng Việt và tiếng Anh.",
+          "title": "Một khu vườn đặc biệt dành riêng cho bé!",
+          "lead": "Các bé có thể học những từ tiếng Anh đầu tiên qua hình ảnh đầy màu sắc, âm thanh vui nhộn và chú chim Dygo! Đi kèm các nút bấm lớn, thời gian học ngắn gọn và hướng dẫn song ngữ.",
           "points": {
-            "pictures": "Đố vui bằng hình: chạm vào từ con nghe được",
-            "faces": "Hai khuôn mặt đơn giản thay cho thang điểm",
-            "stars": "Ong và ngôi sao, không bao giờ có dấu ✕ đỏ",
-            "account": "Mở vườn của con ngay từ tài khoản của bạn"
+            "pictures": "Câu đố hình ảnh: chạm vào từ mà bé nghe thấy",
+            "faces": "Những khuôn mặt cười ngộ nghĩnh thay vì các nút đánh giá phức tạp",
+            "stars": "Những chú ong xinh xắn và ngôi sao thay vì dấu X đỏ đáng sợ",
+            "account": "Quản lý khu vườn của bé trực tiếp từ tài khoản của bạn"
           },
-          "kidsPrompt": "Tìm “cat”!",
-          "kidsHint": "Find the cat!"
+          "kidsPrompt": "Tìm “cat” nhé! 🐱",
+          "kidsHint": "Tìm “cat”!"
         },
         "faq": {
-          "title": "Câu hỏi thường gặp",
+          "title": "Câu Hỏi Thường Gặp",
           "items": {
             "free": {
               "q": "Dygo có miễn phí không?",
-              "a": "Có. Bạn có thể bắt đầu miễn phí, không cần thẻ."
+              "a": "Có chứ! Hoàn toàn miễn phí để bắt đầu và không yêu cầu thẻ tín dụng."
             },
             "who": {
               "q": "Dygo dành cho ai?",
-              "a": "Cho bất kỳ ai muốn học từ tiếng Anh và cách dùng chúng: cho công việc, học tập, du lịch hay cuộc sống hằng ngày."
+              "a": "Dành cho bất cứ ai muốn trau dồi vốn từ và nói tiếng Anh thật tự tin—dù là cho công việc, thi cử, du lịch hay cuộc sống hàng ngày!"
             },
             "english": {
-              "q": "Tôi có cần giỏi tiếng Anh để bắt đầu không?",
-              "a": "Không. Dygo giải thích từ bằng tiếng Việt hoặc tiếng Trung khi bạn cần."
+              "q": "Tôi có cần phải giỏi tiếng Anh mới dùng được không?",
+              "a": "Không hề! Dygo cung cấp các lời giải thích cực kỳ rõ ràng bằng tiếng Việt hoặc tiếng Trung bất cứ khi nào bạn cần."
             },
             "phone": {
-              "q": "Dygo có dùng được trên điện thoại không?",
-              "a": "Có. Dygo chạy trên trình duyệt của iPhone, Android, iPad và máy tính, và bạn có thể thêm vào Màn hình chính."
+              "q": "Ứng dụng có dùng được trên điện thoại không?",
+              "a": "Có luôn! Nó hoạt động cực mượt trên trình duyệt của điện thoại, máy tính bảng lẫn máy tính bàn. Bạn thậm chí có thể thêm Dygo vào màn hình chính giống y như một ứng dụng bình thường!"
             },
             "time": {
-              "q": "Mỗi ngày tôi cần bao nhiêu thời gian?",
-              "a": "Khoảng 5 phút. Dygo cho bạn biết hôm nay những từ nào cần tưới."
+              "q": "Tôi cần bao nhiêu thời gian mỗi ngày?",
+              "a": "Chỉ khoảng 5 phút mỗi ngày! Dygo lo phần lên lịch nên bạn luôn biết chính xác cây nào đang khát nước."
             },
             "ownWords": {
-              "q": "Tôi có thể thêm từ của riêng mình không?",
-              "a": "Có. Gieo bất kỳ từ nào vào “Từ của tôi” và ôn như các từ khác."
+              "q": "Tôi có thể tự thêm từ của mình không?",
+              "a": "Chắc chắn rồi! Bạn có thể thêm bất kỳ từ nào vào mục “Từ Vựng Của Mình” và ôn tập nó giống như mọi cái cây khác."
             },
             "kids": {
               "q": "Có phiên bản cho trẻ em không?",
-              "a": "Khu vườn cho trẻ em sắp ra mắt. Hiện tại Dygo dành cho thanh thiếu niên và người lớn."
+              "a": "Một khu vườn chuyên biệt dành cho trẻ em sắp ra mắt nhé! Hiện tại, Dygo đang được thiết kế tối ưu nhất cho thanh thiếu niên và người lớn."
             },
             "speaking": {
               "q": "Luyện nói hoạt động thế nào? Giọng của tôi có bị lưu không?",
@@ -627,13 +627,13 @@
         },
         "cta": {
           "overline": "Hạt giống Dygo",
-          "title": "Trồng từ đầu tiên hôm nay",
-          "free": "Miễn phí",
+          "title": "Gieo từ vựng đầu tiên của bạn ngay hôm nay!",
+          "free": "Miễn phí mãi mãi",
           "button": "Tạo tài khoản miễn phí"
         },
         "footer": {
-          "terms": "Điều khoản",
-          "privacy": "Quyền riêng tư",
+          "terms": "Điều khoản Dịch vụ",
+          "privacy": "Chính sách Bảo mật",
           "copyright": "© 2026 Dygo Academy"
         },
         "speak": {
@@ -683,154 +683,154 @@
     "review": {
       "close": "Đóng",
       "missionLabel": "Nhiệm vụ · {title}",
-      "count": "{done}/{total}",
+      "count": "Đã xong {done}/{total}",
       "vineText": "Đã tưới {done}/{total} từ",
-      "title": "Tưới {count} từ",
-      "showAnswer": "Xem đáp án",
-      "finishedTitle": "Đã tưới cả {count} từ",
-      "seeBloom": "Xem vườn nở hoa",
-      "replayDemo": "Xem lại demo",
-      "backToGarden": "Về vườn",
-      "empty": "Hiện chưa có từ nào cần tưới. Hãy quay lại khi từ của bạn chín.",
-      "error": "Chưa lưu được từ này. Hãy kiểm tra kết nối và thử lại."
+      "title": "Tưới {count, plural, one {# từ} other {# từ}}",
+      "showAnswer": "Hiện đáp án",
+      "finishedTitle": "Đã tưới xong toàn bộ {count} từ! 🎉",
+      "seeBloom": "Cùng xem khu vườn nở hoa nào!",
+      "replayDemo": "Xem lại bản demo",
+      "backToGarden": "Về lại khu vườn",
+      "empty": "Hiện tại không có cây nào khát nước cả! Hãy quay lại khi từ vựng của bạn trĩu quả nhé.",
+      "error": "Không thể lưu từ này. Vui lòng kiểm tra kết nối và thử lại."
     },
     "complete": {
       "unknown": "—",
       "close": "Đóng",
       "bloomLabel": "Hoa đang nở",
-      "overline": "Hoàn thành nhiệm vụ",
-      "title": "Đã tưới {count} từ",
-      "bloomed": "“{word}” và {count} từ khác vừa nở hoa",
+      "overline": "Nhiệm vụ Hoàn thành! 🎉",
+      "title": "Đã tưới {count, plural, one {# từ} other {# từ}}",
+      "bloomed": "“{word}” và {count} từ khác vừa nở rộ!",
       "percent": "{value}%",
       "minutes": "{count} phút",
-      "recalled": "nhớ được",
+      "recalled": "đã nhớ",
       "today": "hôm nay",
-      "streak": "ngày liên tiếp",
-      "missionsDone": "Xong {done}/{total} nhiệm vụ",
-      "missionsLeft": "{count, plural, =0 {Hoa Vàng hôm nay đang nở} other {Còn # nhiệm vụ nữa là nở Hoa Vàng}}",
+      "streak": "ngày chăm chỉ",
+      "missionsDone": "Đã hoàn thành {done}/{total} nhiệm vụ",
+      "missionsLeft": "{count, plural, =0 {Đóa Hoa Vàng hôm nay đang lớn lên!} one {Còn 1 nhiệm vụ nữa để mở khóa Đóa Hoa Vàng hôm nay!} other {Còn # nhiệm vụ nữa để mở khóa Đóa Hoa Vàng hôm nay!}}",
       "nextMission": "{title} · {minutes} phút",
-      "ripening": "Ngày mai {count} từ sẽ chín",
+      "ripening": "Sẽ có {count, plural, one {# từ} other {# từ}} trĩu quả vào ngày mai",
       "remindAt": "Nhắc tôi lúc {time}",
-      "back": "Về vườn",
+      "back": "Về lại khu vườn",
       "dayLabel": "{day}{today, select, true {, hôm nay} other {}}{done, select, true {, đã xong} other {}}"
     },
     "harvest": {
-      "title": "Thu hoạch tuần này",
+      "title": "Thu Hoạch Hàng Tuần",
       "missionsCount": "{done}/{total} nhiệm vụ",
-      "missionsHint": "Nhiệm vụ giúp cây lớn",
+      "missionsHint": "Hoàn thành nhiệm vụ để giúp cây của ngày hôm đó lớn lên",
       "today": "Hôm nay",
-      "dayPlant": "{count, plural, =0 {chưa có nhiệm vụ} other {# nhiệm vụ}}",
-      "seedPack": "{need} Hoa Vàng trong tuần sẽ mở khóa gói hạt giống <b>{name}</b>",
+      "dayPlant": "{count, plural, =0 {không có nhiệm vụ} one {# nhiệm vụ} other {# nhiệm vụ}}",
+      "seedPack": "Thu thập {need} Đóa Hoa Vàng tuần này để mở khóa gói hạt giống <b>{name}</b> nhé! 📦",
       "seedPackCount": "{have}/{need}",
-      "missionsTitle": "Nhiệm vụ tuần này",
-      "missionsComingSoon": "Nhiệm vụ hằng ngày sắp có. Mỗi nhiệm vụ bạn hoàn thành sẽ giúp cây của ngày đó lớn lên ở đây.",
+      "missionsTitle": "Nhiệm Vụ Tuần Này",
+      "missionsComingSoon": "Nhiệm vụ hàng ngày sắp ra mắt! Mỗi nhiệm vụ bạn hoàn thành sẽ giúp cái cây của ngày hôm đó lớn lên ngay tại đây.",
       "goalHint": "mục tiêu từ vựng",
-      "goalMastered": "/ {target, number} từ đã thuộc",
-      "goalBar": "Đã thuộc {mastered, number} và đang lớn {growing, number} trên {target, number} từ",
-      "legendMastered": "Đã thuộc",
-      "legendGrowing": "Đang lớn ({count, number})",
-      "eta": "Theo tốc độ này: {eta}",
-      "goalTitle": "Mục tiêu từ vựng",
-      "goalComingSoon": "Đặt mục tiêu số từ cho kỳ thi của bạn. Sắp có.",
-      "barrelTitle": "Thùng nước mưa · {count}",
-      "barrelName": "Thùng nước mưa",
-      "barrelBody": "Giữ chuỗi ngày học. Bận quá? Vườn vẫn được tưới.",
-      "comingSoon": "Sắp có.",
-      "groupBody": "Hôm nay {watered}/{members} người đã tưới · {words, number} từ chung",
-      "weekOf": "Tuần từ {date}",
+      "goalMastered": "trong số {target, number} từ đã thành thạo",
+      "goalBar": "Đã thuần thục {mastered, number} · Đang học {growing, number} / Tổng {target, number}",
+      "legendMastered": "Đã thuần thục",
+      "legendGrowing": "Đang học ({count, number})",
+      "eta": "Tiến độ dự kiến: {eta}",
+      "goalTitle": "Mục Tiêu Từ Vựng",
+      "goalComingSoon": "Bạn đang ôn thi? Sắp tới bạn sẽ có thể đặt mục tiêu từ vựng ở đây nhé!",
+      "barrelTitle": "Thùng Hứng Mưa · {count}",
+      "barrelName": "Thùng Hứng Mưa",
+      "barrelBody": "Bảo vệ chuỗi ngày học! Có một ngày bận tối mắt? Khu vườn của bạn vẫn sẽ tự động được tưới.",
+      "comingSoon": "Sắp ra mắt!",
+      "groupBody": "{watered} trên {members} người đã tưới hôm nay · {words, number} từ chung",
+      "weekOf": "Tuần {date}",
       "goalBand": "Đường đến Band {band}",
-      "etaPending": "[ETA]"
+      "etaPending": "[Đang tính]"
     },
     "comeback": {
-      "title": "Chào {name}!<br></br>Vườn vẫn đợi bạn.",
-      "titleNoName": "Chào bạn!<br></br>Vườn vẫn đợi bạn.",
+      "title": "Chào mừng trở lại, {name}! 🎉<br></br>Khu vườn rất nhớ bạn.",
+      "titleNoName": "Chào mừng trở lại! 🎉<br></br>Khu vườn rất nhớ bạn.",
       "legend": {
-        "thirsty": "{count, number} cần tưới",
-        "wilting": "{count, number} đang héo",
-        "ripe": "{count, number} vẫn chín"
+        "thirsty": "{count, number} đang khát",
+        "wilting": "{count, number} sắp héo",
+        "ripe": "{count, number} vẫn trĩu quả"
       },
-      "streakSafe": "Chuỗi {count} ngày của bạn vẫn an toàn",
-      "streakBarrel": "Thùng nước mưa đã bù {covered} ngày. Còn {left}, nạp lại vào {day}.",
+      "streakSafe": "Chuỗi {count} ngày của bạn vẫn an toàn! 🛡️",
+      "streakBarrel": "Thùng Hứng Mưa đã bảo vệ {covered, plural, one {# ngày} other {# ngày}}. Còn lại {left} (sẽ đầy lại vào {day}).",
       "overline": "Bắt đầu nhẹ nhàng",
-      "reviveTitle": "Cứu {count} từ đang héo trước",
-      "reviveBody": "Đây là những từ bạn dễ quên nhất. Những từ còn lại có thể để đến mai.",
-      "revive": "Cứu nhanh",
-      "reviveDetail": "{count} từ · khoảng {minutes} phút",
-      "waterAllInstead": "Tưới cả {count} từ",
-      "waterAll": "Tưới cả {count} từ",
-      "reviveDetailNoTime": "{count} từ"
+      "reviveTitle": "Hãy cứu {count} từ đang héo trước nhé!",
+      "reviveBody": "Những từ này đang dần mờ đi trong trí nhớ của bạn. Những từ còn lại có thể đợi đến ngày mai!",
+      "revive": "Hồi Sinh Nhanh",
+      "reviveDetail": "{count, plural, one {# từ} other {# từ}} · khoảng {minutes} phút",
+      "waterAllInstead": "Thay vào đó, tưới toàn bộ {count} từ",
+      "waterAll": "Tưới toàn bộ {count}",
+      "reviveDetailNoTime": "{count, plural, one {# từ} other {# từ}}"
     },
     "topics": {
-      "title": "Chủ đề",
+      "title": "Chủ Đề",
       "all": "Tất cả",
-      "summary": "{beds} luống · {words} từ",
-      "search": "Tìm từ và chủ đề",
+      "summary": "{beds, plural, one {# luống} other {# luống}} · {words, plural, one {# từ} other {# từ}}",
+      "search": "Tìm kiếm từ và chủ đề",
       "filterLabel": "Lọc chủ đề",
-      "words": "{count} từ",
-      "fruiting": "{count} đã kết trái",
+      "words": "{count, plural, one {# từ} other {# từ}}",
+      "fruiting": "{count} trĩu quả",
       "separator": " · ",
-      "due": "{count} cần ôn",
-      "allWatered": "Đã tưới xong",
-      "locked": "Đã khóa",
-      "newBed": "Tạo luống mới",
+      "due": "{count} từ đến hạn",
+      "allWatered": "Đã tưới xong!",
+      "locked": "Đã khóa 🔒",
+      "newBed": "Trồng luống mới",
       "mine": "Của tôi",
-      "empty": "Chưa có luống nào. Tạo luống đầu tiên ở bên dưới.",
+      "empty": "Chưa có luống nào cả. Hãy trồng luống đầu tiên bên dưới nhé!",
       "library": "Thư viện",
-      "searchTitle": "Tìm luống",
+      "searchTitle": "Tìm một luống chủ đề",
       "searchPlaceholder": "Tên chủ đề",
-      "searchEmpty": "Không có luống nào khớp với “{query}”.",
-      "newBedTitle": "Tạo luống mới",
-      "newBedDescription": "Đặt tên cho chủ đề. Sau đó bạn có thể thêm từ vào.",
+      "searchEmpty": "Không có luống chủ đề nào khớp với “{query}”.",
+      "newBedTitle": "Trồng một luống mới",
+      "newBedDescription": "Đặt tên cho chủ đề của bạn, sau đó bắt đầu thêm từ thôi!",
       "newBedName": "Tên chủ đề",
-      "newBedGroup": "Tạo trong",
-      "newBedSubmit": "Tạo luống",
-      "newBedNoGroup": "Bạn cần một nhóm có quyền thêm chủ đề. Hãy tạo nhóm trong mục Nhóm trước.",
-      "newBedError": "Chưa tạo được luống. Hãy kiểm tra kết nối và thử lại.",
-      "shared": "Chung",
+      "newBedGroup": "Trồng tại",
+      "newBedSubmit": "Trồng ngay!",
+      "newBedNoGroup": "Bạn cần một nhóm nơi bạn có quyền chỉnh sửa. Hãy tạo một nhóm trong phần Khu Vườn Chung trước nhé!",
+      "newBedError": "Không thể tạo luống này. Vui lòng kiểm tra kết nối và thử lại.",
+      "shared": "Được chia sẻ",
       "searchBeds": "Tìm chủ đề",
-      "lockedHint": "Gói hạt giống · còn {count} Hoa Vàng"
+      "lockedHint": "Gói hạt giống · Thu thập thêm {count, plural, one {# Đóa Hoa Vàng} other {# Đóa Hoa Vàng}} tuần này để mở khóa!"
     },
     "bed": {
-      "back": "Quay lại chủ đề",
+      "back": "Trở lại chủ đề",
       "options": "Tùy chọn chủ đề",
       "stagesLabel": "Lọc theo giai đoạn",
       "unknown": "—",
       "stage": {
-        "seed": "Hạt",
-        "sprout": "Mầm",
-        "flower": "Hoa",
-        "tree": "Kết trái"
+        "seed": "Hạt giống",
+        "sprout": "Chồi non",
+        "flower": "Đóa hoa",
+        "tree": "Trĩu quả"
       },
       "stageTitle": {
-        "seed": "Hạt trong luống này",
-        "sprout": "Mầm trong luống này",
+        "seed": "Hạt giống trong luống này",
+        "sprout": "Chồi non trong luống này",
         "flower": "Hoa trong luống này",
-        "tree": "Cây kết trái trong luống này"
+        "tree": "Cây ra quả trong luống này"
       },
-      "water": "Tưới {count} từ",
-      "nothingDue": "Chưa có từ đến hạn",
-      "quiz": "Kiểm tra",
+      "water": "Tưới {count} từ đến hạn",
+      "nothingDue": "Chưa có từ nào đến hạn!",
+      "quiz": "Đố Vui",
       "addWord": "Thêm từ",
-      "allWords": "Tất cả từ",
-      "sorted": "Xếp theo lần tưới tiếp theo",
+      "allWords": "Tất cả các từ",
+      "sorted": "Sắp xếp theo lần ôn tiếp theo",
       "empty": "Chưa có từ nào ở giai đoạn này.",
-      "emptyBed": "Luống này còn trống. Thêm từ đầu tiên để bắt đầu gieo.",
-      "dueNow": "Cần tưới",
+      "emptyBed": "Luống này đang trống! Thêm từ đầu tiên để bắt đầu trồng nhé.",
+      "dueNow": "Đến hạn ngay",
       "new": "Mới",
-      "inDays": "{count} ngày nữa",
+      "inDays": "trong {count, plural, one {# ngày} other {# ngày}}",
       "meta": "{parts}",
-      "wordsCount": "{count} từ",
-      "notFound": "Luống này không tồn tại hoặc không phải của bạn.",
-      "tricky": "{meaning} · từ khó, quên {count} lần",
+      "wordsCount": "{count, plural, one {# từ} other {# từ}}",
+      "notFound": "Luống này không tồn tại hoặc bạn không có quyền truy cập.",
+      "tricky": "{meaning} · khó nhằn ({count, plural, one {# lần sai} other {# lần sai}})",
       "addSheet": {
-        "title": "Thêm từ",
-        "description": "Vào {topic}",
-        "label": "Từ",
-        "placeholder": "ví dụ: resilient",
-        "hint": "Phát âm, âm thanh và ví dụ sẽ tự được bổ sung.",
+        "title": "Thêm một từ",
+        "description": "Vào luống {topic}",
+        "label": "Từ vựng",
+        "placeholder": "VD: resilient",
+        "hint": "Phát âm, âm thanh và ví dụ sẽ được tự động tạo!",
         "submit": "Gieo từ",
         "adding": "Đang gieo…",
-        "error": "Không thêm được từ này. Hãy thử lại."
+        "error": "Không thể thêm từ này. Thử lại xem sao nhé!"
       },
       "speak": "Nói",
       "speakSentences": "{count} câu từ luống này",
@@ -846,146 +846,146 @@
       "unknown": "—",
       "testDay": "Ngày thi: {date}",
       "stats": {
-        "fruiting": "từ kết trái",
-        "bestStreak": "kỷ lục",
-        "hours": "{count}h",
-        "inGarden": "trong vườn",
-        "goldenBlooms": "Hoa Vàng"
+        "fruiting": "từ đang trĩu quả",
+        "bestStreak": "chuỗi dài nhất",
+        "hours": "{count} giờ",
+        "inGarden": "trong khu vườn",
+        "goldenBlooms": "Đóa Hoa Vàng"
       },
-      "calendarTitle": "Lịch vườn",
+      "calendarTitle": "Hoạt Động Vườn",
       "calendarRange": "16 tuần qua",
-      "calendarLabel": "Số nhiệm vụ hoàn thành mỗi ngày trong 16 tuần qua",
-      "calendarLegend": "Mỗi ô = nhiệm vụ của một ngày",
-      "comingSoon": "Sắp có cùng nhiệm vụ hằng ngày.",
-      "keepsakesTitle": "Kỷ niệm",
+      "calendarLabel": "Các nhiệm vụ đã hoàn thành mỗi ngày trong 16 tuần qua",
+      "calendarLegend": "Mỗi ô vuông = nhiệm vụ của một ngày",
+      "comingSoon": "Sắp ra mắt cùng với nhiệm vụ hàng ngày!",
+      "keepsakesTitle": "Kỷ Vật & Thành Tựu 🏆",
       "keepsake": {
-        "firstHarvest": "Vụ đầu tiên",
+        "firstHarvest": "Mùa vụ đầu tiên",
         "streak": "Chuỗi {count} ngày",
-        "blooms": "{count} Hoa Vàng",
-        "next": "Tiếp: {count} từ",
-        "nextStreak": "Tiếp: chuỗi {count} ngày",
-        "nextBlooms": "Tiếp: {count} Hoa Vàng"
+        "blooms": "{count} Đóa Hoa Vàng",
+        "next": "{count} từ · sẽ mở khóa tiếp",
+        "nextStreak": "Chuỗi {count} ngày · sẽ mở khóa tiếp",
+        "nextBlooms": "{count} Đóa Hoa Vàng · sẽ mở khóa tiếp"
       },
-      "dailyGoal": "Mục tiêu ngày",
+      "dailyGoal": "Mục Tiêu Hàng Ngày",
       "dailyGoalValue": "{missions} nhiệm vụ · {minutes} phút",
-      "comingSoonShort": "Sắp có",
-      "reminder": "Nhắc khi từ chín",
-      "meanings": "Nghĩa hiển thị",
+      "comingSoonShort": "Sắp ra mắt",
+      "reminder": "Nhắc Nhở Cây Chín",
+      "meanings": "Định nghĩa bằng",
       "family": "Gia đình",
-      "familyValue": "Mở vườn của {name}",
+      "familyValue": "Mở khu vườn của {name}",
       "goal": "{exam} · mục tiêu band {band}",
       "testDayUnset": "[thêm ngày]",
       "meaningsValue": {
-        "none": "English",
-        "vi-VN": "Tiếng Việt + English",
-        "zh-CN": "简体中文 + English"
+        "none": "Tiếng Anh",
+        "vi-VN": "Tiếng Việt + Tiếng Anh",
+        "zh-CN": "Tiếng Trung + Tiếng Anh"
       },
       "account": "Tài khoản"
     },
     "reference": {
-      "metaTitle": "Mẫu vườn: {name}"
+      "metaTitle": "Tài liệu vườn: {name}"
     },
     "live": {
-      "loading": "Đang tải vườn của bạn…",
-      "error": "Chưa tải được vườn. Hãy kiểm tra kết nối và thử lại.",
+      "loading": "Đang tải khu vườn của bạn…",
+      "error": "Không thể tải khu vườn. Vui lòng kiểm tra kết nối và thử lại.",
       "retry": "Thử lại",
-      "errorTitle": "Có gì đó bị héo",
-      "notFoundTitle": "Lối này không có trong vườn",
-      "notFoundBody": "Trang có thể đã chuyển đi, hoặc đường dẫn đã cũ.",
-      "backHome": "Về vườn của tôi",
-      "missionTitle": "Tưới {count} từ",
-      "topicMeta": "{count} từ"
+      "errorTitle": "Có gì đó vừa héo đi!",
+      "notFoundTitle": "Không tìm thấy đường",
+      "notFoundBody": "Trang này có thể đã bị chuyển đi, hoặc liên kết đã cũ.",
+      "backHome": "Về lại khu vườn của mình",
+      "missionTitle": "Tưới {count, plural, one {# từ} other {# từ}}",
+      "topicMeta": "{count, plural, one {# từ} other {# từ}}"
     },
     "groups": {
       "list": {
-        "title": "Vườn chung",
-        "summary": "{gardens} khu vườn · {gardeners} người",
-        "create": "Tạo vườn mới",
-        "start": "Tạo vườn mới",
-        "join": "Tham gia bằng link",
-        "rainTitle": "{group} · tưới {count} từ",
-        "rainDetail": "{done}/{members} người đã xong · đến {time}",
-        "cardMeta": "{members} người · {beds} luống chung · {words} từ",
-        "emptyTitle": "Chưa có vườn chung nào",
-        "emptyBody": "Tạo một vườn cho lớp học hoặc nhóm bạn, hoặc tham gia bằng link mời.",
-        "joinTitle": "Tham gia bằng link",
-        "joinSubtitle": "Dán link mời bạn nhận được",
-        "joinField": "Link mời",
+        "title": "Khu Vườn Chung",
+        "summary": "{gardens, plural, one {# vườn} other {# vườn}} · {gardeners, plural, one {# người làm vườn} other {# người làm vườn}}",
+        "create": "Tạo một khu vườn",
+        "start": "Bắt đầu một khu vườn",
+        "join": "Tham gia bằng liên kết",
+        "rainTitle": "{group} · tưới {count, plural, one {# từ} other {# từ}}",
+        "rainDetail": "{done}/{members} đã xong · kết thúc lúc {time}",
+        "cardMeta": "{members, plural, one {# người làm vườn} other {# người làm vườn}} · {beds, plural, one {# luống chung} other {# luống chung}} · {words, plural, one {# từ} other {# từ}}",
+        "emptyTitle": "Chưa có khu vườn chung nào",
+        "emptyBody": "Tạo một khu vườn cho lớp hoặc nhóm bạn, hay tham gia bằng liên kết mời!",
+        "joinTitle": "Tham gia bằng liên kết",
+        "joinSubtitle": "Dán liên kết mời của bạn xuống dưới",
+        "joinField": "Liên kết mời",
         "joinPlaceholder": "dygoacademy.com/join/…",
         "joinGo": "Mở lời mời",
-        "joinInvalid": "Đây không giống link mời."
+        "joinInvalid": "Hmm, có vẻ đây không phải là một liên kết mời hợp lệ."
       },
       "garden": {
-        "back": "Quay lại vườn chung",
+        "back": "Trở lại các khu vườn chung",
         "manage": "Quản lý vườn",
-        "subtitle": "{role, select, ADMIN {Bạn là quản trị} WRITE {Bạn là biên tập} other {Bạn là thành viên}} · {members} người",
-        "eyebrow": "Vườn chung",
-        "heroTitle": "{count} từ chung đang lớn",
-        "watered": "Hôm nay {watered}/{members} người đã tưới",
-        "ripe": "{ripe}/{total} cây đã chín",
-        "plotLabel": "Vườn chung có năm ô đất, mỗi người một ô",
-        "rainTitle": "Ngày mưa · tưới {count} từ",
-        "rainDetail": "{done}/{members} người đã xong · bạn: {mine}/{count}",
-        "beds": "Luống chung",
-        "sorted": "Xếp theo số từ bạn cần ôn",
-        "bedWords": "{count} từ",
+        "subtitle": "{role, select, ADMIN {Bạn là Quản trị viên} WRITE {Bạn là Người chỉnh sửa} other {Bạn là Người xem}} · {members, plural, one {# người làm vườn} other {# người làm vườn}}",
+        "eyebrow": "Khu vườn chung",
+        "heroTitle": "Có {count, plural, one {# từ chung đang lớn} other {# từ chung đang lớn}}",
+        "watered": "{watered} trên {members} người đã tưới hôm nay",
+        "ripe": "{ripe} trên {total} cây đã trĩu quả",
+        "plotLabel": "Một khu vườn chung với 5 mảnh đất—một mảnh cho mỗi người",
+        "rainTitle": "Ngày mưa · tưới {count, plural, one {# từ} other {# từ}}",
+        "rainDetail": "{done}/{members} đã xong · bạn: {mine}/{count}",
+        "beds": "Các luống chung",
+        "sorted": "Sắp xếp theo từ đến hạn của bạn",
+        "bedWords": "{count, plural, one {# từ} other {# từ}}",
         "separator": " · ",
         "noBeds": "Chưa có luống chung nào.",
-        "gardeners": "Bạn cùng vườn",
-        "gardenersLabel": "{count} người",
+        "gardeners": "Người làm vườn",
+        "gardenersLabel": "{count, plural, one {# người làm vườn} other {# người làm vườn}}",
         "more": "+{count}",
         "invite": "Mời",
-        "notFound": "Không tìm thấy vườn này, hoặc bạn không ở trong vườn."
+        "notFound": "Khu vườn này không tồn tại hoặc bạn không phải là thành viên."
       },
       "tend": {
-        "title": "Chăm vườn",
-        "back": "Quay lại vườn nhóm",
-        "trickyTab": "Chỗ khó",
-        "gardenersTab": "Bạn cùng vườn",
-        "trickyTitle": "Chỗ khó",
+        "title": "Chăm Sóc Vườn",
+        "back": "Trở lại khu vườn nhóm",
+        "trickyTab": "Luống từ khó nhằn",
+        "gardenersTab": "Người làm vườn",
+        "trickyTitle": "Luống từ khó nhằn",
         "window": "7 ngày qua",
-        "trickyIntro": "Những từ cả vườn hay sai nhất. Chỉ hiện tổng số, không bao giờ hiện câu trả lời của riêng ai.",
-        "trickyMeta": "sai {misses} lần · {gardeners} người",
-        "trickyEmpty": "Tuần này không có chỗ khó nào.",
-        "rainTitle": "Gọi một ngày mưa",
-        "rainBody": "Gửi thông báo đến {count} người · ưu tiên từ khó",
+        "trickyIntro": "Những từ mà nhóm này hay sai nhất. Chỉ hiển thị tổng hợp—không bao giờ hiển thị điểm cá nhân!",
+        "trickyMeta": "{misses, plural, one {# lần sai} other {# lần sai}} · {gardeners, plural, one {# người làm vườn} other {# người làm vườn}}",
+        "trickyEmpty": "Tuần này không có luống từ khó nào cả. Mọi người đang làm rất tuyệt!",
+        "rainTitle": "Khởi động Ngày Mưa 🌧️",
+        "rainBody": "Gửi thông báo đến {count, plural, one {# người làm vườn} other {# người làm vườn}} · tập trung vào các từ khó nhằn trước tiên",
         "sizeLabel": "Số từ mỗi người",
-        "size": "{count} từ",
-        "start": "Bắt đầu ngày mưa · {count} từ mỗi người",
-        "last": "Ngày mưa gần nhất: {day} · {joined}/{members} người tham gia",
-        "pushMessage": "Ngày mưa ở {group}: hôm nay tưới {count} từ",
-        "sent": "Đã gửi ngày mưa đến {count} người.",
-        "sendFailed": "Chưa gửi được ngày mưa. Hãy thử lại.",
-        "alreadyRunning": "Hôm nay đã có một ngày mưa rồi.",
-        "legend": "<b>Quản trị</b> quản lý thành viên, lời mời và ngày mưa · <b>Biên tập</b> thêm luống và từ · <b>Thành viên</b> tưới cây",
-        "joined": "Tham gia {date}",
-        "invitesActive": "{count} link mời đang hoạt động",
-        "invitesNone": "Chưa có link mời",
-        "invitesNoneBody": "Tạo link để mời bạn cùng vườn",
-        "inviteUses": "đã dùng {used}/{max}",
-        "inviteUsesOpen": "đã dùng {used} lần",
-        "inviteExpires": "hết hạn {date}",
-        "inviteNoExpiry": "không hết hạn",
+        "size": "{count, plural, one {# từ} other {# từ}}",
+        "start": "Bắt đầu ngày mưa · mỗi người {count, plural, one {# từ} other {# từ}}",
+        "last": "Ngày mưa gần nhất: {day} · {joined}/{members} người đã tham gia",
+        "pushMessage": "Ngày mưa tại {group}: hãy tưới {count, plural, one {# từ} other {# từ}} hôm nay nhé!",
+        "sent": "Đã gửi thông báo ngày mưa tới {count, plural, one {# người làm vườn} other {# người làm vườn}}!",
+        "sendFailed": "Không thể gửi cảnh báo ngày mưa. Vui lòng thử lại.",
+        "alreadyRunning": "Hôm nay đã có một ngày mưa đang diễn ra rồi!",
+        "legend": "<b>Quản trị viên</b> quản lý thành viên & ngày mưa · <b>Người chỉnh sửa</b> thêm luống & từ · <b>Người xem</b> tưới cây",
+        "joined": "Tham gia vào {date}",
+        "invitesActive": "{count, plural, one {# liên kết mời đang hoạt động} other {# liên kết mời đang hoạt động}}",
+        "invitesNone": "Không có liên kết mời nào",
+        "invitesNoneBody": "Tạo một cái để rủ thêm bạn bè làm vườn nhé!",
+        "inviteUses": "Đã dùng {used}/{max}",
+        "inviteUsesOpen": "đã dùng {used, plural, one {# lần} other {# lần}}",
+        "inviteExpires": "hết hạn vào {date}",
+        "inviteNoExpiry": "không bao giờ hết hạn",
         "invite": "Mời",
-        "linksTitle": "Link mời",
-        "linksSubtitle": "Các link còn dùng được",
+        "linksTitle": "Liên Kết Mời",
+        "linksSubtitle": "Các liên kết đang hoạt động và vẫn dùng được",
         "revoke": "Thu hồi",
-        "revokeLabel": "Thu hồi link {role}",
-        "newLink": "Tạo link mời mới",
-        "roleChanged": "{name} giờ là {role}.",
-        "removeConfirm": "Xóa {name} khỏi vườn này?",
-        "removed": "{name} đã rời vườn.",
-        "lastAdmin": "Vườn cần ít nhất một quản trị. Hãy chọn người khác làm quản trị trước.",
-        "actionFailed": "Chưa thực hiện được. Hãy thử lại.",
-        "settings": "Cài đặt vườn",
-        "settingsSubtitle": "Tên, giới thiệu và ai có thể tìm thấy",
+        "revokeLabel": "Thu hồi liên kết {role}",
+        "newLink": "Liên kết mời mới",
+        "roleChanged": "{name} hiện là {role}.",
+        "removeConfirm": "Bạn có chắc chắn muốn xóa {name} khỏi khu vườn này?",
+        "removed": "{name} đã bị xóa khỏi khu vườn.",
+        "lastAdmin": "Một khu vườn cần ít nhất một quản trị viên. Hãy thăng cấp cho ai đó trước khi bạn từ chức nhé!",
+        "actionFailed": "Có lỗi xảy ra. Vui lòng thử lại.",
+        "settings": "Cài Đặt Khu Vườn",
+        "settingsSubtitle": "Tên, mô tả và thiết lập quyền riêng tư",
         "save": "Lưu thay đổi",
-        "saved": "Đã lưu.",
-        "delete": "Xóa vườn",
-        "deleteConfirm": "Xóa {name}? Các luống chung và từ trong đó cũng bị xóa. Không thể hoàn tác.",
-        "adminOnly": "Chỉ quản trị của vườn mới chăm vườn được.",
-        "backToGarden": "Quay lại vườn",
-        "loadingTricky": "Đang tìm chỗ khó…",
+        "saved": "Đã lưu!",
+        "delete": "Xóa khu vườn",
+        "deleteConfirm": "Bạn có chắc muốn xóa {name}? Tất cả các luống chung và từ vựng sẽ bị xóa vĩnh viễn.",
+        "adminOnly": "Chỉ quản trị viên mới có thể truy cập các cài đặt này.",
+        "backToGarden": "Về lại khu vườn",
+        "loadingTricky": "Đang tìm các luống từ khó nhằn…",
         "echoTitle": "Thử thách Echo",
         "echoWindow": "tuần này",
         "echoKicker": "Từ khó nhất của vườn",
@@ -994,124 +994,124 @@
         "echoSay": "Nói thử"
       },
       "invite": {
-        "title": "Mời bạn cùng vườn",
+        "title": "Mời Người Làm Vườn",
         "subtitle": "vào {group}",
-        "joinAs": "Vai trò khi tham gia",
-        "roleLabel": "Vai trò cho người mới",
+        "joinAs": "Họ sẽ tham gia với vai trò",
+        "roleLabel": "Vai trò cho thành viên mới",
         "expires": "Hết hạn",
-        "uses": "Số lần dùng",
-        "inDays": "Sau {count} ngày",
-        "never": "Không hết hạn",
-        "times": "{count} lần",
+        "uses": "Giới hạn số lần dùng",
+        "inDays": "Trong {count, plural, one {# ngày} other {# ngày}}",
+        "never": "Không bao giờ",
+        "times": "{count, plural, one {# lần} other {# lần}}",
         "unlimited": "Không giới hạn",
-        "stepLabel": "{label}: {value}. Chạm để đổi.",
-        "onceNotice": "Để an toàn, link này chỉ hiện một lần. Hãy sao chép hoặc chia sẻ ngay.",
-        "linkPlaceholder": "Link được tạo khi bạn sao chép hoặc chia sẻ",
-        "copy": "Sao chép link",
+        "stepLabel": "{label}: {value}. Chạm để thay đổi.",
+        "onceNotice": "Vì lý do bảo mật, liên kết này chỉ hiển thị một lần. Hãy sao chép hoặc chia sẻ ngay nhé!",
+        "linkPlaceholder": "Liên kết sẽ được tạo khi bạn nhấn Sao chép hoặc Chia sẻ",
+        "copy": "Sao chép liên kết",
         "share": "Chia sẻ…",
-        "copied": "Đã sao chép link",
-        "copyFailed": "Không sao chép được. Hãy tự chọn và sao chép link.",
-        "failed": "Chưa tạo được link. Hãy thử lại.",
-        "shareText": "Tham gia {group} trên Dygo Academy"
+        "copied": "Đã sao chép liên kết vào khay nhớ tạm! ✨",
+        "copyFailed": "Không thể tự động sao chép. Vui lòng chọn và sao chép thủ công.",
+        "failed": "Không thể tạo liên kết. Vui lòng thử lại.",
+        "shareText": "Cùng tham gia {group} trên Dygo Academy nhé!"
       },
       "join": {
-        "invitedBy": "{name} mời bạn tham gia",
+        "invitedBy": "{name} đã mời bạn tham gia",
         "invited": "Bạn được mời tham gia",
-        "gardeners": "{count, plural, other {người}}",
-        "beds": "{count, plural, other {luống chung}}",
-        "words": "{count, plural, other {từ}}",
-        "benefitBeds": "Luống chung được trồng vào vườn của bạn",
-        "benefitRain": "Nhận ngày mưa từ quản trị vườn",
-        "benefitPrivate": "Tiến độ của riêng bạn luôn được giữ kín",
+        "gardeners": "{count, plural, one {người làm vườn} other {người làm vườn}}",
+        "beds": "{count, plural, one {luống chung} other {luống chung}}",
+        "words": "{count, plural, one {từ} other {từ}}",
+        "benefitBeds": "Các luống chủ đề chung sẽ được gieo thẳng vào khu vườn của bạn",
+        "benefitRain": "Tham gia vào các ngày mưa do quản trị viên phát động",
+        "benefitPrivate": "Tiến độ học tập cá nhân của bạn vẫn hoàn toàn riêng tư 100%",
         "joinAs": {
           "ADMIN": "Bạn sẽ tham gia với vai trò <b>{role}</b>",
           "WRITE": "Bạn sẽ tham gia với vai trò <b>{role}</b>",
           "READ": "Bạn sẽ tham gia với vai trò <b>{role}</b>"
         },
-        "join": "Tham gia vườn",
-        "joining": "Đang tham gia…",
-        "notNow": "Để sau",
+        "join": "Vào vườn ngay!",
+        "joining": "Đang vào…",
+        "notNow": "Lúc khác nhé",
         "loading": "Đang mở lời mời…",
-        "already": "Bạn đã ở trong {group}.",
-        "open": "Mở vườn",
-        "notFound": "Link mời này không dùng được. Hãy xin link mới.",
-        "expired": "Lời mời này đã hết hạn hoặc hết lượt dùng. Hãy xin link mới.",
-        "failed": "Chưa tham gia được. Hãy thử lại."
+        "already": "Bạn đã là thành viên của {group} rồi!",
+        "open": "Mở khu vườn",
+        "notFound": "Liên kết mời này không hợp lệ. Xin quản trị viên một cái mới nhé!",
+        "expired": "Liên kết này đã hết hạn hoặc hết số lần sử dụng. Hãy xin một cái mới nhé!",
+        "failed": "Không thể tham gia. Vui lòng thử lại."
       },
       "create": {
-        "title": "Tạo vườn mới",
-        "subtitle": "Không gian chung cho lớp học hoặc nhóm bạn",
-        "name": "Tên vườn",
+        "title": "Bắt Đầu Một Khu Vườn",
+        "subtitle": "Không gian học chung cho bạn bè hoặc lớp học",
+        "name": "Tên Khu Vườn",
         "about": "Giới thiệu (không bắt buộc)",
-        "namePlaceholder": "Lớp tối Band 7",
-        "aboutPlaceholder": "Từ vựng Writing Task 2, 3 buổi tối mỗi tuần",
-        "openTitle": "Vườn mở",
-        "openOff": "Chỉ người có link mời mới tham gia được",
-        "openOn": "Ai cũng có thể tìm thấy vườn này",
-        "note": "Bạn sẽ là quản trị của vườn. Tiếp theo, hãy thêm luống chung và mời bạn cùng vườn.",
-        "submit": "Tạo vườn",
-        "failed": "Chưa tạo được vườn. Hãy thử lại."
+        "namePlaceholder": "Nhóm Học IELTS Band 7",
+        "aboutPlaceholder": "Từ vựng Writing Task 2 · 3 tối một tuần",
+        "openTitle": "Khu Vườn Công Khai",
+        "openOff": "Chỉ những người có liên kết mời mới có thể tham gia",
+        "openOn": "Ai cũng có thể tìm và tham gia khu vườn này",
+        "note": "Bạn sẽ là quản trị viên của khu vườn! Sau đó bạn có thể thêm các luống chung và rủ bạn bè vào.",
+        "submit": "Tạo khu vườn",
+        "failed": "Không thể tạo khu vườn. Vui lòng thử lại."
       }
     },
     "quiz": {
       "close": "Đóng",
-      "label": "Kiểm tra · {topic}",
-      "labelAll": "Kiểm tra",
-      "count": "{done}/{total}",
-      "vineText": "Đã trả lời {done}/{total} câu",
-      "listen": "Nghe từ",
-      "listenQ": "Nghe rồi gõ lại từ bạn nghe được.",
-      "hint": "Cần gợi ý?",
+      "label": "Đố Vui · {topic}",
+      "labelAll": "Đố Vui",
+      "count": "Đã xong {done}/{total}",
+      "vineText": "Đã trả lời {done}/{total} câu hỏi",
+      "listen": "Nghe âm thanh",
+      "listenQ": "Lắng nghe thật kỹ, sau đó nhập lại từ bạn nghe được.",
+      "hint": "Cần gợi ý không?",
       "hintLoading": "Đang tìm gợi ý…",
       "hintTitle": "Gợi ý",
-      "noIpa": "Từ này chưa có phiên âm.",
-      "noDefinition": "Từ này chưa có định nghĩa.",
+      "noIpa": "Từ này chưa có phát âm, bạn đợi chút nhé.",
+      "noDefinition": "Chưa có định nghĩa cho từ này.",
       "answerLabel": "Câu trả lời của bạn",
-      "placeholder": "Nhập câu trả lời…",
+      "placeholder": "Nhập câu trả lời của bạn vào đây…",
       "check": "Kiểm tra",
       "optionsLabel": "Chọn một đáp án",
       "matchQ": "Từ nào đồng nghĩa với",
       "matchQAntonym": "Từ nào trái nghĩa với",
-      "yourPick": "Bạn chọn",
-      "right": "Chính xác!",
-      "notQuite": "Chưa đúng — đáp án là “{answer}”",
+      "yourPick": "Lựa chọn của bạn",
+      "right": "Chuẩn không cần chỉnh! 🎉",
+      "notQuite": "Suýt đúng rồi! Phải là “{answer}” cơ",
       "wordIpa": "{word} · {ipa}",
       "quote": "“{text}”",
-      "mastered": "Đã thuộc — từ này sẽ ít cần tưới hơn.",
-      "comesBack": "Từ này sẽ quay lại ở lần tưới tới.",
-      "next": "Tiếp",
+      "mastered": "Đã thuần thục! Từ này giờ không cần tưới nhiều nữa. 🚀",
+      "comesBack": "Từ này sẽ xuất hiện lại trong lần ôn tập tiếp theo.",
+      "next": "Tiếp theo",
       "finish": "Xem kết quả",
-      "empty": "Chưa đủ từ sẵn sàng để kiểm tra.",
-      "doneTitle": "Đúng {correct}/{total} câu",
-      "backToBed": "Về luống",
-      "backToTopics": "Về chủ đề",
-      "error": "Chưa kiểm tra được câu trả lời. Hãy kiểm tra kết nối và thử lại.",
+      "empty": "Chưa có đủ từ để làm bài tập đố vui. Hãy học thêm nhé!",
+      "doneTitle": "Đúng {correct}/{total} câu!",
+      "backToBed": "Trở về luống",
+      "backToTopics": "Trở về chủ đề",
+      "error": "Không thể kiểm tra câu trả lời này. Vui lòng kiểm tra kết nối và thử lại.",
       "type": {
         "CLOZE": "Điền vào chỗ trống",
-        "DICTATION": "Nghe và viết",
-        "MATCHING": "Đồng nghĩa hoặc trái nghĩa",
+        "DICTATION": "Nghe và viết lại",
+        "MATCHING": "Từ đồng nghĩa / trái nghĩa",
         "CONTEXTUAL_CHOICE": "Chọn từ đúng"
       },
-      "emptyDrill": "Hiện chưa có từ khó nào cần luyện. Bạn chăm vườn tốt lắm!",
-      "drillTitle": "Từ khó",
+      "emptyDrill": "Hiện không có từ vựng khó nào cần luyện tập. Bạn đang chăm sóc khu vườn rất tốt! ✨",
+      "drillTitle": "Luyện Từ Khó Nhằn",
       "result": {
         "close": "Đóng",
-        "overline": "Đã xong bài kiểm tra",
-        "overlineDrill": "Đã luyện xong",
+        "overline": "Hoàn Thành Đố Vui! 🌟",
+        "overlineDrill": "Hoàn Thành Luyện Tập! 🎉",
         "title": "Đúng {correct}/{total}",
-        "allRight": "Đúng hết rồi. Luống này đang xanh tốt.",
-        "someMissed": "{count, plural, other {# từ cần}} tưới thêm một chút",
-        "right": "Đúng",
-        "needWater": "Cần tưới",
-        "missedTitle": "Những từ cần tưới",
-        "missedNote": "Các từ này sẽ quay lại trong lần tưới tới, bạn sẽ sớm gặp lại.",
-        "drill": "Luyện từ khó",
-        "backToBed": "Về luống",
-        "backToTopics": "Về chủ đề"
+        "allRight": "Đúng 100%! Khu vườn của bạn đang phát triển rất tuyệt! 🌱",
+        "someMissed": "{count, plural, one {# từ cần} other {# từ cần}} thêm một chút nước!",
+        "right": "Chính xác",
+        "needWater": "Cần tưới nước",
+        "missedTitle": "Những từ cần tưới nước",
+        "missedNote": "Chúng sẽ quay lại trong lần ôn tập tiếp theo để bạn có thể sớm chinh phục được!",
+        "drill": "Luyện các từ khó",
+        "backToBed": "Trở về luống",
+        "backToTopics": "Trở về chủ đề"
       }
     },
     "auth": {
-      "email": "Email",
+      "email": "Địa chỉ email",
       "password": "Mật khẩu",
       "show": "Hiện",
       "hide": "Ẩn",
@@ -1119,75 +1119,75 @@
       "hidePassword": "Ẩn mật khẩu",
       "signIn": {
         "metaTitle": "Đăng nhập",
-        "title": "Chào mừng trở lại",
-        "subtitle": "Đăng nhập để tưới các từ hôm nay.",
+        "title": "Chào mừng trở lại! 👋",
+        "subtitle": "Đăng nhập để tưới cây hôm nay nào.",
         "forgot": "Quên mật khẩu?",
         "submit": "Đăng nhập",
         "submitting": "Đang đăng nhập…",
-        "newHere": "Mới dùng Dygo? <link>Tạo tài khoản</link>",
+        "newHere": "Lần đầu đến với Dygo? <link>Tạo tài khoản ngay</link>",
         "errors": {
-          "mismatch": "Email hoặc mật khẩu không đúng. Hãy thử lại hoặc đặt lại mật khẩu.",
-          "network": "Chưa đăng nhập được. Hãy kiểm tra kết nối và thử lại."
+          "mismatch": "Email hoặc mật khẩu không hợp lệ. Vui lòng thử lại hoặc đặt lại mật khẩu.",
+          "network": "Không thể đăng nhập. Kiểm tra kết nối và thử lại nhé."
         }
       },
       "back": "Quay lại",
       "register": {
         "metaTitle": "Tạo tài khoản",
-        "title": "Gieo hạt giống đầu tiên",
-        "subtitle": "Tạo khu vườn của bạn. Miễn phí.",
+        "title": "Gieo hạt giống đầu tiên 🌱",
+        "subtitle": "Bắt đầu xây dựng khu vườn từ vựng của bạn. Hoàn toàn miễn phí!",
         "name": "Tên của bạn",
-        "emailPlaceholder": "ban@example.com",
+        "emailPlaceholder": "you@example.com",
         "passwordPlaceholder": "Ít nhất 6 ký tự",
         "submit": "Tạo tài khoản",
         "submitting": "Đang tạo tài khoản…",
-        "terms": "Khi tiếp tục, bạn đồng ý với Điều khoản và Chính sách quyền riêng tư.",
+        "terms": "Bằng cách tiếp tục, bạn đồng ý với Điều khoản Dịch vụ và Chính sách Bảo mật của chúng tôi.",
         "haveAccount": "Đã có tài khoản? <link>Đăng nhập</link>",
         "invite": {
-          "invitedBy": "{name} mời bạn tham gia",
-          "title": "Tạo tài khoản của bạn",
-          "subtitle": "Sau đó bạn sẽ vào vườn ngay.",
-          "submit": "Tạo tài khoản và tham gia",
+          "invitedBy": "{name} đã mời bạn tham gia",
+          "title": "Tạo tài khoản",
+          "subtitle": "Bạn sẽ bước ngay vào khu vườn chung ngay sau khi xong!",
+          "submit": "Tạo tài khoản & Tham gia",
           "haveAccount": "Đã có tài khoản? <link>Đăng nhập để tham gia</link>"
         },
         "errors": {
-          "failed": "Không tạo được tài khoản với thông tin này. Nếu bạn đã có tài khoản, hãy đăng nhập.",
-          "network": "Chưa tạo được tài khoản. Hãy kiểm tra kết nối và thử lại.",
-          "confirmEmail": "Hãy kiểm tra email để xác nhận tài khoản, rồi đăng nhập."
+          "failed": "Không thể tạo tài khoản với thông tin này. Nếu bạn đã có, thử đăng nhập thay thế nhé!",
+          "network": "Chúng tôi không thể tạo tài khoản. Vui lòng kiểm tra kết nối và thử lại.",
+          "confirmEmail": "Kiểm tra hộp thư đến để xác nhận email, sau đó đăng nhập nhé!"
         }
       },
       "forgot": {
-        "metaTitle": "Đặt lại mật khẩu",
+        "metaTitle": "Đặt Lại Mật Khẩu",
         "title": "Đặt lại mật khẩu",
-        "subtitle": "Chúng tôi sẽ gửi email kèm link để bạn đặt mật khẩu mới.",
-        "submit": "Gửi link đặt lại",
+        "subtitle": "Nhập email của bạn và chúng tôi sẽ gửi liên kết để bạn chọn mật khẩu mới.",
+        "submit": "Gửi liên kết",
         "submitting": "Đang gửi…",
         "sent": {
-          "title": "Kiểm tra hộp thư",
-          "body": "Chúng tôi đã gửi link đến {email}. Link có hiệu lực trong 1 giờ.",
-          "backToSignIn": "Quay lại đăng nhập",
-          "resend": "Chưa nhận được? Gửi lại"
+          "title": "Kiểm tra hộp thư nhé! 📩",
+          "body": "Chúng tôi đã gửi liên kết đặt lại mật khẩu đến {email}. Liên kết này có hiệu lực trong 1 giờ.",
+          "backToSignIn": "Trở lại đăng nhập",
+          "resend": "Chưa nhận được email? Gửi lại liên kết"
         },
         "errors": {
-          "rateLimited": "Bạn đã thử quá nhiều lần. Hãy đợi một phút rồi thử lại.",
-          "network": "Chưa gửi được link. Hãy kiểm tra kết nối và thử lại."
+          "rateLimited": "Thử quá nhiều lần. Vui lòng đợi một phút trước khi thử lại.",
+          "network": "Không thể gửi liên kết đặt lại mật khẩu. Vui lòng kiểm tra kết nối và thử lại."
         }
       },
       "reset": {
-        "metaTitle": "Chọn mật khẩu mới",
+        "metaTitle": "Chọn Mật Khẩu Mới",
         "title": "Chọn mật khẩu mới",
-        "subtitle": "Bạn sẽ dùng mật khẩu này ở lần đăng nhập sau.",
+        "subtitle": "Bạn sẽ dùng mật khẩu này trong lần đăng nhập tới.",
         "newPassword": "Mật khẩu mới",
-        "submit": "Lưu mật khẩu mới",
+        "submit": "Lưu mật khẩu",
         "submitting": "Đang lưu…",
         "expired": {
-          "title": "Link này đã hết hạn",
-          "subtitle": "Link đặt lại chỉ dùng được một lần, trong 1 giờ. Hãy yêu cầu link mới.",
-          "newLink": "Gửi link mới"
+          "title": "Liên kết này đã hết hạn",
+          "subtitle": "Liên kết đặt lại mật khẩu có hiệu lực trong 1 giờ. Yêu cầu một cái mới ở bên dưới nhé!",
+          "newLink": "Gửi liên kết mới"
         },
         "errors": {
-          "samePassword": "Hãy chọn mật khẩu khác với mật khẩu cũ.",
-          "failed": "Chưa lưu được mật khẩu này. Hãy dùng ít nhất 6 ký tự và thử lại.",
-          "network": "Chưa lưu được mật khẩu. Hãy kiểm tra kết nối và thử lại."
+          "samePassword": "Vui lòng chọn mật khẩu khác với mật khẩu cũ của bạn.",
+          "failed": "Không thể lưu mật khẩu. Đảm bảo mật khẩu có ít nhất 6 ký tự và thử lại nhé.",
+          "network": "Không thể lưu mật khẩu mới. Vui lòng kiểm tra kết nối và thử lại."
         }
       }
     },
@@ -1352,6 +1352,95 @@
       "playingShort": "Đang phát…",
       "playNativeLabel": "Nghe người bản xứ",
       "playYouLabel": "Nghe bản ghi của bạn"
+    },
+    "onboarding": {
+      "back": "Quay lại",
+      "skip": "Bỏ qua",
+      "continue": "Tiếp tục",
+      "progress": "Bước {step}/{total}",
+      "progressDone": "Đã xong cả bốn bước",
+      "saveError": "Chưa lưu được. Hãy kiểm tra kết nối rồi thử lại.",
+      "level": {
+        "metaTitle": "Trình độ",
+        "title": "Tiếng Anh của bạn đang ở mức nào?",
+        "subtitle": "Chọn câu giống bạn nhất.",
+        "notSure": "Chưa chắc? Bắt đầu ở B1",
+        "options": {
+          "A2": "Tôi có thể kể về một ngày của mình và hỏi những câu đơn giản.",
+          "B1": "Tôi hiểu được ý chính của một cuộc trò chuyện hay một bài viết ngắn.",
+          "B2": "Tôi có thể bàn về hầu hết các chủ đề và đọc tin tức mà không cần nhiều trợ giúp.",
+          "C1": "Tôi đọc được văn bản học thuật và diễn đạt đúng điều mình muốn nói."
+        }
+      },
+      "goal": {
+        "metaTitle": "Mục tiêu",
+        "title": "Bạn đang vun trồng cho mục tiêu nào?",
+        "subtitle": "Mục tiêu quyết định từ nào chín trước.",
+        "options": {
+          "IELTS": {
+            "title": "IELTS",
+            "detail": "Học thuật hoặc Tổng quát"
+          },
+          "PTE": {
+            "title": "PTE",
+            "detail": "PTE Học thuật"
+          },
+          "LIFE": {
+            "title": "Cho cuộc sống",
+            "detail": "Công việc, du lịch và tiếng Anh hằng ngày"
+          }
+        },
+        "target": {
+          "IELTS": "Band mục tiêu",
+          "PTE": "Điểm mục tiêu"
+        },
+        "lower": "Giảm mục tiêu",
+        "raise": "Tăng mục tiêu"
+      },
+      "bed": {
+        "metaTitle": "Chủ đề đầu tiên",
+        "title": "Chọn gói hạt giống đầu tiên",
+        "subtitle": "Gói này sẽ thành luống đầu tiên trong vườn của bạn. Bạn có thể thêm luống bất cứ lúc nào.",
+        "plant": "Gieo luống này",
+        "empty": "Chưa có chủ đề nào để gieo. Bạn có thể thêm từ của riêng mình trong Chủ đề.",
+        "words": "{count, plural, other {# từ}}"
+      },
+      "reminder": {
+        "metaTitle": "Giờ nhắc",
+        "title": "Khi nào chúng tôi nên nhắc bạn?",
+        "subtitle": "Kéo mặt trời đến giờ bạn muốn tưới từ.",
+        "pick": "Chọn giờ",
+        "confirm": "Nhắc tôi lúc {time}",
+        "slider": "Giờ nhắc",
+        "morning": "Sáng",
+        "night": "Đêm",
+        "presets": {
+          "morning": "Sáng · {time}",
+          "lunch": "Trưa · {time}",
+          "evening": "Tối · {time}",
+          "night": "Đêm · {time}"
+        },
+        "notice": {
+          "denied": "Trình duyệt này đang tắt thông báo, nên chúng tôi đã lưu giờ của bạn nhưng chưa bật nhắc. Bạn có thể bật sau trong mục Tôi.",
+          "unsupported": "Trình duyệt này không hiện được lời nhắc. Giờ của bạn đã được lưu; hãy bật nhắc trong mục Tôi từ một trình duyệt hỗ trợ.",
+          "error": "Chưa lưu được giờ nhắc. Bạn có thể đặt sau trong mục Tôi."
+        }
+      },
+      "ready": {
+        "metaTitle": "Vườn đã sẵn sàng",
+        "title": "Vườn của bạn đã sẵn sàng",
+        "subtitle": "Những hạt giống đầu tiên đã được gieo.",
+        "water": "Tưới những từ đầu tiên",
+        "none": "Chưa đặt",
+        "level": "Trình độ",
+        "levelValue": "{level}",
+        "goal": "Mục tiêu",
+        "goalWithBand": "{goal} · {band}",
+        "bed": "Luống đầu tiên",
+        "reminder": "Nhắc nhở",
+        "reminderOff": "Tắt",
+        "editLater": "Bạn có thể đổi bất kỳ mục nào sau này trong mục Tôi."
+      }
     }
   }
 }

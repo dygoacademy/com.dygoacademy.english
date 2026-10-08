@@ -5,7 +5,10 @@ import { DatabaseService } from '../../database/database.service';
 import {
   DEFAULT_TIMEZONE,
   SrsService,
+  computeGardenMinutes,
   computeSrsSummary,
+  GARDEN_FIRST_EVENT_CAP_MS,
+  GARDEN_IDLE_GAP_SECONDS,
   resolveUserTimezone,
 } from './srs.service';
 import { newCard, schedule } from './fsrs-scheduler';
@@ -725,6 +728,39 @@ describe('SrsService.stats', () => {
     } finally {
       Date.now = realNow;
     }
+  });
+});
+
+describe('computeGardenMinutes', () => {
+  it('turns the summed seconds into whole minutes', async () => {
+    const queryFn = jest.fn().mockResolvedValueOnce([{ seconds: '1530.4' }]);
+
+    await expect(computeGardenMinutes(queryFn, 'user-1')).resolves.toBe(26);
+    expect(queryFn).toHaveBeenCalledWith(expect.stringContaining('public.speaking_attempts'), [
+      'user-1',
+      GARDEN_IDLE_GAP_SECONDS,
+      GARDEN_FIRST_EVENT_CAP_MS,
+    ]);
+  });
+
+  it('is 0 with no activity or an unreadable result', async () => {
+    const none = jest.fn().mockResolvedValueOnce([{ seconds: 0 }]);
+    const unreadable = jest.fn().mockResolvedValueOnce(undefined);
+    await expect(computeGardenMinutes(none, 'u')).resolves.toBe(0);
+    await expect(computeGardenMinutes(unreadable, 'u')).resolves.toBe(0);
+  });
+});
+
+describe('SrsService.stats garden_minutes', () => {
+  it('adds the garden time to the summary', async () => {
+    const queryAsMock = jest.fn((_userId: string, text: string) =>
+      Promise.resolve(text.includes('public.speaking_attempts') ? [{ seconds: '600' }] : []),
+    );
+    const service = await makeService(queryAsMock);
+
+    const stats = await service.stats('user-1');
+
+    expect(stats.garden_minutes).toBe(10);
   });
 });
 

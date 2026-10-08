@@ -315,7 +315,9 @@ function QuestionBody({
               loading={submitting}
               disabled={!text.trim()}
               // Canvas: 58px, and still forest (dimmed) while the field is empty.
-              className="h-[58px] disabled:bg-forest disabled:text-white disabled:opacity-[.45] disabled:shadow-press-forest"
+              // md:max-w-none: span the 560px column like the answer field above,
+              // not the 400px cap the shared button styles apply from md up.
+              className="h-[58px] md:max-w-none disabled:bg-forest disabled:text-white disabled:opacity-[.45] disabled:shadow-press-forest"
             >
               {t('check')}
             </Button>
@@ -519,7 +521,7 @@ function FeedbackPanel({
           ) : null}
         </>
       )}
-      <Button variant="primary" className="mt-1.5 w-full" onClick={onNext} autoFocus>
+      <Button variant="primary" className="mt-1.5 w-full md:max-w-none" onClick={onNext} autoFocus>
         {isLast ? t('finish') : t('next')}
       </Button>
     </section>

@@ -63,7 +63,7 @@ export function HomeLive() {
 
   const now = new Date();
   const s = stats.data;
-  const name = displayName(user.data);
+  const name = displayName(user.data, s.display_name);
   const today = todayIn(timeZone, now);
   const missed = activity.data ? missedDays(activity.data, isoDay(today)) : null;
 

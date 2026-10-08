@@ -151,6 +151,11 @@ export interface SrsStats {
   freezes?: SrsFreezes;
   /** UI-6 U6-3: longest streak in the history (frozen days bridge it). */
   best_streak_days?: number;
+  /**
+   * Me's "in the garden": whole minutes spent learning, all time, worked
+   * out from review and speaking timestamps. Optional for older backends.
+   */
+  garden_minutes?: number;
 }
 
 /** `SrsStats.freezes` — streak freezes. */

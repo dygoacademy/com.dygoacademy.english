@@ -157,6 +157,12 @@ export interface SrsStats {
   freezes: SrsFreezes;
   /** UI-6 U6-3: longest streak in the loaded history (frozen days bridge). */
   best_streak_days: number;
+  /**
+   * Me's "in the garden": whole minutes spent learning, all time (see
+   * `computeGardenMinutes`). Only `GET /srs/stats` fills it; the
+   * NotificationProcessor's summary leaves it out.
+   */
+  garden_minutes?: number;
 }
 
 export interface SrsFreezes {
@@ -672,7 +678,11 @@ export class SrsService {
       params: unknown[],
     ) => this.db.queryAs<T>(userId, text, params);
     const timezone = await resolveUserTimezone(queryFn, userId, detectedTz);
-    return computeSrsSummary(queryFn, userId, timezone);
+    const summary = await computeSrsSummary(queryFn, userId, timezone);
+    // After the summary, not inside its Promise.all, so the summary's own
+    // query order (and its callers' positional mocks) stays the same.
+    const gardenMinutes = await computeGardenMinutes(queryFn, userId);
+    return { ...summary, garden_minutes: gardenMinutes };
   }
 
   /**
@@ -1277,6 +1287,46 @@ export async function computeSrsSummary(
     },
     best_streak_days: streak.best,
   };
+}
+
+/** A pause longer than this ends a learning session. */
+export const GARDEN_IDLE_GAP_SECONDS = 300;
+/** Most a session's first answer can add on its own. */
+export const GARDEN_FIRST_EVENT_CAP_MS = 60_000;
+
+/**
+ * Me's "in the garden": time spent learning, worked out from what the
+ * learner already leaves behind, so it covers their whole history with no
+ * client-side timer. Every review (flashcard, quiz, leech drill) and every
+ * speaking attempt is one event. Each event adds the time since the
+ * previous one when that gap is at most `GARDEN_IDLE_GAP_SECONDS`;
+ * otherwise it starts a new session and adds only its own duration
+ * (`response_ms` / `user_duration_ms`, capped at
+ * `GARDEN_FIRST_EVENT_CAP_MS`). Time spent reading a card before the first
+ * answer of a session isn't counted, so this slightly undercounts.
+ */
+export async function computeGardenMinutes(
+  queryFn: SummaryQueryFn,
+  userId: string,
+): Promise<number> {
+  const rows = await queryFn<{ seconds: string | number | null }>(
+    `select coalesce(sum(
+              case when gap is not null and gap <= $2 then gap
+                   else least(own_ms, $3) / 1000.0 end), 0) as seconds
+       from (
+         select extract(epoch from at - lag(at) over (order by at)) as gap, own_ms
+           from (
+             select reviewed_at as at, coalesce(response_ms, 0) as own_ms
+               from public.review_logs where user_id = $1
+             union all
+             select created_at, user_duration_ms
+               from public.speaking_attempts where user_id = $1
+           ) events
+       ) gaps`,
+    [userId, GARDEN_IDLE_GAP_SECONDS, GARDEN_FIRST_EVENT_CAP_MS],
+  );
+  const seconds = Number(rows?.[0]?.seconds ?? 0);
+  return Number.isFinite(seconds) && seconds > 0 ? Math.round(seconds / 60) : 0;
 }
 
 /** Columns `applyReview` reads from `user_word_srs`. */

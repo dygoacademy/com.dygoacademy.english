@@ -4,7 +4,7 @@ import * as React from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 
 import { setGardenLocaleCookie } from '@/app/(garden)/actions';
-import { ROUTES } from '@/constants/routes';
+import { GARDEN_ROUTES } from '@/constants/garden';
 import type { AppLocale } from '@/i18n/config';
 import { apiClient } from '@/lib/api-client';
 import { createClient } from '@/lib/supabase/client';
@@ -24,6 +24,8 @@ import { RegisterScreen, type RegisterError } from './RegisterScreen';
  * - `?next=` is followed after sign-up (same-site paths only), so an
  *   invite link (`/register?next=/join/<token>`) lands on the join page.
  *   With an invite `next` the page reads as AU3.
+ * - Without `next` the new learner goes to onboarding OB1 (/welcome/level)
+ *   instead of the garden.
  * Both profile writes are best effort: a failure never blocks the
  * redirect (the Me screen can fix either later).
  *
@@ -82,7 +84,9 @@ export function RegisterLive() {
       setBusy(false);
       return;
     }
-    router.push(next ?? ROUTES.home);
+    // A new learner starts with onboarding (OB1); an invite (`next`) goes
+    // straight to its group, as before.
+    router.push(next ?? GARDEN_ROUTES.welcome.level);
     router.refresh();
   }
 

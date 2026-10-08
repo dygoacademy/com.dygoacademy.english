@@ -29,6 +29,7 @@ seeds/         test and demo data, loaded in name order
   03_qa_tenant.sql             third QA tenant + accounts
   04_qa_words.sql              100 QA words (needs 03)
   05_hello_world_word.sql      a multi-word test entry (needs 03)
+  06_onboarded_fixtures.sql    marks every seeded account as onboarded (OB1–OB5), so they open the garden
                                Seed words ship with audio_url = null. After an import, run
                                `cd com.dygoacademy.backend && npm run audio-backfill:prod`
                                to queue their audio (reset-db.sh reminds you).

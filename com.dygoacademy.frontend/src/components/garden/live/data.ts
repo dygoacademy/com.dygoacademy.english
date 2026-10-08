@@ -356,16 +356,31 @@ export function weekOf(today: Date): Date[] {
   });
 }
 
-/** A name to greet with from Supabase user metadata, or null. */
+/**
+ * A name to greet with, or null: `profiles.display_name` first (what
+ * register saves and what seeded accounts like Sarah's carry; it reaches
+ * the app as `SrsStats.display_name`), then Supabase user metadata.
+ */
 export function displayName(
   user: { user_metadata?: Record<string, unknown> | null } | null | undefined,
+  profileName?: string | null,
 ): string | null {
   const meta = user?.user_metadata ?? {};
-  for (const key of ['display_name', 'full_name', 'name']) {
-    const value = meta[key];
+  for (const value of [profileName, meta.display_name, meta.full_name, meta.name]) {
     if (typeof value === 'string' && value.trim()) return value.trim().split(/\s+/)[0];
   }
   return null;
+}
+
+/**
+ * Me's "in the garden" hours from `SrsStats.garden_minutes`: one decimal
+ * under 10 h (so a first week doesn't read as "0h"), whole hours after;
+ * null when the backend doesn't send it.
+ */
+export function gardenHours(minutes: number | null | undefined): number | null {
+  if (minutes === null || minutes === undefined || !Number.isFinite(minutes)) return null;
+  const hours = Math.max(0, minutes) / 60;
+  return hours < 10 ? Math.round(hours * 10) / 10 : Math.round(hours);
 }
 
 /** The finished session, carried from /review to /review/done in the URL. */

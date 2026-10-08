@@ -8,6 +8,7 @@ import {
   doneReminder,
   earliestSchedule,
   freezeStreak,
+  gardenHours,
   gardenPlants,
   greetingFor,
   harvestCard,
@@ -73,6 +74,9 @@ describe('live garden helpers', () => {
     expect(displayName({ user_metadata: { full_name: 'Minh Tran' } })).toBe('Minh');
     expect(displayName({ user_metadata: {} })).toBeNull();
     expect(displayName(null)).toBeNull();
+    expect(displayName({ user_metadata: {} }, 'Sarah')).toBe('Sarah');
+    expect(displayName({ user_metadata: { full_name: 'Minh Tran' } }, 'Sarah Lee')).toBe('Sarah');
+    expect(displayName({ user_metadata: { name: 'Minh' } }, '  ')).toBe('Minh');
   });
 });
 
@@ -435,5 +439,19 @@ describe('harvestCard (SE5)', () => {
   it('is null with no data or nothing ripe', () => {
     expect(harvestCard(words, undefined, today, String)).toBeNull();
     expect(harvestCard([word('c', 'sprout')], harvests, today, String)).toBeNull();
+  });
+});
+
+describe('gardenHours', () => {
+  it('shows one decimal under 10 hours and whole hours after', () => {
+    expect(gardenHours(0)).toBe(0);
+    expect(gardenHours(26)).toBe(0.4);
+    expect(gardenHours(150)).toBe(2.5);
+    expect(gardenHours(754)).toBe(13);
+  });
+
+  it('is null when the backend sends nothing', () => {
+    expect(gardenHours(undefined)).toBeNull();
+    expect(gardenHours(null)).toBeNull();
   });
 });

@@ -12,6 +12,7 @@ import { useNativeEnvelope } from '@/hooks/useNativeEnvelope';
 import { usePlayer } from '@/hooks/usePlayer';
 import { useSpeakingSession } from '@/hooks/useSpeakingSession';
 import { useSpeakingWord } from '@/hooks/useSpeakingWord';
+import { useSrsStats } from '@/hooks/useSrsStats';
 import { prefetchMedia } from '@/lib/media-cache';
 import {
   createRecorder,
@@ -176,7 +177,8 @@ export function SpeakFlow({
   const streamRef = React.useRef<MediaStream | null>(null);
   streamRef.current = stream;
   const user = useCurrentUser();
-  const name = displayName(user.data) ?? user.data?.email?.split('@')[0] ?? '';
+  const stats = useSrsStats();
+  const name = displayName(user.data, stats.data?.display_name) ?? user.data?.email?.split('@')[0] ?? '';
   const initial = (name.trim()[0] ?? t('playYou').trim()[0] ?? '').toUpperCase();
 
   const dispatch = React.useCallback(

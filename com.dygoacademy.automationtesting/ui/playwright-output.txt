@@ -1,0 +1,1796 @@
+
+Running 584 tests using 4 workers
+
+  ✓    3 [iphone-se] › tests/gallery.spec.ts:19:9 › gallery (en-US) › gallery en-US (2.3s)
+  ✓    1 [iphone-se] › tests/navigation.spec.ts:95:5 › Back from a Topic bed returns to Topics (3.6s)
+  ✘    4 [iphone-se] › tests/gallery.spec.ts:19:9 › gallery (vi-VN) › gallery vi-VN (3.7s)
+  ✓    7 [iphone-se] › tests/reference.spec.ts:10:5 › reference screens are found (5ms)
+  ✓    5 [iphone-se] › tests/navigation.spec.ts:99:5 › Back from a Group garden returns to Groups (2.7s)
+  ✓    9 [iphone-se] › tests/reference.spec.ts:19:9 › reference A1-todays-garden (vi-VN) (1.2s)
+  ✓    8 [iphone-se] › tests/reference.spec.ts:19:9 › reference A1-todays-garden (en-US) (1.1s)
+  ✓    6 [iphone-se] › tests/parity.spec.ts:39:5 › classic home and /garden show the same due, streak and mastered (3.0s)
+  ✓   11 [iphone-se] › tests/reference.spec.ts:19:9 › reference A2-review-answer (vi-VN) (709ms)
+  ✓   10 [iphone-se] › tests/reference.spec.ts:19:9 › reference A2-review-answer (en-US) (1.2s)
+  ✓   12 [iphone-se] › tests/reference.spec.ts:19:9 › reference A2-review-finished (en-US) (953ms)
+  ✓    2 [iphone-se] › tests/navigation.spec.ts:50:5 › every tab opens and the tab bar does not jump (7.7s)
+  ✓   13 [iphone-se] › tests/reference.spec.ts:19:9 › reference A2-review-finished (vi-VN) (900ms)
+  ✓   14 [iphone-se] › tests/reference.spec.ts:19:9 › reference A2-review-question (en-US) (948ms)
+  ✓   16 [iphone-se] › tests/reference.spec.ts:19:9 › reference A3-mission-complete (en-US) (1.1s)
+  ✓   15 [iphone-se] › tests/reference.spec.ts:19:9 › reference A2-review-question (vi-VN) (1.3s)
+  ✓   17 [iphone-se] › tests/reference.spec.ts:19:9 › reference A3-mission-complete (vi-VN) (982ms)
+  ✓   18 [iphone-se] › tests/reference.spec.ts:19:9 › reference A4-weekly-harvest (en-US) (1.1s)
+  ✓   19 [iphone-se] › tests/reference.spec.ts:19:9 › reference A4-weekly-harvest (vi-VN) (1.2s)
+  ✓   21 [iphone-se] › tests/reference.spec.ts:19:9 › reference A5-welcome-back (vi-VN) (1.2s)
+  ✓   22 [iphone-se] › tests/reference.spec.ts:19:9 › reference A6-topics (en-US) (941ms)
+  ✓   20 [iphone-se] › tests/reference.spec.ts:19:9 › reference A5-welcome-back (en-US) (1.6s)
+  ✓   23 [iphone-se] › tests/reference.spec.ts:19:9 › reference A6-topics (vi-VN) (1.1s)
+  ✓   24 [iphone-se] › tests/reference.spec.ts:19:9 › reference A7-topic-bed (en-US) (1.1s)
+  ✓   26 [iphone-se] › tests/reference.spec.ts:19:9 › reference A7-topic-bed-filter-sprouts (en-US) (1.2s)
+  ✓   25 [iphone-se] › tests/reference.spec.ts:19:9 › reference A7-topic-bed (vi-VN) (1.7s)
+  ✓   27 [iphone-se] › tests/reference.spec.ts:19:9 › reference A7-topic-bed-filter-sprouts (vi-VN) (913ms)
+  ✓   28 [iphone-se] › tests/reference.spec.ts:19:9 › reference A8-me (en-US) (996ms)
+  ✓   29 [iphone-se] › tests/reference.spec.ts:19:9 › reference A8-me (vi-VN) (1.3s)
+  ✓   30 [iphone-se] › tests/reference.spec.ts:19:9 › reference A8-me-account (en-US) (1.2s)
+  ✓   31 [iphone-se] › tests/reference.spec.ts:19:9 › reference A8-me-account (vi-VN) (1.5s)
+  ✓   32 [iphone-se] › tests/reference.spec.ts:19:9 › reference AU1-sign-in (en-US) (1.2s)
+  ✓   33 [iphone-se] › tests/reference.spec.ts:19:9 › reference AU1-sign-in (vi-VN) (1.2s)
+  ✓   34 [iphone-se] › tests/reference.spec.ts:19:9 › reference AU1-sign-in-error (en-US) (1.2s)
+  ✓   35 [iphone-se] › tests/reference.spec.ts:19:9 › reference AU1-sign-in-error (vi-VN) (1.1s)
+  ✓   36 [iphone-se] › tests/reference.spec.ts:19:9 › reference AU2-create-account (en-US) (1.2s)
+  ✓   38 [iphone-se] › tests/reference.spec.ts:19:9 › reference AU3-create-account-invite (en-US) (1.0s)
+  ✓   39 [iphone-se] › tests/reference.spec.ts:19:9 › reference AU3-create-account-invite (vi-VN) (954ms)
+  ✓   37 [iphone-se] › tests/reference.spec.ts:19:9 › reference AU2-create-account (vi-VN) (1.4s)
+  ✓   40 [iphone-se] › tests/reference.spec.ts:19:9 › reference AU4-reset-password (en-US) (993ms)
+  ✓   43 [iphone-se] › tests/reference.spec.ts:19:9 › reference AU4-reset-password-sent (en-US) (962ms)
+  ✓   42 [iphone-se] › tests/reference.spec.ts:19:9 › reference AU4-reset-password-sent (vi-VN) (995ms)
+  ✓   41 [iphone-se] › tests/reference.spec.ts:19:9 › reference AU4-reset-password (vi-VN) (1.2s)
+  ✓   44 [iphone-se] › tests/reference.spec.ts:19:9 › reference GR1-shared-gardens (en-US) (1.2s)
+  ✓   46 [iphone-se] › tests/reference.spec.ts:19:9 › reference GR2-group-garden (en-US) (1.2s)
+  ✓   47 [iphone-se] › tests/reference.spec.ts:19:9 › reference GR2-group-garden (vi-VN) (1.1s)
+  ✓   48 [iphone-se] › tests/reference.spec.ts:19:9 › reference GR3-tricky-patches (en-US) (930ms)
+  ✓   45 [iphone-se] › tests/reference.spec.ts:19:9 › reference GR1-shared-gardens (vi-VN) (1.6s)
+  ✓   51 [iphone-se] › tests/reference.spec.ts:19:9 › reference GR4-gardeners (vi-VN) (1.1s)
+  ✓   49 [iphone-se] › tests/reference.spec.ts:19:9 › reference GR3-tricky-patches (vi-VN) (1.4s)
+  ✓   50 [iphone-se] › tests/reference.spec.ts:19:9 › reference GR4-gardeners (en-US) (1.4s)
+  ✓   52 [iphone-se] › tests/reference.spec.ts:19:9 › reference GR5-invite (en-US) (1.6s)
+  ✓   53 [iphone-se] › tests/reference.spec.ts:19:9 › reference GR5-invite (vi-VN) (1.1s)
+  ✓   54 [iphone-se] › tests/reference.spec.ts:19:9 › reference GR6-join (en-US) (1.1s)
+  ✓   56 [iphone-se] › tests/reference.spec.ts:19:9 › reference GR7-create (en-US) (973ms)
+  ✓   55 [iphone-se] › tests/reference.spec.ts:19:9 › reference GR6-join (vi-VN) (1.6s)
+  ✓   59 [iphone-se] › tests/reference.spec.ts:19:9 › reference Q1-quiz-choose (vi-VN) (742ms)
+  ✓   60 [iphone-se] › tests/reference.spec.ts:19:9 › reference Q2-quiz-right (en-US) (860ms)
+  ✓   57 [iphone-se] › tests/reference.spec.ts:19:9 › reference GR7-create (vi-VN) (1.5s)
+  ✓   58 [iphone-se] › tests/reference.spec.ts:19:9 › reference Q1-quiz-choose (en-US) (1.8s)
+  ✓   61 [iphone-se] › tests/reference.spec.ts:19:9 › reference Q2-quiz-right (vi-VN) (1.0s)
+  ✓   63 [iphone-se] › tests/reference.spec.ts:19:9 › reference Q3-quiz-not-quite (vi-VN) (972ms)
+  ✓   62 [iphone-se] › tests/reference.spec.ts:19:9 › reference Q3-quiz-not-quite (en-US) (1.3s)
+  ✓   64 [iphone-se] › tests/reference.spec.ts:19:9 › reference Q4-quiz-cloze-hint (en-US) (963ms)
+  ✓   65 [iphone-se] › tests/reference.spec.ts:19:9 › reference Q4-quiz-cloze-hint (vi-VN) (960ms)
+  ✓   66 [iphone-se] › tests/reference.spec.ts:19:9 › reference Q5-quiz-listen (en-US) (980ms)
+  ✓   68 [iphone-se] › tests/reference.spec.ts:19:9 › reference Q6-quiz-result (en-US) (1.1s)
+  ✓   67 [iphone-se] › tests/reference.spec.ts:19:9 › reference Q5-quiz-listen (vi-VN) (1.2s)
+  ✓   69 [iphone-se] › tests/reference.spec.ts:19:9 › reference Q6-quiz-result (vi-VN) (1.1s)
+  ✓   70 [iphone-se] › tests/reference.spec.ts:19:9 › reference Q7-quiz-result-perfect (en-US) (924ms)
+  ✓   71 [iphone-se] › tests/reference.spec.ts:19:9 › reference Q7-quiz-result-perfect (vi-VN) (1.0s)
+  ✓   73 [iphone-se] › tests/reference.spec.ts:19:9 › reference Q8-quiz-drill-done (vi-VN) (873ms)
+  ✓   72 [iphone-se] › tests/reference.spec.ts:19:9 › reference Q8-quiz-drill-done (en-US) (1.4s)
+  ✓   74 [iphone-16] › tests/gallery.spec.ts:19:9 › gallery (en-US) › gallery en-US (2.1s)
+  ✘   75 [iphone-16] › tests/gallery.spec.ts:19:9 › gallery (vi-VN) › gallery vi-VN (3.6s)
+  -   79 [iphone-16] › tests/parity.spec.ts:39:5 › classic home and /garden show the same due, streak and mastered
+  ✓   80 [iphone-16] › tests/reference.spec.ts:10:5 › reference screens are found (2ms)
+  ✓   77 [iphone-16] › tests/navigation.spec.ts:95:5 › Back from a Topic bed returns to Topics (4.4s)
+  ✓   78 [iphone-16] › tests/navigation.spec.ts:99:5 › Back from a Group garden returns to Groups (3.4s)
+  ✓   81 [iphone-16] › tests/reference.spec.ts:19:9 › reference A1-todays-garden (en-US) (1.0s)
+  ✓   82 [iphone-16] › tests/reference.spec.ts:19:9 › reference A1-todays-garden (vi-VN) (958ms)
+  ✓   76 [iphone-16] › tests/navigation.spec.ts:50:5 › every tab opens and the tab bar does not jump (5.7s)
+  ✓   83 [iphone-16] › tests/reference.spec.ts:19:9 › reference A2-review-answer (en-US) (1.2s)
+  ✓   84 [iphone-16] › tests/reference.spec.ts:19:9 › reference A2-review-answer (vi-VN) (943ms)
+  ✓   85 [iphone-16] › tests/reference.spec.ts:19:9 › reference A2-review-finished (en-US) (1.2s)
+  ✓   86 [iphone-16] › tests/reference.spec.ts:19:9 › reference A2-review-finished (vi-VN) (1.7s)
+  ✓   87 [iphone-16] › tests/reference.spec.ts:19:9 › reference A2-review-question (en-US) (1.3s)
+  ✓   89 [iphone-16] › tests/reference.spec.ts:19:9 › reference A3-mission-complete (en-US) (753ms)
+  ✓   88 [iphone-16] › tests/reference.spec.ts:19:9 › reference A2-review-question (vi-VN) (1.3s)
+  ✓   91 [iphone-16] › tests/reference.spec.ts:19:9 › reference A4-weekly-harvest (en-US) (1.0s)
+  ✓   90 [iphone-16] › tests/reference.spec.ts:19:9 › reference A3-mission-complete (vi-VN) (1.1s)
+  ✓   92 [iphone-16] › tests/reference.spec.ts:19:9 › reference A4-weekly-harvest (vi-VN) (1.2s)
+  ✓   93 [iphone-16] › tests/reference.spec.ts:19:9 › reference A5-welcome-back (en-US) (1.3s)
+  ✓   94 [iphone-16] › tests/reference.spec.ts:19:9 › reference A5-welcome-back (vi-VN) (1.2s)
+  ✓   97 [iphone-16] › tests/reference.spec.ts:19:9 › reference A7-topic-bed (en-US) (1.0s)
+  ✓   96 [iphone-16] › tests/reference.spec.ts:19:9 › reference A6-topics (vi-VN) (1.3s)
+  ✓   95 [iphone-16] › tests/reference.spec.ts:19:9 › reference A6-topics (en-US) (1.8s)
+  ✓   98 [iphone-16] › tests/reference.spec.ts:19:9 › reference A7-topic-bed (vi-VN) (904ms)
+  ✓   99 [iphone-16] › tests/reference.spec.ts:19:9 › reference A7-topic-bed-filter-sprouts (en-US) (1.1s)
+  ✓  100 [iphone-16] › tests/reference.spec.ts:19:9 › reference A7-topic-bed-filter-sprouts (vi-VN) (1.3s)
+  ✓  101 [iphone-16] › tests/reference.spec.ts:19:9 › reference A8-me (en-US) (1.2s)
+  ✓  102 [iphone-16] › tests/reference.spec.ts:19:9 › reference A8-me (vi-VN) (1.4s)
+  ✓  103 [iphone-16] › tests/reference.spec.ts:19:9 › reference A8-me-account (en-US) (1.3s)
+  ✓  104 [iphone-16] › tests/reference.spec.ts:19:9 › reference A8-me-account (vi-VN) (1.3s)
+  ✓  105 [iphone-16] › tests/reference.spec.ts:19:9 › reference AU1-sign-in (en-US) (1.4s)
+  ✓  106 [iphone-16] › tests/reference.spec.ts:19:9 › reference AU1-sign-in (vi-VN) (1.1s)
+  ✓  107 [iphone-16] › tests/reference.spec.ts:19:9 › reference AU1-sign-in-error (en-US) (1.3s)
+  ✓  108 [iphone-16] › tests/reference.spec.ts:19:9 › reference AU1-sign-in-error (vi-VN) (1.1s)
+  ✓  110 [iphone-16] › tests/reference.spec.ts:19:9 › reference AU2-create-account (vi-VN) (1.0s)
+  ✓  109 [iphone-16] › tests/reference.spec.ts:19:9 › reference AU2-create-account (en-US) (1.3s)
+  ✓  112 [iphone-16] › tests/reference.spec.ts:19:9 › reference AU3-create-account-invite (vi-VN) (874ms)
+  ✓  111 [iphone-16] › tests/reference.spec.ts:19:9 › reference AU3-create-account-invite (en-US) (1.3s)
+  ✓  113 [iphone-16] › tests/reference.spec.ts:19:9 › reference AU4-reset-password (en-US) (910ms)
+  ✓  114 [iphone-16] › tests/reference.spec.ts:19:9 › reference AU4-reset-password (vi-VN) (1.1s)
+  ✓  116 [iphone-16] › tests/reference.spec.ts:19:9 › reference AU4-reset-password-sent (vi-VN) (977ms)
+  ✓  117 [iphone-16] › tests/reference.spec.ts:19:9 › reference GR1-shared-gardens (en-US) (987ms)
+  ✓  115 [iphone-16] › tests/reference.spec.ts:19:9 › reference AU4-reset-password-sent (en-US) (1.4s)
+  ✓  118 [iphone-16] › tests/reference.spec.ts:19:9 › reference GR1-shared-gardens (vi-VN) (1.1s)
+  ✓  119 [iphone-16] › tests/reference.spec.ts:19:9 › reference GR2-group-garden (en-US) (1.2s)
+  ✓  121 [iphone-16] › tests/reference.spec.ts:19:9 › reference GR3-tricky-patches (en-US) (1.2s)
+  ✓  120 [iphone-16] › tests/reference.spec.ts:19:9 › reference GR2-group-garden (vi-VN) (1.4s)
+  ✓  124 [iphone-16] › tests/reference.spec.ts:19:9 › reference GR4-gardeners (vi-VN) (969ms)
+  ✓  123 [iphone-16] › tests/reference.spec.ts:19:9 › reference GR4-gardeners (en-US) (1.1s)
+  ✓  125 [iphone-16] › tests/reference.spec.ts:19:9 › reference GR5-invite (en-US) (983ms)
+  ✓  126 [iphone-16] › tests/reference.spec.ts:19:9 › reference GR5-invite (vi-VN) (948ms)
+  ✓  127 [iphone-16] › tests/reference.spec.ts:19:9 › reference GR6-join (en-US) (987ms)
+  ✓  128 [iphone-16] › tests/reference.spec.ts:19:9 › reference GR6-join (vi-VN) (1.3s)
+  ✓  129 [iphone-16] › tests/reference.spec.ts:19:9 › reference GR7-create (en-US) (826ms)
+  ✓  130 [iphone-16] › tests/reference.spec.ts:19:9 › reference GR7-create (vi-VN) (1.1s)
+  ✓  131 [iphone-16] › tests/reference.spec.ts:19:9 › reference Q1-quiz-choose (en-US) (820ms)
+  ✓  122 [iphone-16] › tests/reference.spec.ts:19:9 › reference GR3-tricky-patches (vi-VN) (4.1s)
+  ✓  132 [iphone-16] › tests/reference.spec.ts:19:9 › reference Q1-quiz-choose (vi-VN) (892ms)
+  ✓  133 [iphone-16] › tests/reference.spec.ts:19:9 › reference Q2-quiz-right (en-US) (1.1s)
+  ✓  134 [iphone-16] › tests/reference.spec.ts:19:9 › reference Q2-quiz-right (vi-VN) (1.0s)
+  ✓  135 [iphone-16] › tests/reference.spec.ts:19:9 › reference Q3-quiz-not-quite (en-US) (1.3s)
+  ✓  136 [iphone-16] › tests/reference.spec.ts:19:9 › reference Q3-quiz-not-quite (vi-VN) (912ms)
+  ✓  137 [iphone-16] › tests/reference.spec.ts:19:9 › reference Q4-quiz-cloze-hint (en-US) (884ms)
+  ✓  138 [iphone-16] › tests/reference.spec.ts:19:9 › reference Q4-quiz-cloze-hint (vi-VN) (1.0s)
+  ✓  140 [iphone-16] › tests/reference.spec.ts:19:9 › reference Q5-quiz-listen (vi-VN) (1.3s)
+  ✓  141 [iphone-16] › tests/reference.spec.ts:19:9 › reference Q6-quiz-result (en-US) (805ms)
+  ✓  139 [iphone-16] › tests/reference.spec.ts:19:9 › reference Q5-quiz-listen (en-US) (1.4s)
+  ✓  142 [iphone-16] › tests/reference.spec.ts:19:9 › reference Q6-quiz-result (vi-VN) (1.1s)
+  ✓  143 [iphone-16] › tests/reference.spec.ts:19:9 › reference Q7-quiz-result-perfect (en-US) (1.0s)
+  ✓  145 [iphone-16] › tests/reference.spec.ts:19:9 › reference Q8-quiz-drill-done (en-US) (1.0s)
+  ✓  144 [iphone-16] › tests/reference.spec.ts:19:9 › reference Q7-quiz-result-perfect (vi-VN) (1.1s)
+  ✓  146 [iphone-16] › tests/reference.spec.ts:19:9 › reference Q8-quiz-drill-done (vi-VN) (957ms)
+  ✓  147 [iphone-16-pro-max] › tests/gallery.spec.ts:19:9 › gallery (en-US) › gallery en-US (1.9s)
+  ✓  150 [iphone-16-pro-max] › tests/navigation.spec.ts:95:5 › Back from a Topic bed returns to Topics (4.1s)
+  -  152 [iphone-16-pro-max] › tests/parity.spec.ts:39:5 › classic home and /garden show the same due, streak and mastered
+  ✘  148 [iphone-16-pro-max] › tests/gallery.spec.ts:19:9 › gallery (vi-VN) › gallery vi-VN (4.1s)
+  ✓  153 [iphone-16-pro-max] › tests/reference.spec.ts:10:5 › reference screens are found (1ms)
+  ✓  154 [iphone-16-pro-max] › tests/reference.spec.ts:19:9 › reference A1-todays-garden (vi-VN) (1.3s)
+  ✓  151 [iphone-16-pro-max] › tests/navigation.spec.ts:99:5 › Back from a Group garden returns to Groups (4.1s)
+  ✓  155 [iphone-16-pro-max] › tests/reference.spec.ts:19:9 › reference A1-todays-garden (en-US) (1.1s)
+  ✓  149 [iphone-16-pro-max] › tests/navigation.spec.ts:50:5 › every tab opens and the tab bar does not jump (6.8s)
+  ✓  157 [iphone-16-pro-max] › tests/reference.spec.ts:19:9 › reference A2-review-answer (vi-VN) (1.1s)
+  ✓  158 [iphone-16-pro-max] › tests/reference.spec.ts:19:9 › reference A2-review-finished (en-US) (1.3s)
+  ✓  156 [iphone-16-pro-max] › tests/reference.spec.ts:19:9 › reference A2-review-answer (en-US) (1.8s)
+  ✓  160 [iphone-16-pro-max] › tests/reference.spec.ts:19:9 › reference A2-review-question (en-US) (850ms)
+  ✓  159 [iphone-16-pro-max] › tests/reference.spec.ts:19:9 › reference A2-review-finished (vi-VN) (1.4s)
+  ✓  161 [iphone-16-pro-max] › tests/reference.spec.ts:19:9 › reference A2-review-question (vi-VN) (985ms)
+  ✓  162 [iphone-16-pro-max] › tests/reference.spec.ts:19:9 › reference A3-mission-complete (en-US) (1.1s)
+  ✓  163 [iphone-16-pro-max] › tests/reference.spec.ts:19:9 › reference A3-mission-complete (vi-VN) (1.5s)
+  ✓  164 [iphone-16-pro-max] › tests/reference.spec.ts:19:9 › reference A4-weekly-harvest (en-US) (1.4s)
+  ✓  165 [iphone-16-pro-max] › tests/reference.spec.ts:19:9 › reference A4-weekly-harvest (vi-VN) (918ms)
+  ✓  166 [iphone-16-pro-max] › tests/reference.spec.ts:19:9 › reference A5-welcome-back (en-US) (1.4s)
+  ✓  167 [iphone-16-pro-max] › tests/reference.spec.ts:19:9 › reference A5-welcome-back (vi-VN) (1.2s)
+  ✓  168 [iphone-16-pro-max] › tests/reference.spec.ts:19:9 › reference A6-topics (vi-VN) (1.3s)
+  ✓  169 [iphone-16-pro-max] › tests/reference.spec.ts:19:9 › reference A6-topics (en-US) (2.1s)
+  ✓  171 [iphone-16-pro-max] › tests/reference.spec.ts:19:9 › reference A7-topic-bed (vi-VN) (1.0s)
+  ✓  170 [iphone-16-pro-max] › tests/reference.spec.ts:19:9 › reference A7-topic-bed (en-US) (1.5s)
+  ✓  172 [iphone-16-pro-max] › tests/reference.spec.ts:19:9 › reference A7-topic-bed-filter-sprouts (en-US) (1.2s)
+  ✓  173 [iphone-16-pro-max] › tests/reference.spec.ts:19:9 › reference A7-topic-bed-filter-sprouts (vi-VN) (1.1s)
+  ✓  175 [iphone-16-pro-max] › tests/reference.spec.ts:19:9 › reference A8-me (vi-VN) (1.3s)
+  ✓  176 [iphone-16-pro-max] › tests/reference.spec.ts:19:9 › reference A8-me-account (en-US) (1.1s)
+  ✓  174 [iphone-16-pro-max] › tests/reference.spec.ts:19:9 › reference A8-me (en-US) (1.6s)
+  ✓  177 [iphone-16-pro-max] › tests/reference.spec.ts:19:9 › reference A8-me-account (vi-VN) (1.5s)
+  ✓  178 [iphone-16-pro-max] › tests/reference.spec.ts:19:9 › reference AU1-sign-in (en-US) (1.2s)
+  ✓  179 [iphone-16-pro-max] › tests/reference.spec.ts:19:9 › reference AU1-sign-in (vi-VN) (1.3s)
+  ✓  182 [iphone-16-pro-max] › tests/reference.spec.ts:19:9 › reference AU2-create-account (en-US) (935ms)
+  ✓  181 [iphone-16-pro-max] › tests/reference.spec.ts:19:9 › reference AU1-sign-in-error (vi-VN) (1.1s)
+  ✓  180 [iphone-16-pro-max] › tests/reference.spec.ts:19:9 › reference AU1-sign-in-error (en-US) (2.1s)
+  ✓  183 [iphone-16-pro-max] › tests/reference.spec.ts:19:9 › reference AU2-create-account (vi-VN) (1.9s)
+  ✓  185 [iphone-16-pro-max] › tests/reference.spec.ts:19:9 › reference AU3-create-account-invite (vi-VN) (1.2s)
+  ✓  186 [iphone-16-pro-max] › tests/reference.spec.ts:19:9 › reference AU4-reset-password (en-US) (1.1s)
+  ✓  184 [iphone-16-pro-max] › tests/reference.spec.ts:19:9 › reference AU3-create-account-invite (en-US) (1.8s)
+  ✓  187 [iphone-16-pro-max] › tests/reference.spec.ts:19:9 › reference AU4-reset-password (vi-VN) (962ms)
+  ✓  189 [iphone-16-pro-max] › tests/reference.spec.ts:19:9 › reference AU4-reset-password-sent (vi-VN) (1.1s)
+  ✓  188 [iphone-16-pro-max] › tests/reference.spec.ts:19:9 › reference AU4-reset-password-sent (en-US) (1.2s)
+  ✓  190 [iphone-16-pro-max] › tests/reference.spec.ts:19:9 › reference GR1-shared-gardens (en-US) (1.3s)
+  ✓  191 [iphone-16-pro-max] › tests/reference.spec.ts:19:9 › reference GR1-shared-gardens (vi-VN) (1.0s)
+  ✓  192 [iphone-16-pro-max] › tests/reference.spec.ts:19:9 › reference GR2-group-garden (en-US) (1.1s)
+  ✓  194 [iphone-16-pro-max] › tests/reference.spec.ts:19:9 › reference GR3-tricky-patches (en-US) (867ms)
+  ✓  193 [iphone-16-pro-max] › tests/reference.spec.ts:19:9 › reference GR2-group-garden (vi-VN) (2.0s)
+  ✓  195 [iphone-16-pro-max] › tests/reference.spec.ts:19:9 › reference GR3-tricky-patches (vi-VN) (1.9s)
+  ✓  198 [iphone-16-pro-max] › tests/reference.spec.ts:19:9 › reference GR5-invite (en-US) (844ms)
+  ✓  196 [iphone-16-pro-max] › tests/reference.spec.ts:19:9 › reference GR4-gardeners (en-US) (1.9s)
+  ✓  199 [iphone-16-pro-max] › tests/reference.spec.ts:19:9 › reference GR5-invite (vi-VN) (935ms)
+  ✓  197 [iphone-16-pro-max] › tests/reference.spec.ts:19:9 › reference GR4-gardeners (vi-VN) (2.0s)
+  ✓  200 [iphone-16-pro-max] › tests/reference.spec.ts:19:9 › reference GR6-join (en-US) (1.2s)
+  ✓  201 [iphone-16-pro-max] › tests/reference.spec.ts:19:9 › reference GR6-join (vi-VN) (1.5s)
+  ✓  203 [iphone-16-pro-max] › tests/reference.spec.ts:19:9 › reference GR7-create (vi-VN) (1.2s)
+  ✓  202 [iphone-16-pro-max] › tests/reference.spec.ts:19:9 › reference GR7-create (en-US) (1.3s)
+  ✓  204 [iphone-16-pro-max] › tests/reference.spec.ts:19:9 › reference Q1-quiz-choose (en-US) (1.3s)
+  ✓  205 [iphone-16-pro-max] › tests/reference.spec.ts:19:9 › reference Q1-quiz-choose (vi-VN) (1.1s)
+  ✓  206 [iphone-16-pro-max] › tests/reference.spec.ts:19:9 › reference Q2-quiz-right (en-US) (1.1s)
+  ✓  208 [iphone-16-pro-max] › tests/reference.spec.ts:19:9 › reference Q3-quiz-not-quite (en-US) (921ms)
+  ✓  207 [iphone-16-pro-max] › tests/reference.spec.ts:19:9 › reference Q2-quiz-right (vi-VN) (1.6s)
+  ✓  209 [iphone-16-pro-max] › tests/reference.spec.ts:19:9 › reference Q3-quiz-not-quite (vi-VN) (1.1s)
+  ✓  210 [iphone-16-pro-max] › tests/reference.spec.ts:19:9 › reference Q4-quiz-cloze-hint (en-US) (1.1s)
+  ✓  211 [iphone-16-pro-max] › tests/reference.spec.ts:19:9 › reference Q4-quiz-cloze-hint (vi-VN) (1.1s)
+  ✓  213 [iphone-16-pro-max] › tests/reference.spec.ts:19:9 › reference Q5-quiz-listen (vi-VN) (957ms)
+  ✓  214 [iphone-16-pro-max] › tests/reference.spec.ts:19:9 › reference Q6-quiz-result (en-US) (1.1s)
+  ✓  212 [iphone-16-pro-max] › tests/reference.spec.ts:19:9 › reference Q5-quiz-listen (en-US) (1.7s)
+  ✓  215 [iphone-16-pro-max] › tests/reference.spec.ts:19:9 › reference Q6-quiz-result (vi-VN) (1.1s)
+  ✓  216 [iphone-16-pro-max] › tests/reference.spec.ts:19:9 › reference Q7-quiz-result-perfect (en-US) (1.0s)
+  ✓  217 [iphone-16-pro-max] › tests/reference.spec.ts:19:9 › reference Q7-quiz-result-perfect (vi-VN) (1.1s)
+  ✓  219 [iphone-16-pro-max] › tests/reference.spec.ts:19:9 › reference Q8-quiz-drill-done (vi-VN) (848ms)
+  ✓  218 [iphone-16-pro-max] › tests/reference.spec.ts:19:9 › reference Q8-quiz-drill-done (en-US) (1.6s)
+  ✓  220 [iphone-landscape] › tests/gallery.spec.ts:19:9 › gallery (en-US) › gallery en-US (2.5s)
+  ✓  224 [iphone-landscape] › tests/navigation.spec.ts:99:5 › Back from a Group garden returns to Groups (1.7s)
+  -  225 [iphone-landscape] › tests/parity.spec.ts:39:5 › classic home and /garden show the same due, streak and mastered
+  ✓  226 [iphone-landscape] › tests/reference.spec.ts:10:5 › reference screens are found (3ms)
+  ✓  223 [iphone-landscape] › tests/navigation.spec.ts:95:5 › Back from a Topic bed returns to Topics (4.1s)
+  ✓  227 [iphone-landscape] › tests/reference.spec.ts:19:9 › reference A1-todays-garden (en-US) (961ms)
+  ✓  228 [iphone-landscape] › tests/reference.spec.ts:19:9 › reference A1-todays-garden (vi-VN) (911ms)
+  ✓  229 [iphone-landscape] › tests/reference.spec.ts:19:9 › reference A2-review-answer (en-US) (908ms)
+  ✘  221 [iphone-landscape] › tests/gallery.spec.ts:19:9 › gallery (vi-VN) › gallery vi-VN (5.7s)
+  ✓  230 [iphone-landscape] › tests/reference.spec.ts:19:9 › reference A2-review-answer (vi-VN) (855ms)
+  ✓  222 [iphone-landscape] › tests/navigation.spec.ts:50:5 › every tab opens and the tab bar does not jump (6.5s)
+  ✓  231 [iphone-landscape] › tests/reference.spec.ts:19:9 › reference A2-review-finished (en-US) (964ms)
+  ✓  233 [iphone-landscape] › tests/reference.spec.ts:19:9 › reference A2-review-question (vi-VN) (942ms)
+  ✓  232 [iphone-landscape] › tests/reference.spec.ts:19:9 › reference A2-review-question (en-US) (1.4s)
+  ✓  235 [iphone-landscape] › tests/reference.spec.ts:19:9 › reference A3-mission-complete (en-US) (1.5s)
+  ✓  234 [iphone-landscape] › tests/reference.spec.ts:19:9 › reference A2-review-finished (vi-VN) (1.1s)
+  ✓  236 [iphone-landscape] › tests/reference.spec.ts:19:9 › reference A3-mission-complete (vi-VN) (1.3s)
+  ✓  237 [iphone-landscape] › tests/reference.spec.ts:19:9 › reference A4-weekly-harvest (en-US) (1.4s)
+  ✓  238 [iphone-landscape] › tests/reference.spec.ts:19:9 › reference A4-weekly-harvest (vi-VN) (1.1s)
+  ✓  239 [iphone-landscape] › tests/reference.spec.ts:19:9 › reference A5-welcome-back (en-US) (1.1s)
+  ✓  240 [iphone-landscape] › tests/reference.spec.ts:19:9 › reference A5-welcome-back (vi-VN) (1.1s)
+  ✓  241 [iphone-landscape] › tests/reference.spec.ts:19:9 › reference A6-topics (en-US) (1.2s)
+  ✓  242 [iphone-landscape] › tests/reference.spec.ts:19:9 › reference A6-topics (vi-VN) (1.2s)
+  ✓  243 [iphone-landscape] › tests/reference.spec.ts:19:9 › reference A7-topic-bed (en-US) (1.1s)
+  ✓  244 [iphone-landscape] › tests/reference.spec.ts:19:9 › reference A7-topic-bed (vi-VN) (1.1s)
+  ✓  245 [iphone-landscape] › tests/reference.spec.ts:19:9 › reference A7-topic-bed-filter-sprouts (en-US) (1.0s)
+  ✓  246 [iphone-landscape] › tests/reference.spec.ts:19:9 › reference A7-topic-bed-filter-sprouts (vi-VN) (1.1s)
+  ✓  247 [iphone-landscape] › tests/reference.spec.ts:19:9 › reference A8-me (en-US) (1.3s)
+  ✓  248 [iphone-landscape] › tests/reference.spec.ts:19:9 › reference A8-me (vi-VN) (1.0s)
+  ✓  249 [iphone-landscape] › tests/reference.spec.ts:19:9 › reference A8-me-account (en-US) (1.3s)
+  ✓  251 [iphone-landscape] › tests/reference.spec.ts:19:9 › reference AU1-sign-in (en-US) (1.1s)
+  ✓  250 [iphone-landscape] › tests/reference.spec.ts:19:9 › reference A8-me-account (vi-VN) (1.6s)
+  ✓  252 [iphone-landscape] › tests/reference.spec.ts:19:9 › reference AU1-sign-in (vi-VN) (1.3s)
+  ✓  253 [iphone-landscape] › tests/reference.spec.ts:19:9 › reference AU1-sign-in-error (en-US) (1.1s)
+  ✓  254 [iphone-landscape] › tests/reference.spec.ts:19:9 › reference AU1-sign-in-error (vi-VN) (1.1s)
+  ✓  256 [iphone-landscape] › tests/reference.spec.ts:19:9 › reference AU2-create-account (vi-VN) (1.1s)
+  ✓  255 [iphone-landscape] › tests/reference.spec.ts:19:9 › reference AU2-create-account (en-US) (1.6s)
+  ✓  257 [iphone-landscape] › tests/reference.spec.ts:19:9 › reference AU3-create-account-invite (en-US) (981ms)
+  ✓  258 [iphone-landscape] › tests/reference.spec.ts:19:9 › reference AU3-create-account-invite (vi-VN) (1.2s)
+  ✓  259 [iphone-landscape] › tests/reference.spec.ts:19:9 › reference AU4-reset-password (en-US) (929ms)
+  ✓  261 [iphone-landscape] › tests/reference.spec.ts:19:9 › reference AU4-reset-password-sent (en-US) (1.1s)
+  ✓  260 [iphone-landscape] › tests/reference.spec.ts:19:9 › reference AU4-reset-password (vi-VN) (1.1s)
+  ✓  262 [iphone-landscape] › tests/reference.spec.ts:19:9 › reference AU4-reset-password-sent (vi-VN) (1.1s)
+  ✓  263 [iphone-landscape] › tests/reference.spec.ts:19:9 › reference GR1-shared-gardens (en-US) (1.2s)
+  ✓  264 [iphone-landscape] › tests/reference.spec.ts:19:9 › reference GR1-shared-gardens (vi-VN) (1.4s)
+  ✓  265 [iphone-landscape] › tests/reference.spec.ts:19:9 › reference GR2-group-garden (en-US) (1.6s)
+  ✓  266 [iphone-landscape] › tests/reference.spec.ts:19:9 › reference GR2-group-garden (vi-VN) (1.4s)
+  ✓  267 [iphone-landscape] › tests/reference.spec.ts:19:9 › reference GR3-tricky-patches (en-US) (1.4s)
+  ✓  269 [iphone-landscape] › tests/reference.spec.ts:19:9 › reference GR4-gardeners (en-US) (1.2s)
+  ✓  268 [iphone-landscape] › tests/reference.spec.ts:19:9 › reference GR3-tricky-patches (vi-VN) (1.4s)
+  ✓  270 [iphone-landscape] › tests/reference.spec.ts:19:9 › reference GR4-gardeners (vi-VN) (1.2s)
+  ✓  271 [iphone-landscape] › tests/reference.spec.ts:19:9 › reference GR5-invite (en-US) (1.5s)
+  ✓  272 [iphone-landscape] › tests/reference.spec.ts:19:9 › reference GR5-invite (vi-VN) (1.1s)
+  ✓  273 [iphone-landscape] › tests/reference.spec.ts:19:9 › reference GR6-join (en-US) (1.1s)
+  ✓  274 [iphone-landscape] › tests/reference.spec.ts:19:9 › reference GR6-join (vi-VN) (1.0s)
+  ✓  275 [iphone-landscape] › tests/reference.spec.ts:19:9 › reference GR7-create (en-US) (1.1s)
+  ✓  276 [iphone-landscape] › tests/reference.spec.ts:19:9 › reference GR7-create (vi-VN) (1.1s)
+  ✓  277 [iphone-landscape] › tests/reference.spec.ts:19:9 › reference Q1-quiz-choose (en-US) (1.4s)
+  ✓  278 [iphone-landscape] › tests/reference.spec.ts:19:9 › reference Q1-quiz-choose (vi-VN) (1.1s)
+  ✓  279 [iphone-landscape] › tests/reference.spec.ts:19:9 › reference Q2-quiz-right (en-US) (1.4s)
+  ✓  280 [iphone-landscape] › tests/reference.spec.ts:19:9 › reference Q2-quiz-right (vi-VN) (1.5s)
+  ✓  281 [iphone-landscape] › tests/reference.spec.ts:19:9 › reference Q3-quiz-not-quite (en-US) (1.5s)
+  ✓  282 [iphone-landscape] › tests/reference.spec.ts:19:9 › reference Q3-quiz-not-quite (vi-VN) (1.4s)
+  ✓  284 [iphone-landscape] › tests/reference.spec.ts:19:9 › reference Q4-quiz-cloze-hint (vi-VN) (1.1s)
+  ✓  283 [iphone-landscape] › tests/reference.spec.ts:19:9 › reference Q4-quiz-cloze-hint (en-US) (1.4s)
+  ✓  285 [iphone-landscape] › tests/reference.spec.ts:19:9 › reference Q5-quiz-listen (en-US) (1.4s)
+  ✓  286 [iphone-landscape] › tests/reference.spec.ts:19:9 › reference Q5-quiz-listen (vi-VN) (1.3s)
+  ✓  288 [iphone-landscape] › tests/reference.spec.ts:19:9 › reference Q6-quiz-result (vi-VN) (1.2s)
+  ✓  287 [iphone-landscape] › tests/reference.spec.ts:19:9 › reference Q6-quiz-result (en-US) (1.6s)
+  ✓  289 [iphone-landscape] › tests/reference.spec.ts:19:9 › reference Q7-quiz-result-perfect (en-US) (1.2s)
+  ✓  290 [iphone-landscape] › tests/reference.spec.ts:19:9 › reference Q7-quiz-result-perfect (vi-VN) (1.4s)
+  ✓  291 [iphone-landscape] › tests/reference.spec.ts:19:9 › reference Q8-quiz-drill-done (en-US) (1.1s)
+  ✓  292 [iphone-landscape] › tests/reference.spec.ts:19:9 › reference Q8-quiz-drill-done (vi-VN) (876ms)
+  ✓  293 [ipad-slide-over] › tests/gallery.spec.ts:19:9 › gallery (en-US) › gallery en-US (2.3s)
+  ✓  296 [ipad-slide-over] › tests/navigation.spec.ts:95:5 › Back from a Topic bed returns to Topics (2.6s)
+  -  298 [ipad-slide-over] › tests/parity.spec.ts:39:5 › classic home and /garden show the same due, streak and mastered
+  ✓  299 [ipad-slide-over] › tests/reference.spec.ts:10:5 › reference screens are found (3ms)
+  ✓  300 [ipad-slide-over] › tests/reference.spec.ts:19:9 › reference A1-todays-garden (en-US) (848ms)
+  ✓  297 [ipad-slide-over] › tests/navigation.spec.ts:99:5 › Back from a Group garden returns to Groups (2.5s)
+  ✘  294 [ipad-slide-over] › tests/gallery.spec.ts:19:9 › gallery (vi-VN) › gallery vi-VN (4.5s)
+  ✓  302 [ipad-slide-over] › tests/reference.spec.ts:19:9 › reference A2-review-answer (en-US) (874ms)
+  ✓  301 [ipad-slide-over] › tests/reference.spec.ts:19:9 › reference A1-todays-garden (vi-VN) (1.1s)
+  ✓  303 [ipad-slide-over] › tests/reference.spec.ts:19:9 › reference A2-review-finished (en-US) (1.4s)
+  ✓  295 [ipad-slide-over] › tests/navigation.spec.ts:50:5 › every tab opens and the tab bar does not jump (6.5s)
+  ✓  305 [ipad-slide-over] › tests/reference.spec.ts:19:9 › reference A2-review-finished (vi-VN) (1.6s)
+  ✓  304 [ipad-slide-over] › tests/reference.spec.ts:19:9 › reference A2-review-answer (vi-VN) (1.6s)
+  ✓  307 [ipad-slide-over] › tests/reference.spec.ts:19:9 › reference A2-review-question (vi-VN) (1.4s)
+  ✓  306 [ipad-slide-over] › tests/reference.spec.ts:19:9 › reference A2-review-question (en-US) (1.5s)
+  ✓  308 [ipad-slide-over] › tests/reference.spec.ts:19:9 › reference A3-mission-complete (en-US) (1.7s)
+  ✓  309 [ipad-slide-over] › tests/reference.spec.ts:19:9 › reference A3-mission-complete (vi-VN) (1.1s)
+  ✓  310 [ipad-slide-over] › tests/reference.spec.ts:19:9 › reference A4-weekly-harvest (en-US) (1.2s)
+  ✓  311 [ipad-slide-over] › tests/reference.spec.ts:19:9 › reference A4-weekly-harvest (vi-VN) (1.6s)
+  ✓  312 [ipad-slide-over] › tests/reference.spec.ts:19:9 › reference A5-welcome-back (en-US) (1.5s)
+  ✓  313 [ipad-slide-over] › tests/reference.spec.ts:19:9 › reference A5-welcome-back (vi-VN) (1.2s)
+  ✓  314 [ipad-slide-over] › tests/reference.spec.ts:19:9 › reference A6-topics (en-US) (1.4s)
+  ✓  315 [ipad-slide-over] › tests/reference.spec.ts:19:9 › reference A6-topics (vi-VN) (1.7s)
+  ✓  316 [ipad-slide-over] › tests/reference.spec.ts:19:9 › reference A7-topic-bed (en-US) (1.4s)
+  ✓  318 [ipad-slide-over] › tests/reference.spec.ts:19:9 › reference A7-topic-bed-filter-sprouts (en-US) (1.2s)
+  ✓  317 [ipad-slide-over] › tests/reference.spec.ts:19:9 › reference A7-topic-bed (vi-VN) (1.8s)
+  ✓  319 [ipad-slide-over] › tests/reference.spec.ts:19:9 › reference A7-topic-bed-filter-sprouts (vi-VN) (1.3s)
+  ✓  320 [ipad-slide-over] › tests/reference.spec.ts:19:9 › reference A8-me (en-US) (1.3s)
+  ✓  322 [ipad-slide-over] › tests/reference.spec.ts:19:9 › reference A8-me-account (en-US) (1.4s)
+  ✓  324 [ipad-slide-over] › tests/reference.spec.ts:19:9 › reference AU1-sign-in (en-US) (1.1s)
+  ✓  323 [ipad-slide-over] › tests/reference.spec.ts:19:9 › reference A8-me-account (vi-VN) (1.2s)
+  ✓  325 [ipad-slide-over] › tests/reference.spec.ts:19:9 › reference AU1-sign-in (vi-VN) (1.1s)
+  ✓  321 [ipad-slide-over] › tests/reference.spec.ts:19:9 › reference A8-me (vi-VN) (2.8s)
+  ✓  326 [ipad-slide-over] › tests/reference.spec.ts:19:9 › reference AU1-sign-in-error (en-US) (891ms)
+  ✓  327 [ipad-slide-over] › tests/reference.spec.ts:19:9 › reference AU1-sign-in-error (vi-VN) (1.4s)
+  ✓  329 [ipad-slide-over] › tests/reference.spec.ts:19:9 › reference AU2-create-account (vi-VN) (1.1s)
+  ✓  328 [ipad-slide-over] › tests/reference.spec.ts:19:9 › reference AU2-create-account (en-US) (1.3s)
+  ✓  330 [ipad-slide-over] › tests/reference.spec.ts:19:9 › reference AU3-create-account-invite (en-US) (1.2s)
+  ✓  331 [ipad-slide-over] › tests/reference.spec.ts:19:9 › reference AU3-create-account-invite (vi-VN) (1.0s)
+  ✓  332 [ipad-slide-over] › tests/reference.spec.ts:19:9 › reference AU4-reset-password (en-US) (1.0s)
+  ✓  334 [ipad-slide-over] › tests/reference.spec.ts:19:9 › reference AU4-reset-password-sent (en-US) (1.1s)
+  ✓  333 [ipad-slide-over] › tests/reference.spec.ts:19:9 › reference AU4-reset-password (vi-VN) (1.2s)
+  ✓  335 [ipad-slide-over] › tests/reference.spec.ts:19:9 › reference AU4-reset-password-sent (vi-VN) (1.0s)
+  ✓  336 [ipad-slide-over] › tests/reference.spec.ts:19:9 › reference GR1-shared-gardens (en-US) (1.3s)
+  ✓  338 [ipad-slide-over] › tests/reference.spec.ts:19:9 › reference GR2-group-garden (en-US) (1.1s)
+  ✓  337 [ipad-slide-over] › tests/reference.spec.ts:19:9 › reference GR1-shared-gardens (vi-VN) (1.2s)
+  ✓  340 [ipad-slide-over] › tests/reference.spec.ts:19:9 › reference GR3-tricky-patches (en-US) (1.2s)
+  ✓  339 [ipad-slide-over] › tests/reference.spec.ts:19:9 › reference GR2-group-garden (vi-VN) (2.1s)
+  ✓  341 [ipad-slide-over] › tests/reference.spec.ts:19:9 › reference GR3-tricky-patches (vi-VN) (1.3s)
+  ✓  342 [ipad-slide-over] › tests/reference.spec.ts:19:9 › reference GR4-gardeners (en-US) (1.9s)
+  ✓  343 [ipad-slide-over] › tests/reference.spec.ts:19:9 › reference GR4-gardeners (vi-VN) (1.2s)
+  ✓  344 [ipad-slide-over] › tests/reference.spec.ts:19:9 › reference GR5-invite (en-US) (1.1s)
+  ✓  345 [ipad-slide-over] › tests/reference.spec.ts:19:9 › reference GR5-invite (vi-VN) (1.6s)
+  ✓  346 [ipad-slide-over] › tests/reference.spec.ts:19:9 › reference GR6-join (en-US) (1.1s)
+  ✓  347 [ipad-slide-over] › tests/reference.spec.ts:19:9 › reference GR6-join (vi-VN) (1.1s)
+  ✓  348 [ipad-slide-over] › tests/reference.spec.ts:19:9 › reference GR7-create (en-US) (1.1s)
+  ✓  349 [ipad-slide-over] › tests/reference.spec.ts:19:9 › reference GR7-create (vi-VN) (1.0s)
+  ✓  350 [ipad-slide-over] › tests/reference.spec.ts:19:9 › reference Q1-quiz-choose (en-US) (1.1s)
+  ✓  351 [ipad-slide-over] › tests/reference.spec.ts:19:9 › reference Q1-quiz-choose (vi-VN) (1.1s)
+  ✓  352 [ipad-slide-over] › tests/reference.spec.ts:19:9 › reference Q2-quiz-right (en-US) (1.4s)
+  ✓  354 [ipad-slide-over] › tests/reference.spec.ts:19:9 › reference Q3-quiz-not-quite (en-US) (922ms)
+  ✓  355 [ipad-slide-over] › tests/reference.spec.ts:19:9 › reference Q3-quiz-not-quite (vi-VN) (954ms)
+  ✓  356 [ipad-slide-over] › tests/reference.spec.ts:19:9 › reference Q4-quiz-cloze-hint (en-US) (964ms)
+  ✓  353 [ipad-slide-over] › tests/reference.spec.ts:19:9 › reference Q2-quiz-right (vi-VN) (1.8s)
+  ✓  358 [ipad-slide-over] › tests/reference.spec.ts:19:9 › reference Q5-quiz-listen (en-US) (1.0s)
+  ✓  357 [ipad-slide-over] › tests/reference.spec.ts:19:9 › reference Q4-quiz-cloze-hint (vi-VN) (1.4s)
+  ✓  359 [ipad-slide-over] › tests/reference.spec.ts:19:9 › reference Q5-quiz-listen (vi-VN) (1.3s)
+  ✓  360 [ipad-slide-over] › tests/reference.spec.ts:19:9 › reference Q6-quiz-result (en-US) (1.5s)
+  ✓  361 [ipad-slide-over] › tests/reference.spec.ts:19:9 › reference Q6-quiz-result (vi-VN) (1.3s)
+  ✓  362 [ipad-slide-over] › tests/reference.spec.ts:19:9 › reference Q7-quiz-result-perfect (en-US) (1.4s)
+  ✓  364 [ipad-slide-over] › tests/reference.spec.ts:19:9 › reference Q8-quiz-drill-done (en-US) (1.1s)
+  ✓  363 [ipad-slide-over] › tests/reference.spec.ts:19:9 › reference Q7-quiz-result-perfect (vi-VN) (1.3s)
+  ✓  365 [ipad-slide-over] › tests/reference.spec.ts:19:9 › reference Q8-quiz-drill-done (vi-VN) (992ms)
+  ✓  366 [ipad-portrait] › tests/gallery.spec.ts:19:9 › gallery (en-US) › gallery en-US (2.7s)
+  ✓  369 [ipad-portrait] › tests/navigation.spec.ts:95:5 › Back from a Topic bed returns to Topics (2.5s)
+  -  371 [ipad-portrait] › tests/parity.spec.ts:39:5 › classic home and /garden show the same due, streak and mastered
+  ✓  372 [ipad-portrait] › tests/reference.spec.ts:10:5 › reference screens are found (2ms)
+  ✓  373 [ipad-portrait] › tests/reference.spec.ts:19:9 › reference A1-todays-garden (en-US) (1.2s)
+  ✓  370 [ipad-portrait] › tests/navigation.spec.ts:99:5 › Back from a Group garden returns to Groups (2.6s)
+  ✓  374 [ipad-portrait] › tests/reference.spec.ts:19:9 › reference A1-todays-garden (vi-VN) (1.0s)
+  ✓  375 [ipad-portrait] › tests/reference.spec.ts:19:9 › reference A2-review-answer (en-US) (1.2s)
+  ✓  377 [ipad-portrait] › tests/reference.spec.ts:19:9 › reference A2-review-finished (en-US) (828ms)
+  ✓  376 [ipad-portrait] › tests/reference.spec.ts:19:9 › reference A2-review-answer (vi-VN) (1.6s)
+  ✓  378 [ipad-portrait] › tests/reference.spec.ts:19:9 › reference A2-review-finished (vi-VN) (932ms)
+  ✘  367 [ipad-portrait] › tests/gallery.spec.ts:19:9 › gallery (vi-VN) › gallery vi-VN (7.3s)
+  ✓  368 [ipad-portrait] › tests/navigation.spec.ts:50:5 › every tab opens and the tab bar does not jump (8.1s)
+  ✓  379 [ipad-portrait] › tests/reference.spec.ts:19:9 › reference A2-review-question (en-US) (979ms)
+  ✓  380 [ipad-portrait] › tests/reference.spec.ts:19:9 › reference A2-review-question (vi-VN) (948ms)
+  ✓  381 [ipad-portrait] › tests/reference.spec.ts:19:9 › reference A3-mission-complete (vi-VN) (1.2s)
+  ✓  382 [ipad-portrait] › tests/reference.spec.ts:19:9 › reference A4-weekly-harvest (en-US) (1.2s)
+  ✓  384 [ipad-portrait] › tests/reference.spec.ts:19:9 › reference A4-weekly-harvest (vi-VN) (1.2s)
+  ✓  383 [ipad-portrait] › tests/reference.spec.ts:19:9 › reference A3-mission-complete (en-US) (1.6s)
+  ✓  385 [ipad-portrait] › tests/reference.spec.ts:19:9 › reference A5-welcome-back (en-US) (1.6s)
+  ✓  387 [ipad-portrait] › tests/reference.spec.ts:19:9 › reference A6-topics (en-US) (1.2s)
+  ✓  386 [ipad-portrait] › tests/reference.spec.ts:19:9 › reference A5-welcome-back (vi-VN) (2.2s)
+  ✓  388 [ipad-portrait] › tests/reference.spec.ts:19:9 › reference A6-topics (vi-VN) (1.4s)
+  ✓  389 [ipad-portrait] › tests/reference.spec.ts:19:9 › reference A7-topic-bed (en-US) (1.5s)
+  ✓  390 [ipad-portrait] › tests/reference.spec.ts:19:9 › reference A7-topic-bed (vi-VN) (1.4s)
+  ✓  391 [ipad-portrait] › tests/reference.spec.ts:19:9 › reference A7-topic-bed-filter-sprouts (en-US) (1.4s)
+  ✓  392 [ipad-portrait] › tests/reference.spec.ts:19:9 › reference A7-topic-bed-filter-sprouts (vi-VN) (1.2s)
+  ✓  393 [ipad-portrait] › tests/reference.spec.ts:19:9 › reference A8-me (en-US) (1.2s)
+  ✓  394 [ipad-portrait] › tests/reference.spec.ts:19:9 › reference A8-me (vi-VN) (1.1s)
+  ✓  395 [ipad-portrait] › tests/reference.spec.ts:19:9 › reference A8-me-account (en-US) (1.4s)
+  ✓  396 [ipad-portrait] › tests/reference.spec.ts:19:9 › reference A8-me-account (vi-VN) (1.4s)
+  ✓  397 [ipad-portrait] › tests/reference.spec.ts:19:9 › reference AU1-sign-in (en-US) (1.2s)
+  ✓  398 [ipad-portrait] › tests/reference.spec.ts:19:9 › reference AU1-sign-in (vi-VN) (1.5s)
+  ✓  399 [ipad-portrait] › tests/reference.spec.ts:19:9 › reference AU1-sign-in-error (en-US) (1.5s)
+  ✓  400 [ipad-portrait] › tests/reference.spec.ts:19:9 › reference AU1-sign-in-error (vi-VN) (1.1s)
+  ✓  401 [ipad-portrait] › tests/reference.spec.ts:19:9 › reference AU2-create-account (en-US) (1.2s)
+  ✓  402 [ipad-portrait] › tests/reference.spec.ts:19:9 › reference AU2-create-account (vi-VN) (1.3s)
+  ✓  403 [ipad-portrait] › tests/reference.spec.ts:19:9 › reference AU3-create-account-invite (en-US) (1.0s)
+  ✓  404 [ipad-portrait] › tests/reference.spec.ts:19:9 › reference AU3-create-account-invite (vi-VN) (1.3s)
+  ✓  406 [ipad-portrait] › tests/reference.spec.ts:19:9 › reference AU4-reset-password (vi-VN) (967ms)
+  ✓  405 [ipad-portrait] › tests/reference.spec.ts:19:9 › reference AU4-reset-password (en-US) (1.4s)
+  ✓  407 [ipad-portrait] › tests/reference.spec.ts:19:9 › reference AU4-reset-password-sent (en-US) (1.0s)
+  ✓  408 [ipad-portrait] › tests/reference.spec.ts:19:9 › reference AU4-reset-password-sent (vi-VN) (1.1s)
+  ✓  410 [ipad-portrait] › tests/reference.spec.ts:19:9 › reference GR1-shared-gardens (vi-VN) (1.1s)
+  ✓  409 [ipad-portrait] › tests/reference.spec.ts:19:9 › reference GR1-shared-gardens (en-US) (1.1s)
+  ✓  411 [ipad-portrait] › tests/reference.spec.ts:19:9 › reference GR2-group-garden (en-US) (1.2s)
+  ✓  412 [ipad-portrait] › tests/reference.spec.ts:19:9 › reference GR2-group-garden (vi-VN) (1.3s)
+  ✓  414 [ipad-portrait] › tests/reference.spec.ts:19:9 › reference GR3-tricky-patches (vi-VN) (1.4s)
+  ✓  413 [ipad-portrait] › tests/reference.spec.ts:19:9 › reference GR3-tricky-patches (en-US) (1.7s)
+  ✓  415 [ipad-portrait] › tests/reference.spec.ts:19:9 › reference GR4-gardeners (en-US) (1.5s)
+  ✓  416 [ipad-portrait] › tests/reference.spec.ts:19:9 › reference GR4-gardeners (vi-VN) (1.6s)
+  ✓  417 [ipad-portrait] › tests/reference.spec.ts:19:9 › reference GR5-invite (en-US) (1.4s)
+  ✓  418 [ipad-portrait] › tests/reference.spec.ts:19:9 › reference GR5-invite (vi-VN) (1.2s)
+  ✓  419 [ipad-portrait] › tests/reference.spec.ts:19:9 › reference GR6-join (en-US) (1.4s)
+  ✓  420 [ipad-portrait] › tests/reference.spec.ts:19:9 › reference GR6-join (vi-VN) (1.1s)
+  ✓  421 [ipad-portrait] › tests/reference.spec.ts:19:9 › reference GR7-create (en-US) (1.5s)
+  ✓  422 [ipad-portrait] › tests/reference.spec.ts:19:9 › reference GR7-create (vi-VN) (1.5s)
+  ✓  423 [ipad-portrait] › tests/reference.spec.ts:19:9 › reference Q1-quiz-choose (en-US) (1.2s)
+  ✓  424 [ipad-portrait] › tests/reference.spec.ts:19:9 › reference Q1-quiz-choose (vi-VN) (1.2s)
+  ✓  425 [ipad-portrait] › tests/reference.spec.ts:19:9 › reference Q2-quiz-right (en-US) (1.2s)
+  ✓  426 [ipad-portrait] › tests/reference.spec.ts:19:9 › reference Q2-quiz-right (vi-VN) (1.1s)
+  ✓  427 [ipad-portrait] › tests/reference.spec.ts:19:9 › reference Q3-quiz-not-quite (en-US) (1.2s)
+  ✓  428 [ipad-portrait] › tests/reference.spec.ts:19:9 › reference Q3-quiz-not-quite (vi-VN) (1.1s)
+  ✓  429 [ipad-portrait] › tests/reference.spec.ts:19:9 › reference Q4-quiz-cloze-hint (en-US) (1.1s)
+  ✓  430 [ipad-portrait] › tests/reference.spec.ts:19:9 › reference Q4-quiz-cloze-hint (vi-VN) (1.1s)
+  ✓  431 [ipad-portrait] › tests/reference.spec.ts:19:9 › reference Q5-quiz-listen (en-US) (1.1s)
+  ✓  432 [ipad-portrait] › tests/reference.spec.ts:19:9 › reference Q5-quiz-listen (vi-VN) (1.1s)
+  ✓  433 [ipad-portrait] › tests/reference.spec.ts:19:9 › reference Q6-quiz-result (en-US) (1.0s)
+  ✓  434 [ipad-portrait] › tests/reference.spec.ts:19:9 › reference Q6-quiz-result (vi-VN) (1.1s)
+  ✓  436 [ipad-portrait] › tests/reference.spec.ts:19:9 › reference Q7-quiz-result-perfect (vi-VN) (1.2s)
+  ✓  437 [ipad-portrait] › tests/reference.spec.ts:19:9 › reference Q8-quiz-drill-done (en-US) (1.1s)
+  ✓  438 [ipad-portrait] › tests/reference.spec.ts:19:9 › reference Q8-quiz-drill-done (vi-VN) (1.0s)
+  ✓  435 [ipad-portrait] › tests/reference.spec.ts:19:9 › reference Q7-quiz-result-perfect (en-US) (1.7s)
+  ✓  439 [ipad-landscape] › tests/gallery.spec.ts:19:9 › gallery (en-US) › gallery en-US (3.0s)
+  ✓  442 [ipad-landscape] › tests/navigation.spec.ts:95:5 › Back from a Topic bed returns to Topics (2.5s)
+  -  444 [ipad-landscape] › tests/parity.spec.ts:39:5 › classic home and /garden show the same due, streak and mastered
+  ✓  445 [ipad-landscape] › tests/reference.spec.ts:10:5 › reference screens are found (2ms)
+  ✓  446 [ipad-landscape] › tests/reference.spec.ts:19:9 › reference A1-todays-garden (en-US) (931ms)
+  ✓  447 [ipad-landscape] › tests/reference.spec.ts:19:9 › reference A1-todays-garden (vi-VN) (936ms)
+  ✓  448 [ipad-landscape] › tests/reference.spec.ts:19:9 › reference A2-review-answer (en-US) (740ms)
+  ✓  443 [ipad-landscape] › tests/navigation.spec.ts:99:5 › Back from a Group garden returns to Groups (3.6s)
+  ✓  441 [ipad-landscape] › tests/navigation.spec.ts:50:5 › every tab opens and the tab bar does not jump (6.0s)
+  ✓  449 [ipad-landscape] › tests/reference.spec.ts:19:9 › reference A2-review-answer (vi-VN) (860ms)
+  ✓  450 [ipad-landscape] › tests/reference.spec.ts:19:9 › reference A2-review-finished (en-US) (934ms)
+  ✓  452 [ipad-landscape] › tests/reference.spec.ts:19:9 › reference A2-review-question (en-US) (808ms)
+  ✓  451 [ipad-landscape] › tests/reference.spec.ts:19:9 › reference A2-review-finished (vi-VN) (1.4s)
+  ✓  453 [ipad-landscape] › tests/reference.spec.ts:19:9 › reference A2-review-question (vi-VN) (1.0s)
+  ✓  454 [ipad-landscape] › tests/reference.spec.ts:19:9 › reference A3-mission-complete (en-US) (1.0s)
+  ✘  440 [ipad-landscape] › tests/gallery.spec.ts:19:9 › gallery (vi-VN) › gallery vi-VN (7.8s)
+  ✓  456 [ipad-landscape] › tests/reference.spec.ts:19:9 › reference A4-weekly-harvest (en-US) (837ms)
+  ✓  455 [ipad-landscape] › tests/reference.spec.ts:19:9 › reference A3-mission-complete (vi-VN) (2.0s)
+  ✓  457 [ipad-landscape] › tests/reference.spec.ts:19:9 › reference A4-weekly-harvest (vi-VN) (1.0s)
+  ✓  458 [ipad-landscape] › tests/reference.spec.ts:19:9 › reference A5-welcome-back (vi-VN) (1.3s)
+  ✓  461 [ipad-landscape] › tests/reference.spec.ts:19:9 › reference A6-topics (vi-VN) (1.3s)
+  ✓  460 [ipad-landscape] › tests/reference.spec.ts:19:9 › reference A6-topics (en-US) (1.7s)
+  ✓  459 [ipad-landscape] › tests/reference.spec.ts:19:9 › reference A5-welcome-back (en-US) (1.7s)
+  ✓  462 [ipad-landscape] › tests/reference.spec.ts:19:9 › reference A7-topic-bed (en-US) (1.6s)
+  ✓  463 [ipad-landscape] › tests/reference.spec.ts:19:9 › reference A7-topic-bed (vi-VN) (1.2s)
+  ✓  464 [ipad-landscape] › tests/reference.spec.ts:19:9 › reference A7-topic-bed-filter-sprouts (en-US) (1.3s)
+  ✓  466 [ipad-landscape] › tests/reference.spec.ts:19:9 › reference A8-me (en-US) (1.0s)
+  ✓  465 [ipad-landscape] › tests/reference.spec.ts:19:9 › reference A7-topic-bed-filter-sprouts (vi-VN) (1.6s)
+  ✓  467 [ipad-landscape] › tests/reference.spec.ts:19:9 › reference A8-me (vi-VN) (1.6s)
+  ✓  468 [ipad-landscape] › tests/reference.spec.ts:19:9 › reference A8-me-account (en-US) (1.5s)
+  ✓  470 [ipad-landscape] › tests/reference.spec.ts:19:9 › reference AU1-sign-in (en-US) (1.6s)
+  ✓  469 [ipad-landscape] › tests/reference.spec.ts:19:9 › reference A8-me-account (vi-VN) (1.8s)
+  ✓  471 [ipad-landscape] › tests/reference.spec.ts:19:9 › reference AU1-sign-in (vi-VN) (1.1s)
+  ✓  472 [ipad-landscape] › tests/reference.spec.ts:19:9 › reference AU1-sign-in-error (en-US) (1.6s)
+  ✓  474 [ipad-landscape] › tests/reference.spec.ts:19:9 › reference AU2-create-account (en-US) (1.2s)
+  ✓  473 [ipad-landscape] › tests/reference.spec.ts:19:9 › reference AU1-sign-in-error (vi-VN) (1.2s)
+  ✓  475 [ipad-landscape] › tests/reference.spec.ts:19:9 › reference AU2-create-account (vi-VN) (1.5s)
+  ✓  476 [ipad-landscape] › tests/reference.spec.ts:19:9 › reference AU3-create-account-invite (en-US) (1.3s)
+  ✓  478 [ipad-landscape] › tests/reference.spec.ts:19:9 › reference AU4-reset-password (en-US) (1.0s)
+  ✓  477 [ipad-landscape] › tests/reference.spec.ts:19:9 › reference AU3-create-account-invite (vi-VN) (1.1s)
+  ✓  479 [ipad-landscape] › tests/reference.spec.ts:19:9 › reference AU4-reset-password (vi-VN) (1.1s)
+  ✓  480 [ipad-landscape] › tests/reference.spec.ts:19:9 › reference AU4-reset-password-sent (en-US) (1.1s)
+  ✓  481 [ipad-landscape] › tests/reference.spec.ts:19:9 › reference AU4-reset-password-sent (vi-VN) (1.1s)
+  ✓  482 [ipad-landscape] › tests/reference.spec.ts:19:9 › reference GR1-shared-gardens (en-US) (1.3s)
+  ✓  483 [ipad-landscape] › tests/reference.spec.ts:19:9 › reference GR1-shared-gardens (vi-VN) (1.5s)
+  ✓  484 [ipad-landscape] › tests/reference.spec.ts:19:9 › reference GR2-group-garden (en-US) (1.3s)
+  ✓  485 [ipad-landscape] › tests/reference.spec.ts:19:9 › reference GR2-group-garden (vi-VN) (1.8s)
+  ✓  486 [ipad-landscape] › tests/reference.spec.ts:19:9 › reference GR3-tricky-patches (en-US) (1.8s)
+  ✓  487 [ipad-landscape] › tests/reference.spec.ts:19:9 › reference GR3-tricky-patches (vi-VN) (1.5s)
+  ✓  488 [ipad-landscape] › tests/reference.spec.ts:19:9 › reference GR4-gardeners (en-US) (1.5s)
+  ✓  490 [ipad-landscape] › tests/reference.spec.ts:19:9 › reference GR5-invite (en-US) (1.3s)
+  ✓  489 [ipad-landscape] › tests/reference.spec.ts:19:9 › reference GR4-gardeners (vi-VN) (1.7s)
+  ✓  492 [ipad-landscape] › tests/reference.spec.ts:19:9 › reference GR6-join (en-US) (1.1s)
+  ✓  491 [ipad-landscape] › tests/reference.spec.ts:19:9 › reference GR5-invite (vi-VN) (2.0s)
+  ✓  493 [ipad-landscape] › tests/reference.spec.ts:19:9 › reference GR6-join (vi-VN) (1.2s)
+  ✓  494 [ipad-landscape] › tests/reference.spec.ts:19:9 › reference GR7-create (en-US) (1.2s)
+  ✓  495 [ipad-landscape] › tests/reference.spec.ts:19:9 › reference GR7-create (vi-VN) (1.4s)
+  ✓  496 [ipad-landscape] › tests/reference.spec.ts:19:9 › reference Q1-quiz-choose (en-US) (1.1s)
+  ✓  497 [ipad-landscape] › tests/reference.spec.ts:19:9 › reference Q1-quiz-choose (vi-VN) (1.3s)
+  ✓  498 [ipad-landscape] › tests/reference.spec.ts:19:9 › reference Q2-quiz-right (en-US) (1.5s)
+  ✓  499 [ipad-landscape] › tests/reference.spec.ts:19:9 › reference Q2-quiz-right (vi-VN) (1.1s)
+  ✓  500 [ipad-landscape] › tests/reference.spec.ts:19:9 › reference Q3-quiz-not-quite (en-US) (1.2s)
+  ✓  501 [ipad-landscape] › tests/reference.spec.ts:19:9 › reference Q3-quiz-not-quite (vi-VN) (1.1s)
+  ✓  502 [ipad-landscape] › tests/reference.spec.ts:19:9 › reference Q4-quiz-cloze-hint (en-US) (1.1s)
+  ✓  503 [ipad-landscape] › tests/reference.spec.ts:19:9 › reference Q4-quiz-cloze-hint (vi-VN) (1.4s)
+  ✓  505 [ipad-landscape] › tests/reference.spec.ts:19:9 › reference Q5-quiz-listen (vi-VN) (1.1s)
+  ✓  504 [ipad-landscape] › tests/reference.spec.ts:19:9 › reference Q5-quiz-listen (en-US) (1.7s)
+  ✓  506 [ipad-landscape] › tests/reference.spec.ts:19:9 › reference Q6-quiz-result (en-US) (1.2s)
+  ✓  507 [ipad-landscape] › tests/reference.spec.ts:19:9 › reference Q6-quiz-result (vi-VN) (1.1s)
+  ✓  509 [ipad-landscape] › tests/reference.spec.ts:19:9 › reference Q7-quiz-result-perfect (vi-VN) (1.1s)
+  ✓  510 [ipad-landscape] › tests/reference.spec.ts:19:9 › reference Q8-quiz-drill-done (en-US) (1.0s)
+  ✓  511 [ipad-landscape] › tests/reference.spec.ts:19:9 › reference Q8-quiz-drill-done (vi-VN) (1.0s)
+  ✓  508 [ipad-landscape] › tests/reference.spec.ts:19:9 › reference Q7-quiz-result-perfect (en-US) (2.3s)
+  ✓  512 [ipad-13-landscape] › tests/gallery.spec.ts:19:9 › gallery (en-US) › gallery en-US (3.5s)
+  ✓  515 [ipad-13-landscape] › tests/navigation.spec.ts:95:5 › Back from a Topic bed returns to Topics (3.6s)
+  -  517 [ipad-13-landscape] › tests/parity.spec.ts:39:5 › classic home and /garden show the same due, streak and mastered
+  ✓  518 [ipad-13-landscape] › tests/reference.spec.ts:10:5 › reference screens are found (1ms)
+  ✓  516 [ipad-13-landscape] › tests/navigation.spec.ts:99:5 › Back from a Group garden returns to Groups (2.8s)
+  ✓  514 [ipad-13-landscape] › tests/navigation.spec.ts:50:5 › every tab opens and the tab bar does not jump (6.3s)
+  ✓  519 [ipad-13-landscape] › tests/reference.spec.ts:19:9 › reference A1-todays-garden (en-US) (1.6s)
+  ✓  520 [ipad-13-landscape] › tests/reference.spec.ts:19:9 › reference A1-todays-garden (vi-VN) (1.7s)
+  ✓  521 [ipad-13-landscape] › tests/reference.spec.ts:19:9 › reference A2-review-answer (en-US) (1.9s)
+  ✓  522 [ipad-13-landscape] › tests/reference.spec.ts:19:9 › reference A2-review-answer (vi-VN) (1.4s)
+  ✓  523 [ipad-13-landscape] › tests/reference.spec.ts:19:9 › reference A2-review-finished (en-US) (1.6s)
+  ✓  525 [ipad-13-landscape] › tests/reference.spec.ts:19:9 › reference A2-review-question (en-US) (1.6s)
+  ✓  524 [ipad-13-landscape] › tests/reference.spec.ts:19:9 › reference A2-review-finished (vi-VN) (1.8s)
+  ✓  526 [ipad-13-landscape] › tests/reference.spec.ts:19:9 › reference A2-review-question (vi-VN) (1.7s)
+  ✓  527 [ipad-13-landscape] › tests/reference.spec.ts:19:9 › reference A3-mission-complete (en-US) (1.3s)
+  ✓  528 [ipad-13-landscape] › tests/reference.spec.ts:19:9 › reference A3-mission-complete (vi-VN) (1.3s)
+  ✓  529 [ipad-13-landscape] › tests/reference.spec.ts:19:9 › reference A4-weekly-harvest (en-US) (1.7s)
+  ✓  530 [ipad-13-landscape] › tests/reference.spec.ts:19:9 › reference A4-weekly-harvest (vi-VN) (1.4s)
+  ✓  531 [ipad-13-landscape] › tests/reference.spec.ts:19:9 › reference A5-welcome-back (en-US) (2.1s)
+  ✘  513 [ipad-13-landscape] › tests/gallery.spec.ts:19:9 › gallery (vi-VN) › gallery vi-VN (13.3s)
+  ✓  533 [ipad-13-landscape] › tests/reference.spec.ts:19:9 › reference A6-topics (en-US) (1.8s)
+  ✓  532 [ipad-13-landscape] › tests/reference.spec.ts:19:9 › reference A5-welcome-back (vi-VN) (2.1s)
+  ✓  534 [ipad-13-landscape] › tests/reference.spec.ts:19:9 › reference A6-topics (vi-VN) (2.5s)
+  ✓  535 [ipad-13-landscape] › tests/reference.spec.ts:19:9 › reference A7-topic-bed (vi-VN) (2.3s)
+  ✓  536 [ipad-13-landscape] › tests/reference.spec.ts:19:9 › reference A7-topic-bed-filter-sprouts (en-US) (2.5s)
+  ✓  538 [ipad-13-landscape] › tests/reference.spec.ts:19:9 › reference A7-topic-bed-filter-sprouts (vi-VN) (2.2s)
+  ✓  539 [ipad-13-landscape] › tests/reference.spec.ts:19:9 › reference A8-me (en-US) (1.6s)
+  ✓  537 [ipad-13-landscape] › tests/reference.spec.ts:19:9 › reference A7-topic-bed (en-US) (2.7s)
+  ✓  540 [ipad-13-landscape] › tests/reference.spec.ts:19:9 › reference A8-me (vi-VN) (2.4s)
+  ✓  541 [ipad-13-landscape] › tests/reference.spec.ts:19:9 › reference A8-me-account (en-US) (2.2s)
+  ✓  542 [ipad-13-landscape] › tests/reference.spec.ts:19:9 › reference A8-me-account (vi-VN) (2.4s)
+  ✘  544 [ipad-13-landscape] › tests/reference.spec.ts:19:9 › reference AU1-sign-in (vi-VN) (3.6s)
+  ✘  545 [ipad-13-landscape] › tests/reference.spec.ts:19:9 › reference AU1-sign-in-error (en-US) (2.6s)
+  ✘  546 [ipad-13-landscape] › tests/reference.spec.ts:19:9 › reference AU1-sign-in-error (vi-VN) (2.7s)
+  ✘  547 [ipad-13-landscape] › tests/reference.spec.ts:19:9 › reference AU2-create-account (en-US) (2.1s)
+  ✘  548 [ipad-13-landscape] › tests/reference.spec.ts:19:9 › reference AU2-create-account (vi-VN) (2.3s)
+  ✘  549 [ipad-13-landscape] › tests/reference.spec.ts:19:9 › reference AU3-create-account-invite (en-US) (3.5s)
+  ✘  550 [ipad-13-landscape] › tests/reference.spec.ts:19:9 › reference AU3-create-account-invite (vi-VN) (2.7s)
+  ✘  551 [ipad-13-landscape] › tests/reference.spec.ts:19:9 › reference AU4-reset-password (en-US) (2.5s)
+  ✘  552 [ipad-13-landscape] › tests/reference.spec.ts:19:9 › reference AU4-reset-password (vi-VN) (2.5s)
+  ✘  553 [ipad-13-landscape] › tests/reference.spec.ts:19:9 › reference AU4-reset-password-sent (en-US) (2.6s)
+  ✘  554 [ipad-13-landscape] › tests/reference.spec.ts:19:9 › reference AU4-reset-password-sent (vi-VN) (2.7s)
+  ✘  555 [ipad-13-landscape] › tests/reference.spec.ts:19:9 › reference GR1-shared-gardens (en-US) (3.7s)
+  ✘  557 [ipad-13-landscape] › tests/reference.spec.ts:19:9 › reference GR2-group-garden (en-US) (4.2s)
+  ✘  543 [ipad-13-landscape] › tests/reference.spec.ts:19:9 › reference AU1-sign-in (en-US) (1.0m)
+  ✓  560 [ipad-13-landscape] › tests/reference.spec.ts:19:9 › reference GR3-tricky-patches (vi-VN) (909ms)
+  ✓  561 [ipad-13-landscape] › tests/reference.spec.ts:19:9 › reference GR4-gardeners (en-US) (747ms)
+  ✓  562 [ipad-13-landscape] › tests/reference.spec.ts:19:9 › reference GR4-gardeners (vi-VN) (724ms)
+  ✓  563 [ipad-13-landscape] › tests/reference.spec.ts:19:9 › reference GR5-invite (en-US) (727ms)
+  ✓  564 [ipad-13-landscape] › tests/reference.spec.ts:19:9 › reference GR5-invite (vi-VN) (674ms)
+  ✓  565 [ipad-13-landscape] › tests/reference.spec.ts:19:9 › reference GR6-join (en-US) (782ms)
+  ✓  566 [ipad-13-landscape] › tests/reference.spec.ts:19:9 › reference GR6-join (vi-VN) (697ms)
+  ✓  567 [ipad-13-landscape] › tests/reference.spec.ts:19:9 › reference GR7-create (en-US) (686ms)
+  ✓  568 [ipad-13-landscape] › tests/reference.spec.ts:19:9 › reference GR7-create (vi-VN) (739ms)
+  ✓  569 [ipad-13-landscape] › tests/reference.spec.ts:19:9 › reference Q1-quiz-choose (en-US) (696ms)
+  ✓  570 [ipad-13-landscape] › tests/reference.spec.ts:19:9 › reference Q1-quiz-choose (vi-VN) (692ms)
+  ✓  571 [ipad-13-landscape] › tests/reference.spec.ts:19:9 › reference Q2-quiz-right (en-US) (703ms)
+  ✓  572 [ipad-13-landscape] › tests/reference.spec.ts:19:9 › reference Q2-quiz-right (vi-VN) (716ms)
+  ✓  573 [ipad-13-landscape] › tests/reference.spec.ts:19:9 › reference Q3-quiz-not-quite (en-US) (800ms)
+  ✓  574 [ipad-13-landscape] › tests/reference.spec.ts:19:9 › reference Q3-quiz-not-quite (vi-VN) (689ms)
+  ✓  575 [ipad-13-landscape] › tests/reference.spec.ts:19:9 › reference Q4-quiz-cloze-hint (en-US) (692ms)
+  ✓  576 [ipad-13-landscape] › tests/reference.spec.ts:19:9 › reference Q4-quiz-cloze-hint (vi-VN) (708ms)
+  ✓  577 [ipad-13-landscape] › tests/reference.spec.ts:19:9 › reference Q5-quiz-listen (en-US) (699ms)
+  ✓  578 [ipad-13-landscape] › tests/reference.spec.ts:19:9 › reference Q5-quiz-listen (vi-VN) (672ms)
+  ✓  579 [ipad-13-landscape] › tests/reference.spec.ts:19:9 › reference Q6-quiz-result (en-US) (653ms)
+  ✓  580 [ipad-13-landscape] › tests/reference.spec.ts:19:9 › reference Q6-quiz-result (vi-VN) (699ms)
+  ✓  581 [ipad-13-landscape] › tests/reference.spec.ts:19:9 › reference Q7-quiz-result-perfect (en-US) (677ms)
+  ✓  582 [ipad-13-landscape] › tests/reference.spec.ts:19:9 › reference Q7-quiz-result-perfect (vi-VN) (726ms)
+  ✓  583 [ipad-13-landscape] › tests/reference.spec.ts:19:9 › reference Q8-quiz-drill-done (en-US) (695ms)
+  ✓  584 [ipad-13-landscape] › tests/reference.spec.ts:19:9 › reference Q8-quiz-drill-done (vi-VN) (700ms)
+  ✘  556 [ipad-13-landscape] › tests/reference.spec.ts:19:9 › reference GR1-shared-gardens (vi-VN) (1.0m)
+  ✘  558 [ipad-13-landscape] › tests/reference.spec.ts:19:9 › reference GR2-group-garden (vi-VN) (1.0m)
+  ✘  559 [ipad-13-landscape] › tests/reference.spec.ts:19:9 › reference GR3-tricky-patches (en-US) (1.0m)
+
+
+  1) [iphone-se] › tests/gallery.spec.ts:19:9 › gallery (vi-VN) › gallery vi-VN ────────────────────
+
+    Error: expect(page).toHaveScreenshot(expected) failed
+
+      Expected an image 375px by 11504px, received 375px by 11336px. 542593 pixels (ratio 0.13 of all image pixels) are different.
+
+      Snapshot: gallery-vi-VN.png
+
+    Call log:
+      - Expect "toHaveScreenshot(gallery-vi-VN.png)" with timeout 5000ms
+        - verifying given screenshot expectation
+      - taking page screenshot
+        - disabled all CSS animations
+      - waiting for fonts to load...
+      - fonts loaded
+      - Expected an image 375px by 11504px, received 375px by 11336px. 542593 pixels (ratio 0.13 of all image pixels) are different.
+      - waiting 100ms before taking screenshot
+      - taking page screenshot
+        - disabled all CSS animations
+      - waiting for fonts to load...
+      - fonts loaded
+      - captured a stable screenshot
+      - Expected an image 375px by 11504px, received 375px by 11336px. 542593 pixels (ratio 0.13 of all image pixels) are different.
+
+
+      24 |       expect(response?.status(), 'HTTP status of /garden/_gallery').toBe(200);
+      25 |       await settleGarden(page);
+    > 26 |       await expect(page).toHaveScreenshot(`gallery-${locale}.png`, { fullPage: true });
+         |                          ^
+      27 |     });
+      28 |   });
+      29 | }
+        at /Users/dylan/dygo/com.dygoacademy.english/com.dygoacademy.automationtesting/ui/tests/gallery.spec.ts:26:26
+
+    attachment #1: gallery-vi-VN (image/png) ───────────────────────────────────────────────────────
+    Expected: tests/__screenshots__/iphone-se/gallery-vi-VN.png
+    Received: test-results/gallery-gallery-vi-VN-gallery-vi-VN-iphone-se/gallery-vi-VN-actual.png
+    Diff:     test-results/gallery-gallery-vi-VN-gallery-vi-VN-iphone-se/gallery-vi-VN-diff.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/gallery-gallery-vi-VN-gallery-vi-VN-iphone-se/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/gallery-gallery-vi-VN-gallery-vi-VN-iphone-se/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/gallery-gallery-vi-VN-gallery-vi-VN-iphone-se/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2) [iphone-16] › tests/gallery.spec.ts:19:9 › gallery (vi-VN) › gallery vi-VN ────────────────────
+
+    Error: expect(page).toHaveScreenshot(expected) failed
+
+      Expected an image 393px by 11390px, received 393px by 11320px. 420626 pixels (ratio 0.10 of all image pixels) are different.
+
+      Snapshot: gallery-vi-VN.png
+
+    Call log:
+      - Expect "toHaveScreenshot(gallery-vi-VN.png)" with timeout 5000ms
+        - verifying given screenshot expectation
+      - taking page screenshot
+        - disabled all CSS animations
+      - waiting for fonts to load...
+      - fonts loaded
+      - Expected an image 393px by 11390px, received 393px by 11320px. 420623 pixels (ratio 0.10 of all image pixels) are different.
+      - waiting 100ms before taking screenshot
+      - taking page screenshot
+        - disabled all CSS animations
+      - waiting for fonts to load...
+      - fonts loaded
+      - captured a stable screenshot
+      - Expected an image 393px by 11390px, received 393px by 11320px. 420626 pixels (ratio 0.10 of all image pixels) are different.
+
+
+      24 |       expect(response?.status(), 'HTTP status of /garden/_gallery').toBe(200);
+      25 |       await settleGarden(page);
+    > 26 |       await expect(page).toHaveScreenshot(`gallery-${locale}.png`, { fullPage: true });
+         |                          ^
+      27 |     });
+      28 |   });
+      29 | }
+        at /Users/dylan/dygo/com.dygoacademy.english/com.dygoacademy.automationtesting/ui/tests/gallery.spec.ts:26:26
+
+    attachment #1: gallery-vi-VN (image/png) ───────────────────────────────────────────────────────
+    Expected: tests/__screenshots__/iphone-16/gallery-vi-VN.png
+    Received: test-results/gallery-gallery-vi-VN-gallery-vi-VN-iphone-16/gallery-vi-VN-actual.png
+    Diff:     test-results/gallery-gallery-vi-VN-gallery-vi-VN-iphone-16/gallery-vi-VN-diff.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/gallery-gallery-vi-VN-gallery-vi-VN-iphone-16/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/gallery-gallery-vi-VN-gallery-vi-VN-iphone-16/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/gallery-gallery-vi-VN-gallery-vi-VN-iphone-16/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  3) [iphone-16-pro-max] › tests/gallery.spec.ts:19:9 › gallery (vi-VN) › gallery vi-VN ────────────
+
+    Error: expect(page).toHaveScreenshot(expected) failed
+
+      Expected an image 440px by 11216px, received 440px by 11229px. 460269 pixels (ratio 0.10 of all image pixels) are different.
+
+      Snapshot: gallery-vi-VN.png
+
+    Call log:
+      - Expect "toHaveScreenshot(gallery-vi-VN.png)" with timeout 5000ms
+        - verifying given screenshot expectation
+      - taking page screenshot
+        - disabled all CSS animations
+      - waiting for fonts to load...
+      - fonts loaded
+      - Expected an image 440px by 11216px, received 440px by 11229px. 460269 pixels (ratio 0.10 of all image pixels) are different.
+      - waiting 100ms before taking screenshot
+      - taking page screenshot
+        - disabled all CSS animations
+      - waiting for fonts to load...
+      - fonts loaded
+      - captured a stable screenshot
+      - Expected an image 440px by 11216px, received 440px by 11229px. 460269 pixels (ratio 0.10 of all image pixels) are different.
+
+
+      24 |       expect(response?.status(), 'HTTP status of /garden/_gallery').toBe(200);
+      25 |       await settleGarden(page);
+    > 26 |       await expect(page).toHaveScreenshot(`gallery-${locale}.png`, { fullPage: true });
+         |                          ^
+      27 |     });
+      28 |   });
+      29 | }
+        at /Users/dylan/dygo/com.dygoacademy.english/com.dygoacademy.automationtesting/ui/tests/gallery.spec.ts:26:26
+
+    attachment #1: gallery-vi-VN (image/png) ───────────────────────────────────────────────────────
+    Expected: tests/__screenshots__/iphone-16-pro-max/gallery-vi-VN.png
+    Received: test-results/gallery-gallery-vi-VN-gallery-vi-VN-iphone-16-pro-max/gallery-vi-VN-actual.png
+    Diff:     test-results/gallery-gallery-vi-VN-gallery-vi-VN-iphone-16-pro-max/gallery-vi-VN-diff.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/gallery-gallery-vi-VN-gallery-vi-VN-iphone-16-pro-max/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/gallery-gallery-vi-VN-gallery-vi-VN-iphone-16-pro-max/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/gallery-gallery-vi-VN-gallery-vi-VN-iphone-16-pro-max/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  4) [iphone-landscape] › tests/gallery.spec.ts:19:9 › gallery (vi-VN) › gallery vi-VN ─────────────
+
+    Error: expect(page).toHaveScreenshot(expected) failed
+
+      Expected an image 852px by 10451px, received 852px by 10471px. 229179 pixels (ratio 0.03 of all image pixels) are different.
+
+      Snapshot: gallery-vi-VN.png
+
+    Call log:
+      - Expect "toHaveScreenshot(gallery-vi-VN.png)" with timeout 5000ms
+        - verifying given screenshot expectation
+      - taking page screenshot
+        - disabled all CSS animations
+      - waiting for fonts to load...
+      - fonts loaded
+      - Expected an image 852px by 10451px, received 852px by 10471px. 229179 pixels (ratio 0.03 of all image pixels) are different.
+      - waiting 100ms before taking screenshot
+      - taking page screenshot
+        - disabled all CSS animations
+      - waiting for fonts to load...
+      - fonts loaded
+      - captured a stable screenshot
+      - Expected an image 852px by 10451px, received 852px by 10471px. 229179 pixels (ratio 0.03 of all image pixels) are different.
+
+
+      24 |       expect(response?.status(), 'HTTP status of /garden/_gallery').toBe(200);
+      25 |       await settleGarden(page);
+    > 26 |       await expect(page).toHaveScreenshot(`gallery-${locale}.png`, { fullPage: true });
+         |                          ^
+      27 |     });
+      28 |   });
+      29 | }
+        at /Users/dylan/dygo/com.dygoacademy.english/com.dygoacademy.automationtesting/ui/tests/gallery.spec.ts:26:26
+
+    attachment #1: gallery-vi-VN (image/png) ───────────────────────────────────────────────────────
+    Expected: tests/__screenshots__/iphone-landscape/gallery-vi-VN.png
+    Received: test-results/gallery-gallery-vi-VN-gallery-vi-VN-iphone-landscape/gallery-vi-VN-actual.png
+    Diff:     test-results/gallery-gallery-vi-VN-gallery-vi-VN-iphone-landscape/gallery-vi-VN-diff.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/gallery-gallery-vi-VN-gallery-vi-VN-iphone-landscape/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/gallery-gallery-vi-VN-gallery-vi-VN-iphone-landscape/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/gallery-gallery-vi-VN-gallery-vi-VN-iphone-landscape/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  5) [ipad-slide-over] › tests/gallery.spec.ts:19:9 › gallery (vi-VN) › gallery vi-VN ──────────────
+
+    Error: expect(page).toHaveScreenshot(expected) failed
+
+      Expected an image 320px by 12006px, received 320px by 11970px. 548900 pixels (ratio 0.15 of all image pixels) are different.
+
+      Snapshot: gallery-vi-VN.png
+
+    Call log:
+      - Expect "toHaveScreenshot(gallery-vi-VN.png)" with timeout 5000ms
+        - verifying given screenshot expectation
+      - taking page screenshot
+        - disabled all CSS animations
+      - waiting for fonts to load...
+      - fonts loaded
+      - Expected an image 320px by 12006px, received 320px by 11970px. 548901 pixels (ratio 0.15 of all image pixels) are different.
+      - waiting 100ms before taking screenshot
+      - taking page screenshot
+        - disabled all CSS animations
+      - waiting for fonts to load...
+      - fonts loaded
+      - captured a stable screenshot
+      - Expected an image 320px by 12006px, received 320px by 11970px. 548900 pixels (ratio 0.15 of all image pixels) are different.
+
+
+      24 |       expect(response?.status(), 'HTTP status of /garden/_gallery').toBe(200);
+      25 |       await settleGarden(page);
+    > 26 |       await expect(page).toHaveScreenshot(`gallery-${locale}.png`, { fullPage: true });
+         |                          ^
+      27 |     });
+      28 |   });
+      29 | }
+        at /Users/dylan/dygo/com.dygoacademy.english/com.dygoacademy.automationtesting/ui/tests/gallery.spec.ts:26:26
+
+    attachment #1: gallery-vi-VN (image/png) ───────────────────────────────────────────────────────
+    Expected: tests/__screenshots__/ipad-slide-over/gallery-vi-VN.png
+    Received: test-results/gallery-gallery-vi-VN-gallery-vi-VN-ipad-slide-over/gallery-vi-VN-actual.png
+    Diff:     test-results/gallery-gallery-vi-VN-gallery-vi-VN-ipad-slide-over/gallery-vi-VN-diff.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/gallery-gallery-vi-VN-gallery-vi-VN-ipad-slide-over/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/gallery-gallery-vi-VN-gallery-vi-VN-ipad-slide-over/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/gallery-gallery-vi-VN-gallery-vi-VN-ipad-slide-over/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  6) [ipad-portrait] › tests/gallery.spec.ts:19:9 › gallery (vi-VN) › gallery vi-VN ────────────────
+
+    Error: expect(page).toHaveScreenshot(expected) failed
+
+      Expected an image 820px by 10451px, received 820px by 10471px. 229187 pixels (ratio 0.03 of all image pixels) are different.
+
+      Snapshot: gallery-vi-VN.png
+
+    Call log:
+      - Expect "toHaveScreenshot(gallery-vi-VN.png)" with timeout 5000ms
+        - verifying given screenshot expectation
+      - taking page screenshot
+        - disabled all CSS animations
+      - waiting for fonts to load...
+      - fonts loaded
+      - Expected an image 820px by 10451px, received 820px by 10471px. 229187 pixels (ratio 0.03 of all image pixels) are different.
+      - waiting 100ms before taking screenshot
+      - taking page screenshot
+        - disabled all CSS animations
+      - waiting for fonts to load...
+      - fonts loaded
+      - captured a stable screenshot
+      - Expected an image 820px by 10451px, received 820px by 10471px. 229187 pixels (ratio 0.03 of all image pixels) are different.
+
+
+      24 |       expect(response?.status(), 'HTTP status of /garden/_gallery').toBe(200);
+      25 |       await settleGarden(page);
+    > 26 |       await expect(page).toHaveScreenshot(`gallery-${locale}.png`, { fullPage: true });
+         |                          ^
+      27 |     });
+      28 |   });
+      29 | }
+        at /Users/dylan/dygo/com.dygoacademy.english/com.dygoacademy.automationtesting/ui/tests/gallery.spec.ts:26:26
+
+    attachment #1: gallery-vi-VN (image/png) ───────────────────────────────────────────────────────
+    Expected: tests/__screenshots__/ipad-portrait/gallery-vi-VN.png
+    Received: test-results/gallery-gallery-vi-VN-gallery-vi-VN-ipad-portrait/gallery-vi-VN-actual.png
+    Diff:     test-results/gallery-gallery-vi-VN-gallery-vi-VN-ipad-portrait/gallery-vi-VN-diff.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/gallery-gallery-vi-VN-gallery-vi-VN-ipad-portrait/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/gallery-gallery-vi-VN-gallery-vi-VN-ipad-portrait/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/gallery-gallery-vi-VN-gallery-vi-VN-ipad-portrait/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  7) [ipad-landscape] › tests/gallery.spec.ts:19:9 › gallery (vi-VN) › gallery vi-VN ───────────────
+
+    Error: expect(page).toHaveScreenshot(expected) failed
+
+      112676 pixels (ratio 0.01 of all image pixels) are different.
+
+      Snapshot: gallery-vi-VN.png
+
+    Call log:
+      - Expect "toHaveScreenshot(gallery-vi-VN.png)" with timeout 5000ms
+        - verifying given screenshot expectation
+      - taking page screenshot
+        - disabled all CSS animations
+      - waiting for fonts to load...
+      - fonts loaded
+      - 112676 pixels (ratio 0.01 of all image pixels) are different.
+      - waiting 100ms before taking screenshot
+      - taking page screenshot
+        - disabled all CSS animations
+      - waiting for fonts to load...
+      - fonts loaded
+      - captured a stable screenshot
+      - 112676 pixels (ratio 0.01 of all image pixels) are different.
+
+
+      24 |       expect(response?.status(), 'HTTP status of /garden/_gallery').toBe(200);
+      25 |       await settleGarden(page);
+    > 26 |       await expect(page).toHaveScreenshot(`gallery-${locale}.png`, { fullPage: true });
+         |                          ^
+      27 |     });
+      28 |   });
+      29 | }
+        at /Users/dylan/dygo/com.dygoacademy.english/com.dygoacademy.automationtesting/ui/tests/gallery.spec.ts:26:26
+
+    attachment #1: gallery-vi-VN (image/png) ───────────────────────────────────────────────────────
+    Expected: tests/__screenshots__/ipad-landscape/gallery-vi-VN.png
+    Received: test-results/gallery-gallery-vi-VN-gallery-vi-VN-ipad-landscape/gallery-vi-VN-actual.png
+    Diff:     test-results/gallery-gallery-vi-VN-gallery-vi-VN-ipad-landscape/gallery-vi-VN-diff.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/gallery-gallery-vi-VN-gallery-vi-VN-ipad-landscape/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/gallery-gallery-vi-VN-gallery-vi-VN-ipad-landscape/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/gallery-gallery-vi-VN-gallery-vi-VN-ipad-landscape/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  8) [ipad-13-landscape] › tests/gallery.spec.ts:19:9 › gallery (vi-VN) › gallery vi-VN ────────────
+
+    Error: expect(page).toHaveScreenshot(expected) failed
+
+      112677 pixels (ratio 0.01 of all image pixels) are different.
+
+      Snapshot: gallery-vi-VN.png
+
+    Call log:
+      - Expect "toHaveScreenshot(gallery-vi-VN.png)" with timeout 5000ms
+        - verifying given screenshot expectation
+      - taking page screenshot
+        - disabled all CSS animations
+      - waiting for fonts to load...
+      - fonts loaded
+      - 112677 pixels (ratio 0.01 of all image pixels) are different.
+      - waiting 100ms before taking screenshot
+      - taking page screenshot
+        - disabled all CSS animations
+      - waiting for fonts to load...
+      - fonts loaded
+      - captured a stable screenshot
+      - 112677 pixels (ratio 0.01 of all image pixels) are different.
+
+
+      24 |       expect(response?.status(), 'HTTP status of /garden/_gallery').toBe(200);
+      25 |       await settleGarden(page);
+    > 26 |       await expect(page).toHaveScreenshot(`gallery-${locale}.png`, { fullPage: true });
+         |                          ^
+      27 |     });
+      28 |   });
+      29 | }
+        at /Users/dylan/dygo/com.dygoacademy.english/com.dygoacademy.automationtesting/ui/tests/gallery.spec.ts:26:26
+
+    attachment #1: gallery-vi-VN (image/png) ───────────────────────────────────────────────────────
+    Expected: tests/__screenshots__/ipad-13-landscape/gallery-vi-VN.png
+    Received: test-results/gallery-gallery-vi-VN-gallery-vi-VN-ipad-13-landscape/gallery-vi-VN-actual.png
+    Diff:     test-results/gallery-gallery-vi-VN-gallery-vi-VN-ipad-13-landscape/gallery-vi-VN-diff.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/gallery-gallery-vi-VN-gallery-vi-VN-ipad-13-landscape/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/gallery-gallery-vi-VN-gallery-vi-VN-ipad-13-landscape/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/gallery-gallery-vi-VN-gallery-vi-VN-ipad-13-landscape/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  9) [ipad-13-landscape] › tests/reference.spec.ts:19:9 › reference AU1-sign-in (en-US) ────────────
+
+    Test timeout of 60000ms exceeded.
+
+    Error: page.waitForSelector: Test timeout of 60000ms exceeded.
+    Call log:
+      - waiting for locator('[data-ui="garden"]') to be visible
+
+
+       at fixtures.ts:65
+
+      63 | /** Wait for the garden to be revealed, freeze motion, wait for fonts. */
+      64 | export async function settleGarden(page: Page): Promise<void> {
+    > 65 |   await page.waitForSelector('[data-ui="garden"]', { state: 'visible' });
+         |              ^
+      66 |   await page.addStyleTag({ content: FREEZE_CSS });
+      67 |   await page.evaluate(async () => {
+      68 |     await document.fonts.ready;
+        at settleGarden (/Users/dylan/dygo/com.dygoacademy.english/com.dygoacademy.automationtesting/ui/tests/fixtures.ts:65:14)
+        at /Users/dylan/dygo/com.dygoacademy.english/com.dygoacademy.automationtesting/ui/tests/reference.spec.ts:24:25
+
+    Error Context: test-results/reference-reference-AU1-sign-in-en-US--ipad-13-landscape/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/reference-reference-AU1-sign-in-en-US--ipad-13-landscape/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/reference-reference-AU1-sign-in-en-US--ipad-13-landscape/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  10) [ipad-13-landscape] › tests/reference.spec.ts:19:9 › reference AU1-sign-in (vi-VN) ───────────
+
+    Error: expect(page).toHaveScreenshot(expected) failed
+
+      103608 pixels (ratio 0.08 of all image pixels) are different.
+
+      Snapshot: reference-AU1-sign-in-vi-VN.png
+
+    Call log:
+      - Expect "toHaveScreenshot(reference-AU1-sign-in-vi-VN.png)" with timeout 5000ms
+        - verifying given screenshot expectation
+      - taking page screenshot
+        - disabled all CSS animations
+      - waiting for fonts to load...
+      - fonts loaded
+      - 103608 pixels (ratio 0.08 of all image pixels) are different.
+      - waiting 100ms before taking screenshot
+      - taking page screenshot
+        - disabled all CSS animations
+      - waiting for fonts to load...
+      - fonts loaded
+      - captured a stable screenshot
+      - 103608 pixels (ratio 0.08 of all image pixels) are different.
+
+
+      23 |       expect(response?.status(), `HTTP status of /garden/_reference/${name}`).toBe(200);
+      24 |       await settleGarden(page);
+    > 25 |       await expect(page).toHaveScreenshot(`reference-${name}-${locale}.png`, { fullPage: true });
+         |                          ^
+      26 |     });
+      27 |   }
+      28 | }
+        at /Users/dylan/dygo/com.dygoacademy.english/com.dygoacademy.automationtesting/ui/tests/reference.spec.ts:25:26
+
+    attachment #1: reference-AU1-sign-in-vi-VN (image/png) ─────────────────────────────────────────
+    Expected: tests/__screenshots__/ipad-13-landscape/reference-AU1-sign-in-vi-VN.png
+    Received: test-results/reference-reference-AU1-sign-in-vi-VN--ipad-13-landscape/reference-AU1-sign-in-vi-VN-actual.png
+    Diff:     test-results/reference-reference-AU1-sign-in-vi-VN--ipad-13-landscape/reference-AU1-sign-in-vi-VN-diff.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/reference-reference-AU1-sign-in-vi-VN--ipad-13-landscape/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/reference-reference-AU1-sign-in-vi-VN--ipad-13-landscape/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/reference-reference-AU1-sign-in-vi-VN--ipad-13-landscape/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  11) [ipad-13-landscape] › tests/reference.spec.ts:19:9 › reference AU1-sign-in-error (en-US) ─────
+
+    Error: expect(page).toHaveScreenshot(expected) failed
+
+      104854 pixels (ratio 0.08 of all image pixels) are different.
+
+      Snapshot: reference-AU1-sign-in-error-en-US.png
+
+    Call log:
+      - Expect "toHaveScreenshot(reference-AU1-sign-in-error-en-US.png)" with timeout 5000ms
+        - verifying given screenshot expectation
+      - taking page screenshot
+        - disabled all CSS animations
+      - waiting for fonts to load...
+      - fonts loaded
+      - 104854 pixels (ratio 0.08 of all image pixels) are different.
+      - waiting 100ms before taking screenshot
+      - taking page screenshot
+        - disabled all CSS animations
+      - waiting for fonts to load...
+      - fonts loaded
+      - captured a stable screenshot
+      - 104854 pixels (ratio 0.08 of all image pixels) are different.
+
+
+      23 |       expect(response?.status(), `HTTP status of /garden/_reference/${name}`).toBe(200);
+      24 |       await settleGarden(page);
+    > 25 |       await expect(page).toHaveScreenshot(`reference-${name}-${locale}.png`, { fullPage: true });
+         |                          ^
+      26 |     });
+      27 |   }
+      28 | }
+        at /Users/dylan/dygo/com.dygoacademy.english/com.dygoacademy.automationtesting/ui/tests/reference.spec.ts:25:26
+
+    attachment #1: reference-AU1-sign-in-error-en-US (image/png) ───────────────────────────────────
+    Expected: tests/__screenshots__/ipad-13-landscape/reference-AU1-sign-in-error-en-US.png
+    Received: test-results/reference-reference-AU1-sign-in-error-en-US--ipad-13-landscape/reference-AU1-sign-in-error-en-US-actual.png
+    Diff:     test-results/reference-reference-AU1-sign-in-error-en-US--ipad-13-landscape/reference-AU1-sign-in-error-en-US-diff.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/reference-reference-AU1-sign-in-error-en-US--ipad-13-landscape/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/reference-reference-AU1-sign-in-error-en-US--ipad-13-landscape/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/reference-reference-AU1-sign-in-error-en-US--ipad-13-landscape/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  12) [ipad-13-landscape] › tests/reference.spec.ts:19:9 › reference AU1-sign-in-error (vi-VN) ─────
+
+    Error: expect(page).toHaveScreenshot(expected) failed
+
+      105555 pixels (ratio 0.08 of all image pixels) are different.
+
+      Snapshot: reference-AU1-sign-in-error-vi-VN.png
+
+    Call log:
+      - Expect "toHaveScreenshot(reference-AU1-sign-in-error-vi-VN.png)" with timeout 5000ms
+        - verifying given screenshot expectation
+      - taking page screenshot
+        - disabled all CSS animations
+      - waiting for fonts to load...
+      - fonts loaded
+      - 105555 pixels (ratio 0.08 of all image pixels) are different.
+      - waiting 100ms before taking screenshot
+      - taking page screenshot
+        - disabled all CSS animations
+      - waiting for fonts to load...
+      - fonts loaded
+      - captured a stable screenshot
+      - 105555 pixels (ratio 0.08 of all image pixels) are different.
+
+
+      23 |       expect(response?.status(), `HTTP status of /garden/_reference/${name}`).toBe(200);
+      24 |       await settleGarden(page);
+    > 25 |       await expect(page).toHaveScreenshot(`reference-${name}-${locale}.png`, { fullPage: true });
+         |                          ^
+      26 |     });
+      27 |   }
+      28 | }
+        at /Users/dylan/dygo/com.dygoacademy.english/com.dygoacademy.automationtesting/ui/tests/reference.spec.ts:25:26
+
+    attachment #1: reference-AU1-sign-in-error-vi-VN (image/png) ───────────────────────────────────
+    Expected: tests/__screenshots__/ipad-13-landscape/reference-AU1-sign-in-error-vi-VN.png
+    Received: test-results/reference-reference-AU1-sign-in-error-vi-VN--ipad-13-landscape/reference-AU1-sign-in-error-vi-VN-actual.png
+    Diff:     test-results/reference-reference-AU1-sign-in-error-vi-VN--ipad-13-landscape/reference-AU1-sign-in-error-vi-VN-diff.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/reference-reference-AU1-sign-in-error-vi-VN--ipad-13-landscape/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/reference-reference-AU1-sign-in-error-vi-VN--ipad-13-landscape/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/reference-reference-AU1-sign-in-error-vi-VN--ipad-13-landscape/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  13) [ipad-13-landscape] › tests/reference.spec.ts:19:9 › reference AU2-create-account (en-US) ────
+
+    Error: expect(page).toHaveScreenshot(expected) failed
+
+      91498 pixels (ratio 0.07 of all image pixels) are different.
+
+      Snapshot: reference-AU2-create-account-en-US.png
+
+    Call log:
+      - Expect "toHaveScreenshot(reference-AU2-create-account-en-US.png)" with timeout 5000ms
+        - verifying given screenshot expectation
+      - taking page screenshot
+        - disabled all CSS animations
+      - waiting for fonts to load...
+      - fonts loaded
+      - 91498 pixels (ratio 0.07 of all image pixels) are different.
+      - waiting 100ms before taking screenshot
+      - taking page screenshot
+        - disabled all CSS animations
+      - waiting for fonts to load...
+      - fonts loaded
+      - captured a stable screenshot
+      - 91498 pixels (ratio 0.07 of all image pixels) are different.
+
+
+      23 |       expect(response?.status(), `HTTP status of /garden/_reference/${name}`).toBe(200);
+      24 |       await settleGarden(page);
+    > 25 |       await expect(page).toHaveScreenshot(`reference-${name}-${locale}.png`, { fullPage: true });
+         |                          ^
+      26 |     });
+      27 |   }
+      28 | }
+        at /Users/dylan/dygo/com.dygoacademy.english/com.dygoacademy.automationtesting/ui/tests/reference.spec.ts:25:26
+
+    attachment #1: reference-AU2-create-account-en-US (image/png) ──────────────────────────────────
+    Expected: tests/__screenshots__/ipad-13-landscape/reference-AU2-create-account-en-US.png
+    Received: test-results/reference-reference-AU2-create-account-en-US--ipad-13-landscape/reference-AU2-create-account-en-US-actual.png
+    Diff:     test-results/reference-reference-AU2-create-account-en-US--ipad-13-landscape/reference-AU2-create-account-en-US-diff.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/reference-reference-AU2-create-account-en-US--ipad-13-landscape/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/reference-reference-AU2-create-account-en-US--ipad-13-landscape/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/reference-reference-AU2-create-account-en-US--ipad-13-landscape/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  14) [ipad-13-landscape] › tests/reference.spec.ts:19:9 › reference AU2-create-account (vi-VN) ────
+
+    Error: expect(page).toHaveScreenshot(expected) failed
+
+      92638 pixels (ratio 0.07 of all image pixels) are different.
+
+      Snapshot: reference-AU2-create-account-vi-VN.png
+
+    Call log:
+      - Expect "toHaveScreenshot(reference-AU2-create-account-vi-VN.png)" with timeout 5000ms
+        - verifying given screenshot expectation
+      - taking page screenshot
+        - disabled all CSS animations
+      - waiting for fonts to load...
+      - fonts loaded
+      - 92638 pixels (ratio 0.07 of all image pixels) are different.
+      - waiting 100ms before taking screenshot
+      - taking page screenshot
+        - disabled all CSS animations
+      - waiting for fonts to load...
+      - fonts loaded
+      - captured a stable screenshot
+      - 92638 pixels (ratio 0.07 of all image pixels) are different.
+
+
+      23 |       expect(response?.status(), `HTTP status of /garden/_reference/${name}`).toBe(200);
+      24 |       await settleGarden(page);
+    > 25 |       await expect(page).toHaveScreenshot(`reference-${name}-${locale}.png`, { fullPage: true });
+         |                          ^
+      26 |     });
+      27 |   }
+      28 | }
+        at /Users/dylan/dygo/com.dygoacademy.english/com.dygoacademy.automationtesting/ui/tests/reference.spec.ts:25:26
+
+    attachment #1: reference-AU2-create-account-vi-VN (image/png) ──────────────────────────────────
+    Expected: tests/__screenshots__/ipad-13-landscape/reference-AU2-create-account-vi-VN.png
+    Received: test-results/reference-reference-AU2-create-account-vi-VN--ipad-13-landscape/reference-AU2-create-account-vi-VN-actual.png
+    Diff:     test-results/reference-reference-AU2-create-account-vi-VN--ipad-13-landscape/reference-AU2-create-account-vi-VN-diff.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/reference-reference-AU2-create-account-vi-VN--ipad-13-landscape/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/reference-reference-AU2-create-account-vi-VN--ipad-13-landscape/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/reference-reference-AU2-create-account-vi-VN--ipad-13-landscape/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  15) [ipad-13-landscape] › tests/reference.spec.ts:19:9 › reference AU3-create-account-invite (en-US) 
+
+    Error: expect(page).toHaveScreenshot(expected) failed
+
+      76144 pixels (ratio 0.06 of all image pixels) are different.
+
+      Snapshot: reference-AU3-create-account-invite-en-US.png
+
+    Call log:
+      - Expect "toHaveScreenshot(reference-AU3-create-account-invite-en-US.png)" with timeout 5000ms
+        - verifying given screenshot expectation
+      - taking page screenshot
+        - disabled all CSS animations
+      - waiting for fonts to load...
+      - fonts loaded
+      - 76144 pixels (ratio 0.06 of all image pixels) are different.
+      - waiting 100ms before taking screenshot
+      - taking page screenshot
+        - disabled all CSS animations
+      - waiting for fonts to load...
+      - fonts loaded
+      - captured a stable screenshot
+      - 76144 pixels (ratio 0.06 of all image pixels) are different.
+
+
+      23 |       expect(response?.status(), `HTTP status of /garden/_reference/${name}`).toBe(200);
+      24 |       await settleGarden(page);
+    > 25 |       await expect(page).toHaveScreenshot(`reference-${name}-${locale}.png`, { fullPage: true });
+         |                          ^
+      26 |     });
+      27 |   }
+      28 | }
+        at /Users/dylan/dygo/com.dygoacademy.english/com.dygoacademy.automationtesting/ui/tests/reference.spec.ts:25:26
+
+    attachment #1: reference-AU3-create-account-invite-en-US (image/png) ───────────────────────────
+    Expected: tests/__screenshots__/ipad-13-landscape/reference-AU3-create-account-invite-en-US.png
+    Received: test-results/reference-reference-AU3-create-account-invite-en-US--ipad-13-landscape/reference-AU3-create-account-invite-en-US-actual.png
+    Diff:     test-results/reference-reference-AU3-create-account-invite-en-US--ipad-13-landscape/reference-AU3-create-account-invite-en-US-diff.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/reference-reference-AU3-create-account-invite-en-US--ipad-13-landscape/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/reference-reference-AU3-create-account-invite-en-US--ipad-13-landscape/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/reference-reference-AU3-create-account-invite-en-US--ipad-13-landscape/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  16) [ipad-13-landscape] › tests/reference.spec.ts:19:9 › reference AU3-create-account-invite (vi-VN) 
+
+    Error: expect(page).toHaveScreenshot(expected) failed
+
+      77144 pixels (ratio 0.06 of all image pixels) are different.
+
+      Snapshot: reference-AU3-create-account-invite-vi-VN.png
+
+    Call log:
+      - Expect "toHaveScreenshot(reference-AU3-create-account-invite-vi-VN.png)" with timeout 5000ms
+        - verifying given screenshot expectation
+      - taking page screenshot
+        - disabled all CSS animations
+      - waiting for fonts to load...
+      - fonts loaded
+      - 77144 pixels (ratio 0.06 of all image pixels) are different.
+      - waiting 100ms before taking screenshot
+      - taking page screenshot
+        - disabled all CSS animations
+      - waiting for fonts to load...
+      - fonts loaded
+      - captured a stable screenshot
+      - 77144 pixels (ratio 0.06 of all image pixels) are different.
+
+
+      23 |       expect(response?.status(), `HTTP status of /garden/_reference/${name}`).toBe(200);
+      24 |       await settleGarden(page);
+    > 25 |       await expect(page).toHaveScreenshot(`reference-${name}-${locale}.png`, { fullPage: true });
+         |                          ^
+      26 |     });
+      27 |   }
+      28 | }
+        at /Users/dylan/dygo/com.dygoacademy.english/com.dygoacademy.automationtesting/ui/tests/reference.spec.ts:25:26
+
+    attachment #1: reference-AU3-create-account-invite-vi-VN (image/png) ───────────────────────────
+    Expected: tests/__screenshots__/ipad-13-landscape/reference-AU3-create-account-invite-vi-VN.png
+    Received: test-results/reference-reference-AU3-create-account-invite-vi-VN--ipad-13-landscape/reference-AU3-create-account-invite-vi-VN-actual.png
+    Diff:     test-results/reference-reference-AU3-create-account-invite-vi-VN--ipad-13-landscape/reference-AU3-create-account-invite-vi-VN-diff.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/reference-reference-AU3-create-account-invite-vi-VN--ipad-13-landscape/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/reference-reference-AU3-create-account-invite-vi-VN--ipad-13-landscape/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/reference-reference-AU3-create-account-invite-vi-VN--ipad-13-landscape/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  17) [ipad-13-landscape] › tests/reference.spec.ts:19:9 › reference AU4-reset-password (en-US) ────
+
+    Error: expect(page).toHaveScreenshot(expected) failed
+
+      37980 pixels (ratio 0.03 of all image pixels) are different.
+
+      Snapshot: reference-AU4-reset-password-en-US.png
+
+    Call log:
+      - Expect "toHaveScreenshot(reference-AU4-reset-password-en-US.png)" with timeout 5000ms
+        - verifying given screenshot expectation
+      - taking page screenshot
+        - disabled all CSS animations
+      - waiting for fonts to load...
+      - fonts loaded
+      - 37980 pixels (ratio 0.03 of all image pixels) are different.
+      - waiting 100ms before taking screenshot
+      - taking page screenshot
+        - disabled all CSS animations
+      - waiting for fonts to load...
+      - fonts loaded
+      - captured a stable screenshot
+      - 37980 pixels (ratio 0.03 of all image pixels) are different.
+
+
+      23 |       expect(response?.status(), `HTTP status of /garden/_reference/${name}`).toBe(200);
+      24 |       await settleGarden(page);
+    > 25 |       await expect(page).toHaveScreenshot(`reference-${name}-${locale}.png`, { fullPage: true });
+         |                          ^
+      26 |     });
+      27 |   }
+      28 | }
+        at /Users/dylan/dygo/com.dygoacademy.english/com.dygoacademy.automationtesting/ui/tests/reference.spec.ts:25:26
+
+    attachment #1: reference-AU4-reset-password-en-US (image/png) ──────────────────────────────────
+    Expected: tests/__screenshots__/ipad-13-landscape/reference-AU4-reset-password-en-US.png
+    Received: test-results/reference-reference-AU4-reset-password-en-US--ipad-13-landscape/reference-AU4-reset-password-en-US-actual.png
+    Diff:     test-results/reference-reference-AU4-reset-password-en-US--ipad-13-landscape/reference-AU4-reset-password-en-US-diff.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/reference-reference-AU4-reset-password-en-US--ipad-13-landscape/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/reference-reference-AU4-reset-password-en-US--ipad-13-landscape/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/reference-reference-AU4-reset-password-en-US--ipad-13-landscape/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  18) [ipad-13-landscape] › tests/reference.spec.ts:19:9 › reference AU4-reset-password (vi-VN) ────
+
+    Error: expect(page).toHaveScreenshot(expected) failed
+
+      38298 pixels (ratio 0.03 of all image pixels) are different.
+
+      Snapshot: reference-AU4-reset-password-vi-VN.png
+
+    Call log:
+      - Expect "toHaveScreenshot(reference-AU4-reset-password-vi-VN.png)" with timeout 5000ms
+        - verifying given screenshot expectation
+      - taking page screenshot
+        - disabled all CSS animations
+      - waiting for fonts to load...
+      - fonts loaded
+      - 38298 pixels (ratio 0.03 of all image pixels) are different.
+      - waiting 100ms before taking screenshot
+      - taking page screenshot
+        - disabled all CSS animations
+      - waiting for fonts to load...
+      - fonts loaded
+      - captured a stable screenshot
+      - 38298 pixels (ratio 0.03 of all image pixels) are different.
+
+
+      23 |       expect(response?.status(), `HTTP status of /garden/_reference/${name}`).toBe(200);
+      24 |       await settleGarden(page);
+    > 25 |       await expect(page).toHaveScreenshot(`reference-${name}-${locale}.png`, { fullPage: true });
+         |                          ^
+      26 |     });
+      27 |   }
+      28 | }
+        at /Users/dylan/dygo/com.dygoacademy.english/com.dygoacademy.automationtesting/ui/tests/reference.spec.ts:25:26
+
+    attachment #1: reference-AU4-reset-password-vi-VN (image/png) ──────────────────────────────────
+    Expected: tests/__screenshots__/ipad-13-landscape/reference-AU4-reset-password-vi-VN.png
+    Received: test-results/reference-reference-AU4-reset-password-vi-VN--ipad-13-landscape/reference-AU4-reset-password-vi-VN-actual.png
+    Diff:     test-results/reference-reference-AU4-reset-password-vi-VN--ipad-13-landscape/reference-AU4-reset-password-vi-VN-diff.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/reference-reference-AU4-reset-password-vi-VN--ipad-13-landscape/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/reference-reference-AU4-reset-password-vi-VN--ipad-13-landscape/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/reference-reference-AU4-reset-password-vi-VN--ipad-13-landscape/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  19) [ipad-13-landscape] › tests/reference.spec.ts:19:9 › reference AU4-reset-password-sent (en-US) 
+
+    Error: expect(page).toHaveScreenshot(expected) failed
+
+      42208 pixels (ratio 0.03 of all image pixels) are different.
+
+      Snapshot: reference-AU4-reset-password-sent-en-US.png
+
+    Call log:
+      - Expect "toHaveScreenshot(reference-AU4-reset-password-sent-en-US.png)" with timeout 5000ms
+        - verifying given screenshot expectation
+      - taking page screenshot
+        - disabled all CSS animations
+      - waiting for fonts to load...
+      - fonts loaded
+      - 42208 pixels (ratio 0.03 of all image pixels) are different.
+      - waiting 100ms before taking screenshot
+      - taking page screenshot
+        - disabled all CSS animations
+      - waiting for fonts to load...
+      - fonts loaded
+      - captured a stable screenshot
+      - 42208 pixels (ratio 0.03 of all image pixels) are different.
+
+
+      23 |       expect(response?.status(), `HTTP status of /garden/_reference/${name}`).toBe(200);
+      24 |       await settleGarden(page);
+    > 25 |       await expect(page).toHaveScreenshot(`reference-${name}-${locale}.png`, { fullPage: true });
+         |                          ^
+      26 |     });
+      27 |   }
+      28 | }
+        at /Users/dylan/dygo/com.dygoacademy.english/com.dygoacademy.automationtesting/ui/tests/reference.spec.ts:25:26
+
+    attachment #1: reference-AU4-reset-password-sent-en-US (image/png) ─────────────────────────────
+    Expected: tests/__screenshots__/ipad-13-landscape/reference-AU4-reset-password-sent-en-US.png
+    Received: test-results/reference-reference-AU4-reset-password-sent-en-US--ipad-13-landscape/reference-AU4-reset-password-sent-en-US-actual.png
+    Diff:     test-results/reference-reference-AU4-reset-password-sent-en-US--ipad-13-landscape/reference-AU4-reset-password-sent-en-US-diff.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/reference-reference-AU4-reset-password-sent-en-US--ipad-13-landscape/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/reference-reference-AU4-reset-password-sent-en-US--ipad-13-landscape/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/reference-reference-AU4-reset-password-sent-en-US--ipad-13-landscape/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  20) [ipad-13-landscape] › tests/reference.spec.ts:19:9 › reference AU4-reset-password-sent (vi-VN) 
+
+    Error: expect(page).toHaveScreenshot(expected) failed
+
+      43142 pixels (ratio 0.04 of all image pixels) are different.
+
+      Snapshot: reference-AU4-reset-password-sent-vi-VN.png
+
+    Call log:
+      - Expect "toHaveScreenshot(reference-AU4-reset-password-sent-vi-VN.png)" with timeout 5000ms
+        - verifying given screenshot expectation
+      - taking page screenshot
+        - disabled all CSS animations
+      - waiting for fonts to load...
+      - fonts loaded
+      - 43142 pixels (ratio 0.04 of all image pixels) are different.
+      - waiting 100ms before taking screenshot
+      - taking page screenshot
+        - disabled all CSS animations
+      - waiting for fonts to load...
+      - fonts loaded
+      - captured a stable screenshot
+      - 43142 pixels (ratio 0.04 of all image pixels) are different.
+
+
+      23 |       expect(response?.status(), `HTTP status of /garden/_reference/${name}`).toBe(200);
+      24 |       await settleGarden(page);
+    > 25 |       await expect(page).toHaveScreenshot(`reference-${name}-${locale}.png`, { fullPage: true });
+         |                          ^
+      26 |     });
+      27 |   }
+      28 | }
+        at /Users/dylan/dygo/com.dygoacademy.english/com.dygoacademy.automationtesting/ui/tests/reference.spec.ts:25:26
+
+    attachment #1: reference-AU4-reset-password-sent-vi-VN (image/png) ─────────────────────────────
+    Expected: tests/__screenshots__/ipad-13-landscape/reference-AU4-reset-password-sent-vi-VN.png
+    Received: test-results/reference-reference-AU4-reset-password-sent-vi-VN--ipad-13-landscape/reference-AU4-reset-password-sent-vi-VN-actual.png
+    Diff:     test-results/reference-reference-AU4-reset-password-sent-vi-VN--ipad-13-landscape/reference-AU4-reset-password-sent-vi-VN-diff.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/reference-reference-AU4-reset-password-sent-vi-VN--ipad-13-landscape/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/reference-reference-AU4-reset-password-sent-vi-VN--ipad-13-landscape/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/reference-reference-AU4-reset-password-sent-vi-VN--ipad-13-landscape/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  21) [ipad-13-landscape] › tests/reference.spec.ts:19:9 › reference GR1-shared-gardens (en-US) ────
+
+    Error: expect(page).toHaveScreenshot(expected) failed
+
+      63057 pixels (ratio 0.05 of all image pixels) are different.
+
+      Snapshot: reference-GR1-shared-gardens-en-US.png
+
+    Call log:
+      - Expect "toHaveScreenshot(reference-GR1-shared-gardens-en-US.png)" with timeout 5000ms
+        - verifying given screenshot expectation
+      - taking page screenshot
+        - disabled all CSS animations
+      - waiting for fonts to load...
+      - fonts loaded
+      - 63057 pixels (ratio 0.05 of all image pixels) are different.
+      - waiting 100ms before taking screenshot
+      - taking page screenshot
+        - disabled all CSS animations
+      - waiting for fonts to load...
+      - fonts loaded
+      - captured a stable screenshot
+      - 63057 pixels (ratio 0.05 of all image pixels) are different.
+
+
+      23 |       expect(response?.status(), `HTTP status of /garden/_reference/${name}`).toBe(200);
+      24 |       await settleGarden(page);
+    > 25 |       await expect(page).toHaveScreenshot(`reference-${name}-${locale}.png`, { fullPage: true });
+         |                          ^
+      26 |     });
+      27 |   }
+      28 | }
+        at /Users/dylan/dygo/com.dygoacademy.english/com.dygoacademy.automationtesting/ui/tests/reference.spec.ts:25:26
+
+    attachment #1: reference-GR1-shared-gardens-en-US (image/png) ──────────────────────────────────
+    Expected: tests/__screenshots__/ipad-13-landscape/reference-GR1-shared-gardens-en-US.png
+    Received: test-results/reference-reference-GR1-shared-gardens-en-US--ipad-13-landscape/reference-GR1-shared-gardens-en-US-actual.png
+    Diff:     test-results/reference-reference-GR1-shared-gardens-en-US--ipad-13-landscape/reference-GR1-shared-gardens-en-US-diff.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/reference-reference-GR1-shared-gardens-en-US--ipad-13-landscape/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/reference-reference-GR1-shared-gardens-en-US--ipad-13-landscape/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/reference-reference-GR1-shared-gardens-en-US--ipad-13-landscape/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  22) [ipad-13-landscape] › tests/reference.spec.ts:19:9 › reference GR1-shared-gardens (vi-VN) ────
+
+    Test timeout of 60000ms exceeded.
+
+    Error: page.waitForSelector: Test timeout of 60000ms exceeded.
+    Call log:
+      - waiting for locator('[data-ui="garden"]') to be visible
+
+
+       at fixtures.ts:65
+
+      63 | /** Wait for the garden to be revealed, freeze motion, wait for fonts. */
+      64 | export async function settleGarden(page: Page): Promise<void> {
+    > 65 |   await page.waitForSelector('[data-ui="garden"]', { state: 'visible' });
+         |              ^
+      66 |   await page.addStyleTag({ content: FREEZE_CSS });
+      67 |   await page.evaluate(async () => {
+      68 |     await document.fonts.ready;
+        at settleGarden (/Users/dylan/dygo/com.dygoacademy.english/com.dygoacademy.automationtesting/ui/tests/fixtures.ts:65:14)
+        at /Users/dylan/dygo/com.dygoacademy.english/com.dygoacademy.automationtesting/ui/tests/reference.spec.ts:24:25
+
+    Error Context: test-results/reference-reference-GR1-shared-gardens-vi-VN--ipad-13-landscape/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/reference-reference-GR1-shared-gardens-vi-VN--ipad-13-landscape/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/reference-reference-GR1-shared-gardens-vi-VN--ipad-13-landscape/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  23) [ipad-13-landscape] › tests/reference.spec.ts:19:9 › reference GR2-group-garden (en-US) ──────
+
+    Error: expect(page).toHaveScreenshot(expected) failed
+
+      116471 pixels (ratio 0.09 of all image pixels) are different.
+
+      Snapshot: reference-GR2-group-garden-en-US.png
+
+    Call log:
+      - Expect "toHaveScreenshot(reference-GR2-group-garden-en-US.png)" with timeout 5000ms
+        - verifying given screenshot expectation
+      - taking page screenshot
+        - disabled all CSS animations
+      - waiting for fonts to load...
+      - fonts loaded
+      - 116471 pixels (ratio 0.09 of all image pixels) are different.
+      - waiting 100ms before taking screenshot
+      - taking page screenshot
+        - disabled all CSS animations
+      - waiting for fonts to load...
+      - fonts loaded
+      - captured a stable screenshot
+      - 116471 pixels (ratio 0.09 of all image pixels) are different.
+
+
+      23 |       expect(response?.status(), `HTTP status of /garden/_reference/${name}`).toBe(200);
+      24 |       await settleGarden(page);
+    > 25 |       await expect(page).toHaveScreenshot(`reference-${name}-${locale}.png`, { fullPage: true });
+         |                          ^
+      26 |     });
+      27 |   }
+      28 | }
+        at /Users/dylan/dygo/com.dygoacademy.english/com.dygoacademy.automationtesting/ui/tests/reference.spec.ts:25:26
+
+    attachment #1: reference-GR2-group-garden-en-US (image/png) ────────────────────────────────────
+    Expected: tests/__screenshots__/ipad-13-landscape/reference-GR2-group-garden-en-US.png
+    Received: test-results/reference-reference-GR2-group-garden-en-US--ipad-13-landscape/reference-GR2-group-garden-en-US-actual.png
+    Diff:     test-results/reference-reference-GR2-group-garden-en-US--ipad-13-landscape/reference-GR2-group-garden-en-US-diff.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/reference-reference-GR2-group-garden-en-US--ipad-13-landscape/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/reference-reference-GR2-group-garden-en-US--ipad-13-landscape/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/reference-reference-GR2-group-garden-en-US--ipad-13-landscape/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  24) [ipad-13-landscape] › tests/reference.spec.ts:19:9 › reference GR2-group-garden (vi-VN) ──────
+
+    Test timeout of 60000ms exceeded.
+
+    Error: page.waitForSelector: Test timeout of 60000ms exceeded.
+    Call log:
+      - waiting for locator('[data-ui="garden"]') to be visible
+
+
+       at fixtures.ts:65
+
+      63 | /** Wait for the garden to be revealed, freeze motion, wait for fonts. */
+      64 | export async function settleGarden(page: Page): Promise<void> {
+    > 65 |   await page.waitForSelector('[data-ui="garden"]', { state: 'visible' });
+         |              ^
+      66 |   await page.addStyleTag({ content: FREEZE_CSS });
+      67 |   await page.evaluate(async () => {
+      68 |     await document.fonts.ready;
+        at settleGarden (/Users/dylan/dygo/com.dygoacademy.english/com.dygoacademy.automationtesting/ui/tests/fixtures.ts:65:14)
+        at /Users/dylan/dygo/com.dygoacademy.english/com.dygoacademy.automationtesting/ui/tests/reference.spec.ts:24:25
+
+    Error Context: test-results/reference-reference-GR2-group-garden-vi-VN--ipad-13-landscape/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/reference-reference-GR2-group-garden-vi-VN--ipad-13-landscape/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/reference-reference-GR2-group-garden-vi-VN--ipad-13-landscape/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  25) [ipad-13-landscape] › tests/reference.spec.ts:19:9 › reference GR3-tricky-patches (en-US) ────
+
+    Test timeout of 60000ms exceeded.
+
+    Error: page.waitForSelector: Test timeout of 60000ms exceeded.
+    Call log:
+      - waiting for locator('[data-ui="garden"]') to be visible
+
+
+       at fixtures.ts:65
+
+      63 | /** Wait for the garden to be revealed, freeze motion, wait for fonts. */
+      64 | export async function settleGarden(page: Page): Promise<void> {
+    > 65 |   await page.waitForSelector('[data-ui="garden"]', { state: 'visible' });
+         |              ^
+      66 |   await page.addStyleTag({ content: FREEZE_CSS });
+      67 |   await page.evaluate(async () => {
+      68 |     await document.fonts.ready;
+        at settleGarden (/Users/dylan/dygo/com.dygoacademy.english/com.dygoacademy.automationtesting/ui/tests/fixtures.ts:65:14)
+        at /Users/dylan/dygo/com.dygoacademy.english/com.dygoacademy.automationtesting/ui/tests/reference.spec.ts:24:25
+
+    Error Context: test-results/reference-reference-GR3-tricky-patches-en-US--ipad-13-landscape/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/reference-reference-GR3-tricky-patches-en-US--ipad-13-landscape/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/reference-reference-GR3-tricky-patches-en-US--ipad-13-landscape/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  25 failed
+    [iphone-se] › tests/gallery.spec.ts:19:9 › gallery (vi-VN) › gallery vi-VN ─────────────────────
+    [iphone-16] › tests/gallery.spec.ts:19:9 › gallery (vi-VN) › gallery vi-VN ─────────────────────
+    [iphone-16-pro-max] › tests/gallery.spec.ts:19:9 › gallery (vi-VN) › gallery vi-VN ─────────────
+    [iphone-landscape] › tests/gallery.spec.ts:19:9 › gallery (vi-VN) › gallery vi-VN ──────────────
+    [ipad-slide-over] › tests/gallery.spec.ts:19:9 › gallery (vi-VN) › gallery vi-VN ───────────────
+    [ipad-portrait] › tests/gallery.spec.ts:19:9 › gallery (vi-VN) › gallery vi-VN ─────────────────
+    [ipad-landscape] › tests/gallery.spec.ts:19:9 › gallery (vi-VN) › gallery vi-VN ────────────────
+    [ipad-13-landscape] › tests/gallery.spec.ts:19:9 › gallery (vi-VN) › gallery vi-VN ─────────────
+    [ipad-13-landscape] › tests/reference.spec.ts:19:9 › reference AU1-sign-in (en-US) ─────────────
+    [ipad-13-landscape] › tests/reference.spec.ts:19:9 › reference AU1-sign-in (vi-VN) ─────────────
+    [ipad-13-landscape] › tests/reference.spec.ts:19:9 › reference AU1-sign-in-error (en-US) ───────
+    [ipad-13-landscape] › tests/reference.spec.ts:19:9 › reference AU1-sign-in-error (vi-VN) ───────
+    [ipad-13-landscape] › tests/reference.spec.ts:19:9 › reference AU2-create-account (en-US) ──────
+    [ipad-13-landscape] › tests/reference.spec.ts:19:9 › reference AU2-create-account (vi-VN) ──────
+    [ipad-13-landscape] › tests/reference.spec.ts:19:9 › reference AU3-create-account-invite (en-US) 
+    [ipad-13-landscape] › tests/reference.spec.ts:19:9 › reference AU3-create-account-invite (vi-VN) 
+    [ipad-13-landscape] › tests/reference.spec.ts:19:9 › reference AU4-reset-password (en-US) ──────
+    [ipad-13-landscape] › tests/reference.spec.ts:19:9 › reference AU4-reset-password (vi-VN) ──────
+    [ipad-13-landscape] › tests/reference.spec.ts:19:9 › reference AU4-reset-password-sent (en-US) ─
+    [ipad-13-landscape] › tests/reference.spec.ts:19:9 › reference AU4-reset-password-sent (vi-VN) ─
+    [ipad-13-landscape] › tests/reference.spec.ts:19:9 › reference GR1-shared-gardens (en-US) ──────
+    [ipad-13-landscape] › tests/reference.spec.ts:19:9 › reference GR1-shared-gardens (vi-VN) ──────
+    [ipad-13-landscape] › tests/reference.spec.ts:19:9 › reference GR2-group-garden (en-US) ────────
+    [ipad-13-landscape] › tests/reference.spec.ts:19:9 › reference GR2-group-garden (vi-VN) ────────
+    [ipad-13-landscape] › tests/reference.spec.ts:19:9 › reference GR3-tricky-patches (en-US) ──────
+  7 skipped
+  552 passed (5.1m)
+
+To open last HTML report run:
+[36m[39m
+[36m  npx playwright show-report[39m
+[36m[39m

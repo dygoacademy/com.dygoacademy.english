@@ -45,6 +45,8 @@ interface ProfileLocaleRow {
   ui_locale?: string | null;
   meaning_locale?: string | null;
   timezone?: string | null;
+  /** Onboarding (20261008_onboarding.sql); missing until that migration is applied. */
+  onboarded_at?: string | null;
 }
 
 /** The session user, once per request (the (garden) layout uses it too). */
@@ -69,6 +71,19 @@ const getProfileLocaleRow = cache(async (): Promise<ProfileLocaleRow | null> => 
   } catch {
     return null;
   }
+});
+
+/**
+ * Onboarding OB1–OB5: true only when the profile says this learner hasn't
+ * finished (`onboarded_at` is null). Everything else counts as done, so
+ * nobody is ever stuck in onboarding: no profile row, a failed read, or a
+ * database without the 20261008 migration (the column is then missing,
+ * not null; same `select('*')` reasoning as above). Shares the cached
+ * profile read with getGardenLocaleContext.
+ */
+export const needsOnboarding = cache(async (): Promise<boolean> => {
+  const profile = await getProfileLocaleRow();
+  return profile !== null && profile.onboarded_at === null;
 });
 
 export const getGardenLocaleContext = cache(async (): Promise<GardenLocaleContext> => {

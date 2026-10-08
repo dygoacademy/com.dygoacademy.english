@@ -103,17 +103,24 @@ const JOBS = [
   ['LandingDesktop.dc.html', 'en', 'H2-home-desktop', { $size: [1280, 2600] }],
   ['LandingPhoneVi.dc.html', 'vi', 'H1-home-phone-vi', { $size: [390, 3800] }],
   ['LandingDesktopVi.dc.html', 'vi', 'H2-home-desktop-vi', { $size: [1280, 2600] }],
-  // Home page v2 (canvas page "Home page v2", 2026-10-03): full boards, sizes from the canvas.
-  ['LandingV2Phone.dc.html', 'en', 'H3-home-v2-phone', { $size: [390, 6569] }],
-  ['LandingV2PhoneVi.dc.html', 'vi', 'H3-home-v2-phone-vi', { $size: [390, 6471] }],
-  ['LandingV2Desktop.dc.html', 'en', 'H4-home-v2-desktop', { $size: [1280, 4433] }],
-  ['LandingV2DesktopVi.dc.html', 'vi', 'H4-home-v2-desktop-vi', { $size: [1280, 4282] }],
-  ['LandingV2PlantBloomed.dc.html', 'en', 'H3s-plant-bloomed', { $size: [390, 6985] }],
-  ['LandingV2PlantBloomedVi.dc.html', 'vi', 'H3s-plant-bloomed-vi', { $size: [390, 6908] }],
-  ['LandingV2PainFlipped.dc.html', 'en', 'H3s-pain-flipped', { $size: [390, 6569] }],
-  ['LandingV2PainFlippedVi.dc.html', 'vi', 'H3s-pain-flipped-vi', { $size: [390, 6471] }],
-  ['LandingV2UsesTravel.dc.html', 'en', 'H3s-uses-travel', { $size: [390, 6547] }],
-  ['LandingV2UsesTravelVi.dc.html', 'vi', 'H3s-uses-travel-vi', { $size: [390, 6471] }],
+  // Landing page (canvas page "Landing Page", was "Home page v2"; renamed 2026-10-08):
+  // H3 "Landing · Phone", H4 "Landing · Desktop". Output names renamed
+  // H3-home-v2-* → H3-landing-v2-*, H4-home-v2-* → H4-landing-v2-* (2026-10-08).
+  // 2026-10-07: Speaking section (#speak) + FAQ + desktop nav link; 2026-10-08:
+  // hero NEW pill and nav dot removed. Sizes from the canvas.
+  ['LandingV2Phone.dc.html', 'en', 'H3-landing-v2-phone', { $size: [390, 7423] }],
+  ['LandingV2PhoneVi.dc.html', 'vi', 'H3-landing-v2-phone-vi', { $size: [390, 7373] }],
+  ['LandingV2Desktop.dc.html', 'en', 'H4-landing-v2-desktop', { $size: [1280, 5063] }],
+  ['LandingV2DesktopVi.dc.html', 'vi', 'H4-landing-v2-desktop-vi', { $size: [1280, 4867] }],
+  ['LandingV2PlantBloomed.dc.html', 'en', 'H3s-plant-bloomed', { $size: [390, 7836] }],
+  ['LandingV2PlantBloomedVi.dc.html', 'vi', 'H3s-plant-bloomed-vi', { $size: [390, 7807] }],
+  ['LandingV2PainFlipped.dc.html', 'en', 'H3s-pain-flipped', { $size: [390, 7423] }],
+  ['LandingV2PainFlippedVi.dc.html', 'vi', 'H3s-pain-flipped-vi', { $size: [390, 7373] }],
+  ['LandingV2UsesTravel.dc.html', 'en', 'H3s-uses-travel', { $size: [390, 7402] }],
+  ['LandingV2UsesTravelVi.dc.html', 'vi', 'H3s-uses-travel-vi', { $size: [390, 7390] }],
+  // Speaking demo after "Try it now" (spk: 'done'), new 2026-10-07.
+  ['LandingV2SpeakCompared.dc.html', 'en', 'H3s-speaking-compared', { $size: [390, 7503] }],
+  ['LandingV2SpeakComparedVi.dc.html', 'vi', 'H3s-speaking-compared-vi', { $size: [390, 7453] }],
   // Speaking (canvas page "Adult · Speaking", Phase 13 handover v2, 2026-10-04): SP1–SP4.
   // componentDidMount doesn't run here, so each state is set by its overrides.
   ['SpeakListen.dc.html', 'en', 'SP1-speak-listen', {}],

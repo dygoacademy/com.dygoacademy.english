@@ -167,7 +167,7 @@ with test data in `database/seeds/`. Full detail: [`database/README.md`](databas
 | Folder | Contents |
 | :--- | :--- |
 | `schema/` | `01_extensions_types` → `02_tables` → `03_functions_triggers` → `04_rls_policies` → `05_indexes` → `06_grants` |
-| `seeds/` | `01_core_fixtures` (**never on a real production database**), `02_tier_ladder`, `03_qa_tenant`, `04_qa_words`, `05_hello_world_word` |
+| `seeds/` | `01_core_fixtures` (**never on a real production database**), `02_tier_ladder`, `03_qa_tenant`, `04_qa_words`, `05_hello_world_word`, `06_onboarded_fixtures` |
 | `migrations/` | Changes after the baseline; `--migrations` applies pending ones, each once |
 | `archive/` | The original 001–021 migrations, history only |
 

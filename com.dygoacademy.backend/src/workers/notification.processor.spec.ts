@@ -138,7 +138,8 @@ describe('NotificationProcessor / SrsService.stats — shared summary source (Wa
 
       // Same fixture rows in, same numbers out — regardless of which
       // caller's queryFn shape ran them.
-      expect(summaryViaWorker).toEqual(statsViaApi);
+      // (`garden_minutes` is API-only; the worker doesn't compute it.)
+      expect(summaryViaWorker).toEqual({ ...statsViaApi, garden_minutes: undefined });
 
       // And it's not just coincidence: both paths execute the exact same
       // SQL string — the "single source of truth" property Wave 1b exists

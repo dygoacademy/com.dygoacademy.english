@@ -44,6 +44,18 @@ export const GARDEN_ROUTES = {
   /** A8 Me. */
   me: '/me',
   /**
+   * Onboarding OB1–OB5 (design changelog, page "Adult · Onboarding"): after
+   * AU2 Create account, before the first garden. The garden home sends a
+   * learner whose `profiles.onboarded_at` is null to OB1.
+   */
+  welcome: {
+    level: '/welcome/level',
+    goal: '/welcome/goal',
+    bed: '/welcome/bed',
+    reminder: '/welcome/reminder',
+    ready: '/welcome/ready',
+  },
+  /**
    * Phase 13 (phase/phase 13/PHASE-13-RECORD.md): The Pond, five sentences said out
    * loud. Reached from the Missions tab card. The Sound patch drills would
    * be a second part of this page; not built (not in this phase's run).
