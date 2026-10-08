@@ -15,6 +15,11 @@
       "manage": "Chăm vườn",
       "join": "Tham gia vườn",
       "quiz": "Kiểm tra"
+    },
+    "update": {
+      "available": "Đã có phiên bản Dygo mới.",
+      "reload": "Tải lại",
+      "later": "Để sau"
     }
   },
   "tokens": {

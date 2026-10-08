@@ -3,6 +3,7 @@ import { headers } from 'next/headers';
 import { redirect } from 'next/navigation';
 
 import { GroupsTabLive } from '@/components/garden/live/GroupsTabLive';
+import { AppUpdateWatcher } from '@/components/garden/AppUpdateWatcher';
 import { MediaCacheRegistrar } from '@/components/garden/MediaCacheRegistrar';
 import { ROUTES } from '@/constants/routes';
 import { getGardenLocaleContext, getGardenUser } from '@/i18n/garden-locale';
@@ -69,6 +70,7 @@ export default async function GardenLayout({ children }: { children: React.React
       stored={locale.stored}
     >
       <MediaCacheRegistrar />
+      <AppUpdateWatcher />
       <GroupsTabLive>{children}</GroupsTabLive>
     </GardenRoot>
   );

@@ -1,4 +1,5 @@
 import { GardenRoot } from '@/app/(garden)/GardenRoot';
+import { AppUpdateWatcher } from '@/components/garden/AppUpdateWatcher';
 import { getGardenLocaleContext } from '@/i18n/garden-locale';
 
 /**
@@ -19,6 +20,7 @@ export default async function HomeLayout({ children }: { children: React.ReactNo
       meaningLocale={locale.meaningLocale}
       stored={locale.stored}
     >
+      <AppUpdateWatcher />
       {children}
     </GardenRoot>
   );

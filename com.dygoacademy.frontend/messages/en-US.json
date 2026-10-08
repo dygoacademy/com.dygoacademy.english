@@ -15,6 +15,11 @@
       "manage": "Tend the garden",
       "join": "Join a garden",
       "quiz": "Quiz"
+    },
+    "update": {
+      "available": "A new version of Dygo is ready.",
+      "reload": "Reload",
+      "later": "Later"
     }
   },
   "tokens": {

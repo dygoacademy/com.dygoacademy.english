@@ -19,6 +19,11 @@
       "manage": "照料花园",
       "join": "加入花园",
       "quiz": "测验"
+    },
+    "update": {
+      "available": "Dygo 有新版本了。",
+      "reload": "重新加载",
+      "later": "稍后"
     }
   },
   "tokens": {
