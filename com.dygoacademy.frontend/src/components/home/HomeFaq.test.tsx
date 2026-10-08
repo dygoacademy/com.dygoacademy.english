@@ -12,11 +12,11 @@ import { FAQ_KEYS, faqJsonLd, HomeFaq } from './HomeFaq';
 const LOCALES = { 'en-US': enUS, 'vi-VN': viVN, 'zh-CN': zhCN } as const;
 
 describe('HomeFaq (Home page v2 HP-9)', () => {
-  it.each(Object.entries(LOCALES))('builds FAQPage JSON-LD with 7 Q&As in %s', (locale, messages) => {
+  it.each(Object.entries(LOCALES))('builds FAQPage JSON-LD with 8 Q&As in %s', (locale, messages) => {
     const t = createTranslator({ locale, messages: messages as typeof enUS, namespace: 'screens.home.public.faq' });
     const ld = faqJsonLd(t);
     expect(ld['@type']).toBe('FAQPage');
-    expect(ld.mainEntity).toHaveLength(7);
+    expect(ld.mainEntity).toHaveLength(8);
     const faq = messages.screens.home.public.faq.items;
     ld.mainEntity.forEach((entry, i) => {
       const key = FAQ_KEYS[i];
@@ -27,10 +27,10 @@ describe('HomeFaq (Home page v2 HP-9)', () => {
     });
   });
 
-  it('renders the 7 questions as details, the first one open, in reading order', () => {
+  it('renders the 8 questions as details, the first one open, in reading order', () => {
     const { container } = renderWithIntl(<HomeFaq />);
     const details = Array.from(container.querySelectorAll('details'));
-    expect(details).toHaveLength(7);
+    expect(details).toHaveLength(8);
     const byOrder = [...details].sort((a, b) => Number(a.style.order) - Number(b.style.order));
     expect(byOrder.map((d) => d.querySelector('summary')?.textContent)).toEqual(
       FAQ_KEYS.map((key) => enUS.screens.home.public.faq.items[key].q),

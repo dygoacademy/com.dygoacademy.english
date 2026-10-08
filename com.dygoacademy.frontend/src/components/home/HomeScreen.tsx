@@ -28,6 +28,8 @@ import { GrowthStages } from './GrowthStages';
 import { HomeFaq } from './HomeFaq';
 import { PainCards, type PainKey } from './PainCards';
 import { PlantAWord } from './PlantAWord';
+import type { SpeakDemoState } from './SpeakDemo';
+import { SpeakingSection } from './SpeakingSection';
 import { readPlantedWord, rememberPlantedWord, SeedPacketCta } from './SeedPacketCta';
 import { UseCaseBeds } from './UseCaseBeds';
 import type { UseCaseBedKey } from './useCaseWords';
@@ -36,6 +38,7 @@ import type { UseCaseBedKey } from './useCaseWords';
 export const HOME_ANCHORS = {
   features: 'features',
   howItWorks: 'how-it-works',
+  speaking: 'speak',
   uses: 'uses',
   questions: 'faq',
   forParents: 'for-parents',
@@ -62,6 +65,8 @@ export interface HomeScreenProps {
   flippedPains?: PainKey[];
   /** HP-8: start with this use-case bed selected (the H3s-uses-travel fixture picks `travel`). */
   useCaseBed?: UseCaseBedKey;
+  /** Start the speaking demo in this state (`compared` = the H3s `LandingV2SpeakCompared` board). */
+  speakDemo?: SpeakDemoState;
 }
 
 export type HomeLayout = 'auto' | 'phone' | 'desktop';
@@ -98,6 +103,7 @@ export function HomeScreen({
   plantedWord,
   flippedPains,
   useCaseBed,
+  speakDemo,
 }: HomeScreenProps) {
   const t = useTranslations('screens.home.public');
   // HP-9: the word planted in the hero this visit, for the seed packet CTA (`/register?seed=`).
@@ -121,6 +127,13 @@ export function HomeScreen({
             </a>
             <a href={`#${HOME_ANCHORS.howItWorks}`} className="text-[15px] font-semibold text-text no-underline">
               {t('nav.howItWorks')}
+            </a>
+            <a
+              href={`#${HOME_ANCHORS.speaking}`}
+              className="inline-flex items-center gap-1.5 text-[15px] font-semibold text-text no-underline"
+            >
+              {t('nav.speaking')}
+              <span aria-hidden="true" className="size-2 rounded-full bg-primary" />
             </a>
             <a href={`#${HOME_ANCHORS.questions}`} className="text-[15px] font-semibold text-text no-underline">
               {t('nav.questions')}
@@ -160,6 +173,15 @@ export function HomeScreen({
         */}
         <section className="flex flex-col gap-[18px] px-5 pb-9 pt-1.5 home-lg:flex-row home-lg:items-start home-lg:gap-14 home-lg:px-16 home-lg:pb-16 home-lg:pt-9">
           <div className="flex flex-col gap-3 home-lg:min-w-0 home-lg:flex-1 home-lg:gap-[18px] home-lg:pt-6">
+            <a
+              href={`#${HOME_ANCHORS.speaking}`}
+              className="inline-flex max-w-full items-center gap-2 self-start rounded-full border border-primary-border bg-primary-soft py-1.5 pl-1.5 pr-3 text-[13px] font-semibold leading-[18px] text-primary no-underline home-lg:text-[14px]"
+            >
+              <span className="rounded-full bg-primary px-2 py-0.5 text-[11px] font-bold uppercase tracking-[.06em] text-white">
+                {t('hero.pillNew')}
+              </span>
+              <span className="min-w-0">{t('hero.pill')} →</span>
+            </a>
             <h1 className="m-0 font-display text-[34px] font-semibold leading-[1.06] tracking-[-0.01em] home-lg:text-[56px]">
               {t('hero.title')}
             </h1>
@@ -207,6 +229,9 @@ export function HomeScreen({
           </div>
           <GrowthStages />
         </section>
+
+        {/* Speaking (2026-10-07): text and steps, then the demo card; two columns on desktop. */}
+        <SpeakingSection id={HOME_ANCHORS.speaking} registerHref={registerHref} demoState={speakDemo} />
 
         {/* What do you need English for? (HP-8): bed tabs, one bed panel; 3 tiles per row on the phone, 5 on desktop. */}
         <section

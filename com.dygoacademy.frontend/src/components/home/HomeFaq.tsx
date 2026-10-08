@@ -5,15 +5,15 @@ import { gcn } from '@/components/garden/cn';
 
 import { AddWordPlusIcon } from './homeArt';
 
-/** The seven questions, in reading order (phone column, JSON-LD). */
-export const FAQ_KEYS = ['free', 'who', 'english', 'phone', 'time', 'ownWords', 'kids'] as const;
+/** The eight questions (`speaking` added 2026-10-07), in reading order (phone column, JSON-LD). */
+export const FAQ_KEYS = ['free', 'who', 'english', 'phone', 'time', 'ownWords', 'speaking', 'kids'] as const;
 export type FaqKey = (typeof FAQ_KEYS)[number];
 
 type FaqMessageKey = `items.${FaqKey}.q` | `items.${FaqKey}.a`;
 
 /**
  * `FAQPage` structured data (schema.org) from the same messages as the
- * section, so every locale gets its own 7 Q&As. `t` is the
+ * section, so every locale gets its own 8 Q&As. `t` is the
  * `screens.home.public.faq` translator (server or client).
  */
 export function faqJsonLd(t: (key: FaqMessageKey) => string) {

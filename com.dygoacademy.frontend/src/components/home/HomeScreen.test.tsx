@@ -36,6 +36,7 @@ describe('HomeScreen (Home page H1 / H2)', () => {
     expect(screen.getAllByRole('heading', { level: 2 }).map((h) => h.textContent)).toEqual([
       'Sound familiar?',
       'How your words grow',
+      'Hear it. Say it. Watch it bloom.',
       'What do you need English for?',
       'Everything you need to grow your vocabulary',
       'A garden for kids, too',
@@ -69,6 +70,7 @@ describe('HomeScreen (Home page H1 / H2)', () => {
     expect(anchors).toEqual([
       ['Features', '#features'],
       ['How it works', '#how-it-works'],
+      ['Speaking', '#speak'],
       ['Questions', '#faq'],
       ['For parents', '#for-parents'],
     ]);
