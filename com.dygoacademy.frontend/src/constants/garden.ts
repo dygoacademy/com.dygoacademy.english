@@ -27,6 +27,8 @@ export const GARDEN_ROUTES = {
   speakingDev: '/garden/_speaking',
   /** A2 Review (watering) and A3 Mission complete. */
   review: '/review',
+  /** A2 for the "Plant new words" mission: only never-reviewed words, `count` of them. */
+  plant: (count: number) => `/review?new=${Math.max(1, Math.round(count))}`,
   reviewDone: '/review/done',
   /** A4 Weekly harvest. */
   missions: '/missions',

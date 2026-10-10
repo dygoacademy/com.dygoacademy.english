@@ -84,7 +84,7 @@ describe('iPad layouts', () => {
 
   it('Today: hero 5/8 + missions 3/8 on iPad, hero full width then 6/12 rows in landscape', () => {
     const { container } = renderWithIntl(
-      <TodaysGardenScreen {...HOME} action={{ ...HOME.action, href: '/review' }} />,
+      <TodaysGardenScreen {...HOME} />,
     );
     const grid = container.querySelector('.ipad\\:grid-cols-8');
     expect(grid?.className).toContain('contents');

@@ -213,12 +213,30 @@ describe('live missions (U6-5)', () => {
   };
   const href = '/quiz?topic=t2';
 
-  it('maps the 3 missions to A1 rows, capping progress at the target', () => {
-    expect(liveMissions(today, href)).toEqual([
-      { kind: 'water', done: 8, total: 8 },
-      { kind: 'plant', done: 2, total: 5 },
+  it('maps the 3 missions to A1 rows linking to their activity, capping progress at the target', () => {
+    expect(liveMissions(today, href, 0)).toEqual([
+      { kind: 'water', done: 8, total: 8, href: '/review' },
+      { kind: 'plant', done: 2, total: 5, href: '/review?new=3' },
       { kind: 'challenge', minutes: null, done: false, href },
     ]);
+  });
+
+  it('counts the water row down from the live due count, not the morning target', () => {
+    const open = {
+      ...today,
+      missions: [{ type: 'REVIEW_DUE' as const, target: 25, progress: 4, done: false }],
+    };
+    // 4 watered, 22 still thirsty: the row shows 22 left, like the hero card.
+    expect(liveMissions(open, href, 22)[0]).toEqual({
+      kind: 'water',
+      done: 4,
+      total: 26,
+      href: '/review',
+    });
+    // Nothing left to water reads as done even before the mission row closes.
+    expect(liveMissions(open, href, 0)[0]).toMatchObject({ done: 4, total: 4 });
+    // A done mission stays done when new words turn thirsty later in the day.
+    expect(liveMissions(today, href, 5)[0]).toMatchObject({ done: 8, total: 8 });
   });
 
   it('summarises A3: done count, and the quiz as next while it is open', () => {
@@ -236,7 +254,7 @@ describe('live missions (U6-5)', () => {
       ...today,
       missions: [today.missions[0], today.missions[1], { type: 'SPEAK' as const, target: 3, progress: 1, done: false }],
     };
-    expect(liveMissions(speakDay, href)[2]).toEqual({
+    expect(liveMissions(speakDay, href, 0)[2]).toEqual({
       kind: 'speak',
       done: 1,
       total: 3,

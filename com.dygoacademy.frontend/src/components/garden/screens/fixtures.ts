@@ -160,11 +160,10 @@ export const HOME = {
     ] satisfies HeroPlant[],
   },
   missions: [
-    { kind: 'water', done: 15, total: 18 },
-    { kind: 'plant', done: 5, total: 5 },
-    { kind: 'challenge', minutes: 3, done: false },
+    { kind: 'water', done: 15, total: 18, href: '/review' },
+    { kind: 'plant', done: 5, total: 5, href: '/review?new=1' },
+    { kind: 'challenge', minutes: 3, done: false, href: '/quiz' },
   ] satisfies MissionItem[],
-  action: { kind: 'continue' as const, wordsLeft: 3, minutes: 1 },
   ripens: { time: { hour: 7, minute: 30 }, count: 14 },
 };
 

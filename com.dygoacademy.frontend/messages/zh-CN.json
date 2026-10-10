@@ -394,24 +394,29 @@
         "goldenBloom": "完成全部 {total} 个任务，今天的<b>金花</b>就会开放 🌸",
         "goldenBloomOne": "完成这个任务，今天的<b>金花</b>就会开放 🌸",
         "goldenBloomEarned": "今天的<b>金花</b>开了 🌸",
-        "water": "给 {count} 个待复习单词浇水",
         "thirsty": "给今天缺水的单词浇水",
         "plant": "种下 {count} 个新单词",
         "challenge": "搭配挑战",
         "valueDone": "已完成",
         "valueMinutes": "{count} 分钟",
         "valueCount": "{done}/{total}",
+        "valueLeft": "还剩 {count, number} 个",
         "progressWater": "已浇水 {done}/{total} 个单词",
         "progressPlant": "已种下 {done}/{total} 个单词",
         "notStarted": "未开始",
         "speak": "说出 {count} 个成熟的单词",
-        "progressSpeak": "已说 {done}/{total} 个单词"
-      },
-      "action": {
-        "continue": "接着来",
-        "start": "给花园浇水",
-        "detail": "还剩 {count} 个单词 · 约 {minutes} 分钟",
-        "detailNoTime": "还剩 {count} 个单词"
+        "progressSpeak": "已说 {done}/{total} 个单词",
+        "nextUp": "接下来",
+        "then": "然后",
+        "nextWater": "给 {count} 个缺水的单词浇水",
+        "nextProgress": "已完成 {done}/{total}",
+        "nextMinutes": "约 {count} 分钟",
+        "start": {
+          "water": "开始浇水",
+          "plant": "开始种植",
+          "challenge": "开始挑战",
+          "speak": "开始说"
+        }
       },
       "ripens": "明天 {time} · <b>{count} 个单词到期</b>",
       "public": {
@@ -700,6 +705,7 @@
       "replayDemo": "重播演示",
       "backToGarden": "返回花园",
       "empty": "现在没有需要浇水的单词。等有单词到期再来吧。",
+      "emptyPlant": "现在没有可以种的新单词。去“主题”里添加单词或选一个新花圃吧。",
       "error": "这个单词没能保存，请检查网络后再试。"
     },
     "complete": {
@@ -902,6 +908,7 @@
       "notFoundBody": "页面可能已移动，或者链接已经过期。",
       "backHome": "回到我的花园",
       "missionTitle": "给 {count} 个单词浇水",
+      "plantTitle": "种下 {count} 个新单词",
       "topicMeta": "{count} 个单词"
     },
     "groups": {

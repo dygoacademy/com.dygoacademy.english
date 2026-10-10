@@ -1,5 +1,5 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { IsIn, IsOptional, IsUUID, Max, Min } from 'class-validator';
+import { IsBoolean, IsIn, IsOptional, IsUUID, Max, Min } from 'class-validator';
 import { Type } from 'class-transformer';
 
 const MODES = ['STANDARD', 'REVERSE', 'LISTENING'] as const;
@@ -34,4 +34,12 @@ export class StartSessionDto {
   @Min(1)
   @Max(100)
   limit?: number;
+
+  @ApiPropertyOptional({
+    description: 'Only never-reviewed words (the "Plant new words" mission); no due reviews.',
+    default: false,
+  })
+  @IsOptional()
+  @IsBoolean()
+  newOnly?: boolean;
 }

@@ -124,6 +124,22 @@ describe('SrsService.findDue', () => {
     expect(firstSql).toMatch(/tw\.topic_id = \$1/);
     expect(firstParams).toEqual(['topic-9', 10]);
   });
+
+  it('newOnly skips the existing-due query and asks for new cards up to the limit', async () => {
+    const newRow = { topic_word_id: 'w2', is_new: true };
+    const queryAsMock = jest.fn().mockResolvedValueOnce([newRow]);
+    const service = await makeService(queryAsMock);
+
+    const result = await service.findDue('user-1', undefined, 3, true);
+
+    expect(queryAsMock).toHaveBeenCalledTimes(1);
+    const [, sql, params] = queryAsMock.mock.calls[0];
+    expect(sql).toMatch(/not exists/);
+    expect(params).toEqual([3]);
+    expect(result).toEqual([
+      { ...newRow, retrievability: null, interval_preview: expect.any(Object) },
+    ]);
+  });
 });
 
 describe('SrsService.rate (Phase 10 — FSRS)', () => {

@@ -14,9 +14,21 @@ import type { SessionMode, SrsSession } from '@/types';
  * here would mean manually wiring loading/error/refetch state that
  * `useQuery` already gives for free.
  */
-export function useStudySession(topicId: string | undefined, mode: SessionMode, limit = 20) {
+export function useStudySession(
+  topicId: string | undefined,
+  mode: SessionMode,
+  limit = 20,
+  newOnly = false,
+) {
   return useQuery({
-    queryKey: ['srs', 'sessions', topicId ?? 'all', mode, limit],
-    queryFn: () => apiClient.post<SrsSession>('/srs/sessions', { topicId, mode, limit }),
+    queryKey: ['srs', 'sessions', topicId ?? 'all', mode, limit, newOnly],
+    // `newOnly` is only sent when set, so older backends still accept the body.
+    queryFn: () =>
+      apiClient.post<SrsSession>('/srs/sessions', {
+        topicId,
+        mode,
+        limit,
+        ...(newOnly ? { newOnly } : {}),
+      }),
   });
 }

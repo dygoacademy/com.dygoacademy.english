@@ -304,11 +304,16 @@ export class SrsService {
    * can be empty without complicating the other's shape, and the "existing
    * due" query is the one carrying the p95 < 15ms budget (FR-3.4) — it
    * should not pay for a second table's worth of join/filter logic.
+   *
+   * `newOnly` skips the existing-due query: the home screen's "Plant new
+   * words" mission starts a session of never-reviewed words only.
    */
-  async findDue(userId: string, topicId?: string, limit = 50): Promise<DueCard[]> {
-    const dueExisting = await this.db.queryAs<DueCard>(
-      userId,
-      `select ${DUE_CARD_COLUMNS},
+  async findDue(userId: string, topicId?: string, limit = 50, newOnly = false): Promise<DueCard[]> {
+    const dueExisting = newOnly
+      ? []
+      : await this.db.queryAs<DueCard>(
+          userId,
+          `select ${DUE_CARD_COLUMNS},
               false as is_new,
               uws.fsrs_state as state, uws.stability, uws.difficulty,
               uws.reps, uws.lapses, uws.learning_steps, uws.scheduled_days, uws.last_reviewed_at,
@@ -322,8 +327,8 @@ export class SrsService {
           ${topicId ? 'and tw.topic_id = $1' : ''}
         order by uws.next_due_at asc
         limit ${topicId ? '$2' : '$1'}`,
-      topicId ? [topicId, limit] : [limit],
-    );
+          topicId ? [topicId, limit] : [limit],
+        );
 
     const now = new Date();
     const remaining = Math.max(0, limit - dueExisting.length);
@@ -853,7 +858,7 @@ export class SrsService {
   /** FR-4.3 — see StartSessionDto's header comment for why this has no persisted "session" row. */
   async startSession(userId: string, dto: StartSessionDto): Promise<SessionResult> {
     const mode: SessionMode = dto.mode ?? 'STANDARD';
-    const cards = await this.findDue(userId, dto.topicId, dto.limit ?? 20);
+    const cards = await this.findDue(userId, dto.topicId, dto.limit ?? 20, dto.newOnly ?? false);
     return { mode, cards };
   }
 

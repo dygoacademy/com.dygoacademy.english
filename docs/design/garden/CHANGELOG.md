@@ -2,7 +2,7 @@
 
 Location in the repo: `docs/design/CHANGELOG.md`
 Design source of truth: the **Dygo Word Garden** design canvas (owner: Dylan).
-Last updated: **2026-10-08**
+Last updated: **2026-10-10**
 
 ---
 
@@ -73,7 +73,7 @@ Every row has an English file and a Vietnamese twin (`…Vi.dc.html`) unless not
 #### Adult core — pages "Adult · Garden" (A1, A5), "Adult · Review" (A2, A3), "Adult · Missions" (A4), "Adult · Topics" (A6, A7), "Adult · Me" (A8)
 | ID | Screen | File | Status | What's on it | Goes to | Build status |
 |---|---|---|---|---|---|---|
-| A1 | Today's Garden (Home) | `AdultHome` | Built | Greeting + streak. Garden card (every word as a plant, counts: thirsty / ripe / wilting). **3 daily missions** (review due, learn new, 1 quiz) → finishing all 3 grows the **Golden Bloom**. "Continue mission" button. "Tomorrow 7:30 · N words ripen". **Speaking mission (2026-10-07, merged from SE1):** 3rd mission can be "Say 3 ripe words · 2 min" (clay mic row) → SP1; still counts to Golden Bloom. | A2, tabs | UI-4 `4b701fd`, `6e7eb53`; iPad home `48912ed` |
+| A1 | Today's Garden (Home) | `AdultHome` | Built | Greeting + streak. Garden card (every word as a plant, counts: thirsty / ripe / wilting). **3 daily missions** (review due, learn new, 1 quiz) → finishing all 3 grows the **Golden Bloom**. **2026-10-10 (Option D, Approved):** no big button under the card; the missions card opens with **Next up** (first open mission, its own button, e.g. "Water 3 thirsty words · Start watering →") and a **Then** list (other missions, each opens its activity; done rows plain, struck through). "Tomorrow 7:30 · N words ripen". **Speaking mission (2026-10-07, merged from SE1):** 3rd mission can be "Say 3 ripe words · 2 min" (clay mic row) → SP1; still counts to Golden Bloom. | A2, tabs | UI-4 `4b701fd`, `6e7eb53`; iPad home `48912ed` |
 | A1b | All watered (nothing due) | `AdultAllWatered` | For approval | Empty state of A1: calm full garden, "Nothing to water today", next ripening time, optional extras (learn 5 new, speak, quiz). Streak still counts. | A1 extras, tabs | Not built |
 | A2 | Watering (Review) | `AdultReview` | Built | Flashcard: word (Fraunces), IPA, CEFR, topic, meaning (English; Vietnamese meaning first when app language is vi), example, synonyms. 4 ratings with next interval: Again / Hard / Good / Easy. Vine progress = mission progress. | A3, A1 | UI-4; keyboard shortcuts U7-3 `51b6180`. Phase 13 "Say this one?" added S11 `bc38bff`, removed 2026-10-06 `0e47e01` |
 | A3 | Mission Complete | `AdultBloom` | Built | Bloom animation, stats, streak +1, "1 mission left for Golden Bloom" with a 3-min button, reminder toggle for when words ripen. | A1, A2 | UI-4 `6e7eb53`; reminder switch UI-6 U6-7b `c96515a` |
@@ -130,9 +130,22 @@ Every row has an English file and a Vietnamese twin (`…Vi.dc.html`) unless not
 #### Landing page — page "Landing Page"
 | ID | Screen | File | Status | What's on it | Build status |
 |---|---|---|---|---|---|
-| H3 | Landing · Phone | `LandingV2Phone` | For approval | Marketing only, no backend calls. Order: header · Plant a word (type or tap a chip → pot blooms → word card → Save this word → Create account) · Sound familiar? (4 flip cards) · How your words grow · What do you need English for? (5 chips; Work/Travel/Daily life = Coming soon) · Features · For parents · Questions · Seed packet · footer. **Speaking (2026-10-07, For approval):** new section "Hear it. Say it. Watch it bloom." after How your words grow — demo card (sentence with *mitigate*, native waveform, Native · UK; mic → Listening… → compare: your waveform over native, amber MIT band, "In bloom · 76% match", Try again / Practise free → AU2), 3 steps Listen / Say it / Compare, privacy line; new FAQ "How does speaking practice work? Is my voice kept?". Real recording vs sample: D-8. | Built ahead of approval: Home HP-11 `9b4ee0d`, `9cb4617` (live). Speaking section built 2026-10-07 from this row's text (boards not in `source/` yet, so no `garden:diff`); demo uses a sample result, no mic (D-8), Play hidden until a real native clip exists |
-| H4 | Landing · Desktop | `LandingV2Desktop` | For approval | Same sections, 1280 wide; hero keeps Create free account + I have an account. **Speaking (2026-10-07):** same section as two columns (text + steps left, demo card right); nav gets a "Speaking" link (no dot). | Built ahead of approval: Home HP-11 `9b4ee0d`, `9cb4617` (live). Speaking section + nav link built 2026-10-07 (see H3) |
-| H3s | State variants | `LandingV2PlantBloomed`, `LandingV2PainFlipped`, `LandingV2UsesTravel`, `LandingV2SpeakCompared` (new 2026-10-07) | For approval | Plant-a-word bloomed (deadline), pain card flipped, Travel = Coming soon, Speaking demo in its compared state. | Built ahead of approval: Home HP-11 `9b4ee0d` (live) |
+| H3 | Landing · Phone | `LandingSeoPhone` (was `LandingV2Phone`) | Built | Marketing only, no backend calls. Order: header · Plant a word (type or tap a chip → pot blooms → word card → Save this word → Create account) · Sound familiar? (4 flip cards) · How your words grow · What do you need English for? (5 chips; Work/Travel/Daily life = Coming soon) · Features · For parents · Questions · Seed packet · footer. **Speaking (2026-10-07, For approval):** new section "Hear it. Say it. Watch it bloom." after How your words grow — demo card (sentence with *mitigate*, native waveform, Native · UK; mic → Listening… → compare: your waveform over native, amber MIT band, "In bloom · 76% match", Try again / Practise free → AU2), 3 steps Listen / Say it / Compare, privacy line; new FAQ "How does speaking practice work? Is my voice kept?". Real recording vs sample: D-8. | Built ahead of approval: Home HP-11 `9b4ee0d`, `9cb4617` (live). Speaking section built 2026-10-07 from this row's text (boards not in `source/` yet, so no `garden:diff`); demo uses a sample result, no mic (D-8), Play hidden until a real native clip exists |
+| H4 | Landing · Desktop | `LandingSeoDesktop` (was `LandingV2Desktop`) | Built | Same sections, 1280 wide; hero keeps Create free account + I have an account. **Speaking (2026-10-07):** same section as two columns (text + steps left, demo card right); nav gets a "Speaking" link (no dot). | Built ahead of approval: Home HP-11 `9b4ee0d`, `9cb4617` (live). Speaking section + nav link built 2026-10-07 (see H3) |
+| H3s | State variants | `LandingSeo{PlantBloomed,PainFlipped,UsesTravel,SpeakCompared}` (repo `source/` only; were `LandingV2*`) | Built | Plant-a-word bloomed (deadline), pain card flipped, Travel = Coming soon, Speaking demo in its compared state. | Built ahead of approval: Home HP-11 `9b4ee0d` (live) |
+
+#### Legal — page "Legal"
+| ID | Screen | File | Status | What's on it | Build status |
+|---|---|---|---|---|---|
+| LG1 | Terms of Service · desktop | `LegalTermsDesktop` | Built | Short-version card, "Where do you live?" switch (Vietnam · Australia · Singapore) swapping the region note + "Your local rights", table of contents. `[[…]]` = facts Dylan still fills in. | `/terms` 2026-10-09 (see `Change Log.md`) |
+| LG2 | Privacy Policy · desktop | `LegalPrivacyDesktop` | Built | Same layout; PDPL / Privacy Act / PDPA rights per region. | `/privacy` 2026-10-09 |
+| LG3 | Terms · phone (VI) | `LegalTermsPhoneVi` | Built | Tap-to-open sections, local rights first. | `/terms` below `lg:` |
+| LG4 | Privacy · phone (VI) | `LegalPrivacyPhoneVi` | Built | Same as LG3. | `/privacy` below `lg:` |
+
+#### Brand — page "Brand"
+| ID | Screen | File | Status | What's on it | Build status |
+|---|---|---|---|---|---|
+| BR1 | Logo, favicon, app icon | `Logo*` boards | Approved | Logo "The Sprout" (option A, Dylan 2026-10-09): mark + wordmark, favicon, app icon. Files in `docs/design/brand/`. | Favicon / `icon.svg` / `apple-icon.png` live 2026-10-09 |
 
 #### Kids — page "Kids" (English only)
 | ID | Screen | File | Status | What's on it | Build status |
@@ -191,6 +204,31 @@ All iPad screens: sidebar (Garden · Missions · Topics · Groups · Me + Shared
 ## 3. Changelog
 
 Newest first. Format: `### YYYY-MM-DD — title` then lines tagged **Added / Changed / Removed / Decision**, with screen IDs and status.
+
+### 2026-10-10 — A1 missions card: "Next up" + "Then" (Option D)
+- **Removed** A1 / iA1 (EN + VI): the big "Continue mission" button under the missions card (Dylan: two ways in were confusing).
+- **Changed** A1 / iA1: missions card = **Next up** panel (first open mission, light blue, progress, own button "Start watering →" / "Bắt đầu tưới →") + **Then** list (phone: Say 3 ripe words · 2 min → SP1; iPad: Collocation challenge · 3 min → Q1); done missions plain and struck through. Golden Bloom strip and "Tomorrow · N words ripen" unchanged. Chosen from 4 options (A action pills, B tap-to-start tiles, C progress rings, D next up) on a temporary page "Mission rows · options", now deleted. *Approved (Dylan). Not built yet:* the site currently has the in-between version (no button, each row a link with a chevron, deployed 2026-10-10).
+- **Changed** `source/AdultHome(Vi).dc.html`, `reference/A1-todays-garden(-vi)` re-rendered.
+
+### 2026-10-10 — Landing Page: memory block redesigned
+- **Changed** H3 / H4 / H3s (EN + VI), "How spaced repetition helps" section: the block under the growth stages. Before: chart card (white) + "A water drop…" (blue fill, stretched empty) + "Forgot one?" (no card). After: three white bordered cards in the same order (title, picture, one line). Desktop: chart card left (1.25fr), the two tips stacked right, together as tall as the chart. Tips get tiny garden tiles (English words, `aria-hidden`): *mitigate* sprout + drop, *deadline* flower, *negotiate* sprout + drop; and *deadline* faded "?" → sprout + drop → flower.
+- **Changed** Drop tip copy (Dylan found it unclear): "A water drop means: review it today" / "When it’s time to review a word, Dygo puts a water drop on it. Just review the words with a drop. You don’t have to work out what to study." VI "Giọt nước = cần ôn hôm nay" / "Khi đến lúc ôn một từ, Dygo gắn giọt nước lên từ đó. Bạn chỉ cần ôn những từ có giọt nước, không cần tự tính nên học từ nào." *Built* (UAT 2026-10-10). Heights: H3 390 × 8025 (VI 8070), H4 1280 × 5455 (VI 5311).
+
+### 2026-10-10 — Landing Page: memory chart
+- **Added** H3 / H4 / H3s (EN + VI): "Reviews spread out as a word grows" card shows a chart (memory without review fades; with Dygo, six reviews at widening gaps), legend With Dygo / Without review / A review, axis Today → Weeks later. Replaces the drop strip. *Built.*
+
+### 2026-10-10 — Landing Page: speaking demo animation
+- **Changed** H3 / H4 / H3s speaking demo (D-8 decided: **animated sample, no microphone**): mic → Listening… (moving clay bars, pulsing stop ring, 2.6 s) → sample result 76%. Copy: "Tap the mic to see a sample learner’s result. No sign-up needed.", "Comparing a sample learner with the native speaker." *Built.*
+
+### 2026-10-09 — Landing Page rebuilt for search (LandingSeo*)
+- **Changed** Canvas page "Landing Page" now holds `LandingSeo{Phone,PhoneVi,Desktop,DesktopVi}` (old "Landing Page" boards removed, "Landing Page SEO" renamed "Landing Page", Dylan). Three H2s follow search topics: "How to remember English vocabulary for a long time", "How spaced repetition helps English learners", "How to practise English speaking by yourself" (VI/ZH equivalents); each intro gains one topic sentence. Layout unchanged. *Built.*
+- **Changed** `tools/render.js`: landing references render from `LandingSeo*` at measured heights; `garden:diff` maps fixtures `H3-home-v2-*` / `H4-home-v2-*` to the `H3/H4-landing-v2-*` PNGs.
+
+### 2026-10-09 — Legal pages
+- **Added** Page "Legal": LG1–LG4 Terms of Service and Privacy Policy for Vietnam, Australia, Singapore (PDPL, Privacy Act, PDPA), desktop + Vietnamese phone. *Built* as `/terms`, `/privacy` (EN, VI, ZH). Open: `[[…]]` placeholders; review by a Vietnamese lawyer.
+
+### 2026-10-09 — Brand
+- **Added** Page "Brand" (was "Logo"): BR1 logo option A "The Sprout", favicon, app icon (Dylan). Exports in `docs/design/brand/`. *Built* (site favicon + icons).
 
 ### 2026-10-08 — "Home Page" renamed "Landing Page"
 - **Changed** Canvas page "Home Page" → **"Landing Page"**; boards H3 "Home v2 · phone" → **"Landing · Phone"**, H4 "Home v2 · desktop" → **"Landing · Desktop"** (VI: "Landing · Điện thoại", "Landing · Máy tính"). Names only: IDs (H3, H4, H3s), files (`LandingV2*`) and the design are unchanged (Dylan).

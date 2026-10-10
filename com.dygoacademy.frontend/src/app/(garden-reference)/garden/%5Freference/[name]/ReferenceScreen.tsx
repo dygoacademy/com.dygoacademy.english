@@ -73,14 +73,8 @@ function ReferenceScreenBody({ name, locale }: { name: ReferenceName; locale: Ap
   const home = GARDEN_ROUTES.home;
 
   switch (name) {
+    // The A1 canvas has the speaking mission as the 3rd (merged from SE1).
     case 'A1-todays-garden':
-      return (
-        <TodaysGardenScreen
-          {...HOME}
-          action={{ ...HOME.action, href: GARDEN_ROUTES.review }}
-          stickyNav={false}
-        />
-      );
     case 'SE1-entry-home':
       return (
         <TodaysGardenScreen
@@ -89,7 +83,6 @@ function ReferenceScreenBody({ name, locale }: { name: ReferenceName; locale: Ap
             ...HOME.missions.slice(0, 2),
             { ...ENTRY.homeSpeak, href: GARDEN_ROUTES.reference('SE2-entry-bed') },
           ]}
-          action={{ ...HOME.action, href: GARDEN_ROUTES.review }}
           stickyNav={false}
         />
       );

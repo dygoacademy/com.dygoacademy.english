@@ -48,20 +48,78 @@ describe('reference fixtures', () => {
 
 describe('TodaysGardenScreen', () => {
   it('renders the canvas copy from the fixture', () => {
-    renderWithIntl(
-      <TodaysGardenScreen {...HOME} action={{ ...HOME.action, href: '/review' }} />,
-    );
+    renderWithIntl(<TodaysGardenScreen {...HOME} />);
     expect(screen.getByRole('heading', { level: 1 }).textContent).toBe('Good evening, Minh');
     expect(screen.getByText('412 words growing')).toBeTruthy();
     expect(screen.getByText('1 of 3 done')).toBeTruthy();
-    expect(screen.getByText('Water 18 due words')).toBeTruthy();
-    expect(screen.getByText('3 words left · about 1 min')).toBeTruthy();
     expect(screen.getByRole('link', { name: 'Garden' }).getAttribute('aria-current')).toBe('page');
   });
 
+  it('opens with Next up: the first open mission, with its own Start button', () => {
+    renderWithIntl(<TodaysGardenScreen {...HOME} />);
+    expect(screen.getByText('Next up')).toBeTruthy();
+    expect(screen.getByText('Water 3 thirsty words')).toBeTruthy();
+    expect(screen.getByText('15 of 18 done')).toBeTruthy();
+    expect(screen.getByRole('link', { name: 'Start watering' }).getAttribute('href')).toBe('/review');
+    expect(screen.queryByText('Water your garden')).toBeNull();
+  });
+
+  it('lists the other missions under Then: open ones link, done ones are plain', () => {
+    renderWithIntl(<TodaysGardenScreen {...HOME} />);
+    expect(screen.getByText('Then')).toBeTruthy();
+    const quiz = screen.getByRole('link', { name: /Collocation challenge/ });
+    expect(quiz.getAttribute('href')).toBe('/quiz');
+    expect(within(quiz).getByText('3 min')).toBeTruthy();
+    // The finished plant mission shows as done and opens nothing.
+    expect(screen.queryByRole('link', { name: /Plant 5 new words/ })).toBeNull();
+    expect(screen.getByText('Plant 5 new words').className).toContain('line-through');
+    // Open rows come before done ones.
+    const list = screen.getByText('Then').nextElementSibling as HTMLElement;
+    const items = within(list).getAllByRole('listitem').map((li) => li.textContent ?? '');
+    expect(items[0]).toMatch(/Collocation challenge/);
+    expect(items[1]).toMatch(/Plant 5 new words/);
+  });
+
+  it('labels the Start button by the next mission', () => {
+    renderWithIntl(
+      <TodaysGardenScreen
+        {...HOME}
+        missions={[
+          { kind: 'water', done: 18, total: 18, href: '/review' },
+          { kind: 'speak', done: 0, total: 3, minutes: 2, href: '/sounds' },
+          { kind: 'challenge', minutes: null, done: false, href: '/quiz' },
+        ]}
+      />,
+    );
+    expect(screen.getByText('Say 3 ripe words')).toBeTruthy();
+    expect(screen.getByText('Not started · about 2 min')).toBeTruthy();
+    expect(screen.getByRole('link', { name: 'Start speaking' }).getAttribute('href')).toBe('/sounds');
+    expect(screen.queryByRole('link', { name: 'Start watering' })).toBeNull();
+  });
+
+  it('shows no Next up panel when every mission is done', () => {
+    renderWithIntl(
+      <TodaysGardenScreen
+        {...HOME}
+        missions={[
+          { kind: 'water', done: 18, total: 18, href: '/review' },
+          { kind: 'plant', done: 5, total: 5, href: '/plant' },
+          { kind: 'challenge', minutes: 3, done: true, href: '/quiz' },
+        ]}
+        goldenBloom
+      />,
+    );
+    expect(screen.queryByText('Next up')).toBeNull();
+    expect(screen.queryByText('Then')).toBeNull();
+    expect(screen.queryByRole('link', { name: /^Start/ })).toBeNull();
+    const list = screen.getByText('Plant 5 new words').closest('ul') as HTMLElement;
+    expect(within(list).getAllByRole('listitem')).toHaveLength(3);
+    expect(screen.getByText(/is open/)).toBeTruthy();
+  });
+
   it('shows "coming soon" instead of mission numbers when missions are unknown', () => {
-    renderWithIntl(<TodaysGardenScreen {...HOME} missions={null} action={null} ripens={null} />);
-    expect(screen.getByText(/Daily missions are coming soon/)).toBeTruthy();
+    renderWithIntl(<TodaysGardenScreen {...HOME} missions={null} ripens={null} />);
+    expect(screen.getByText(/Daily missions are on the way/)).toBeTruthy();
     expect(screen.queryByText('1 of 3 done')).toBeNull();
     expect(screen.queryByRole('progressbar')).toBeNull();
   });

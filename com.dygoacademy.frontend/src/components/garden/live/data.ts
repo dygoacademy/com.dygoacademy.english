@@ -106,18 +106,28 @@ export function missionsSummary(mission: { done: number; total: number }): {
 /**
  * UI-6 (U6-5): A1's mission rows from `GET /missions/today`, in the API's
  * order (REVIEW_DUE, LEARN_NEW, then QUIZ or SPEAK). Progress is capped at
- * the target so extra reviews don't overflow the bar; QUIZ links to
- * `quizHref`, SPEAK (Phase 13 SE1) to The Pond.
+ * the target so extra reviews don't overflow the bar. Every open row links
+ * to its activity: water → watering, plant → a new-words session for
+ * what's left, QUIZ → `quizHref`, SPEAK (Phase 13 SE1) → The Pond.
+ *
+ * The water row follows the live due count (`GET /srs/stats` `due_now`,
+ * the hero card's "thirsty" number) rather than the target frozen when
+ * the day's rows were created: total = watered today + still due, and it
+ * reads done once the mission is done or nothing is left to water.
  */
-export function liveMissions(today: TodayMissions, quizHref: string): MissionItem[] {
+export function liveMissions(today: TodayMissions, quizHref: string, dueNow: number): MissionItem[] {
   return today.missions.map((m): MissionItem => {
     if (m.type === 'QUIZ') return { kind: 'challenge', minutes: null, done: m.done, href: quizHref };
     const total = Math.max(0, m.target);
     const done = m.done ? total : Math.min(Math.max(0, m.progress), total);
+    if (m.type === 'REVIEW_DUE') {
+      const left = m.done ? 0 : Math.max(0, dueNow);
+      return { kind: 'water', done, total: done + left, href: GARDEN_ROUTES.review };
+    }
     if (m.type === 'SPEAK') {
       return { kind: 'speak', done, total, minutes: null, href: GARDEN_ROUTES.sounds };
     }
-    return { kind: m.type === 'REVIEW_DUE' ? 'water' : 'plant', done, total };
+    return { kind: 'plant', done, total, href: GARDEN_ROUTES.plant(total - done) };
   });
 }
 

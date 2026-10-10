@@ -39,9 +39,12 @@ import { LiveError, LiveLoading } from './LiveState';
  * the learner's earliest enabled reminder time (hidden without one).
  * Missions (U6-5): GET /missions/today's 3 rows (water due words, plant
  * new words, the collocation quiz linking to the most-due bed's quiz) and
- * the Golden Bloom state. If that call fails, Missions v0 (U4-4): only
- * "Water today's thirsty words" (reviews today from GET /srs/activity +
- * `due_now`); "coming soon" when that call failed too. Not shown yet:
+ * the Golden Bloom state. Each open row is the way in to its activity
+ * (there is no separate "Water your garden" button); the water row counts
+ * the live `due_now`, the same number as the hero's "thirsty". If that
+ * call fails, Missions v0 (U4-4): only "Water today's thirsty words"
+ * (reviews today from GET /srs/activity + `due_now`), linking to
+ * watering; "coming soon" when that call failed too. Not shown yet:
  * time estimates. A5's freeze card ("streak is safe" + rain barrel, U6-6)
  * shows when GET /srs/stats `freezes` covered missed days this week and
  * the streak is still alive (`freezeStreak`); hidden otherwise.
@@ -104,17 +107,17 @@ export function HomeLive() {
       }}
       missions={
         missions.data
-          ? liveMissions(missions.data, missionQuizHref(topics.data))
+          ? liveMissions(missions.data, missionQuizHref(topics.data), s.due_now)
           : activity.data
-            ? [thirstyMission(activity.data, isoDay(today), s.due_now)]
+            ? [
+                {
+                  ...thirstyMission(activity.data, isoDay(today), s.due_now),
+                  href: GARDEN_ROUTES.review,
+                },
+              ]
             : null
       }
       goldenBloom={missions.data?.goldenBloom ?? false}
-      action={
-        s.due_now > 0
-          ? { href: GARDEN_ROUTES.review, kind: 'start', wordsLeft: s.due_now, minutes: null }
-          : null
-      }
       ripens={ripensTomorrow(upcoming.data, isoDay(addDays(today, 1)), schedules.data)}
     />
   );

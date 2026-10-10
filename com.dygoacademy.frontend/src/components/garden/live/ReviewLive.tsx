@@ -30,11 +30,14 @@ import { LiveError, LiveLoading } from './LiveState';
  * carries this session's results to /review/done in the URL.
  * (Phase 13's "Say this one?" offer was removed on 2026-10-06 for the
  * speaking entry-point redesign; The Pond is still at /sounds.)
+ * With `newWords` (the "Plant new words" mission, `/review?new=<n>`) the
+ * session holds only never-reviewed words, up to that many.
  */
-export function ReviewLive({ topicId }: { topicId?: string }) {
+export function ReviewLive({ topicId, newWords }: { topicId?: string; newWords?: number }) {
   const t = useTranslations('screens.review');
   const live = useTranslations('screens.live');
-  const session = useStudySession(topicId, 'STANDARD', 20);
+  const planting = newWords !== undefined;
+  const session = useStudySession(topicId, 'STANDARD', newWords ?? 20, planting);
   const topics = useTopics();
   const rate = useRateWord();
   const { meaningLocale } = useGardenPreferences();
@@ -46,7 +49,8 @@ export function ReviewLive({ topicId }: { topicId?: string }) {
   const startedAt = React.useRef<number>(0);
 
   if (cards === null && session.data) {
-    setCards(session.data.cards);
+    // A planting session shows new words only, whatever the server sends.
+    setCards(planting ? session.data.cards.filter((c) => c.is_new) : session.data.cards);
   }
   React.useEffect(() => {
     if (cards !== null && startedAt.current === 0) startedAt.current = Date.now();
@@ -83,7 +87,7 @@ export function ReviewLive({ topicId }: { topicId?: string }) {
     <>
       <ReviewScreen
         state={finished ? 'finished' : revealed ? 'answer' : 'question'}
-        missionTitle={live('missionTitle', { count: total })}
+        missionTitle={live(planting ? 'plantTitle' : 'missionTitle', { count: total })}
         done={Math.min(index, total)}
         total={Math.max(total, 1)}
         closeHref={GARDEN_ROUTES.home}
@@ -133,7 +137,7 @@ export function ReviewLive({ topicId }: { topicId?: string }) {
         }}
         bloomHref={`${GARDEN_ROUTES.reviewDone}?${params.toString()}`}
         secondaryAction={{ label: t('backToGarden'), href: GARDEN_ROUTES.home }}
-        emptyText={total === 0 ? t('empty') : undefined}
+        emptyText={total === 0 ? t(planting ? 'emptyPlant' : 'empty') : undefined}
       />
     </>
   );

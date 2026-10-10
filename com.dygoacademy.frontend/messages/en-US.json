@@ -390,24 +390,29 @@
         "goldenBloom": "Finish all {total} and today’s <b>Golden Bloom</b> opens 🌸",
         "goldenBloomOne": "Finish this one and today’s <b>Golden Bloom</b> opens 🌸",
         "goldenBloomEarned": "Today’s <b>Golden Bloom</b> is open 🌸",
-        "water": "Water {count, plural, one {# due word} other {# due words}}",
         "thirsty": "Water today's thirsty words",
         "plant": "Plant {count, plural, one {# new word} other {# new words}}",
         "challenge": "Collocation challenge",
         "valueDone": "Done",
         "valueMinutes": "{count} min",
         "valueCount": "{done}/{total}",
+        "valueLeft": "{count, number} left",
         "progressWater": "{done} of {total} words watered",
         "progressPlant": "{done} of {total} words planted",
         "notStarted": "Not started",
         "speak": "Say {count, plural, one {# ripe word} other {# ripe words}}",
-        "progressSpeak": "{done} of {total} words said"
-      },
-      "action": {
-        "continue": "Pick up where you left off",
-        "start": "Water your garden",
-        "detail": "{count, plural, one {# word} other {# words}} left · about {minutes} min",
-        "detailNoTime": "{count, plural, one {# word} other {# words}} left"
+        "progressSpeak": "{done} of {total} words said",
+        "nextUp": "Next up",
+        "then": "Then",
+        "nextWater": "Water {count, plural, one {# thirsty word} other {# thirsty words}}",
+        "nextProgress": "{done} of {total} done",
+        "nextMinutes": "about {count} min",
+        "start": {
+          "water": "Start watering",
+          "plant": "Start planting",
+          "challenge": "Start challenge",
+          "speak": "Start speaking"
+        }
       },
       "ripens": "Tomorrow {time} · <b>{count, plural, one {# word is} other {# words are}} ready to water</b>",
       "public": {
@@ -696,6 +701,7 @@
       "replayDemo": "Replay demo",
       "backToGarden": "Back to garden",
       "empty": "Nothing needs water right now. Come back when your words are due.",
+      "emptyPlant": "No new words to plant right now. Add a word or choose a new bed in Topics.",
       "error": "We couldn’t save this word. Check your connection and try again."
     },
     "complete": {
@@ -898,6 +904,7 @@
       "notFoundBody": "It may have moved, or the link is out of date.",
       "backHome": "Back to my garden",
       "missionTitle": "Water {count, plural, one {# word} other {# words}}",
+      "plantTitle": "Plant {count, plural, one {# new word} other {# new words}}",
       "topicMeta": "{count, plural, one {# word} other {# words}}"
     },
     "groups": {

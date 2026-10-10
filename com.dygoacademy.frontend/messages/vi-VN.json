@@ -390,24 +390,29 @@
         "goldenBloom": "Xong cả {total} nhiệm vụ là <b>Hoa Vàng</b> hôm nay nở 🌸",
         "goldenBloomOne": "Xong nhiệm vụ này là <b>Hoa Vàng</b> hôm nay nở 🌸",
         "goldenBloomEarned": "<b>Hoa Vàng</b> hôm nay đã nở 🌸",
-        "water": "Tưới {count, plural, one {# từ đến hạn} other {# từ đến hạn}}",
         "thirsty": "Tưới các từ đang khát hôm nay",
         "plant": "Gieo {count, plural, one {# từ mới} other {# từ mới}}",
         "challenge": "Thử thách cụm từ",
         "valueDone": "Xong",
         "valueMinutes": "{count} phút",
         "valueCount": "{done}/{total}",
+        "valueLeft": "Còn {count, number}",
         "progressWater": "Đã tưới {done}/{total} từ",
         "progressPlant": "Đã gieo {done}/{total} từ",
         "notStarted": "Chưa bắt đầu",
         "speak": "Nói {count} từ đã kết trái",
-        "progressSpeak": "Đã nói {done}/{total} từ"
-      },
-      "action": {
-        "continue": "Làm tiếp",
-        "start": "Tưới vườn",
-        "detail": "Còn {count, plural, one {# từ} other {# từ}} · khoảng {minutes} phút",
-        "detailNoTime": "Còn {count, plural, one {# từ} other {# từ}}"
+        "progressSpeak": "Đã nói {done}/{total} từ",
+        "nextUp": "Làm tiếp",
+        "then": "Sau đó",
+        "nextWater": "Tưới {count} từ đang khát",
+        "nextProgress": "Xong {done}/{total}",
+        "nextMinutes": "khoảng {count} phút",
+        "start": {
+          "water": "Bắt đầu tưới",
+          "plant": "Bắt đầu gieo",
+          "challenge": "Bắt đầu thử thách",
+          "speak": "Bắt đầu nói"
+        }
       },
       "ripens": "Ngày mai {time} · <b>{count, plural, one {# từ} other {# từ}} đến hạn tưới</b>",
       "public": {
@@ -696,6 +701,7 @@
       "replayDemo": "Xem lại bản demo",
       "backToGarden": "Về vườn",
       "empty": "Giờ chưa có từ nào cần tưới. Khi có từ đến hạn, bạn quay lại nhé.",
+      "emptyPlant": "Hiện chưa có từ mới để gieo. Bạn thêm từ hoặc chọn luống mới trong mục Chủ đề nhé.",
       "error": "Chưa lưu được từ này. Bạn kiểm tra kết nối rồi thử lại nhé."
     },
     "complete": {
@@ -898,6 +904,7 @@
       "notFoundBody": "Trang có thể đã chuyển chỗ, hoặc liên kết đã cũ.",
       "backHome": "Về vườn của tôi",
       "missionTitle": "Tưới {count, plural, one {# từ} other {# từ}}",
+      "plantTitle": "Gieo {count, plural, one {# từ mới} other {# từ mới}}",
       "topicMeta": "{count, plural, one {# từ} other {# từ}}"
     },
     "groups": {

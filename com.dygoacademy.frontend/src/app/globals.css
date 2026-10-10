@@ -145,6 +145,10 @@
     --color-water-border: #b9d8ec;
     --color-water-strong: #2f6f9a; /* rain barrel on the streak-safe banner */
     --color-water-text-soft: #2f5a75;
+    --color-water-panel: #eef5f9; /* A1 missions "Next up" panel (Option D) */
+    --color-water-track: #d5e7f2; /* progress track inside the Next up panel */
+    --color-water-deep: #2f6e99; /* "Next up" label, Start button shadow */
+    --color-text-soft: #44524a; /* progress line inside the Next up panel */
     --color-divider: #efeae0; /* rows inside a settings card */
     --color-dashed: #b9ae96; /* "Plant a new bed" */
     --color-locked-bg: #efeadf;
