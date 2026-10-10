@@ -79,6 +79,7 @@ Every row has an English file and a Vietnamese twin (`…Vi.dc.html`) unless not
 | A3 | Mission Complete | `AdultBloom` | Built | Bloom animation, stats, streak +1, "1 mission left for Golden Bloom" with a 3-min button, reminder toggle for when words ripen. | A1, A2 | UI-4 `6e7eb53`; reminder switch UI-6 U6-7b `c96515a` |
 | A4 | Weekly Harvest | `AdultMissions` | Built | 7 day-plants (0–3 missions each), full week unlocks a seed pack, Road to Band 7 (mastered / target), rain barrel (streak freezes), study-group card → GR2. | GR2, tabs | UI-6. Phase 13 Sound Garden card added S10 `1968f24`, removed 2026-10-06 `0e47e01` |
 | A5 | Welcome Back | `AdultComeback` | Built | No guilt: streak freeze kept the streak; wilting = most overdue only; "Quick revive, 5 min"; escape hatch "Water all 42". | A2, tabs | UI-6 |
+| A5b | Welcome Back · nothing wilting | `AdultComebackStart` | Approved | A5 when 0 words are wilting (the common case today): card "Start small · Water the 10 thirstiest words first" → **Quick start** (10 words · about 4 min, only the 10 most overdue) + "Water all 45 instead". ≤10 thirsty: "Water your N thirsty words" / Start watering, no second link. Nothing due after missed days → show A1 / A1b, not A5. Minutes ≈ 25 s a word. | A2, tabs | Not built — plan: `A5 welcome back implementation plan.md` |
 | A6 | Topics (Beds) | `AdultTopics` | Built | Each topic = a garden bed: stage icon, fruit/flower/sprout bar, due badge, locked seed pack. Filters: All / IELTS Academic / Mine. | A7, tabs | UI-5 (wrap-up `58ab14f`) |
 | A6b | Search | `AdultSearch` | For approval | From the search button on A6. Live results grouped by bed, matched letters highlighted, stage icon per word; "Not in your garden yet" row → Plant (A7b); recent searches when empty. | A7, A7b | Not built |
 | A6c | No topics yet | `AdultTopicsEmpty` | For approval | Empty bed field + 3 suggested seed packets and "Browse all topics". | A7 | Not built |
@@ -204,6 +205,13 @@ All iPad screens: sidebar (Garden · Missions · Topics · Groups · Me + Shared
 ## 3. Changelog
 
 Newest first. Format: `### YYYY-MM-DD — title` then lines tagged **Added / Changed / Removed / Decision**, with screen IDs and status.
+
+### 2026-10-10 — A5 Welcome back: finish it (A5b + rules)
+- **Found** (Dylan, UAT): A5 is only half done. With 0 wilting words — the usual case, because almost nobody has leeches yet — the "Start small" card loses its title and button and shows only an underlined "Water all 45" link inside an empty white card. No time estimates ("about 5 min" from the board never shows). After missed days with nothing due, A5 still shows with no card at all.
+- **Added** A5b "Welcome Back · nothing wilting" (`AdultComebackStart`, EN + VI): same screen, the card offers a short start: "Water the 10 thirstiest words first" → **Quick start · 10 words · about 4 min** (watering with only the 10 most overdue words), "Water all 45 instead" underneath. *Approved (Dylan).*
+- **Decision** A5 shows only when the learner missed 2+ days **and** something is due; otherwise Today's Garden (A1 / A1b). Time estimate on A5 / A5b ≈ 25 s a word, rounded (12 → 5 min, 10 → 4 min). *Approved (Dylan).*
+- **Note** A5b uses the site's current title "Your garden kept your spot." (A5 board still says "Your garden waited for you."; the site wins until Dylan fine-tunes copy).
+- Build plan for Claude Code: `A5 welcome back implementation plan.md` (repo root).
 
 ### 2026-10-10 — A1 missions card: "Next up" + "Then" (Option D)
 - **Removed** A1 / iA1 (EN + VI): the big "Continue mission" button under the missions card (Dylan: two ways in were confusing).
