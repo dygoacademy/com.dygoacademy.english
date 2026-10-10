@@ -13,18 +13,23 @@ import { useTopics } from '@/hooks/useTopics';
 import { useUpcomingActivity } from '@/hooks/useUpcomingActivity';
 
 import { addDays, hourIn, isoDay, todayIn } from '../format';
+import { AllWateredScreen } from '../screens/AllWateredScreen';
 import { TodaysGardenScreen } from '../screens/TodaysGardenScreen';
 import { WelcomeBackScreen } from '../screens/WelcomeBackScreen';
 import {
   displayName,
   comebackStart,
+  EXTRA_PLANT_COUNT,
+  extraPlantBed,
   freezeStreak,
   gardenPlants,
   greetingFor,
   liveMissions,
   missedDays,
   missionQuizHref,
+  nextRipening,
   ripensTomorrow,
+  showAllWatered,
   showWelcomeBack,
   thirstyMission,
 } from './data';
@@ -53,6 +58,14 @@ import { LiveError, LiveLoading } from './LiveState';
  * is safe" + rain barrel, U6-6) shows when GET /srs/stats `freezes`
  * covered missed days this week and the streak is still alive
  * (`freezeStreak`); hidden otherwise.
+ *
+ * A1b All watered replaces A1 when nothing is due and today's missions
+ * are all done (`showAllWatered`; the due count alone when the missions
+ * call failed, and then without the Golden Bloom line): the Golden Bloom
+ * card with the next ripening (the count stays without a reminder,
+ * `nextRipening`) and three extras: plant 5 new words from the bed with
+ * the most seeds (`extraPlantBed`, hidden without seeds), The Pond, and
+ * the mission quiz link.
  */
 export function HomeLive() {
   const timeZone = useTimeZone();
@@ -92,6 +105,37 @@ export function HomeLive() {
     );
   }
 
+  const tomorrow = isoDay(addDays(today, 1));
+
+  if (showAllWatered(s, missions.data)) {
+    const bed = extraPlantBed(topics.data);
+    return (
+      <AllWateredScreen
+        date={today}
+        greeting={greetingFor(hourIn(timeZone, now))}
+        name={name}
+        streakDays={s.current_streak_days}
+        plants={gardenPlants(s, 9)}
+        bloom={
+          missions.data
+            ? {
+                done: missions.data.missions.filter((m) => m.done).length,
+                total: missions.data.missions.length,
+              }
+            : null
+        }
+        ripens={nextRipening(upcoming.data, tomorrow, schedules.data)}
+        extras={{
+          plant: bed
+            ? { bed: bed.title, href: GARDEN_ROUTES.plant(EXTRA_PLANT_COUNT, bed.id) }
+            : null,
+          speakHref: GARDEN_ROUTES.sounds,
+          quizHref: missionQuizHref(topics.data),
+        }}
+      />
+    );
+  }
+
   return (
     <TodaysGardenScreen
       date={today}
@@ -118,7 +162,7 @@ export function HomeLive() {
             : null
       }
       goldenBloom={missions.data?.goldenBloom ?? false}
-      ripens={ripensTomorrow(upcoming.data, isoDay(addDays(today, 1)), schedules.data)}
+      ripens={ripensTomorrow(upcoming.data, tomorrow, schedules.data)}
     />
   );
 }

@@ -7,6 +7,7 @@ import { renderWithIntl } from '@/test/render';
 import messages from '../../../../messages/en-US.json';
 
 import {
+  ALL_WATERED,
   BED,
   COMEBACK,
   COMEBACK_START,
@@ -20,6 +21,7 @@ import {
   TOPICS_LOCKED_PACK,
   isReferenceName,
 } from './fixtures';
+import { AllWateredScreen } from './AllWateredScreen';
 import { MeScreen } from './MeScreen';
 import { ReviewScreen } from './ReviewScreen';
 import { TodaysGardenScreen } from './TodaysGardenScreen';
@@ -32,8 +34,9 @@ const push = vi.fn();
 vi.mock('next/navigation', () => ({ useRouter: () => ({ push }) }));
 
 describe('reference fixtures', () => {
-  it('lists the 50 canvas references (13 adult screens, 7 group screens, 6 sign-in, 8 quiz, 7 home, 5 speaking, 4 speaking entry points)', () => {
-    expect(REFERENCE_NAMES).toHaveLength(50);
+  it('lists the 51 canvas references (14 adult screens, 7 group screens, 6 sign-in, 8 quiz, 7 home, 5 speaking, 4 speaking entry points)', () => {
+    expect(REFERENCE_NAMES).toHaveLength(51);
+    expect(isReferenceName('A1b-all-watered')).toBe(true);
     expect(isReferenceName('SE5-entry-harvest')).toBe(true);
     expect(isReferenceName('SP3-speak-done')).toBe(true);
     expect(isReferenceName('H1-home-phone')).toBe(true);
@@ -406,6 +409,57 @@ describe('MeScreen', () => {
       </NextIntlClientProvider>,
     );
     expect(screen.getByText('IELTS Academic · target band 7.0')).toBeTruthy();
+  });
+});
+
+describe('AllWateredScreen (A1b)', () => {
+  const extras = {
+    plant: { bed: 'Environment', href: '/review?new=5&topic=t1' },
+    speakHref: '/sounds',
+    quizHref: '/quiz?topic=t2',
+  };
+  const more = () =>
+    screen.getByRole('heading', { name: 'Want a little more?' }).closest('section') as HTMLElement;
+
+  it('rests the garden and shows the Golden Bloom with the next ripening', () => {
+    renderWithIntl(<AllWateredScreen {...ALL_WATERED} extras={extras} />);
+    expect(screen.getByRole('heading', { level: 1 }).textContent).toBe('Good evening, Minh');
+    expect(screen.getByRole('heading', { name: 'All watered today' })).toBeTruthy();
+    expect(screen.getByText('Nothing is thirsty. Your garden is resting.')).toBeTruthy();
+    expect(screen.queryByRole('list', { name: 'Your garden by stage' })).toBeNull();
+    expect(screen.getByRole('img', { name: 'Resting garden with a sun and a butterfly' })).toBeTruthy();
+    expect(screen.getByText('3 of 3 missions · Golden Bloom grown')).toBeTruthy();
+    expect(screen.getByText('Next ripening: tomorrow 7:30 AM · 14 words')).toBeTruthy();
+  });
+
+  it('offers the three extras with their links', () => {
+    renderWithIntl(<AllWateredScreen {...ALL_WATERED} extras={extras} />);
+    const links = within(more()).getAllByRole('link');
+    expect(links.map((a) => a.getAttribute('href'))).toEqual([
+      '/review?new=5&topic=t1',
+      '/sounds',
+      '/quiz?topic=t2',
+    ]);
+    expect(links[0].textContent).toBe('Plant 5 new wordsFrom Environment');
+    expect(links[1].textContent).toBe('Say 3 sentencesAbout 2 min');
+    expect(links[2].textContent).toBe('Quiz a bed10 quick questions');
+  });
+
+  it('hides the plant row when no bed has seeds', () => {
+    renderWithIntl(<AllWateredScreen {...ALL_WATERED} extras={{ ...extras, plant: null }} />);
+    const links = within(more()).getAllByRole('link');
+    expect(links.map((a) => a.getAttribute('href'))).toEqual(['/sounds', '/quiz?topic=t2']);
+  });
+
+  it('ripening line: no reminder keeps the count, nothing ripening hides it', () => {
+    const { unmount } = renderWithIntl(
+      <AllWateredScreen {...ALL_WATERED} ripens={{ time: null, count: 1 }} extras={extras} />,
+    );
+    expect(screen.getByText('Next ripening: tomorrow · 1 word')).toBeTruthy();
+    unmount();
+    renderWithIntl(<AllWateredScreen {...ALL_WATERED} ripens={null} extras={extras} />);
+    expect(screen.queryByText(/Next ripening/)).toBeNull();
+    expect(screen.getByText('3 of 3 missions · Golden Bloom grown')).toBeTruthy();
   });
 });
 

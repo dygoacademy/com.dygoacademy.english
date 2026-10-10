@@ -21,6 +21,7 @@ import {
   referenceFixtures,
   type ReferenceName,
 } from '@/components/garden/screens/fixtures';
+import { AllWateredScreen } from '@/components/garden/screens/AllWateredScreen';
 import { MeScreen } from '@/components/garden/screens/MeScreen';
 import { MissionCompleteScreen } from '@/components/garden/screens/MissionCompleteScreen';
 import { QuizResultScreen } from '@/components/garden/screens/QuizResultScreen';
@@ -56,6 +57,7 @@ export function ReferenceScreen({ name, locale }: { name: ReferenceName; locale:
 
 function ReferenceScreenBody({ name, locale }: { name: ReferenceName; locale: AppLocale }) {
   const {
+    ALL_WATERED,
     BED,
     COMEBACK,
     COMEBACK_START,
@@ -87,6 +89,20 @@ function ReferenceScreenBody({ name, locale }: { name: ReferenceName; locale: Ap
           stickyNav={false}
         />
       );
+    case 'A1b-all-watered': {
+      const { bed, ...props } = ALL_WATERED;
+      return (
+        <AllWateredScreen
+          {...props}
+          extras={{
+            plant: { bed, href: GARDEN_ROUTES.reference('A7-topic-bed') },
+            speakHref: GARDEN_ROUTES.reference('SP2-speak-countdown'),
+            quizHref: GARDEN_ROUTES.reference('Q1-quiz-choose'),
+          }}
+          stickyNav={false}
+        />
+      );
+    }
     case 'A2-review-question':
     case 'A2-review-answer':
     case 'A2-review-finished': {

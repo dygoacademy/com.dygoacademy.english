@@ -106,21 +106,7 @@ export function TodaysGardenScreen({
 
   return (
     <div className={gcn(SCREEN_CLASSES, IPAD_NAV_COLUMN, 'gap-[14px] pt-[22px]')}>
-      <header className="flex items-end gap-3 px-5">
-        <div className="flex flex-grow flex-col">
-          <span className="text-[13px] font-medium text-muted-foreground">{f.longDay(date)}</span>
-          <h1 className="font-display text-[28px] font-semibold leading-[1.1]">
-            {name ? t(`greeting.${greeting}`, { name }) : t(`greetingNoName.${greeting}`)}
-          </h1>
-        </div>
-        {streakDays !== null ? (
-          <StreakPill
-            count={f.number(streakDays)}
-            unit={t('streakUnit', { count: streakDays })}
-            label={t('streakLabel', { count: streakDays })}
-          />
-        ) : null}
-      </header>
+      <HomeHeader date={date} greeting={greeting} name={name} streakDays={streakDays} />
 
       {/*
         Design system §10, A1: iPhone stacks hero → missions → ripens line
@@ -188,6 +174,34 @@ export function TodaysGardenScreen({
 
       <GardenTabBar active="garden" sticky={stickyNav} />
     </div>
+  );
+}
+
+/** A1's header (date, greeting, streak pill), shared with A1b All watered. */
+export function HomeHeader({
+  date,
+  greeting,
+  name,
+  streakDays,
+}: Pick<TodaysGardenScreenProps, 'date' | 'greeting' | 'name' | 'streakDays'>) {
+  const t = useTranslations('screens.home');
+  const f = useGardenFormat();
+  return (
+    <header className="flex items-end gap-3 px-5">
+      <div className="flex flex-grow flex-col">
+        <span className="text-[13px] font-medium text-muted-foreground">{f.longDay(date)}</span>
+        <h1 className="font-display text-[28px] font-semibold leading-[1.1]">
+          {name ? t(`greeting.${greeting}`, { name }) : t(`greetingNoName.${greeting}`)}
+        </h1>
+      </div>
+      {streakDays !== null ? (
+        <StreakPill
+          count={f.number(streakDays)}
+          unit={t('streakUnit', { count: streakDays })}
+          label={t('streakLabel', { count: streakDays })}
+        />
+      ) : null}
+    </header>
   );
 }
 

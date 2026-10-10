@@ -16,6 +16,9 @@ import type { PlantStage } from './plantStage';
  * - `comeback` (A5 / A5b): the muted background, no heading, the same
  *   garden faded, and a rain cloud; a thirsty flower or sprout gets a
  *   still drop (a thirsty sprout is the two-leaf one, A5b).
+ * - `resting` (A1b All watered): forest background, a `subtitle` line in
+ *   place of the legend, the sun at the top right with a small butterfly,
+ *   and the garden with no drops (the flowers sway).
  *
  * The illustration is drawn exactly as in the canvas: up to 9 (normal) or
  * 8 (comeback) planting spots, left to right, each holding the plant for
@@ -32,13 +35,16 @@ export interface HeroLegendItem {
 export type HeroPlant = PlantStage | { stage: PlantStage; thirsty?: boolean };
 
 export interface HeroGardenCardProps {
-  variant?: 'normal' | 'comeback';
+  variant?: 'normal' | 'comeback' | 'resting';
   overline?: string;
   title?: string;
+  /** A line under the title in place of the legend (A1b: "Nothing is thirsty…"). */
+  subtitle?: string;
   /** Decorative icon at the top right, e.g. <MoonIcon width={30} height={30} />. */
   trailing?: React.ReactNode;
   /** The plants drawn in the illustration, left to right. */
   plants: readonly HeroPlant[];
+  /** Empty hides the legend row. */
   legend: readonly HeroLegendItem[];
   /** Heading level for the title. Defaults to h2. */
   headingLevel?: 'h1' | 'h2' | 'h3';
@@ -56,6 +62,8 @@ const DOT: Record<PlantStage, string> = {
 
 const NORMAL_SLOTS = [6, 46, 86, 124, 166, 204, 242, 280, 316] as const;
 const COMEBACK_SLOTS = [10, 56, 98, 142, 186, 228, 272, 312] as const;
+/** A1b: nine spots, 39.775 apart, as the canvas draws them. */
+const RESTING_SLOTS = [-0.1, 39.7, 79.4, 119.2, 159, 198.8, 238.6, 278.3, 318.1] as const;
 
 /** The canvas draws the scene 358 wide (a 390 iPhone). */
 const SCENE_WIDTH = 358;
@@ -299,6 +307,97 @@ function normalize(plant: HeroPlant): { stage: PlantStage; thirsty: boolean } {
     : { stage: plant.stage, thirsty: Boolean(plant.thirsty) };
 }
 
+/** A1b: the resting garden's tree (rounder canopy than A1's) and swaying flowers, no drops. */
+function restingPlant(stage: PlantStage, slot: number): React.ReactNode {
+  switch (stage) {
+    case 'tree':
+      return (
+        <>
+          <rect x="18" y="100" width="4" height="30" fill="var(--stage-trunk)" />
+          <circle cx="20" cy="90" r="17" fill="var(--stage-tree-canopy)" />
+          <circle cx="8" cy="100" r="10" fill="var(--stage-tree-canopy)" />
+          <circle cx="32" cy="100" r="10" fill="var(--stage-tree-canopy)" />
+          {[
+            [13, 88],
+            [27, 92],
+            [20, 102],
+          ].map(([cx, cy]) => (
+            <circle key={`${cx}-${cy}`} cx={cx} cy={cy} r="2.5" fill="var(--stage-tree-fruit)" />
+          ))}
+        </>
+      );
+    case 'flower':
+      return <g className="sway">{normalPlant('flower', slot).art}</g>;
+    case 'thirsty':
+      return null;
+    default:
+      return normalPlant(stage, slot).art;
+  }
+}
+
+/**
+ * Unlike A1 / A5, the canvas scales this scene with the card (a 358 × 132
+ * viewBox at full width), so the plants grow with it.
+ */
+function RestingScene({ plants, label }: { plants: readonly HeroPlant[]; label: string }) {
+  return (
+    <svg
+      viewBox="0 0 358 132"
+      aria-label={label}
+      role="img"
+      className={gcn(SCENE_CLASSES, 'mt-1 block h-auto')}
+    >
+      <rect x="0" y="120" width="358" height="12" fill="var(--color-forest-deep)" />
+      {plants.slice(0, RESTING_SLOTS.length).map((plant, slot) => (
+        <g key={slot} transform={`translate(${RESTING_SLOTS[slot]},-10)`}>
+          {restingPlant(normalize(plant).stage, slot)}
+        </g>
+      ))}
+    </svg>
+  );
+}
+
+/** A1b: the sun (36px, eight rays) at the top right of the resting card. */
+function Sun() {
+  return (
+    <svg
+      aria-hidden="true"
+      width="36"
+      height="36"
+      viewBox="0 0 36 36"
+      className="absolute right-4 top-[14px]"
+    >
+      <circle cx="18" cy="18" r="9" fill="var(--color-gold-light)" />
+      {[0, 45, 90, 135, 180, 225, 270, 315].map((deg) => (
+        <path
+          key={deg}
+          d="M18 2 V6"
+          stroke="var(--color-gold-light)"
+          strokeWidth="2.4"
+          strokeLinecap="round"
+          transform={`rotate(${deg} 18 18)`}
+        />
+      ))}
+    </svg>
+  );
+}
+
+/** A1b: the small butterfly beside the sun (`flutter`). */
+function Butterfly() {
+  return (
+    <svg
+      aria-hidden="true"
+      width="26"
+      height="20"
+      viewBox="0 0 26 20"
+      className="flutter absolute right-[70px] top-[46px]"
+    >
+      <path d="M13 10 C8 0 0 2 2 9 C4 15 11 13 13 10 Z" fill="var(--color-gold-light)" />
+      <path d="M13 10 C18 0 26 2 24 9 C22 15 15 13 13 10 Z" fill="var(--stage-flower)" />
+    </svg>
+  );
+}
+
 function NormalScene({ plants, label }: { plants: readonly HeroPlant[]; label: string }) {
   return (
     <svg height="132" aria-label={label} role="img" className={gcn(SCENE_CLASSES, 'mt-1')}>
@@ -358,6 +457,7 @@ export function HeroGardenCard({
   variant = 'normal',
   overline,
   title,
+  subtitle,
   trailing,
   plants,
   legend,
@@ -367,6 +467,7 @@ export function HeroGardenCard({
   const t = useTranslations('components.hero');
   const Heading = headingLevel;
   const comeback = variant === 'comeback';
+  const resting = variant === 'resting';
 
   return (
     <section
@@ -374,38 +475,56 @@ export function HeroGardenCard({
       className={gcn(
         'flex flex-col overflow-hidden rounded-hero px-4 pt-4 text-on-forest',
         comeback ? 'gap-1.5 bg-forest-muted' : 'gap-1 bg-forest',
+        resting && 'relative',
         className,
       )}
     >
       {overline || title || trailing ? (
         <div className="flex items-start justify-between">
-          <div className="flex flex-col">
+          <div className={gcn('flex flex-col', resting && 'gap-1')}>
             {overline ? (
               <span className="overline-label text-[12px] font-semibold text-stage-sprout">
                 {overline}
               </span>
             ) : null}
             {title ? (
-              <Heading className="font-display text-[22px] font-medium">{title}</Heading>
+              <Heading
+                className={gcn('font-display font-medium', resting ? 'text-[24px]' : 'text-[22px]')}
+              >
+                {title}
+              </Heading>
             ) : null}
           </div>
           {trailing}
         </div>
       ) : null}
 
-      <ul
-        aria-label={t('legend')}
-        className="flex gap-[14px] text-[12px] text-on-forest-muted"
-      >
-        {legend.map((item) => (
-          <li key={item.stage} className="flex items-center gap-[5px]">
-            <span aria-hidden="true" className={gcn('h-2 w-2 rounded-[4px]', DOT[item.stage])} />
-            {item.label}
-          </li>
-        ))}
-      </ul>
+      {subtitle ? <p className="text-[13px] text-on-forest-muted">{subtitle}</p> : null}
 
-      {comeback ? (
+      {legend.length > 0 ? (
+        <ul
+          aria-label={t('legend')}
+          className="flex gap-[14px] text-[12px] text-on-forest-muted"
+        >
+          {legend.map((item) => (
+            <li key={item.stage} className="flex items-center gap-[5px]">
+              <span aria-hidden="true" className={gcn('h-2 w-2 rounded-[4px]', DOT[item.stage])} />
+              {item.label}
+            </li>
+          ))}
+        </ul>
+      ) : null}
+
+      {resting ? (
+        <>
+          <Butterfly />
+          <Sun />
+        </>
+      ) : null}
+
+      {resting ? (
+        <RestingScene plants={plants} label={t('restingScene')} />
+      ) : comeback ? (
         <ComebackScene
           plants={plants}
           label={t(

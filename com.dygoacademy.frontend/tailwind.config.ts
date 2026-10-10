@@ -103,6 +103,7 @@ const config: Config = {
         'on-forest': 'var(--color-on-forest)',
         'on-forest-muted': 'var(--color-on-forest-muted)',
         'gold-wash': 'var(--color-gold-wash)',
+        'forest-wash': 'var(--color-forest-wash)',
         'primary-soft': 'var(--color-primary-soft)',
         'primary-border': 'var(--color-primary-border)',
         'gold-border': 'var(--color-gold-border)',

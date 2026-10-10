@@ -1,13 +1,16 @@
 import { describe, expect, it } from 'vitest';
 
+import { GARDEN_ROUTES } from '@/constants/garden';
+import type { TodayMissions } from '@/hooks/useMissions';
 import { toLocalDateString } from '@/lib/timezone';
-import type { SrsStats } from '@/types';
+import type { SrsStats, StudySchedule, UpcomingActivity } from '@/types';
 
 import {
   COMEBACK_BATCH,
   comebackStart,
   displayName,
   doneReminder,
+  extraPlantBed,
   earliestSchedule,
   freezeStreak,
   gardenHours,
@@ -22,8 +25,10 @@ import {
   missedDays,
   missionQuizHref,
   missionsSummary,
+  nextRipening,
   ripensTomorrow,
   sampleGarden,
+  showAllWatered,
   showWelcomeBack,
   stageGarden,
   thirstyMission,
@@ -282,6 +287,55 @@ describe('live missions (U6-5)', () => {
     expect(missionQuizHref(topics)).toBe('/quiz?topic=t2');
     expect(missionQuizHref([{ id: 't1', due_count: '0' }, { id: 't2' }])).toBe('/quiz');
     expect(missionQuizHref(undefined)).toBe('/quiz');
+  });
+});
+
+describe('A1b All watered', () => {
+  const stats = (due_now: number) =>
+    ({ total_words: 40, mastered_words: 10, due_now, leech_count: 0, current_streak_days: 4 }) as SrsStats;
+  const mission = (type: 'REVIEW_DUE' | 'NEW_WORDS' | 'QUIZ', done: boolean) =>
+    ({ type, target: 5, progress: done ? 5 : 1, done }) as TodayMissions['missions'][number];
+  const today = (done: boolean[]): TodayMissions => ({
+    date: '2026-09-25',
+    missions: [mission('REVIEW_DUE', done[0]!), mission('NEW_WORDS', done[1]!), mission('QUIZ', done[2]!)],
+    goldenBloom: done.every(Boolean),
+  });
+
+  it('shows when nothing is due and every mission is done', () => {
+    expect(showAllWatered(stats(0), today([true, true, true]))).toBe(true);
+    expect(showAllWatered(stats(0), today([true, false, true]))).toBe(false);
+    expect(showAllWatered(stats(3), today([true, true, true]))).toBe(false);
+    expect(showAllWatered(stats(0), undefined)).toBe(true);
+    expect(showAllWatered(stats(2), undefined)).toBe(false);
+  });
+
+  it('plants from the bed with the most seeds, the first on a tie', () => {
+    expect(
+      extraPlantBed([
+        { id: 't1', title: 'Education', seed_count: '4' },
+        { id: 't2', title: 'Environment', seed_count: '9' },
+        { id: 't3', title: 'Work', seed_count: '9' },
+      ]),
+    ).toEqual({ id: 't2', title: 'Environment' });
+    expect(extraPlantBed([{ id: 't1', title: 'Education', seed_count: '0' }, { id: 't2', title: 'Work' }])).toBeNull();
+    expect(extraPlantBed(undefined)).toBeNull();
+  });
+
+  it('plant route takes the bed', () => {
+    expect(GARDEN_ROUTES.plant(5, 't 2')).toBe('/review?new=5&topic=t%202');
+    expect(GARDEN_ROUTES.plant(5)).toBe('/review?new=5');
+  });
+
+  it('next ripening keeps the count without a reminder', () => {
+    const upcoming = [{ due_date: '2026-09-26', due_count: 14 }] as UpcomingActivity[];
+    const reminder = [{ is_enabled: true, reminder_time: '07:30:00' }] as StudySchedule[];
+    expect(nextRipening(upcoming, '2026-09-26', reminder)).toEqual({
+      time: { hour: 7, minute: 30 },
+      count: 14,
+    });
+    expect(nextRipening(upcoming, '2026-09-26', [])).toEqual({ time: null, count: 14 });
+    expect(nextRipening(upcoming, '2026-09-27', reminder)).toBeNull();
+    expect(ripensTomorrow(upcoming, '2026-09-26', [])).toBeNull();
   });
 });
 

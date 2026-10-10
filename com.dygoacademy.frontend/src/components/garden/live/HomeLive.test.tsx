@@ -2,6 +2,7 @@ import { screen } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { renderWithIntl } from '@/test/render';
+import type { TodayMissions } from '@/hooks/useMissions';
 import type { SrsStats } from '@/types';
 
 import { isoDate } from './data';
@@ -21,14 +22,18 @@ const stats: { data: SrsStats } = {
   },
 };
 const activity: { data: Array<{ review_date: string; review_count: number }> } = { data: [] };
+const missions: { data: TodayMissions | undefined } = { data: undefined };
+const topics: { data: Array<{ id: string; title: string; seed_count?: string; due_count?: string }> } = {
+  data: [],
+};
 
 vi.mock('@/hooks/useSrsStats', () => ({ useSrsStats: () => query(stats.data) }));
 vi.mock('@/hooks/useDailyActivity', () => ({ useDailyActivity: () => query(activity.data) }));
 vi.mock('@/hooks/useCurrentUser', () => ({ useCurrentUser: () => query(null) }));
 vi.mock('@/hooks/useUpcomingActivity', () => ({ useUpcomingActivity: () => query([]) }));
 vi.mock('@/hooks/useNotificationSchedules', () => ({ useNotificationSchedules: () => query([]) }));
-vi.mock('@/hooks/useMissions', () => ({ useTodayMissions: () => query(undefined) }));
-vi.mock('@/hooks/useTopics', () => ({ useTopics: () => query([]) }));
+vi.mock('@/hooks/useMissions', () => ({ useTodayMissions: () => query(missions.data) }));
+vi.mock('@/hooks/useTopics', () => ({ useTopics: () => query(topics.data) }));
 
 import { HomeLive } from './HomeLive';
 
@@ -56,6 +61,46 @@ describe('HomeLive welcome back (A5 / A5b)', () => {
     stats.data = { ...stats.data, due_now: 0, leech_count: 0 };
     renderWithIntl(<HomeLive />);
     expect(screen.queryByText(/Welcome back/)).toBeNull();
+    expect(screen.getByRole('heading', { level: 1 }).textContent).toContain('Minh');
+  });
+});
+
+describe('HomeLive all watered (A1b)', () => {
+  const today = (done: boolean[]): TodayMissions => ({
+    date: isoDate(new Date()),
+    missions: (['REVIEW_DUE', 'NEW_WORDS', 'QUIZ'] as const).map((type, i) => ({
+      type,
+      target: 5,
+      progress: done[i] ? 5 : 0,
+      done: done[i]!,
+    })) as TodayMissions['missions'],
+    goldenBloom: done.every(Boolean),
+  });
+
+  beforeEach(() => {
+    activity.data = [{ review_date: isoDate(new Date()), review_count: 8 }];
+    stats.data = { ...stats.data, due_now: 0, leech_count: 0 };
+    topics.data = [
+      { id: 't1', title: 'Education', seed_count: '2', due_count: '0' },
+      { id: 't2', title: 'Environment', seed_count: '7', due_count: '0' },
+    ];
+  });
+
+  it('nothing due and the Golden Bloom grown → All watered', () => {
+    missions.data = today([true, true, true]);
+    renderWithIntl(<HomeLive />);
+    expect(screen.getByRole('heading', { name: 'All watered today' })).toBeTruthy();
+    expect(screen.getByText('3 of 3 missions · Golden Bloom grown')).toBeTruthy();
+    expect(screen.getByRole('link', { name: /Plant 5 new words/ }).getAttribute('href')).toBe(
+      '/review?new=5&topic=t2',
+    );
+    expect(screen.getByRole('link', { name: /From Environment/ })).toBeTruthy();
+  });
+
+  it("nothing due but a mission still open → Today's Garden", () => {
+    missions.data = today([true, false, true]);
+    renderWithIntl(<HomeLive />);
+    expect(screen.queryByRole('heading', { name: 'All watered today' })).toBeNull();
     expect(screen.getByRole('heading', { level: 1 }).textContent).toContain('Minh');
   });
 });

@@ -294,7 +294,8 @@
       "legend": "Your garden by stage",
       "scene": "Garden with plants at different stages",
       "comebackScene": "Garden with wilting plants and a rain cloud",
-      "comebackSceneThirsty": "Thirsty garden with a rain cloud"
+      "comebackSceneThirsty": "Thirsty garden with a rain cloud",
+      "restingScene": "Resting garden with a sun and a butterfly"
     },
     "tabBar": {
       "label": "Main navigation",
@@ -689,6 +690,20 @@
           }
         }
       }
+    },
+    "allWatered": {
+      "title": "All watered today",
+      "resting": "Nothing is thirsty. Your garden is resting.",
+      "bloom": "{done} of {total} missions · Golden Bloom grown",
+      "nextRipening": "Next ripening: tomorrow {time} · {count, plural, one {# word} other {# words}}",
+      "nextRipeningNoTime": "Next ripening: tomorrow · {count, plural, one {# word} other {# words}}",
+      "more": "Want a little more?",
+      "plant": "Plant 5 new words",
+      "plantFrom": "From {bed}",
+      "speak": "Say 3 sentences",
+      "speakTime": "About 2 min",
+      "quiz": "Quiz a bed",
+      "quizMeta": "10 quick questions"
     },
     "review": {
       "close": "Close",

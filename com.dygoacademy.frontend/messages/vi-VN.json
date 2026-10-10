@@ -294,7 +294,8 @@
       "legend": "Giai đoạn cây trong vườn",
       "scene": "Khu vườn với các cây ở những giai đoạn khác nhau",
       "comebackScene": "Khu vườn với những cây đang héo và một đám mây mưa",
-      "comebackSceneThirsty": "Khu vườn đang khát và một đám mây mưa"
+      "comebackSceneThirsty": "Khu vườn đang khát và một đám mây mưa",
+      "restingScene": "Khu vườn đang nghỉ ngơi với mặt trời và một chú bướm"
     },
     "tabBar": {
       "label": "Điều hướng chính",
@@ -689,6 +690,20 @@
           }
         }
       }
+    },
+    "allWatered": {
+      "title": "Hôm nay đã tưới xong",
+      "resting": "Không còn cây nào khát nước. Vườn đang nghỉ ngơi.",
+      "bloom": "Xong {done}/{total} nhiệm vụ · Hoa Vàng đã nở",
+      "nextRipening": "Lần chín tiếp theo: {time} ngày mai · {count} từ",
+      "nextRipeningNoTime": "Lần chín tiếp theo: ngày mai · {count} từ",
+      "more": "Muốn học thêm chút nữa?",
+      "plant": "Gieo 5 từ mới",
+      "plantFrom": "Từ luống {bed}",
+      "speak": "Nói 3 câu",
+      "speakTime": "Khoảng 2 phút",
+      "quiz": "Kiểm tra một luống",
+      "quizMeta": "10 câu hỏi nhanh"
     },
     "review": {
       "close": "Đóng",

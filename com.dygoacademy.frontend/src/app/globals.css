@@ -150,6 +150,7 @@
     --color-water-deep: #2f6e99; /* "Next up" label, Start button shadow */
     --color-text-soft: #44524a; /* progress line inside the Next up panel */
     --color-divider: #efeae0; /* rows inside a settings card */
+    --color-forest-wash: #f1f6ef; /* A1b "Want a little more?" icon wells */
     --color-dashed: #b9ae96; /* "Plant a new bed" */
     --color-locked-bg: #efeadf;
     --color-locked-border: #cfc6b2;
@@ -495,6 +496,26 @@
     opacity: 0;
   }
 }
+/* A1b All watered (AdultAllWatered.dc.html): flowers sway 3s, the
+   butterfly flutters 2.6s; both stop under reduced motion. */
+@keyframes sway {
+  0%,
+  100% {
+    transform: rotate(-3deg);
+  }
+  50% {
+    transform: rotate(3deg);
+  }
+}
+@keyframes flutter {
+  0%,
+  100% {
+    transform: translate(0, 0);
+  }
+  50% {
+    transform: translate(6px, -6px);
+  }
+}
 @keyframes fade-in {
   from {
     opacity: 0;
@@ -517,7 +538,19 @@
   .rain {
     animation: rain var(--motion-rain) linear infinite;
   }
+  .sway {
+    transform-box: fill-box;
+    transform-origin: bottom center;
+    animation: sway 3s ease-in-out infinite;
+  }
+  .flutter {
+    animation: flutter 2.6s ease-in-out infinite;
+  }
   @media (prefers-reduced-motion: reduce) {
+    .sway,
+    .flutter {
+      animation: none;
+    }
     .drip,
     .rain {
       animation: none;

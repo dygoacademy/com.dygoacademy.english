@@ -22,6 +22,7 @@ import type { AvatarTone } from './WeeklyHarvestScreen';
 
 export const REFERENCE_NAMES = [
   'A1-todays-garden',
+  'A1b-all-watered',
   'A2-review-question',
   'A2-review-answer',
   'A2-review-finished',
@@ -279,6 +280,30 @@ export const COMEBACK_START = {
     ] satisfies HeroPlant[],
   },
   start: { kind: 'batch' as const, count: 10, minutes: 4, waterAll: { count: 45 } },
+};
+
+/**
+ * AdultAllWatered.dc.html (A1b): nothing due, 3 of 3 missions, trees and
+ * swaying flowers. The bed ("Environment") comes from `SAMPLE`.
+ */
+export const ALL_WATERED = {
+  date: calendarDay(2026, 9, 25),
+  greeting: 'evening' as const,
+  name: 'Minh',
+  streakDays: 23,
+  plants: [
+    'tree',
+    'flower',
+    'tree',
+    'flower',
+    'tree',
+    'flower',
+    'tree',
+    'flower',
+    'tree',
+  ] satisfies HeroPlant[],
+  bloom: { done: 3, total: 3 },
+  ripens: { time: { hour: 7, minute: 30 }, count: 14 },
 };
 
 /** AdultTopics.dc.html */
@@ -639,6 +664,7 @@ export function referenceFixtures(locale: AppLocale) {
   const sample = SAMPLE[locale];
   return {
     HOME,
+    ALL_WATERED: { ...ALL_WATERED, bed: sample.topics[0] },
     REVIEW: {
       ...REVIEW,
       card: {

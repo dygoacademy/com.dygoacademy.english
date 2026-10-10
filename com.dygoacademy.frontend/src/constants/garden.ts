@@ -8,7 +8,7 @@
  * _gallery, _reference) stay under /garden.
  */
 export const GARDEN_ROUTES = {
-  /** Today's Garden (A1), or Welcome back (A5) after 2+ missed days. */
+  /** Today's Garden (A1), Welcome back (A5) after 2+ missed days, or All watered (A1b). */
   home: '/garden',
   /**
    * Flag-only token/type test page (UI-1). The folder is `%5Ftokens`
@@ -27,8 +27,12 @@ export const GARDEN_ROUTES = {
   speakingDev: '/garden/_speaking',
   /** A2 Review (watering) and A3 Mission complete. */
   review: '/review',
-  /** A2 for the "Plant new words" mission: only never-reviewed words, `count` of them. */
-  plant: (count: number) => `/review?new=${Math.max(1, Math.round(count))}`,
+  /**
+   * A2 for the "Plant new words" mission: only never-reviewed words,
+   * `count` of them; from one bed when `topicId` is given (A1b extras).
+   */
+  plant: (count: number, topicId?: string) =>
+    `/review?new=${Math.max(1, Math.round(count))}${topicId ? `&topic=${encodeURIComponent(topicId)}` : ''}`,
   /** A2 with only the `count` most overdue due words (A5b "Quick start"). */
   reviewFirst: (count: number) => `/review?limit=${Math.max(1, Math.round(count))}`,
   reviewDone: '/review/done',

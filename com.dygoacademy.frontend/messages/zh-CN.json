@@ -298,7 +298,8 @@
       "legend": "按生长阶段查看你的花园",
       "scene": "花园里的植物处于不同生长阶段",
       "comebackScene": "花园里有枯萎的植物和一朵雨云",
-      "comebackSceneThirsty": "缺水的花园和一朵雨云"
+      "comebackSceneThirsty": "缺水的花园和一朵雨云",
+      "restingScene": "正在休息的花园，有太阳和一只蝴蝶"
     },
     "tabBar": {
       "label": "主导航",
@@ -693,6 +694,20 @@
           }
         }
       }
+    },
+    "allWatered": {
+      "title": "今天都浇完了",
+      "resting": "没有口渴的植物，花园正在休息。",
+      "bloom": "完成 {done}/{total} 个任务 · 金花已开",
+      "nextRipening": "下次成熟：明天 {time} · {count} 个单词",
+      "nextRipeningNoTime": "下次成熟：明天 · {count} 个单词",
+      "more": "想再多学一点？",
+      "plant": "种下 5 个新单词",
+      "plantFrom": "来自{bed}花圃",
+      "speak": "说 3 个句子",
+      "speakTime": "约 2 分钟",
+      "quiz": "测验一个花圃",
+      "quizMeta": "10 道快速题"
     },
     "review": {
       "close": "关闭",

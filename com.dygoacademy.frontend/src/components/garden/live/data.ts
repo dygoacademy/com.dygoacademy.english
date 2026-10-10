@@ -307,12 +307,26 @@ export function ripensTomorrow(
   tomorrow: string,
   schedules: readonly StudySchedule[] | undefined,
 ): { time: ClockTime; count: number } | null {
+  const next = nextRipening(upcoming, tomorrow, schedules);
+  return next?.time ? { time: next.time, count: next.count } : null;
+}
+
+/**
+ * A1b's "Next ripening: tomorrow 7:30 · 14 words": the same data as
+ * `ripensTomorrow`, but without a reminder the line keeps the count and
+ * drops the time (`time` null). Null (line hidden) when nothing ripens.
+ */
+export function nextRipening(
+  upcoming: readonly UpcomingActivity[] | undefined,
+  tomorrow: string,
+  schedules: readonly StudySchedule[] | undefined,
+): { time: ClockTime | null; count: number } | null {
   const count = upcoming?.find((row) => row.due_date.slice(0, 10) === tomorrow)?.due_count ?? 0;
   const reminder = [...(schedules ?? [])]
     .filter((s) => s.is_enabled)
     .sort((a, b) => a.reminder_time.localeCompare(b.reminder_time))[0];
-  if (count <= 0 || !reminder) return null;
-  return { time: parseClock(reminder.reminder_time), count };
+  if (count <= 0) return null;
+  return { time: reminder ? parseClock(reminder.reminder_time) : null, count };
 }
 
 /** The reminder time a new schedule gets (same default as the classic settings page). */
@@ -652,6 +666,36 @@ export function minutesFor(count: number): number {
 export function showWelcomeBack(missed: number | null, stats: SrsStats): boolean {
   return missed !== null && missed >= 2 && (stats.due_now > 0 || stats.leech_count > 0);
 }
+
+/**
+ * A1b All watered instead of A1: nothing is due and today's missions are
+ * all done (Golden Bloom grown). Without the missions (call failed) the
+ * due count decides alone. Nothing due but a mission still open → A1.
+ */
+export function showAllWatered(stats: SrsStats, missions: TodayMissions | undefined): boolean {
+  if (stats.due_now > 0) return false;
+  if (!missions) return true;
+  return missions.goldenBloom || missions.missions.every((m) => m.done);
+}
+
+/**
+ * A1b "Plant 5 new words · From {bed}": the bed with the most seeds
+ * (`GET /topics` `seed_count`, the first on a tie). Null hides the row
+ * when no bed has seeds left (or the topics call failed).
+ */
+export function extraPlantBed(
+  topics: ReadonlyArray<Pick<GardenTopicSummary, 'id' | 'title' | 'seed_count'>> | undefined,
+): { id: string; title: string } | null {
+  let best: { id: string; title: string; seeds: number } | null = null;
+  for (const topic of topics ?? []) {
+    const seeds = num(topic.seed_count);
+    if (seeds > 0 && (!best || seeds > best.seeds)) best = { id: topic.id, title: topic.title, seeds };
+  }
+  return best ? { id: best.id, title: best.title } : null;
+}
+
+/** A1b: how many new words "Plant 5 new words" plants. */
+export const EXTRA_PLANT_COUNT = 5;
 
 /**
  * A5 / A5b "Start small" card from `GET /srs/stats`:

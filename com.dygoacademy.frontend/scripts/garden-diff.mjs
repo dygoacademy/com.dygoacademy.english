@@ -47,6 +47,7 @@ const defaultReferenceDir = path.resolve(frontend, '../docs/design/garden/refere
 
 const NAMES = [
   'A1-todays-garden',
+  'A1b-all-watered',
   'A2-review-question',
   'A2-review-answer',
   'A2-review-finished',
