@@ -365,7 +365,7 @@ function ThenRow({ item }: { item: MissionItem }) {
       </span>
       <span className="flex-grow text-[15px] font-bold">
         {done ? <span className="text-muted-foreground line-through">{title}</span> : title}
-        <span className="sr-only">, {progress}</span>
+        <span className="sr-only">{`, ${progress}`}</span>
       </span>
       <span
         aria-hidden="true"
