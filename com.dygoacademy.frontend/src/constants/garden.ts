@@ -29,6 +29,8 @@ export const GARDEN_ROUTES = {
   review: '/review',
   /** A2 for the "Plant new words" mission: only never-reviewed words, `count` of them. */
   plant: (count: number) => `/review?new=${Math.max(1, Math.round(count))}`,
+  /** A2 with only the `count` most overdue due words (A5b "Quick start"). */
+  reviewFirst: (count: number) => `/review?limit=${Math.max(1, Math.round(count))}`,
   reviewDone: '/review/done',
   /** A4 Weekly harvest. */
   missions: '/missions',

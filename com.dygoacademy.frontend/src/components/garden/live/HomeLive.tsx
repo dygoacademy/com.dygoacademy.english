@@ -17,6 +17,7 @@ import { TodaysGardenScreen } from '../screens/TodaysGardenScreen';
 import { WelcomeBackScreen } from '../screens/WelcomeBackScreen';
 import {
   displayName,
+  comebackStart,
   freezeStreak,
   gardenPlants,
   greetingFor,
@@ -24,13 +25,16 @@ import {
   missedDays,
   missionQuizHref,
   ripensTomorrow,
+  showWelcomeBack,
   thirstyMission,
 } from './data';
 import { LiveError, LiveLoading } from './LiveState';
 
 /**
- * /garden: Today's Garden (A1), or Welcome back (A5) when the learner has
- * missed 2+ days according to GET /srs/activity.
+ * /garden: Today's Garden (A1), or Welcome back (A5 / A5b) when the
+ * learner has missed 2+ days according to GET /srs/activity and something
+ * is due or wilting (`showWelcomeBack`; its "Start small" card from
+ * `comebackStart`).
  *
  * Real data: GET /srs/stats (streak, words, due, mastered, leeches, and
  * U4-3's `stage_counts` for the garden plants; the `sampleGarden` estimate
@@ -44,10 +48,11 @@ import { LiveError, LiveLoading } from './LiveState';
  * the live `due_now`, the same number as the hero's "thirsty". If that
  * call fails, Missions v0 (U4-4): only "Water today's thirsty words"
  * (reviews today from GET /srs/activity + `due_now`), linking to
- * watering; "coming soon" when that call failed too. Not shown yet:
- * time estimates. A5's freeze card ("streak is safe" + rain barrel, U6-6)
- * shows when GET /srs/stats `freezes` covered missed days this week and
- * the streak is still alive (`freezeStreak`); hidden otherwise.
+ * watering; "coming soon" when that call failed too. A1 doesn't show
+ * time estimates yet (A5 does, `minutesFor`). A5's freeze card ("streak
+ * is safe" + rain barrel, U6-6) shows when GET /srs/stats `freezes`
+ * covered missed days this week and the streak is still alive
+ * (`freezeStreak`); hidden otherwise.
  */
 export function HomeLive() {
   const timeZone = useTimeZone();
@@ -70,7 +75,7 @@ export function HomeLive() {
   const today = todayIn(timeZone, now);
   const missed = activity.data ? missedDays(activity.data, isoDay(today)) : null;
 
-  if (missed !== null && missed >= 2) {
+  if (showWelcomeBack(missed, s)) {
     return (
       <WelcomeBackScreen
         date={today}
@@ -82,12 +87,7 @@ export function HomeLive() {
           plants: gardenPlants(s, 8),
         }}
         streak={freezeStreak(s)}
-        revive={
-          s.leech_count > 0
-            ? { count: s.leech_count, minutes: null, href: GARDEN_ROUTES.quiz(undefined, 'leech') }
-            : null
-        }
-        waterAll={s.due_now > 0 ? { count: s.due_now, href: GARDEN_ROUTES.review } : null}
+        start={comebackStart(s)}
       />
     );
   }

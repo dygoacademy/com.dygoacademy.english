@@ -10,12 +10,15 @@ import { ArrowRightIcon, RainBarrelIcon } from '../icons';
 import { GardenTabBar, IPAD_NAV_COLUMN, SCREEN_CLASSES } from './GardenTabBar';
 
 /**
- * A5 · Welcome back (canvas `reference/A5-welcome-back`), shown on the
- * Garden tab after 2+ missed days. Props only.
+ * A5 · Welcome back (canvas `reference/A5-welcome-back`) and A5b, nothing
+ * wilting (`reference/A5b-welcome-back-start`), shown on the Garden tab
+ * after 2+ missed days when something is due or wilting. Props only.
  *
  * Header → the faded garden with the rain cloud → "streak is safe" (only
  * when streak freezes exist, UI-6) → "Start small": revive the wilting
- * words first, or water everything → tab bar.
+ * words (A5), water the most overdue batch (A5b) or the few that are due
+ * (A5b short), with "Water all N words instead" under the first two →
+ * tab bar.
  */
 export interface WelcomeBackScreenProps {
   /** Today, as a calendar day (format.ts). */
@@ -26,19 +29,34 @@ export interface WelcomeBackScreenProps {
   /** Null until streak freezes exist (UI-6). */
   /** `refills`: the calendar day the rain barrel refills. */
   streak: { days: number; covered: number; left: number; refills: Date } | null;
-  /** `minutes` is an estimate; null leaves it out. */
-  revive: { count: number; minutes: number | null; href: string } | null;
-  waterAll: { count: number; href: string } | null;
+  /**
+   * The "Start small" card: `revive` the wilting words (A5), a `batch` of
+   * the most overdue words (A5b) or `all` of the few due words (A5b short).
+   * `minutes` is an estimate; null leaves it out. Null hides the card.
+   */
+  start: {
+    kind: 'revive' | 'batch' | 'all';
+    count: number;
+    minutes: number | null;
+    href: string;
+    waterAll: { count: number; href: string } | null;
+  } | null;
   stickyNav?: boolean;
 }
+
+/** Message keys (`screens.comeback`) for each kind of "Start small" card. */
+const START_COPY = {
+  revive: { title: 'reviveTitle', body: 'reviveBody', button: 'revive' },
+  batch: { title: 'batchTitle', body: 'batchBody', button: 'batch' },
+  all: { title: 'allTitle', body: 'allBody', button: 'startWatering' },
+} as const;
 
 export function WelcomeBackScreen({
   date,
   name,
   garden,
   streak,
-  revive,
-  waterAll,
+  start,
   stickyNav = true,
 }: WelcomeBackScreenProps) {
   const t = useTranslations('screens.comeback');
@@ -90,38 +108,32 @@ export function WelcomeBackScreen({
         </div>
       ) : null}
 
-      {revive || waterAll ? (
+      {start ? (
         <section className="mx-4 flex flex-col gap-3 rounded-[22px] border border-border bg-surface p-4">
-          {revive ? (
-            <>
-              <div className="flex flex-col gap-0.5">
-                <span className="overline-label text-[12px] font-bold text-success">
-                  {t('overline')}
-                </span>
-                <h2 className="font-display text-[21px] font-semibold">
-                  {t('reviveTitle', { count: revive.count })}
-                </h2>
-                <p className="text-[14px] text-muted-foreground">{t('reviveBody')}</p>
-              </div>
-              <Link href={revive.href} className={buttonClassName('primary', { twoLine: true, className: 'md:max-w-none' })}>
-                <ButtonTwoLine
-                  label={t('revive')}
-                  secondLine={
-                    revive.minutes === null
-                      ? t('reviveDetailNoTime', { count: revive.count })
-                      : t('reviveDetail', { count: revive.count, minutes: revive.minutes })
-                  }
-                />
-                <ArrowRightIcon width={24} height={24} stroke="var(--color-surface)" />
-              </Link>
-            </>
-          ) : null}
-          {waterAll ? (
+          <div className="flex flex-col gap-0.5">
+            <span className="overline-label text-[12px] font-bold text-success">{t('overline')}</span>
+            <h2 className="font-display text-[21px] font-semibold">
+              {t(START_COPY[start.kind].title, { count: start.count })}
+            </h2>
+            <p className="text-[14px] text-muted-foreground">{t(START_COPY[start.kind].body)}</p>
+          </div>
+          <Link href={start.href} className={buttonClassName('primary', { twoLine: true, className: 'md:max-w-none' })}>
+            <ButtonTwoLine
+              label={t(START_COPY[start.kind].button)}
+              secondLine={
+                start.minutes === null
+                  ? t('reviveDetailNoTime', { count: start.count })
+                  : t('reviveDetail', { count: start.count, minutes: start.minutes })
+              }
+            />
+            <ArrowRightIcon width={24} height={24} stroke="var(--color-surface)" />
+          </Link>
+          {start.waterAll ? (
             <Link
-              href={waterAll.href}
+              href={start.waterAll.href}
               className="text-center text-[14px] font-semibold text-forest underline"
             >
-              {t(revive ? 'waterAllInstead' : 'waterAll', { count: waterAll.count })}
+              {t('waterAllInstead', { count: start.waterAll.count })}
             </Link>
           ) : null}
         </section>

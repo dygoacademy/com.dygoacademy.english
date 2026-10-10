@@ -28,6 +28,7 @@ export const REFERENCE_NAMES = [
   'A3-mission-complete',
   'A4-weekly-harvest',
   'A5-welcome-back',
+  'A5b-welcome-back-start',
   'A6-topics',
   'A7-topic-bed',
   'A7-topic-bed-filter-sprouts',
@@ -256,8 +257,28 @@ export const COMEBACK = {
     ] satisfies HeroPlant[],
   },
   streak: { days: 23, covered: 2, left: 0, refills: calendarDay(2026, 10, 4) },
-  revive: { count: 12, minutes: 5 },
-  waterAll: { count: 42 },
+  start: { kind: 'revive' as const, count: 12, minutes: 5, waterAll: { count: 42 } },
+};
+
+/** AdultComebackStart.dc.html (A5b): nothing wilting, 45 thirsty. */
+export const COMEBACK_START = {
+  ...COMEBACK,
+  garden: {
+    thirsty: 45,
+    wilting: 0,
+    ripe: 31,
+    plants: [
+      'tree',
+      { stage: 'flower', thirsty: true },
+      { stage: 'sprout', thirsty: true },
+      'flower',
+      { stage: 'flower', thirsty: true },
+      'tree',
+      { stage: 'sprout', thirsty: true },
+      'sprout',
+    ] satisfies HeroPlant[],
+  },
+  start: { kind: 'batch' as const, count: 10, minutes: 4, waterAll: { count: 45 } },
 };
 
 /** AdultTopics.dc.html */
@@ -630,6 +651,7 @@ export function referenceFixtures(locale: AppLocale) {
     COMPLETE,
     HARVEST: { ...HARVEST, group: { ...HARVEST.group, name: sample.group } },
     COMEBACK,
+    COMEBACK_START,
     TOPICS: TOPICS.map((topic, index) => ({
       ...topic,
       title: sample.topics[index],

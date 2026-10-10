@@ -293,7 +293,8 @@
     "hero": {
       "legend": "Giai đoạn cây trong vườn",
       "scene": "Khu vườn với các cây ở những giai đoạn khác nhau",
-      "comebackScene": "Khu vườn với những cây đang héo và một đám mây mưa"
+      "comebackScene": "Khu vườn với những cây đang héo và một đám mây mưa",
+      "comebackSceneThirsty": "Khu vườn đang khát và một đám mây mưa"
     },
     "tabBar": {
       "label": "Điều hướng chính",
@@ -768,7 +769,13 @@
       "reviveDetail": "{count, plural, one {# từ} other {# từ}} · khoảng {minutes} phút",
       "waterAllInstead": "Tưới cả {count} từ",
       "waterAll": "Tưới cả {count}",
-      "reviveDetailNoTime": "{count, plural, one {# từ} other {# từ}}"
+      "reviveDetailNoTime": "{count, plural, one {# từ} other {# từ}}",
+      "batchTitle": "Tưới {count} từ khát nhất trước",
+      "batchBody": "Đây là những từ đã chờ lâu nhất. Xong 10 từ này, phần còn lại để mai cũng được.",
+      "batch": "Bắt đầu nhanh",
+      "allTitle": "Tưới {count} từ đang khát",
+      "allBody": "Chỉ có chừng này đang chờ. Vài phút là vườn lại xanh.",
+      "startWatering": "Bắt đầu tưới"
     },
     "topics": {
       "title": "Chủ đề",

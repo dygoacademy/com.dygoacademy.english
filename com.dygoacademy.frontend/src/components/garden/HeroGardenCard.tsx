@@ -13,8 +13,9 @@ import type { PlantStage } from './plantStage';
  *
  * - `normal` (A1): forest background, the plants on dark soil, a drop
  *   above each thirsty plant.
- * - `comeback` (A5): the muted background, no heading, the same garden
- *   faded, and a rain cloud.
+ * - `comeback` (A5 / A5b): the muted background, no heading, the same
+ *   garden faded, and a rain cloud; a thirsty flower or sprout gets a
+ *   still drop (a thirsty sprout is the two-leaf one, A5b).
  *
  * The illustration is drawn exactly as in the canvas: up to 9 (normal) or
  * 8 (comeback) planting spots, left to right, each holding the plant for
@@ -218,8 +219,8 @@ function normalPlant(stage: PlantStage, slot: number): { art: React.ReactNode; d
   }
 }
 
-/** A5: the same garden, faded. */
-function comebackPlant(stage: PlantStage, slot: number): React.ReactNode {
+/** A5: the same garden, faded. A5b: a drop over each thirsty plant. */
+function comebackPlant(stage: PlantStage, slot: number, thirsty: boolean): React.ReactNode {
   switch (stage) {
     case 'tree':
       return slot % 2 === 0 ? (
@@ -262,10 +263,21 @@ function comebackPlant(stage: PlantStage, slot: number): React.ReactNode {
           <circle cx="26" cy="95" r="5" fill="var(--comeback-petal)" />
           <circle cx="14" cy="95" r="5" fill="var(--comeback-petal)" />
           <circle cx="20" cy="96" r="3.5" fill="var(--comeback-pollen)" />
+          {thirsty ? <DripDrop y={70} /> : null}
         </>
       );
     case 'sprout':
-      return (
+      return thirsty ? (
+        <>
+          <path d="M20 130 V110" stroke="var(--comeback-stem)" strokeWidth="2.5" />
+          <path d={LEAF_LEFT} fill="var(--comeback-stem)" />
+          <path
+            d="M20 114 C27 113 31 108 29 103 C23 103 20 108 20 114 Z"
+            fill="var(--comeback-leaf-light)"
+          />
+          <DripDrop y={82} />
+        </>
+      ) : (
         <>
           <path d="M20 130 V112" stroke="var(--comeback-stem)" strokeWidth="2.5" />
           <path
@@ -330,11 +342,14 @@ function ComebackScene({ plants, label }: { plants: readonly HeroPlant[]; label:
         ))}
       </svg>
       <rect x="0" y="136" width="100%" height="14" fill="var(--comeback-soil)" />
-      {plants.slice(0, COMEBACK_SLOTS.length).map((plant, slot) => (
-        <svg key={slot} x={spotX(COMEBACK_SLOTS[slot])} y="8" width="40" height="142" overflow="visible">
-          {comebackPlant(normalize(plant).stage, slot)}
-        </svg>
-      ))}
+      {plants.slice(0, COMEBACK_SLOTS.length).map((plant, slot) => {
+        const { stage, thirsty } = normalize(plant);
+        return (
+          <svg key={slot} x={spotX(COMEBACK_SLOTS[slot])} y="8" width="40" height="142" overflow="visible">
+            {comebackPlant(stage, slot, thirsty)}
+          </svg>
+        );
+      })}
     </svg>
   );
 }
@@ -391,7 +406,14 @@ export function HeroGardenCard({
       </ul>
 
       {comeback ? (
-        <ComebackScene plants={plants} label={t('comebackScene')} />
+        <ComebackScene
+          plants={plants}
+          label={t(
+            plants.some((plant) => normalize(plant).stage === 'wilting')
+              ? 'comebackScene'
+              : 'comebackSceneThirsty',
+          )}
+        />
       ) : (
         <NormalScene plants={plants} label={t('scene')} />
       )}

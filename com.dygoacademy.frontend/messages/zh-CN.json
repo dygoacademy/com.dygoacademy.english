@@ -297,7 +297,8 @@
     "hero": {
       "legend": "按生长阶段查看你的花园",
       "scene": "花园里的植物处于不同生长阶段",
-      "comebackScene": "花园里有枯萎的植物和一朵雨云"
+      "comebackScene": "花园里有枯萎的植物和一朵雨云",
+      "comebackSceneThirsty": "缺水的花园和一朵雨云"
     },
     "tabBar": {
       "label": "主导航",
@@ -772,7 +773,13 @@
       "reviveDetail": "{count} 个单词 · 约 {minutes} 分钟",
       "waterAllInstead": "改为给全部 {count} 个单词浇水",
       "waterAll": "给全部 {count} 个单词浇水",
-      "reviveDetailNoTime": "{count} 个单词"
+      "reviveDetailNoTime": "{count} 个单词",
+      "batchTitle": "先给最缺水的 {count} 个单词浇水",
+      "batchBody": "它们等得最久。浇完这十个，其余的明天再说也行。",
+      "batch": "快速开始",
+      "allTitle": "给 {count} 个缺水的单词浇水",
+      "allBody": "只有这些在等你。几分钟后，花园就会恢复生机。",
+      "startWatering": "开始浇水"
     },
     "topics": {
       "title": "主题",

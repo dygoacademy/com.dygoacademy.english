@@ -4,6 +4,8 @@ import { toLocalDateString } from '@/lib/timezone';
 import type { SrsStats } from '@/types';
 
 import {
+  COMEBACK_BATCH,
+  comebackStart,
   displayName,
   doneReminder,
   earliestSchedule,
@@ -16,11 +18,13 @@ import {
   liveMissionsSummary,
   meCalendar,
   meKeepsakes,
+  minutesFor,
   missedDays,
   missionQuizHref,
   missionsSummary,
   ripensTomorrow,
   sampleGarden,
+  showWelcomeBack,
   stageGarden,
   thirstyMission,
   weekHarvest,
@@ -471,5 +475,71 @@ describe('gardenHours', () => {
   it('is null when the backend sends nothing', () => {
     expect(gardenHours(undefined)).toBeNull();
     expect(gardenHours(null)).toBeNull();
+  });
+});
+
+describe('welcome back (A5 / A5b)', () => {
+  const stats = (over: Partial<SrsStats>): SrsStats => ({
+    total_words: 120,
+    mastered_words: 31,
+    due_now: 45,
+    leech_count: 0,
+    current_streak_days: 23,
+    display_name: null,
+    ...over,
+  });
+
+  it('estimates about 25 s a word, at least a minute', () => {
+    expect(minutesFor(1)).toBe(1);
+    expect(minutesFor(6)).toBe(3);
+    expect(minutesFor(10)).toBe(4);
+    expect(minutesFor(12)).toBe(5);
+    expect(minutesFor(0)).toBe(1);
+  });
+
+  it('shows only after 2+ missed days with something due or wilting', () => {
+    expect(showWelcomeBack(3, stats({}))).toBe(true);
+    expect(showWelcomeBack(3, stats({ due_now: 0, leech_count: 2 }))).toBe(true);
+    expect(showWelcomeBack(3, stats({ due_now: 0, leech_count: 0 }))).toBe(false);
+    expect(showWelcomeBack(1, stats({}))).toBe(false);
+    expect(showWelcomeBack(null, stats({}))).toBe(false);
+  });
+
+  it('A5: wilting words → Quick revive, water all when something is due', () => {
+    expect(comebackStart(stats({ leech_count: 12, due_now: 42 }))).toEqual({
+      kind: 'revive',
+      count: 12,
+      minutes: 5,
+      href: '/quiz?mode=leech',
+      waterAll: { count: 42, href: '/review' },
+    });
+    expect(comebackStart(stats({ leech_count: 3, due_now: 0 }))?.waterAll).toBeNull();
+  });
+
+  it('A5b: nothing wilting, more than the batch due → Quick start with the first 10', () => {
+    expect(comebackStart(stats({ due_now: 45 }))).toEqual({
+      kind: 'batch',
+      count: COMEBACK_BATCH,
+      minutes: 4,
+      href: '/review?limit=10',
+      waterAll: { count: 45, href: '/review' },
+    });
+    expect(comebackStart(stats({ due_now: 11 }))?.kind).toBe('batch');
+  });
+
+  it('A5b short: 1–10 due → water them all, no second link', () => {
+    expect(comebackStart(stats({ due_now: 10 }))).toEqual({
+      kind: 'all',
+      count: 10,
+      minutes: 4,
+      href: '/review',
+      waterAll: null,
+    });
+    expect(comebackStart(stats({ due_now: 6 }))).toMatchObject({ kind: 'all', count: 6, minutes: 3 });
+    expect(comebackStart(stats({ due_now: 1 }))).toMatchObject({ kind: 'all', count: 1, minutes: 1 });
+  });
+
+  it('nothing due or wilting → no card', () => {
+    expect(comebackStart(stats({ due_now: 0 }))).toBeNull();
   });
 });

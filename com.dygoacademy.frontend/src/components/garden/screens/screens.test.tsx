@@ -8,6 +8,8 @@ import messages from '../../../../messages/en-US.json';
 
 import {
   BED,
+  COMEBACK,
+  COMEBACK_START,
   HARVEST,
   HOME,
   ME,
@@ -24,13 +26,14 @@ import { TodaysGardenScreen } from './TodaysGardenScreen';
 import { TopicBedScreen } from './TopicBedScreen';
 import { TopicsScreen } from './TopicsScreen';
 import { WeeklyHarvestScreen } from './WeeklyHarvestScreen';
+import { WelcomeBackScreen } from './WelcomeBackScreen';
 
 const push = vi.fn();
 vi.mock('next/navigation', () => ({ useRouter: () => ({ push }) }));
 
 describe('reference fixtures', () => {
-  it('lists the 49 canvas references (12 adult screens, 7 group screens, 6 sign-in, 8 quiz, 7 home, 5 speaking, 4 speaking entry points)', () => {
-    expect(REFERENCE_NAMES).toHaveLength(49);
+  it('lists the 50 canvas references (13 adult screens, 7 group screens, 6 sign-in, 8 quiz, 7 home, 5 speaking, 4 speaking entry points)', () => {
+    expect(REFERENCE_NAMES).toHaveLength(50);
     expect(isReferenceName('SE5-entry-harvest')).toBe(true);
     expect(isReferenceName('SP3-speak-done')).toBe(true);
     expect(isReferenceName('H1-home-phone')).toBe(true);
@@ -403,5 +406,62 @@ describe('MeScreen', () => {
       </NextIntlClientProvider>,
     );
     expect(screen.getByText('IELTS Academic · target band 7.0')).toBeTruthy();
+  });
+});
+
+describe('WelcomeBackScreen (A5 / A5b)', () => {
+  const card = () => screen.getByRole('heading', { level: 2 }).closest('section') as HTMLElement;
+
+  it('A5: wilting words → Quick revive with a time, Water all instead', () => {
+    renderWithIntl(
+      <WelcomeBackScreen
+        {...COMEBACK}
+        start={{
+          ...COMEBACK.start,
+          href: '/quiz?mode=leech',
+          waterAll: { ...COMEBACK.start.waterAll, href: '/review' },
+        }}
+      />,
+    );
+    expect(screen.getByRole('heading', { name: 'Start with the 12 wilting words' })).toBeTruthy();
+    const links = within(card()).getAllByRole('link');
+    expect(links.map((a) => a.getAttribute('href'))).toEqual(['/quiz?mode=leech', '/review']);
+    expect(links[0].textContent).toContain('Quick revive');
+    expect(links[0].textContent).toContain('12 words · about 5 min');
+    expect(links[1].textContent).toContain('Water all 42 words instead');
+  });
+
+  it('A5b: nothing wilting → Quick start with the 10 thirstiest, Water all 45 instead', () => {
+    renderWithIntl(
+      <WelcomeBackScreen
+        {...COMEBACK_START}
+        start={{
+          ...COMEBACK_START.start,
+          href: '/review?limit=10',
+          waterAll: { ...COMEBACK_START.start.waterAll, href: '/review' },
+        }}
+      />,
+    );
+    expect(screen.getByRole('heading', { name: 'Water the 10 thirstiest words first' })).toBeTruthy();
+    const links = within(card()).getAllByRole('link');
+    expect(links.map((a) => a.getAttribute('href'))).toEqual(['/review?limit=10', '/review']);
+    expect(links[0].textContent).toContain('Quick start');
+    expect(links[0].textContent).toContain('10 words · about 4 min');
+    expect(links[1].textContent).toContain('Water all 45 words instead');
+    expect(screen.getByRole('img', { name: 'Thirsty garden with a rain cloud' })).toBeTruthy();
+  });
+
+  it('A5b short: a few due → Start watering, no second link', () => {
+    renderWithIntl(
+      <WelcomeBackScreen
+        {...COMEBACK_START}
+        start={{ kind: 'all', count: 6, minutes: 3, href: '/review', waterAll: null }}
+      />,
+    );
+    expect(screen.getByRole('heading', { name: 'Water your 6 thirsty words' })).toBeTruthy();
+    const links = within(card()).getAllByRole('link');
+    expect(links).toHaveLength(1);
+    expect(links[0].textContent).toContain('Start watering');
+    expect(links[0].textContent).toContain('6 words · about 3 min');
   });
 });

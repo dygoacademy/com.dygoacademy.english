@@ -293,7 +293,8 @@
     "hero": {
       "legend": "Your garden by stage",
       "scene": "Garden with plants at different stages",
-      "comebackScene": "Garden with wilting plants and a rain cloud"
+      "comebackScene": "Garden with wilting plants and a rain cloud",
+      "comebackSceneThirsty": "Thirsty garden with a rain cloud"
     },
     "tabBar": {
       "label": "Main navigation",
@@ -768,7 +769,13 @@
       "reviveDetail": "{count, plural, one {# word} other {# words}} · about {minutes} min",
       "waterAllInstead": "Water all {count} words instead",
       "waterAll": "Water all {count}",
-      "reviveDetailNoTime": "{count, plural, one {# word} other {# words}}"
+      "reviveDetailNoTime": "{count, plural, one {# word} other {# words}}",
+      "batchTitle": "Water the {count} thirstiest words first",
+      "batchBody": "They’ve waited the longest. Do these ten and the rest can wait until tomorrow.",
+      "batch": "Quick start",
+      "allTitle": "Water your {count} thirsty words",
+      "allBody": "That’s all that’s waiting. A few minutes and your garden is back.",
+      "startWatering": "Start watering"
     },
     "topics": {
       "title": "Topics",

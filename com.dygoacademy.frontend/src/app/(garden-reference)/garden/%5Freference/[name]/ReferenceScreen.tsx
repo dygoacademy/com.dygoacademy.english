@@ -58,6 +58,7 @@ function ReferenceScreenBody({ name, locale }: { name: ReferenceName; locale: Ap
   const {
     BED,
     COMEBACK,
+    COMEBACK_START,
     COMPLETE,
     HARVEST,
     HOME,
@@ -131,8 +132,23 @@ function ReferenceScreenBody({ name, locale }: { name: ReferenceName; locale: Ap
       return (
         <WelcomeBackScreen
           {...COMEBACK}
-          revive={{ ...COMEBACK.revive, href: GARDEN_ROUTES.review }}
-          waterAll={{ ...COMEBACK.waterAll, href: GARDEN_ROUTES.review }}
+          start={{
+            ...COMEBACK.start,
+            href: GARDEN_ROUTES.review,
+            waterAll: { ...COMEBACK.start.waterAll, href: GARDEN_ROUTES.review },
+          }}
+          stickyNav={false}
+        />
+      );
+    case 'A5b-welcome-back-start':
+      return (
+        <WelcomeBackScreen
+          {...COMEBACK_START}
+          start={{
+            ...COMEBACK_START.start,
+            href: GARDEN_ROUTES.reviewFirst(COMEBACK_START.start.count),
+            waterAll: { ...COMEBACK_START.start.waterAll, href: GARDEN_ROUTES.review },
+          }}
           stickyNav={false}
         />
       );

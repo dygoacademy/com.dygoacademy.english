@@ -53,6 +53,7 @@ const NAMES = [
   'A3-mission-complete',
   'A4-weekly-harvest',
   'A5-welcome-back',
+  'A5b-welcome-back-start',
   'A6-topics',
   'A7-topic-bed',
   'A7-topic-bed-filter-sprouts',

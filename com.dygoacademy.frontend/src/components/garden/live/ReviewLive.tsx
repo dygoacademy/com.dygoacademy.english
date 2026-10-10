@@ -31,13 +31,23 @@ import { LiveError, LiveLoading } from './LiveState';
  * (Phase 13's "Say this one?" offer was removed on 2026-10-06 for the
  * speaking entry-point redesign; The Pond is still at /sounds.)
  * With `newWords` (the "Plant new words" mission, `/review?new=<n>`) the
- * session holds only never-reviewed words, up to that many.
+ * session holds only never-reviewed words, up to that many. With `limit`
+ * (A5b "Quick start", `/review?limit=<n>`) it holds at most n words; the
+ * API orders due words most overdue first.
  */
-export function ReviewLive({ topicId, newWords }: { topicId?: string; newWords?: number }) {
+export function ReviewLive({
+  topicId,
+  newWords,
+  limit,
+}: {
+  topicId?: string;
+  newWords?: number;
+  limit?: number;
+}) {
   const t = useTranslations('screens.review');
   const live = useTranslations('screens.live');
   const planting = newWords !== undefined;
-  const session = useStudySession(topicId, 'STANDARD', newWords ?? 20, planting);
+  const session = useStudySession(topicId, 'STANDARD', newWords ?? limit ?? 20, planting);
   const topics = useTopics();
   const rate = useRateWord();
   const { meaningLocale } = useGardenPreferences();

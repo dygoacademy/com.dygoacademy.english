@@ -637,6 +637,59 @@ export function freezeStreak(stats: SrsStats): WelcomeBackScreenProps['streak'] 
   };
 }
 
+/** A5b: how many of the most overdue words "Quick start" waters. */
+export const COMEBACK_BATCH = 10;
+
+/** A5 / A5b time estimate: about 25 s a word, rounded, at least 1 min. */
+export function minutesFor(count: number): number {
+  return Math.max(1, Math.round((count * 25) / 60));
+}
+
+/**
+ * A5 after 2+ missed days, but only when something needs the learner:
+ * words due or wilting. Otherwise /garden shows Today's Garden.
+ */
+export function showWelcomeBack(missed: number | null, stats: SrsStats): boolean {
+  return missed !== null && missed >= 2 && (stats.due_now > 0 || stats.leech_count > 0);
+}
+
+/**
+ * A5 / A5b "Start small" card from `GET /srs/stats`:
+ * - wilting words → Quick revive (leech drill), "Water all N words instead"
+ *   when anything is due;
+ * - nothing wilting, more due than COMEBACK_BATCH → Quick start with the
+ *   most overdue COMEBACK_BATCH words, "Water all N words instead";
+ * - nothing wilting, a few due → Start watering all of them, no second link.
+ * Null when nothing is due or wilting.
+ */
+export function comebackStart(stats: SrsStats): WelcomeBackScreenProps['start'] {
+  const due = Math.max(0, stats.due_now);
+  const waterAll = due > 0 ? { count: due, href: GARDEN_ROUTES.review } : null;
+  if (stats.leech_count > 0) {
+    const count = stats.leech_count;
+    return {
+      kind: 'revive',
+      count,
+      minutes: minutesFor(count),
+      href: GARDEN_ROUTES.quiz(undefined, 'leech'),
+      waterAll,
+    };
+  }
+  if (due > COMEBACK_BATCH) {
+    return {
+      kind: 'batch',
+      count: COMEBACK_BATCH,
+      minutes: minutesFor(COMEBACK_BATCH),
+      href: GARDEN_ROUTES.reviewFirst(COMEBACK_BATCH),
+      waterAll,
+    };
+  }
+  if (due > 0) {
+    return { kind: 'all', count: due, minutes: minutesFor(due), href: GARDEN_ROUTES.review, waterAll: null };
+  }
+  return null;
+}
+
 /**
  * UI-6 (U6-7): A8's garden calendar — 16 Monday-first week columns ending
  * with this week; a day's level is the missions done that day (0–3) from
