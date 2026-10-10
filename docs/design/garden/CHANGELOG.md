@@ -206,6 +206,9 @@ All iPad screens: sidebar (Garden · Missions · Topics · Groups · Me + Shared
 
 Newest first. Format: `### YYYY-MM-DD — title` then lines tagged **Added / Changed / Removed / Decision**, with screen IDs and status.
 
+### 2026-10-10 — A1b boards take the streak pill and the site's wording
+- **Changed** `source/AdultAllWatered(Vi).dc.html` (Dylan): header gets A1's streak pill ("23 days" / "23 ngày"); EN date "Friday, September 25", "tomorrow 7:30 AM", last tab "Profile"; VI last tab "Hồ sơ". References `A1b-all-watered(-vi)` re-exported. `garden:diff` (local): EN 0.000%, VI 0.094%.
+
 ### 2026-10-10 — A1b All watered: ready to build
 - **Added** `source/AdultAllWatered(Vi).dc.html`, `reference/A1b-all-watered(-vi)`, `tools/render.js` jobs.
 - **Decision** A1b replaces A1 only when `due_now = 0` **and** every mission of the day is done (Golden Bloom grown). Nothing due but missions still open → A1 (Option D card). The header keeps A1's streak pill (the board leaves it out). *Approved (Dylan).*
