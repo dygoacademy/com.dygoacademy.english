@@ -1,7 +1,7 @@
 {
   "_meta": {
     "status": "draft, needs native review",
-    "note": "Chinese (Simplified) UI copy drafted by Claude from the UI-L glossary in phase 12 implementation plan.md. English words being learned stay in English. Review before release (plan decision 8)."
+    "note": "Chinese (Simplified) UI copy. Revised 2026-10-10 for a warmer, more natural tone and to match the privacy pages. English words being learned stay in English. Still needs review by a native speaker before release."
   },
   "garden": {
     "home": {
@@ -9,7 +9,7 @@
     },
     "pages": {
       "review": "浇水",
-      "done": "任务完成",
+      "done": "完成啦",
       "missions": "本周收获",
       "topics": "主题",
       "me": "我的",
@@ -21,7 +21,7 @@
       "quiz": "测验"
     },
     "update": {
-      "available": "Dygo 有新版本了。",
+      "available": "Dygo 有新版本了",
       "reload": "重新加载",
       "later": "稍后"
     }
@@ -147,7 +147,7 @@
       "waterSecond": "约 4 分钟",
       "showAnswer": "显示答案",
       "addWord": "添加单词",
-      "longLabel": "继续今天的搭配挑战，并给缺水的单词浇水",
+      "longLabel": "做完今天的搭配挑战，再给缺水的单词浇浇水",
       "back": "返回",
       "close": "关闭",
       "play": "播放发音",
@@ -192,17 +192,17 @@
       "longExample": "Internationalisation made it easy to launch the app in Vietnam and Singapore.",
       "hideAnswer": "隐藏答案",
       "missionWater": "给 18 个缺水的单词浇水",
-      "missionPlant": "种下 3 个新单词",
+      "missionPlant": "种下 5 个新单词",
       "missionChallenge": "搭配挑战",
       "missionWaterProgress": "已浇水 {done}/{total} 个单词",
       "missionPlantProgress": "已种下 {done}/{total} 个单词",
       "missionChallengeProgress": "已完成 {done}/{total} 个挑战",
       "heroOverline": "今天的花园",
-      "heroTitle": "18 棵植物缺水",
+      "heroTitle": "18 棵植物等着浇水",
       "heroSubtitle": "大约 6 分钟就能全部浇完",
       "heroComebackOverline": "欢迎回来",
-      "heroComebackTitle": "你的花园想你了",
-      "heroComebackSubtitle": "你不在的时候下过雨。先从最容易忘的 10 个单词开始吧。",
+      "heroComebackTitle": "花园一直在等你",
+      "heroComebackSubtitle": "你不在的时候下过雨。先从最需要你的 10 个单词开始吧。",
       "heroAction": "给 18 个单词浇水",
       "heroComebackAction": "给 10 个单词浇水",
       "stageSeeds": "种子",
@@ -214,7 +214,7 @@
       "wordMeaning": "able to continue for a long time",
       "wordDueNow": "现在复习",
       "wordInDays": "3 天后",
-      "wordWilting": "需要帮助",
+      "wordWilting": "需要照顾",
       "word2": "commute",
       "word2Meaning": "to travel regularly between home and work",
       "word3": "notwithstanding",
@@ -223,7 +223,7 @@
       "openLongSheet": "打开长面板",
       "sheetTitle": "添加单词",
       "sheetDescription": "它会作为种子种进“环境”。",
-      "sheetBody": "搜索一个单词，或自己输入单词和释义。之后可以把它移到其他主题。",
+      "sheetBody": "搜索一个单词，或者自己输入单词和释义。之后也可以移到别的主题。",
       "sheetLongLine": "长面板正文第 {n} 行，在面板内部滚动。",
       "sheetAction": "种下",
       "toastInfo": "已设置每天早上 7:30 提醒",
@@ -242,11 +242,11 @@
       "thirsty": "缺水"
     },
     "rating": {
-      "groupLabel": "你记得怎么样？",
-      "again": "重来",
-      "hard": "困难",
-      "good": "良好",
-      "easy": "简单",
+      "groupLabel": "这个词你记得怎么样？",
+      "again": "忘了",
+      "hard": "有点难",
+      "good": "记得",
+      "easy": "很简单",
       "interval": {
         "lessThanMinute": "< 1 分钟",
         "minutes": "{count} 分钟",
@@ -312,7 +312,7 @@
     },
     "language": {
       "title": "语言",
-      "description": "应用的显示语言，以及复习卡片上额外显示的释义。",
+      "description": "选择应用语言，以及复习卡片上显示的释义语言。",
       "appLanguage": "应用语言",
       "meaningLanguage": "释义语言",
       "meaningHint": "始终显示英文释义。",
@@ -324,9 +324,9 @@
       "meaningWith": "{language} + English",
       "meaningNone": "仅英文",
       "saving": "正在保存…",
-      "error": "没能保存。请检查网络后重试。",
+      "error": "没能保存，请检查网络后再试。",
       "variety": "英语类型",
-      "varietyHint": "花园里的拼写和发音。",
+      "varietyHint": "用于整个花园的拼写和发音。",
       "varietyUS": "美式英语",
       "varietyUK": "英式英语"
     },
@@ -336,7 +336,7 @@
       "signOut": "退出登录",
       "signingOut": "正在退出…",
       "cancel": "取消",
-      "error": "未能退出登录。请检查网络后重试。"
+      "error": "没能退出登录，请检查网络后再试。"
     },
     "groups": {
       "roles": {
@@ -345,7 +345,7 @@
         "READ": "成员"
       },
       "roleHints": {
-        "ADMIN": "管理园丁、邀请和雨天",
+        "ADMIN": "管理园丁、邀请链接和雨天",
         "WRITE": "添加花圃和单词",
         "READ": "为共享花圃浇水"
       },
@@ -359,11 +359,11 @@
     },
     "dailyGoal": {
       "title": "每日目标",
-      "description": "你每天想在花园里待多久。",
+      "description": "你每天想在花园里花多少时间。",
       "legend": "每天分钟数",
       "minutes": "{count} 分钟",
       "saving": "正在保存…",
-      "error": "没能保存。请检查网络后重试。"
+      "error": "没能保存，请检查网络后再试。"
     }
   },
   "screens": {
@@ -390,10 +390,10 @@
       "missions": {
         "title": "今日任务",
         "progress": "已完成 {done}/{total}",
-        "comingSoon": "每日任务即将上线。在此之前，先给下面待复习的单词浇水吧。",
-        "goldenBloom": "完成全部 {total} 个任务，让今天的<b>金色花开</b>绽放",
-        "goldenBloomOne": "完成它，让今天的<b>金色花开</b>绽放",
-        "goldenBloomEarned": "今天的<b>金色花开</b>已经绽放",
+        "comingSoon": "每日任务马上就来。在那之前，先给下面到期的单词浇水吧。",
+        "goldenBloom": "完成全部 {total} 个任务，今天的<b>金花</b>就会开放 🌸",
+        "goldenBloomOne": "完成这个任务，今天的<b>金花</b>就会开放 🌸",
+        "goldenBloomEarned": "今天的<b>金花</b>开了 🌸",
         "water": "给 {count} 个待复习单词浇水",
         "thirsty": "给今天缺水的单词浇水",
         "plant": "种下 {count} 个新单词",
@@ -408,14 +408,16 @@
         "progressSpeak": "已说 {done}/{total} 个单词"
       },
       "action": {
-        "continue": "继续任务",
+        "continue": "接着来",
         "start": "给花园浇水",
         "detail": "还剩 {count} 个单词 · 约 {minutes} 分钟",
         "detailNoTime": "还剩 {count} 个单词"
       },
-      "ripens": "明天 {time} · <b>{count} 个单词将成熟</b>",
+      "ripens": "明天 {time} · <b>{count} 个单词到期</b>",
       "public": {
-        "metaTitle": "Dygo · 学英语单词，也学会怎么用",
+        "metaTitle": "每天5分钟，轻松背英语单词 | Dygo Academy",
+        "metaDescription": "英语单词学习 App：每个单词都有中文释义、IPA 音标、发音和真实例句。间隔重复会在你快忘记前提醒复习，记得更牢。免费开始。",
+        "metaKeywords": "背单词, 英语单词, 背单词软件, 英语词汇学习, 英语音标, 间隔重复, 单词卡",
         "nav": {
           "label": "本页内容",
           "features": "功能",
@@ -428,12 +430,12 @@
         "createAccount": "创建账户",
         "hero": {
           "title": "学一个词，用对它，永远记住。",
-          "lead": "每个单词都配有真实例句和用你的语言写的清楚解释。然后，Dygo 会在你快要忘记之前再次提醒你。每天只需 5 分钟。",
+          "lead": "每个单词都配有真实例句和用你的语言写的清楚解释。在你快忘的时候，Dygo 会让它再出现一次。每天 5 分钟就够了。",
           "start": "创建免费账户",
           "haveAccount": "我已有账户",
           "languages": "支持 English、Tiếng Việt 和简体中文",
           "pillNew": "新",
-          "pill": "跟母语者练口语"
+          "pill": "跟着母语者录音练口语"
         },
         "plant": {
           "inputLabel": "种下一个单词",
@@ -443,12 +445,12 @@
           "chipsLabel": "试一个单词",
           "synonyms": "同义词",
           "bird": "我会在你忘记之前提醒你。要留下这个词吗？",
-          "save": "保存这个词——免费",
+          "save": "免费保存这个词",
           "unknown": "注册后，Dygo 会为你种下“{word}”。"
         },
         "pains": {
-          "title": "是不是很熟悉？",
-          "lead": "点一下卡片，看看 Dygo 怎么帮你。",
+          "title": "如何长期记住英语单词",
+          "lead": "新单词如果不再见到，很快就会忘。点开卡片，看看怎样让单词留下来。",
           "hint": "点一下，看看 Dygo 怎么帮你",
           "helps": "Dygo 怎么帮你",
           "cards": {
@@ -462,17 +464,17 @@
             },
             "language": {
               "front": "“全英文的解释只会让我更糊涂。”",
-              "back": "需要时用越南语或中文解释，准备好了再切换到纯英语。"
+              "back": "需要时看越南语或中文释义，准备好了再换成纯英文。"
             },
             "habit": {
               "front": "“开始时干劲十足，三天后就放弃了。”",
-              "back": "每天只需 5 分钟和三个小任务。忙碌的日子里，雨水桶会保住你的连续天数。"
+              "back": "每天 5 分钟，三个小任务。忙的时候，雨水桶会帮你保住连续天数。"
             }
           }
         },
         "how": {
-          "title": "你的单词如何生长",
-          "lead": "把每个单词想象成一株植物。每次复习并答对，它就长大一点，Dygo 也会多等一会儿再浇下一次水。",
+          "title": "间隔重复如何帮助英语学习者",
+          "lead": "间隔重复会在你快要忘记的时候让单词再出现，而且一次比一次隔得久。把每个单词想成一株植物：每次你记得它，它就长大一点，Dygo 也会多等一阵再浇下一次水。",
           "stage": "第 {n} 阶段",
           "reviews": "复习：",
           "growsWhen": "长大条件：",
@@ -487,7 +489,7 @@
             "sprout": {
               "name": "幼苗",
               "means": "你还在学习它。",
-              "reviews": "很频繁，当天稍后或第二天。",
+              "reviews": "比较频繁，当天晚些时候或第二天。",
               "grows": "你答对几次。"
             },
             "flower": {
@@ -507,15 +509,21 @@
             "title": "单词越长大，复习间隔越长",
             "today": "今天",
             "later": "几周后",
-            "text": "在快要忘记之前复习，单词才记得牢，所以你的 5 分钟都花在最需要的单词上。"
+            "text": "在快要忘记之前复习，单词才记得牢，所以你的 5 分钟都花在最需要的单词上。",
+            "chart": {
+              "with": "用 Dygo 复习",
+              "without": "不复习",
+              "review": "一次复习",
+              "label": "几周内对一个单词的记忆：不复习会很快忘掉；用 Dygo 复习，每次复习都把记忆拉回来，之后忘得更慢。"
+            }
           },
           "tips": {
             "drop": {
-              "title": "水滴表示今天该复习",
-              "text": "带水滴的单词今天需要复习。Dygo 会帮你挑好，不用自己计划。"
+              "title": "水滴表示：今天复习它",
+              "text": "到了该复习某个单词的时候，Dygo 会给它加上一滴水。你只要复习带水滴的单词就行，不用自己想该学什么。"
             },
             "forgot": {
-              "title": "忘了一个？没关系。",
+              "title": "忘了一个？很正常。",
               "text": "它会变回幼苗，再出现几次，直到你记住为止。"
             }
           }
@@ -552,26 +560,26 @@
           }
         },
         "features": {
-          "title": "让词汇量生长所需的一切",
+          "title": "花园里有什么",
           "watering": {
             "title": "每日浇水",
-            "text": "复习今天到期的单词。说说你记得多好，Dygo 会安排下一次浇水。"
+            "text": "复习今天到期的单词。告诉 Dygo 你记得怎么样，它会安排下次再见的时间。"
           },
           "quizzes": {
             "title": "测验",
-            "text": "选词、同义词、填空、听写。答错的单词会再出现，绝不会有红叉。"
+            "text": "选词、近义词、填空、听写。答错的单词之后会再出现，没有红叉。"
           },
           "beds": {
-            "title": "主题花床",
-            "text": "IELTS Academic 词库和你自己的花床，附例句、发音和同义词。"
+            "title": "主题花圃",
+            "text": "雅思学术词库和你自己建的花圃，都配有例句、发音和近义词。"
           },
           "missions": {
-            "title": "任务和金色花开",
-            "text": "每天三个小任务。全部完成即可获得金色花开；忙碌的日子里，雨水桶会保住你的连续天数。"
+            "title": "任务和金花",
+            "text": "每天三个小任务，全部完成就能开出一朵金花。忙的时候，雨水桶会帮你保住连续天数。"
           },
           "shared": {
             "title": "共享花园",
-            "text": "和班级或朋友一起学习。看到整个小组的进展，但绝不会看到任何人的个人进度。"
+            "text": "和同学或朋友一起学。大家能看到小组整体的进展，但看不到你个人的成绩。"
           },
           "language": {
             "title": "你的语言",
@@ -581,13 +589,13 @@
         "parents": {
           "overline": "家长专区",
           "soon": "即将上线",
-          "title": "也有给孩子的花园",
-          "lead": "孩子通过图片、声音和小鸟 Dygo 学习最初的英语单词。大按钮、短时学习，提示语有越南语和英语。",
+          "title": "儿童花园正在准备中",
+          "lead": "我们正在做一个儿童花园，让孩子通过图片和声音学会最初的英语单词。大按钮、短时间，提示用越南语和英语。",
           "points": {
-            "pictures": "看图测验：点出你听到的单词",
+            "pictures": "看图小测验：点出听到的单词",
             "faces": "用两个简单表情代替评分",
-            "stars": "蜜蜂和星星，绝不会有红叉",
-            "account": "在你自己的账户里打开孩子的花园"
+            "stars": "蜜蜂和星星，没有红叉",
+            "account": "由家长在自己的账户里创建和管理孩子的花园"
           },
           "kidsPrompt": "找到“cat”！",
           "kidsHint": "Find the cat!"
@@ -621,11 +629,11 @@
             },
             "kids": {
               "q": "有儿童版吗？",
-              "a": "儿童花园即将推出。目前 Dygo 面向青少年和成人。"
+              "a": "儿童花园正在准备中。目前，16 岁及以上可以自己注册；16 岁以下需要由家长或监护人创建并管理账户。"
             },
             "speaking": {
-              "q": "口语练习怎么用？我的声音会被保存吗？",
-              "a": "先听母语者读一句含有你单词的句子，再自己说一遍。Dygo 会对比两者，指出需要练习的地方，让你的单词从种子长到结果。你的录音检查完就会删除。"
+              "q": "口语练习怎么用？会保存我的声音吗？",
+              "a": "先听母语者录音读一句含有你单词的句子，再自己说一遍。Dygo 会对比两者，告诉你哪里需要练。你的录音只用于这次检查，检查完就删除，我们不会保留。"
             }
           }
         },
@@ -641,45 +649,41 @@
           "copyright": "© 2026 Dygo Academy"
         },
         "speak": {
-          "overline": "口语练习",
-          "title": "听一听，说一说，看它开花。",
-          "lead": "每个单词都配有一句母语者朗读的例句。你跟着说，Dygo 把你的声音和母语者的放在一起，让你看到哪里需要改进。",
+          "overline": "新 · 口语",
+          "title": "如何自己练习英语口语",
+          "lead": "练口语不一定要有搭档。先听，再说，然后对比：Dygo 把你的声音和母语者的录音放在一起，让你看清差别，不用靠猜。",
           "steps": {
             "listen": {
               "title": "听",
-              "text": "听母语者用英音或美音读一句含有你单词的真实句子。"
+              "text": "母语者读一句真实的句子。想慢一点可以选 0.75×。"
             },
             "say": {
               "title": "说",
-              "text": "点麦克风，大声读出这句话。不限时，没压力。"
+              "text": "3 · 2 · 1 · 嘀，然后用你自己的方式读出来。不限时间。"
             },
             "compare": {
               "title": "对比",
-              "text": "看你的声音叠在母语者的声音上，哪里需要练习，以及你的单词长到了哪一步。"
+              "text": "看你的声音叠在母语者的声音上，以及下一个要改的音。"
             }
           },
-          "privacy": "你的录音检查完就会删除。",
+          "grows": "你最好的一次朗读也会让单词的植物长大，所以口语练习也计入每日任务。",
+          "privacy": "录音只用于检查，检查完就删除。",
           "demo": {
-            "say": "说出这句话",
+            "say": "读这句话",
+            "level": "C1 · 动词",
             "native": "母语者 · 英式",
-            "play": "播放",
-            "playLabel": "播放母语者的朗读",
-            "waveNative": "母语者朗读这句话的波形",
-            "waveCompare": "学习者的句子（陶土色）叠在母语者（绿色）上",
-            "micLabel": "试着说这句话",
-            "tapMic": "点麦克风试一试",
+            "you": "你",
+            "youInitial": "你",
+            "tryNow": "现在试试",
+            "tryNowText": "点麦克风，看看一位学习者的示例结果。无需注册。",
+            "micLabel": "试试演示",
+            "stopLabel": "停止",
             "listening": "正在听…",
-            "legend": {
-              "native": "母语者",
-              "you": "你",
-              "needsWork": "需要练习"
-            },
+            "listeningText": "正在把示例学习者和母语者对比。",
             "match": "开花 · 匹配 {pct}%",
-            "scale": "种子 · 发芽 · 开花 · <b>90% 结果</b>",
-            "tip": "MIT 读得太轻。重读：MIT-i-gate。",
+            "tip": "<b>MIT</b> 读得太轻。读得更响、更长一点：<plain>MIT</plain>-i-gate。",
             "tryAgain": "再试一次",
-            "practise": "免费练习",
-            "sample": "演示使用一位学习者的示例结果。本页面不会使用你的麦克风。"
+            "practise": "免费练习"
           }
         }
       }
@@ -695,14 +699,14 @@
       "seeBloom": "看花园开花",
       "replayDemo": "重播演示",
       "backToGarden": "返回花园",
-      "empty": "现在没有缺水的单词。等单词成熟时再回来吧。",
-      "error": "这个单词没能保存。请检查网络后重试。"
+      "empty": "现在没有需要浇水的单词。等有单词到期再来吧。",
+      "error": "这个单词没能保存，请检查网络后再试。"
     },
     "complete": {
       "unknown": "—",
       "close": "关闭",
       "bloomLabel": "正在开放的花",
-      "overline": "任务完成",
+      "overline": "做得好 🎉",
       "title": "已浇水 {count} 个单词",
       "bloomed": "“{word}”和另外 {count} 个单词刚刚开花",
       "percent": "{value}%",
@@ -711,9 +715,9 @@
       "today": "今天",
       "streak": "连续天数",
       "missionsDone": "已完成 {done}/{total} 个任务",
-      "missionsLeft": "{count, plural, =0 {今天的金色花开正在绽放} other {再完成 # 个任务，今天的金色花开就会绽放}}",
+      "missionsLeft": "{count, plural, =0 {今天的金花开了} other {再完成 # 个任务，今天的金花就会开放}}",
       "nextMission": "{title} · {minutes} 分钟",
-      "ripening": "明天有 {count} 个单词成熟",
+      "ripening": "明天有 {count} 个单词到期",
       "remindAt": "{time} 提醒我",
       "back": "返回花园",
       "dayLabel": "{day}{today, select, true {，今天} other {}}{done, select, true {，已完成} other {}}"
@@ -724,7 +728,7 @@
       "missionsHint": "每完成一个任务，当天的植物就长大一点",
       "today": "今天",
       "dayPlant": "{count, plural, =0 {没有任务} other {# 个任务}}",
-      "seedPack": "本周 {need} 朵金色花开可解锁 <b>{name}</b> 种子包",
+      "seedPack": "本周集齐 {need} 朵金花，就能解锁 <b>{name}</b> 种子包 📦",
       "seedPackCount": "{have}/{need}",
       "missionsTitle": "本周任务",
       "missionsComingSoon": "每日任务即将上线。你完成的每个任务都会让当天的植物在这里长大。",
@@ -735,29 +739,29 @@
       "legendGrowing": "生长中 ({count, number})",
       "eta": "照此速度：{eta}",
       "goalTitle": "词汇目标",
-      "goalComingSoon": "为你的考试设定单词目标。即将上线。",
+      "goalComingSoon": "在备考吗？很快就能在这里设定单词目标。",
       "barrelTitle": "雨水桶 · {count}",
       "barrelName": "雨水桶",
-      "barrelBody": "保护连续天数。今天太忙？花园照样有水。",
-      "comingSoon": "即将上线。",
+      "barrelBody": "帮你保住连续天数。哪天实在太忙，雨水桶会替你给花园浇水。",
+      "comingSoon": "即将上线",
       "groupBody": "今天 {watered}/{members} 人已浇水 · {words, number} 个共享单词",
       "weekOf": "{date} 这一周",
       "goalBand": "冲刺 {band} 分",
       "etaPending": "[ETA]"
     },
     "comeback": {
-      "title": "欢迎回来，{name}。<br></br>你的花园一直在等你。",
-      "titleNoName": "欢迎回来。<br></br>你的花园一直在等你。",
+      "title": "欢迎回来，{name}。<br></br>花园一直在等你。",
+      "titleNoName": "欢迎回来。<br></br>花园一直在等你。",
       "legend": {
         "thirsty": "{count, number} 缺水",
         "wilting": "{count, number} 枯萎",
         "ripe": "{count, number} 仍然成熟"
       },
-      "streakSafe": "你的 {count} 天连续记录还在",
-      "streakBarrel": "雨水桶补了 {covered} 天，剩 {left} 个，{day}补满。",
+      "streakSafe": "你的 {count} 天连续记录还在 🛡️",
+      "streakBarrel": "雨水桶帮你补了 {covered} 天，还剩 {left} 次，{day}补满。",
       "overline": "从小处开始",
-      "reviveTitle": "先救回 {count} 个枯萎的单词",
-      "reviveBody": "这些是你最容易忘记的单词。其余的可以等到明天。",
+      "reviveTitle": "先照顾 {count} 个枯萎的单词",
+      "reviveBody": "这些是你最容易忘的单词。其余的明天再说也行。",
       "revive": "快速救回",
       "reviveDetail": "{count} 个单词 · 约 {minutes} 分钟",
       "waterAllInstead": "改为给全部 {count} 个单词浇水",
@@ -792,7 +796,7 @@
       "newBedError": "花圃没能创建。请检查网络后重试。",
       "shared": "共享",
       "searchBeds": "搜索主题",
-      "lockedHint": "种子包 · 本周还差 {count} 朵金色花开"
+      "lockedHint": "种子包 · 本周再开 {count} 朵金花就能解锁"
     },
     "bed": {
       "back": "返回主题",
@@ -818,23 +822,23 @@
       "allWords": "全部单词",
       "sorted": "按下次浇水时间排序",
       "empty": "这个阶段还没有单词。",
-      "emptyBed": "这块苗圃还是空的。添加第一个单词来种下它吧。",
+      "emptyBed": "这个花圃还是空的。添加第一个单词，开始种吧。",
       "dueNow": "现在复习",
       "new": "新词",
       "inDays": "{count} 天后",
       "meta": "{parts}",
       "wordsCount": "{count} 个单词",
-      "notFound": "这个花圃不存在，或者不属于你。",
-      "tricky": "{meaning} · 难词，忘记 {count} 次",
+      "notFound": "找不到这个花圃，或者你没有查看权限。",
+      "tricky": "{meaning} · 难词，答错 {count} 次",
       "addSheet": {
         "title": "添加单词",
         "description": "添加到{topic}",
         "label": "单词",
         "placeholder": "例如：resilient",
-        "hint": "发音、音频和例句会自动补全。",
+        "hint": "Dygo 会自动补上音标、发音和例句。",
         "submit": "种下单词",
         "adding": "正在种下…",
-        "error": "无法添加这个单词，请重试。"
+        "error": "这个单词没能添加，请再试一次。"
       },
       "speak": "开口说",
       "speakSentences": "这个花圃里的 {count} 个句子",
@@ -854,7 +858,7 @@
         "bestStreak": "最长连续",
         "hours": "{count}h",
         "inGarden": "在花园里",
-        "goldenBlooms": "金色花开"
+        "goldenBlooms": "金花"
       },
       "calendarTitle": "花园日历",
       "calendarRange": "最近 16 周",
@@ -865,15 +869,15 @@
       "keepsake": {
         "firstHarvest": "第一次收获",
         "streak": "连续 {count} 天",
-        "blooms": "{count} 朵金色花开",
+        "blooms": "{count} 朵金花",
         "next": "下一个：{count} 个单词",
         "nextStreak": "下一个：连续 {count} 天",
-        "nextBlooms": "下一个：{count} 朵金色花开"
+        "nextBlooms": "下一个：{count} 朵金花"
       },
       "dailyGoal": "每日目标",
       "dailyGoalValue": "{missions} 个任务 · {minutes} 分钟",
       "comingSoonShort": "即将上线",
-      "reminder": "成熟提醒",
+      "reminder": "提醒时间",
       "meanings": "释义语言",
       "family": "家庭",
       "familyValue": "打开 {name} 的花园",
@@ -891,10 +895,10 @@
     },
     "live": {
       "loading": "正在加载你的花园…",
-      "error": "花园没能加载。请检查网络后重试。",
+      "error": "花园没能加载，请检查网络后再试。",
       "retry": "重试",
       "errorTitle": "出了点小问题",
-      "notFoundTitle": "花园里没有这条小路",
+      "notFoundTitle": "找不到这个页面",
       "notFoundBody": "页面可能已移动，或者链接已经过期。",
       "backHome": "回到我的花园",
       "missionTitle": "给 {count} 个单词浇水",
@@ -948,16 +952,16 @@
         "gardenersTab": "园丁",
         "trickyTitle": "难点区",
         "window": "最近 7 天",
-        "trickyIntro": "本花园错得最多的单词。只显示总数，从不显示个人的答案。",
+        "trickyIntro": "这个花园里大家错得最多的单词。只显示小组总数，从不显示个人成绩。",
         "trickyMeta": "错 {misses} 次 · {gardeners} 人",
-        "trickyEmpty": "本周没有难点。",
+        "trickyEmpty": "本周没有难点，大家都很棒。",
         "rainTitle": "发起雨天",
         "rainBody": "向 {count} 位园丁推送 · 难词优先",
         "sizeLabel": "每人单词数",
         "size": "{count} 个词",
         "start": "开始雨天 · 每人 {count} 个词",
         "last": "上次雨天：{day} · {joined}/{members} 人参与",
-        "pushMessage": "{group} 雨天：今天浇水 {count} 个单词",
+        "pushMessage": "{group} 今天是雨天，一起浇 {count} 个单词吧 🌧️",
         "sent": "雨天已发送给 {count} 位园丁。",
         "sendFailed": "雨天发送失败，请重试。",
         "alreadyRunning": "今天已经有一个雨天了。",
@@ -987,7 +991,7 @@
         "saved": "已保存。",
         "delete": "删除花园",
         "deleteConfirm": "删除{name}？其中的共享花圃和单词也会一并删除，且无法恢复。",
-        "adminOnly": "只有花园管理员可以照料花园。",
+        "adminOnly": "只有花园管理员可以更改这些设置。",
         "backToGarden": "返回花园",
         "loadingTricky": "正在查找难点…",
         "echoTitle": "回声挑战",
@@ -1016,7 +1020,7 @@
         "copied": "链接已复制",
         "copyFailed": "无法复制，请手动选择并复制链接。",
         "failed": "链接创建失败，请重试。",
-        "shareText": "加入 Dygo Academy 上的{group}"
+        "shareText": "来 Dygo Academy 加入{group}，一起种单词"
       },
       "join": {
         "invitedBy": "{name} 邀请你加入",
@@ -1026,7 +1030,7 @@
         "words": "{count, plural, other {个单词}}",
         "benefitBeds": "共享花圃会种进你的花园",
         "benefitRain": "接收花园管理员发起的雨天",
-        "benefitPrivate": "你自己的进度始终保密",
+        "benefitPrivate": "你个人的成绩只有你能看到，小组只看到总数。",
         "joinAs": {
           "ADMIN": "你将以<b>{role}</b>身份加入",
           "WRITE": "你将以<b>{role}</b>身份加入",
@@ -1085,7 +1089,7 @@
       "comesBack": "这个词会在下次浇水时再出现。",
       "next": "下一题",
       "finish": "查看结果",
-      "empty": "可用于测验的单词还不够。",
+      "empty": "可以测验的单词还不够。再浇几个单词，然后回来试试。",
       "doneTitle": "答对 {correct}/{total} 题",
       "backToBed": "返回花圃",
       "backToTopics": "返回主题",
@@ -1096,8 +1100,8 @@
         "MATCHING": "近义词或反义词",
         "CONTEXTUAL_CHOICE": "选词"
       },
-      "emptyDrill": "现在没有需要强化的难词。照料得真好！",
-      "drillTitle": "难词",
+      "emptyDrill": "现在没有需要强化的难词，花园照料得很好。",
+      "drillTitle": "难词练习",
       "result": {
         "close": "关闭",
         "overline": "测验完成",
@@ -1108,7 +1112,7 @@
         "right": "答对",
         "needWater": "需要浇水",
         "missedTitle": "需要浇水的词",
-        "missedNote": "它们会在下次浇水时再出现，你很快就会再见到。",
+        "missedNote": "下次浇水时它们会再出现。",
         "drill": "强化难词",
         "backToBed": "返回花圃",
         "backToTopics": "返回主题"
@@ -1144,7 +1148,7 @@
         "passwordPlaceholder": "至少 6 个字符",
         "submit": "创建账户",
         "submitting": "正在创建账户…",
-        "terms": "继续即表示你同意条款和隐私政策。",
+        "terms": "创建账户即表示你同意<terms>服务条款</terms>和<privacy>隐私政策</privacy>。",
         "haveAccount": "已有账户？<link>登录</link>",
         "invite": {
           "invitedBy": "{name} 邀请你加入",
@@ -1298,8 +1302,8 @@
       "backToGarden": "返回花园",
       "mic": {
         "title": "Dygo 需要使用你的麦克风",
-        "why": "为了把你的声音和母语者的放在一起对比，Dygo 会在你说话时聆听。",
-        "private": "我们不会保存你的录音。录音只留在这部手机上，离开后就会消失。",
+        "why": "为了把你的声音和母语者对比，Dygo 只在你录音时收听。",
+        "private": "录音只用于检查这句话，检查完就删除，我们不会保留。",
         "headphones": "在嘈杂的地方，戴上耳机会更好。",
         "allow": "允许使用麦克风",
         "notNow": "以后再说"
@@ -1344,11 +1348,11 @@
       "startingSoon": "即将开始",
       "pauseStops": "或者停下来，录音会自动结束",
       "checking": "正在检查你的句子…",
-      "privacy": "你的录音检查完就会删除。",
-      "quickCheck": "已在手机上快速检查：检查服务正忙。",
+      "privacy": "录音只用于检查，检查完就删除。",
+      "quickCheck": "检查服务正忙，已在手机上做了快速检查。",
       "failed": {
         "title": "这句没能检查",
-        "body": "连接中断了。你的录音没有保存。",
+        "body": "连接中断了，你的录音没有保留。",
         "checkAgain": "再检查一次",
         "recordAgain": "重新录音"
       },
