@@ -144,7 +144,7 @@ export function ReviewScreen({
           <h1 className="font-display text-[28px] font-semibold">
             {t('finishedTitle', { count: total })}
           </h1>
-          <Link href={bloomHref} className={buttonClassName('primary', { className: 'w-full' })}>
+          <Link href={bloomHref} className={buttonClassName('primary', { className: 'w-full md:max-w-none' })}>
             {t('seeBloom')}
           </Link>
           {secondaryAction ? (
@@ -165,6 +165,8 @@ export function ReviewScreen({
           {shown === 'question' ? (
             <Button
               variant="forest"
+              // md:max-w-none: span the column like the card and rating bar.
+              className="w-full md:max-w-none"
               onClick={showAnswer}
               aria-keyshortcuts={keyboardShortcuts ? 'Space' : undefined}
             >

@@ -53,7 +53,7 @@ export interface HomeScreenProps {
   loginHref: string;
   /** The logo link (`/`). */
   homeHref?: string;
-  /** Terms and Privacy: `#` until decision 12. */
+  /** Terms and Privacy (`/terms`, `/privacy`); `#` in the reference fixtures. */
   termsHref?: string;
   privacyHref?: string;
   languageBusy?: boolean;
@@ -119,21 +119,18 @@ export function HomeScreen({
   return (
     <div data-home-layout={layout} className="min-h-dvh bg-bg font-body text-text">
       <div className="mx-auto box-border w-full max-w-[560px] home-lg:max-w-[1280px]">
-        <header className="flex items-center gap-2.5 px-5 py-3.5 home-lg:gap-8 home-lg:px-16 home-lg:py-5">
+        <header className="flex items-center gap-2.5 px-5 py-3.5 home-lg:gap-7 home-lg:px-16 home-lg:py-5">
           <Logo href={homeHref} />
-          <nav aria-label={t('nav.label')} className="ml-6 hidden gap-7 home-lg:flex">
+          <nav aria-label={t('nav.label')} className="ml-5 hidden gap-6 whitespace-nowrap home-lg:flex">
             <a href={`#${HOME_ANCHORS.features}`} className="text-[15px] font-semibold text-text no-underline">
               {t('nav.features')}
             </a>
             <a href={`#${HOME_ANCHORS.howItWorks}`} className="text-[15px] font-semibold text-text no-underline">
               {t('nav.howItWorks')}
             </a>
-            <a
-              href={`#${HOME_ANCHORS.speaking}`}
-              className="inline-flex items-center gap-1.5 text-[15px] font-semibold text-text no-underline"
-            >
+            {/* No "new" dot: removed from the canvas on 2026-10-08. */}
+            <a href={`#${HOME_ANCHORS.speaking}`} className="text-[15px] font-semibold text-text no-underline">
               {t('nav.speaking')}
-              <span aria-hidden="true" className="size-2 rounded-full bg-primary" />
             </a>
             <a href={`#${HOME_ANCHORS.questions}`} className="text-[15px] font-semibold text-text no-underline">
               {t('nav.questions')}
@@ -173,15 +170,8 @@ export function HomeScreen({
         */}
         <section className="flex flex-col gap-[18px] px-5 pb-9 pt-1.5 home-lg:flex-row home-lg:items-start home-lg:gap-14 home-lg:px-16 home-lg:pb-16 home-lg:pt-9">
           <div className="flex flex-col gap-3 home-lg:min-w-0 home-lg:flex-1 home-lg:gap-[18px] home-lg:pt-6">
-            <a
-              href={`#${HOME_ANCHORS.speaking}`}
-              className="inline-flex max-w-full items-center gap-2 self-start rounded-full border border-primary-border bg-primary-soft py-1.5 pl-1.5 pr-3 text-[13px] font-semibold leading-[18px] text-primary no-underline home-lg:text-[14px]"
-            >
-              <span className="rounded-full bg-primary px-2 py-0.5 text-[11px] font-bold uppercase tracking-[.06em] text-white">
-                {t('hero.pillNew')}
-              </span>
-              <span className="min-w-0">{t('hero.pill')} →</span>
-            </a>
+            {/* The "New · Speaking" hero pill was removed from the canvas on 2026-10-08;
+                the desktop nav's Speaking link still leads to #speak. */}
             <h1 className="m-0 font-display text-[34px] font-semibold leading-[1.06] tracking-[-0.01em] home-lg:text-[56px]">
               {t('hero.title')}
             </h1>

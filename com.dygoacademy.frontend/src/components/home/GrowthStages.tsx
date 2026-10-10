@@ -14,6 +14,7 @@ import {
   HomeTree,
   StageArrow,
 } from './homeArt';
+import { MemoryChart, MemoryChartLegend } from './MemoryChart';
 
 /** The four stages, in order (FSRS mapping in §3: Learning/Relearning = sprout, Review = flower, mastered = fruiting). */
 export const GROWTH_STAGES = ['seed', 'sprout', 'flower', 'fruiting'] as const;
@@ -26,8 +27,6 @@ const STAGE_ART: Record<GrowthStage, { tint: string; art: React.ReactNode }> = {
   fruiting: { tint: 'bg-[#F7F0DC]', art: <HomeTree width={60} height={76} /> },
 };
 
-/** Where the review drops sit on the "Reviews spread out" line (widening gaps, Today → Weeks later). */
-const SPREAD_DROPS = [0, 7, 17, 32, 57, 100];
 
 /**
  * Home page v2 HP-7 · How your words grow v2 (G-home notes, reference
@@ -87,18 +86,17 @@ export function GrowthStages() {
         ))}
       </ol>
 
-      <div className="flex flex-col gap-2.5 home-lg:grid home-lg:grid-cols-[1.3fr_1fr_1fr] home-lg:gap-4">
+      <div className="flex flex-col gap-2.5 home-lg:grid home-lg:grid-cols-[minmax(0,1.25fr)_minmax(0,1fr)] home-lg:gap-4">
         <div className={gcn(card, 'gap-3 p-4 home-lg:p-5')}>
           <span className="text-[16px] font-bold">{t('spread.title')}</span>
-          <div aria-hidden="true" className="relative mx-2.5 h-[22px]">
-            <span className="absolute inset-x-0 top-1/2 h-[3px] -translate-y-1/2 rounded-sm bg-[linear-gradient(90deg,#DCE8D5,#9CB79A)]" />
-            {SPREAD_DROPS.map((left) => (
-              <span
-                key={left}
-                style={{ left: `${left}%` }}
-                className="absolute top-1/2 size-3.5 -translate-x-1/2 -translate-y-1/2 rounded-[7px] bg-water-due shadow-[0_0_0_3px_var(--color-water-soft)]"
-              />
-            ))}
+          {/* Memory chart (canvas 2026-10-10): without review vs with Dygo, reviews at widening gaps. */}
+          <div className="flex flex-col gap-2.5">
+            <MemoryChartLegend
+              withDygo={t('spread.chart.with')}
+              withoutReview={t('spread.chart.without')}
+              review={t('spread.chart.review')}
+            />
+            <MemoryChart label={t('spread.chart.label')} />
           </div>
           <div className="flex justify-between text-[12px] font-semibold text-muted-foreground">
             <span>{t('spread.today')}</span>
@@ -106,20 +104,21 @@ export function GrowthStages() {
           </div>
           <span className="text-[14px] leading-[1.5] text-[#44524A]">{t('spread.text')}</span>
         </div>
-        <Tip
-          className="bg-[#EEF5F9]"
-          iconClassName="bg-water-soft text-forest"
-          icon={<FeatureWaterIcon width={22} height={22} className="block" />}
-          title={t('tips.drop.title')}
-          text={t('tips.drop.text')}
-        />
-        <Tip
-          className="bg-[#EEF3EA]"
-          iconClassName="bg-on-forest-muted"
-          icon={<HomeSprout width={30} height={30} className="block" />}
-          title={t('tips.forgot.title')}
-          text={t('tips.forgot.text')}
-        />
+        {/* The two tips as picture cards (canvas 2026-10-10): stacked right of the chart on desktop. */}
+        <div className="flex flex-col gap-2.5 home-lg:gap-4">
+          <TipCard data-tip="drop" title={t('tips.drop.title')} text={t('tips.drop.text')}>
+            <GardenTile word="mitigate" plant="sprout" badge="drop" />
+            <GardenTile word="deadline" plant="flower" />
+            <GardenTile word="negotiate" plant="sprout" badge="drop" />
+          </TipCard>
+          <TipCard data-tip="forgot" title={t('tips.forgot.title')} text={t('tips.forgot.text')}>
+            <GardenTile word="deadline" plant="flower" badge="forgot" />
+            <TileArrow />
+            <GardenTile word="deadline" plant="sprout" badge="drop" />
+            <TileArrow />
+            <GardenTile word="deadline" plant="flower" />
+          </TipCard>
+        </div>
       </div>
     </>
   );
@@ -136,31 +135,66 @@ function StageRow({ icon, label, text }: { icon: React.ReactNode; label: string;
   );
 }
 
-function Tip({
-  className,
-  iconClassName,
-  icon,
+/** A tip card: title, a small picture of the garden, one line of text (same order as the chart card). */
+function TipCard({
   title,
   text,
-}: {
-  className: string;
-  iconClassName: string;
-  icon: React.ReactNode;
-  title: string;
-  text: string;
-}) {
+  children,
+  ...rest
+}: { title: string; text: string; children: React.ReactNode } & React.HTMLAttributes<HTMLDivElement>) {
   return (
-    <div className={gcn('flex items-start gap-3 rounded-[22px] p-4 home-lg:p-5', className)}>
-      <span
-        aria-hidden="true"
-        className={gcn('flex size-11 shrink-0 items-center justify-center rounded-[14px]', iconClassName)}
-      >
-        {icon}
-      </span>
-      <div className="flex flex-col gap-1">
-        <span className="text-[16px] font-bold">{title}</span>
-        <span className="text-[14px] leading-[1.5] text-[#44524A]">{text}</span>
+    <div
+      {...rest}
+      className="flex flex-col gap-3 rounded-[22px] border border-solid border-border bg-surface p-4 home-lg:flex-1 home-lg:p-5"
+    >
+      <span className="text-[16px] font-bold">{title}</span>
+      <div aria-hidden="true" className="flex flex-auto gap-2">
+        {children}
       </div>
+      <span className="text-[14px] leading-[1.5] text-[#44524A]">{text}</span>
     </div>
+  );
+}
+
+/**
+ * One word in a tiny garden bed. `drop`: due today (blue tile, water drop
+ * badge). `forgot`: the word was forgotten (faded plant, "?" badge). The
+ * words stay English in every language, like the speaking demo sentence.
+ */
+function GardenTile({ word, plant, badge }: { word: string; plant: 'sprout' | 'flower'; badge?: 'drop' | 'forgot' }) {
+  const faded = badge === 'forgot';
+  return (
+    <div
+      data-tile={badge ?? 'plain'}
+      className={gcn(
+        'relative flex min-w-0 flex-1 flex-col items-center justify-end gap-1 rounded-[14px] px-1 pb-2 pt-2.5',
+        badge === 'drop' ? 'bg-[#EEF5F9]' : 'bg-[#F7F4EC]',
+      )}
+    >
+      <span className={gcn('flex h-10 items-end [&>svg]:block', faded && 'opacity-50')}>
+        {plant === 'sprout' ? <HomeSprout width={34} height={34} /> : <HomeFlower width={30} height={39} />}
+      </span>
+      <span lang="en" className={gcn('text-[13px] font-bold', faded ? 'text-[#9AA39C]' : 'text-[#24463A]')}>
+        {word}
+      </span>
+      {badge === 'drop' ? (
+        <span className="absolute right-1.5 top-1.5 flex size-5 items-center justify-center rounded-full bg-white shadow-[0_0_0_1.5px_#CFE3F0]">
+          <FeatureWaterIcon width={12} height={12} className="block" />
+        </span>
+      ) : null}
+      {badge === 'forgot' ? (
+        <span className="absolute right-1.5 top-1.5 size-5 rounded-full bg-white text-center text-[12px] font-extrabold leading-5 text-primary shadow-[0_0_0_1.5px_#F0CDBB]">
+          ?
+        </span>
+      ) : null}
+    </div>
+  );
+}
+
+function TileArrow() {
+  return (
+    <span className="flex flex-none items-center text-[#9CB79A]">
+      <StageArrow direction="right" width={16} height={16} className="block" />
+    </span>
   );
 }

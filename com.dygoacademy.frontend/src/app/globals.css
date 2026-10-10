@@ -583,3 +583,37 @@
     padding-left: 240px;
   }
 }
+
+/* Home page speaking demo (canvas "Landing Page" #speak, 2026-10-10): the sample
+   learner's clay bars move while "Listening…", and the stop button sends out a ring. */
+@keyframes home-speak-wave {
+  0%,
+  100% {
+    transform: scaleY(0.35);
+  }
+  50% {
+    transform: scaleY(1);
+  }
+}
+@keyframes home-speak-ring {
+  0% {
+    box-shadow: 0 0 0 0 rgba(180, 85, 46, 0.45);
+  }
+  100% {
+    box-shadow: 0 0 0 16px rgba(180, 85, 46, 0);
+  }
+}
+.home-speak-wave {
+  transform-box: fill-box;
+  transform-origin: 50% 50%;
+  animation: home-speak-wave 0.7s ease-in-out infinite;
+}
+.home-speak-ring {
+  animation: home-speak-ring 1.2s ease-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .home-speak-wave,
+  .home-speak-ring {
+    animation: none;
+  }
+}

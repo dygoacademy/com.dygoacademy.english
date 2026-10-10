@@ -116,7 +116,7 @@ export function OnboardReminderScreen({
               {t(`reminder.notice.${notice}`)}
             </p>
           ) : null}
-          <Button variant="primary" onClick={onConfirm} disabled={!time} loading={saving}>
+          <Button variant="primary" className="md:max-w-none" onClick={onConfirm} disabled={!time} loading={saving}>
             {notice ? t('continue') : time ? t('reminder.confirm', { time: label }) : t('reminder.pick')}
           </Button>
         </>

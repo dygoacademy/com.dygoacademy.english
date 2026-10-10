@@ -37,6 +37,8 @@ export interface OnboardingShellProps {
   subtitle?: string;
   children: React.ReactNode;
   footer: React.ReactNode;
+  /** false = no progress header (OB5 draws the grown plants in its own bed). */
+  progress?: boolean;
 }
 
 export function OnboardingShell({
@@ -47,10 +49,11 @@ export function OnboardingShell({
   subtitle,
   children,
   footer,
+  progress = true,
 }: OnboardingShellProps) {
   const t = useTranslations('screens.onboarding');
   return (
-    <div className={gcn(SCREEN_CLASSES, 'gap-5 px-5 pb-7 pt-[22px] pb-safe')}>
+    <div className={gcn(SCREEN_CLASSES, 'gap-5 px-5 pt-[22px] pb-[max(28px,var(--safe-bottom))]')}>
       <div className="flex min-h-11 items-center justify-between">
         {back ? (
           <IconButton asChild aria-label={t('back')}>
@@ -71,7 +74,7 @@ export function OnboardingShell({
           </button>
         ) : null}
       </div>
-      <OnboardingProgress step={step} />
+      {progress ? <OnboardingProgress step={step} /> : null}
       <div className="flex flex-col gap-1">
         <h1 className="font-display text-[28px] font-semibold leading-[1.1]">{title}</h1>
         {subtitle ? <p className="text-[15px] text-muted-foreground">{subtitle}</p> : null}

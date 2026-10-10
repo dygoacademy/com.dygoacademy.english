@@ -39,10 +39,29 @@ describe('GrowthStages (Home page v2 How your words grow, HP-7)', () => {
       'Reviews spread out as a word grows',
       'Today',
       'Weeks later',
-      'A water drop means it’s due today',
+      'A water drop means: review it today',
       'Forgot one? No problem.',
     ]) {
       expect(screen.getByText(text)).toBeTruthy();
     }
+  });
+
+  it('draws the memory chart: without review vs with Dygo, six reviews (canvas 2026-10-10)', () => {
+    const { container } = renderWithIntl(<GrowthStages />);
+    const chart = screen.getByRole('img', { name: /Memory of a word over a few weeks/ });
+    expect(chart.querySelectorAll('circle')).toHaveLength(6);
+    expect(container.textContent).toContain('With Dygo');
+    expect(container.textContent).toContain('Without review');
+  });
+
+  it('shows each tip as a small garden picture: due words carry a drop, a forgotten word goes back to a sprout (canvas 2026-10-10)', () => {
+    const { container } = renderWithIntl(<GrowthStages />);
+    const drop = container.querySelector('[data-tip="drop"]')!;
+    const forgot = container.querySelector('[data-tip="forgot"]')!;
+    expect([...drop.querySelectorAll('[data-tile]')].map((t) => t.getAttribute('data-tile'))).toEqual(['drop', 'plain', 'drop']);
+    expect([...forgot.querySelectorAll('[data-tile]')].map((t) => t.getAttribute('data-tile'))).toEqual(['forgot', 'drop', 'plain']);
+    // The pictures repeat the text, so screen readers skip them.
+    expect(drop.querySelector('[aria-hidden="true"] [data-tile]')).toBeTruthy();
+    expect(drop.textContent).toContain('Dygo puts a water drop on it');
   });
 });

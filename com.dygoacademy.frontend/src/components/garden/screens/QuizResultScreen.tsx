@@ -131,13 +131,13 @@ export function QuizResultScreen({
           <Link
             href={drillHref}
             className={buttonClassName('secondary', {
-              className: 'h-[56px] w-full rounded-[18px] text-[16px]',
+              className: 'h-[56px] w-full rounded-[18px] text-[16px] md:max-w-none',
             })}
           >
             {t('drill')}
           </Link>
         ) : null}
-        <Link href={backHref} className={buttonClassName('primary', { className: 'w-full' })}>
+        <Link href={backHref} className={buttonClassName('primary', { className: 'w-full md:max-w-none' })}>
           {back === 'bed' ? t('backToBed') : t('backToTopics')}
         </Link>
       </div>

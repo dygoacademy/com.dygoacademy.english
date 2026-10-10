@@ -16,13 +16,16 @@ import { HomeLive } from './HomeLive';
 export async function homeMetadata(locale: AppLocale): Promise<Metadata> {
   const t = await getTranslations('screens.home.public');
   const title = t('metaTitle');
-  // Home page v2 (HP-6): the description is the hero lead.
-  const description = t('hero.lead');
+  // SEO keywords (2026-10-09): its own search-focused description, not the hero lead.
+  const description = t('metaDescription');
+  // Ignored by Google, still read by Baidu and some smaller engines.
+  const keywords = t('metaKeywords').split(/[,，]\s*/);
   const path = HOME_LOCALE_PATHS[locale];
   return {
     metadataBase: new URL(SITE_URL),
     title,
     description,
+    keywords,
     alternates: { canonical: path, languages: homeAlternates() },
     openGraph: {
       title,

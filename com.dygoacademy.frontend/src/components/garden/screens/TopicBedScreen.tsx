@@ -176,7 +176,7 @@ export function TopicBedScreen({
           <Link
             href={water.href}
             className={buttonClassName('primary', {
-              className: 'h-[52px] flex-grow rounded-control text-[16px]',
+              className: 'h-[52px] flex-grow rounded-control text-[16px] md:max-w-none',
             })}
           >
             <WaterIcon width={20} height={20} fill="var(--color-surface)" />

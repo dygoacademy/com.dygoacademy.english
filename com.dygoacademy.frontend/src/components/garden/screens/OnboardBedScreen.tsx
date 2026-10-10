@@ -53,7 +53,7 @@ export function OnboardBedScreen({
         <>
           {error ? <SaveError /> : null}
           <Button
-            variant="primary"
+            variant="primary" className="md:max-w-none"
             onClick={onContinue}
             disabled={!empty && !selectedId}
             loading={saving}

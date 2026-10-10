@@ -34,6 +34,8 @@ export function HomeLive() {
       registerHref={ROUTES.register}
       loginHref={ROUTES.login}
       homeHref={HOME_LOCALE_PATHS[appLocale]}
+      termsHref={ROUTES.terms}
+      privacyHref={ROUTES.privacy}
     />
   );
 }

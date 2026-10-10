@@ -174,9 +174,20 @@ const FREEZE_CSS =
   '*,*::before,*::after{animation:none!important;transition:none!important}' +
   'nextjs-portal,.tsqd-parent-container{display:none!important}';
 
+/**
+ * Fixture pages whose reference PNGs were renamed (2026-10-08: `home-v2` →
+ * `landing-v2`, docs/design/garden/README.md). The fixture keeps its old name
+ * on the site; the PNG and the table row use the new one. `--only` takes either.
+ */
+const REFERENCE_FILE = {
+  'H3-home-v2-phone': 'H3-landing-v2-phone',
+  'H4-home-v2-desktop': 'H4-landing-v2-desktop',
+};
+const FIXTURE_FOR = Object.fromEntries(Object.entries(REFERENCE_FILE).map(([fixture, ref]) => [ref, fixture]));
+
 async function main() {
   const args = parseArgs(process.argv.slice(2));
-  const names = args.only ?? NAMES;
+  const names = (args.only ?? NAMES).map((n) => FIXTURE_FOR[n] ?? n);
   const outDir = path.resolve(frontend, args.out);
   fs.mkdirSync(outDir, { recursive: true });
 
@@ -202,7 +213,8 @@ async function main() {
   const jobs = args.locales.flatMap((locale) => names.map((name) => ({ locale, name })));
   for (const { locale, name: screen } of jobs) {
     // Reference PNGs: English is <name>.png (drawn in en-US), Vietnamese <name>-vi.png.
-    const name = locale === 'en-US' ? screen : `${screen}-${REFERENCE_SUFFIX[locale] ?? locale}`;
+    const base = REFERENCE_FILE[screen] ?? screen;
+    const name = locale === 'en-US' ? base : `${base}-${REFERENCE_SUFFIX[locale] ?? locale}`;
     const refPath = path.join(args.refs, `${name}.png`);
     if (!fs.existsSync(refPath)) {
       rows.push({ name, error: 'no reference PNG' });

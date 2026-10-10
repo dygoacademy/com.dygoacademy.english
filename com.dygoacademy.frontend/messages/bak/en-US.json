@@ -1,0 +1,1450 @@
+{
+  "garden": {
+    "home": {
+      "title": "Word Garden"
+    },
+    "pages": {
+      "review": "Watering Time",
+      "done": "Mission Accomplished!",
+      "missions": "Weekly Harvest",
+      "topics": "Topics",
+      "me": "Profile",
+      "topic": "Topic Bed",
+      "groups": "Shared Gardens",
+      "group": "Shared Garden",
+      "manage": "Tend the Garden",
+      "join": "Join a Garden",
+      "quiz": "Quiz"
+    },
+    "update": {
+      "available": "A new version of Dygo is ready.",
+      "reload": "Reload",
+      "later": "Later"
+    }
+  },
+  "tokens": {
+    "metaTitle": "Garden Tokens",
+    "title": "Garden Tokens",
+    "intro": "Every color, text style, radius, shadow, and motion token in the Word Garden design system, with English, Chinese, and Vietnamese test strings. Visible only with the garden flag on.",
+    "sizeClass": {
+      "label": "Size class:",
+      "compact": "compact (under 600px)",
+      "medium": "medium (600–1023px)",
+      "expanded": "expanded (1024px and up)",
+      "short": "short (height under 500px)"
+    },
+    "sections": {
+      "colour": "Color",
+      "stages": "Plant stages",
+      "ratings": "Rating buttons",
+      "fonts": "Fonts",
+      "type": "Type scale",
+      "overline": "Overline in Chinese",
+      "spacing": "Spacing",
+      "radius": "Corner radius",
+      "elevation": "Elevation",
+      "motion": "Motion",
+      "safeArea": "Safe area and full height",
+      "widths": "Content widths"
+    },
+    "notes": {
+      "swatch": "The swatch uses the CSS variable; the hex beside it is copied from the spec. If they look different, the token is wrong.",
+      "overline": "Label style with the overline class. English is uppercase with letter spacing; Chinese keeps normal case and no spacing.",
+      "motion": "Hover or focus the tiles to see each duration. With reduced motion on, bloom drops to a 150ms fade and ambient loops stop.",
+      "safeArea": "This page's frame is padded by the safe-area insets and is at least 100dvh tall. On a Face ID iPhone the tinted strips show the notch and home-indicator insets.",
+      "widths": "Each bar is one GARDEN_CONTENT_WIDTH tier: full width on iPhone, capped on iPad.",
+      "fonts": "DM Sans (body) with Be Vietnam Pro for Vietnamese letters DM Sans lacks, and Fraunces with the optical-size axis (display). All three are self-hosted woff2 files, the same ones the canvas references were rendered with."
+    },
+    "sample": {
+      "button": "Water 12 words",
+      "pressMe": "Tap me!"
+    }
+  },
+  "gallery": {
+    "metaTitle": "Garden Components",
+    "title": "Garden Components",
+    "intro": "Every Word Garden component built so far, in every state. Compare against the mockups at 390px. Visible only with the garden flag on.",
+    "pending": "Every UI-2 component is built. Gate G1 compares this page with the mockups side by side at 390px.",
+    "sections": {
+      "buttons": "Buttons",
+      "iconButtons": "Icon buttons",
+      "chips": "Chips",
+      "cards": "Cards",
+      "stats": "Stat tiles",
+      "switches": "Switches",
+      "vine": "Progress vine",
+      "plants": "Plant glyphs",
+      "stageMapping": "SRS state to plant stage",
+      "ratingBar": "Rating bar",
+      "audio": "Audio button",
+      "reviewCard": "Review card",
+      "missionRow": "Mission rows",
+      "hero": "Hero garden card",
+      "stageTile": "Stage tiles",
+      "wordRow": "Word rows",
+      "tabBar": "Bottom tab bar",
+      "ipadNav": "iPad navigation (rail and sidebar)",
+      "sheet": "Bottom sheet",
+      "toast": "Toast",
+      "groups": "Shared gardens (UI-G)"
+    },
+    "states": {
+      "default": "Default",
+      "disabled": "Disabled",
+      "loading": "Loading...",
+      "secondLine": "With second line",
+      "long": "Long label",
+      "off": "Off",
+      "on": "On",
+      "tappable": "Tappable (link)",
+      "static": "Static",
+      "sizes": "Every stage at 24, 32, 40, 56 and 72",
+      "labelled": "Labeled (role img) at 56",
+      "drip": "Drip (ambient, stops with reduced motion)",
+      "bloom": "Bloom (plays once)",
+      "interactive": "Interactive: tap, or press 1–4 on a keyboard",
+      "saving": "Disabled while saving",
+      "lastRating": "Last rating: {rating}",
+      "noRating": "No rating yet",
+      "idle": "Ready (tap to play a short test tone)",
+      "audioError": "Audio unavailable (tap to retry)",
+      "audioFails": "Broken file: tap, and it switches to the unavailable state",
+      "noAudio": "No audio for this word",
+      "hidden": "Answer hidden",
+      "shown": "Answer shown",
+      "toggle": "Interactive",
+      "longContent": "Long word, Vietnamese meaning line, no audio",
+      "todo": "To do",
+      "inProgress": "In progress",
+      "done": "Done",
+      "normal": "Normal",
+      "comeback": "Comeback",
+      "dueNow": "Due now",
+      "wilting": "Wilting",
+      "link": "Whole row is a link",
+      "activeGarden": "Garden active",
+      "activeTopics": "Topics active",
+      "sheetHint": "Opens as a bottom sheet on iPhone (drag the grabber down to close) and a centered sheet from 600px.",
+      "info": "Info",
+      "success": "Success",
+      "toastLive": "Live: shows for 3 seconds (bottom on iPhone, top from 600px)",
+      "groupCards": "Group cards: your role, gardeners and your due words",
+      "roles": "Role badges",
+      "rainForest": "Rain day in the gardens list",
+      "rainWater": "Rain day inside a garden",
+      "tricky": "Tricky patches (totals only)",
+      "gardeners": "Gardeners with the role picker (your own row is locked here)",
+      "invite": "Invite sheet (interactive; the link is a sample)",
+      "rail": "Side rail, 600–1023px",
+      "sidebar": "Sidebar, 1024px and up"
+    },
+    "sample": {
+      "water": "Water 12 words",
+      "waterSecond": "About 4 minutes",
+      "showAnswer": "Show answer",
+      "addWord": "Add a word",
+      "longLabel": "Take today's collocation challenge and give your thirsty words some water!",
+      "back": "Back",
+      "close": "Close",
+      "play": "Play pronunciation",
+      "chipAll": "All",
+      "chipDue": "Due now",
+      "chipWilting": "Wilting",
+      "cardTitle": "Environment",
+      "cardBody": "48 words · 6 due today",
+      "statGrowing": "words growing",
+      "statStreak": "day streak",
+      "statMastered": "ripe",
+      "reminders": "Daily reminder",
+      "sound": "Sounds",
+      "vineText": "{done} of {total} words watered",
+      "replayBloom": "Replay bloom",
+      "mapState": "fsrs_state",
+      "mapMastered": "mastered_at",
+      "mapLeech": "is_leech",
+      "mapStage": "Stage",
+      "yes": "yes",
+      "no": "no",
+      "set": "set",
+      "null": "null",
+      "reviewWord": "sustainable",
+      "reviewIpa": "/səˈsteɪnəbl/",
+      "reviewLevel": "B2",
+      "reviewTopic": "Environment",
+      "reviewPos": "adjective",
+      "reviewMeaning": "able to continue for a long time without harming the environment",
+      "reviewTranslation": "bền vững",
+      "reviewExample": "The city wants a more sustainable transport system by 2030.",
+      "reviewCollocation1": "sustainable development",
+      "reviewCollocation2": "sustainable growth",
+      "reviewCollocation3": "environmentally sustainable",
+      "longWord": "internationalisation",
+      "longIpa": "/ˌɪntənæʃənəlaɪˈzeɪʃən/",
+      "longLevel": "C1",
+      "longTopic": "Business and global trade",
+      "longPos": "noun",
+      "longMeaning": "the process of planning a product so that it can be adapted to many languages and regions",
+      "longTranslation": "quá trình quốc tế hoá sản phẩm để phù hợp với nhiều ngôn ngữ và khu vực",
+      "longExample": "Internationalisation made it easy to launch the app in Vietnam and Singapore.",
+      "hideAnswer": "Hide answer",
+      "missionWater": "Water 18 thirsty words",
+      "missionPlant": "Plant 3 new words",
+      "missionChallenge": "Collocation challenge",
+      "missionWaterProgress": "{done} of {total} words watered",
+      "missionPlantProgress": "{done} of {total} words planted",
+      "missionChallengeProgress": "{done} of {total} challenges completed",
+      "heroOverline": "Today's garden",
+      "heroTitle": "18 plants are thirsty!",
+      "heroSubtitle": "Takes about 6 minutes to water them all",
+      "heroComebackOverline": "Welcome back!",
+      "heroComebackTitle": "Your garden missed you!",
+      "heroComebackSubtitle": "It rained while you were away. Let's start with the 10 most at-risk words.",
+      "heroAction": "Water 18 words",
+      "heroComebackAction": "Water 10 words",
+      "stageSeeds": "Seeds",
+      "stageSprouts": "Sprouts",
+      "stageFlowers": "Flowers",
+      "stageRipe": "Ripe",
+      "stageWilting": "Wilting",
+      "stageThirsty": "Thirsty",
+      "wordMeaning": "able to continue for a long time",
+      "wordDueNow": "Due now",
+      "wordInDays": "in 3 days",
+      "wordWilting": "Needs TLC",
+      "word2": "commute",
+      "word2Meaning": "to travel regularly between home and work",
+      "word3": "notwithstanding",
+      "word3Meaning": "in spite of something; although this is true, the plan will still go ahead",
+      "openSheet": "Open sheet",
+      "openLongSheet": "Open long sheet",
+      "sheetTitle": "Add a word",
+      "sheetDescription": "Planted as a seed in Environment.",
+      "sheetBody": "Search for a word, or type your own along with its meaning. You can move it to another topic anytime!",
+      "sheetLongLine": "Line {n} of a long sheet body that scrolls inside the sheet.",
+      "sheetAction": "Plant it!",
+      "toastInfo": "Reminder set for 7:30 AM every morning",
+      "toastSuccess": "Planted in Environment!",
+      "showInfoToast": "Show info toast",
+      "showSuccessToast": "Show success toast"
+    }
+  },
+  "components": {
+    "plant": {
+      "seed": "Seed",
+      "sprout": "Sprout",
+      "flower": "Flower",
+      "tree": "Fruit Tree",
+      "wilting": "Wilting",
+      "thirsty": "Thirsty"
+    },
+    "rating": {
+      "groupLabel": "How well did that stick?",
+      "again": "Forgot",
+      "hard": "Hard",
+      "good": "Good",
+      "easy": "Easy!",
+      "interval": {
+        "lessThanMinute": "< 1 min",
+        "minutes": "{count} min",
+        "hours": "{count} h",
+        "days": "{count, plural, one {# day} other {# days}}",
+        "months": "{count, plural, one {# month} other {# months}}"
+      }
+    },
+    "audio": {
+      "play": "Play pronunciation",
+      "none": "No audio for this word",
+      "unavailable": "Audio unavailable",
+      "unavailableRetry": "Audio unavailable, tap to retry"
+    },
+    "review": {
+      "cardLabel": "Review card: {word}",
+      "tags": "Word details",
+      "play": "Play pronunciation of {word}",
+      "meaning": "Meaning",
+      "example": "Example",
+      "collocations": "Collocations",
+      "synonyms": "Synonyms",
+      "hiddenHint": "Say the meaning out loud,<br></br>then check your answer!",
+      "quoted": "“{text}”"
+    },
+    "partOfSpeech": {
+      "noun": "noun",
+      "verb": "verb",
+      "adjective": "adjective",
+      "adverb": "adverb",
+      "pronoun": "pronoun",
+      "preposition": "preposition",
+      "conjunction": "conjunction",
+      "interjection": "interjection",
+      "determiner": "determiner",
+      "phrase": "phrase",
+      "phrasalVerb": "phrasal verb",
+      "idiom": "idiom"
+    },
+    "mission": {
+      "status": {
+        "todo": "Not started",
+        "inProgress": "In progress",
+        "done": "Done"
+      },
+      "statusSuffix": ", {status}"
+    },
+    "hero": {
+      "legend": "Your garden by stage",
+      "scene": "Garden with plants at different stages",
+      "comebackScene": "Garden with wilting plants and a rain cloud"
+    },
+    "tabBar": {
+      "label": "Main navigation",
+      "garden": "Garden",
+      "missions": "Missions",
+      "topics": "Topics",
+      "me": "Profile",
+      "groups": "Groups"
+    },
+    "sheet": {
+      "close": "Close"
+    },
+    "language": {
+      "title": "Language Settings",
+      "description": "Choose your app language and the translation language for review cards.",
+      "appLanguage": "App language",
+      "meaningLanguage": "Meanings shown in",
+      "meaningHint": "The English definition is always included.",
+      "names": {
+        "en-US": "English",
+        "vi-VN": "Tiếng Việt",
+        "zh-CN": "简体中文"
+      },
+      "meaningWith": "{language} + English",
+      "meaningNone": "English only",
+      "saving": "Saving…",
+      "error": "Couldn't save changes. Check your connection and try again.",
+      "variety": "English dialect",
+      "varietyHint": "Spelling and pronunciation styles across your garden.",
+      "varietyUS": "US English 🇺🇸",
+      "varietyUK": "UK English 🇬🇧"
+    },
+    "account": {
+      "title": "Account",
+      "signedInAs": "Signed in as {email}",
+      "signOut": "Sign out",
+      "signingOut": "Signing out…",
+      "cancel": "Cancel",
+      "error": "Couldn't sign out. Check your connection and try again."
+    },
+    "groups": {
+      "roles": {
+        "ADMIN": "Admin",
+        "WRITE": "Editor",
+        "READ": "Viewer"
+      },
+      "roleHints": {
+        "ADMIN": "Manages gardeners, invites, and rain days",
+        "WRITE": "Adds topic beds and words",
+        "READ": "Waters the shared beds"
+      },
+      "dueForYou": "{count} due for you",
+      "allWatered": "All watered!",
+      "water": "Water",
+      "rainDayToday": "Rain day today 🌧️",
+      "you": "(you)",
+      "changeRole": "Change {name}'s role",
+      "remove": "Remove from garden"
+    },
+    "dailyGoal": {
+      "title": "Daily Goal",
+      "description": "How long you’d like to spend in your garden each day.",
+      "legend": "Minutes per day",
+      "minutes": "{count} min",
+      "saving": "Saving…",
+      "error": "Couldn't save changes. Check your connection and try again."
+    }
+  },
+  "screens": {
+    "home": {
+      "greeting": {
+        "morning": "Good morning, {name}! ☀️",
+        "afternoon": "Good afternoon, {name}! 👋",
+        "evening": "Good evening, {name}! 🌙"
+      },
+      "greetingNoName": {
+        "morning": "Good morning! ☀️",
+        "afternoon": "Good afternoon! 👋",
+        "evening": "Good evening! 🌙"
+      },
+      "streakUnit": "{count, plural, one {day} other {days}}",
+      "streakLabel": "{count, plural, one {# day} other {# days}} streak",
+      "heroOverline": "Your garden",
+      "heroTitle": "{count, plural, one {# word} other {# words}} growing",
+      "legend": {
+        "thirsty": "{count, number} thirsty",
+        "ripe": "{count, number} ripe",
+        "wilting": "{count, number} wilting"
+      },
+      "missions": {
+        "title": "Today's Missions",
+        "progress": "{done} of {total} completed",
+        "comingSoon": "Daily missions are coming soon! In the meantime, water what's due below.",
+        "goldenBloom": "Finish all {total} to grow today's <b>Golden Bloom</b> 🌸",
+        "goldenBloomOne": "Finish it to grow today's <b>Golden Bloom</b> 🌸",
+        "goldenBloomEarned": "Today's <b>Golden Bloom</b> has bloomed! 🎉",
+        "water": "Water {count, plural, one {# due word} other {# due words}}",
+        "thirsty": "Water today's thirsty words",
+        "plant": "Plant {count, plural, one {# new word} other {# new words}}",
+        "challenge": "Collocation challenge",
+        "valueDone": "Done!",
+        "valueMinutes": "{count} min",
+        "valueCount": "{done}/{total}",
+        "progressWater": "{done} of {total} words watered",
+        "progressPlant": "{done} of {total} words planted",
+        "notStarted": "Not started",
+        "speak": "Say {count, plural, one {# ripe word} other {# ripe words}}",
+        "progressSpeak": "{done} of {total} words said"
+      },
+      "action": {
+        "continue": "Keep going!",
+        "start": "Water your garden",
+        "detail": "{count, plural, one {# word} other {# words}} left · about {minutes} min",
+        "detailNoTime": "{count, plural, one {# word} other {# words}} left"
+      },
+      "ripens": "Tomorrow {time} · <b>{count, plural, one {# word} other {# words}} will ripen</b>",
+      "public": {
+        "metaTitle": "Learn English Vocabulary in 5 Minutes a Day | Dygo Academy",
+        "metaDescription": "Learn English vocabulary with clear meanings, IPA, audio and real examples in your language. Spaced repetition brings words back before you forget. Start free.",
+        "metaKeywords": "learn English vocabulary, English vocabulary app, English words with examples, spaced repetition, IPA pronunciation, English flashcards, vocabulary builder",
+        "nav": {
+          "label": "On this page",
+          "features": "Features",
+          "howItWorks": "How it works",
+          "questions": "Questions",
+          "forParents": "For parents",
+          "speaking": "Speaking"
+        },
+        "signIn": "Sign in",
+        "createAccount": "Create account",
+        "hero": {
+          "title": "Learn a word. Use it right. Remember it for good.",
+          "lead": "Every word comes with real example sentences and a clear explanation in your language. Then Dygo brings it back right before you’d forget it. Just 5 minutes a day.",
+          "start": "Create free account",
+          "haveAccount": "I already have an account",
+          "languages": "Available in English, Tiếng Việt and 简体中文",
+          "pillNew": "New",
+          "pill": "Speaking practice with a native speaker"
+        },
+        "plant": {
+          "inputLabel": "Plant a word",
+          "placeholder": "A word you keep forgetting…",
+          "button": "Plant",
+          "try": "Try:",
+          "chipsLabel": "Try a word",
+          "synonyms": "Synonyms",
+          "bird": "I’ll remind you before it slips your mind. Want to keep this one?",
+          "save": "Save this word — it’s free",
+          "unknown": "We’ll grow “{word}” for you once you sign up."
+        },
+        "pains": {
+          "title": "How to remember English vocabulary for a long time",
+          "lead": "Most new words fade within a week. Tap a card to see the habit that makes each one stay.",
+          "hint": "Tap to see how Dygo helps",
+          "helps": "How Dygo helps",
+          "cards": {
+            "use": {
+              "front": "“I know what it means, but I can’t use it.”",
+              "back": "Every word comes with real example sentences, synonyms and fill-in-the-blank practice."
+            },
+            "forget": {
+              "front": "“I learn a word today and forget it by next week.”",
+              "back": "Dygo brings each word back right before you’d forget it."
+            },
+            "language": {
+              "front": "“All-English explanations just confuse me.”",
+              "back": "Get meanings in Vietnamese or Chinese when you need them, and switch to English only when you’re ready."
+            },
+            "habit": {
+              "front": "“I start strong, then give up after three days.”",
+              "back": "Just 5 minutes and three small missions a day. On busy days, the rain barrel protects your streak."
+            }
+          }
+        },
+        "how": {
+          "title": "How spaced repetition helps English learners",
+          "lead": "Spaced repetition brings each word back right before you’d forget it, at longer and longer gaps. Think of every word as a plant: each time you review it and get it right, it grows, and Dygo waits a little longer before the next watering.",
+          "stage": "Stage {n}",
+          "reviews": "Reviews:",
+          "growsWhen": "Grows when:",
+          "staysIf": "Stays that way if:",
+          "stages": {
+            "seed": {
+              "name": "Seed",
+              "means": "A new word you’ve just added.",
+              "reviews": "none yet. It’s waiting for you.",
+              "grows": "you study it for the first time."
+            },
+            "sprout": {
+              "name": "Sprout",
+              "means": "You’re still learning it.",
+              "reviews": "often, later that day or the next day.",
+              "grows": "you get it right a couple of times."
+            },
+            "flower": {
+              "name": "Flower",
+              "means": "You remember it.",
+              "reviews": "every few days, then every week or two.",
+              "grows": "you keep getting it right as the gaps get longer."
+            },
+            "fruiting": {
+              "name": "Fruiting",
+              "means": "You know it for good.",
+              "reviews": "just the odd one, weeks apart.",
+              "grows": "you keep getting it right. Most words get here after about four good reviews."
+            }
+          },
+          "spread": {
+            "title": "Reviews spread out as a word grows",
+            "today": "Today",
+            "later": "Weeks later",
+            "text": "Reviewing a word just before you’d forget it is what makes it stick, so your 5 minutes go on the words that need it most.",
+            "chart": {
+              "with": "With Dygo",
+              "without": "Without review",
+              "review": "A review",
+              "label": "Memory of a word over a few weeks: without review it fades fast; with Dygo each review brings it back and it fades more slowly each time."
+            }
+          },
+          "tips": {
+            "drop": {
+              "title": "A water drop means: review it today",
+              "text": "When it’s time to review a word, Dygo puts a water drop on it. Just review the words with a drop. You don’t have to work out what to study."
+            },
+            "forgot": {
+              "title": "Forgot one? No problem.",
+              "text": "It goes back to being a sprout and comes up a few more times until it sticks."
+            }
+          }
+        },
+        "uses": {
+          "title": "What do you need English for?",
+          "lead": "Grow the words that matter to you.",
+          "soon": "Coming soon",
+          "soonLine": "Until then, start with your own words.",
+          "addWord": "Add a word",
+          "button": "Start with these words",
+          "beds": {
+            "work": {
+              "name": "Work",
+              "line": "Words for emails, meetings and talking to customers."
+            },
+            "study": {
+              "name": "Study & IELTS",
+              "line": "The IELTS Academic word list is ready to go."
+            },
+            "travel": {
+              "name": "Travel",
+              "line": "Get around with confidence on your next trip."
+            },
+            "daily": {
+              "name": "Daily life",
+              "line": "Everyday words for shopping, appointments and getting things done."
+            },
+            "own": {
+              "name": "My own words",
+              "line": "Save any word you come across, with your own meaning and example sentence.",
+              "lineAi": "Add any word you meet. Dygo adds the meaning and examples."
+            }
+          }
+        },
+        "features": {
+          "title": "Everything you need to grow your vocabulary",
+          "watering": {
+            "title": "Daily watering",
+            "text": "Review the words that are due today. Tell Dygo how well you remembered each one, and it schedules the next review."
+          },
+          "quizzes": {
+            "title": "Quizzes",
+            "text": "Pick the right word, match synonyms, fill in the blanks, or listen and spell. Words you miss come back later, with no red crosses."
+          },
+          "beds": {
+            "title": "Topic beds",
+            "text": "IELTS Academic word lists plus beds you create yourself, each with example sentences, pronunciation and synonyms."
+          },
+          "missions": {
+            "title": "Missions and Golden Bloom",
+            "text": "Three small missions a day. Complete all three to earn a Golden Bloom, and let the rain barrel protect your streak on busy days."
+          },
+          "shared": {
+            "title": "Shared gardens",
+            "text": "Learn with your class or friends. See how the group is doing, but never anyone’s private progress."
+          },
+          "language": {
+            "title": "Your language",
+            "text": "Get meanings in Vietnamese or Chinese when you want them, or stick to English when you don’t."
+          }
+        },
+        "parents": {
+          "overline": "For parents",
+          "soon": "Coming soon",
+          "title": "A garden for kids, too",
+          "lead": "Children learn their first English words with pictures, sounds and Dygo the bird. Big buttons, short sessions, and instructions in both Vietnamese and English.",
+          "points": {
+            "pictures": "Picture quizzes: tap the word you hear",
+            "faces": "Two simple faces instead of a rating scale",
+            "stars": "Bees and stars instead of red crosses",
+            "account": "Manage your child’s garden from your own account"
+          },
+          "kidsPrompt": "Find “cat”!",
+          "kidsHint": "Tìm “cat”!"
+        },
+        "faq": {
+          "title": "Common questions",
+          "items": {
+            "free": {
+              "q": "Is Dygo free?",
+              "a": "Yes. It’s free to start, and you don’t need a credit card."
+            },
+            "who": {
+              "q": "Who is Dygo for?",
+              "a": "Anyone who wants to learn English words and use them with confidence, whether for work, study, travel or everyday life."
+            },
+            "english": {
+              "q": "Do I need to be good at English to start?",
+              "a": "No. Dygo can explain words in Vietnamese or Chinese whenever you need it."
+            },
+            "phone": {
+              "q": "Does it work on my phone?",
+              "a": "Yes. It works in your browser on iPhone, Android, iPad and computers, and you can add it to your home screen like an app."
+            },
+            "time": {
+              "q": "How much time do I need?",
+              "a": "About 5 minutes a day. Dygo shows you which words need watering today."
+            },
+            "ownWords": {
+              "q": "Can I add my own words?",
+              "a": "Yes. Add any word to “My own words” and review it just like the others."
+            },
+            "kids": {
+              "q": "Is there a version for children?",
+              "a": "A garden for kids is coming soon. For now, Dygo is designed for teens and adults."
+            },
+            "speaking": {
+              "q": "How does speaking practice work? Is my voice kept?",
+              "a": "Listen to a native speaker say a sentence with your word, then say it yourself. Dygo compares the two, shows the part that needs work and grows your word from seed to fruit. Your recording is checked, then deleted."
+            }
+          }
+        },
+        "cta": {
+          "overline": "Dygo seeds",
+          "title": "Plant your first word today",
+          "free": "Free",
+          "button": "Create free account"
+        },
+        "footer": {
+          "terms": "Terms",
+          "privacy": "Privacy",
+          "copyright": "© 2026 Dygo Academy"
+        },
+        "speak": {
+          "overline": "New · Speaking",
+          "title": "How to practise English speaking by yourself",
+          "lead": "You don’t need a partner to practise speaking. Listen, say it, then compare: Dygo puts your voice next to a native speaker’s, so you can see the difference, not just guess.",
+          "steps": {
+            "listen": {
+              "title": "Listen",
+              "text": "A native speaker says one real sentence. Slow it to 0.75× if you like."
+            },
+            "say": {
+              "title": "Say it",
+              "text": "3 · 2 · 1 · beep, then read it your way. No time limit."
+            },
+            "compare": {
+              "title": "Compare",
+              "text": "See your voice over theirs, and the one sound to fix next."
+            }
+          },
+          "grows": "Your best try grows the word’s plant too, so speaking practice counts toward your daily missions.",
+          "privacy": "Your recording is checked, then deleted.",
+          "demo": {
+            "say": "Say this sentence",
+            "level": "C1 · verb",
+            "native": "Native · UK",
+            "you": "You",
+            "youInitial": "Y",
+            "tryNow": "Try it now",
+            "tryNowText": "Tap the mic to see a sample learner’s result. No sign-up needed.",
+            "micLabel": "Try the demo",
+            "stopLabel": "Stop",
+            "listening": "Listening…",
+            "listeningText": "Comparing a sample learner with the native speaker.",
+            "match": "In bloom · {pct}% match",
+            "tip": "<b>MIT</b> is too soft. Make it louder and a little longer: <plain>MIT</plain>-i-gate.",
+            "tryAgain": "Try again",
+            "practise": "Practise free"
+          }
+        }
+      }
+    },
+    "review": {
+      "close": "Close",
+      "missionLabel": "Mission · {title}",
+      "count": "{done}/{total}",
+      "vineText": "{done} of {total} words watered",
+      "title": "Water {count, plural, one {# word} other {# words}}",
+      "showAnswer": "Show answer",
+      "finishedTitle": "All {count} words watered! 🎉",
+      "seeBloom": "Watch your garden bloom!",
+      "replayDemo": "Replay demo",
+      "backToGarden": "Back to garden",
+      "empty": "Nothing is thirsty right now! Come back when your words ripen.",
+      "error": "Couldn't save this word. Check your connection and try again."
+    },
+    "complete": {
+      "unknown": "—",
+      "close": "Close",
+      "bloomLabel": "Blooming flower",
+      "overline": "Mission Complete! 🎉",
+      "title": "{count, plural, one {# word} other {# words}} watered",
+      "bloomed": "“{word}” and {count} more just bloomed!",
+      "percent": "{value}%",
+      "minutes": "{count} min",
+      "recalled": "recalled",
+      "today": "today",
+      "streak": "day streak",
+      "missionsDone": "{done} of {total} missions completed",
+      "missionsLeft": "{count, plural, =0 {Today's Golden Bloom is growing!} one {1 more mission to unlock today's Golden Bloom!} other {# more missions to unlock today's Golden Bloom!}}",
+      "nextMission": "{title} · {minutes} min",
+      "ripening": "{count, plural, one {# word} other {# words}} will ripen tomorrow",
+      "remindAt": "Remind me at {time}",
+      "back": "Back to garden",
+      "dayLabel": "{day}{today, select, true {, today} other {}}{done, select, true {, done} other {}}"
+    },
+    "harvest": {
+      "title": "Weekly Harvest",
+      "missionsCount": "{done} of {total} missions",
+      "missionsHint": "Completing a mission grows that day's plant",
+      "today": "Today",
+      "dayPlant": "{count, plural, =0 {no missions} one {# mission} other {# missions}}",
+      "seedPack": "Earn {need} Golden Blooms this week to unlock the <b>{name}</b> seed pack! 📦",
+      "seedPackCount": "{have}/{need}",
+      "missionsTitle": "This Week’s Missions",
+      "missionsComingSoon": "Daily missions are coming soon! Every mission you finish will grow that day’s plant right here.",
+      "goalHint": "vocabulary goal",
+      "goalMastered": "of {target, number} words mastered",
+      "goalBar": "{mastered, number} mastered · {growing, number} growing out of {target, number} total",
+      "legendMastered": "Mastered",
+      "legendGrowing": "Growing ({count, number})",
+      "eta": "Estimated completion pace: {eta}",
+      "goalTitle": "Vocabulary Goal",
+      "goalComingSoon": "Targeting an exam? Set custom word goals here soon!",
+      "barrelTitle": "Rain Barrel · {count}",
+      "barrelName": "Rain Barrel",
+      "barrelBody": "Streak protection! Got a super busy day? Your garden stays watered automatically.",
+      "comingSoon": "Coming soon!",
+      "groupBody": "{watered} of {members} watered today · {words, number} shared words",
+      "weekOf": "Week of {date}",
+      "goalBand": "Road to Band {band}",
+      "etaPending": "[ETA]"
+    },
+    "comeback": {
+      "title": "Welcome back, {name}! 🎉<br></br>Your garden missed you.",
+      "titleNoName": "Welcome back! 🎉<br></br>Your garden missed you.",
+      "legend": {
+        "thirsty": "{count, number} thirsty",
+        "wilting": "{count, number} wilting",
+        "ripe": "{count, number} still ripe"
+      },
+      "streakSafe": "Your {count}-day streak is safe and sound! 🛡️",
+      "streakBarrel": "Your Rain Barrel covered {covered, plural, one {# day} other {# days}}. {left} left (refills on {day}).",
+      "overline": "Start small",
+      "reviveTitle": "Let's save the {count} wilting words first!",
+      "reviveBody": "These words are slipping from your memory. The rest can wait until tomorrow!",
+      "revive": "Quick Revive",
+      "reviveDetail": "{count, plural, one {# word} other {# words}} · about {minutes} min",
+      "waterAllInstead": "Water all {count} words instead",
+      "waterAll": "Water all {count}",
+      "reviveDetailNoTime": "{count, plural, one {# word} other {# words}}"
+    },
+    "topics": {
+      "title": "Topics",
+      "all": "All",
+      "summary": "{beds, plural, one {# bed} other {# beds}} · {words, plural, one {# word} other {# words}}",
+      "search": "Search words and topics",
+      "filterLabel": "Filter topics",
+      "words": "{count, plural, one {# word} other {# words}}",
+      "fruiting": "{count} fruiting",
+      "separator": " · ",
+      "due": "{count} due",
+      "allWatered": "All watered!",
+      "locked": "Locked 🔒",
+      "newBed": "Plant a new bed",
+      "mine": "Mine",
+      "empty": "No beds here yet. Plant your first one below!",
+      "library": "Library",
+      "searchTitle": "Find a topic bed",
+      "searchPlaceholder": "Topic name",
+      "searchEmpty": "No topic beds match “{query}”.",
+      "newBedTitle": "Plant a new bed",
+      "newBedDescription": "Give your topic a name, then start adding words!",
+      "newBedName": "Topic name",
+      "newBedGroup": "Plant it in",
+      "newBedSubmit": "Plant it!",
+      "newBedNoGroup": "You'll need a group where you have editing rights. Create one in Groups first!",
+      "newBedError": "Couldn't plant this bed. Check your connection and try again.",
+      "shared": "Shared",
+      "searchBeds": "Search topics",
+      "lockedHint": "Seed pack · Earn {count, plural, one {# more Golden Bloom} other {# more Golden Blooms}} this week to unlock!"
+    },
+    "bed": {
+      "back": "Back to topics",
+      "options": "Topic options",
+      "stagesLabel": "Filter by stage",
+      "unknown": "—",
+      "stage": {
+        "seed": "Seeds",
+        "sprout": "Sprouts",
+        "flower": "Flowers",
+        "tree": "Fruiting"
+      },
+      "stageTitle": {
+        "seed": "Seeds in this bed",
+        "sprout": "Sprouts in this bed",
+        "flower": "Flowers in this bed",
+        "tree": "Fruiting in this bed"
+      },
+      "water": "Water {count} due",
+      "nothingDue": "Nothing due!",
+      "quiz": "Quiz",
+      "addWord": "Add word",
+      "allWords": "All words",
+      "sorted": "Sorted by next review",
+      "empty": "No words at this stage yet.",
+      "emptyBed": "This bed is empty! Add your first word to start planting.",
+      "dueNow": "Due now",
+      "new": "New",
+      "inDays": "in {count, plural, one {# day} other {# days}}",
+      "meta": "{parts}",
+      "wordsCount": "{count, plural, one {# word} other {# words}}",
+      "notFound": "This bed doesn’t exist or isn’t accessible.",
+      "tricky": "{meaning} · tricky ({count, plural, one {# miss} other {# misses}})",
+      "addSheet": {
+        "title": "Add a word",
+        "description": "To {topic}",
+        "label": "Word",
+        "placeholder": "e.g. resilient",
+        "hint": "Pronunciation, audio, and examples generate automatically!",
+        "submit": "Plant word",
+        "adding": "Planting…",
+        "error": "Couldn’t add this word. Give it another try!"
+      },
+      "speak": "Speak",
+      "speakSentences": "{count, plural, one {# sentence} other {# sentences}} from this bed",
+      "harvest": {
+        "title": "Ready to harvest",
+        "count": "{count, plural, one {# flower} other {# flowers}}",
+        "body": "Say a ripe word well (90%+) to pick its fruit. Watering dates stay the same.",
+        "picked": "Picked · {score}%",
+        "say": "Say {word}"
+      }
+    },
+    "me": {
+      "unknown": "—",
+      "testDay": "Test date: {date}",
+      "stats": {
+        "fruiting": "words fruiting",
+        "bestStreak": "best streak",
+        "hours": "{count}h",
+        "inGarden": "in the garden",
+        "goldenBlooms": "Golden Blooms"
+      },
+      "calendarTitle": "Garden Activity",
+      "calendarRange": "Last 16 weeks",
+      "calendarLabel": "Missions completed daily over the past 16 weeks",
+      "calendarLegend": "Each square = one day's missions",
+      "comingSoon": "Coming soon with daily missions!",
+      "keepsakesTitle": "Keepsakes & Achievements 🏆",
+      "keepsake": {
+        "firstHarvest": "First harvest",
+        "streak": "{count}-day streak",
+        "blooms": "{count} Golden Blooms",
+        "next": "{count} words · next unlock",
+        "nextStreak": "{count}-day streak · next unlock",
+        "nextBlooms": "{count} Golden Blooms · next unlock"
+      },
+      "dailyGoal": "Daily Goal",
+      "dailyGoalValue": "{missions} missions · {minutes} min",
+      "comingSoonShort": "Coming soon",
+      "reminder": "Ripening Reminder",
+      "meanings": "Meanings in",
+      "family": "Family",
+      "familyValue": "Open {name}'s garden",
+      "goal": "{exam} · target band {band}",
+      "testDayUnset": "[add date]",
+      "meaningsValue": {
+        "none": "English",
+        "vi-VN": "Tiếng Việt + English",
+        "zh-CN": "简体中文 + English"
+      },
+      "account": "Account"
+    },
+    "reference": {
+      "metaTitle": "Garden reference: {name}"
+    },
+    "live": {
+      "loading": "Loading your garden…",
+      "error": "Couldn't load your garden. Check your connection and try again.",
+      "retry": "Try again",
+      "errorTitle": "Something wilted!",
+      "notFoundTitle": "Path not found",
+      "notFoundBody": "This page might have moved, or the link is outdated.",
+      "backHome": "Back to my garden",
+      "missionTitle": "Water {count, plural, one {# word} other {# words}}",
+      "topicMeta": "{count, plural, one {# word} other {# words}}"
+    },
+    "groups": {
+      "list": {
+        "title": "Shared Gardens",
+        "summary": "{gardens, plural, one {# garden} other {# gardens}} · {gardeners, plural, one {# gardener} other {# gardeners}}",
+        "create": "Create a garden",
+        "start": "Start a garden",
+        "join": "Join with a link",
+        "rainTitle": "{group} · water {count, plural, one {# word} other {# words}}",
+        "rainDetail": "{done} of {members} done · ends {time}",
+        "cardMeta": "{members, plural, one {# gardener} other {# gardeners}} · {beds, plural, one {# shared bed} other {# shared beds}} · {words, plural, one {# word} other {# words}}",
+        "emptyTitle": "No shared gardens yet",
+        "emptyBody": "Start one for your class or friend group, or join using an invite link!",
+        "joinTitle": "Join with a link",
+        "joinSubtitle": "Paste your invite link below",
+        "joinField": "Invite link",
+        "joinPlaceholder": "dygoacademy.com/join/…",
+        "joinGo": "Open invite",
+        "joinInvalid": "Hmm, that doesn't look like a valid invite link."
+      },
+      "garden": {
+        "back": "Back to shared gardens",
+        "manage": "Manage garden",
+        "subtitle": "{role, select, ADMIN {You're an Admin} WRITE {You're an Editor} other {You're a Viewer}} · {members, plural, one {# gardener} other {# gardeners}}",
+        "eyebrow": "Shared garden",
+        "heroTitle": "{count, plural, one {# shared word growing} other {# shared words growing}}",
+        "watered": "{watered} of {members} watered today",
+        "ripe": "{ripe} of {total} plants ripe",
+        "plotLabel": "A shared garden with 5 plots—one per gardener",
+        "rainTitle": "Rain day · water {count, plural, one {# word} other {# words}}",
+        "rainDetail": "{done} of {members} finished · you: {mine} of {count}",
+        "beds": "Shared beds",
+        "sorted": "Sorted by your due words",
+        "bedWords": "{count, plural, one {# word} other {# words}}",
+        "separator": " · ",
+        "noBeds": "No shared beds yet.",
+        "gardeners": "Gardeners",
+        "gardenersLabel": "{count, plural, one {# gardener} other {# gardeners}}",
+        "more": "+{count}",
+        "invite": "Invite",
+        "notFound": "This garden isn't available or you aren't a member."
+      },
+      "tend": {
+        "title": "Tend the Garden",
+        "back": "Back to group garden",
+        "trickyTab": "Tricky patches",
+        "gardenersTab": "Gardeners",
+        "trickyTitle": "Tricky patches",
+        "window": "last 7 days",
+        "trickyIntro": "Words this group missed most. Shows combined totals only—never individual scores!",
+        "trickyMeta": "{misses, plural, one {# miss} other {# misses}} · {gardeners, plural, one {# gardener} other {# gardeners}}",
+        "trickyEmpty": "No tricky patches this week. Everyone's crushing it!",
+        "rainTitle": "Call a rain day 🌧️",
+        "rainBody": "Sends a notification to {count, plural, one {# gardener} other {# gardeners}} · focuses on tricky words first",
+        "sizeLabel": "Words per gardener",
+        "size": "{count, plural, one {# word} other {# words}}",
+        "start": "Start rain day · {count, plural, one {# word} other {# words}} each",
+        "last": "Last rain day: {day} · {joined} of {members} participated",
+        "pushMessage": "Rain day in {group}: water {count, plural, one {# word} other {# words}} today!",
+        "sent": "Rain day alert sent to {count, plural, one {# gardener} other {# gardeners}}!",
+        "sendFailed": "Couldn't send rain day alert. Give it another try.",
+        "alreadyRunning": "A rain day is already active today!",
+        "legend": "<b>Admin</b> manages members & rain days · <b>Editor</b> adds beds & words · <b>Viewer</b> waters plants",
+        "joined": "Joined {date}",
+        "invitesActive": "{count, plural, one {# active invite link} other {# active invite links}}",
+        "invitesNone": "No active invite links",
+        "invitesNoneBody": "Create one to invite fellow gardeners!",
+        "inviteUses": "{used} of {max} used",
+        "inviteUsesOpen": "used {used, plural, one {# time} other {# times}}",
+        "inviteExpires": "expires {date}",
+        "inviteNoExpiry": "never expires",
+        "invite": "Invite",
+        "linksTitle": "Invite Links",
+        "linksSubtitle": "Active links that can still be used",
+        "revoke": "Revoke",
+        "revokeLabel": "Revoke the {role} link",
+        "newLink": "New invite link",
+        "roleChanged": "{name} is now an {role}.",
+        "removeConfirm": "Remove {name} from this garden?",
+        "removed": "{name} was removed from the garden.",
+        "lastAdmin": "A garden needs at least one admin. Promote someone else before stepping down!",
+        "actionFailed": "Something went wrong. Try again.",
+        "settings": "Garden Settings",
+        "settingsSubtitle": "Name, description, and visibility settings",
+        "save": "Save changes",
+        "saved": "Saved!",
+        "delete": "Delete garden",
+        "deleteConfirm": "Are you sure you want to delete {name}? All shared beds and words will be permanently removed.",
+        "adminOnly": "Only garden admins can access these settings.",
+        "backToGarden": "Back to garden",
+        "loadingTricky": "Finding tricky patches…",
+        "echoTitle": "Echo challenge",
+        "echoWindow": "this week",
+        "echoKicker": "The garden's trickiest word",
+        "echoDone": "{done} of {total, plural, one {# gardener} other {# gardeners}} done",
+        "echoNote": "Totals only, never names.",
+        "echoSay": "Say it"
+      },
+      "invite": {
+        "title": "Invite Gardeners",
+        "subtitle": "to {group}",
+        "joinAs": "They'll join as",
+        "roleLabel": "Role for new members",
+        "expires": "Expires",
+        "uses": "Usage limit",
+        "inDays": "In {count, plural, one {# day} other {# days}}",
+        "never": "Never",
+        "times": "{count, plural, one {# time} other {# times}}",
+        "unlimited": "Unlimited",
+        "stepLabel": "{label}: {value}. Tap to change.",
+        "onceNotice": "For security, this link is shown only once. Copy or share it now!",
+        "linkPlaceholder": "Link generates when you tap Copy or Share",
+        "copy": "Copy link",
+        "share": "Share…",
+        "copied": "Link copied to clipboard! ✨",
+        "copyFailed": "Couldn't copy automatically. Please select and copy manually.",
+        "failed": "Couldn't generate link. Try again.",
+        "shareText": "Join {group} on Dygo Academy!"
+      },
+      "join": {
+        "invitedBy": "{name} invited you to",
+        "invited": "You're invited to join",
+        "gardeners": "{count, plural, one {gardener} other {gardeners}}",
+        "beds": "{count, plural, one {shared bed} other {shared beds}}",
+        "words": "{count, plural, one {word} other {words}}",
+        "benefitBeds": "Shared topic beds are planted directly in your garden",
+        "benefitRain": "Participate in group rain days called by admins",
+        "benefitPrivate": "Your personal learning progress remains 100% private",
+        "joinAs": {
+          "ADMIN": "You'll join as an <b>{role}</b>",
+          "WRITE": "You'll join as an <b>{role}</b>",
+          "READ": "You'll join as a <b>{role}</b>"
+        },
+        "join": "Join the garden!",
+        "joining": "Joining…",
+        "notNow": "Not now",
+        "loading": "Opening invite…",
+        "already": "You're already a member of {group}!",
+        "open": "Open garden",
+        "notFound": "This invite link is invalid. Ask an admin for a new one!",
+        "expired": "This invite link has expired or reached its limit. Ask for a new one!",
+        "failed": "Couldn't join. Please try again."
+      },
+      "create": {
+        "title": "Start a Garden",
+        "subtitle": "A shared learning space for your friends or class",
+        "name": "Garden Name",
+        "about": "About (optional)",
+        "namePlaceholder": "IELTS Band 7 Study Group",
+        "aboutPlaceholder": "Writing Task 2 vocabulary · 3 nights a week",
+        "openTitle": "Public Garden",
+        "openOff": "Only people with an invite link can join",
+        "openOn": "Anyone can find and join this garden",
+        "note": "You'll be the garden admin! You can add shared topic beds and invite friends next.",
+        "submit": "Create garden",
+        "failed": "Couldn't create garden. Try again."
+      }
+    },
+    "quiz": {
+      "close": "Close",
+      "label": "Quiz · {topic}",
+      "labelAll": "Quiz",
+      "count": "{done}/{total}",
+      "vineText": "{done} of {total} questions answered",
+      "listen": "Play audio",
+      "listenQ": "Listen closely, then type what you hear.",
+      "hint": "Need a hint?",
+      "hintLoading": "Finding a hint…",
+      "hintTitle": "Hint",
+      "noIpa": "No pronunciation available for this word yet.",
+      "noDefinition": "No definition available for this word yet.",
+      "answerLabel": "Your answer",
+      "placeholder": "Type your answer here…",
+      "check": "Check",
+      "optionsLabel": "Choose one",
+      "matchQ": "Which word means the same as",
+      "matchQAntonym": "Which word means the opposite of",
+      "yourPick": "Your pick",
+      "right": "Spot on! 🎉",
+      "notQuite": "Almost! It’s “{answer}”",
+      "wordIpa": "{word} · {ipa}",
+      "quote": "“{text}”",
+      "mastered": "Mastered! This word needs watering less often now. 🚀",
+      "comesBack": "This word will pop up again in your next review.",
+      "next": "Next",
+      "finish": "See results",
+      "empty": "Not enough words are ready for a quiz yet. Keep studying!",
+      "doneTitle": "{correct} of {total} correct!",
+      "backToBed": "Back to bed",
+      "backToTopics": "Back to topics",
+      "error": "Couldn't check this answer. Check your connection and try again.",
+      "type": {
+        "CLOZE": "Fill in the blank",
+        "DICTATION": "Listen and spell",
+        "MATCHING": "Synonym or antonym",
+        "CONTEXTUAL_CHOICE": "Choose the word"
+      },
+      "emptyDrill": "No tricky words to drill right now. Great job keeping your garden clean! ✨",
+      "drillTitle": "Tricky Words Drill",
+      "result": {
+        "close": "Close",
+        "overline": "Quiz Completed! 🌟",
+        "overlineDrill": "Drill Completed! 🎉",
+        "title": "{correct} of {total} right",
+        "allRight": "100% correct! Your garden is thriving! 🌱",
+        "someMissed": "{count, plural, one {# word needs} other {# words need}} a little extra water!",
+        "right": "Correct",
+        "needWater": "Needs water",
+        "missedTitle": "Words that need water",
+        "missedNote": "They'll pop up in your next review session so you can master them soon!",
+        "drill": "Drill tricky words",
+        "backToBed": "Back to bed",
+        "backToTopics": "Back to topics"
+      }
+    },
+    "auth": {
+      "email": "Email address",
+      "password": "Password",
+      "show": "Show",
+      "hide": "Hide",
+      "showPassword": "Show password",
+      "hidePassword": "Hide password",
+      "signIn": {
+        "metaTitle": "Sign In",
+        "title": "Welcome back! 👋",
+        "subtitle": "Sign in to water today's plants.",
+        "forgot": "Forgot password?",
+        "submit": "Sign in",
+        "submitting": "Signing in…",
+        "newHere": "New to Dygo? <link>Create an account</link>",
+        "errors": {
+          "mismatch": "Invalid email or password. Please try again or reset your password.",
+          "network": "Couldn't sign you in. Check your connection and try again."
+        }
+      },
+      "back": "Back",
+      "register": {
+        "metaTitle": "Create Account",
+        "title": "Plant your first seed 🌱",
+        "subtitle": "Build your vocabulary garden. It's completely free!",
+        "name": "Your name",
+        "emailPlaceholder": "you@example.com",
+        "passwordPlaceholder": "At least 6 characters",
+        "submit": "Create account",
+        "submitting": "Creating account…",
+        "terms": "By continuing, you agree to our <terms>Terms of Service</terms> and <privacy>Privacy Policy</privacy>.",
+        "haveAccount": "Already have an account? <link>Sign in</link>",
+        "invite": {
+          "invitedBy": "{name} invited you to join",
+          "title": "Create your account",
+          "subtitle": "You'll jump straight into the shared garden right after!",
+          "submit": "Create account & join",
+          "haveAccount": "Already have an account? <link>Sign in to join</link>"
+        },
+        "errors": {
+          "failed": "Couldn't create an account with these details. If you already have one, try signing in instead!",
+          "network": "We couldn't create your account. Check your connection and try again.",
+          "confirmEmail": "Check your inbox to confirm your email, then sign in!"
+        }
+      },
+      "forgot": {
+        "metaTitle": "Reset Password",
+        "title": "Reset your password",
+        "subtitle": "Enter your email and we'll send you a link to pick a new password.",
+        "submit": "Send reset link",
+        "submitting": "Sending…",
+        "sent": {
+          "title": "Check your inbox! 📩",
+          "body": "We sent a reset link to {email}. The link expires in 1 hour.",
+          "backToSignIn": "Back to sign in",
+          "resend": "Didn't get the email? Resend link"
+        },
+        "errors": {
+          "rateLimited": "Too many attempts. Please wait a minute before trying again.",
+          "network": "Couldn't send reset link. Check your connection and try again."
+        }
+      },
+      "reset": {
+        "metaTitle": "Choose New Password",
+        "title": "Choose a new password",
+        "subtitle": "You'll use this password next time you sign in.",
+        "newPassword": "New password",
+        "submit": "Save new password",
+        "submitting": "Saving…",
+        "expired": {
+          "title": "This link has expired",
+          "subtitle": "Password reset links are valid for 1 hour. Request a new one below!",
+          "newLink": "Send new link"
+        },
+        "errors": {
+          "samePassword": "Please choose a password that's different from your old one.",
+          "failed": "Couldn't save password. Make sure it has at least 6 characters and try again.",
+          "network": "Couldn't save your new password. Check your connection and try again."
+        }
+      }
+    },
+    "speak": {
+      "header": "Speaking · The Pond",
+      "progress": "{n}/{total}",
+      "close": "Close",
+      "saySentence": "Say this sentence",
+      "nativeSpeaker": "Native speaker",
+      "play": "Play",
+      "playing": "Playing",
+      "accent": {
+        "uk": "UK",
+        "us": "US"
+      },
+      "speed": {
+        "normal": "1×",
+        "slow": "0.75×"
+      },
+      "listenHint": "Listen, then say the whole sentence",
+      "micButton": "Start recording",
+      "recording": "Recording",
+      "fillShape": "The pale green shape is the native speaker. Try to fill it.",
+      "stressTip": "<b>{word}</b> {before}<b>{stressed}</b>{after}: push on <b>{syllable}</b>",
+      "tapToStop": "Tap to stop",
+      "getReady": "Get ready",
+      "stopButton": "Stop recording",
+      "cancel": "Cancel",
+      "yourSentence": "Your sentence",
+      "durations": "{you}s · native {native}s",
+      "view": {
+        "label": "Waveform view",
+        "overlay": "Overlay",
+        "stacked": "Side by side"
+      },
+      "legend": {
+        "native": "Native",
+        "you": "You",
+        "needsWork": "Needs work"
+      },
+      "waveLabel": {
+        "listen": "Waveform of a native speaker saying the sentence",
+        "live": "Your voice, live, over the native shape",
+        "overlay": "Your sentence in clay over the native speaker in green.",
+        "stacked": "Native speaker on top, you below"
+      },
+      "mark": {
+        "stressSoft": "{syllable} is too soft",
+        "missing": "missing",
+        "heard": "heard “{word}”",
+        "unclear": "unclear"
+      },
+      "stage": {
+        "seed": "Seed",
+        "sprout": "Sprout",
+        "bloom": "In bloom",
+        "fruit": "Fruit"
+      },
+      "match": "{stage} · {pct}% match",
+      "stageScale": "Seed · Sprout · Bloom · <b>Fruit at 90%</b>",
+      "tip": {
+        "stress": {
+          "title": "In <b>{word}</b>, make <b>{syllable}</b> stronger",
+          "body": "You said its {count, select, 2 {two parts} 3 {three parts} 4 {four parts} 5 {five parts} 6 {six parts} other {parts}} evenly. Say {before}<b>{stressed}</b>{after}. The rest of the sentence flowed well.",
+          "bodyShort": "You said its {count, select, 2 {two parts} 3 {three parts} 4 {four parts} 5 {five parts} 6 {six parts} other {parts}} evenly. Say {before}<b>{stressed}</b>{after}."
+        },
+        "missing": {
+          "title": "Say every word",
+          "body": "We didn't hear {words}. Say the whole sentence in one go."
+        },
+        "rushed": {
+          "title": "Slow down on {word}",
+          "body": "Give {word} as much time as the native speaker does."
+        },
+        "slow": {
+          "title": "Keep {word} moving",
+          "body": "You stretched {word}. Say it as one smooth word."
+        },
+        "flowed": {
+          "title": "That flowed well",
+          "body": "Your rhythm matched the native speaker. On to the next one."
+        },
+        "unclear": {
+          "title": "Say <b>{word}</b> more clearly",
+          "body": "{heard, select, none {Listen to the native speaker again, then say it slowly.} other {We heard “{heard}”. Listen to the native speaker again, then say it slowly.}}"
+        },
+        "also": {
+          "both": "Also keep <b>{missing}</b>, and say <b>{unclear}</b>{ipa, select, none {} other { {ipa}}}.",
+          "missing": "Also keep <b>{missing}</b>.",
+          "unclear": "Also say <b>{unclear}</b>{ipa, select, none {} other { {ipa}}}."
+        }
+      },
+      "playYou": "You",
+      "tryAgain": "Try again",
+      "nextWord": "Next word",
+      "done": {
+        "kicker": "Speaking done",
+        "title": "{n, plural, one {You said # word out loud} other {You said # words out loud}}",
+        "sub": "Your voice watered your garden",
+        "gardenLabel": "{n, plural, one {One plant for the word you spoke} =5 {Five plants, one for each word you spoke} other {# plants, one for each word you spoke}}",
+        "pattern": "Pattern to watch:",
+        "best": "{pct}%"
+      },
+      "backToGarden": "Back to garden",
+      "mic": {
+        "title": "Dygo needs your microphone",
+        "why": "To put your voice next to a native speaker's, Dygo listens while you speak.",
+        "private": "We don't save your recordings. They stay on this phone and are gone when you leave.",
+        "headphones": "In a noisy place, headphones help.",
+        "allow": "Allow microphone",
+        "notNow": "Not now"
+      },
+      "denied": {
+        "title": "The microphone is off for Dygo",
+        "body": "In Safari: tap aA → Website Settings → Microphone → Allow, then try again.",
+        "retry": "Try again",
+        "skip": "Skip speaking"
+      },
+      "quiet": {
+        "title": "We couldn't hear you",
+        "body": "Move closer to the phone and try again."
+      },
+      "short": {
+        "title": "Say the whole sentence",
+        "body": "That was too short to compare. Say every word."
+      },
+      "unsupported": {
+        "title": "Speaking isn't available on this browser",
+        "body": "Open Dygo in Safari or Chrome on your phone to practise speaking."
+      },
+      "audioFailed": {
+        "title": "Couldn't load the native audio",
+        "body": "Check your connection and try again. The other sentences still work.",
+        "retry": "Retry",
+        "skip": "Next word"
+      },
+      "soundGarden": {
+        "title": "Sound Garden",
+        "body": "Say your words out loud and see your voice next to a native speaker.",
+        "pond": "The Pond",
+        "pondBody": "{n, plural, one {# sentence ready} other {# sentences ready}}",
+        "open": "Start speaking"
+      },
+      "sayThis": {
+        "offer": "Say this one?",
+        "close": "Back to the card"
+      },
+      "countdownHint": "Recording starts after the beep · tap to start now",
+      "countdownButton": "Get ready. Recording starts after the beep. Tap to start now",
+      "startingSoon": "Starting soon",
+      "pauseStops": "or just pause, it stops by itself",
+      "checking": "Checking your sentence…",
+      "privacy": "Your recording is checked, then deleted.",
+      "quickCheck": "Quick check on this phone: the checker was busy.",
+      "failed": {
+        "title": "Couldn't check this one",
+        "body": "The connection dropped. Your recording wasn't saved.",
+        "checkAgain": "Check again",
+        "recordAgain": "Record again"
+      },
+      "nativeAccent": "Native · {accent}",
+      "playingShort": "Playing…",
+      "playNativeLabel": "Play the native speaker",
+      "playYouLabel": "Play your recording"
+    },
+    "onboarding": {
+      "back": "Back",
+      "skip": "Skip",
+      "continue": "Continue",
+      "progress": "Step {step} of {total}",
+      "progressDone": "All four steps done",
+      "saveError": "We couldn't save that. Check your connection and try again.",
+      "level": {
+        "metaTitle": "Your level",
+        "title": "How much English do you have?",
+        "subtitle": "Pick the sentence that sounds most like you.",
+        "notSure": "Not sure? Start at B1",
+        "options": {
+          "A2": "I can talk about my day and ask simple questions.",
+          "B1": "I can follow the main points of a conversation or a short article.",
+          "B2": "I can discuss most topics and read the news without much help.",
+          "C1": "I can read academic texts and say exactly what I mean."
+        }
+      },
+      "goal": {
+        "metaTitle": "Your goal",
+        "title": "What are you growing towards?",
+        "subtitle": "Your goal decides which words ripen first.",
+        "options": {
+          "IELTS": {
+            "title": "IELTS",
+            "detail": "Academic or General Training"
+          },
+          "PTE": {
+            "title": "PTE",
+            "detail": "PTE Academic"
+          },
+          "LIFE": {
+            "title": "Just for life",
+            "detail": "Work, travel and everyday English"
+          }
+        },
+        "target": {
+          "IELTS": "Target band",
+          "PTE": "Target score"
+        },
+        "lower": "Lower target",
+        "raise": "Raise target"
+      },
+      "bed": {
+        "metaTitle": "First topic",
+        "title": "Pick your first seed packet",
+        "subtitle": "It becomes the first bed in your garden. You can add more any time.",
+        "plant": "Plant this bed",
+        "empty": "No topics to plant yet. You can add your own words from Topics.",
+        "words": "{count, plural, one {# word} other {# words}}"
+      },
+      "reminder": {
+        "metaTitle": "Reminder time",
+        "title": "When should we remind you?",
+        "subtitle": "Drag the sun to the time you'd like to water your words.",
+        "pick": "Pick a time",
+        "confirm": "Remind me at {time}",
+        "slider": "Reminder time",
+        "morning": "Morning",
+        "night": "Night",
+        "presets": {
+          "morning": "Morning · {time}",
+          "lunch": "Lunch · {time}",
+          "evening": "Evening · {time}",
+          "night": "Night · {time}"
+        },
+        "notice": {
+          "denied": "Notifications are off in this browser, so we saved your time without reminders. You can turn them on later in Me.",
+          "unsupported": "This browser can't show reminders. We saved your time; turn reminders on in Me from a browser that can.",
+          "error": "We couldn't save your reminder. You can set it later in Me."
+        }
+      },
+      "ready": {
+        "metaTitle": "Garden ready",
+        "title": "Your garden is ready",
+        "subtitle": "Your first seeds are planted.",
+        "water": "Water your first words",
+        "none": "Not set",
+        "level": "Level",
+        "levelValue": "{level}",
+        "goal": "Goal",
+        "goalWithBand": "{goal} · {band}",
+        "bed": "First bed",
+        "reminder": "Reminder",
+        "reminderOff": "Off",
+        "editLater": "You can change any of these later in Me."
+      }
+    }
+  }
+}

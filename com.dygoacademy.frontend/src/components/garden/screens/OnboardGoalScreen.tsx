@@ -49,7 +49,7 @@ export function OnboardGoalScreen({
       footer={
         <>
           {error ? <SaveError /> : null}
-          <Button variant="primary" onClick={onContinue} disabled={!goal} loading={saving}>
+          <Button variant="primary" className="md:max-w-none" onClick={onContinue} disabled={!goal} loading={saving}>
             {t('continue')}
           </Button>
         </>

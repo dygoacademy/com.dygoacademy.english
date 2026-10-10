@@ -8,16 +8,18 @@ import type { ClockTime } from '../format';
 import { useGardenFormat } from '../format';
 import { WaterIcon } from '../icons';
 import { formatBand, hasBand } from '../live/onboarding';
-import { OnboardingShell } from '../OnboardingShell';
+import { ONBOARDING_STAGES, OnboardingShell } from '../OnboardingShell';
 import { PlantGlyph } from '../PlantGlyph';
 import { SaveError } from './OnboardLevelScreen';
 
 /**
  * OB5 · Garden ready (board `OnboardReady`, not in the repo yet). Props only.
  *
- * The first seeds drop into the bed (the bloom animation, one after the
- * other; still under reduced motion), a summary of the four choices (all
- * can be changed later in Me), and "Water your first words" → A1.
+ * One forest bed instead of the shell's progress header: the four step
+ * plants, all grown (seed → sprout → flower → fruit tree), pop in one after
+ * the other (bloom animation; still under reduced motion). Then a summary
+ * of the four choices (all can be changed later in Me), and "Water your
+ * first words" → A1.
  */
 export interface OnboardReadyScreenProps {
   level: OnboardingLevel | null;
@@ -30,8 +32,6 @@ export interface OnboardReadyScreenProps {
   saving?: boolean;
   error?: boolean;
 }
-
-const SEEDS = 5;
 
 export function OnboardReadyScreen({
   level,
@@ -67,6 +67,7 @@ export function OnboardReadyScreen({
   return (
     <OnboardingShell
       step={5}
+      progress={false}
       back={back}
       title={t('ready.title')}
       subtitle={t('ready.subtitle')}
@@ -75,6 +76,7 @@ export function OnboardReadyScreen({
           {error ? <SaveError /> : null}
           <Button
             variant="primary"
+            className="md:max-w-none"
             onClick={onWater}
             loading={saving}
             leadingIcon={<WaterIcon width={20} height={20} fill="currentColor" />}
@@ -84,20 +86,20 @@ export function OnboardReadyScreen({
         </>
       }
     >
-      <div
-        aria-hidden="true"
-        className="flex h-[96px] items-end justify-center gap-4 rounded-card bg-forest pb-3"
+      <ol
+        aria-label={t('progressDone')}
+        className="flex h-[96px] items-end justify-center gap-6 rounded-card bg-forest pb-3"
       >
-        {Array.from({ length: SEEDS }, (_, index) => (
-          <span
-            key={index}
-            className="bloom"
+        {ONBOARDING_STAGES.map((stage, index) => (
+          <li
+            key={stage}
+            className="bloom flex items-end"
             style={{ animationDelay: `${index * 120}ms`, animationFillMode: 'both' }}
           >
-            <PlantGlyph stage={index % 2 === 0 ? 'seed' : 'sprout'} variant="topic" size={index % 2 === 0 ? 22 : 30} />
-          </span>
+            <PlantGlyph stage={stage} variant="topic" size={36} />
+          </li>
         ))}
-      </div>
+      </ol>
       <dl className="flex flex-col divide-y divide-divider rounded-card border border-border bg-surface">
         {rows.map((row) => (
           <div key={row.id} className="flex min-h-[52px] items-center justify-between gap-3 px-4 py-2.5">

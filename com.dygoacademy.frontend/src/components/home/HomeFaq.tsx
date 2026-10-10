@@ -5,8 +5,8 @@ import { gcn } from '@/components/garden/cn';
 
 import { AddWordPlusIcon } from './homeArt';
 
-/** The eight questions (`speaking` added 2026-10-07), in reading order (phone column, JSON-LD). */
-export const FAQ_KEYS = ['free', 'who', 'english', 'phone', 'time', 'ownWords', 'speaking', 'kids'] as const;
+/** The eight questions in reading order (phone column, JSON-LD), as on the Landing Page boards (2026-10-10). */
+export const FAQ_KEYS = ['free', 'who', 'english', 'speaking', 'phone', 'time', 'ownWords', 'kids'] as const;
 export type FaqKey = (typeof FAQ_KEYS)[number];
 
 type FaqMessageKey = `items.${FaqKey}.q` | `items.${FaqKey}.a`;
@@ -33,13 +33,17 @@ export function faqJsonLd(t: (key: FaqMessageKey) => string) {
  * `reference/H3-home-v2-phone`, `H4-home-v2-desktop`, each also `-vi`).
  * Native `<details>/<summary>`, the first one open like the boards, more
  * than one may be open. Phone: one column in question order. Desktop: two
- * independent columns (odd questions left, even right, as on H4); the
+ * independent columns (five left, three right, as on H4); the
  * column wrappers are `display: contents` on the phone and `order` puts
  * the questions back in reading order there.
  */
 export function HomeFaq() {
   const t = useTranslations('screens.home.public.faq');
-  const columns = [FAQ_KEYS.filter((_, i) => i % 2 === 0), FAQ_KEYS.filter((_, i) => i % 2 === 1)];
+  // Desktop columns exactly as on the H4 board: five left, three right.
+  const columns: FaqKey[][] = [
+    ['free', 'english', 'time', 'speaking', 'kids'],
+    ['who', 'phone', 'ownWords'],
+  ];
 
   return (
     <div className="flex flex-col gap-2.5 home-lg:grid home-lg:grid-cols-2 home-lg:items-start home-lg:gap-3">

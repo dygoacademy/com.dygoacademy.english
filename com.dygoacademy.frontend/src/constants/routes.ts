@@ -72,6 +72,9 @@ export const ROUTES = {
   home: '/',
   login: '/login',
   register: '/register',
+  /** Public legal pages (canvas page "Legal", 2026-10-09). */
+  terms: '/terms',
+  privacy: '/privacy',
 } as const;
 
 /**

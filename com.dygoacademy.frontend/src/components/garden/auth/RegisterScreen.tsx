@@ -4,6 +4,7 @@ import * as React from 'react';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 
+import { ROUTES } from '@/constants/routes';
 import type { AppLocale } from '@/i18n/config';
 
 import { AuthField } from './AuthField';
@@ -143,8 +144,21 @@ export function RegisterScreen({
               : t('register.submit')}
         </button>
       </form>
-      {/* Terms and Privacy stay plain text until Dylan has the URLs (plan decision 12). */}
-      <p className="text-center text-[12px] leading-[1.4] text-muted-foreground">{t('register.terms')}</p>
+      {/* Terms and Privacy link to the legal pages (canvas page "Legal", 2026-10-09). */}
+      <p className="text-center text-[12px] leading-[1.4] text-muted-foreground">
+        {t.rich('register.terms', {
+          terms: (chunks) => (
+            <Link href={ROUTES.terms} className="underline">
+              {chunks}
+            </Link>
+          ),
+          privacy: (chunks) => (
+            <Link href={ROUTES.privacy} className="underline">
+              {chunks}
+            </Link>
+          ),
+        })}
+      </p>
       <p className="text-center text-[14px] text-muted-foreground">
         {t.rich(joining ? 'register.invite.haveAccount' : 'register.haveAccount', {
           link: (chunks) => (

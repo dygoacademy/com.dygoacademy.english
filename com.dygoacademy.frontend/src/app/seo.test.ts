@@ -21,12 +21,20 @@ describe('home page SEO (2026-10-07)', () => {
     expect((await homeMetadata('en-US')).alternates?.canonical).toBe('/');
   });
 
-  it('lists the three home pages in the sitemap with absolute alternates', () => {
+  it('uses the search description and keywords, not the hero lead (2026-10-09)', async () => {
+    const en = await homeMetadata('en-US');
+    expect(en.description).toBe('t:metaDescription');
+    expect(en.keywords).toEqual(['t:metaKeywords']);
+  });
+
+  it('lists the three home pages and the legal pages in the sitemap with absolute alternates', () => {
     const entries = sitemap();
     expect(entries.map((e) => e.url)).toEqual([
       'https://www.dygoacademy.com/',
       'https://www.dygoacademy.com/vi',
       'https://www.dygoacademy.com/zh',
+      'https://www.dygoacademy.com/terms',
+      'https://www.dygoacademy.com/privacy',
     ]);
     expect(entries[2].alternates?.languages).toMatchObject({ 'vi-VN': 'https://www.dygoacademy.com/vi' });
   });

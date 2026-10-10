@@ -52,7 +52,7 @@ export function OnboardLevelScreen({
       footer={
         <>
           {error ? <SaveError /> : null}
-          <Button variant="primary" onClick={onContinue} disabled={!level} loading={saving}>
+          <Button variant="primary" className="md:max-w-none" onClick={onContinue} disabled={!level} loading={saving}>
             {t('continue')}
           </Button>
         </>

@@ -173,7 +173,7 @@ export function MissionCompleteScreen({
                 <Link
                   href={missions.next.href}
                   className={buttonClassName('primary', {
-                    className: 'h-[54px] rounded-control text-[16px]',
+                    className: 'h-[54px] rounded-control text-[16px] md:max-w-none',
                   })}
                 >
                   {missions.next.minutes === null

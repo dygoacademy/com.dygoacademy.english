@@ -34,9 +34,9 @@ describe('HomeScreen (Home page H1 / H2)', () => {
     renderScreen();
     expect(screen.getByRole('heading', { level: 1, name: 'Learn a word. Use it right. Remember it for good.' })).toBeTruthy();
     expect(screen.getAllByRole('heading', { level: 2 }).map((h) => h.textContent)).toEqual([
-      'Sound familiar?',
-      'How your words grow',
-      'Hear it. Say it. Watch it bloom.',
+      'How to remember English vocabulary for a long time',
+      'How spaced repetition helps English learners',
+      'How to practise English speaking by yourself',
       'What do you need English for?',
       'Everything you need to grow your vocabulary',
       'A garden for kids, too',
