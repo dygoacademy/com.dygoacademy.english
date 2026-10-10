@@ -74,7 +74,7 @@ Every row has an English file and a Vietnamese twin (`…Vi.dc.html`) unless not
 | ID | Screen | File | Status | What's on it | Goes to | Build status |
 |---|---|---|---|---|---|---|
 | A1 | Today's Garden (Home) | `AdultHome` | Built | Greeting + streak. Garden card (every word as a plant, counts: thirsty / ripe / wilting). **3 daily missions** (review due, learn new, 1 quiz) → finishing all 3 grows the **Golden Bloom**. **2026-10-10 (Option D, Approved):** no big button under the card; the missions card opens with **Next up** (first open mission, its own button, e.g. "Water 3 thirsty words · Start watering →") and a **Then** list (other missions, each opens its activity; done rows plain, struck through). "Tomorrow 7:30 · N words ripen". **Speaking mission (2026-10-07, merged from SE1):** 3rd mission can be "Say 3 ripe words · 2 min" (clay mic row) → SP1; still counts to Golden Bloom. | A2, tabs | UI-4 `4b701fd`, `6e7eb53`; iPad home `48912ed`; Next up + Then (Option D) `b6725e6` |
-| A1b | All watered (nothing due) | `AdultAllWatered` | For approval | Empty state of A1: calm full garden, "Nothing to water today", next ripening time, optional extras (learn 5 new, speak, quiz). Streak still counts. | A1 extras, tabs | Not built |
+| A1b | All watered (nothing due) | `AdultAllWatered` | Approved | Today's Garden when nothing is due **and** today's missions are all done: sunny full garden "All watered today · Nothing is thirsty. Your garden is resting.", Golden Bloom card "3 of 3 missions · Golden Bloom grown" + next ripening, "Want a little more?" list (Plant 5 new words from a bed · Say 3 sentences · Quiz a bed). | A1 extras, tabs | Not built — plan: `A1b all watered implementation plan.md`; source + reference added 2026-10-10 |
 | A2 | Watering (Review) | `AdultReview` | Built | Flashcard: word (Fraunces), IPA, CEFR, topic, meaning (English; Vietnamese meaning first when app language is vi), example, synonyms. 4 ratings with next interval: Again / Hard / Good / Easy. Vine progress = mission progress. | A3, A1 | UI-4; keyboard shortcuts U7-3 `51b6180`. Phase 13 "Say this one?" added S11 `bc38bff`, removed 2026-10-06 `0e47e01` |
 | A3 | Mission Complete | `AdultBloom` | Built | Bloom animation, stats, streak +1, "1 mission left for Golden Bloom" with a 3-min button, reminder toggle for when words ripen. | A1, A2 | UI-4 `6e7eb53`; reminder switch UI-6 U6-7b `c96515a` |
 | A4 | Weekly Harvest | `AdultMissions` | Built | 7 day-plants (0–3 missions each), full week unlocks a seed pack, Road to Band 7 (mastered / target), rain barrel (streak freezes), study-group card → GR2. | GR2, tabs | UI-6. Phase 13 Sound Garden card added S10 `1968f24`, removed 2026-10-06 `0e47e01` |
@@ -205,6 +205,15 @@ All iPad screens: sidebar (Garden · Missions · Topics · Groups · Me + Shared
 ## 3. Changelog
 
 Newest first. Format: `### YYYY-MM-DD — title` then lines tagged **Added / Changed / Removed / Decision**, with screen IDs and status.
+
+### 2026-10-10 — A1b All watered: ready to build
+- **Added** `source/AdultAllWatered(Vi).dc.html`, `reference/A1b-all-watered(-vi)`, `tools/render.js` jobs.
+- **Decision** A1b replaces A1 only when `due_now = 0` **and** every mission of the day is done (Golden Bloom grown). Nothing due but missions still open → A1 (Option D card). The header keeps A1's streak pill (the board leaves it out). *Approved (Dylan).*
+- Build plan: `A1b all watered implementation plan.md` (repo root).
+
+### 2026-10-10 — Canvas: one Welcome back board
+- **Removed** the old A5 board ("Start with the 12 wilting words · Quick revive", EN + VI) from the canvas (Dylan).
+- **Changed** board A5b "Welcome Back · nothing wilting" renamed **"A5 · Welcome Back"** and moved into A5's place (files `AdultComeback(Vi).dc.html` on the canvas), with the site wording from `241ac8c`. Repo files keep their names (`source/AdultComebackStart*`, `reference/A5b-welcome-back-start*`) so `garden:diff` still matches the site. **Open (Claude Code, when Dylan asks):** the site still shows the wilting "Quick revive" card when words are wilting; drop it if that case should also use Start small, then rename the A5b fixture / files to A5.
 
 ### 2026-10-10 — A5 Welcome back: finish it (A5b + rules)
 - **Found** (Dylan, UAT): A5 is only half done. With 0 wilting words — the usual case, because almost nobody has leeches yet — the "Start small" card loses its title and button and shows only an underlined "Water all 45" link inside an empty white card. No time estimates ("about 5 min" from the board never shows). After missed days with nothing due, A5 still shows with no card at all.

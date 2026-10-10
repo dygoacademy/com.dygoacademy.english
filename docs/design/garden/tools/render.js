@@ -31,6 +31,7 @@ const fontCss =
 const FILTER = process.argv[3] || '';
 const JOBS = [
   ['AdultHome.dc.html', 'en', 'A1-todays-garden', {}],
+  ['AdultAllWatered.dc.html', 'en', 'A1b-all-watered', {}],
   ['AdultReview.dc.html', 'en', 'A2-review-question', {}],
   ['AdultReview.dc.html', 'en', 'A2-review-answer', { shown: true }],
   ['AdultReview.dc.html', 'en', 'A2-review-finished', { i: 3 }],
@@ -56,6 +57,7 @@ const JOBS = [
   ['AdultForgot.dc.html', 'en', 'AU4-reset-password', {}],
   ['AdultForgot.dc.html', 'en', 'AU4-reset-password-sent', { sent: true }],
   ['AdultHomeVi.dc.html', 'vi', 'A1-todays-garden-vi', {}],
+  ['AdultAllWateredVi.dc.html', 'vi', 'A1b-all-watered-vi', {}],
   ['AdultReviewVi.dc.html', 'vi', 'A2-review-question-vi', {}],
   ['AdultReviewVi.dc.html', 'vi', 'A2-review-answer-vi', { shown: true }],
   ['AdultReviewVi.dc.html', 'vi', 'A2-review-finished-vi', { i: 3 }],
