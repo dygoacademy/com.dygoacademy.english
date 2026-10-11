@@ -37,6 +37,8 @@ export interface WordTiming {
 export interface SpeakingTimings {
   duration: number;
   words: WordTiming[];
+  /** The TTS speaking rate the clip was made at (1 = the voice's own pace); missing on older clips. */
+  speaking_rate?: number;
 }
 
 /** One syllable on a Pronunciation stone (MI · ti · gate); the stressed one is the big stone. */

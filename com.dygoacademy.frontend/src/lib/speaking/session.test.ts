@@ -12,6 +12,8 @@ import {
   speakReducer,
   type SpeakAction,
   type SpeakState,
+  LEARNER_PACE,
+  nativePace,
 } from './session';
 
 const run = (state: SpeakState, ...actions: SpeakAction[]) => actions.reduce(speakReducer, state);
@@ -223,5 +225,18 @@ describe('meterDead (iOS silent switch, 2026-10-05)', () => {
       ),
     ).toBe(true);
     expect(speechDiagnostics(zeros(9), PER_S).meterDead).toBe(true);
+  });
+});
+
+describe('nativePace', () => {
+  it('slows a clip made at the voice’s own pace to the learner pace', () => {
+    expect(LEARNER_PACE).toBe(0.85);
+    expect(nativePace(null)).toBe(0.85);
+    expect(nativePace({})).toBe(0.85);
+    expect(nativePace({ speaking_rate: 1 })).toBe(0.85);
+  });
+  it('plays a clip already made at the learner pace as it is, never faster', () => {
+    expect(nativePace({ speaking_rate: 0.85 })).toBe(1);
+    expect(nativePace({ speaking_rate: 0.8 })).toBe(1);
   });
 });

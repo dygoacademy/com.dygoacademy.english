@@ -6,6 +6,7 @@ import type {
   SpeakingCheckState,
   SpeakingSessionItem,
   SpeakingSyllable,
+  SpeakingTimings,
   SpeakingWordCheckResult,
 } from '@/types';
 
@@ -20,7 +21,7 @@ import {
 } from './constants';
 import { withTimeout } from './check';
 import { stoneText } from './ipa';
-import { meterDead } from './session';
+import { LEARNER_PACE, meterDead } from './session';
 
 /**
  * Pronunciation "Stepping stones" (P1–P4, P2b; plan Part 2): say one word,
@@ -271,6 +272,10 @@ export function unusableTake(
 
 // ── Native audio ───────────────────────────────────────────────────────────
 
+/** The speaking rate a sentence clip was made at (1 for older clips). */
+const madeAt = (timings: SpeakingTimings | null | undefined): number =>
+  timings?.speaking_rate && timings.speaking_rate > 0 ? timings.speaking_rate : 1;
+
 /** The accent's sentence clip and timings, each falling back to the other accent. */
 function clipFor(item: SpeakingSessionItem, accent: SpeakingAccent) {
   const uk = accent === 'UK';
@@ -281,25 +286,48 @@ function clipFor(item: SpeakingSessionItem, accent: SpeakingAccent) {
 }
 
 /**
+ * A native clip to play. A span of the sentence clip says the speaking rate
+ * the clip was made at (`madeAt`); the word clip has none and plays like the
+ * flashcard's.
+ */
+export interface NativeClip {
+  src: string;
+  span?: ClipSpan;
+  madeAt?: number;
+}
+
+/**
+ * The player rate for `clip` asked at `rate`: a span of the sentence clip is
+ * never quicker than the learner pace, and a slow rate (PRON_SLOW_RATE) is
+ * that rate of the voice's own pace, whatever pace the clip was made at.
+ */
+export function nativeClipRate(clip: NativeClip, rate = 1): number {
+  if (clip.madeAt === undefined) return rate;
+  return Math.min(1, Math.min(rate, LEARNER_PACE) / clip.madeAt);
+}
+
+/**
  * "Hear it": the word said on its own when there is a recording of it,
  * else the word's part of the sentence clip (its timings). Null when
  * neither exists.
  */
-export function nativeWord(
-  item: SpeakingSessionItem,
-  accent: SpeakingAccent,
-): { src: string; span?: ClipSpan } | null {
+export function nativeWord(item: SpeakingSessionItem, accent: SpeakingAccent): NativeClip | null {
   if (item.word_audio_url) return { src: item.word_audio_url };
   const { url, timings } = clipFor(item, accent);
   const w = timings?.words[item.target_index];
   if (!url || !w) return null;
-  return { src: url, span: { start: w.start, end: w.end } };
+  return { src: url, span: { start: w.start, end: w.end }, madeAt: madeAt(timings) };
 }
 
-/** The native word's length in seconds (the lit-stone hint), when the timings have it. */
+/**
+ * The native word's length in seconds at the voice's own pace (the lit-stone
+ * hint), when the timings have it. A clip made slower for learners
+ * (`speaking_rate`) is scaled back, so the hint doesn't ask for slow speech.
+ */
 export function nativeWordSeconds(item: SpeakingSessionItem, accent: SpeakingAccent): number | null {
-  const w = clipFor(item, accent).timings?.words[item.target_index];
-  return w && w.end > w.start ? w.end - w.start : null;
+  const { timings } = clipFor(item, accent);
+  const w = timings?.words[item.target_index];
+  return w && w.end > w.start ? (w.end - w.start) * madeAt(timings) : null;
 }
 
 /**
@@ -310,10 +338,12 @@ export function nativeSyllable(
   item: SpeakingSessionItem,
   accent: SpeakingAccent,
   index: number,
-): { src: string; span?: ClipSpan } | null {
+): NativeClip | null {
   const { url, timings } = clipFor(item, accent);
   const s = timings?.words[item.target_index]?.syllables[index];
-  if (url && s && s.end > s.start) return { src: url, span: { start: s.start, end: s.end } };
+  if (url && s && s.end > s.start) {
+    return { src: url, span: { start: s.start, end: s.end }, madeAt: madeAt(timings) };
+  }
   return nativeWord(item, accent);
 }
 

@@ -50,6 +50,7 @@ import { compareEnvelopes, type SpeakingResult } from '@/lib/speaking/envelopeSc
 import {
   forAccent,
   initialSpeakState,
+  nativePace,
   notHeard,
   sessionPattern,
   speakReducer,
@@ -70,6 +71,9 @@ import { SpeakRecordingScreen } from '../screens/SpeakRecordingScreen';
 import { LiveError, LiveLoading } from './LiveState';
 
 const clipUrl = (item: SpeakingSessionItem, accent: SpeakingAccent) => forAccent(item, accent).url;
+/** The player rate for this accent's sentence clip: the chosen rate at the learner's pace. */
+const clipRate = (item: SpeakingSessionItem, accent: SpeakingAccent, rate: number) =>
+  rate * nativePace(forAccent(item, accent).timings);
 
 /**
  * /sounds: The Pond (Phase 13 T6, plan §2). Real data: `GET
@@ -460,7 +464,7 @@ export function SpeakFlow({
       return;
     }
     setPlayKey((k) => k + 1);
-    void player.play(url, player.rate).catch(() => undefined);
+    void player.play(url, clipRate(item, accent, player.rate)).catch(() => undefined);
   }
 
   if (!item) return <LiveError />;
@@ -530,7 +534,7 @@ export function SpeakFlow({
           const next = clipUrl(item, a);
           if (next) {
             setPlayKey((k) => k + 1);
-            void player.play(next, player.rate).catch(() => undefined);
+            void player.play(next, clipRate(item, a, player.rate)).catch(() => undefined);
           }
         }}
         rate={player.rate}
@@ -538,7 +542,7 @@ export function SpeakFlow({
           player.setRate(r);
           if (url) {
             setPlayKey((k) => k + 1);
-            void player.play(url, r).catch(() => undefined);
+            void player.play(url, clipRate(item, accent, r)).catch(() => undefined);
           }
         }}
         playing={url ? player.isPlaying(url) : false}
@@ -559,7 +563,8 @@ export function SpeakFlow({
       if (!src) return;
       if (player.isPlaying(src)) return player.stop();
       setPlayKey((k) => k + 1);
-      void player.play(src, 1).catch(() => undefined);
+      // The learner's recording at its own speed, the native clip at the learner's pace.
+      void player.play(src, src === url ? clipRate(item, accent, 1) : 1).catch(() => undefined);
     };
     return (
       <SpeakCompareScreen

@@ -13,6 +13,7 @@ import {
   hopParts,
   layoutStones,
   litStones,
+  nativeClipRate,
   nativeSyllable,
   nativeWord,
   pronVoiceEnded,
@@ -139,12 +140,12 @@ const ITEM = {
 describe('native audio', () => {
   it('plays the word on its own when there is one, else its part of the sentence', () => {
     expect(nativeWord({ ...ITEM, word_audio_url: 'w.mp3' }, 'UK')).toEqual({ src: 'w.mp3' });
-    expect(nativeWord(ITEM, 'UK')).toEqual({ src: 'uk.m4a', span: { start: 0.5, end: 1.1 } });
+    expect(nativeWord(ITEM, 'UK')).toEqual({ src: 'uk.m4a', span: { start: 0.5, end: 1.1 }, madeAt: 1 });
   });
 
   it('plays one syllable from the timings, else the whole word', () => {
-    expect(nativeSyllable(ITEM, 'UK', 1)).toEqual({ src: 'uk.m4a', span: { start: 0.7, end: 0.85 } });
-    expect(nativeSyllable(ITEM, 'UK', 5)).toEqual({ src: 'uk.m4a', span: { start: 0.5, end: 1.1 } });
+    expect(nativeSyllable(ITEM, 'UK', 1)).toEqual({ src: 'uk.m4a', span: { start: 0.7, end: 0.85 }, madeAt: 1 });
+    expect(nativeSyllable(ITEM, 'UK', 5)).toEqual({ src: 'uk.m4a', span: { start: 0.5, end: 1.1 }, madeAt: 1 });
   });
 });
 
@@ -222,5 +223,20 @@ describe('wordCheck', () => {
     await expect(
       wordCheck({ recording: new Blob(['x']), topicWordId: 'tw1', accent: 'US' }, { pollMs: 1 }),
     ).rejects.toThrow('bad_audio');
+  });
+});
+
+describe('nativeClipRate', () => {
+  it('plays the word clip at the rate asked, like the flashcard', () => {
+    expect(nativeClipRate({ src: 'w.mp3' })).toBe(1);
+    expect(nativeClipRate({ src: 'w.mp3' }, 0.7)).toBe(0.7);
+  });
+  it('brings a span of an older sentence clip to the learner pace; slow stays slow', () => {
+    expect(nativeClipRate({ src: 'uk.m4a', madeAt: 1 })).toBe(0.85);
+    expect(nativeClipRate({ src: 'uk.m4a', madeAt: 1 }, 0.7)).toBe(0.7);
+  });
+  it('plays a clip made at the learner pace as it is; slow is still 0.7 of the voice', () => {
+    expect(nativeClipRate({ src: 'uk.m4a', madeAt: 0.85 })).toBe(1);
+    expect(nativeClipRate({ src: 'uk.m4a', madeAt: 0.85 }, 0.7)).toBeCloseTo(0.7 / 0.85);
   });
 });

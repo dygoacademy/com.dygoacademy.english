@@ -7,11 +7,14 @@
  *   npm run speaking-generate -- --topic <uuid> --dry-run    # a bed's words: what would be made + cost
  *   npm run speaking-generate -- --topic <uuid>              # make it (uses ../.env)
  *   npm run speaking-generate -- --all --limit 200           # any READY word without an item yet
+ *   npm run speaking-generate:prod -- --all --refresh --limit 5000  # also remake items not at SPEAKING_RATE
  *   npm run speaking-generate:prod -- --topic <uuid>         # ../env-profiles/prod.env on top
  *   npm run speaking-generate -- --fixture --out <dir>       # local test clip, no keys, no DB
  *
  * Options: --accents uk,us (default both) · --limit N (default 50) ·
  * --force (re-synthesize and overwrite audio that already exists) ·
+ * --refresh (with --all: also words that have an item; clips not made at
+ * this voice + SPEAKING_RATE are remade, the rest skipped) ·
  * --max-usd N (stop before this run's TTS passes $N at list price, default 2) ·
  * --yes (no --max-usd stop; the daily cap GOOGLE_TTS_DAILY_CHAR_LIMIT,
  * default 300000 chars, always applies). A stopped run keeps what it made.
@@ -19,13 +22,13 @@
  * A speaking item belongs to the word (master_lexicon), shared by every bed
  * that has it; --topic just picks which words to do. For each word: take its
  * first example sentence, find the target word, and for each accent
- *   1. if the word's item already has that accent for this sentence → skip
- *      (unless --force);
- *   2. if R2 already has the clip + its timings JSON (same sentence and voice,
- *      e.g. after a database reset) → reuse them, no TTS call (unless --force);
+ *   1. if the word's item already has that accent's clip for this sentence,
+ *      voice and speaking rate → skip (unless --force);
+ *   2. if R2 already has the clip + its timings JSON (same sentence, voice and
+ *      rate, e.g. after a database reset) → reuse them, no TTS call (unless --force);
  *   3. otherwise call Google TTS with a <mark> before every word, build the
  *      timings (src/modules/speaking/speaking-timings.ts), check them, and
- *      upload `speaking/en/<uk|us>/<md5(voice|sentence)>.m4a` (AAC, linked),
+ *      upload `speaking/en/<uk|us>/<md5(voice[@rate]|sentence)>.m4a` (AAC, linked),
  *      the `.wav` copy and the `.json` timings.
  * Then upsert speaking_items (one row per word) as service_role.
  *
@@ -33,7 +36,9 @@
  * STORAGE_PROVIDER=r2 + R2_*; src/config/storage-config.ts), GOOGLE_TTS_API_KEY (a Google
  * Cloud API key restricted to the Text-to-Speech API), optional
  * SPEAKING_VOICE_UK / SPEAKING_VOICE_US (Neural2 voices support <mark>;
- * Chirp 3 HD voices don't take SSML).
+ * Chirp 3 HD voices don't take SSML), optional SPEAKING_RATE (TTS speaking
+ * rate, default 0.85: the voices' own pace is quick for self-taught learners;
+ * 1 = the voice's pace and the original file names).
  *
  * --fixture writes one item (the handover's "mitigate" sentence) with clips
  * from macOS `say`, spoken one word at a time so the word timings are exact.
@@ -76,6 +81,8 @@ const DEFAULT_VOICES: Record<SpeakingAccent, string> = {
   UK: 'en-GB-Neural2-C',
   US: 'en-US-Neural2-F',
 };
+/** Slower than the voices' own pace, which learners found too fast (2026-10-11). */
+const DEFAULT_SPEAKING_RATE = 0.85;
 /** Google Neural2 list price, USD per character, for the cost estimate only. */
 const PRICE_PER_CHAR = 16 / 1_000_000;
 const SAMPLE_RATE = 24000;
@@ -88,6 +95,8 @@ interface Args {
   limit: number;
   dryRun: boolean;
   force: boolean;
+  /** With --all: also words that already have an item (remake clips not at this rate). */
+  refresh: boolean;
   fixture: boolean;
   out?: string;
   /** Stop before this run's TTS would pass this many USD at list price (S13). */
@@ -97,7 +106,7 @@ interface Args {
 }
 
 function usage(): never {
-  console.log(fs.readFileSync(__filename, 'utf8').split('\n').slice(2, 18).join('\n'));
+  console.log(fs.readFileSync(__filename, 'utf8').split('\n').slice(2, 21).join('\n'));
   process.exit(0);
 }
 
@@ -108,6 +117,7 @@ function parseArgs(argv: string[]): Args {
     limit: 50,
     dryRun: false,
     force: false,
+    refresh: false,
     fixture: false,
     maxUsd: 2,
     yes: false,
@@ -121,6 +131,7 @@ function parseArgs(argv: string[]): Args {
     } else if (a === '--limit') args.limit = parseInt(argv[++i], 10);
     else if (a === '--dry-run') args.dryRun = true;
     else if (a === '--force') args.force = true;
+    else if (a === '--refresh') args.refresh = true;
     else if (a === '--fixture') args.fixture = true;
     else if (a === '--out') args.out = argv[++i];
     else if (a === '--max-usd') args.maxUsd = parseFloat(argv[++i]);
@@ -167,6 +178,7 @@ async function synthesizeGoogle(
   tokens: string[],
   accent: SpeakingAccent,
   voice: string,
+  speakingRate: number,
 ): Promise<Synthesis> {
   const res = await fetch(`${TTS_URL}?key=${encodeURIComponent(apiKey)}`, {
     method: 'POST',
@@ -174,7 +186,8 @@ async function synthesizeGoogle(
     body: JSON.stringify({
       input: { ssml: buildSsml(tokens) },
       voice: { languageCode: accent === 'UK' ? 'en-GB' : 'en-US', name: voice },
-      audioConfig: { audioEncoding: 'LINEAR16', sampleRateHertz: SAMPLE_RATE },
+      // Timepoints come back in the slowed clip's own seconds.
+      audioConfig: { audioEncoding: 'LINEAR16', sampleRateHertz: SAMPLE_RATE, speakingRate },
       enableTimePointing: ['SSML_MARK'],
     }),
   });
@@ -330,6 +343,11 @@ async function runTopic(args: Args, env: Record<string, string>): Promise<void> 
     UK: env.SPEAKING_VOICE_UK || DEFAULT_VOICES.UK,
     US: env.SPEAKING_VOICE_US || DEFAULT_VOICES.US,
   };
+  const speakingRate = env.SPEAKING_RATE ? parseFloat(env.SPEAKING_RATE) : DEFAULT_SPEAKING_RATE;
+  // Google takes 0.25–4; keep to a range that still sounds like speech.
+  if (!(speakingRate >= 0.5 && speakingRate <= 1.5)) {
+    throw new Error(`SPEAKING_RATE must be between 0.5 and 1.5 (got ${env.SPEAKING_RATE})`);
+  }
   // Same store as the backend (RustFS → media.dygoacademy.com, or R2).
   const store = storageConfigFrom(env);
   const bucket = store.bucket;
@@ -364,9 +382,11 @@ async function runTopic(args: Args, env: Record<string, string>): Promise<void> 
       if (!topic.rows[0]) throw new Error(`topic ${args.topic} not found`);
       console.log(`Topic: ${topic.rows[0].title}${args.dryRun ? '  (dry run)' : ''}`);
     } else {
-      console.log(`All READY words without an item${args.dryRun ? '  (dry run)' : ''}`);
+      console.log(
+        `All READY words${args.refresh ? '' : ' without an item'}${args.dryRun ? '  (dry run)' : ''}`,
+      );
     }
-    console.log(`Voices: UK ${voices.UK}, US ${voices.US}`);
+    console.log(`Voices: UK ${voices.UK}, US ${voices.US}, speaking rate ${speakingRate}`);
 
     const words = await db.query<WordRow>(
       `select ml.id as lexicon_id, ml.normalized_word as word, ml.ipa_uk, ml.ipa_us,
@@ -378,10 +398,10 @@ async function runTopic(args: Args, env: Record<string, string>): Promise<void> 
                 select 1 from public.topic_words tw
                  where tw.lexicon_id = ml.id and tw.status = 'READY'
                    and ($1::uuid is null or tw.topic_id = $1::uuid))
-          and ($1::uuid is not null or si.id is null)
+          and ($1::uuid is not null or $3::boolean or si.id is null)
         order by ml.normalized_word
         limit $2`,
-      [args.topic ?? null, args.limit],
+      [args.topic ?? null, args.limit, args.refresh],
     );
 
     for (const w of words.rows) {
@@ -402,12 +422,21 @@ async function runTopic(args: Args, env: Record<string, string>): Promise<void> 
       for (const accent of args.accents) {
         const a = accent.toLowerCase() as 'uk' | 'us';
         const label = `${w.word} ${accent}`;
-        if (w[`audio_${a}_path`] && w.item_sentence === sentence && !args.force) {
+        const keyFor = (ext: 'm4a' | 'wav') =>
+          StorageService.speakingAudioKeyFor(
+            sentence,
+            accent,
+            voices[accent],
+            'en',
+            ext,
+            speakingRate,
+          );
+        const current = w[`audio_${a}_path`];
+        // Same sentence, voice and rate (an older, faster clip has another key).
+        if (current && (current === keyFor('m4a') || current === keyFor('wav')) && !args.force) {
           console.log(`  = ${label}: already in speaking_items`);
           continue;
         }
-        const keyFor = (ext: 'm4a' | 'wav') =>
-          StorageService.speakingAudioKeyFor(sentence, accent, voices[accent], 'en', ext);
         const jsonKey = keyFor('m4a').replace(/\.m4a$/, '.json');
         // An earlier clip for this sentence + voice: the .m4a, else an older .wav.
         let key = keyFor('m4a');
@@ -456,13 +485,16 @@ async function runTopic(args: Args, env: Record<string, string>): Promise<void> 
           console.log(`  + ${label}: would synthesize ${chars} chars → ${keyFor('m4a')} (+ .wav)`);
           continue;
         }
-        const s = await synthesizeGoogle(apiKey, tokens, accent, voices[accent]);
-        const timings = timingsFor(
-          s,
-          tokens,
-          targetIndex,
-          targetIpaFor(w.word, accent === 'UK' ? (w.ipa_uk ?? w.ipa_us) : (w.ipa_us ?? w.ipa_uk)),
-        );
+        const s = await synthesizeGoogle(apiKey, tokens, accent, voices[accent], speakingRate);
+        const timings: SpeakingTimings = {
+          ...timingsFor(
+            s,
+            tokens,
+            targetIndex,
+            targetIpaFor(w.word, accent === 'UK' ? (w.ipa_uk ?? w.ipa_us) : (w.ipa_us ?? w.ipa_uk)),
+          ),
+          speaking_rate: speakingRate,
+        };
         const meta = { CacheControl: 'public, max-age=31536000, immutable' };
         // AAC .m4a (what the API links) + the WAV copy at the same key
         // (KEEP_WAV_COPY); WAV only if ffmpeg is missing.

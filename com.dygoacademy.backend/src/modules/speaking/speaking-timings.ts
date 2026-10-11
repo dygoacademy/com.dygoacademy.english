@@ -33,6 +33,11 @@ export interface WordTiming {
 export interface SpeakingTimings {
   duration: number;
   words: WordTiming[];
+  /**
+   * The TTS speaking rate the clip was made at (1 = the voice's own pace).
+   * Missing on older clips; the app slows those in the player instead.
+   */
+  speaking_rate?: number;
 }
 
 /** Decoded 16-bit PCM (mono or first channel of interleaved). */

@@ -5,7 +5,7 @@ import { useTranslations } from 'next-intl';
 import type { SpeakingAccent, SpeakingSessionItem } from '@/types';
 import { SPEAKING_ACCENTS } from '@/types';
 import type { PlayerRate } from '@/hooks/usePlayer';
-import { forAccent } from '@/lib/speaking/session';
+import { forAccent, nativePace } from '@/lib/speaking/session';
 
 import { Chip } from '../Chip';
 import { SpeakHeader } from '../speaking/SpeakHeader';
@@ -128,7 +128,7 @@ export function SpeakListenScreen(props: SpeakListenScreenProps) {
         <Waveform
           levels={props.nativeLevels ?? []}
           target={targetSpan(timings, item.target_index)}
-          playingMs={playing && timings ? (timings.duration * 1000) / rate : null}
+          playingMs={playing && timings ? (timings.duration * 1000) / (rate * nativePace(timings)) : null}
           playKey={props.playKey}
           label={t('waveLabel.listen')}
         />

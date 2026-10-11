@@ -23,9 +23,11 @@ import { beepAndVibrate } from '@/lib/speaking/beep';
 import { BEEP_GUARD_MS } from '@/lib/speaking/constants';
 import {
   litStones,
+  nativeClipRate,
   nativeSyllable,
   nativeWord,
   nativeWordSeconds,
+  type NativeClip,
   PRON_MAX_MS,
   PRON_ROOM_MS,
   PRON_SLOW_RATE,
@@ -312,9 +314,9 @@ function PronounceWord({
     finish(null);
   }
 
-  const play = (src: { src: string; span?: { start: number; end: number } } | null, rate = 1) => {
+  const play = (src: NativeClip | null, rate = 1) => {
     if (!src) return;
-    void player.play(src.src, rate, src.span).catch(() => undefined);
+    void player.play(src.src, nativeClipRate(src, rate), src.span).catch(() => undefined);
   };
   const hearMine = () => {
     if (recUrl) void player.play(recUrl, 1).catch(() => undefined);

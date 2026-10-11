@@ -3,6 +3,7 @@
 import { useFormatter, useTranslations } from 'next-intl';
 
 import type { CheckStatus, ShownResult } from '@/lib/speaking/check';
+import { nativePace } from '@/lib/speaking/session';
 import type { SpeakingAccent, SpeakingSessionItem, SpeakingTimings } from '@/types';
 
 import { CompareWaveform, type CompareBand, type CompareView } from '../speaking/CompareWaveform';
@@ -79,7 +80,8 @@ export function SpeakCompareScreen(props: SpeakCompareScreenProps) {
   const tipText = useTipText();
   const reason = useMarkReason();
   const tokens = item.sentence.trim().split(/\s+/);
-  const nativeSeconds = timings?.duration ?? 0;
+  // As the learner hears it: the clip plays at the learner's pace.
+  const nativeSeconds = (timings?.duration ?? 0) / nativePace(timings);
   const done = status === 'done' && result !== null;
   const seconds = (s: number) =>
     format.number(s, { minimumFractionDigits: 1, maximumFractionDigits: 1 });

@@ -220,6 +220,20 @@ export function meterDead(levels: readonly number[], barsPerSecond: number): boo
   return levels.length >= barsPerSecond && levels.every((v) => v === 0);
 }
 
+/**
+ * Native sentences should reach the learner at this pace: 0.85 of the TTS
+ * voice's own speed, which is quick for self-taught learners. Clips made at
+ * that rate (timings `speaking_rate`) play as they are; older clips, made at
+ * the voice's own pace, are slowed in the player instead (pitch kept).
+ */
+export const LEARNER_PACE = 0.85;
+
+/** The playback rate that brings a sentence clip to LEARNER_PACE (never faster than 1×). */
+export function nativePace(timings: Pick<SpeakingTimings, 'speaking_rate'> | null | undefined): number {
+  const made = timings?.speaking_rate && timings.speaking_rate > 0 ? timings.speaking_rate : 1;
+  return Math.min(1, LEARNER_PACE / made);
+}
+
 /** The accent's clip, timings and IPA, each falling back to the other accent. */
 export function forAccent(
   item: SpeakingSessionItem,

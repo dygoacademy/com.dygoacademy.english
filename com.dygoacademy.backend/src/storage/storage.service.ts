@@ -57,8 +57,12 @@ export class StorageService {
     voice: string,
     languageCode = 'en',
     ext: 'm4a' | 'wav' = 'm4a',
+    speakingRate = 1,
   ): string {
-    const hash = createHash('md5').update(`${voice}|${sentence.trim()}`).digest('hex');
+    // A slower clip is a different file (the old one is cached as immutable);
+    // rate 1 keeps the original keys.
+    const made = speakingRate === 1 ? voice : `${voice}@${speakingRate}`;
+    const hash = createHash('md5').update(`${made}|${sentence.trim()}`).digest('hex');
     return `speaking/${languageCode}/${accent.toLowerCase()}/${hash}.${ext}`;
   }
 
