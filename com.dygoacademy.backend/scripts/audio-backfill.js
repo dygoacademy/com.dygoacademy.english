@@ -118,9 +118,17 @@ async function main() {
     const existing = await Promise.all(
       rows.map((r) => queue.getJob(`${AUDIO_BACKFILL_JOB}-${r.id}`)),
     );
+    // A job that failed (all attempts used) stays for a day under the same
+    // id; retry it instead of reporting it as queued.
+    const states = await Promise.all(existing.map((j) => (j ? j.getState() : null)));
+    const failed = existing.filter((j, i) => j && states[i] === 'failed');
+    await Promise.all(failed.map((j) => j.retry('failed')));
+    if (failed.length) console.log(`audio-backfill: retrying ${failed.length} failed job(s).`);
     fresh = rows.filter((_, i) => !existing[i]);
     if (fresh.length === 0) {
-      console.log(`audio-backfill: all ${rows.length} word(s) without audio are already queued. Nothing added.`);
+      if (!failed.length) {
+        console.log(`audio-backfill: all ${rows.length} word(s) without audio are already queued. Nothing added.`);
+      }
       return;
     }
     await queue.addBulk(
