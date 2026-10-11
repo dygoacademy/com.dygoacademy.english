@@ -241,7 +241,7 @@ export function PondStones({
                 className="font-display"
                 aria-hidden="true"
               >
-                ?
+                {'?'}
               </text>
             ) : null}
           </>

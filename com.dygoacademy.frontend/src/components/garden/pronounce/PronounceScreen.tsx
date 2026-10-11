@@ -289,7 +289,7 @@ export function PronounceScreen(props: PronounceScreenProps) {
       >
         {recording ? (
           <>
-            <span aria-hidden="true">● </span>
+            <span aria-hidden="true">{'● '}</span>
             {t('recording')}
           </>
         ) : (
