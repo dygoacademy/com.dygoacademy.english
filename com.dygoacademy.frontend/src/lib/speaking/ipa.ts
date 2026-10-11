@@ -106,3 +106,11 @@ export function stressedSpelling(word: string, ipa: string | null | undefined): 
   const seg = spellingSegments(word, ipa).find((s) => s.stressed);
   return seg ? seg.text.toUpperCase() : null;
 }
+
+/**
+ * A spelled syllable as the stones and the Bees rows show it: the stressed
+ * one in capitals (MI · ti · gate). IPA syllables stay as they are.
+ */
+export function stoneText(s: { text: string; stressed: boolean }): string {
+  return s.stressed && /^[a-z]+$/i.test(s.text) ? s.text.toUpperCase() : s.text;
+}

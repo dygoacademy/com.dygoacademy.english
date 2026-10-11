@@ -19,6 +19,7 @@ import {
   SPEECH_SKIP_MS,
 } from './constants';
 import { withTimeout } from './check';
+import { stoneText } from './ipa';
 import { meterDead } from './session';
 
 /**
@@ -56,10 +57,7 @@ export function wordStones(item: Pick<SpeakingSessionItem, 'word' | 'syllables'>
     : [{ text: item.word, stressed: true }];
 }
 
-/** What a stone says: the stressed syllable in capitals (MI · ti · gate); IPA stays as is. */
-export function stoneText(s: SpeakingSyllable): string {
-  return s.stressed && /^[a-z]+$/i.test(s.text) ? s.text.toUpperCase() : s.text;
-}
+export { stoneText };
 
 export type PondSize = 'phone' | 'ipad';
 

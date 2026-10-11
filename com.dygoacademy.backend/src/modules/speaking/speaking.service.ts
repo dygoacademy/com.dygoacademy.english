@@ -8,7 +8,6 @@ import { StorageService } from '../../storage/storage.service';
 import { CreateSpeakingAttemptDto } from './dto/create-attempt.dto';
 import { wordSyllables } from './speaking-syllables';
 import {
-  POLLINATE_MIN_SCORE,
   SPEAKING_LOOKUP_MAX,
   SPEAKING_SESSION_SIZE,
   SpeakingAccent,
@@ -193,8 +192,9 @@ export class SpeakingService {
   /**
    * Saves one Compare result. Try again saves another row (both are kept).
    * SE1: the first attempt on a sentence in the learner's day bumps the
-   * SPEAK mission (a no-op on days without one). SE5: with `harvest` and a
-   * score of 90+, the word is saved as harvested (once; never touches SRS).
+   * SPEAK mission (a no-op on days without one). Never pollinates: since
+   * 2026-10-11 only the word check does (Pronunciation, Stepping stones
+   * Part 3); `harvest` from older apps is ignored.
    */
   async createAttempt(userId: string, dto: CreateSpeakingAttemptDto): Promise<SpeakingAttempt> {
     try {
@@ -214,7 +214,7 @@ export class SpeakingService {
            ) as spoken`,
           [dto.item_id, timezone],
         );
-        const inserted = await client.query<Omit<SpeakingAttempt, 'harvested'>>(
+        const inserted = await client.query<SpeakingAttempt>(
           `insert into public.speaking_attempts
              (item_id, accent, score, stage, word_marks, user_duration_ms)
            values ($1, $2, $3, $4, $5::jsonb, $6)
@@ -231,18 +231,7 @@ export class SpeakingService {
         if (!before.rows[0]?.spoken) {
           await recordMissionProgress(client, userId, timezone, new Date(), 'SPEAK');
         }
-        let harvested = false;
-        if (dto.harvest && dto.score >= POLLINATE_MIN_SCORE) {
-          const res = await client.query(
-            `insert into public.speaking_harvests (lexicon_id, score)
-             select si.lexicon_id, $2 from public.speaking_items si where si.id = $1
-             on conflict (user_id, lexicon_id) do nothing
-             returning id`,
-            [dto.item_id, dto.score],
-          );
-          harvested = res.rows.length > 0;
-        }
-        return { ...inserted.rows[0], harvested };
+        return inserted.rows[0];
       });
     } catch (err) {
       // 23503: item_id doesn't exist.

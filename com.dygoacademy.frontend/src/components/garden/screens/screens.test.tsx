@@ -343,7 +343,7 @@ describe('TopicBedScreen', () => {
       word: id,
       sound: `/${id}/`,
       pollinated,
-      href: `/sounds?word=${id}&harvest=1`,
+      href: `/sounds/word?words=${id}&back=%2Ftopics%2Ft1`,
     });
 
     it('lists waiting words with a mic and pollinated ones with a tick', () => {
@@ -352,7 +352,7 @@ describe('TopicBedScreen', () => {
           {...props}
           bees={{
             waiting: 2,
-            sayAllHref: '/sounds?words=deforestation,ecosystem&harvest=1',
+            sayAllHref: '/sounds/word?words=deforestation%2Cecosystem&back=%2Ftopics%2Ft1',
             words: [bee('mitigate', true), bee('deforestation'), bee('ecosystem')],
           }}
         />,
@@ -369,9 +369,9 @@ describe('TopicBedScreen', () => {
         within(card)
           .getByRole('link', { name: 'Say ecosystem to pollinate' })
           .getAttribute('href'),
-      ).toBe('/sounds?word=ecosystem&harvest=1');
+      ).toBe('/sounds/word?words=ecosystem&back=%2Ftopics%2Ft1');
       expect(within(card).getByRole('link', { name: 'Say all' }).getAttribute('href')).toBe(
-        '/sounds?words=deforestation,ecosystem&harvest=1',
+        '/sounds/word?words=deforestation%2Cecosystem&back=%2Ftopics%2Ft1',
       );
     });
 

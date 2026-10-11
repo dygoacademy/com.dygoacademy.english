@@ -557,6 +557,29 @@ describe('beesCard (A7 Bees are waiting)', () => {
     expect(card).toMatchObject({ waiting: 0, sayAllHref: null });
   });
 
+  it('shows the syllables with the stressed one in capitals, else the IPA (Stepping stones Part 3)', () => {
+    const card = beesCard(
+      [word('mitigate', 'flower'), word('b', 'flower')],
+      [
+        {
+          ...waiting('mitigate'),
+          syllables: [
+            { text: 'mi', stressed: true },
+            { text: 'ti', stressed: false },
+            { text: 'gate', stressed: false },
+          ],
+        },
+        { ...waiting('b'), syllables: [] },
+      ],
+      today,
+      (id) => GARDEN_ROUTES.pronounce({ words: [id], topic: 't1', back: '/topics/t1' }),
+      (ids) => GARDEN_ROUTES.pronounce({ words: ids, topic: 't1', back: '/topics/t1' }),
+    )!;
+    expect(card.words.map((w) => w.sound)).toEqual(['MI · ti · gate', '/b/']);
+    expect(card.words[0].href).toBe('/sounds/word?words=mitigate&topic=t1&back=%2Ftopics%2Ft1');
+    expect(card.sayAllHref).toBe('/sounds/word?words=mitigate%2Cb&topic=t1&back=%2Ftopics%2Ft1');
+  });
+
   it('is null with no data or nothing to show', () => {
     expect(beesCard([word('a', 'flower')], undefined, today, href, sayAll)).toBeNull();
     expect(beesCard([word('c', 'sprout')], [waiting('c')], today, href, sayAll)).toBeNull();

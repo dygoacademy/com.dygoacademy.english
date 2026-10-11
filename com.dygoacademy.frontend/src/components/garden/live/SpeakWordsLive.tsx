@@ -12,20 +12,17 @@ import { LiveError, LiveLoading } from './LiveState';
 import { SpeakFlow } from './SpeakLive';
 
 /**
- * /sounds?words=a,b,c: "Say all" on "Bees are waiting" (A7, 2026-10-11).
- * Each word's sentence (GET /speaking/words/:id, the same query as one
- * word's mic), then The Pond's flow over them in order, in harvest mode
- * when asked. A word that fails to load is skipped; none loading is an
- * error.
+ * /sounds?words=a,b,c: several words' sentences (GET /speaking/words/:id),
+ * then The Pond's flow over them in order. Was "Say all" on "Bees are
+ * waiting" until that moved to Pronunciation (2026-10-11). A word that
+ * fails to load is skipped; none loading is an error.
  */
 export function SpeakWordsLive({
   wordIds,
-  harvest,
   closeHref,
   forceNotice,
 }: {
   wordIds: readonly string[];
-  harvest: boolean;
   closeHref: string;
   forceNotice?: SpeakNoticeKind;
 }) {
@@ -55,7 +52,6 @@ export function SpeakWordsLive({
       items={taken.items}
       defaultAccent={taken.accent}
       closeHref={closeHref}
-      harvest={harvest}
       onSkipSpeaking={() => router.push(closeHref)}
       forceNotice={forceNotice}
     />

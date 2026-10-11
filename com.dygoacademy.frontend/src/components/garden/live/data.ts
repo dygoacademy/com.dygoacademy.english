@@ -15,6 +15,7 @@ import type {
 import { GARDEN_ROUTES } from '@/constants/garden';
 import { languageOf } from '@/i18n/config';
 import { findMatch } from '@/lib/search/fold';
+import { stoneText } from '@/lib/speaking/ipa';
 import type { MissionDay, TodayMissions } from '@/hooks/useMissions';
 import type { MyKeepsakes } from '@/hooks/useProfile';
 import { toLocalDateString } from '@/lib/timezone';
@@ -829,8 +830,9 @@ export const BEE_LIMIT = 3;
  * Flower (not wilting) not harvested yet, at most BEE_LIMIT of them, oldest
  * first. Pollinated = harvested today (local date), shown until tomorrow;
  * older harvests drop off. Rows keep the API's order so a word doesn't
- * jump when it's pollinated. `sound` is the word's UK IPA until
- * enrichment has syllables (v2). Null when there's nothing to show.
+ * jump when it's pollinated. `sound` is the word's syllables with the
+ * stressed one in capitals (MI · ti · gate), else its UK IPA. Null when
+ * there's nothing to show.
  *
  * The garden-wide cap (3 bees across all beds, 1–2 new a day, a bee
  * leaves after 3 days) needs backend state: v2.
@@ -852,7 +854,9 @@ export function beesCard(
     const row = {
       id: word.id,
       word: word.word,
-      sound: h.ipa_uk ?? null,
+      sound: h.syllables?.length
+        ? h.syllables.map(stoneText).join(' · ')
+        : (h.ipa_uk ?? null),
       href: hrefFor(word.id),
     };
     if (h.harvested_score === null) {

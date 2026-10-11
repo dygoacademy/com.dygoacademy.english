@@ -9,9 +9,9 @@ import { SPEAK_NOTICES, type SpeakNoticeKind } from '@/lib/speaking/constants';
 /**
  * Phase 13 The Pond. Entry points (2026-10-06 redesign): the Home SPEAK
  * mission (SE1), a bed's Speak row (SE2, `?topic=<id>`: that bed's words),
- * "Bees are waiting" (was SE5, `?word=<topic word id>&harvest=1`; "Say
- * all": `?words=<id>,<id>&harvest=1`) and the Echo
- * challenge (SE6, `?word=`). `?back=<path>` is where Close goes (an app
+ * several words in a row (`?words=<id>,<id>`) and the Echo challenge (SE6,
+ * `?word=`). "Bees are waiting" opens Pronunciation (`/sounds/word`) since
+ * 2026-10-11. `?back=<path>` is where Close goes (an app
  * path only). Dev toggle (T7): `?state=mic|denied|quiet|short|
  * unsupported|audioFailed` opens SP1 showing that state, so each one can be
  * checked on a phone; it changes nothing else.
@@ -26,7 +26,7 @@ export default async function SoundsPage({
 }: {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
-  const { topic, word, words, harvest, back, state } = await searchParams;
+  const { topic, word, words, back, state } = await searchParams;
   const topicId = typeof topic === 'string' && topic ? topic : undefined;
   const wordId = typeof word === 'string' && word ? word : undefined;
   // Only a path in this app: never another site (open redirect).
@@ -39,7 +39,6 @@ export default async function SoundsPage({
       <SpeakWordsLive
         key={wordIds.join(',')}
         wordIds={wordIds}
-        harvest={harvest === '1'}
         closeHref={backHref ?? (topicId ? GARDEN_ROUTES.topic(topicId) : GARDEN_ROUTES.missions)}
         forceNotice={forceNotice}
       />
@@ -50,7 +49,6 @@ export default async function SoundsPage({
       key={`${topicId ?? 'all'}:${wordId ?? ''}:${forceNotice ?? ''}`}
       topicId={topicId}
       wordId={wordId}
-      harvest={harvest === '1'}
       backHref={backHref}
       forceNotice={forceNotice}
     />

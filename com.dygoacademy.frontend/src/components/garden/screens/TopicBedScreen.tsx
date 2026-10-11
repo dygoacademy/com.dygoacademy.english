@@ -51,18 +51,18 @@ export interface TopicBedWord {
 
 /**
  * "Bees are waiting" (2026-10-11, was SE5): a ripe Flower to say aloud, or
- * one pollinated today (said at 90%+; shown until tomorrow).
+ * one pollinated today (its word check passed at 80%+; shown until tomorrow).
  */
 export interface BeeWord {
   id: string;
   word: string;
   /**
-   * The line under the word: syllables with the stress ("MI · ti · gate")
-   * once enrichment has them (v2), the UK IPA until then; null = none.
+   * The line under the word: syllables with the stress ("MI · ti · gate"),
+   * else the UK IPA; null = none.
    */
   sound: string | null;
   pollinated: boolean;
-  /** The speaking flow for this word (harvest mode). */
+  /** Pronunciation (P1) for this word. */
   href: string;
 }
 

@@ -224,7 +224,7 @@ describe('SpeakingService.createAttempt', () => {
 
     const result = await service.createAttempt('user-1', dto);
 
-    expect(result).toMatchObject({ id: 'att-1', harvested: false });
+    expect(result).toMatchObject({ id: 'att-1' });
     expect(withUser.mock.calls[0][0]).toBe('user-1');
     const insert = query.mock.calls.find(([sql]) =>
       sql.includes('insert into public.speaking_attempts'),
@@ -253,31 +253,17 @@ describe('SpeakingService.createAttempt', () => {
     expect(again.query.mock.calls.some(([sql]) => sql.includes('daily_missions'))).toBe(false);
   });
 
-  it('pollinates only when asked and at 80%+ (D-3, 2026-10-11)', async () => {
-    const low = fakeClient({ harvestRows: [{ id: 'h1' }] });
-    const lowRes = await (
-      await makeService({ withUser: low.withUser })
+  it('never pollinates, even when an older app asks (Stepping stones Part 3)', async () => {
+    const client = fakeClient({ harvestRows: [{ id: 'h1' }] });
+    await (
+      await makeService({ withUser: client.withUser })
     ).createAttempt('user-1', {
       ...dto,
-      score: 79,
+      score: 95,
+      stage: 'fruit' as const,
       harvest: true,
     });
-    expect(lowRes.harvested).toBe(false);
-    expect(low.query.mock.calls.some(([sql]) => sql.includes('speaking_harvests'))).toBe(false);
-
-    const high = fakeClient({ harvestRows: [{ id: 'h1' }] });
-    const highRes = await (
-      await makeService({ withUser: high.withUser })
-    ).createAttempt('user-1', {
-      ...dto,
-      score: 80,
-      stage: 'bloom' as const,
-      harvest: true,
-    });
-    expect(highRes.harvested).toBe(true);
-    const insert = high.query.mock.calls.find(([sql]) => sql.includes('speaking_harvests'))!;
-    expect(insert[0]).toContain('on conflict (user_id, lexicon_id) do nothing');
-    expect(insert[1]).toEqual(['item-1', 80]);
+    expect(client.query.mock.calls.some(([sql]) => sql.includes('speaking_harvests'))).toBe(false);
   });
 
   it('404s for an unknown item', async () => {

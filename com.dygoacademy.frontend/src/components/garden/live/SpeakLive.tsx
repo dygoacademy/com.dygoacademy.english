@@ -121,8 +121,6 @@ export interface SpeakFlowProps {
   mode?: 'pond' | 'single';
   /** "Skip speaking" on the denied card. */
   onSkipSpeaking: () => void;
-  /** SE5 "Ready to harvest": attempts ask to harvest the word (the API keeps 90%+ only). */
-  harvest?: boolean;
   /** T7 dev toggle. */
   forceNotice?: SpeakNoticeKind;
 }
@@ -138,7 +136,6 @@ export function SpeakFlow({
   onClose,
   mode = 'pond',
   onSkipSpeaking,
-  harvest = false,
   forceNotice,
 }: SpeakFlowProps) {
   const t = useTranslations('screens.speak');
@@ -348,7 +345,6 @@ export function SpeakFlow({
             }),
           ),
           user_duration_ms: shown.userDurationMs,
-          ...(harvest ? { harvest: true } : {}),
         });
       } catch {
         if (alive) setCheckStatus('failed');
@@ -637,20 +633,18 @@ export function SpeakFlow({
 /**
  * /sounds: The Pond. Takes the session's sentences once, from this
  * visit's fetch (not an older cached list), then runs SpeakFlow. With
- * `wordId` (SE5 harvest, SE6 Echo) it runs one word's sentence instead
+ * `wordId` (SE6 Echo) it runs one word's sentence instead
  * (single mode: Next closes). Close goes to `backHref`, else the bed
  * (`topicId`), else the Missions tab.
  */
 export function SpeakLive({
   topicId,
   wordId,
-  harvest = false,
   backHref,
   forceNotice,
 }: {
   topicId?: string;
   wordId?: string;
-  harvest?: boolean;
   backHref?: string;
   forceNotice?: SpeakNoticeKind;
 }) {
@@ -659,7 +653,6 @@ export function SpeakLive({
   return wordId ? (
     <SpeakWordLive
       wordId={wordId}
-      harvest={harvest}
       closeHref={closeHref}
       forceNotice={forceNotice}
     />
@@ -709,12 +702,10 @@ function SpeakPondLive({
 
 function SpeakWordLive({
   wordId,
-  harvest,
   closeHref,
   forceNotice,
 }: {
   wordId: string;
-  harvest: boolean;
   closeHref: string;
   forceNotice?: SpeakNoticeKind;
 }) {
@@ -733,7 +724,6 @@ function SpeakWordLive({
       closeHref={closeHref}
       onClose={() => router.push(closeHref)}
       mode="single"
-      harvest={harvest}
       onSkipSpeaking={() => router.push(closeHref)}
       forceNotice={forceNotice}
     />

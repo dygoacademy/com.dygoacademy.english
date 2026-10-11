@@ -76,8 +76,6 @@ export interface SpeakingAttempt {
   word_marks: { index: number; ok: boolean; reason: SpeakingMarkReason | null }[];
   user_duration_ms: number;
   created_at: string;
-  /** SE5: true when this attempt harvested the word (asked, 80%+, not harvested before). */
-  harvested: boolean;
 }
 
 /** A word said at this score or more is Pollinated (D-3, changed 2026-10-11: one 80 % rule, visual only). */

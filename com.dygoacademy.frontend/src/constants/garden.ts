@@ -76,22 +76,19 @@ export const GARDEN_ROUTES = {
   sounds: '/sounds',
   /**
    * The speaking flow from an entry point (SE2 / SE5 / SE6): one bed's Pond
-   * (`topic`), one word (`word`, with `harvest` for "Bees are waiting"),
-   * or several words in a row (`words`, "Say all"); `back` is where Close
-   * and the last Next go.
+   * (`topic`), one word (`word`, the Echo challenge) or several words in a
+   * row (`words`); `back` is where Close and the last Next go.
    */
   speak: (opts: {
     topic?: string;
     word?: string;
     words?: readonly string[];
-    harvest?: boolean;
     back?: string;
   }) => {
     const params = new URLSearchParams();
     if (opts.topic) params.set('topic', opts.topic);
     if (opts.word) params.set('word', opts.word);
     if (opts.words?.length) params.set('words', opts.words.join(','));
-    if (opts.harvest) params.set('harvest', '1');
     if (opts.back) params.set('back', opts.back);
     const query = params.toString();
     return query ? `/sounds?${query}` : '/sounds';

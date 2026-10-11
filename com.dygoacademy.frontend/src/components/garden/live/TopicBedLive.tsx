@@ -45,9 +45,9 @@ import { TopicBedsSidebar } from './SidebarLists';
  * (GET /speaking/session?topic_id=…; hidden when no word has a speaking
  * item). "Bees are waiting" (2026-10-11, was SE5 "Ready to harvest") lists
  * up to 3 ripe words with a speaking item and today's pollinated ones
- * (GET /speaking/harvest, `beesCard`); each mic opens that word's sentence
- * in harvest mode, "Say all" runs the waiting ones in a row, and both come
- * back here.
+ * (GET /speaking/harvest, `beesCard`); each mic opens Pronunciation (P1,
+ * say one word; a pass pollinates it), "Say all" runs the waiting ones in
+ * a row, and both come back here.
  */
 export function TopicBedLive({ topicId }: { topicId: string }) {
   const t = useTranslations('screens.bed');
@@ -78,8 +78,8 @@ export function TopicBedLive({ topicId }: { topicId: string }) {
     words,
     harvests.data,
     toLocalDateString(new Date()),
-    (id) => GARDEN_ROUTES.speak({ word: id, harvest: true, back: bedHref }),
-    (ids) => GARDEN_ROUTES.speak({ words: ids, harvest: true, back: bedHref }),
+    (id) => GARDEN_ROUTES.pronounce({ words: [id], topic: topicId, back: bedHref }),
+    (ids) => GARDEN_ROUTES.pronounce({ words: ids, topic: topicId, back: bedHref }),
   );
 
   return (

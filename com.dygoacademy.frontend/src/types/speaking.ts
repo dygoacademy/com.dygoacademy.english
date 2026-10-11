@@ -101,18 +101,14 @@ export interface CreateSpeakingAttemptRequest {
   stage: SpeakingStage;
   word_marks: SpeakingWordMark[];
   user_duration_ms: number;
-  /** SE5 "Ready to harvest": harvest the word at 90%+ (visual only, no SRS change). */
-  harvest?: boolean;
   /** The device time zone, for the SPEAK mission's day (SE1). */
   tz?: string;
 }
 
 /** `POST /api/v1/speaking/attempts` response. */
-export interface SpeakingAttempt extends Omit<CreateSpeakingAttemptRequest, 'harvest' | 'tz'> {
+export interface SpeakingAttempt extends Omit<CreateSpeakingAttemptRequest, 'tz'> {
   id: string;
   created_at: string;
-  /** SE5: this attempt harvested the word. */
-  harvested: boolean;
 }
 
 /** `GET /api/v1/speaking/harvest?topic_id=` (SE5): a bed's speakable words and their harvests. */
@@ -124,6 +120,8 @@ export interface SpeakingHarvestWord {
   harvested_at: string | null;
   /** The word's UK IPA ("Bees are waiting" sound line, 2026-10-11); optional for older APIs. */
   ipa_uk?: string | null;
+  /** The word's syllables (MI · ti · gate), shown on the bee row instead of the IPA; optional for older APIs. */
+  syllables?: SpeakingSyllable[];
 }
 
 /** `GET /api/v1/groups/:id/echo` (SE6): the trickiest speakable word, totals only. */

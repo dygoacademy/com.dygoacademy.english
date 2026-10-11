@@ -81,8 +81,8 @@ export class CreateSpeakingAttemptDto {
 
   @ApiPropertyOptional({
     description:
-      'SE5 "Ready to harvest": at 90%+ the word is saved as harvested (visual only, no SRS ' +
-      'change). Ignored below 90.',
+      'Ignored (2026-10-11): sentences no longer pollinate a word; only POST ' +
+      '/speaking/word-check does. Still accepted so older apps keep working.',
   })
   @IsOptional()
   @IsBoolean()
