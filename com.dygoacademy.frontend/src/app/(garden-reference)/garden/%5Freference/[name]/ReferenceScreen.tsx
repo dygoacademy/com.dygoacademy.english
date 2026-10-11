@@ -15,6 +15,7 @@ import {
   HOME_REFERENCE,
   QUIZ,
   QUIZ_RESULT,
+  PRIVACY,
   REGISTER,
   SIGN_IN,
   TOPIC_SEARCH,
@@ -26,6 +27,8 @@ import {
 } from '@/components/garden/screens/fixtures';
 import { AllWateredScreen } from '@/components/garden/screens/AllWateredScreen';
 import { MeScreen } from '@/components/garden/screens/MeScreen';
+import { PrivacyScreen } from '@/components/garden/screens/PrivacyScreen';
+import { VOICE_DONATION_LINKS } from '@/lib/voice-donation';
 import { MissionCompleteScreen } from '@/components/garden/screens/MissionCompleteScreen';
 import { QuizResultScreen } from '@/components/garden/screens/QuizResultScreen';
 import { QuizScreen } from '@/components/garden/screens/QuizScreen';
@@ -80,6 +83,7 @@ function ReferenceScreenBody({ name, locale }: { name: ReferenceName; locale: Ap
   } = referenceFixtures(locale);
   const review = useTranslations('screens.review');
   const topics = useTranslations('screens.topics');
+  const privacyText = useTranslations('screens.privacy');
   const home = GARDEN_ROUTES.home;
 
   switch (name) {
@@ -267,6 +271,7 @@ function ReferenceScreenBody({ name, locale }: { name: ReferenceName; locale: Ap
             {...ME}
             dailyGoal={{ ...ME.dailyGoal, href: GARDEN_ROUTES.missions }}
             family={{ ...ME.family, href: '/' }}
+            privacy={{ donating: false, href: GARDEN_ROUTES.reference('A8e-privacy') }}
             stickyNav={false}
           />
           {name === 'A8-me-account' ? (
@@ -280,6 +285,40 @@ function ReferenceScreenBody({ name, locale }: { name: ReferenceName; locale: Ap
           ) : null}
         </>
       );
+    case 'A8e-privacy':
+    case 'A8e-privacy-confirm':
+    case 'A8e-privacy-on':
+    case 'A8e-privacy-delete':
+    case 'A8e-privacy-deleted': {
+      const on = name === 'A8e-privacy-on' || name === 'A8e-privacy-delete';
+      return (
+        <PrivacyScreen
+          framed
+          backHref={GARDEN_ROUTES.reference('A8-me')}
+          status={
+            on
+              ? { donating: true, count: PRIVACY.count, since: PRIVACY.since }
+              : { donating: false, count: 0, since: null }
+          }
+          overlay={
+            name === 'A8e-privacy-confirm'
+              ? 'confirm'
+              : name === 'A8e-privacy-delete'
+                ? 'delete'
+                : null
+          }
+          region={PRIVACY.region}
+          onRegionChange={() => {}}
+          onSwitch={() => {}}
+          onConfirm={() => {}}
+          onDismiss={() => {}}
+          onAskDelete={() => {}}
+          onDelete={() => {}}
+          toast={name === 'A8e-privacy-deleted' ? privacyText('toast.deleted', { count: PRIVACY.count }) : null}
+          links={VOICE_DONATION_LINKS}
+        />
+      );
+    }
     case 'Q1-quiz-choose':
     case 'Q2-quiz-right':
     case 'Q3-quiz-not-quite':
@@ -353,6 +392,7 @@ function ReferenceScreenBody({ name, locale }: { name: ReferenceName; locale: Ap
         />
       );
     case 'AU2-create-account':
+    case 'AU2-create-account-donate':
     case 'AU3-create-account-invite':
       return (
         <RegisterScreen
@@ -364,6 +404,14 @@ function ReferenceScreenBody({ name, locale }: { name: ReferenceName; locale: Ap
           joining={name === 'AU3-create-account-invite'}
           invite={name === 'AU3-create-account-invite' ? REGISTER.invite[locale] : null}
           initialName={REGISTER.name}
+          donation={
+            name === 'AU3-create-account-invite'
+              ? null
+              : {
+                  howHref: GARDEN_ROUTES.reference('A8e-privacy'),
+                  initialChecked: name === 'AU2-create-account-donate',
+                }
+          }
         />
       );
     case 'AU4-reset-password':

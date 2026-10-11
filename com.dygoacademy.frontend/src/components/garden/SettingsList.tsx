@@ -37,6 +37,7 @@ export function SettingsRow({
   chevron = false,
   labelId,
   onClick,
+  compact = false,
 }: {
   icon: React.ReactNode;
   label: string;
@@ -51,10 +52,14 @@ export function SettingsRow({
   labelId?: string;
   /** Makes the row a button (e.g. opens a sheet); same box as the div row. */
   onClick?: () => void;
+  /** 48px rows (A8 with the Privacy & data row, canvas 2026-10-11). */
+  compact?: boolean;
 }) {
-  // Content-box, as in the canvas: 52px plus the 1px divider.
-  const classes =
-    'box-content flex h-[52px] items-center gap-3 border-b border-divider px-[14px] text-text';
+  // Content-box, as in the canvas: 52px (48px compact) plus the 1px divider.
+  const classes = gcn(
+    'box-content flex items-center gap-3 border-b border-divider px-[14px] text-text',
+    compact ? 'h-12' : 'h-[52px]',
+  );
   const content = (
     <>
       {icon}

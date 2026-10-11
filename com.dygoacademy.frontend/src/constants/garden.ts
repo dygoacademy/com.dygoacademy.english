@@ -56,6 +56,8 @@ export const GARDEN_ROUTES = {
   },
   /** A8 Me. */
   me: '/me',
+  /** A8e Privacy & data (voice donation; 404 unless NEXT_PUBLIC_VOICE_DONATION). */
+  privacy: '/me/privacy',
   /**
    * Onboarding OB1–OB5 (design changelog, page "Adult · Onboarding"): after
    * AU2 Create account, before the first garden. The garden home sends a

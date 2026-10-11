@@ -39,6 +39,12 @@ export const REFERENCE_NAMES = [
   'A6b-search-topics',
   'A8-me',
   'A8-me-account',
+  // Voice donation (canvas 2026-10-11)
+  'A8e-privacy',
+  'A8e-privacy-confirm',
+  'A8e-privacy-on',
+  'A8e-privacy-delete',
+  'A8e-privacy-deleted',
   // UI-G: sample data in groupFixtures.ts
   'GR1-shared-gardens',
   'GR2-group-garden',
@@ -51,6 +57,7 @@ export const REFERENCE_NAMES = [
   'AU1-sign-in',
   'AU1-sign-in-error',
   'AU2-create-account',
+  'AU2-create-account-donate',
   'AU3-create-account-invite',
   'AU4-reset-password',
   'AU4-reset-password-sent',
@@ -777,3 +784,10 @@ export function referenceFixtures(locale: AppLocale) {
     QUIZ_TOPIC: sample.topics[0],
   };
 }
+
+/** AdultPrivacy.dc.html / AdultPrivacyVi.dc.html (A8e, same sample in both). */
+export const PRIVACY = {
+  count: 38,
+  since: new Date('2026-10-12T09:00:00Z'),
+  region: 'south',
+} as const;

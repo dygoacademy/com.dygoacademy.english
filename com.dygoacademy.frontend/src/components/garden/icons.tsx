@@ -269,6 +269,16 @@ export function SearchIcon(props: IconProps) {
   );
 }
 
+/** Shield with a tick (A8 "Privacy & data" row). */
+export function ShieldCheckIcon(props: IconProps) {
+  return (
+    <StrokeIcon {...props}>
+      <path d="M12 3 L19 6 V11 C19 16 16 19.5 12 21 C8 19.5 5 16 5 11 V6 Z" />
+      <path d="M9 12 L11 14 L15 10" />
+    </StrokeIcon>
+  );
+}
+
 /** Back chevron ‹. Canvas: stroke 2.4. */
 export function BackIcon(props: IconProps) {
   return (

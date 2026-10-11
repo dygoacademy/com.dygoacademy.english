@@ -14,7 +14,8 @@
       "group": "Shared Garden",
       "manage": "Tend the Garden",
       "join": "Join a Garden",
-      "quiz": "Quiz"
+      "quiz": "Quiz",
+      "privacy": "Privacy & data"
     },
     "update": {
       "available": "There’s a new version of Dygo.",
@@ -935,7 +936,12 @@
         "vi-VN": "Tiếng Việt + English",
         "zh-CN": "简体中文 + English"
       },
-      "account": "Account"
+      "account": "Account",
+      "privacy": "Privacy & data",
+      "privacyValue": {
+        "on": "Voice donation on",
+        "off": "Voice donation off"
+      }
     },
     "reference": {
       "metaTitle": "Garden reference: {name}"
@@ -1209,6 +1215,11 @@
           "failed": "We couldn’t create an account with these details. If you already have one, try signing in.",
           "network": "We couldn't create your account. Check your connection and try again.",
           "confirmEmail": "We sent you an email. Confirm your address, then sign in."
+        },
+        "donate": {
+          "title": "Help improve Dygo’s speech checker",
+          "optional": "(optional)",
+          "body": "Keep my speaking recordings to train Dygo’s checker for Vietnamese speakers. Optional · change any time in Profile. <link>How it works</link>"
         }
       },
       "forgot": {
@@ -1407,7 +1418,8 @@
       "nativeAccent": "Native · {accent}",
       "playingShort": "Playing…",
       "playNativeLabel": "Play the native speaker",
-      "playYouLabel": "Play your recording"
+      "playYouLabel": "Play your recording",
+      "privacyKept": "Your recording is checked and kept to improve Dygo (you chose this in Profile › Privacy)."
     },
     "onboarding": {
       "back": "Back",
@@ -1576,6 +1588,57 @@
         "pass": "All the stones are green",
         "retry": "{wobbly} wobbly, the rest green",
         "notHeard": "The stones stay dark and the bee waits"
+      }
+    },
+    "privacy": {
+      "title": "Privacy & data",
+      "back": "Back",
+      "voiceHeading": "Your voice",
+      "donate": {
+        "title": "Help improve Dygo’s speech checker",
+        "body": "Keep my speaking and pronunciation recordings to train Dygo’s own checker for Vietnamese speakers of English.",
+        "switchLabel": "Voice donation",
+        "off": "Off: your recordings are checked, then deleted.",
+        "donated": "{count, plural, one {<b>#</b> recording donated} other {<b>#</b> recordings donated}} · since {date}",
+        "pointCode": "Stored under a random code, not your name",
+        "pointListen": "Some may be listened to by trained people",
+        "pointKept": "Never sold or published · kept up to 3 years",
+        "delete": "Delete my donated recordings",
+        "how": "How we use donated recordings"
+      },
+      "dataHeading": "Your data",
+      "data": {
+        "download": "Download my data",
+        "privacy": "Privacy Policy",
+        "terms": "Terms of Service",
+        "deleteAccount": "Delete account"
+      },
+      "confirm": {
+        "title": "Donate your voice recordings?",
+        "line1": "We keep your recordings from now on, under a random code, not your name.",
+        "line2": "Some may be listened to by trained people to mark how words were said.",
+        "line3": "We use them only to improve Dygo’s speech checker. Never sold, never public.",
+        "line4": "Kept up to 3 years. Turn off or delete any time here.",
+        "regionQuestion": "Where did you grow up? (optional)",
+        "regions": {
+          "north": "North",
+          "central": "Central",
+          "south": "South",
+          "elsewhere": "Elsewhere",
+          "none": "Prefer not to say"
+        },
+        "notNow": "Not now",
+        "yes": "Yes, donate"
+      },
+      "deleteDialog": {
+        "title": "{count, plural, one {Delete # donated recording?} other {Delete # donated recordings?}}",
+        "body": "We’ll delete them within 30 days and stop keeping new ones. A model already trained can’t forget them, but they won’t be used again. This can’t be undone.",
+        "confirm": "Delete recordings",
+        "cancel": "Cancel"
+      },
+      "toast": {
+        "deleted": "{count, plural, =0 {Donation is off.} one {Deleting your recording. Donation is off.} other {Deleting your # recordings. Donation is off.}}",
+        "error": "Couldn’t save that. Check your connection and try again."
       }
     }
   }

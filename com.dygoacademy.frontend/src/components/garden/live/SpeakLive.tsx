@@ -13,6 +13,7 @@ import { usePlayer } from '@/hooks/usePlayer';
 import { useSpeakingSession } from '@/hooks/useSpeakingSession';
 import { useSpeakingWord } from '@/hooks/useSpeakingWord';
 import { useSrsStats } from '@/hooks/useSrsStats';
+import { useVoiceDonation } from '@/hooks/useVoiceDonation';
 import { prefetchMedia } from '@/lib/media-cache';
 import {
   createRecorder,
@@ -144,6 +145,7 @@ export function SpeakFlow({
 }: SpeakFlowProps) {
   const t = useTranslations('screens.speak');
   const player = usePlayer();
+  const donating = useVoiceDonation().data?.donating ?? false;
 
   const [state, setState] = React.useState<SpeakState>(() => initialSpeakState(items.length));
   const [accent, setAccent] = React.useState<SpeakingAccent>(defaultAccent);
@@ -501,6 +503,7 @@ export function SpeakFlow({
     const card = shown ? (
       <SpeakNotice
         kind={shown}
+        donating={donating}
         onPrimary={
           shown === 'mic'
             ? allowMic
@@ -568,6 +571,7 @@ export function SpeakFlow({
     };
     return (
       <SpeakCompareScreen
+        donating={donating}
         item={item}
         index={state.index}
         total={state.total}

@@ -17,6 +17,8 @@ export interface SpeakNoticeProps {
   onPrimary?: () => void;
   /** mic: Not now · denied: Skip speaking · audioFailed: Next word. */
   onSecondary?: () => void;
+  /** Voice donation is on: the mic explainer says the recording is kept. */
+  donating?: boolean;
 }
 
 /**
@@ -24,7 +26,7 @@ export interface SpeakNoticeProps {
  * audio failed, built from the existing card and button styles (the
  * states aren't in the canvas). Copy in `screens.speak.{mic,denied,…}`.
  */
-export function SpeakNotice({ kind, onPrimary, onSecondary }: SpeakNoticeProps) {
+export function SpeakNotice({ kind, onPrimary, onSecondary, donating = false }: SpeakNoticeProps) {
   const t = useTranslations('screens.speak');
   const tone =
     kind === 'quiet' || kind === 'short'
@@ -41,7 +43,9 @@ export function SpeakNotice({ kind, onPrimary, onSecondary }: SpeakNoticeProps) 
       // S16-b: "stays on this phone" is only true while the check runs there.
       lines = [
         t('mic.why'),
-        speechCheckMode() === 'server' ? t('privacy') : t('mic.private'),
+        speechCheckMode() === 'server'
+          ? t(donating ? 'privacyKept' : 'privacy')
+          : t('mic.private'),
         t('mic.headphones'),
       ];
       primary = t('mic.allow');

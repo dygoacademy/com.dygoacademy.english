@@ -10,6 +10,9 @@ import {
   useUpdateProfilePrefs,
 } from "@/hooks/useProfile";
 import { useSrsStats } from "@/hooks/useSrsStats";
+import { useVoiceDonation } from "@/hooks/useVoiceDonation";
+import { GARDEN_ROUTES } from "@/constants/garden";
+import { isVoiceDonationOn } from "@/lib/voice-donation";
 
 import { DailyGoalSheet } from "../DailyGoalSheet";
 import { parseClock } from "../format";
@@ -38,6 +41,8 @@ import { useReminderSwitch } from "./useReminderSwitch";
  * older backend); family stays hidden. UI-L: "Meanings in" shows the profile's
  * meaning language and opens the language sheet (app + meaning language).
  * SO-1: the gear opens the Account sheet (who's signed in, Sign out).
+ * Voice donation (NEXT_PUBLIC_VOICE_DONATION): the "Privacy & data" row,
+ * on/off from GET /profiles/me/voice-donation (off until it loads).
  */
 export function MeLive() {
   const preferences = useGardenPreferences();
@@ -50,6 +55,7 @@ export function MeLive() {
   const week = useWeekMissions();
   const keepsakes = useMyKeepsakes();
   const profile = useMyProfile();
+  const donation = useVoiceDonation();
   const prefs = useUpdateProfilePrefs();
   const [goalOpen, setGoalOpen] = React.useState(false);
   // Optimistic: show the value being saved until the reply lands.
@@ -97,6 +103,11 @@ export function MeLive() {
         meanings={preferences.meaningLocale ?? "none"}
         onLanguageClick={() => setLanguageOpen(true)}
         family={null}
+        privacy={
+          isVoiceDonationOn()
+            ? { donating: donation.data?.donating ?? false, href: GARDEN_ROUTES.privacy }
+            : null
+        }
         onAccountClick={() => setAccountOpen(true)}
       />
       <AccountSheetLive

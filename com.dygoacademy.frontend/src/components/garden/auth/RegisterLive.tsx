@@ -8,6 +8,7 @@ import { GARDEN_ROUTES } from '@/constants/garden';
 import type { AppLocale } from '@/i18n/config';
 import { apiClient } from '@/lib/api-client';
 import { createClient } from '@/lib/supabase/client';
+import { isVoiceDonationOn, VOICE_DONATION_LINKS } from '@/lib/voice-donation';
 
 import { useGardenPreferences } from '../preferences';
 import { authHrefWithNext, AUTH_HREFS, inviteTokenFromNext, safeNextPath } from './authPaths';
@@ -26,7 +27,11 @@ import { RegisterScreen, type RegisterError } from './RegisterScreen';
  *   With an invite `next` the page reads as AU3.
  * - Without `next` the new learner goes to onboarding OB1 (/welcome/level)
  *   instead of the garden.
- * Both profile writes are best effort: a failure never blocks the
+ * - Voice donation (NEXT_PUBLIC_VOICE_DONATION): the optional box (AU2 only,
+ *   as the canvas; not on AU3); ticked,
+ *   the consent is saved right after sign-up (`PUT /profiles/me/voice-donation`,
+ *   method `register`).
+ * All three profile writes are best effort: a failure never blocks the
  * redirect (the Me screen can fix either later).
  *
  * AU3's "Minh invited you to …" banner is not shown live yet: the GR6
@@ -50,7 +55,17 @@ export function RegisterLive() {
     startRefresh(() => router.refresh());
   }
 
-  async function register({ name, email, password }: { name: string; email: string; password: string }) {
+  async function register({
+    name,
+    email,
+    password,
+    donate,
+  }: {
+    name: string;
+    email: string;
+    password: string;
+    donate: boolean;
+  }) {
     setError(null);
     setBusy(true);
     const supabase = createClient();
@@ -78,6 +93,13 @@ export function RegisterLive() {
           ? supabase.from('profiles').update({ display_name: name }).eq('id', userId)
           : Promise.resolve(),
         apiClient.patch('/profiles/me', { uiLocale: appLocale }),
+        donate
+          ? apiClient.put('/profiles/me/voice-donation', {
+              donating: true,
+              method: 'register',
+              locale: appLocale,
+            })
+          : Promise.resolve(),
       ]);
     } catch {
       setError('network');
@@ -101,6 +123,7 @@ export function RegisterLive() {
       signInHref={authHrefWithNext(AUTH_HREFS.login, next)}
       joining={joining}
       invite={null}
+      donation={isVoiceDonationOn() && !joining ? { howHref: VOICE_DONATION_LINKS.how } : null}
     />
   );
 }

@@ -2,7 +2,7 @@ import { gcn } from './cn';
 
 /**
  * Garden calendar (canvas A8): 16 week columns of 7 days, 13px squares 3px
- * apart, radius 3, shaded by how many missions were done that day (0–3).
+ * apart (9px tall when `compact`: A8 with the Privacy & data row, 2026-10-11), radius 3, shaded by how many missions were done that day (0–3).
  * Days still to come are an empty outline. Under it, the legend ("Each
  * square = one day's missions", 0 ■■■■ 3).
  *
@@ -32,6 +32,7 @@ export function GardenCalendar({
   legend,
   low,
   high,
+  compact = false,
   className,
 }: {
   weeks: ReadonlyArray<ReadonlyArray<CalendarLevel | null>>;
@@ -40,6 +41,7 @@ export function GardenCalendar({
   /** Legend ends, e.g. "0" and "3". */
   low: string;
   high: string;
+  compact?: boolean;
   className?: string;
 }) {
   return (
@@ -51,7 +53,13 @@ export function GardenCalendar({
         style={{ gridTemplateColumns: `repeat(${weeks.length}, minmax(0, 1fr))` }}
       >
         {weeks.map((days, w) => (
-          <div key={w} className="grid grid-rows-[repeat(7,13px)] gap-[3px]">
+          <div
+            key={w}
+            className={gcn(
+              'grid gap-[3px]',
+              compact ? 'grid-rows-[repeat(7,9px)]' : 'grid-rows-[repeat(7,13px)]',
+            )}
+          >
             {days.map((level, d) => (
               <span
                 key={d}

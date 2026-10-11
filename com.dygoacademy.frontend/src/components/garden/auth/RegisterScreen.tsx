@@ -10,6 +10,7 @@ import type { AppLocale } from '@/i18n/config';
 import { AuthField } from './AuthField';
 import { AuthSeed, AUTH_LINK_CLASSES, AUTH_SUBMIT_CLASSES, AuthError, AuthShell } from './AuthShell';
 import { LanguageChip } from './LanguageChip';
+import { gcn } from '../cn';
 import { TileSprout } from '../groupArt';
 
 /** Why sign-up failed. `failed` never says whether the email is already taken. */
@@ -24,7 +25,8 @@ export interface RegisterInvite {
 export interface RegisterScreenProps {
   locale: AppLocale;
   onLanguageChange: (locale: AppLocale) => void;
-  onSubmit: (values: { name: string; email: string; password: string }) => void;
+  /** `donate` is the voice donation box (always false when it isn't shown). */
+  onSubmit: (values: { name: string; email: string; password: string; donate: boolean }) => void;
   error?: RegisterError | null;
   busy?: boolean;
   backHref: string;
@@ -38,6 +40,11 @@ export interface RegisterScreenProps {
   invite?: RegisterInvite | null;
   /** Sample value for the reference page; empty in the live app. */
   initialName?: string;
+  /**
+   * Voice donation (canvas 2026-10-11): the optional "Help improve Dygo's
+   * speech checker" box above the button, unticked. `howHref` is its link.
+   */
+  donation?: { howHref: string; initialChecked?: boolean } | null;
 }
 
 /**
@@ -57,11 +64,13 @@ export function RegisterScreen({
   joining = false,
   invite,
   initialName = '',
+  donation = null,
 }: RegisterScreenProps) {
   const t = useTranslations('screens.auth');
   const [name, setName] = React.useState(initialName);
   const [email, setEmail] = React.useState('');
   const [password, setPassword] = React.useState('');
+  const [donate, setDonate] = React.useState(donation?.initialChecked ?? false);
 
   const initial = invite?.inviterName.trim().charAt(0).toUpperCase() ?? '';
   const hero = joining ? (
@@ -105,7 +114,7 @@ export function RegisterScreen({
         className="contents"
         onSubmit={(event) => {
           event.preventDefault();
-          onSubmit({ name: name.trim(), email, password });
+          onSubmit({ name: name.trim(), email, password, donate: donation !== null && donate });
         }}
       >
         {error ? <AuthError>{t(`register.errors.${error}`)}</AuthError> : null}
@@ -136,6 +145,40 @@ export function RegisterScreen({
           value={password}
           onChange={setPassword}
         />
+        {donation ? (
+          <label
+            className={gcn(
+              'flex cursor-pointer items-start gap-3 rounded-2xl border px-[14px] py-3',
+              donate ? 'border-stage-sprout-leaf bg-[#EEF4EC]' : 'border-border bg-surface',
+            )}
+          >
+            <input
+              type="checkbox"
+              name="donate"
+              checked={donate}
+              disabled={busy}
+              onChange={(event) => setDonate(event.target.checked)}
+              className="mt-px h-[22px] w-[22px] shrink-0 cursor-pointer accent-forest"
+            />
+            <span className="flex flex-col gap-[3px]">
+              <span className="text-[14px] font-bold leading-[1.35]">
+                {t('register.donate.title')}{' '}
+                <span className="font-medium text-muted-foreground">
+                  {t('register.donate.optional')}
+                </span>
+              </span>
+              <span className="text-[13px] leading-[1.4] text-muted-foreground">
+                {t.rich('register.donate.body', {
+                  link: (chunks) => (
+                    <Link href={donation.howHref} className="font-bold text-forest underline">
+                      {chunks}
+                    </Link>
+                  ),
+                })}
+              </span>
+            </span>
+          </label>
+        ) : null}
         <button type="submit" disabled={busy} className={AUTH_SUBMIT_CLASSES}>
           {busy
             ? t('register.submitting')

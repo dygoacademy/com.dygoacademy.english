@@ -33,6 +33,7 @@ vi.mock('@/hooks/useCurrentUser', () => ({
   useCurrentUser: () => ({ data: { email: 'minh@example.com', user_metadata: {} } }),
 }));
 vi.mock('@/hooks/useSrsStats', () => ({ useSrsStats: () => ({ data: undefined }) }));
+vi.mock('@/hooks/useVoiceDonation', () => ({ useVoiceDonation: () => ({ data: undefined }) }));
 vi.mock('@/hooks/useSpeakingSession', () => ({
   useSpeakingSession: () => ({
     data: SPEAK_FIXTURE_SESSION,

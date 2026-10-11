@@ -14,7 +14,8 @@
       "group": "Vườn chung",
       "manage": "Chăm vườn",
       "join": "Vào vườn",
-      "quiz": "Kiểm tra nhanh"
+      "quiz": "Kiểm tra nhanh",
+      "privacy": "Quyền riêng tư"
     },
     "update": {
       "available": "Dygo vừa có bản mới.",
@@ -935,7 +936,12 @@
         "vi-VN": "Tiếng Việt + Tiếng Anh",
         "zh-CN": "Tiếng Trung + Tiếng Anh"
       },
-      "account": "Tài khoản"
+      "account": "Tài khoản",
+      "privacy": "Quyền riêng tư",
+      "privacyValue": {
+        "on": "Đang góp giọng",
+        "off": "Không góp giọng"
+      }
     },
     "reference": {
       "metaTitle": "Tài liệu vườn: {name}"
@@ -1209,6 +1215,11 @@
           "failed": "Chưa tạo được tài khoản với thông tin này. Nếu bạn đã có tài khoản, hãy thử đăng nhập.",
           "network": "Chưa tạo được tài khoản. Bạn kiểm tra kết nối rồi thử lại nhé.",
           "confirmEmail": "Chúng tôi đã gửi email cho bạn. Bạn xác nhận địa chỉ rồi đăng nhập nhé."
+        },
+        "donate": {
+          "title": "Góp giọng để Dygo chấm phát âm tốt hơn",
+          "optional": "(không bắt buộc)",
+          "body": "Lưu bản ghi luyện nói của tôi để huấn luyện bộ chấm cho người Việt. Không bắt buộc · đổi bất cứ lúc nào trong Hồ sơ. <link>Cách hoạt động</link>"
         }
       },
       "forgot": {
@@ -1407,7 +1418,8 @@
       "nativeAccent": "Bản xứ · {accent}",
       "playingShort": "Đang phát…",
       "playNativeLabel": "Nghe người bản xứ",
-      "playYouLabel": "Nghe bản ghi của bạn"
+      "playYouLabel": "Nghe bản ghi của bạn",
+      "privacyKept": "Bản ghi được chấm và lưu lại để cải thiện Dygo (bạn đã chọn trong Hồ sơ › Quyền riêng tư)."
     },
     "onboarding": {
       "back": "Quay lại",
@@ -1576,6 +1588,57 @@
         "pass": "Tất cả các hòn đá đều xanh",
         "retry": "{wobbly} còn chênh vênh, các hòn khác xanh",
         "notHeard": "Các hòn đá vẫn tối, ong đang chờ"
+      }
+    },
+    "privacy": {
+      "title": "Quyền riêng tư",
+      "back": "Quay lại",
+      "voiceHeading": "Giọng nói của bạn",
+      "donate": {
+        "title": "Góp giọng nói",
+        "body": "Giúp Dygo chấm phát âm giọng Việt chuẩn hơn · Không bắt buộc",
+        "switchLabel": "Góp giọng nói",
+        "off": "Đang tắt · bản ghi được xoá sau mỗi lần chấm",
+        "donated": "Đã góp <b>{count}</b> bản ghi · từ {date}",
+        "pointCode": "Lưu dưới mã ngẫu nhiên, không kèm tên bạn",
+        "pointListen": "Một số có thể được người đã qua đào tạo nghe",
+        "pointKept": "Không bán, không công khai · lưu tối đa 3 năm",
+        "delete": "Xoá các bản ghi đã góp",
+        "how": "Dygo dùng bản ghi được góp như thế nào"
+      },
+      "dataHeading": "Dữ liệu của bạn",
+      "data": {
+        "download": "Tải dữ liệu của tôi",
+        "privacy": "Chính sách quyền riêng tư",
+        "terms": "Điều khoản sử dụng",
+        "deleteAccount": "Xoá tài khoản"
+      },
+      "confirm": {
+        "title": "Góp bản ghi giọng nói?",
+        "line1": "Từ giờ chúng tôi lưu bản ghi của bạn dưới một mã ngẫu nhiên, không kèm tên bạn.",
+        "line2": "Một số bản ghi có thể được người đã qua đào tạo nghe để đánh dấu cách phát âm.",
+        "line3": "Chỉ dùng để cải thiện bộ chấm phát âm của Dygo. Không bán, không công khai.",
+        "line4": "Lưu tối đa 3 năm. Tắt hoặc xoá bất cứ lúc nào tại đây.",
+        "regionQuestion": "Bạn lớn lên ở miền nào? (không bắt buộc)",
+        "regions": {
+          "north": "Bắc",
+          "central": "Trung",
+          "south": "Nam",
+          "elsewhere": "Nơi khác",
+          "none": "Không muốn trả lời"
+        },
+        "notNow": "Để sau",
+        "yes": "Đồng ý góp"
+      },
+      "deleteDialog": {
+        "title": "Xoá {count} bản ghi đã góp?",
+        "body": "Chúng tôi sẽ xoá trong vòng 30 ngày và ngừng lưu bản ghi mới. Mô hình đã huấn luyện không thể “quên” lại, nhưng bản ghi sẽ không được dùng nữa. Không thể hoàn tác.",
+        "confirm": "Xoá bản ghi",
+        "cancel": "Huỷ"
+      },
+      "toast": {
+        "deleted": "{count, plural, =0 {Đã tắt góp giọng.} other {Đang xoá # bản ghi của bạn. Đã tắt góp giọng.}}",
+        "error": "Chưa lưu được. Kiểm tra kết nối rồi thử lại."
       }
     }
   }

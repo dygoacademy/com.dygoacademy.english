@@ -18,7 +18,8 @@
       "group": "共享花园",
       "manage": "照料花园",
       "join": "加入花园",
-      "quiz": "测验"
+      "quiz": "测验",
+      "privacy": "隐私与数据"
     },
     "update": {
       "available": "Dygo 有新版本了",
@@ -939,7 +940,12 @@
         "vi-VN": "Tiếng Việt + English",
         "zh-CN": "简体中文 + English"
       },
-      "account": "账户"
+      "account": "账户",
+      "privacy": "隐私与数据",
+      "privacyValue": {
+        "on": "正在捐赠语音",
+        "off": "未捐赠语音"
+      }
     },
     "reference": {
       "metaTitle": "花园参考：{name}"
@@ -1213,6 +1219,11 @@
           "failed": "无法用这些信息创建账户。如果你已有账户，请直接登录。",
           "network": "暂时无法创建账户。请检查网络后重试。",
           "confirmEmail": "请查收邮件确认账户，然后登录。"
+        },
+        "donate": {
+          "title": "帮助改进 Dygo 的发音检查",
+          "optional": "（选填）",
+          "body": "保留我的口语录音，用来训练 Dygo 面向越南人的发音检查。选填 · 可随时在“我的”中更改。<link>了解详情</link>"
         }
       },
       "forgot": {
@@ -1411,7 +1422,8 @@
       "nativeAccent": "母语者 · {accent}",
       "playingShort": "正在播放…",
       "playNativeLabel": "播放母语者的录音",
-      "playYouLabel": "播放你的录音"
+      "playYouLabel": "播放你的录音",
+      "privacyKept": "你的录音检查后会被保留，用来改进 Dygo（你在 我的 › 隐私与数据 中选择了这一项）。"
     },
     "onboarding": {
       "back": "返回",
@@ -1580,6 +1592,57 @@
         "pass": "所有石头都变绿了",
         "retry": "{wobbly} 不稳，其他都是绿色",
         "notHeard": "石头还是暗的，蜜蜂在等"
+      }
+    },
+    "privacy": {
+      "title": "隐私与数据",
+      "back": "返回",
+      "voiceHeading": "你的声音",
+      "donate": {
+        "title": "帮助改进 Dygo 的发音检查",
+        "body": "保留我的口语和发音录音，用来训练 Dygo 自己的、面向说英语的越南人的发音检查。",
+        "switchLabel": "捐赠语音",
+        "off": "已关闭：录音检查完就删除。",
+        "donated": "已捐赠 <b>{count}</b> 条录音 · 自 {date} 起",
+        "pointCode": "用随机编号保存，不用你的名字",
+        "pointListen": "部分录音可能由受过培训的人员收听",
+        "pointKept": "绝不出售或公开 · 最多保留 3 年",
+        "delete": "删除我捐赠的录音",
+        "how": "我们如何使用捐赠的录音"
+      },
+      "dataHeading": "你的数据",
+      "data": {
+        "download": "下载我的数据",
+        "privacy": "隐私政策",
+        "terms": "服务条款",
+        "deleteAccount": "删除账户"
+      },
+      "confirm": {
+        "title": "捐赠你的语音录音？",
+        "line1": "从现在起，我们用随机编号保存你的录音，不用你的名字。",
+        "line2": "部分录音可能由受过培训的人员收听，用来标注发音。",
+        "line3": "只用于改进 Dygo 的发音检查。绝不出售，绝不公开。",
+        "line4": "最多保留 3 年。可随时在这里关闭或删除。",
+        "regionQuestion": "你在越南哪个地区长大？（选填）",
+        "regions": {
+          "north": "北部",
+          "central": "中部",
+          "south": "南部",
+          "elsewhere": "其他地方",
+          "none": "不想回答"
+        },
+        "notNow": "以后再说",
+        "yes": "同意捐赠"
+      },
+      "deleteDialog": {
+        "title": "删除 {count} 条捐赠的录音？",
+        "body": "我们会在 30 天内删除，并不再保留新的录音。已经训练好的模型无法“忘记”它们，但它们不会再被使用。此操作无法撤销。",
+        "confirm": "删除录音",
+        "cancel": "取消"
+      },
+      "toast": {
+        "deleted": "{count, plural, =0 {已关闭语音捐赠。} other {正在删除你的 # 条录音。已关闭语音捐赠。}}",
+        "error": "没能保存。请检查网络后重试。"
       }
     }
   }

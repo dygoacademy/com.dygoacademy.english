@@ -45,6 +45,8 @@ export interface SpeakCompareScreenProps {
   onNext: () => void;
   /** Replaces "Next word" (the sheet: "Back to the card"). */
   nextLabel?: string;
+  /** Voice donation is on: "checked and kept" instead of "checked, then deleted". */
+  donating?: boolean;
 }
 
 const SpeakerIcon = () => (
@@ -262,7 +264,7 @@ export function SpeakCompareScreen(props: SpeakCompareScreenProps) {
               <rect x="5" y="11" width="14" height="10" rx="2" />
               <path d="M8 11 V8 A4 4 0 0 1 16 8 V11" />
             </svg>
-            {t('privacy')}
+            {t(props.donating ? 'privacyKept' : 'privacy')}
           </span>
         </div>
       )}

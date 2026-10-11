@@ -44,7 +44,25 @@ describe('RegisterScreen (AU2)', () => {
     fireEvent.change(screen.getByLabelText('Email'), { target: { value: 'minh@example.com' } });
     fireEvent.change(screen.getByLabelText('Password'), { target: { value: 'gardenpass' } });
     fireEvent.click(screen.getByRole('button', { name: 'Create account' }));
-    expect(onSubmit).toHaveBeenCalledWith({ name: 'Minh', email: 'minh@example.com', password: 'gardenpass' });
+    expect(onSubmit).toHaveBeenCalledWith({ name: 'Minh', email: 'minh@example.com', password: 'gardenpass', donate: false });
+  });
+
+  it('has no voice donation box unless asked for', () => {
+    renderScreen();
+    expect(screen.queryByRole('checkbox')).toBeNull();
+  });
+
+  it('voice donation: the optional box is unticked and its answer is submitted', () => {
+    const { onSubmit } = renderScreen({ donation: { howHref: '/privacy#p4' } });
+    const box = screen.getByRole('checkbox', { name: /Help improve Dygo’s speech checker/ });
+    expect((box as HTMLInputElement).checked).toBe(false);
+    expect(screen.getByRole('link', { name: 'How it works' }).getAttribute('href')).toBe(
+      '/privacy#p4',
+    );
+    fireEvent.click(box);
+    expect((box as HTMLInputElement).checked).toBe(true);
+    fireEvent.submit(box.closest('form')!);
+    expect(onSubmit).toHaveBeenCalledWith(expect.objectContaining({ donate: true }));
   });
 
   it('shows one sign-up error that never says the email is taken', () => {

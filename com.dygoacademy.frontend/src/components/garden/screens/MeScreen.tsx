@@ -15,6 +15,7 @@ import {
   GoldenBloomIcon,
   HarvestFruitIcon,
   MissionsTabIcon,
+  ShieldCheckIcon,
   TranslateIcon,
 } from '../icons';
 import { Keepsake } from '../Keepsake';
@@ -34,6 +35,10 @@ import { GardenTabBar, IPAD_NAV_COLUMN, SCREEN_CLASSES } from './GardenTabBar';
  *
  * SO-1: a gear at the top right of the profile opens the Account sheet
  * (`onAccountClick`; the caller renders the sheet).
+ *
+ * Voice donation (canvas 2026-10-11): `privacy` adds the "Privacy & data"
+ * row (→ A8e) after "Meanings in"; to fit it the screen is a little
+ * tighter (10px gaps, 18px top, 48px rows, 9px calendar squares).
  */
 export type KeepsakeItem =
   | { type: 'firstHarvest' }
@@ -69,6 +74,8 @@ export interface MeScreenProps {
   meanings: MeaningLocale | 'none' | null;
   onLanguageClick?: () => void;
   family: { name: string; href: string } | null;
+  /** A8 "Privacy & data" row (voice donation on/off); null hides it. */
+  privacy?: { donating: boolean; href: string } | null;
   /** The gear (aria-label "Account"): opens the Account sheet. */
   onAccountClick?: () => void;
   stickyNav?: boolean;
@@ -93,6 +100,7 @@ export function MeScreen({
   meanings,
   onLanguageClick,
   family,
+  privacy = null,
   onAccountClick,
   stickyNav = true,
 }: MeScreenProps) {
@@ -101,9 +109,16 @@ export function MeScreen({
   const [remindOn, setRemindOn] = React.useState(reminder?.on ?? false);
   const dash = t('unknown');
   const num = (value: number | null) => (value === null ? dash : f.number(value));
+  const compact = privacy !== null;
 
   return (
-    <div className={gcn(SCREEN_CLASSES, IPAD_NAV_COLUMN, 'gap-3 pt-[22px]')}>
+    <div
+      className={gcn(
+        SCREEN_CLASSES,
+        IPAD_NAV_COLUMN,
+        compact ? 'gap-2.5 pt-[18px]' : 'gap-3 pt-[22px]',
+      )}
+    >
       <header className="flex items-center gap-[14px] px-5">
         <div
           aria-hidden="true"
@@ -170,6 +185,7 @@ export function MeScreen({
                 legend={t('calendarLegend')}
                 low="0"
                 high="3"
+                compact={compact}
               />
             ) : (
               <p className="text-[13px] text-muted-foreground">{t('comingSoon')}</p>
@@ -255,12 +271,14 @@ export function MeScreen({
               href={dailyGoal?.href}
               onClick={dailyGoal && !dailyGoal.href ? onDailyGoalClick : undefined}
               chevron={!dailyGoal}
+              compact={compact}
             />
             <SettingsRow
               icon={<BellIcon {...ICON} />}
               label={t('reminder')}
               labelId="garden-me-reminder"
               value={reminder ? f.clock(reminder.time) : undefined}
+              compact={compact}
               control={
                 reminder ? (
                   <Switch
@@ -281,13 +299,24 @@ export function MeScreen({
               value={meanings ? t(`meaningsValue.${meanings}`) : t('comingSoonShort')}
               onClick={onLanguageClick}
               chevron
+              compact={compact}
             />
+            {privacy ? (
+              <SettingsRow
+                icon={<ShieldCheckIcon {...ICON} />}
+                label={t('privacy')}
+                value={t(privacy.donating ? 'privacyValue.on' : 'privacyValue.off')}
+                href={privacy.href}
+                compact
+              />
+            ) : null}
             {family ? (
               <SettingsRow
                 icon={<FamilyIcon {...ICON} />}
                 label={t('family')}
                 value={t('familyValue', { name: family.name })}
                 href={family.href}
+                compact={compact}
               />
             ) : null}
           </SettingsList>
