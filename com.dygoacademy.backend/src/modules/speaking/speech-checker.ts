@@ -9,11 +9,15 @@ import { ConfigService } from '@nestjs/config';
  */
 export const SPEECH_CHECKER = Symbol('SPEECH_CHECKER');
 
-/** One word in the scorer's reply (docker/speech, `POST /check`). */
+/**
+ * One word in the scorer's reply (docker/speech, `POST /check-pronunciation`; `/check` has the
+ * same fields). `score` is null for a word the GOPT scorer couldn't score (no known phones, or
+ * audio too short to align): Whisper alone decided its status. The mapper doesn't read it.
+ */
 export interface ScorerWord {
   index: number;
   text: string;
-  score: number;
+  score: number | null;
   status: 'ok' | 'unclear' | 'missing';
   heard: string | null;
   start: number | null;
@@ -75,7 +79,8 @@ export class SpeechCheckError extends Error {
 
 /**
  * The free scorer on this Mac (docker compose service `speech`, README
- * "Speech checking"). Multipart `audio` + `sentence` to `{scorerUrl}/check`;
+ * "Speech checking"). Multipart `audio` + `sentence` to `{scorerUrl}/check-pronunciation`
+ * (the GOPT scorer; `/check` is the older GOP one, same reply fields);
  * `audio` + `word` + `ipa` to `{scorerUrl}/check-word`.
  * Logs status and timings only, never the audio, the sentence or what was
  * heard.
@@ -94,7 +99,7 @@ export class MacSpeechChecker implements SpeechChecker {
   ): Promise<ScorerResult> {
     const fields: Record<string, string> = { sentence };
     if (targetIndex !== undefined) fields.target_index = String(targetIndex);
-    return this.post<ScorerResult>(`${scorerUrl}/check`, audio, fields);
+    return this.post<ScorerResult>(`${scorerUrl}/check-pronunciation`, audio, fields);
   }
 
   async checkWord(

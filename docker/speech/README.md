@@ -37,12 +37,12 @@ Multipart: `audio` (m4a / webm / wav, ≤ 1 MB, 0.3–30 s), `sentence`. Errors:
 
 `status`: `ok`, `unclear` (low sound score, or `heard` = the word Whisper heard instead) or `missing`. Thresholds (`UNCLEAR_SCORE` 60, `MISSING_SCORE` 40) are first guesses, tuned in M4 with real recordings.
 
-## `POST /check-gopt`
+## `POST /check-pronunciation`
 
 GOPT pronunciation scorer (2026-10-11, `com.dydoacademy.gopt`). Same request and reply shape as `/check`, plus `gopt` (the model's own utterance `accuracy` / `total`, 0–100, and `aligned`) and each word's `phones` (`[{"phone": "EH", "score": 91}]`). Same limits, lock and logging as `/check`; `/check` and `/check-word` are unchanged.
 
 ```bash
-curl -s -F audio=@samples/migrate.m4a -F "sentence=Planting more trees can help mitigate the effects of climate change." -F target_index=5 http://127.0.0.1:8100/check-gopt
+curl -s -F audio=@samples/migrate.m4a -F "sentence=Planting more trees can help mitigate the effects of climate change." -F target_index=5 http://127.0.0.1:8100/check-pronunciation
 ```
 
 How it works (`app/phones.py`, `app/gopt_scorer.py`, `app/gopt_model.py`):

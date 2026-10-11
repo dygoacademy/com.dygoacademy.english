@@ -1,4 +1,4 @@
-"""GOPT pronunciation scorer on Dygo's wav2vec2 phoneme model (POST /check-gopt).
+"""GOPT pronunciation scorer on Dygo's wav2vec2 phoneme model (POST /check-pronunciation).
 
 1. The sentence's phones (ARPAbet, `phones.py`) are force-aligned (CTC) to the
    recording with the phoneme model that `Scorer` already runs.

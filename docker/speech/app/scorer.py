@@ -213,7 +213,7 @@ class Scorer:
         return [self.phoneme[i] for i in self.word_ids(word)]
 
     def check_gopt(self, audio: np.ndarray, sentence: str, target_index: int | None = None) -> dict:
-        """Same reply shape as `check`, scored by the GOPT transformer (`POST /check-gopt`):
+        """Same reply shape as `check`, scored by the GOPT transformer (`POST /check-pronunciation`):
         word and phone scores 0–100 from speechocean762-trained GOPT on this model's features;
         Whisper still says what was left out or said as another word."""
         positions = [i for i, w in enumerate(sentence.split()) if normalise(w)]

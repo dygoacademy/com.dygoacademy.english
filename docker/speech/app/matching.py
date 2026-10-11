@@ -22,7 +22,7 @@ MISSING_SCORE = 40
 # mishearings of good speech ("months" → "onts") 99–100.
 HEARD_TRUST_SCORE = 85
 
-# GOPT scorer scale (POST /check-gopt). GOPT predicts word accuracy 0–100 with a high median
+# GOPT scorer scale (POST /check-pronunciation). GOPT predicts word accuracy 0–100 with a high median
 # (98): the best F1 for catching a human-marked mispronounced word (accuracy <= 5/10) on
 # speechocean762 was at 80 (flags 9% of words; humans marked 7.6%). "Missing" and the
 # Whisper-heard-another-word trust level are provisional: no data to calibrate them yet.

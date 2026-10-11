@@ -1,4 +1,4 @@
-"""Dygo speech scorer API (Phase 13 G6): POST /check, POST /check-gopt, POST /check-word, GET /health.
+"""Dygo speech scorer API (Phase 13 G6): POST /check, POST /check-pronunciation, POST /check-word, GET /health.
 
 Only the backend calls this (the port is bound to 127.0.0.1). The upload is
 read into memory, scored and dropped; the log line has timings and the
@@ -74,8 +74,8 @@ def check(
     return result
 
 
-@app.post("/check-gopt")
-def check_gopt(
+@app.post("/check-pronunciation")
+def check_pronunciation(
     audio: UploadFile = File(...),
     sentence: str = Form(...),
     target_index: int | None = Form(None),
@@ -100,7 +100,7 @@ def check_gopt(
     with lock:
         result = scorer.check_gopt(pcm, sentence, target_index)
     result["latency_ms"] = round((time.time() - t) * 1000)
-    log.info("check-gopt duration_ms=%s latency_ms=%s total=%s", result["duration_ms"], result["latency_ms"], result["total"])
+    log.info("check-pronunciation duration_ms=%s latency_ms=%s total=%s", result["duration_ms"], result["latency_ms"], result["total"])
     return result
 
 
