@@ -230,8 +230,8 @@ export function SpeakFlow({
     return () => clearInterval(id);
   }, [capturing, stream]);
 
-  // Stop by itself 2 s after the voice ends; nothing heard after 8 s:
-  // "We couldn't hear you" (handover v2 §3.2).
+  // Stop by itself 2 s after the voice ends; nothing heard NOT_HEARD_MS
+  // after the beep: "We couldn't hear you" (handover v2 §3.2).
   React.useEffect(() => {
     if (!capturing) return;
     if (voiceEnded(live, LIVE_LEVELS_PER_SECOND)) void stopRecording();
@@ -418,6 +418,9 @@ export function SpeakFlow({
     setDrawn(null);
     setCheckStatus('checking');
     setStarted(false);
+    // The last attempt's clock would otherwise count against this one: a
+    // retry after a long attempt said "We couldn't hear you" at the beep.
+    setElapsedMs(0);
     player.stop();
     try {
       await resumeAudioContext(); // inside the tap (iOS)

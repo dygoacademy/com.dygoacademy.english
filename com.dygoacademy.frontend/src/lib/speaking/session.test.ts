@@ -129,19 +129,19 @@ describe('voiceEnded (auto-stop, handover v2 §3.2)', () => {
   });
 });
 
-describe('notHeard (no voice 8 s after the beep)', () => {
+describe('notHeard (no voice 5 s after the beep)', () => {
   const PER_S = 20;
   const bars = (seconds: number, level: number) =>
     Array.from({ length: Math.round(seconds * PER_S) }, () => level);
 
-  it('only after 8 s, and only with no voice at all', () => {
-    expect(notHeard(bars(7.9, 0.004), PER_S, 7900)).toBe(false);
-    expect(notHeard(bars(8, 0.004), PER_S, 8000)).toBe(true);
-    expect(notHeard([...bars(6, 0.004), ...bars(2, 0.2)], PER_S, 8000)).toBe(false);
+  it('only after 5 s, and only with no voice at all', () => {
+    expect(notHeard(bars(4.9, 0.004), PER_S, 4900)).toBe(false);
+    expect(notHeard(bars(5, 0.004), PER_S, 5000)).toBe(true);
+    expect(notHeard([...bars(3, 0.004), ...bars(2, 0.2)], PER_S, 5000)).toBe(false);
   });
 
   it('two tap clicks are still nothing heard', () => {
-    expect(notHeard([0.5, ...bars(4, 0.004), 0.5, ...bars(4, 0.004)], PER_S, 8100)).toBe(true);
+    expect(notHeard([0.5, ...bars(2.5, 0.004), 0.5, ...bars(2.5, 0.004)], PER_S, 5100)).toBe(true);
   });
 });
 

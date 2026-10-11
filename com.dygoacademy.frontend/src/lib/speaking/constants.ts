@@ -120,7 +120,7 @@ export const BEEP_HZ = 880;
 export const BEEP_MS = 120;
 export const VIBRATE_MS = 40;
 export const AUTO_STOP_SILENCE_MS = 2000;
-export const NOT_HEARD_MS = 8000;
+export const NOT_HEARD_MS = 5000;
 export const FOLLOW_ALONG_SLOWDOWN = 1.5;
 
 /**

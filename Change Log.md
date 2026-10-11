@@ -908,3 +908,8 @@ Engineering-facing log of shipped fixes and changes, one dated entry per change.
 * **Decision**: `GET /topics` already returns the library topics and the learner waters them in place (no copy), so Plant sows that topic's first 5 words (`/review?new=5&topic=…`) instead of cloning it; after that the topic shows under "Your topics".
 * **Gaps**: the word hint only knows beds whose words are already loaded this visit; a search across every bed's words needs an endpoint (v2).
 * **Verified**: `vitest run src/components/garden src/lib/search` (Linux copy): same 44 known failures, 404 passing (+18). `tsc --noEmit` and eslint clean. Local `garden:diff`: A6-topics 0.164 %, A6b-search-topics 0.077 %, A6b-search-topics-vi 0.124 % (pass); A6-topics-vi 0.985 % is the board's older wording ("kết trái" counts, "Cần tưới"), not layout.
+
+### Fixed: The Pond says "We couldn't hear you" 5 s after the beep, and a retry starts its own clock
+* **Files**: [`SpeakLive.tsx`](com.dygoacademy.frontend/src/components/garden/live/SpeakLive.tsx), [`constants.ts`](com.dygoacademy.frontend/src/lib/speaking/constants.ts) (`NOT_HEARD_MS` 8000 → 5000), tests (`SpeakLive.test.tsx`, `session.test.ts`)
+* **What**: with no voice, SP2 now gives up 5 s after the beep instead of 8 s. Starting a new recording resets the elapsed clock, so a retry after a long attempt no longer said "We couldn't hear you" right at the beep.
+* **Verified**: the new SpeakLive test (5 s, twice in a row, nothing saved) and `session.test.ts` pass; the 5 other SpeakLive failures are the known copy-rewrite strings. `tsc --noEmit` clean.

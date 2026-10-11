@@ -32,6 +32,7 @@ vi.mock('next/navigation', () => ({ useRouter: () => ({ push }) }));
 vi.mock('@/hooks/useCurrentUser', () => ({
   useCurrentUser: () => ({ data: { email: 'minh@example.com', user_metadata: {} } }),
 }));
+vi.mock('@/hooks/useSrsStats', () => ({ useSrsStats: () => ({ data: undefined }) }));
 vi.mock('@/hooks/useSpeakingSession', () => ({
   useSpeakingSession: () => ({
     data: SPEAK_FIXTURE_SESSION,
@@ -289,6 +290,34 @@ describe('SpeakLive (The Pond)', () => {
     await waitFor(() => expect(recorderStop).toHaveBeenCalledTimes(1));
     await waitFor(() => expect(screen.getByText('In bloom · 82% match')).toBeTruthy());
     expect(mutate).toHaveBeenCalledTimes(1);
+  });
+
+  it('waits 5 s after the beep before "We couldn\'t hear you", on a retry too', async () => {
+    vi.useFakeTimers({
+      shouldAdvanceTime: true,
+      toFake: ['setTimeout', 'clearTimeout', 'setInterval', 'clearInterval', 'performance'],
+    });
+    env.levels = Array.from({ length: 20 }, () => 0.004); // room noise, no voice
+    await renderLive();
+    const quietAfterBeep = async () => {
+      await act(async () =>
+        fireEvent.click(screen.getByRole('button', { name: 'Start recording' })),
+      );
+      await countdown();
+      expect(screen.queryByText("We couldn't hear you")).toBeNull();
+      await act(async () => {
+        vi.advanceTimersByTime(4500);
+      });
+      expect(screen.queryByText("We couldn't hear you")).toBeNull();
+      expect(screen.getByRole('button', { name: 'Stop recording' })).toBeTruthy();
+      await act(async () => {
+        vi.advanceTimersByTime(700);
+      });
+      expect(screen.getByText("We couldn't hear you")).toBeTruthy();
+    };
+    await quietAfterBeep();
+    await quietAfterBeep(); // the first attempt's clock mustn't carry over
+    expect(mutate).not.toHaveBeenCalled();
   });
 
   it('server mode (S18): uploads the recording, shows its marks, saves them without "heard"', async () => {
