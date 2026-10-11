@@ -190,6 +190,20 @@ const JOBS = [
   ['iPadPronResultVi.dc.html', 'vi', 'iP4-result-retry-vi', { result: 'retry', $size: [1194, 834] }],
   ['iPadPronResultVi.dc.html', 'vi', 'iP4-result-pollinated-vi', { result: 'pass', $size: [1194, 834] }],
   ['iPadPronNotHeardVi.dc.html', 'vi', 'iP2b-not-heard-vi', { reason: 'quiet', $size: [1194, 834] }],
+  // Voice donation (2026-10-11): A8e Privacy & data, `state` = the board's Demo enum.
+  ['AdultPrivacy.dc.html', 'en', 'A8e-privacy', { state: 'off' }],
+  ['AdultPrivacy.dc.html', 'en', 'A8e-privacy-confirm', { state: 'confirm' }],
+  ['AdultPrivacy.dc.html', 'en', 'A8e-privacy-on', { state: 'on' }],
+  ['AdultPrivacy.dc.html', 'en', 'A8e-privacy-delete', { state: 'delete' }],
+  ['AdultPrivacy.dc.html', 'en', 'A8e-privacy-deleted', { state: 'deleted' }],
+  ['AdultPrivacyVi.dc.html', 'vi', 'A8e-privacy-vi', { state: 'off' }],
+  ['AdultPrivacyVi.dc.html', 'vi', 'A8e-privacy-confirm-vi', { state: 'confirm' }],
+  ['AdultPrivacyVi.dc.html', 'vi', 'A8e-privacy-on-vi', { state: 'on' }],
+  ['AdultPrivacyVi.dc.html', 'vi', 'A8e-privacy-delete-vi', { state: 'delete' }],
+  ['AdultPrivacyVi.dc.html', 'vi', 'A8e-privacy-deleted-vi', { state: 'deleted' }],
+  // AU2 with the donate box ticked.
+  ['AdultRegister.dc.html', 'en', 'AU2-create-account-donate', { donate: true }],
+  ['AdultRegisterVi.dc.html', 'vi', 'AU2-create-account-donate-vi', { donate: true }],
 ].filter(([, , name]) => !FILTER || name.includes(FILTER));
 
 // English pages redrawn with the app's body stack (DM Sans, then Be Vietnam
