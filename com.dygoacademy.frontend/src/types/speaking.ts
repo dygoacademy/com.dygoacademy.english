@@ -143,7 +143,7 @@ export interface SpeakingWordLookup {
   spoken_today: boolean;
 }
 
-/** One word's mark from `POST /api/v1/speaking/check` (S17). */
+/** One word's mark from `POST /api/v1/speaking/check-speech` (S17). */
 export interface SpeakingCheckMark {
   index: number;
   ok: boolean;
@@ -152,7 +152,7 @@ export interface SpeakingCheckMark {
   heard?: string;
 }
 
-/** `POST /api/v1/speaking/check`: the server's verdict on one recording. Never saved by itself. */
+/** `POST /api/v1/speaking/check-speech`: the server's verdict on one recording. Never saved by itself. */
 export interface SpeakingCheckResult {
   score: number;
   stage: SpeakingStage;
@@ -161,7 +161,7 @@ export interface SpeakingCheckResult {
   check_ms: number;
 }
 
-/** `POST /api/v1/speaking/check` (202, queue v1): the check is queued; poll its id. */
+/** `POST /api/v1/speaking/check-speech` (202, queue v1): the check is queued; poll its id. */
 export interface SpeakingCheckQueued {
   check_id: string;
   status: 'queued';
@@ -187,7 +187,7 @@ export interface SpeakingWordCheckSyllable {
   heard_ipa: string | null;
 }
 
-/** `POST /api/v1/speaking/word-check` → `GET /api/v1/speaking/check/:id` result: one word, a score per syllable. */
+/** `POST /api/v1/speaking/check-pronunciation` → `GET /api/v1/speaking/check/:id` result: one word, a score per syllable. */
 export interface SpeakingWordCheckResult {
   kind: 'word';
   status: 'ok' | 'not_heard' | 'other_word';

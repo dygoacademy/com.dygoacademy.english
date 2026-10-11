@@ -137,7 +137,7 @@ export const CHECK_POLL_MS = 800;
 
 /**
  * Where SP3's check runs (S18): `local` = the on-device envelope scorer
- * (the default), `server` = `POST /speaking/check` → the speech scorer on
+ * (the default), `server` = `POST /speaking/check-speech` → the speech scorer on
  * the Mac (G6). Set NEXT_PUBLIC_SPEECH_CHECK=server at build time to switch
  * (M5, after calibration). Read literally so Next inlines it.
  */

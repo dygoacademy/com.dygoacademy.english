@@ -86,7 +86,7 @@ const clipRate = (item: SpeakingSessionItem, accent: SpeakingAccent, rate: numbe
  * /speaking/attempts` per checked attempt) → next, or Done (SP4) after the
  * last. By default the check runs on the phone
  * (`localCheck`); with NEXT_PUBLIC_SPEECH_CHECK=server (S18) a usable
- * recording is also sent to `POST /speaking/check`, checked by the speech
+ * recording is also sent to `POST /speaking/check-speech`, checked by the speech
  * scorer and dropped (never stored). Nothing changes SRS (D5).
  */
 /** The T7 notice for a mic error. */

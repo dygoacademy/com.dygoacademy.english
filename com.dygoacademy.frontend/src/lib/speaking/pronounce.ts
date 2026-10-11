@@ -402,7 +402,7 @@ export function resultView(
 
 /**
  * Sends the take as recorded (m4a on iPhone, webm on Chrome) to `POST
- * /speaking/word-check`, then asks `GET /speaking/check/:id` every
+ * /speaking/check-pronunciation`, then asks `GET /speaking/check/:id` every
  * CHECK_POLL_MS until it's done. Rejects (→ P3's "Check again / Record
  * again" card) when the server is busy (503), the check fails, on any
  * other API error, or after SERVER_CHECK_TIMEOUT_MS.
@@ -423,7 +423,7 @@ export async function wordCheck(
   const pollMs = opts.pollMs ?? CHECK_POLL_MS;
   let stopped = false;
   const work = async (): Promise<SpeakingWordCheckResult> => {
-    const queued = await apiClient.upload<SpeakingCheckQueued>('/speaking/word-check', form);
+    const queued = await apiClient.upload<SpeakingCheckQueued>('/speaking/check-pronunciation', form);
     while (!stopped) {
       await new Promise((resolve) => setTimeout(resolve, pollMs));
       if (stopped) break;

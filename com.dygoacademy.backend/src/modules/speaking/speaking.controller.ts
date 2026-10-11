@@ -39,7 +39,7 @@ import {
   SpeakingWordLookup,
 } from './speaking.types';
 
-/** The fields of multer's in-memory file that `POST /speaking/check` reads. */
+/** The fields of multer's in-memory file that `POST /speaking/check-speech` reads. */
 interface UploadedAudio {
   buffer: Buffer;
   mimetype: string;
@@ -138,7 +138,8 @@ export class SpeakingController {
     return this.speaking.createAttempt(userId, dto);
   }
 
-  @Post('check')
+  // `check` is the name before 2026-10-11: kept so apps loaded before the rename keep working.
+  @Post(['check-speech', 'check'])
   @HttpCode(202)
   @UseGuards(SpeechCheckRateLimitGuard)
   @UseInterceptors(
@@ -184,11 +185,12 @@ export class SpeakingController {
     );
   }
 
-  @Post('word-check')
+  // `word-check` is the name before 2026-10-11 (see `check` above).
+  @Post(['check-pronunciation', 'word-check'])
   @HttpCode(202)
   @UseGuards(SpeechCheckRateLimitGuard)
   @UseInterceptors(
-    // In memory only, as for POST /speaking/check.
+    // In memory only, as for POST /speaking/check-speech.
     FileInterceptor('audio', { limits: { fileSize: SPEAKING_CHECK_MAX_BYTES, files: 1 } }),
   )
   @ApiConsumes('multipart/form-data')
@@ -206,7 +208,7 @@ export class SpeakingController {
   @ApiOperation({
     summary: 'Queue a check of one word the learner said (Pronunciation, 2026-10-11)',
     description:
-      'Same queue, limits and polling as POST /speaking/check (poll GET /speaking/check/:id). ' +
+      'Same queue, limits and polling as POST /speaking/check-speech (poll GET /speaking/check/:id). ' +
       'The scorer checks the word against its IPA for the accent: a score per syllable, which ' +
       'ones wobbled (and what they sounded like), not_heard / other_word. passed = ok and 80+; ' +
       'a passed word is pollinated (speaking_harvests, once per word; never SRS). The ' +

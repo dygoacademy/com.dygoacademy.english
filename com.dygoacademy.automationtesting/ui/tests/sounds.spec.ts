@@ -12,7 +12,7 @@ import { SIGN_IN_SKIP_REASON, expect, hasSignedInSession, test } from './fixture
  * The microphone is stubbed: Chrome's fake capture device plays the
  * fixture sentence once (`%noloop`, then silence, so the v2 auto-stop
  * fires), and the mic permission is granted up front. The speaking API is
- * stubbed too (`/speaking/session`, `/speaking/check`, `/speaking/attempts`),
+ * stubbed too (`/speaking/session`, `/speaking/check-speech`, `/speaking/attempts`),
  * in the backend's `{ success, data }` envelope, so the spec writes nothing,
  * never calls the speech scorer and doesn't depend on which words the
  * fixture user has. Works with the app in either check mode: `server`
@@ -97,7 +97,7 @@ const CHECK_RESULT = {
 interface Stubs {
   attempts: Array<{ word_marks: Array<Record<string, unknown>> } & Record<string, unknown>>;
   checks: number;
-  /** What the next `/speaking/check` answers: the result, or an HTTP status. */
+  /** What the next `/speaking/check-speech` answers: the result, or an HTTP status. */
   checkReply: 'ok' | 503;
   checkDelayMs: number;
 }
@@ -120,7 +120,7 @@ async function stubSpeakingApi(page: Page, itemCount = 38): Promise<Stubs> {
       }),
     }),
   );
-  await page.route('**/api/v1/speaking/check', async (route) => {
+  await page.route('**/api/v1/speaking/check-speech', async (route) => {
     stubs.checks++;
     if (stubs.checkDelayMs) await new Promise((r) => setTimeout(r, stubs.checkDelayMs));
     if (stubs.checkReply === 503) {

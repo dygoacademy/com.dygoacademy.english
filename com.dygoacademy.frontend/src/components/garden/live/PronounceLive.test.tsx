@@ -165,7 +165,7 @@ describe('PronounceLive (Stepping stones)', () => {
     expect(screen.getByText('Recording')).toBeTruthy();
     await speak(10);
     await wait(900);
-    expect(upload).toHaveBeenCalledWith('/speaking/word-check', expect.any(FormData));
+    expect(upload).toHaveBeenCalledWith('/speaking/check-pronunciation', expect.any(FormData));
     expect(screen.getByText('Clean crossing!')).toBeTruthy();
     expect(screen.getByRole('link', { name: 'Back to the bed' }).getAttribute('href')).toBe('/topics/t1');
   });

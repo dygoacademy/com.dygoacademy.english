@@ -3,7 +3,7 @@ import { IsIn, IsUUID } from 'class-validator';
 
 import { SPEAKING_ACCENTS, SpeakingAccent } from '../speaking.types';
 
-/** Form fields of `POST /speaking/word-check` (multipart; the recording is the `audio` file). */
+/** Form fields of `POST /speaking/check-pronunciation` (multipart; the recording is the `audio` file). */
 export class WordCheckDto {
   @ApiProperty({ description: "The learner's topic_words row for the word they said." })
   @IsUUID('loose')

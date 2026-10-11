@@ -209,7 +209,7 @@ describe('wordCheck', () => {
       { pollMs: 1 },
     );
     expect(r).toEqual(CHECK);
-    expect(upload.mock.calls[0][0]).toBe('/speaking/word-check');
+    expect(upload.mock.calls[0][0]).toBe('/speaking/check-pronunciation');
     const form = upload.mock.calls[0][1] as FormData;
     expect(form.get('topic_word_id')).toBe('tw1');
     expect(form.get('accent')).toBe('UK');

@@ -10,7 +10,7 @@ import { MacSpeechChecker, SPEECH_CHECKER } from './speech-checker';
 
 /**
  * Phase 13: adult speaking sessions (session + attempts) and speech checks
- * (`POST /speaking/check` → the speech scorer, S17 / G6). Native audio is
+ * (`POST /speaking/check-speech` → the speech scorer, S17 / G6). Native audio is
  * made offline by `scripts/speaking-generate.ts`. StorageService needs no
  * import here (StorageModule is @Global()).
  */

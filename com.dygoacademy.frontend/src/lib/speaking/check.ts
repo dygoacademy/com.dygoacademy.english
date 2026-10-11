@@ -157,7 +157,7 @@ export function mergeServerResult(
 /**
  * S18 `server` mode, queued (v1, 2026-10-06): sends the recording as
  * recorded (S15-a: m4a on iPhone, webm on Chrome) to `POST
- * /speaking/check`, which answers at once with a check id; then asks
+ * /speaking/check-speech`, which answers at once with a check id; then asks
  * `GET /speaking/check/:id` every CHECK_POLL_MS while SP3 shows "Checking
  * your sentence…", and merges the result with the on-device one. When the
  * server is busy (503 on send) it returns the phone's own result marked
@@ -189,7 +189,7 @@ export async function serverCheck(
   const work = async (): Promise<ShownResult> => {
     let queued: SpeakingCheckQueued;
     try {
-      queued = await apiClient.upload<SpeakingCheckQueued>('/speaking/check', form);
+      queued = await apiClient.upload<SpeakingCheckQueued>('/speaking/check-speech', form);
     } catch (err) {
       if (err instanceof ApiError && err.status === 503)
         return { ...forDisplay(local), quick: true };

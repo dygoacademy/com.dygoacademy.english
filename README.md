@@ -779,7 +779,7 @@ too short / too long / no sentence. Full details: `docker/speech/README.md`.
 
 - **Go through the backend's queue.** The browser never talks to a scorer:
   scorers are bound to `127.0.0.1` and must never get a Cloudflare tunnel
-  route. The app calls `POST /api/v1/speaking/check` (answers at once with a
+  route. The app calls `POST /api/v1/speaking/check-speech` (answers at once with a
   `check_id`) and polls `GET /api/v1/speaking/check/:id`; a BullMQ worker in the
   backend (`speech-check-queue`, `SpeechCheckProcessor`) sends each recording to
   a free scorer from `SPEECH_SCORER_URLS` (UAT: `http://127.0.0.1:8100,http://127.0.0.1:8101`

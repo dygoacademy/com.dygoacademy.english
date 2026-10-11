@@ -347,7 +347,7 @@ describe('SpeakLive (The Pond)', () => {
     await act(async () => fireEvent.click(screen.getByRole('button', { name: 'Stop recording' })));
     await waitFor(() => expect(mutate).toHaveBeenCalledTimes(1));
     const [path, form] = upload.mock.calls[0] as [string, FormData];
-    expect(path).toBe('/speaking/check');
+    expect(path).toBe('/speaking/check-speech');
     expect(form.get('item_id')).toBe(SPEAK_FIXTURE_ITEM.id);
     const saved = mutate.mock.calls[0][0];
     expect(saved).toMatchObject({ score: 64, stage: 'sprout', user_duration_ms: 3500 });

@@ -41,7 +41,7 @@ export default () => ({
   },
 
   // Phase 13 G6: the speech scorer (docker/speech, container dygo_speech) on
-  // this Mac. Only the backend calls it (127.0.0.1); `POST /speaking/check`
+  // this Mac. Only the backend calls it (127.0.0.1); `POST /speaking/check-speech`
   // forwards a recording and gives up after timeoutMs (SP3 shows "Couldn't
   // check"). Unset = the local default; the scorer being down is a 503 per
   // request, not a boot failure.

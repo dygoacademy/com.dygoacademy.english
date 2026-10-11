@@ -55,7 +55,7 @@ import { LiveError, LiveLoading } from './LiveState';
  * P1 → tap the mic: the mic listens to the room for PRON_ROOM_MS, then a
  * beep and the take (P2: stones light as the voice goes on; stops 1 s
  * after the voice, at 4 s, or on Stop) → too quiet / too noisy: P2b, no
- * server call → else P3: `POST /speaking/word-check`, polled → P4 (retry
+ * server call → else P3: `POST /speaking/check-pronunciation`, polled → P4 (retry
  * / pollinated) or P2b (`not_heard` / `other_word`). The take stays in
  * memory for "Hear mine" and is never stored. A pass pollinates the word
  * on the server; the bed's Bees list is refreshed.

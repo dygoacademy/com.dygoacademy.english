@@ -62,7 +62,7 @@ export const apiClient = {
     request<T>(path, { method: 'POST', body: json ? JSON.stringify(json) : undefined }),
   patch: <T>(path: string, json?: unknown) =>
     request<T>(path, { method: 'PATCH', body: json ? JSON.stringify(json) : undefined }),
-  /** Multipart POST (e.g. a recording for `/speaking/check`). */
+  /** Multipart POST (e.g. a recording for `/speaking/check-speech`). */
   upload: <T>(path: string, form: FormData) => request<T>(path, { method: 'POST', body: form }),
   delete: <T>(path: string, json?: unknown) =>
     request<T>(path, { method: 'DELETE', body: json ? JSON.stringify(json) : undefined }),

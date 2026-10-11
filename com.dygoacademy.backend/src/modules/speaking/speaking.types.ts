@@ -108,7 +108,7 @@ export interface SpeakingWordLookup {
 /** At most this many ids per lookup (a review session has up to 20 cards). */
 export const SPEAKING_LOOKUP_MAX = 50;
 
-/** One word's mark from `POST /speaking/check` (handover v2 §3). */
+/** One word's mark from `POST /speaking/check-speech` (handover v2 §3). */
 export interface SpeakingCheckMark {
   index: number;
   ok: boolean;
@@ -119,7 +119,7 @@ export interface SpeakingCheckMark {
 }
 
 /**
- * `POST /speaking/check`: the speech scorer's verdict on one recording
+ * `POST /speaking/check-speech`: the speech scorer's verdict on one recording
  * (Phase 13 S17, G6). Not saved here; the recording is never stored.
  */
 export interface SpeakingCheckResult {
@@ -141,7 +141,7 @@ export const SPEAKING_CHECK_MAX_BYTES = 1_000_000;
 /** Where a queued speech check is (queue v1, 2026-10-06). */
 export type SpeakingCheckStatus = 'queued' | 'checking' | 'done' | 'failed';
 
-/** `POST /speaking/check` (202): the check is queued; poll `GET /speaking/check/:id`. */
+/** `POST /speaking/check-speech` (202): the check is queued; poll `GET /speaking/check/:id`. */
 export interface SpeakingCheckQueued {
   check_id: string;
   status: 'queued';
@@ -162,7 +162,7 @@ export interface SpeakingWordCheckSyllable {
 }
 
 /**
- * `POST /speaking/word-check` (Pronunciation P3 → P4): one word, a score
+ * `POST /speaking/check-pronunciation` (Pronunciation P3 → P4): one word, a score
  * per syllable. `passed` = said clearly at POLLINATE_MIN_SCORE or more,
  * which pollinates the word (once per word; never touches SRS).
  */

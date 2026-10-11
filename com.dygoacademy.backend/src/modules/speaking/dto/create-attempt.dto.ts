@@ -82,7 +82,7 @@ export class CreateSpeakingAttemptDto {
   @ApiPropertyOptional({
     description:
       'Ignored (2026-10-11): sentences no longer pollinate a word; only POST ' +
-      '/speaking/word-check does. Still accepted so older apps keep working.',
+      '/speaking/check-pronunciation does. Still accepted so older apps keep working.',
   })
   @IsOptional()
   @IsBoolean()

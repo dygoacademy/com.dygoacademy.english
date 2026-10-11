@@ -3,7 +3,7 @@ import { IsIn, IsUUID } from 'class-validator';
 
 import { SPEAKING_ACCENTS, SpeakingAccent } from '../speaking.types';
 
-/** Form fields of `POST /speaking/check` (multipart; the recording is the `audio` file). */
+/** Form fields of `POST /speaking/check-speech` (multipart; the recording is the `audio` file). */
 export class CheckSpeechDto {
   @ApiProperty({ description: 'The speaking item the learner read (its sentence is checked).' })
   @IsUUID()

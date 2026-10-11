@@ -10,7 +10,7 @@ import { Request } from 'express';
 import { SPEAKING_CHECKS_PER_HOUR } from './speaking.types';
 
 /**
- * `POST /speaking/check`: at most SPEAKING_CHECKS_PER_HOUR checks per learner
+ * `POST /speaking/check-speech`: at most SPEAKING_CHECKS_PER_HOUR checks per learner
  * in any rolling hour (Phase 13 S17), so one learner (or a stolen token)
  * can't tie up the speech scorer, which runs one check at a time on this Mac.
  *

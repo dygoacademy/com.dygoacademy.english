@@ -139,7 +139,7 @@ describe('serverCheck (queue v1)', () => {
       });
     const r = await serverCheck(req(), local(), { pollMs: 1 });
     const [path, form] = upload.mock.calls[0] as [string, FormData];
-    expect(path).toBe('/speaking/check');
+    expect(path).toBe('/speaking/check-speech');
     expect((form.get('audio') as File).name).toBe('recording.m4a');
     expect(form.get('item_id')).toBe('item-1');
     expect(form.get('accent')).toBe('UK');
