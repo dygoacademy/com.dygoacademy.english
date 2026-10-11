@@ -17,7 +17,7 @@ import {
   QUIZ_RESULT,
   REGISTER,
   SIGN_IN,
-  entryHarvest,
+  entryBees,
   referenceFixtures,
   type ReferenceName,
 } from '@/components/garden/screens/fixtures';
@@ -193,6 +193,8 @@ function ReferenceScreenBody({ name, locale }: { name: ReferenceName; locale: Ap
           quizHref={GARDEN_ROUTES.review}
           addWordHref={GARDEN_ROUTES.topics}
           optionsHref={GARDEN_ROUTES.topics}
+          speak={{ ...ENTRY.bedSpeak, href: GARDEN_ROUTES.reference('SP2-speak-countdown') }}
+          bees={entryBees(GARDEN_ROUTES.reference('SP2-speak-countdown'))}
         />
       );
     case 'SE2-entry-bed':
@@ -207,7 +209,7 @@ function ReferenceScreenBody({ name, locale }: { name: ReferenceName; locale: Ap
           optionsHref={GARDEN_ROUTES.topics}
           {...(name === 'SE2-entry-bed'
             ? { speak: { ...ENTRY.bedSpeak, href: GARDEN_ROUTES.reference('SE5-entry-harvest') } }
-            : { harvest: entryHarvest(BED.words, GARDEN_ROUTES.reference('SE2-entry-bed')) })}
+            : { bees: entryBees(GARDEN_ROUTES.reference('SE2-entry-bed')) })}
         />
       );
     case 'A8-me':

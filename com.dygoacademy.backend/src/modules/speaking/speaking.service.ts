@@ -253,9 +253,11 @@ export class SpeakingService {
   }
 
   /**
-   * SE5 "Ready to harvest": the bed's words that have a speaking item, with
-   * whether (and how well) the learner harvested each. The app picks the
-   * ripe (Flower) ones from the bed's own stages. RLS scopes topic_words
+   * SE5 "Ready to harvest" (A7 "Bees are waiting" since 2026-10-11): the
+   * bed's words that have a speaking item, oldest planted first, with
+   * whether (and how well) the learner harvested each and the UK IPA for
+   * the bee row. The app picks the ripe (Flower) ones from the bed's own
+   * stages. RLS scopes topic_words
    * and speaking_harvests to the learner.
    */
   async harvest(userId: string, topicId: string): Promise<SpeakingHarvestWord[]> {
@@ -263,9 +265,10 @@ export class SpeakingService {
     return this.db.queryAs<SpeakingHarvestWord>(
       userId,
       `select tw.id as topic_word_id, si.id as item_id,
-              h.score as harvested_score, h.created_at as harvested_at
+              h.score as harvested_score, h.created_at as harvested_at, ml.ipa_uk
          from public.topic_words tw
          join public.speaking_items si on si.lexicon_id = tw.lexicon_id
+         join public.master_lexicon ml on ml.id = tw.lexicon_id
          left join public.speaking_harvests h
                 on h.lexicon_id = tw.lexicon_id and h.user_id = auth.uid()
         where tw.topic_id = $1 and tw.status = 'READY'

@@ -866,12 +866,14 @@
       },
       "speak": "Nói",
       "speakSentences": "{count} câu từ luống này",
-      "harvest": {
-        "title": "Sẵn sàng thu hoạch",
-        "count": "{count} hoa",
-        "body": "Nói tốt một từ đã kết trái (từ 90%) để hái quả. Lịch tưới vẫn giữ nguyên.",
-        "picked": "Đã hái · {score}%",
-        "say": "Nói {word}"
+      "bees": {
+        "title": "Ong đang chờ",
+        "sayAll": "Nói hết",
+        "intro": "{count, plural, one {1 bông hoa muốn được nghe. Đọc to để thụ phấn.} other {# bông hoa muốn được nghe. Đọc to từng từ để thụ phấn.}}",
+        "allDone": "Hôm nay đã thụ phấn hết. Ngày mai ong sẽ quay lại.",
+        "waitingRow": "Đọc to để thụ phấn",
+        "pollinated": "Đã thụ phấn · sắp kết trái",
+        "say": "Nói {word} để thụ phấn"
       }
     },
     "me": {

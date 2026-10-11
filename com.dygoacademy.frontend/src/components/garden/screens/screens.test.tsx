@@ -335,26 +335,91 @@ describe('TopicBedScreen', () => {
     expect(screen.queryByRole('link', { name: /Speak/ })).toBeNull();
   });
 
-  it('SE5: lists ripe words with a mic each, and picked ones with their score', () => {
-    renderWithIntl(
-      <TopicBedScreen
-        {...props}
-        harvest={{
-          count: 3,
-          words: [
-            { id: 'a', word: 'mitigate', meaning: 'giảm nhẹ', picked: 94, href: '/sounds?word=a' },
-            { id: 'b', word: 'ecosystem', meaning: 'hệ sinh thái', picked: null, href: '/sounds?word=b' },
-          ],
-        }}
-      />,
-    );
-    const card = screen.getByRole('region', { name: 'Ready to harvest' });
-    expect(within(card).getByText('3 flowers')).toBeTruthy();
-    expect(within(card).getByText('Picked · 94%')).toBeTruthy();
-    expect(within(card).queryByRole('link', { name: 'Say mitigate' })).toBeNull();
-    expect(within(card).getByRole('link', { name: 'Say ecosystem' }).getAttribute('href')).toBe(
-      '/sounds?word=b',
-    );
+  describe('Bees are waiting', () => {
+    const bee = (id: string, pollinated = false) => ({
+      id,
+      word: id,
+      sound: `/${id}/`,
+      pollinated,
+      href: `/sounds?word=${id}&harvest=1`,
+    });
+
+    it('lists waiting words with a mic and pollinated ones with a tick', () => {
+      renderWithIntl(
+        <TopicBedScreen
+          {...props}
+          bees={{
+            waiting: 2,
+            sayAllHref: '/sounds?words=deforestation,ecosystem&harvest=1',
+            words: [bee('mitigate', true), bee('deforestation'), bee('ecosystem')],
+          }}
+        />,
+      );
+      const card = screen.getByRole('region', { name: 'Bees are waiting' });
+      expect(
+        within(card).getByText('2 flowers want to be heard. Say each word to pollinate it.'),
+      ).toBeTruthy();
+      expect(within(card).getByText('Pollinated · on its way to fruit')).toBeTruthy();
+      expect(within(card).getAllByText('Say it to pollinate')).toHaveLength(2);
+      expect(within(card).getByText('/mitigate/').getAttribute('lang')).toBe('en');
+      expect(within(card).queryByRole('link', { name: 'Say mitigate to pollinate' })).toBeNull();
+      expect(
+        within(card)
+          .getByRole('link', { name: 'Say ecosystem to pollinate' })
+          .getAttribute('href'),
+      ).toBe('/sounds?word=ecosystem&harvest=1');
+      expect(within(card).getByRole('link', { name: 'Say all' }).getAttribute('href')).toBe(
+        '/sounds?words=deforestation,ecosystem&harvest=1',
+      );
+    });
+
+    it('says so when all are pollinated, with no Say all', () => {
+      renderWithIntl(
+        <TopicBedScreen
+          {...props}
+          bees={{ waiting: 0, sayAllHref: null, words: [bee('mitigate', true)] }}
+        />,
+      );
+      const card = screen.getByRole('region', { name: 'Bees are waiting' });
+      expect(
+        within(card).getByText('All flowers pollinated today. New bees come tomorrow.'),
+      ).toBeTruthy();
+      expect(within(card).queryByRole('link', { name: 'Say all' })).toBeNull();
+    });
+
+    it('uses one-flower wording', () => {
+      renderWithIntl(
+        <TopicBedScreen
+          {...props}
+          bees={{ waiting: 1, sayAllHref: '/sounds?words=a', words: [bee('a')] }}
+        />,
+      );
+      expect(
+        screen.getByText('1 flower wants to be heard. Say it to pollinate it.'),
+      ).toBeTruthy();
+    });
+
+    it('is hidden with no rows', () => {
+      const { unmount } = renderWithIntl(<TopicBedScreen {...props} bees={null} />);
+      expect(screen.queryByRole('region', { name: 'Bees are waiting' })).toBeNull();
+      unmount();
+      renderWithIntl(
+        <TopicBedScreen {...props} bees={{ waiting: 0, sayAllHref: null, words: [] }} />,
+      );
+      expect(screen.queryByRole('region', { name: 'Bees are waiting' })).toBeNull();
+    });
+
+    it('animates with classes reduced motion turns off', () => {
+      const { container } = renderWithIntl(
+        <TopicBedScreen
+          {...props}
+          bees={{ waiting: 1, sayAllHref: '/sounds?words=b', words: [bee('a', true), bee('b')] }}
+        />,
+      );
+      // globals.css stops .bee-hover and .spark under prefers-reduced-motion.
+      expect(container.querySelectorAll('.bee-hover')).toHaveLength(2);
+      expect(container.querySelectorAll('.spark')).toHaveLength(2);
+    });
   });
 
   it("can't filter when stage counts are unknown", () => {

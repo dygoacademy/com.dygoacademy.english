@@ -15,7 +15,7 @@ import { toLocalDateString } from '@/lib/timezone';
 import { AddWordSheet } from '../AddWordSheet';
 import { useGardenPreferences } from '../preferences';
 import { TopicBedScreen } from '../screens/TopicBedScreen';
-import { harvestCard, toBedWords, type GardenTopicWord } from './data';
+import { beesCard, toBedWords, type GardenTopicWord } from './data';
 import { LiveError, LiveLoading } from './LiveState';
 import { TopicBedsSidebar } from './SidebarLists';
 
@@ -43,9 +43,11 @@ import { TopicBedsSidebar } from './SidebarLists';
  *
  * Phase 13 SE2: "Speak · N sentences from this bed" opens this bed's Pond
  * (GET /speaking/session?topic_id=…; hidden when no word has a speaking
- * item). SE5: "Ready to harvest" lists the ripe words with a speaking item
- * (GET /speaking/harvest); each mic opens that word's sentence in harvest
- * mode, and both come back here.
+ * item). "Bees are waiting" (2026-10-11, was SE5 "Ready to harvest") lists
+ * up to 3 ripe words with a speaking item and today's pollinated ones
+ * (GET /speaking/harvest, `beesCard`); each mic opens that word's sentence
+ * in harvest mode, "Say all" runs the waiting ones in a row, and both come
+ * back here.
  */
 export function TopicBedLive({ topicId }: { topicId: string }) {
   const t = useTranslations('screens.bed');
@@ -80,8 +82,12 @@ export function TopicBedLive({ topicId }: { topicId: string }) {
   const dueCount = [...dueById.values()].length;
   const bedHref = GARDEN_ROUTES.topic(topicId);
   const speakCount = Math.min(speaking.data?.item_count ?? 0, POND_SESSION_SIZE);
-  const harvest = harvestCard(words, harvests.data, toLocalDateString(new Date()), (id) =>
-    GARDEN_ROUTES.speak({ word: id, harvest: true, back: bedHref }),
+  const bees = beesCard(
+    words,
+    harvests.data,
+    toLocalDateString(new Date()),
+    (id) => GARDEN_ROUTES.speak({ word: id, harvest: true, back: bedHref }),
+    (ids) => GARDEN_ROUTES.speak({ words: ids, harvest: true, back: bedHref }),
   );
 
   return (
@@ -107,7 +113,7 @@ export function TopicBedLive({ topicId }: { topicId: string }) {
             ? { count: speakCount, href: GARDEN_ROUTES.speak({ topic: topicId, back: bedHref }) }
             : null
         }
-        harvest={harvest}
+        bees={bees}
         onAddWord={() => setAdding(true)}
         wiltingHref={GARDEN_ROUTES.quiz(topicId, 'leech')}
         sidebar={<TopicBedsSidebar activeId={topicId} />}

@@ -8,10 +8,10 @@ import { useTranslations } from 'next-intl';
 import { buttonClassName } from '../buttonStyles';
 import { gcn } from '../cn';
 import { EmptyState } from '../EmptyState';
+import { BeeFlower, BeeGlyph } from '../Bee';
 import { useGardenFormat } from '../format';
-import { BackIcon, ChevronRightIcon, MicIcon, MoreIcon, PlusIcon, WaterIcon } from '../icons';
+import { BackIcon, CheckIcon, MicIcon, MoreIcon, PlusIcon, WaterIcon } from '../icons';
 import { IconButton } from '../IconButton';
-import { PlantGlyph } from '../PlantGlyph';
 import { StageTile } from '../StageTile';
 import { WordRow } from '../WordRow';
 import { GardenTabBar, IPAD_NAV_COLUMN, SCREEN_CLASSES } from './GardenTabBar';
@@ -27,8 +27,8 @@ import { GardenTabBar, IPAD_NAV_COLUMN, SCREEN_CLASSES } from './GardenTabBar';
  *
  * Header (Back, title + meta, options) → four stage tiles that filter the
  * list (tap again to clear) → Water / Quiz / Add word → the "Speak" row
- * (SE2, `reference/SE2-entry-bed`) → "Ready to harvest" (SE5,
- * `reference/SE5-entry-harvest`) → the word list.
+ * (SE2, restyled with the 2026-10-11 A7 board) → "Bees are waiting"
+ * (2026-10-11, was SE5 "Ready to harvest") → the word list.
  * Stages come from the API in UI-5; until then `stageCounts` is null, the
  * tiles show "—" and can't filter, and every word shows as a sprout
  * unless the caller knows better.
@@ -49,14 +49,19 @@ export interface TopicBedWord {
   due: { tone: 'now' } | { tone: 'new' } | { tone: 'later'; days: number | null };
 }
 
-/** SE5: a ripe word on "Ready to harvest": a mic to say it, or its picked score. */
-export interface HarvestWord {
+/**
+ * "Bees are waiting" (2026-10-11, was SE5): a ripe Flower to say aloud, or
+ * one pollinated today (said at 90%+; shown until tomorrow).
+ */
+export interface BeeWord {
   id: string;
   word: string;
-  meaning: string;
-  meaningLang?: string;
-  /** Score it was harvested with (shown as Fruit, "Picked · 94%"); null = still a Flower. */
-  picked: number | null;
+  /**
+   * The line under the word: syllables with the stress ("MI · ti · gate")
+   * once enrichment has them (v2), the UK IPA until then; null = none.
+   */
+  sound: string | null;
+  pollinated: boolean;
   /** The speaking flow for this word (harvest mode). */
   href: string;
 }
@@ -82,10 +87,11 @@ export interface TopicBedScreenProps {
    */
   speak?: { count: number; href: string } | null;
   /**
-   * SE5 (Phase 13): ripe words to say for their fruit (90%+, no SRS change,
-   * D-3). `count` = flowers on the card. Null / omitted / empty hides it.
+   * "Bees are waiting" (was SE5): ripe words to say for their fruit (90%+,
+   * no SRS change, D-3). `waiting` = rows still to say; `sayAllHref` runs
+   * them in a row (null when none wait). Null / omitted / empty hides it.
    */
-  harvest?: { count: number; words: readonly HarvestWord[] } | null;
+  bees?: { waiting: number; sayAllHref: string | null; words: readonly BeeWord[] } | null;
   /** Wilting rows link here (the leech drill, U5-6); omitted = static rows. */
   wiltingHref?: string;
   /** Master list under the iPad sidebar's tabs at `lg` (the topic beds). */
@@ -105,7 +111,7 @@ export function TopicBedScreen({
   onAddWord,
   optionsHref,
   speak,
-  harvest,
+  bees,
   wiltingHref,
   sidebar,
 }: TopicBedScreenProps) {
@@ -205,76 +211,95 @@ export function TopicBedScreen({
       {speak ? (
         <Link
           href={speak.href}
-          className="box-border flex h-[52px] items-center gap-[10px] rounded-control border border-primary-border bg-primary-soft pl-2 pr-3 text-text"
+          className="-mt-1 box-border flex h-[50px] shrink-0 items-center justify-center gap-2 rounded-[16px] border border-primary-border bg-primary-soft text-[15px] font-bold text-primary-text"
         >
-          <span
-            aria-hidden="true"
-            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary text-surface"
-          >
-            <MicIcon width={18} height={18} />
-          </span>
-          <span className="flex-grow text-[15px]">
-            <b className="text-primary">{t('speak')}</b>
-            <span className="text-muted-foreground">
-              {topicsT('separator')}
-              {t('speakSentences', { count: speak.count })}
-            </span>
-          </span>
-          <ChevronRightIcon width={20} height={20} className="text-primary" />
+          <MicIcon width={20} height={20} />
+          {t('speak')}
+          {topicsT('separator')}
+          {t('speakSentences', { count: speak.count })}
         </Link>
       ) : null}
 
-      {harvest && harvest.words.length > 0 ? (
+      {bees && bees.words.length > 0 ? (
         <section
-          aria-labelledby="bed-harvest-title"
-          className="flex flex-col gap-1 rounded-[22px] border border-border bg-surface px-[14px] pb-1.5 pt-3"
+          aria-labelledby="bed-bees-title"
+          className="flex shrink-0 flex-col gap-2 rounded-[20px] border border-gold-border bg-gold-soft p-3"
         >
-          <div className="flex items-baseline justify-between">
+          <div className="flex items-center gap-2">
+            <BeeGlyph size={26} />
             <h2
-              id="bed-harvest-title"
-              className="font-display text-[18px] font-semibold leading-[23px]"
+              id="bed-bees-title"
+              className="flex-grow font-display text-[18px] font-semibold leading-[23px]"
             >
-              {t('harvest.title')}
+              {t('bees.title')}
             </h2>
-            <span className="text-[12px] font-semibold leading-4 text-gold-text">
-              {t('harvest.count', { count: harvest.count })}
-            </span>
+            {bees.sayAllHref ? (
+              <Link
+                href={bees.sayAllHref}
+                className="whitespace-nowrap text-[13px] font-bold text-primary-text"
+              >
+                {t('bees.sayAll')}
+              </Link>
+            ) : null}
           </div>
-          <p className="mb-1 text-[13px] leading-[17px] text-muted-foreground">
-            {t('harvest.body')}
+          <p className="-mt-1 text-[13px] leading-[1.4] text-gold-soft-text">
+            {bees.waiting > 0 ? t('bees.intro', { count: bees.waiting }) : t('bees.allDone')}
           </p>
-          <ul className="flex flex-col gap-1">
-            {harvest.words.map((w) => (
-              <li key={w.id} className="flex items-center gap-[10px] border-t border-border py-1.5">
-                <span
-                  aria-hidden="true"
-                  className="flex h-9 w-9 shrink-0 items-end justify-center overflow-hidden rounded-tile bg-background"
-                >
-                  <PlantGlyph stage={w.picked === null ? 'flower' : 'tree'} size={26} />
+          <ul className="flex flex-col gap-2">
+            {bees.words.map((w) => (
+              <li
+                key={w.id}
+                className={gcn(
+                  'box-border flex min-h-14 items-center gap-3 rounded-[14px] border py-1.5 pl-2 pr-1.5',
+                  w.pollinated
+                    ? 'border-forest-wash-border bg-forest-wash'
+                    : 'border-gold-border bg-surface',
+                )}
+              >
+                <span className="relative flex h-10 w-[34px] shrink-0 items-end justify-center">
+                  {w.pollinated ? (
+                    <span className="spark flex">
+                      <BeeFlower pollinated />
+                    </span>
+                  ) : (
+                    <>
+                      <BeeFlower pollinated={false} />
+                      <span className="absolute -right-1 -top-2.5">
+                        <BeeGlyph size={20} />
+                      </span>
+                    </>
+                  )}
                 </span>
-                <span className="flex min-w-0 flex-grow flex-col">
-                  <span lang="en" className="text-[15px] font-bold leading-5">
+                <span className="flex min-w-0 flex-grow flex-col leading-[1.25]">
+                  <span lang="en" className="text-[16px] font-bold">
                     {w.word}
                   </span>
+                  {w.sound ? (
+                    <span lang="en" className="text-[12px] tracking-[.02em] text-gold-soft-text">
+                      {w.sound}
+                    </span>
+                  ) : null}
                   <span
-                    lang={w.meaningLang}
-                    className="truncate text-[13px] leading-[17px] text-muted-foreground"
+                    className={gcn(
+                      'text-[12px] font-semibold',
+                      w.pollinated ? 'text-success' : 'text-primary-text',
+                    )}
                   >
-                    {w.meaning}
+                    {w.pollinated ? t('bees.pollinated') : t('bees.waitingRow')}
                   </span>
                 </span>
-                {w.picked === null ? (
+                {w.pollinated ? (
+                  <span className="spark mr-1 flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-success text-surface">
+                    <CheckIcon width={18} height={18} />
+                  </span>
+                ) : (
                   <Link
                     href={w.href}
-                    aria-label={t('harvest.say', { word: w.word })}
+                    aria-label={t('bees.say', { word: w.word })}
                     className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-primary text-surface shadow-[0_3px_0_var(--color-primary-shadow)]"
                   >
                     <MicIcon width={20} height={20} />
                   </Link>
-                ) : (
-                  <span className="flex h-8 shrink-0 items-center rounded-full border border-gold-border bg-gold-soft px-2.5 text-[12px] font-bold text-gold-soft-text">
-                    {t('harvest.picked', { score: w.picked })}
-                  </span>
                 )}
               </li>
             ))}

@@ -21,7 +21,7 @@ import type { CalendarLevel } from '../GardenCalendar';
 import type { HeroPlant } from '../HeroGardenCard';
 import { stageFromSrs, type GardenFsrsState } from '../plantStage';
 import type { KeepsakeItem } from '../screens/MeScreen';
-import type { BedStage, HarvestWord, TopicBedWord } from '../screens/TopicBedScreen';
+import type { BeeWord, BedStage, TopicBedWord } from '../screens/TopicBedScreen';
 import type { TopicsScreenTopic } from '../screens/TopicsScreen';
 import type { Greeting, MissionItem } from '../screens/TodaysGardenScreen';
 import type { WeeklyHarvestScreenProps } from '../screens/WeeklyHarvestScreen';
@@ -788,40 +788,54 @@ export function meKeepsakes(keepsakes: MyKeepsakes, slots = 4): KeepsakeItem[] {
   return [...earned.slice(Math.max(0, earned.length - (slots - nextItem.length))), ...nextItem];
 }
 
-/** SE5 shows at most this many rows. */
-export const HARVEST_ROWS = 3;
+/** "Bees are waiting" shows at most this many waiting rows per bed (v1). */
+export const BEE_LIMIT = 3;
 
 /**
- * SE5 "Ready to harvest" from the bed's words (their SRS stages) and
- * `GET /speaking/harvest`: the ripe words (Flower, not wilting) that have
- * a speaking item and aren't harvested yet, after the ones harvested today
- * (shown as "Picked"). Words harvested before today drop off. `count` =
- * all of them, the rows stop at HARVEST_ROWS. Null when there's nothing.
+ * "Bees are waiting" (A7, 2026-10-11; was SE5 "Ready to harvest") from
+ * the bed's words (their SRS stages) and `GET /speaking/harvest` (one row
+ * per word with a speaking item, oldest planted first). Waiting = a ripe
+ * Flower (not wilting) not harvested yet, at most BEE_LIMIT of them, oldest
+ * first. Pollinated = harvested today (local date), shown until tomorrow;
+ * older harvests drop off. Rows keep the API's order so a word doesn't
+ * jump when it's pollinated. `sound` is the word's UK IPA until
+ * enrichment has syllables (v2). Null when there's nothing to show.
+ *
+ * The garden-wide cap (3 bees across all beds, 1–2 new a day, a bee
+ * leaves after 3 days) needs backend state: v2.
  */
-export function harvestCard(
+export function beesCard(
   words: readonly TopicBedWord[],
   harvests: readonly SpeakingHarvestWord[] | undefined,
   today: string,
   hrefFor: (topicWordId: string) => string,
-): { count: number; words: HarvestWord[] } | null {
+  sayAllHrefFor: (topicWordIds: string[]) => string,
+): { waiting: number; sayAllHref: string | null; words: BeeWord[] } | null {
   if (!harvests) return null;
-  const byWord = new Map(harvests.map((h) => [h.topic_word_id, h]));
-  const picked: HarvestWord[] = [];
-  const ripe: HarvestWord[] = [];
-  for (const word of words) {
-    const h = byWord.get(word.id);
-    if (!h || word.stage !== 'flower' || word.wilting) continue;
+  const byId = new Map(words.map((w) => [w.id, w]));
+  const rows: BeeWord[] = [];
+  const waitingIds: string[] = [];
+  for (const h of harvests) {
+    const word = byId.get(h.topic_word_id);
+    if (!word) continue;
     const row = {
       id: word.id,
       word: word.word,
-      meaning: word.meaning,
-      meaningLang: word.meaningLang,
+      sound: h.ipa_uk ?? null,
       href: hrefFor(word.id),
     };
-    if (h.harvested_score === null) ripe.push({ ...row, picked: null });
-    else if (toLocalDateString(new Date(h.harvested_at ?? 0)) === today)
-      picked.push({ ...row, picked: h.harvested_score });
+    if (h.harvested_score === null) {
+      if (word.stage !== 'flower' || word.wilting || waitingIds.length >= BEE_LIMIT) continue;
+      waitingIds.push(word.id);
+      rows.push({ ...row, pollinated: false });
+    } else if (toLocalDateString(new Date(h.harvested_at ?? 0)) === today) {
+      rows.push({ ...row, pollinated: true });
+    }
   }
-  const all = [...picked, ...ripe];
-  return all.length > 0 ? { count: all.length, words: all.slice(0, HARVEST_ROWS) } : null;
+  if (rows.length === 0) return null;
+  return {
+    waiting: waitingIds.length,
+    sayAllHref: waitingIds.length > 0 ? sayAllHrefFor(waitingIds) : null,
+    words: rows,
+  };
 }

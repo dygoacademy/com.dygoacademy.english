@@ -870,12 +870,14 @@
       },
       "speak": "开口说",
       "speakSentences": "这个花圃里的 {count} 个句子",
-      "harvest": {
-        "title": "可以收获了",
-        "count": "{count} 朵花",
-        "body": "把成熟的单词说好（90% 以上）就能摘下果实。浇水日期不变。",
-        "picked": "已摘 · {score}%",
-        "say": "说 {word}"
+      "bees": {
+        "title": "蜜蜂在等你",
+        "sayAll": "全部说",
+        "intro": "{count, plural, one {1 朵花想被听到。说出它来授粉。} other {# 朵花想被听到。说出每个单词来授粉。}}",
+        "allDone": "今天的花都授粉了。明天会有新的蜜蜂。",
+        "waitingRow": "说出来授粉",
+        "pollinated": "已授粉 · 快要结果了",
+        "say": "说出 {word} 来授粉"
       }
     },
     "me": {

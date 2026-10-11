@@ -112,6 +112,8 @@ export interface SpeakingHarvestWord {
   /** Score it was harvested with; null = not harvested. */
   harvested_score: number | null;
   harvested_at: string | null;
+  /** The word's UK IPA ("Bees are waiting" sound line, 2026-10-11); optional for older APIs. */
+  ipa_uk?: string | null;
 }
 
 /** `GET /api/v1/groups/:id/echo` (SE6): the trickiest speakable word, totals only. */

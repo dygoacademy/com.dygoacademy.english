@@ -866,12 +866,14 @@
       },
       "speak": "Speak",
       "speakSentences": "{count, plural, one {# sentence} other {# sentences}} from this bed",
-      "harvest": {
-        "title": "Ready to harvest",
-        "count": "{count, plural, one {# flower} other {# flowers}}",
-        "body": "Say a ripe word well (90% or more) to pick its fruit. Your watering dates stay the same.",
-        "picked": "Picked · {score}%",
-        "say": "Say {word}"
+      "bees": {
+        "title": "Bees are waiting",
+        "sayAll": "Say all",
+        "intro": "{count, plural, one {1 flower wants to be heard. Say it to pollinate it.} other {# flowers want to be heard. Say each word to pollinate it.}}",
+        "allDone": "All flowers pollinated today. New bees come tomorrow.",
+        "waitingRow": "Say it to pollinate",
+        "pollinated": "Pollinated · on its way to fruit",
+        "say": "Say {word} to pollinate"
       }
     },
     "me": {

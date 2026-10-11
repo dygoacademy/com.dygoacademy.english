@@ -16,7 +16,8 @@ import {
   gardenHours,
   gardenPlants,
   greetingFor,
-  harvestCard,
+  BEE_LIMIT,
+  beesCard,
   liveMissions,
   liveMissionsSummary,
   meCalendar,
@@ -480,7 +481,7 @@ describe('doneReminder (U6-7b)', () => {
   });
 });
 
-describe('harvestCard (SE5)', () => {
+describe('beesCard (A7 Bees are waiting)', () => {
   const word = (id: string, stage: 'flower' | 'sprout', wilting = false) => ({
     id,
     word: id,
@@ -489,32 +490,72 @@ describe('harvestCard (SE5)', () => {
     wilting,
     due: { tone: 'new' as const },
   });
-  const words = [word('a', 'flower'), word('b', 'flower'), word('c', 'sprout'), word('d', 'flower', true), word('e', 'flower'), word('f', 'flower')];
   const now = new Date();
-  const harvests = [
-    { topic_word_id: 'a', item_id: 'i1', harvested_score: null, harvested_at: null },
-    { topic_word_id: 'b', item_id: 'i2', harvested_score: 95, harvested_at: now.toISOString() },
-    { topic_word_id: 'c', item_id: 'i3', harvested_score: null, harvested_at: null },
-    { topic_word_id: 'd', item_id: 'i4', harvested_score: null, harvested_at: null },
-    { topic_word_id: 'e', item_id: 'i5', harvested_score: 91, harvested_at: '2020-01-01T00:00:00Z' },
-    { topic_word_id: 'f', item_id: 'i6', harvested_score: null, harvested_at: null },
-  ];
   const today = toLocalDateString(now);
+  const waiting = (id: string) => ({
+    topic_word_id: id,
+    item_id: `i-${id}`,
+    harvested_score: null,
+    harvested_at: null,
+    ipa_uk: `/${id}/`,
+  });
+  const href = (id: string) => `/sounds?word=${id}`;
+  const sayAll = (ids: string[]) => `/sounds?words=${ids.join(',')}`;
 
-  it("puts today's picks first, then unharvested ripe words; skips the rest", () => {
-    const card = harvestCard(words, harvests, today, (id) => `/sounds?word=${id}`)!;
-    expect(card.count).toBe(3);
-    expect(card.words.map((w) => [w.id, w.picked])).toEqual([
-      ['b', 95],
-      ['a', null],
-      ['f', null],
+  it("keeps the API's order: today's pollinated in place, ripe waiting words, skips the rest", () => {
+    const words = ['a', 'b', 'e', 'f'].map((id) => word(id, 'flower'));
+    words.push(word('c', 'sprout'), word('d', 'flower', true));
+    const card = beesCard(
+      words,
+      [
+        waiting('a'),
+        { ...waiting('b'), harvested_score: 95, harvested_at: now.toISOString() },
+        waiting('c'),
+        waiting('d'),
+        { ...waiting('e'), harvested_score: 91, harvested_at: '2020-01-01T00:00:00Z' },
+        waiting('f'),
+      ],
+      today,
+      href,
+      sayAll,
+    )!;
+    expect(card.words.map((w) => [w.id, w.pollinated])).toEqual([
+      ['a', false],
+      ['b', true],
+      ['f', false],
     ]);
-    expect(card.words[1].href).toBe('/sounds?word=a');
+    expect(card.waiting).toBe(2);
+    expect(card.words[0]).toMatchObject({ sound: '/a/', href: '/sounds?word=a' });
+    expect(card.sayAllHref).toBe('/sounds?words=a,f');
   });
 
-  it('is null with no data or nothing ripe', () => {
-    expect(harvestCard(words, undefined, today, String)).toBeNull();
-    expect(harvestCard([word('c', 'sprout')], harvests, today, String)).toBeNull();
+  it('shows at most 3 waiting words, oldest first', () => {
+    const ids = ['a', 'b', 'c', 'd', 'e'];
+    const card = beesCard(
+      ids.map((id) => word(id, 'flower')),
+      ids.map(waiting),
+      today,
+      href,
+      sayAll,
+    )!;
+    expect(card.words.map((w) => w.id)).toEqual(['a', 'b', 'c']);
+    expect(card.waiting).toBe(BEE_LIMIT);
+  });
+
+  it('has no Say all when everything is pollinated today', () => {
+    const card = beesCard(
+      [word('a', 'flower')],
+      [{ ...waiting('a'), harvested_score: 92, harvested_at: now.toISOString() }],
+      today,
+      href,
+      sayAll,
+    )!;
+    expect(card).toMatchObject({ waiting: 0, sayAllHref: null });
+  });
+
+  it('is null with no data or nothing to show', () => {
+    expect(beesCard([word('a', 'flower')], undefined, today, href, sayAll)).toBeNull();
+    expect(beesCard([word('c', 'sprout')], [waiting('c')], today, href, sayAll)).toBeNull();
   });
 });
 

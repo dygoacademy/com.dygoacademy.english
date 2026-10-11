@@ -301,7 +301,7 @@ describe('SpeakingService.harvest (SE5)', () => {
     const queryAs = jest
       .fn()
       .mockResolvedValue([
-        { topic_word_id: 'tw-1', item_id: 'item-1', harvested_score: 94, harvested_at: 'now' },
+        { topic_word_id: 'tw-1', item_id: 'item-1', harvested_score: 94, harvested_at: 'now', ipa_uk: '/ˈmɪtɪɡeɪt/' },
       ]);
     const service = await makeService({ queryAs });
 
@@ -309,6 +309,7 @@ describe('SpeakingService.harvest (SE5)', () => {
 
     expect(rows).toHaveLength(1);
     expect(queryAs.mock.calls[0][1]).toContain('speaking_harvests');
+    expect(queryAs.mock.calls[0][1]).toContain('ml.ipa_uk');
     expect(queryAs.mock.calls[0][2]).toEqual([TOPIC_ID]);
   });
 

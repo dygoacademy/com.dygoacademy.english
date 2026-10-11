@@ -151,6 +151,7 @@
     --color-text-soft: #44524a; /* progress line inside the Next up panel */
     --color-divider: #efeae0; /* rows inside a settings card */
     --color-forest-wash: #f1f6ef; /* A1b "Want a little more?" icon wells */
+    --color-forest-wash-border: #cfe0c8; /* A7 pollinated bee row */
     --color-dashed: #b9ae96; /* "Plant a new bed" */
     --color-locked-bg: #efeadf;
     --color-locked-border: #cfc6b2;
@@ -192,6 +193,12 @@
     --stage-tree-fruit: #e0b04a;
     --stage-wilt: #a89f6b;
     --stage-due: #8ec5e8;
+
+    /* A7 "Bees are waiting" (2026-10-11) */
+    --bee-wing: #e8f2f8;
+    --bee-wing-line: #bfd8e8;
+    --bee-body: #f2c744;
+    --bee-stripe: #3b3020;
 
     /* §5.2 Rating buttons (bg / text) */
     --rating-again: #f6e3dc;
@@ -516,6 +523,31 @@
     transform: translate(6px, -6px);
   }
 }
+/* A7 "Bees are waiting" (AdultTopicDetail.dc.html, 2026-10-11): the bee
+   hovers 1.6s ease-in-out infinite, a pollinated row sparks .5s once. */
+@keyframes bee-hover {
+  0%,
+  100% {
+    transform: translate(0, 0) rotate(-4deg);
+  }
+  50% {
+    transform: translate(2px, -3px) rotate(4deg);
+  }
+}
+@keyframes spark {
+  0% {
+    transform: scale(0.4);
+    opacity: 0;
+  }
+  60% {
+    transform: scale(1.15);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
 @keyframes fade-in {
   from {
     opacity: 0;
@@ -546,9 +578,17 @@
   .flutter {
     animation: flutter 2.6s ease-in-out infinite;
   }
+  .bee-hover {
+    animation: bee-hover 1.6s ease-in-out infinite;
+  }
+  .spark {
+    animation: spark 0.5s ease-out;
+  }
   @media (prefers-reduced-motion: reduce) {
     .sway,
-    .flutter {
+    .flutter,
+    .bee-hover,
+    .spark {
       animation: none;
     }
     .drip,
