@@ -14,10 +14,13 @@ export const TRANSLATIONS_BACKFILL_JOB = 'translations-backfill';
 export const NOTIFICATION_TICK_JOB = 'notification-tick';
 export const PARTITION_MAINTENANCE_JOB = 'partition-maintenance';
 export const SPEECH_CHECK_JOB = 'speech-check';
+/** Voice donation: delete queued donor codes' recordings and those over 3 years old. */
+export const VOICE_DONATION_CLEANUP_JOB = 'voice-donation-cleanup';
 
 /** Scheduler ids — stable, so a restart updates the schedule instead of duplicating it. */
 export const NOTIFICATION_TICK_SCHEDULER = 'notification-tick-every-15m';
 export const PARTITION_MAINTENANCE_SCHEDULER = 'partition-maintenance-daily';
+export const VOICE_DONATION_CLEANUP_SCHEDULER = 'voice-donation-cleanup-daily';
 
 /** Job payload schemas. */
 export interface WordEnrichmentJob {
@@ -65,6 +68,9 @@ export type SpeechCheckJob =
       userId: string;
       sentence: string;
       targetIndex: number;
+      /** Voice donation metadata: the accent practised and the device type. */
+      accent?: 'UK' | 'US';
+      device?: 'phone' | 'tablet' | 'desktop';
     }
   | {
       kind: 'word';
@@ -74,4 +80,6 @@ export type SpeechCheckJob =
       /** The word's IPA for the practised accent (null when the word has none). */
       ipa: string | null;
       lexiconId: string;
+      accent?: 'UK' | 'US';
+      device?: 'phone' | 'tablet' | 'desktop';
     };

@@ -69,6 +69,17 @@ export default () => ({
     busyEtaSeconds: parseInt(process.env.SPEECH_BUSY_ETA_SECONDS || '15', 10),
   },
 
+  // Voice donation (`Voice donation consent plan.md`, 2026-10-11). Off unless
+  // VOICE_DONATION_ENABLED=true (UAT only until the legal text is approved).
+  // VOICE_DONATION_KEY = 32 random bytes, base64 (`openssl rand -base64 32`):
+  // donated recordings are encrypted with it before they are stored; without
+  // it nothing is kept. The bucket is private, on the media store (storage.*).
+  voiceDonation: {
+    enabled: process.env.VOICE_DONATION_ENABLED === 'true',
+    key: process.env.VOICE_DONATION_KEY ?? '',
+    bucket: process.env.VOICE_DONATION_BUCKET || 'voice-donations',
+  },
+
   // Module 6 (Web Push & Habit Scheduling) — VAPID identifies this server to
   // the browser's push service (FR-6.5). Empty strings, not a thrown error,
   // when unset — same "degrade, don't block boot" rule as `ai.geminiApiKey`:

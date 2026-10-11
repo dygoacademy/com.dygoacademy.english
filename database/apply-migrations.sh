@@ -155,6 +155,9 @@ run_rls_suite() {
   # Onboarding OB1–OB5: profile columns + backfill of the fixtures as onboarded.
   run_file "$DIR/migrations/20261008_onboarding.sql" "$scratch"
   run_file "$DIR/tests/rls_onboarding_test.sql" "$scratch"
+  # Voice donation: consents, donor codes, kept recordings, deletion queue.
+  run_file "$DIR/migrations/20261011_voice_donation.sql" "$scratch"
+  run_file "$DIR/tests/rls_voice_donation_test.sql" "$scratch"
 }
 
 # -----------------------------------------------------------------------------

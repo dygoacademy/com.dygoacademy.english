@@ -862,6 +862,23 @@ Phase 13 SE5 (2026-10-06): a ripe word the learner said at 90%+ from a bed's "Re
 
 ---
 
+#### Voice donation: `voice_donation_consents`, `voice_donors`, `voice_donations`, `voice_donation_deletions`
+
+`20261011_voice_donation.sql` (`Voice donation consent plan.md` §4). A learner who turns on "Help improve Dygo's speech checker" (A8e, or the AU2 box) has an encrypted copy of each scored speaking / pronunciation recording kept in the private bucket `VOICE_DONATION_BUCKET` (default `voice-donations`), under a random donor code. The API offers it only with `VOICE_DONATION_ENABLED=true`.
+
+| Table | Columns | Written by | RLS |
+| :--- | :--- | :--- | :--- |
+| `voice_donation_consents` | `id`, `user_id` (default `auth.uid()`, **no FK**: kept after the account goes), `granted_at`, `withdrawn_at`, `text_version`, `method` (`setting` \| `register` \| `invite`), `locale` | The learner (`PUT /profiles/me/voice-donation`); `withdrawn_at` is the only updatable column. Never deleted. | select / insert / update own |
+| `voice_donors` | `user_id` PK → `profiles(id)` ON DELETE CASCADE, `donor_code` UNIQUE (random), `region` (`north` \| `central` \| `south` \| `elsewhere` \| null), `created_at` | The learner; delete = "Delete my donated recordings" | select / insert / update(region) / delete own |
+| `voice_donations` | `id`, `donor_code`, `object_key` UNIQUE (prefix of `.audio.enc` + `.json.enc`), `kind` (`sentence` \| `word`), `created_at`. No account id. | The speech-check worker, as the learner | select / insert own (donor code via `voice_donors`) |
+| `voice_donation_deletions` | `donor_code` PK, `requested_at`, `done_at` | Trigger `voice_donors_queue_deletion` (SECURITY DEFINER `voice_donor_deleted()`) on any `voice_donors` delete, including the account cascade | service_role only |
+
+**Partial unique index** — `voice_donation_consents_one_active` (user_id) WHERE `withdrawn_at is null`: one active consent per learner.
+
+**Cleanup** — `voice-donation-cleanup` on the maintenance queue (daily 03:45 UTC, and at once after a delete request) deletes the files and `voice_donations` rows of queued codes and marks them done, then deletes recordings older than 3 years.
+
+---
+
 #### `speaking_attempts`
 
 One row per speaking Compare (SP3). Try again stores another row. The learner's recording is never stored (decision D2).

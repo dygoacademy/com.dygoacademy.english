@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   Get,
+  Headers,
   HttpCode,
   Param,
   ParseUUIDPipe,
@@ -28,6 +29,7 @@ import { WordCheckDto } from './dto/word-check.dto';
 import { SpeechCheckRateLimitGuard } from './speech-check-rate-limit.guard';
 import { SpeechCheckService } from './speech-check.service';
 import { SpeakingService } from './speaking.service';
+import { deviceFromUserAgent } from '../voice-donation/voice-donation.types';
 import {
   SPEAKING_CHECK_MAX_BYTES,
   SpeakingAttempt,
@@ -173,6 +175,7 @@ export class SpeakingController {
     @CurrentUser('id') userId: string,
     @Body() dto: CheckSpeechDto,
     @UploadedFile() audio?: UploadedAudio,
+    @Headers('user-agent') userAgent?: string,
   ): Promise<SpeakingCheckQueued> {
     return this.speechCheck.enqueue(
       userId,
@@ -182,6 +185,7 @@ export class SpeakingController {
         mimetype: audio.mimetype,
         filename: audio.originalname || 'recording',
       },
+      { accent: dto.accent, device: deviceFromUserAgent(userAgent) },
     );
   }
 
@@ -218,6 +222,7 @@ export class SpeakingController {
     @CurrentUser('id') userId: string,
     @Body() dto: WordCheckDto,
     @UploadedFile() audio?: UploadedAudio,
+    @Headers('user-agent') userAgent?: string,
   ): Promise<SpeakingCheckQueued> {
     return this.speechCheck.enqueueWord(
       userId,
@@ -228,6 +233,7 @@ export class SpeakingController {
         mimetype: audio.mimetype,
         filename: audio.originalname || 'recording',
       },
+      { device: deviceFromUserAgent(userAgent) },
     );
   }
 

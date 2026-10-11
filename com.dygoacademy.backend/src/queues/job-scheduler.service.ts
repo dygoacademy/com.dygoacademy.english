@@ -9,6 +9,8 @@ import {
   NOTIFICATION_TICK_SCHEDULER,
   PARTITION_MAINTENANCE_JOB,
   PARTITION_MAINTENANCE_SCHEDULER,
+  VOICE_DONATION_CLEANUP_JOB,
+  VOICE_DONATION_CLEANUP_SCHEDULER,
 } from './queue.constants';
 
 /**
@@ -55,6 +57,16 @@ export class JobSchedulerService implements OnApplicationBootstrap {
         data: { monthsAhead: 6 },
         opts: { removeOnComplete: { count: 14 } },
       },
+    );
+
+    // Voice donation: daily at 03:45 UTC, delete the recordings of donor
+    // codes queued for deletion (well inside the promised 30 days; a delete
+    // request also queues a run at once) and any older than 3 years. Runs
+    // with the flag off too, so a promise to delete is always kept.
+    await this.maintenance.upsertJobScheduler(
+      VOICE_DONATION_CLEANUP_SCHEDULER,
+      { pattern: '45 3 * * *' },
+      { name: VOICE_DONATION_CLEANUP_JOB, opts: { removeOnComplete: { count: 14 } } },
     );
 
     // Provision immediately as well as on the daily schedule: a deploy on the

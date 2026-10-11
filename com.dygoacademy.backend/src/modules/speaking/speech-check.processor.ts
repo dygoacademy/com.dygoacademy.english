@@ -8,6 +8,7 @@ import { SPEECH_CHECK_QUEUE, SpeechCheckJob } from '../../queues/queue.constants
 import { toCheckResult, toWordCheckResult } from './speech-check.mapper';
 import { ScorerPool, SpeechCheckStore } from './speech-check.store';
 import { SPEECH_CHECKER, SpeechCheckError, SpeechChecker } from './speech-checker';
+import { VoiceDonationService } from '../voice-donation/voice-donation.service';
 
 /**
  * Queue v1 (2026-10-06): runs queued speech checks. Takes the recording
@@ -15,7 +16,10 @@ import { SPEECH_CHECKER, SpeechCheckError, SpeechChecker } from './speech-checke
  * records the result or why it failed in SpeechCheckStore, where the app
  * polls it. Concurrency = number of scorers (each does one check at a
  * time). A word check that passes pollinates the word (`speaking_harvests`,
- * once per word, as the learner; never SRS). Never throws, so BullMQ doesn't retry: the app shows a failure at
+ * once per word, as the learner; never SRS). Voice donation: when the
+ * learner's consent is active, an encrypted copy of a scored recording is
+ * kept after the result is out (VoiceDonationService.keep, never throws);
+ * otherwise the recording is dropped as before. Never throws, so BullMQ doesn't retry: the app shows a failure at
  * once and the learner can Check again or Record again.
  */
 @Processor(SPEECH_CHECK_QUEUE)
@@ -28,6 +32,7 @@ export class SpeechCheckProcessor extends WorkerHost implements OnModuleInit {
     @Inject(SPEECH_CHECKER) private readonly checker: SpeechChecker,
     config: ConfigService,
     private readonly db: DatabaseService,
+    private readonly donations: VoiceDonationService,
   ) {
     super();
     this.pool = new ScorerPool(config.get<string[]>('speech.scorerUrls') ?? []);
@@ -54,9 +59,25 @@ export class SpeechCheckProcessor extends WorkerHost implements OnModuleInit {
         const pollinated =
           result.passed && (await this.pollinate(data.userId, data.lexiconId, result.total));
         this.store.done(checkId, { ...result, pollinated });
+        void this.donations.keep(data.userId, audio, {
+          kind: 'word',
+          text: data.word,
+          targetIpa: data.ipa,
+          accent: data.accent ?? null,
+          device: data.device ?? null,
+          scores: raw,
+        });
       } else {
         const raw = await this.checker.check(audio, data.sentence, data.targetIndex, scorer);
         this.store.done(checkId, toCheckResult(raw, data.sentence.trim().split(/\s+/).length));
+        void this.donations.keep(data.userId, audio, {
+          kind: 'sentence',
+          text: data.sentence,
+          targetIpa: null,
+          accent: data.accent ?? null,
+          device: data.device ?? null,
+          scores: raw,
+        });
       }
     } catch (err) {
       const reason = err instanceof SpeechCheckError ? err.kind : 'unavailable';

@@ -21,6 +21,7 @@ import { SpeakingModule } from './modules/speaking/speaking.module';
 import { SrsModule } from './modules/srs/srs.module';
 import { TelemetryModule } from './modules/telemetry/telemetry.module';
 import { TopicsModule } from './modules/topics/topics.module';
+import { VoiceDonationModule } from './modules/voice-donation/voice-donation.module';
 import { WordsModule } from './modules/words/words.module';
 import { QueuesModule } from './queues/queues.module';
 import { StorageModule } from './storage/storage.module';
@@ -54,6 +55,7 @@ import { NotificationProcessor } from './workers/notification.processor';
     MissionsModule,
     SpeakingModule,
     TelemetryModule,
+    VoiceDonationModule,
   ],
   providers: [
     EnrichmentProcessor,

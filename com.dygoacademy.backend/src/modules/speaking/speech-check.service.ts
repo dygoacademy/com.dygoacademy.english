@@ -16,6 +16,7 @@ import { DatabaseService } from '../../database/database.service';
 import { SPEECH_CHECK_JOB, SPEECH_CHECK_QUEUE, SpeechCheckJob } from '../../queues/queue.constants';
 import { SpeechCheckStore } from './speech-check.store';
 import type { SpeechAudio } from './speech-checker';
+import type { VoiceDonationDevice } from '../voice-donation/voice-donation.types';
 import {
   SPEAKING_CHECK_MAX_BYTES,
   SPEECH_CHECK_AVG_SECONDS,
@@ -23,6 +24,12 @@ import {
   SpeakingCheckQueued,
   SpeakingCheckState,
 } from './speaking.types';
+
+/** Kept with a donated recording (voice donation): the accent practised and the device type. */
+export interface CheckContext {
+  accent?: SpeakingAccent;
+  device?: VoiceDonationDevice;
+}
 
 /** What browsers record: AAC (iPhone Safari), WebM/Opus (Chrome), WAV (the PCM fallback). */
 const AUDIO_TYPES = /^audio\/(mp4|x-m4a|aac|webm|ogg|wav|x-wav|wave)\b/;
@@ -33,7 +40,9 @@ const AUDIO_TYPES = /^audio\/(mp4|x-m4a|aac|webm|ogg|wav|x-wav|wave)\b/;
  * and queues a job with ids only, then answers at once (202); the
  * SpeechCheckProcessor sends it to a free scorer. `status` is polled by the
  * app during SP3's "Checking your sentence…". The recording is never
- * written to disk, Redis, the database or logs (D2: send → check → delete).
+ * written to disk, Redis, the database or logs (D2: send → check → delete),
+ * unless the learner chose voice donation: then the worker keeps an
+ * encrypted copy (VoiceDonationService).
  * When the estimated wait passes `speech.busyEtaSeconds`, a new check is
  * refused with 503 and the app shows its own quick result instead.
  * `enqueueWord` (Pronunciation, 2026-10-11) is the same queue for one word.
@@ -51,6 +60,7 @@ export class SpeechCheckService {
     userId: string,
     itemId: string,
     audio: SpeechAudio | undefined,
+    context: CheckContext = {},
   ): Promise<SpeakingCheckQueued> {
     const recording = this.validAudio(audio);
     const rows = await this.db.queryAs<{ sentence: string; target_index: number }>(
@@ -65,6 +75,7 @@ export class SpeechCheckService {
       userId,
       sentence: item.sentence,
       targetIndex: item.target_index,
+      ...context,
     }));
   }
 
@@ -78,6 +89,7 @@ export class SpeechCheckService {
     topicWordId: string,
     accent: SpeakingAccent,
     audio: SpeechAudio | undefined,
+    context: Pick<CheckContext, 'device'> = {},
   ): Promise<SpeakingCheckQueued> {
     const recording = this.validAudio(audio);
     const rows = await this.db.queryAs<{
@@ -103,6 +115,8 @@ export class SpeechCheckService {
       word: word.word,
       ipa,
       lexiconId: word.lexicon_id,
+      accent,
+      ...context,
     }));
   }
 

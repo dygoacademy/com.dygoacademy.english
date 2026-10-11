@@ -19,6 +19,7 @@ import { SpeechCheckService } from './speech-check.service';
 import { AUDIO_TTL_MS, RESULT_TTL_MS, ScorerPool, SpeechCheckStore } from './speech-check.store';
 import { ScorerResult, ScorerWordResult, SpeechCheckError } from './speech-checker';
 import type { SpeakingCheckResult, SpeakingWordCheckResult } from './speaking.types';
+import type { VoiceDonationService } from '../voice-donation/voice-donation.service';
 
 const SENTENCE = 'Planting more trees can help mitigate the effects of climate change.';
 
@@ -240,19 +241,31 @@ function makeProcessor(
   check: jest.Mock,
   checkWord: jest.Mock = jest.fn(),
   queryAs: jest.Mock = jest.fn(),
+  keep: jest.Mock = jest.fn().mockResolvedValue(false),
 ) {
   const store = new SpeechCheckStore();
   const config = {
     get: () => ['http://s0', 'http://s1'],
   } as unknown as ConfigService;
-  const processor = new SpeechCheckProcessor(store, { check, checkWord }, config, {
-    queryAs,
-  } as unknown as DatabaseService);
+  const processor = new SpeechCheckProcessor(
+    store,
+    { check, checkWord },
+    config,
+    { queryAs } as unknown as DatabaseService,
+    { keep } as unknown as VoiceDonationService,
+  );
   const job = (checkId: string) =>
     ({
-      data: { checkId, userId: 'u', sentence: SENTENCE, targetIndex: 5 },
+      data: {
+        checkId,
+        userId: 'u',
+        sentence: SENTENCE,
+        targetIndex: 5,
+        accent: 'UK',
+        device: 'phone',
+      },
     }) as Job<SpeechCheckJob>;
-  return { store, processor, job };
+  return { store, processor, job, keep };
 }
 describe('SpeechCheckProcessor', () => {
   const make = makeProcessor;
@@ -272,6 +285,31 @@ describe('SpeechCheckProcessor', () => {
       'missing',
     );
     expect(store.takeAudio('c1')).toBeNull(); // the recording is gone
+    store.onModuleDestroy();
+  });
+
+  it('voice donation: hands the scored recording and its metadata to keep(), after the result', async () => {
+    const raw = scorer({});
+    const { store, processor, job, keep } = make(jest.fn().mockResolvedValue(raw));
+    store.add('c1', 'u', audio());
+    await processor.process(job('c1'));
+    expect(store.get('c1', 'u')?.status).toBe('done');
+    expect(keep).toHaveBeenCalledWith('u', expect.objectContaining({ mimetype: 'audio/mp4' }), {
+      kind: 'sentence',
+      text: SENTENCE,
+      targetIpa: null,
+      accent: 'UK',
+      device: 'phone',
+      scores: raw,
+    });
+    store.onModuleDestroy();
+  });
+
+  it('voice donation: a failed check keeps nothing', async () => {
+    const { store, processor, job, keep } = make(jest.fn().mockRejectedValue(new Error('boom')));
+    store.add('c1', 'u', audio());
+    await processor.process(job('c1'));
+    expect(keep).not.toHaveBeenCalled();
     store.onModuleDestroy();
   });
 
@@ -367,7 +405,7 @@ describe('Word check (Pronunciation, 2026-10-11)', () => {
       ipa_us: '/ˈmɪt̬.ə.ɡeɪt/',
     };
     const { s, queryAs, queue } = service([word]);
-    const r = await s.enqueueWord('u', 'tw-1', 'UK', audio());
+    const r = await s.enqueueWord('u', 'tw-1', 'UK', audio(), { device: 'tablet' });
     expect(queryAs).toHaveBeenCalledWith('u', expect.stringContaining('topic_words'), ['tw-1']);
     expect(queue.add.mock.calls[0][1]).toEqual({
       kind: 'word',
@@ -376,6 +414,8 @@ describe('Word check (Pronunciation, 2026-10-11)', () => {
       word: 'mitigate',
       ipa: MITIGATE,
       lexiconId: 'lex-1',
+      accent: 'UK',
+      device: 'tablet',
     });
     await s.enqueueWord('u', 'tw-1', 'US', audio());
     expect(queue.add.mock.calls[1][1].ipa).toBe('/ˈmɪt̬.ə.ɡeɪt/');

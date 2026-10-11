@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 
+import { VoiceDonationModule } from '../voice-donation/voice-donation.module';
 import { SpeakingController } from './speaking.controller';
 import { SpeakingService } from './speaking.service';
 import { SpeechCheckProcessor } from './speech-check.processor';
@@ -15,6 +16,8 @@ import { MacSpeechChecker, SPEECH_CHECKER } from './speech-checker';
  * import here (StorageModule is @Global()).
  */
 @Module({
+  // Voice donation: the worker keeps a donated copy before dropping a recording.
+  imports: [VoiceDonationModule],
   controllers: [SpeakingController],
   providers: [
     SpeakingService,
