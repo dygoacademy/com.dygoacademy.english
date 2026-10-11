@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import { headers } from 'next/headers';
 
 import { HOME_LOCALE_PATHS, ROUTES, SITE_URL } from '@/constants/routes';
-import { LEGAL_CONTENT, legalRegionFor, type LegalKind } from '@/content/legal';
+import { legalContent, legalRegionFor, type LegalKind } from '@/content/legal';
 import { getGardenLocaleContext } from '@/i18n/garden-locale';
 
 import { LegalPage } from './LegalPage';
@@ -16,7 +16,7 @@ const PATHS: Record<LegalKind, string> = { terms: ROUTES.terms, privacy: ROUTES.
  */
 export async function legalMetadata(kind: LegalKind): Promise<Metadata> {
   const { appLocale } = await getGardenLocaleContext();
-  const doc = LEGAL_CONTENT[appLocale][kind];
+  const doc = legalContent(appLocale)[kind];
   return {
     metadataBase: new URL(SITE_URL),
     title: `${doc.title} | Dygo Academy`,
@@ -28,7 +28,7 @@ export async function legalMetadata(kind: LegalKind): Promise<Metadata> {
 
 export async function LegalRoute({ kind }: { kind: LegalKind }) {
   const { appLocale } = await getGardenLocaleContext();
-  const content = LEGAL_CONTENT[appLocale];
+  const content = legalContent(appLocale);
   const other: LegalKind = kind === 'terms' ? 'privacy' : 'terms';
   const label = (k: LegalKind) => (k === 'terms' ? content.ui.termsLabel : content.ui.privacyLabel);
   const country = (await headers()).get('cf-ipcountry');

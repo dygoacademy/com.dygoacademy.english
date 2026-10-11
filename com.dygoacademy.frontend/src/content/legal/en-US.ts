@@ -183,7 +183,7 @@ export const legalEnUs: LegalContent = {
         blocks: [
           {
             kind: "p",
-            text: "You can delete your account at any time in Me › Account › Delete account. We delete your personal data within [[30]] days, except what the law requires us to keep, such as payment records."
+            text: "You can delete your account at any time in Profile › Account › Delete account. We delete your personal data within [[30]] days, except what the law requires us to keep, such as payment records."
           },
           {
             kind: "p",
@@ -461,7 +461,7 @@ export const legalEnUs: LegalContent = {
           },
           {
             kind: "p",
-            text: "Most of this is in Me › Account. For anything else, write to [[dpo@dygo.example]]. We reply within 30 days, or sooner when your country’s law sets a shorter time, and we don’t charge for it."
+            text: "Most of this is in Profile › Account. For anything else, write to [[dpo@dygo.example]]. We reply within 30 days, or sooner when your country’s law sets a shorter time, and we don’t charge for it."
           }
         ]
       },

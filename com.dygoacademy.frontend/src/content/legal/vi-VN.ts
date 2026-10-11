@@ -183,7 +183,7 @@ export const legalViVn: LegalContent = {
         blocks: [
           {
             kind: "p",
-            text: "Bạn có thể xoá tài khoản bất cứ lúc nào tại Tôi › Tài khoản › Xoá tài khoản. Chúng tôi xoá dữ liệu cá nhân của bạn trong vòng [[30]] ngày, trừ dữ liệu luật yêu cầu lưu, như chứng từ thanh toán."
+            text: "Bạn có thể xoá tài khoản bất cứ lúc nào tại Hồ sơ › Tài khoản › Xoá tài khoản. Chúng tôi xoá dữ liệu cá nhân của bạn trong vòng [[30]] ngày, trừ dữ liệu luật yêu cầu lưu, như chứng từ thanh toán."
           },
           {
             kind: "p",
@@ -461,7 +461,7 @@ export const legalViVn: LegalContent = {
           },
           {
             kind: "p",
-            text: "Phần lớn có trong Tôi › Tài khoản. Với yêu cầu khác, hãy viết đến [[dpo@dygo.example]]. Chúng tôi trả lời trong 30 ngày, hoặc sớm hơn nếu luật nước bạn quy định ngắn hơn, và không thu phí."
+            text: "Phần lớn có trong Hồ sơ › Tài khoản. Với yêu cầu khác, hãy viết đến [[dpo@dygo.example]]. Chúng tôi trả lời trong 30 ngày, hoặc sớm hơn nếu luật nước bạn quy định ngắn hơn, và không thu phí."
           }
         ]
       },

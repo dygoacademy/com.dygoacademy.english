@@ -1,7 +1,13 @@
 import { fireEvent, render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 
-import { LEGAL_CONTENT, LEGAL_REGIONS, legalRegionFor, type LegalDoc } from '@/content/legal';
+import {
+  LEGAL_CONTENT,
+  LEGAL_REGIONS,
+  legalContent,
+  legalRegionFor,
+  type LegalDoc,
+} from '@/content/legal';
 
 import { LegalPage, LegalText } from './LegalPage';
 
@@ -21,6 +27,30 @@ describe('legal pages (canvas page "Legal", 2026-10-09)', () => {
         for (const r of LEGAL_REGIONS) expect(LEGAL_CONTENT[locale][kind].regionNote[r]).toBeTruthy();
       }
     }
+  });
+
+  it('voice donation text: only with the flag, same shape in all three languages', () => {
+    expect(legalContent('en-US', false)).toBe(LEGAL_CONTENT['en-US']);
+    const en = legalContent('en-US', true);
+    for (const locale of ['vi-VN', 'zh-CN'] as const) {
+      const other = legalContent(locale, true);
+      for (const kind of ['terms', 'privacy'] as const) expect(shape(other[kind])).toEqual(shape(en[kind]));
+    }
+    const text = (doc: LegalDoc) => JSON.stringify(doc);
+    expect(text(LEGAL_CONTENT['en-US'].privacy)).not.toContain('donat');
+    expect(en.terms.short[3]).toContain('unless you choose to donate');
+    expect(en.privacy.short[2]).toContain('Donating is off until you turn it on');
+    const p2 = en.privacy.sections.find((s) => s.id === 'p2')!.blocks[0];
+    expect(p2.kind === 'table' && p2.rows[3][0]).toBe('Voice recording');
+    expect(p2.kind === 'table' && p2.rows[4][0]).toMatch(/^Donated voice recordings/);
+    const p5 = en.privacy.sections.find((s) => s.id === 'p5')!.blocks[0];
+    expect(p5.kind === 'ul' && p5.items[4]).toMatch(/Payments/);
+    expect(p5.kind === 'ul' && p5.items[5]).toMatch(/Voice labelling/);
+    const p8 = en.privacy.sections.find((s) => s.id === 'p8')!.blocks[1];
+    expect(p8.kind === 'ul' && p8.items[4]).toMatch(/^withdraw consent.*stop donating your voice;$/);
+    for (const r of LEGAL_REGIONS) expect(en.privacy.local.blocks[r]).toHaveLength(LEGAL_CONTENT['en-US'].privacy.local.blocks[r].length + 1);
+    // The base copy is untouched.
+    expect(LEGAL_CONTENT['en-US'].terms.short[3]).toBe('Speaking practice: your recording is checked, then deleted.');
   });
 
   it('opens the local rights tab for the visitor’s country, Vietnam otherwise', () => {
