@@ -464,11 +464,11 @@ async function runTopic(args: Args, env: Record<string, string>): Promise<void> 
           }
           const taken = await db.query(
             `insert into public.api_usage_daily (provider, day, units)
-             select 'google_tts', (now() at time zone 'utc')::date, $1
-              where $1 <= $2
+             select 'google_tts', (now() at time zone 'utc')::date, $1::bigint
+              where $1::bigint <= $2::bigint
              on conflict (provider, day) do update
                set units = public.api_usage_daily.units + excluded.units, updated_at = now()
-               where public.api_usage_daily.units + excluded.units <= $2
+               where public.api_usage_daily.units + excluded.units <= $2::bigint
              returning units`,
             [chars, dailyCharLimit],
           );

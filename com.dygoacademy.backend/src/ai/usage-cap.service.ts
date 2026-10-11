@@ -51,11 +51,11 @@ export class UsageCapService {
     const limit = this.limitFor(provider);
     const rows = await this.db.queryAsService<{ units: string; day: string }>(
       `insert into public.api_usage_daily (provider, day, units)
-       select $1, (now() at time zone 'utc')::date, $2
-        where $2 <= $3
+       select $1, (now() at time zone 'utc')::date, $2::bigint
+        where $2::bigint <= $3::bigint
        on conflict (provider, day) do update
          set units = public.api_usage_daily.units + excluded.units, updated_at = now()
-         where public.api_usage_daily.units + excluded.units <= $3
+         where public.api_usage_daily.units + excluded.units <= $3::bigint
        returning units, day::text`,
       [provider, units, limit],
     );
