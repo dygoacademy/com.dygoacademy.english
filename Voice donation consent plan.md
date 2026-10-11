@@ -1,11 +1,19 @@
-# Voice donation: consent, Terms and Privacy, implementation plan (for Claude Code)
+# Voice donation ("Donate my voice"): implementation plan (for Claude Code)
 
-Date: 2026-10-11 · Owner: Dylan · Status: **Draft for Dylan's review** (and a lawyer's, see §6)
-Why: Dylan will train Dygo's own GOP scorer (wav2vec2, fine-tuned for Vietnamese speakers of English). That needs real learner recordings, kept with the learner's permission. Today both documents promise the opposite ("checked, then deleted … not used to train AI"), so the text, the app and the data handling must change **together, in one release**. Don't ship the new legal text before the setting exists, or the old promise before the setting is removed.
+Date: 2026-10-11 · Owner: Dylan · Design: canvas pages "Adult · Profile" (A8, **A8e**), "Adult · Authentication" (AU2) and "Legal" (LG1–LG4)
+Design changelog: `docs/design/garden/CHANGELOG.md`, entry "2026-10-11 — Legal: optional voice donation".
 
-> **Gate:** build nothing here until Dylan marks this plan **Approved** and the legal text has been reviewed (§6).
+Why: Dylan will train Dygo's own GOP scorer (wav2vec2, fine-tuned for Vietnamese speakers of English). That needs real learner recordings, kept only with the learner's permission. Today the app and both legal documents promise "checked, then deleted … not used to train AI".
 
----
+> **Gate:** the screens and §1 decisions are **Approved** (Dylan, 2026-10-11). The legal text still needs a lawyer's review, so **everything ships behind one flag, `VOICE_DONATION_ENABLED` (backend) / `NEXT_PUBLIC_VOICE_DONATION` (frontend), default off.** With the flag off, nothing changes for anyone: no box, no row, old legal text, nothing stored. Dylan turns the flag on (UAT first, then production) only after the review. Build in the order below, one commit and one UAT deploy (flag on in UAT only) per part.
+
+| Part | What | Design files (`docs/design/garden/source/`) |
+|---|---|---|
+| 1 | Backend: consent, private storage of donated audio, delete | — |
+| 2 | Screens: A8e Privacy & data, A8 row, AU2 box, small copy changes | `AdultPrivacy(Vi)`, `AdultMe(Vi)`, `AdultRegister(Vi)` |
+| 3 | Terms and Privacy text (second version, behind the flag) | `LegalTermsDesktop`, `LegalPrivacyDesktop`, `LegalTermsPhoneVi`, `LegalPrivacyPhoneVi` |
+
+Rules for every part: copy from the boards; all strings in `messages/{en-US,vi-VN,zh-CN}.json` (ZH to match); `vitest` and backend `jest` (compare with HEAD); `tsc --noEmit`; `Change Log.md` entry; set the changelog rows to **Built** with the commit; deploy UAT via `deploy/request.md`. The recording never appears in logs.
 
 ## 1. Decisions (Dylan to confirm; the plan assumes these)
 
@@ -36,53 +44,70 @@ Why: Dylan will train Dygo's own GOP scorer (wav2vec2, fine-tuned for Vietnamese
 
 ---
 
-## 3. The app (consent UX)
+---
 
-### 3.1 Setting: Profile › Privacy (new section)
-- Toggle, **off by default**:
-  - EN: **Help improve Dygo's speech checker** · "Keep my speaking and pronunciation recordings to train Dygo's own checker for Vietnamese speakers of English. You can stop at any time." · link "How we use donated recordings" → `/privacy#p4`
-  - VI: **Góp giọng để Dygo chấm phát âm tốt hơn** · "Lưu bản ghi luyện nói và phát âm của tôi để huấn luyện bộ chấm riêng của Dygo cho người Việt nói tiếng Anh. Bạn có thể dừng bất cứ lúc nào." · "Dygo dùng bản ghi được góp như thế nào"
-- Turning it **on** opens a short confirm sheet (below) — the switch alone isn't enough for a first consent.
-- When on, a row: "{n} recordings donated" · VI "Đã góp {n} bản ghi", and a button **Delete my donated recordings** · VI **Xoá các bản ghi đã góp**. Confirm: "We'll delete your {n} donated recordings within 30 days. This can't be undone." · VI "Chúng tôi sẽ xoá {n} bản ghi bạn đã góp trong vòng 30 ngày. Không thể hoàn tác."
-- Hidden for child profiles and for accounts under 16.
+## Part 1 · Backend
 
-### 3.2 Confirm sheet (first time turning it on)
-- Title: **Donate your voice recordings?** · VI **Góp bản ghi giọng nói?**
-- Four short lines (EN / VI):
-  1. "We keep your recordings from now on, under a random code, not your name." / "Từ giờ chúng tôi lưu bản ghi của bạn dưới một mã ngẫu nhiên, không kèm tên bạn."
-  2. "Some may be listened to by trained people to mark how words were said." / "Một số bản ghi có thể được người đã qua đào tạo nghe để đánh dấu cách phát âm."
-  3. "We use them only to improve Dygo's speech checker. Never sold, never public." / "Chỉ dùng để cải thiện bộ chấm phát âm của Dygo. Không bán, không công khai."
-  4. "Kept up to 3 years. Turn off or delete any time in Profile › Privacy." / "Lưu tối đa 3 năm. Tắt hoặc xoá bất cứ lúc nào trong Hồ sơ › Quyền riêng tư."
-- Optional fields (each "Prefer not to say"): first language, where in Vietnam you grew up (North / Central / South / elsewhere), English level. · VI: Tiếng mẹ đẻ · Bạn lớn lên ở miền nào (Bắc / Trung / Nam / nơi khác) · Trình độ tiếng Anh · "Không muốn trả lời".
-- Buttons with **equal weight**: **Yes, donate** / **Not now** · VI **Đồng ý góp** / **Để sau**.
+**Tables** (new migration in `database/migrations/`):
+- `voice_donation_consents`: id, user_id, granted_at, withdrawn_at (null while active), text_version (e.g. `2026-11-v1`, a constant shared with Part 3), method (`signup` / `setting`), locale, region_answer (`north` / `central` / `south` / `elsewhere` / null). Never deleted (proof of consent), even when the recordings are.
+- `voice_donors`: user_id (unique) ↔ donor_code (random UUID). Deleted with the recordings or the account.
+- `voice_donations`: id, donor_code, kind (`word` / `sentence`), storage_key, text (word or sentence), target_ipa, total score, per-syllable or per-word scores (jsonb), accent, app_locale, device_type, created_at. **No user_id, email or name.**
 
-### 3.3 One-time invitation (optional, after the learner's 5th pronunciation check, adults only)
-- A small card on the result screen, shown **once**, never again after "Not now":
-  - EN: **Help Dygo hear Vietnamese speakers better?** "Most speech checkers learn only from native speakers. Your recordings would teach Dygo how Vietnamese speakers say English words, so its feedback gets fairer." · **Tell me more** (→ the confirm sheet) · **No thanks**
-  - VI: **Giúp Dygo nghe người Việt nói chuẩn hơn?** "Hầu hết bộ chấm phát âm chỉ học từ người bản xứ. Bản ghi của bạn giúp Dygo hiểu cách người Việt nói từ tiếng Anh, để nhận xét công bằng hơn." · **Tìm hiểu thêm** · **Không, cảm ơn**
+**Storage:** a **separate, private** bucket `[[dygo-voice-donations]]` on the same S3 store as `storage-config.ts` (`[[STORAGE PROVIDER]]`, `[[REGION]]`), never under the public media URL. Key: `{donor_code}/{yyyy-mm}/{uuid}.wav`. Server-side encryption on. Access: the backend's donation writer and Dylan only.
 
-### 3.4 Small copy changes elsewhere
-- SP0 mic screen and P3 checking: "Your recording is checked, then deleted." → when donation is **on**: "Your recording is checked and kept to improve Dygo (you chose this in Profile › Privacy)." · VI "Bản ghi được chấm và lưu lại để cải thiện Dygo (bạn đã chọn trong Hồ sơ › Quyền riêng tư)." Off: unchanged.
-- Landing page speak demo: unchanged (visitors never donate).
+**Endpoints** (`profiles` module, or a small new `privacy` module):
+- `GET /profiles/me/voice-donation` → `{ enabled, since, count, can_donate }`. `can_donate` is false for child profiles (and under-16 accounts, if an age is ever stored; today the Terms make own accounts 16+).
+- `PUT /profiles/me/voice-donation` `{ enabled: true, method, locale, region_answer? }` → creates the consent row (and the donor code if missing). `{ enabled: false }` → sets withdrawn_at; stops at once.
+- `DELETE /profiles/me/voice-donation/recordings` → withdraws, queues deletion of all files + rows for the donor code, deletes the donor link; returns `{ deleting: n }`. Done within 30 days (aim: the same night).
+- `POST /auth/register` (or the profile created after sign-up) accepts `donate_voice: true` → same as `PUT … enabled: true, method: 'signup'`.
+
+**Saving recordings:** in `speech-check.processor.ts`, after a check finishes **successfully** (word or sentence), if the user has an active consent at that moment, copy the audio buffer to the donation bucket and write a `voice_donations` row. Fire-and-forget: a failed save never changes the learner's result. When there is no active consent, the code path is exactly today's (audio in memory, then dropped). Failed checks and "couldn't hear you" attempts are not kept.
+
+**Jobs:** nightly: process queued deletions; delete donations older than **3 years**. Account deletion (wherever it is or will be) must also call the recordings delete.
+
+**Tests:** no copy without consent; copy with consent; withdraw stops copying; delete removes files, rows and the donor link but keeps the consent row; child profile can't enable; the flag off makes every endpoint 404 and never copies.
 
 ---
 
-## 4. Data handling (backend)
+## Part 2 · Screens (EN + VI)
 
-- `voice_donation_consents`: user_id, granted_at, withdrawn_at, text_version (e.g. `2026-11-v1`), method (`setting` / `invite`), locale. Never delete these rows (proof of consent), even after the recordings go.
-- `voice_donors`: donor_code (random UUID) ↔ user_id. Deleting the account or the recordings deletes this link.
-- Recordings: when consent is active at the moment of the check, after scoring copy the audio to a **separate encrypted bucket** (`[[STORAGE PROVIDER]]`, `[[REGION]]`) with metadata {donor_code, item text, target IPA, scores, accent, app locale, device type, optional profile answers, created_at}. No email, name or account id. Access: Dylan + named reviewers only, logged.
-- The check path stays the same when consent is off: audio in memory only, then dropped.
-- Withdrawal: stop copying at once. "Delete my donated recordings" and account deletion: queue a delete; done within 30 days; nightly job also deletes anything older than 3 years.
-- Training sets are built from the bucket at training time; a set is deleted when the model built from it is replaced. Record which donor codes were in each set (so deletions are respected next time).
-- Labelling: if a contractor is used, they get audio + text only, under a written data processing agreement.
-- Tests: no copy when consent is off; copy when on; withdrawal stops copying; delete removes files + link; child / under-16 can't enable; consent row written with version.
+### A8 Profile — new row (`AdultMe(Vi)`)
+- Between "Meanings in" and "Family": **Privacy & data** · value "Voice donation on" / "Voice donation off" (VI **Quyền riêng tư** · "Đang góp giọng" / "Không góp giọng"), shield icon, chevron → `/me/privacy`.
+- To fit, the garden calendar rows are 9 px (were 13) and setting rows 48 px (were 52), as on the board.
 
----
+### A8e Privacy & data — new screen (`AdultPrivacy(Vi)`, route `/me/privacy`)
+- Header: back → Profile, title **Privacy & data** · VI **Quyền riêng tư**.
+- Section **Your voice** · VI **Giọng nói của bạn**: one white card, no icon:
+  - Title **Donate my voice** · VI **Góp giọng nói**; line "Helps improve Dygo’s speaking scores · Optional" · VI "Giúp Dygo chấm điểm phát âm chính xác hơn · Không bắt buộc"; switch on the right (`role="switch"`).
+  - Off: "Off · recordings are deleted after each check" · VI "Đang tắt · bản ghi được xoá sau mỗi lần chấm".
+  - On: green border; "**38** recordings donated · since 12 Oct 2026" · VI "Đã góp **38** bản ghi · từ 12/10/2026"; three ticks: "Stored under a random code, not your name" / "Some may be listened to by trained people" / "Never sold or published · kept up to 3 years" (VI on the board); outlined button **Delete my donated recordings** · VI **Xoá các bản ghi đã góp**.
+  - Link "How we use donated recordings" → `/privacy#p4` · VI "Dygo dùng bản ghi được góp như thế nào".
+- Section **Your data** · VI **Dữ liệu của bạn**: Download my data, Privacy Policy, Terms of Service, Delete account (rows that already have a destination link to it; "Download my data" and "Delete account" may stay hidden until those features exist; don't build them here).
+- **Turning the switch on** opens the confirm sheet (never turns on straight away): title **Donate your voice recordings?**, four numbered lines, "Where did you grow up? (optional)" chips North / Central / South / Elsewhere / Prefer not to say, buttons **Not now** / **Yes, donate** with equal size. Yes → `PUT … enabled: true` → switch on. Not now / tap outside → stays off.
+- **Turning it off**: no sheet; `PUT … enabled: false`; switch off; recordings stay (the delete button still works from a small "Delete donated recordings" link shown under the off line while count > 0).
+- **Delete**: alert dialog "Delete {n} donated recordings?" + body + **Delete recordings** / Cancel → `DELETE …/recordings` → toast "Deleting your {n} recordings. Donation is off."
+- Hidden entirely when `can_donate` is false (child profile): the Your voice section doesn't show.
 
-## 5. Terms and Privacy: new text
+### AU2 Create account (`AdultRegister(Vi)`)
+- Under the password, kept **quiet on purpose** (changed 2026-10-11): a plain 18 px checkbox and one 13 px grey line, no card or border: "Let Dygo keep my speaking recordings to help improve speaking scores. Optional. **Learn more**" · VI "Cho Dygo lưu bản ghi luyện nói của tôi để cải thiện việc chấm điểm phát âm. Không bắt buộc. **Tìm hiểu thêm**". Don't mention Vietnamese speakers. "Learn more" opens the Privacy Policy at #p4 (new tab, before sign-up).
+- **Unticked** by default. Ticked → send `donate_voice: true` with sign-up (consent method `signup`). Not on AU3 (invite) or child profiles.
+- The terms line becomes "By creating an account you agree to the Terms and Privacy Policy." with both as links.
 
-Edit `com.dygoacademy.frontend/src/content/legal/{en-US,vi-VN,zh-CN}.ts` (ZH to match). Keep section ids. Also fix the old path "Me › Account" → "Profile › Account" (the tab is Profile now). Update "Last updated" and, per t11 / p12, tell existing users in the app before it applies (nothing changes for anyone who doesn't turn it on).
+### Small copy changes (only while donation is on)
+- SP0 mic screen, SP3 checking line and P3 checking: "Your recording is checked, then deleted." → "Your recording is checked and kept to improve Dygo (you chose this in Profile)." · VI "Bản ghi được chấm và lưu lại để cải thiện Dygo (bạn đã chọn trong Hồ sơ)." Off: unchanged.
+
+### Messages
+`screens.privacy.*` (A8e), `screens.me.privacyRow`, `screens.auth.register.donate*`. Copy every string from the boards (EN + VI); ZH to match.
+
+### Fixtures + tests
+Reference fixtures for A8e off / confirm / on / delete and AU2 with the box; tests: the switch opens the sheet; Not now keeps it off; Yes calls the API; delete flow; hidden for child profiles; AU2 sends `donate_voice` only when ticked; flag off hides the row, the screen route (404) and the box.
+
+### Later (not in this plan; needs a design)
+The one-time invitation card after the 5th pronunciation check.
+
+## Part 3 · Terms and Privacy text (behind the flag)
+
+Design: canvas page "Legal" (`source/LegalTermsDesktop`, `LegalPrivacyDesktop`, `LegalTermsPhoneVi`, `LegalPrivacyPhoneVi`) already shows this text. In `com.dygoacademy.frontend/src/content/legal/{en-US,vi-VN,zh-CN}.ts` (ZH to match) add the new text **as a second version** chosen by `voiceDonationEnabled()`: flag off → today's text exactly; flag on → the text below. Keep section ids; extend `legal.test.ts` for both versions. Also fix the old path "Me › Account" → "Profile › Account" (the tab is Profile now). Update "Last updated" and, per t11 / p12, tell existing users in the app before it applies (nothing changes for anyone who doesn't turn it on).
 
 ### 5.1 Terms of Service
 
@@ -123,7 +148,7 @@ And change the note under the table:
 **p4 · Your voice** (replace)
 - EN:
   - p: "<b>Normally:</b> when you tap the mic, your recording is sent to our own speech checker, compared with a native speaker's recording and deleted as soon as the result is ready. If you never tap the mic, we never hear you."
-  - p: "<b>If you choose to donate:</b> in Profile › Privacy you can turn on “Help improve Dygo's speech checker”. From then on, we keep your speaking and pronunciation recordings to train and test our own speech checker. Recordings made before you turned it on were already deleted."
+  - p: "<b>If you choose to donate:</b> in Profile › Privacy you can turn on “Donate my voice”. From then on, we keep your speaking and pronunciation recordings to train and test our own speech checker. Recordings made before you turned it on were already deleted."
   - ul:
     - "It's off unless you turn it on. Saying no, or stopping later, never changes what you can do in Dygo."
     - "We store donated recordings under a random code, apart from your name and email. We keep the link only so you can delete them."
@@ -132,7 +157,7 @@ And change the note under the table:
     - "We keep them for up to [[3 years]]. Turn donation off and we stop keeping new recordings at once; tap “Delete my donated recordings” and we delete them within [[30]] days. A speech model already trained can't be un-trained, but your recordings won't be used in any future training."
 - VI:
   - p: "<b>Thông thường:</b> khi bạn nhấn micro, bản ghi được gửi đến bộ chấm phát âm của chính chúng tôi, so với giọng người bản xứ và xoá ngay khi có kết quả. Nếu bạn không nhấn micro, chúng tôi không nghe thấy bạn."
-  - p: "<b>Nếu bạn chọn góp:</b> trong Hồ sơ › Quyền riêng tư, bạn có thể bật “Góp giọng để Dygo chấm phát âm tốt hơn”. Từ lúc đó, chúng tôi lưu bản ghi luyện nói và phát âm của bạn để huấn luyện và kiểm thử bộ chấm phát âm riêng. Các bản ghi trước khi bạn bật đã được xoá."
+  - p: "<b>Nếu bạn chọn góp:</b> trong Hồ sơ › Quyền riêng tư, bạn có thể bật “Góp giọng nói”. Từ lúc đó, chúng tôi lưu bản ghi luyện nói và phát âm của bạn để huấn luyện và kiểm thử bộ chấm phát âm riêng. Các bản ghi trước khi bạn bật đã được xoá."
   - ul:
     - "Mặc định tắt cho đến khi bạn tự bật. Không đồng ý, hoặc dừng sau này, không làm thay đổi những gì bạn được dùng trong Dygo."
     - "Bản ghi được góp lưu dưới một mã ngẫu nhiên, tách khỏi tên và email của bạn. Chúng tôi chỉ giữ liên kết để bạn có thể xoá chúng."
@@ -159,12 +184,22 @@ And change the note under the table:
 
 ---
 
-## 6. Before launch (Dylan, not Claude Code)
+---
 
-- **Lawyer review** of §5 in Vietnam (and Singapore if the company moves). I'm not a lawyer; this is a draft. Points to ask about:
-  - Is a voice recording "biometric data" (sensitive) under Decree 356 even when it's never used to identify anyone? The plan treats it as sensitive to be safe.
-  - Does training Dygo's own model count as a "personal data processing service" needing a licence (Decree 356, Arts. 21–27)? Likely not for your own product, but confirm.
-  - The small-business exemption from impact assessments doesn't cover sensitive data: update the **processing impact assessment** (and the cross-border one if the bucket or GPUs are outside Vietnam) to include voice donation, and file with A05.
-- Fill the `[[…]]` placeholders: retention, storage provider and region, labelling provider, training provider.
-- Decide V-1 … V-10 (§1).
-- Then mark this plan **Approved**; Claude Code builds §3–§5 in one release.
+---
+
+## Part 4 · Onboarding OB4b "Say 5 words" (EN + VI) — design: `source/OnboardVoice(Vi).dc.html`, `OnboardReminder(Vi)`, `OnboardReady(Vi)`
+
+- **Where:** optional bonus step after OB4 Reminder. OB4 "Continue" → OB4b; "Not now" and OB4b "Skip" → OB5. Header: back, "Bonus step · about 1 minute", Skip.
+- **Flow:** 5 fixed words, one at a time: think /θɪŋk/, ship /ʃɪp/, world /wɜːld/, very /ˈveri/, sixth /sɪksθ/. Chips show done / current / next. Word card (word, IPA, Hear it). Mic as in P2 (beep, auto-stop). Each word uses the existing word check (`POST /speaking/word-check`); a "couldn't hear" result asks again once, then moves on.
+- **Result:** "Your mic works!" + "Sounds to practise first" = the 1–2 weakest sounds across the 5 checks (chips like "th · think, sixth", "final d · world"). Save them on the profile (`starter_sounds`) so the first bees prefer words with those sounds. OB5 shows a "Sounds" row with "Redo" → OB4b.
+- **Consent (only with the voice-donation flag on):** the quiet unticked box "Let Dygo keep these 5 and my future speaking recordings to help improve speaking scores. Optional. Learn more" (VI on the board). If AU2 already gave consent, show it ticked. **Keep the 5 recordings in memory on the device** until Continue; if ticked, upload them to `voice_donations` (kind `onboarding`, the fixed word as text) and create/keep the consent (method `onboarding`); if not ticked, drop them. "Where did you grow up?" chips appear only when ticked and are stored as `region_answer`.
+- **Why these 5 words:** the same short script from every donor gives clean, labelled data across the sounds Vietnamese learners find hardest (th, sh, final consonant clusters, v), without the app saying so.
+- **Tests:** skip at any point; 5 checks then the result; sounds chosen from the weakest scores; box unticked → no upload; ticked → 5 uploads + consent row; region only when ticked; flag off → no box, nothing uploaded.
+
+## Before Dylan turns the flag on
+- **Lawyer review** of Part 3 (Vietnam; Singapore if the company moves). Ask: is a voice recording "biometric data" under Decree 356 when never used to identify anyone (the plan treats it as sensitive)? Does training Dygo's own model need a data-processing-service licence (Decree 356, Arts. 21–27; likely not for your own product)?
+- Update the **processing impact assessment** (and the cross-border one if storage or GPUs are outside Vietnam) to include voice donation; file with A05.
+- Fill the `[[…]]` placeholders: bucket, storage provider and region, labelling and training providers, retention (3 years), deletion time (30 days), `text_version`.
+- Tell existing users in the app before the new Terms apply (Terms t11 / Privacy p12); nothing changes for anyone who doesn't donate.
+- Then: flag on in UAT → check → flag on in production.
