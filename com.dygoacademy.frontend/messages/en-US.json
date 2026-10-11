@@ -1217,9 +1217,7 @@
           "confirmEmail": "We sent you an email. Confirm your address, then sign in."
         },
         "donate": {
-          "title": "Help improve Dygo’s speech checker",
-          "optional": "(optional)",
-          "body": "Keep my speaking recordings to train Dygo’s checker for Vietnamese speakers. Optional · change any time in Profile. <link>How it works</link>"
+          "body": "Let Dygo keep my speaking recordings to help improve speaking scores. Optional. <link>Learn more</link>"
         }
       },
       "forgot": {
@@ -1419,7 +1417,7 @@
       "playingShort": "Playing…",
       "playNativeLabel": "Play the native speaker",
       "playYouLabel": "Play your recording",
-      "privacyKept": "Your recording is checked and kept to improve Dygo (you chose this in Profile › Privacy)."
+      "privacyKept": "Your recording is checked and kept to improve Dygo (you chose this in Profile)."
     },
     "onboarding": {
       "back": "Back",
@@ -1595,10 +1593,10 @@
       "back": "Back",
       "voiceHeading": "Your voice",
       "donate": {
-        "title": "Help improve Dygo’s speech checker",
-        "body": "Keep my speaking and pronunciation recordings to train Dygo’s own checker for Vietnamese speakers of English.",
+        "title": "Donate my voice",
+        "body": "Helps improve Dygo’s speaking scores · Optional",
         "switchLabel": "Voice donation",
-        "off": "Off: your recordings are checked, then deleted.",
+        "off": "Off · recordings are deleted after each check",
         "donated": "{count, plural, one {<b>#</b> recording donated} other {<b>#</b> recordings donated}} · since {date}",
         "pointCode": "Stored under a random code, not your name",
         "pointListen": "Some may be listened to by trained people",

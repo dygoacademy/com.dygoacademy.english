@@ -1217,9 +1217,7 @@
           "confirmEmail": "Chúng tôi đã gửi email cho bạn. Bạn xác nhận địa chỉ rồi đăng nhập nhé."
         },
         "donate": {
-          "title": "Góp giọng để Dygo chấm phát âm tốt hơn",
-          "optional": "(không bắt buộc)",
-          "body": "Lưu bản ghi luyện nói của tôi để huấn luyện bộ chấm cho người Việt. Không bắt buộc · đổi bất cứ lúc nào trong Hồ sơ. <link>Cách hoạt động</link>"
+          "body": "Cho Dygo lưu bản ghi luyện nói của tôi để cải thiện việc chấm điểm phát âm. Không bắt buộc. <link>Tìm hiểu thêm</link>"
         }
       },
       "forgot": {
@@ -1419,7 +1417,7 @@
       "playingShort": "Đang phát…",
       "playNativeLabel": "Nghe người bản xứ",
       "playYouLabel": "Nghe bản ghi của bạn",
-      "privacyKept": "Bản ghi được chấm và lưu lại để cải thiện Dygo (bạn đã chọn trong Hồ sơ › Quyền riêng tư)."
+      "privacyKept": "Bản ghi được chấm và lưu lại để cải thiện Dygo (bạn đã chọn trong Hồ sơ)."
     },
     "onboarding": {
       "back": "Quay lại",
@@ -1596,7 +1594,7 @@
       "voiceHeading": "Giọng nói của bạn",
       "donate": {
         "title": "Góp giọng nói",
-        "body": "Giúp Dygo chấm phát âm giọng Việt chuẩn hơn · Không bắt buộc",
+        "body": "Giúp Dygo chấm điểm phát âm chính xác hơn · Không bắt buộc",
         "switchLabel": "Góp giọng nói",
         "off": "Đang tắt · bản ghi được xoá sau mỗi lần chấm",
         "donated": "Đã góp <b>{count}</b> bản ghi · từ {date}",

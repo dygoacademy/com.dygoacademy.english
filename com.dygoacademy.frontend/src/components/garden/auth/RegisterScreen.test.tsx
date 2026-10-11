@@ -54,11 +54,11 @@ describe('RegisterScreen (AU2)', () => {
 
   it('voice donation: the optional box is unticked and its answer is submitted', () => {
     const { onSubmit } = renderScreen({ donation: { howHref: '/privacy#p4' } });
-    const box = screen.getByRole('checkbox', { name: /Help improve Dygo’s speech checker/ });
+    const box = screen.getByRole('checkbox', { name: /Let Dygo keep my speaking recordings/ });
     expect((box as HTMLInputElement).checked).toBe(false);
-    expect(screen.getByRole('link', { name: 'How it works' }).getAttribute('href')).toBe(
-      '/privacy#p4',
-    );
+    const learnMore = screen.getByRole('link', { name: 'Learn more' });
+    expect(learnMore.getAttribute('href')).toBe('/privacy#p4');
+    expect(learnMore.getAttribute('target')).toBe('_blank');
     fireEvent.click(box);
     expect((box as HTMLInputElement).checked).toBe(true);
     fireEvent.submit(box.closest('form')!);

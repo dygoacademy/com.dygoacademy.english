@@ -10,7 +10,6 @@ import type { AppLocale } from '@/i18n/config';
 import { AuthField } from './AuthField';
 import { AuthSeed, AUTH_LINK_CLASSES, AUTH_SUBMIT_CLASSES, AuthError, AuthShell } from './AuthShell';
 import { LanguageChip } from './LanguageChip';
-import { gcn } from '../cn';
 import { TileSprout } from '../groupArt';
 
 /** Why sign-up failed. `failed` never says whether the email is already taken. */
@@ -41,8 +40,9 @@ export interface RegisterScreenProps {
   /** Sample value for the reference page; empty in the live app. */
   initialName?: string;
   /**
-   * Voice donation (canvas 2026-10-11): the optional "Help improve Dygo's
-   * speech checker" box above the button, unticked. `howHref` is its link.
+   * Voice donation (canvas 2026-10-11, quiet version): a plain unticked
+   * 18px checkbox and one grey line above the button. `howHref` is its
+   * "Learn more" link (new tab).
    */
   donation?: { howHref: string; initialChecked?: boolean } | null;
 }
@@ -147,10 +147,7 @@ export function RegisterScreen({
         />
         {donation ? (
           <label
-            className={gcn(
-              'flex cursor-pointer items-start gap-3 rounded-2xl border px-[14px] py-3',
-              donate ? 'border-stage-sprout-leaf bg-[#EEF4EC]' : 'border-border bg-surface',
-            )}
+            className="flex cursor-pointer items-start gap-2.5 px-0.5"
           >
             <input
               type="checkbox"
@@ -158,24 +155,22 @@ export function RegisterScreen({
               checked={donate}
               disabled={busy}
               onChange={(event) => setDonate(event.target.checked)}
-              className="mt-px h-[22px] w-[22px] shrink-0 cursor-pointer accent-forest"
+              className="mt-px h-[18px] w-[18px] shrink-0 cursor-pointer accent-forest"
             />
-            <span className="flex flex-col gap-[3px]">
-              <span className="text-[14px] font-bold leading-[1.35]">
-                {t('register.donate.title')}{' '}
-                <span className="font-medium text-muted-foreground">
-                  {t('register.donate.optional')}
-                </span>
-              </span>
-              <span className="text-[13px] leading-[1.4] text-muted-foreground">
-                {t.rich('register.donate.body', {
-                  link: (chunks) => (
-                    <Link href={donation.howHref} className="font-bold text-forest underline">
-                      {chunks}
-                    </Link>
-                  ),
-                })}
-              </span>
+            <span className="text-[13px] leading-[1.45] text-muted-foreground">
+              {t.rich('register.donate.body', {
+                // Opens in a new tab: the learner hasn't signed up yet.
+                link: (chunks) => (
+                  <a
+                    href={donation.howHref}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="font-bold text-forest underline"
+                  >
+                    {chunks}
+                  </a>
+                ),
+              })}
             </span>
           </label>
         ) : null}

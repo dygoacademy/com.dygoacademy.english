@@ -76,7 +76,7 @@ export const voiceDonationEnUs: VoiceDonationLegalText = {
       },
       {
         kind: 'p',
-        text: '<b>If you choose to donate:</b> in Profile › Privacy you can turn on “Help improve Dygo’s speech checker”. From then on, we keep your speaking and pronunciation recordings to train and test our own speech checker. Recordings made before you turned it on were already deleted.',
+        text: '<b>If you choose to donate:</b> in Profile › Privacy you can turn on “Donate my voice”. From then on, we keep your speaking and pronunciation recordings to train and test our own speech checker. Recordings made before you turned it on were already deleted.',
       },
       {
         kind: 'ul',
@@ -142,7 +142,7 @@ export const voiceDonationViVn: VoiceDonationLegalText = {
       },
       {
         kind: 'p',
-        text: '<b>Nếu bạn chọn góp:</b> trong Hồ sơ › Quyền riêng tư, bạn có thể bật “Góp giọng để Dygo chấm phát âm tốt hơn”. Từ lúc đó, chúng tôi lưu bản ghi luyện nói và phát âm của bạn để huấn luyện và kiểm thử bộ chấm phát âm riêng. Các bản ghi trước khi bạn bật đã được xoá.',
+        text: '<b>Nếu bạn chọn góp:</b> trong Hồ sơ › Quyền riêng tư, bạn có thể bật “Góp giọng nói”. Từ lúc đó, chúng tôi lưu bản ghi luyện nói và phát âm của bạn để huấn luyện và kiểm thử bộ chấm phát âm riêng. Các bản ghi trước khi bạn bật đã được xoá.',
       },
       {
         kind: 'ul',
@@ -204,7 +204,7 @@ export const voiceDonationZhCn: VoiceDonationLegalText = {
       },
       {
         kind: 'p',
-        text: '<b>如果你选择捐赠：</b>你可以在 我的 › 隐私与数据 中打开“帮助改进 Dygo 的发音检查”。从那时起，我们会保留你的口语和发音录音，用来训练和测试我们自己的发音检查。你打开之前的录音早已删除。',
+        text: '<b>如果你选择捐赠：</b>你可以在 我的 › 隐私与数据 中打开“捐赠我的声音”。从那时起，我们会保留你的口语和发音录音，用来训练和测试我们自己的发音检查。你打开之前的录音早已删除。',
       },
       {
         kind: 'ul',

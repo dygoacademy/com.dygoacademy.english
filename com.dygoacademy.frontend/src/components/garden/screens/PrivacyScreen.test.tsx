@@ -46,7 +46,7 @@ describe('PrivacyScreen (A8e)', () => {
     const { onSwitch } = renderScreen();
     const toggle = screen.getByRole('switch', { name: 'Voice donation' });
     expect(toggle.getAttribute('aria-checked')).toBe('false');
-    expect(screen.getByText('Off: your recordings are checked, then deleted.')).toBeTruthy();
+    expect(screen.getByText('Off · recordings are deleted after each check')).toBeTruthy();
     expect(screen.queryByRole('button', { name: 'Delete my donated recordings' })).toBeNull();
     fireEvent.click(toggle);
     expect(onSwitch).toHaveBeenCalledWith(true);

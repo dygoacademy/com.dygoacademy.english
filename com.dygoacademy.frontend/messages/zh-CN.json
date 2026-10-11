@@ -1221,9 +1221,7 @@
           "confirmEmail": "请查收邮件确认账户，然后登录。"
         },
         "donate": {
-          "title": "帮助改进 Dygo 的发音检查",
-          "optional": "（选填）",
-          "body": "保留我的口语录音，用来训练 Dygo 面向越南人的发音检查。选填 · 可随时在“我的”中更改。<link>了解详情</link>"
+          "body": "让 Dygo 保留我的口语录音，用来改进口语评分。选填。<link>了解详情</link>"
         }
       },
       "forgot": {
@@ -1423,7 +1421,7 @@
       "playingShort": "正在播放…",
       "playNativeLabel": "播放母语者的录音",
       "playYouLabel": "播放你的录音",
-      "privacyKept": "你的录音检查后会被保留，用来改进 Dygo（你在 我的 › 隐私与数据 中选择了这一项）。"
+      "privacyKept": "你的录音检查后会被保留，用来改进 Dygo（你在“我的”中选择了这一项）。"
     },
     "onboarding": {
       "back": "返回",
@@ -1599,10 +1597,10 @@
       "back": "返回",
       "voiceHeading": "你的声音",
       "donate": {
-        "title": "帮助改进 Dygo 的发音检查",
-        "body": "保留我的口语和发音录音，用来训练 Dygo 自己的、面向说英语的越南人的发音检查。",
+        "title": "捐赠我的声音",
+        "body": "帮助改进 Dygo 的口语评分 · 选填",
         "switchLabel": "捐赠语音",
-        "off": "已关闭：录音检查完就删除。",
+        "off": "已关闭 · 每次检查后删除录音",
         "donated": "已捐赠 <b>{count}</b> 条录音 · 自 {date} 起",
         "pointCode": "用随机编号保存，不用你的名字",
         "pointListen": "部分录音可能由受过培训的人员收听",
