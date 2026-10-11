@@ -362,8 +362,11 @@ function PronounceWord({
       }}
       onRecordAgain={() => void startRecording()}
       result={result}
+      // One syllable cut from the sentence is too quick to follow at 1×.
       onHearSyllable={() =>
-        result?.first ? play(nativeSyllable(item, accent, result.first.index)) : undefined
+        result?.first
+          ? play(nativeSyllable(item, accent, result.first.index), PRON_SLOW_RATE)
+          : undefined
       }
       onTryAgain={() => void startRecording()}
       nextWord={nextWord}

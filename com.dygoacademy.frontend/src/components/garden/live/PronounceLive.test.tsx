@@ -220,6 +220,11 @@ describe('PronounceLive (Stepping stones)', () => {
     expect(screen.getByText('One wobbly stone')).toBeTruthy();
     expect(screen.getByText('Almost · 2 of 3 stones')).toBeTruthy();
     expect(screen.getByText('sounded like /taɪ/')).toBeTruthy();
+    const play = vi.mocked(HTMLMediaElement.prototype.play);
+    play.mockClear();
+    await act(async () => fireEvent.click(screen.getAllByRole('button', { name: 'Hear “ti”' })[0]));
+    const el = play.mock.instances[0] as unknown as HTMLMediaElement;
+    expect(el.playbackRate).toBe(0.7);
     await act(async () => fireEvent.click(screen.getByRole('button', { name: 'Next bee' })));
     expect(await screen.findByText('Bee 2 of 2')).toBeTruthy();
     expect(screen.getAllByText('deforestation').length).toBeGreaterThan(0);

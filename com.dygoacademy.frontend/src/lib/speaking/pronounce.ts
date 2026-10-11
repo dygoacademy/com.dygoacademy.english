@@ -45,7 +45,7 @@ export const PRON_NOISY_DBFS = -35;
 export const PRON_ONSET_DB = 10;
 /** A syllable's length when the timings don't say (lit-stone hint). */
 export const PRON_SYLLABLE_S = 0.25;
-/** "Slowly" plays the native word at this rate (pitch kept). */
+/** "Slowly" and the wobbly stone's "Hear" play the native audio at this rate (pitch kept). */
 export const PRON_SLOW_RATE = 0.7;
 
 // ── Stones ─────────────────────────────────────────────────────────────────
