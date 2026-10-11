@@ -1,4 +1,4 @@
-"""Dygo speech scorer API (Phase 13 G6): POST /check, POST /check-pronunciation, POST /check-word, GET /health.
+"""Dygo speech scorer API (Phase 13 G6): POST /check-speech, POST /check-pronunciation, GET /health.
 
 Only the backend calls this (the port is bound to 127.0.0.1). The upload is
 read into memory, scored and dropped; the log line has timings and the
@@ -46,8 +46,8 @@ def health() -> dict:
     return {"ok": True}
 
 
-@app.post("/check")
-def check(
+@app.post("/check-speech")
+def check_speech(
     audio: UploadFile = File(...),
     sentence: str = Form(...),
     # The practised word's position in sentence.split(): weighs more (M4-a).
@@ -70,7 +70,7 @@ def check(
     with lock:
         result = scorer.check(pcm, sentence, target_index)
     result["latency_ms"] = round((time.time() - t) * 1000)
-    log.info("check duration_ms=%s latency_ms=%s total=%s", result["duration_ms"], result["latency_ms"], result["total"])
+    log.info("check-speech duration_ms=%s latency_ms=%s total=%s", result["duration_ms"], result["latency_ms"], result["total"])
     return result
 
 
@@ -80,9 +80,9 @@ def check_pronunciation(
     sentence: str = Form(...),
     target_index: int | None = Form(None),
 ) -> dict:
-    """Same request and reply as /check (plus `gopt` utterance scores and each word's
+    """Same request and reply as /check-speech (plus `gopt` utterance scores and each word's
     `phones`), scored by the GOPT transformer trained on speechocean762 with this
-    service's wav2vec2 features. Same limits, lock and logging as /check."""
+    service's wav2vec2 features. Same limits, lock and logging as /check-speech."""
     scorer: Scorer | None = state["scorer"]
     if scorer is None:
         raise HTTPException(503, detail="loading models")
@@ -101,38 +101,4 @@ def check_pronunciation(
         result = scorer.check_gopt(pcm, sentence, target_index)
     result["latency_ms"] = round((time.time() - t) * 1000)
     log.info("check-pronunciation duration_ms=%s latency_ms=%s total=%s", result["duration_ms"], result["latency_ms"], result["total"])
-    return result
-
-
-@app.post("/check-word")
-def check_word(
-    audio: UploadFile = File(...),
-    word: str = Form(...),
-    # The word's IPA for the practised accent ("/ˈmɪt.ɪ.ɡeɪt/"): one stone per syllable.
-    ipa: str = Form(""),
-) -> dict:
-    """Pronunciation (P1–P4): one word, a score per syllable. Same limits,
-    lock and logging as /check: the log never has the audio, the word or
-    what was heard."""
-    scorer: Scorer | None = state["scorer"]
-    if scorer is None:
-        raise HTTPException(503, detail="loading models")
-    data = audio.file.read(MAX_UPLOAD_BYTES + 1)
-    if len(data) > MAX_UPLOAD_BYTES:
-        raise HTTPException(413, detail="audio over 1 MB")
-    if not word.strip() or len(word) > 100 or len(ipa) > 200:
-        raise HTTPException(422, detail="word missing or too long")
-    t = time.time()
-    try:
-        pcm = decode(data)
-    except AudioError as err:
-        raise HTTPException(422, detail=str(err)) from None
-    del data
-    with lock:
-        result = scorer.check_word(pcm, word.strip(), ipa)
-    result["latency_ms"] = round((time.time() - t) * 1000)
-    log.info(
-        "check-word duration_ms=%s latency_ms=%s total=%s status=%s",
-        result["duration_ms"], result["latency_ms"], result["total"], result["status"],
-    )
     return result

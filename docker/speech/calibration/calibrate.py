@@ -30,7 +30,7 @@ def run(set_dir, url):
         t = time.time()
         out = subprocess.run(
             ["curl", "-s", "-F", f"audio=@{os.path.join(set_dir, m['file'])}", "-F", f"sentence={m['sentence']}",
-             "-F", f"target_index={m['target_index']}", f"{url}/check"],
+             "-F", f"target_index={m['target_index']}", f"{url}/check-speech"],
             capture_output=True, text=True, check=True).stdout
         r = json.loads(out)
         raw.append({**m, "result": r, "seconds": round(time.time() - t, 2)})

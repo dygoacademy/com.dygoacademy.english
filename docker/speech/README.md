@@ -11,7 +11,7 @@ Checks a learner's recording against the sentence, on this Mac, for free (Phase 
 ```bash
 docker compose up -d speech          # first start downloads ~1.4 GB of models into `speech_models` (~90 s)
 curl -fsS http://127.0.0.1:8100/health
-curl -s -F audio=@clip.m4a -F "sentence=Planting more trees can help mitigate the effects of climate change." http://127.0.0.1:8100/check
+curl -s -F audio=@clip.m4a -F "sentence=Planting more trees can help mitigate the effects of climate change." http://127.0.0.1:8100/check-speech
 docker run --rm --entrypoint python comdygoacademyenglish-speech -m pytest -q tests   # rules, no models
 ```
 
@@ -19,7 +19,7 @@ docker run --rm --entrypoint python comdygoacademyenglish-speech -m pytest -q te
 
 Import `docker/speech/dygo-speech.postman_collection.json` (Postman desktop app on this Mac: the API is on 127.0.0.1 only, so the web app and other devices can't reach it). It has *Health* and four *Check* requests using the clips in `samples/` (macOS voices, AAC `.m4a`): good speech, "the" left out, "migrate" for "mitigate", a Vietnamese voice. If your copy of the repo is somewhere else, change the collection variable `samplesDir`. To try your own voice, record the sentence in Voice Memos, AirDrop the `.m4a` to the Mac and pick it as `audio`.
 
-## `POST /check`
+## `POST /check-speech`
 
 Multipart: `audio` (m4a / webm / wav, ≤ 1 MB, 0.3–30 s), `sentence`. Errors: 413 over 1 MB, 422 not audio / too short / too long, 503 while models load.
 
@@ -39,7 +39,7 @@ Multipart: `audio` (m4a / webm / wav, ≤ 1 MB, 0.3–30 s), `sentence`. Errors:
 
 ## `POST /check-pronunciation`
 
-GOPT pronunciation scorer (2026-10-11, `com.dydoacademy.gopt`). Same request and reply shape as `/check`, plus `gopt` (the model's own utterance `accuracy` / `total`, 0–100, and `aligned`) and each word's `phones` (`[{"phone": "EH", "score": 91}]`). Same limits, lock and logging as `/check`; `/check` and `/check-word` are unchanged.
+GOPT pronunciation scorer (2026-10-11, `com.dydoacademy.gopt`). Same request and reply shape as `/check-speech`, plus `gopt` (the model's own utterance `accuracy` / `total`, 0–100, and `aligned`) and each word's `phones` (`[{"phone": "EH", "score": 91}]`). Same limits, lock and logging as `/check-speech`; `/check-speech` and `/check-word` are unchanged.
 
 ```bash
 curl -s -F audio=@samples/migrate.m4a -F "sentence=Planting more trees can help mitigate the effects of climate change." -F target_index=5 http://127.0.0.1:8100/check-pronunciation
@@ -49,36 +49,13 @@ How it works (`app/phones.py`, `app/gopt_scorer.py`, `app/gopt_model.py`):
 1. **Sentence → phones**: CMUdict (`app/data/cmudict.dict`, BSD) first; a word it lacks (names, numbers, new words) falls back to the phoneme model's espeak tokens converted to ARPAbet (`TOKEN_TO_ARPA`). A word with no phones is left unscored and Whisper alone decides its mark.
 2. **Features**: the same wav2vec2 phoneme model force-aligns those phones and gives 84 features per phone (same layout as GOPT's Kaldi features; keep `gopt_scorer.py` in step with `com.dydoacademy.gopt/wav2vec2/extract_feats.py`).
 3. **GOPT** (`app/data/gopt/gopt_wav2vec2.pth`, 26.6 K parameters, trained on speechocean762) scores each phone, word and the utterance (0–2 × 50 = 0–100). Sentences over 50 phones go through in chunks of whole words.
-4. **Marks**: word score under `GOPT_UNCLEAR_SCORE` (80, best F1 on speechocean762; humans marked 7.6% of words, this flags about 9%) is `unclear`; `missing` and "Whisper heard another word" use Whisper as in `/check` (provisional `GOPT_MISSING_SCORE` 40 and `GOPT_HEARD_TRUST_SCORE` 90, no calibration data yet). `total` uses the same rules and caps as `/check`.
+4. **Marks**: word score under `GOPT_UNCLEAR_SCORE` (80, best F1 on speechocean762; humans marked 7.6% of words, this flags about 9%) is `unclear`; `missing` and "Whisper heard another word" use Whisper as in `/check-speech` (provisional `GOPT_MISSING_SCORE` 40 and `GOPT_HEARD_TRUST_SCORE` 90, no calibration data yet). `total` uses the same rules and caps as `/check-speech`.
 
-Accuracy on speechocean762 (500 test utterances): word score correlation with human scores 0.55 (current `/check`: 0.32); sentence correlation 0.77 (0.54); mispronounced-word AUC 0.89 (0.81). Cost: about 0.1 s on top of `/check`. All speakers there are Mandarin-accented: the thresholds and the model should be validated on Vietnamese learners' recordings before the app relies on them.
+Accuracy on speechocean762 (500 test utterances): word score correlation with human scores 0.55 (current `/check-speech`: 0.32); sentence correlation 0.77 (0.54); mispronounced-word AUC 0.89 (0.81). Cost: about 0.1 s on top of `/check-speech`. All speakers there are Mandarin-accented: the thresholds and the model should be validated on Vietnamese learners' recordings before the app relies on them.
+
+Words (Pronunciation stones): there is no `/check-word` any more (removed 2026-10-11). The backend sends the word as a one-word sentence to this endpoint and builds the per-syllable result from the reply's `phones` (`com.dygoacademy.backend/src/modules/speaking/pronunciation-word.ts`: phones grouped into syllables, labelled with the word's IPA; `wobbly` under 70 or a phone under 45; `heard_ipa` is no longer returned).
 
 Deploy: `docker compose up -d --build speech speech-2` (restarts both scorers; models load from the volume). Tests: `docker run --rm --entrypoint python <image> -m pytest -q tests`.
-
-## `POST /check-word`
-
-Pronunciation "Stepping stones" (2026-10-11): one word, a score per syllable. Multipart `audio`, `word`, `ipa` (the word's IPA for the accent, e.g. `/ˈmɪt.ɪ.ɡeɪt/`; empty = espeak's spelling of the word, one syllable). Same limits, lock and logging as `/check`.
-
-```json
-{
-  "status": "ok",
-  "total": 76,
-  "heard_text": "mitigate",
-  "duration_ms": 900,
-  "latency_ms": 700,
-  "syllables": [
-    { "ipa": "ˈmɪt", "score": 91, "wobbly": false, "heard_ipa": null },
-    { "ipa": "ɪ", "score": 48, "wobbly": true, "heard_ipa": "aɪ" },
-    { "ipa": "ɡeɪt", "score": 88, "wobbly": false, "heard_ipa": null }
-  ]
-}
-```
-
-Rules (`app/word.py`): syllables split on `.` and before `ˈ` / `ˌ` (as the backend's `ipaSyllables`); a syllable's score is the mean of its phonemes' GOP; under 60 = `wobbly`; `heard_ipa` is the phoneme model's own best path over a wobbly syllable's frames when it differs, else null. `status`: `not_heard` (under 0.3 s of voice, or no word heard and every syllable under 20), `other_word` (Whisper heard one other word, UK / US spellings aside, and the total is under 50), else `ok`. `total` = mean of the phoneme scores. The backend calls it pollinated at `ok` and 80+.
-
-```bash
-curl -s -F audio=@samples/migrate.m4a -F word=mitigate -F "ipa=/ˈmɪt.ɪ.ɡeɪt/" http://127.0.0.1:8100/check-word
-```
 
 ## Limits
 

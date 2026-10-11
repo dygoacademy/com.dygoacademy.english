@@ -36,7 +36,6 @@ from .matching import (
     word_status,
 )
 from .phones import sentence_phones
-from . import word as wordcheck
 
 RATE = 16000
 MODELS_DIR = os.environ.get("MODELS_DIR", "/models")
@@ -66,6 +65,21 @@ def decode(data: bytes) -> np.ndarray:
     if seconds > MAX_SECONDS:
         raise AudioError("too long")
     return audio
+
+
+# A 10 ms frame louder than this RMS (−40 dBFS, as the backend's SILENCE_RMS) is voiced.
+VOICED_RMS = 0.01
+
+
+def voiced_ms(audio: np.ndarray) -> int:
+    """How much of the clip is louder than VOICED_RMS, in 10 ms frames (ms)."""
+    frame = RATE // 100
+    n = len(audio) // frame
+    if n == 0:
+        return 0
+    frames = audio[: n * frame].reshape(n, frame)
+    rms = np.sqrt((frames.astype(np.float64) ** 2).mean(axis=1))
+    return int((rms > VOICED_RMS).sum()) * 10
 
 
 class Scorer:
@@ -252,45 +266,6 @@ class Scorer:
             "gopt": {"accuracy": res["accuracy"], "total": res["total"], "aligned": res["aligned"]},
             "heard_text": " ".join(h["word"] for h in heard),
             "duration_ms": round(len(audio) / RATE * 1000),
+            "voiced_ms": voiced_ms(audio),
             "words": out_words,
-        }
-
-    # ── one word (Pronunciation, P1–P4) ───────────────────────────────────
-    def check_word(self, audio: np.ndarray, word: str, ipa: str) -> dict:
-        """One word, scored per syllable (`POST /check-word`). Sounds come
-        from `ipa` (espeak spelling of the word when it's empty); a wobbly
-        syllable gets `heard_ipa` when the model's own best guess for its
-        frames is clearly something else."""
-        syllables = wordcheck.ipa_syllables(ipa)
-        per_syl = [self.ipa_ids(s) for s in syllables]
-        if not any(per_syl):
-            syllables, per_syl = [word], [self.word_ids(word)]
-        heard_f = self.pool.submit(self.heard_words, audio)
-        logp = self.logprobs(audio)
-        flat = [i for ids in per_syl for i in ids]
-        phone_scores, spans = self.gop(logp, flat)
-        scores = wordcheck.syllable_scores(phone_scores, [len(ids) for ids in per_syl])
-        total = round(sum(phone_scores) / len(phone_scores)) if phone_scores else 0
-        heard = heard_f.result()
-        out, i = [], 0
-        for text, ids, score in zip(syllables, per_syl, scores):
-            frames = [f for sp in spans[i : i + len(ids)] for f in sp]
-            i += len(ids)
-            wobbly = score is not None and score < wordcheck.WOBBLY_SCORE
-            heard_ipa = None
-            if wobbly and frames:
-                path = logp[min(frames) : max(frames) + 1].argmax(-1).tolist()
-                guess = "".join(self.phoneme.get(p, "") for p in wordcheck.collapse_path(path, self.blank))
-                expected = "".join(self.phoneme[p] for p in ids)
-                heard_ipa = guess if guess and guess != expected else None
-            out.append({"ipa": text, "score": score if score is not None else total, "wobbly": wobbly, "heard_ipa": heard_ipa})
-        status = wordcheck.word_status(
-            word, [h["word"] for h in heard], total, scores, wordcheck.voiced_seconds(audio, RATE)
-        )
-        return {
-            "status": status,
-            "total": total,
-            "heard_text": " ".join(h["word"] for h in heard),
-            "duration_ms": round(len(audio) / RATE * 1000),
-            "syllables": out,
         }

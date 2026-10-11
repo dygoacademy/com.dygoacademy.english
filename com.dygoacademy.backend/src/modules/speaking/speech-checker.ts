@@ -1,6 +1,8 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 
+import { toScorerWordResult, type PronunciationReply } from './pronunciation-word';
+
 /**
  * Phase 13 S17 / G6: checks a learner's recording against a sentence.
  * `SPEECH_CHECKER` is the injection token, so the scorer behind it can be
@@ -33,7 +35,7 @@ export interface ScorerResult {
   words: ScorerWord[];
 }
 
-/** The scorer's reply to `POST /check-word` (one word, per syllable). */
+/** What the Pronunciation stones show for one word, per syllable (built from `POST /check-pronunciation`, see pronunciation-word.ts). */
 export interface ScorerWordResult {
   status: 'ok' | 'not_heard' | 'other_word';
   total: number;
@@ -81,7 +83,7 @@ export class SpeechCheckError extends Error {
  * The free scorer on this Mac (docker compose service `speech`, README
  * "Speech checking"). Multipart `audio` + `sentence` to `{scorerUrl}/check-pronunciation`
  * (the GOPT scorer; `/check` is the older GOP one, same reply fields);
- * `audio` + `word` + `ipa` to `{scorerUrl}/check-word`.
+ * a word goes to the same endpoint as a one-word sentence (the old `/check-word` is gone).
  * Logs status and timings only, never the audio, the sentence or what was
  * heard.
  */
@@ -108,7 +110,10 @@ export class MacSpeechChecker implements SpeechChecker {
     ipa: string,
     scorerUrl: string,
   ): Promise<ScorerWordResult> {
-    return this.post<ScorerWordResult>(`${scorerUrl}/check-word`, audio, { word, ipa });
+    const raw = await this.post<PronunciationReply>(`${scorerUrl}/check-pronunciation`, audio, {
+      sentence: word,
+    });
+    return toScorerWordResult(raw, word, ipa);
   }
 
   private async post<T>(

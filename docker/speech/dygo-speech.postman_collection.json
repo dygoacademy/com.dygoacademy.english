@@ -35,7 +35,7 @@
       "request": {
         "method": "POST",
         "url": {
-          "raw": "{{baseUrl}}/check",
+          "raw": "{{baseUrl}}/check-speech",
           "host": [
             "{{baseUrl}}"
           ],
@@ -65,7 +65,7 @@
       "request": {
         "method": "POST",
         "url": {
-          "raw": "{{baseUrl}}/check",
+          "raw": "{{baseUrl}}/check-speech",
           "host": [
             "{{baseUrl}}"
           ],
@@ -95,7 +95,7 @@
       "request": {
         "method": "POST",
         "url": {
-          "raw": "{{baseUrl}}/check",
+          "raw": "{{baseUrl}}/check-speech",
           "host": [
             "{{baseUrl}}"
           ],
@@ -125,7 +125,7 @@
       "request": {
         "method": "POST",
         "url": {
-          "raw": "{{baseUrl}}/check",
+          "raw": "{{baseUrl}}/check-speech",
           "host": [
             "{{baseUrl}}"
           ],

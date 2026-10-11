@@ -58,3 +58,15 @@ def test_gopt_word_status_thresholds():
 def test_default_word_status_is_unchanged():
     assert word_status(50, WordMatch(None, False), "mitigate") == ("unclear", None)
     assert word_status(30, WordMatch(None, False), "mitigate") == ("missing", None)
+
+
+def test_voiced_ms_counts_loud_frames_only():
+    import numpy as np
+
+    from app.scorer import RATE, voiced_ms
+
+    silence = np.zeros(RATE, dtype=np.float32)
+    assert voiced_ms(silence) == 0
+    tone = np.concatenate([np.zeros(RATE // 2), 0.3 * np.sin(np.linspace(0, 2000, RATE // 2))]).astype(np.float32)
+    assert 480 <= voiced_ms(tone) <= 500  # the loud half second
+    assert voiced_ms(np.zeros(10, dtype=np.float32)) == 0  # shorter than a frame

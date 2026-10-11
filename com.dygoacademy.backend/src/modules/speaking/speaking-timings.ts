@@ -159,12 +159,10 @@ export function startsFromTimepoints(
 }
 
 /**
- * Syllables of an IPA transcription: split on "." and before stress marks.
- * "/ˈmɪt.ɪ.ɡeɪt/" → [stressed, -, -]; "/ˌbaɪ.oʊ.daɪˈvɜːr.sə.ti/" → 6, the
- * 4th stressed. Secondary stress (ˌ) doesn't count as stressed. With no
- * primary stress mark and one syllable, that syllable is stressed.
+ * The syllables of an IPA transcription as text, stress marks kept: split on
+ * "." and before ˈ / ˌ, first variant only. "/ˈmɪt.ɪ.ɡeɪt/" → ["ˈmɪt", "ɪ", "ɡeɪt"].
  */
-export function ipaSyllables(ipa: string | null | undefined): { stressed: boolean }[] {
+export function ipaSyllableTexts(ipa: string | null | undefined): string[] {
   if (!ipa) return [];
   const core = ipa
     .trim()
@@ -172,12 +170,21 @@ export function ipaSyllables(ipa: string | null | undefined): { stressed: boolea
     .split(/[,;]/)[0]
     .trim();
   if (!core) return [];
-  const parts = core
+  return core
     .split('.')
     .flatMap((chunk) => chunk.split(/(?=[ˈˌ])/))
     .map((p) => p.trim())
     .filter((p) => p.replace(/[ˈˌ]/g, '').length > 0);
-  const out = parts.map((p) => ({ stressed: p.startsWith('ˈ') }));
+}
+
+/**
+ * Syllables of an IPA transcription: split on "." and before stress marks.
+ * "/ˈmɪt.ɪ.ɡeɪt/" → [stressed, -, -]; "/ˌbaɪ.oʊ.daɪˈvɜːr.sə.ti/" → 6, the
+ * 4th stressed. Secondary stress (ˌ) doesn't count as stressed. With no
+ * primary stress mark and one syllable, that syllable is stressed.
+ */
+export function ipaSyllables(ipa: string | null | undefined): { stressed: boolean }[] {
+  const out = ipaSyllableTexts(ipa).map((p) => ({ stressed: p.startsWith('ˈ') }));
   if (out.length === 1 && !out[0].stressed) out[0].stressed = true;
   return out;
 }
