@@ -1501,6 +1501,86 @@
         "reminderOff": "关闭",
         "editLater": "这些之后都可以在“我的”里修改。"
       }
+    },
+    "pronounce": {
+      "eyebrow": "发音",
+      "eyebrowTopic": "发音 · {topic}",
+      "beeCount": "第 {n} 只蜜蜂，共 {total} 只",
+      "close": "关闭",
+      "bigStone": "大石头 = 重读部分",
+      "hearIt": "听一听",
+      "slowly": "慢速",
+      "hopIntro": "跳过石头：",
+      "hopHard": "重踩 <b>{s}</b>",
+      "hopLight": "轻踩 <b>{s}</b>",
+      "hopThen": "然后 <b>{s}</b>",
+      "hopSep": "，",
+      "hopEnd": "。",
+      "tapToSay": "点一下，然后只说这个词",
+      "micFirstTime": "第一次：手机会请求使用麦克风",
+      "micFirstTimeIpad": "第一次：iPad 会请求使用麦克风",
+      "startSpeaking": "开始说",
+      "stopRecording": "停止录音",
+      "recording": "正在录音",
+      "cancel": "取消",
+      "beep": "哔！现在说",
+      "sayNow": "现在说“{word}”",
+      "keepGoing": "继续…",
+      "listening": "正在听…",
+      "listeningSay": "正在听… 说“{word}”",
+      "yourVoice": "你的声音",
+      "autoStop": "说完会自动停止 · 也可以点一下停止",
+      "checking": "听到了。正在检查每块石头…",
+      "usually": "通常需要 1–2 秒",
+      "checkingLabel": "正在检查，通常需要 1 到 2 秒",
+      "hearMine": "听我的",
+      "hearNative": "听母语者",
+      "almost": "差一点 · {ok}/{n} 块石头",
+      "wobbly": "{count, plural, =1 {有一块石头不稳} other {有 # 块石头不稳}}",
+      "soundedLike": "听起来像 /{ipa}/",
+      "notClear": "不够清楚",
+      "tryLike": "照母语者这样说：<b>/{ipa}/</b>",
+      "hearSyllable": "听“{syllable}”",
+      "tryAgain": "再试一次",
+      "nextBee": "下一只蜜蜂",
+      "pollinatedBadge": "已授粉 · {n}/{n} 块石头",
+      "cleanCrossing": "顺利过河！",
+      "pollinatedBody": "<b>{word}</b> 已授粉，正在结果的路上。",
+      "nextBeeWord": "下一只蜜蜂：{word}",
+      "backToBed": "回到花圃",
+      "doesntCount": "这次不算，什么都没丢。",
+      "hearFirst": "先听一下这个词",
+      "notHeard": {
+        "quiet": {
+          "title": "没听清你说的",
+          "body": "蜜蜂几乎什么都没听到。",
+          "tip1": "手机离嘴大约一个手掌远",
+          "tip1Ipad": "iPad 离你大约一臂远，正对着你",
+          "tip2": "比平时稍微大声一点"
+        },
+        "noisy": {
+          "title": "太吵了，听不清",
+          "body": "你周围的声音很多。",
+          "tip1": "换个安静一点的地方",
+          "tip2": "靠近手机说，等提示音响后再说",
+          "tip2Ipad": "对着 iPad 说，等提示音响后再说"
+        },
+        "other": {
+          "title": "听起来像另一个词",
+          "body": "我们听到的是“{heard}”。只说“{word}”就好。",
+          "tip1": "点“听一听”，跟着母语者说",
+          "tip2": "从大石头开始：{stressed}"
+        }
+      },
+      "pond": {
+        "say": "音节 {list} 的踏脚石。{big} 是大石头。",
+        "waiting": "石头在等你的声音",
+        "lit": "Dygo 听到每个部分时石头会亮起：{list}",
+        "checking": "Dygo 检查时石头在闪烁",
+        "pass": "所有石头都变绿了",
+        "retry": "{wobbly} 不稳，其他都是绿色",
+        "notHeard": "石头还是暗的，蜜蜂在等"
+      }
     }
   }
 }

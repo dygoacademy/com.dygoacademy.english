@@ -1497,6 +1497,86 @@
         "reminderOff": "Tắt",
         "editLater": "Bạn có thể đổi các mục này bất cứ lúc nào trong mục Hồ sơ."
       }
+    },
+    "pronounce": {
+      "eyebrow": "Phát âm",
+      "eyebrowTopic": "Phát âm · {topic}",
+      "beeCount": "Ong {n}/{total}",
+      "close": "Đóng",
+      "bigStone": "Đá to = phần đọc mạnh",
+      "hearIt": "Nghe",
+      "slowly": "Nghe chậm",
+      "hopIntro": "Nhảy qua các hòn đá: ",
+      "hopHard": "nhấn mạnh ở <b>{s}</b>",
+      "hopLight": "nhẹ ở <b>{s}</b>",
+      "hopThen": "rồi đến <b>{s}</b>",
+      "hopSep": ", ",
+      "hopEnd": ".",
+      "tapToSay": "Chạm, rồi chỉ đọc từ này",
+      "micFirstTime": "Lần đầu: điện thoại sẽ hỏi quyền dùng micro",
+      "micFirstTimeIpad": "Lần đầu: iPad sẽ hỏi quyền dùng micro",
+      "startSpeaking": "Bắt đầu nói",
+      "stopRecording": "Dừng ghi âm",
+      "recording": "Đang ghi âm",
+      "cancel": "Hủy",
+      "beep": "Bíp! Đọc ngay",
+      "sayNow": "Đọc “{word}” ngay",
+      "keepGoing": "Tiếp tục…",
+      "listening": "Đang nghe…",
+      "listeningSay": "Đang nghe… đọc “{word}”",
+      "yourVoice": "Giọng của bạn",
+      "autoStop": "Tự dừng khi bạn đọc xong · hoặc chạm để dừng",
+      "checking": "Đã nghe. Đang kiểm tra từng hòn đá…",
+      "usually": "Thường mất 1–2 giây",
+      "checkingLabel": "Đang kiểm tra, thường mất 1–2 giây",
+      "hearMine": "Giọng của tôi",
+      "hearNative": "Giọng bản xứ",
+      "almost": "Gần được · {ok}/{n} hòn đá",
+      "wobbly": "{count, plural, =1 {Một hòn đá còn chênh vênh} other {# hòn đá còn chênh vênh}}",
+      "soundedLike": "nghe giống /{ipa}/",
+      "notClear": "chưa rõ",
+      "tryLike": "Đọc theo giọng bản xứ: <b>/{ipa}/</b>",
+      "hearSyllable": "Nghe “{syllable}”",
+      "tryAgain": "Thử lại",
+      "nextBee": "Ong tiếp theo",
+      "pollinatedBadge": "Đã thụ phấn · {n}/{n} hòn đá",
+      "cleanCrossing": "Qua suối gọn gàng!",
+      "pollinatedBody": "<b>{word}</b> đã được thụ phấn, đang trên đường kết trái.",
+      "nextBeeWord": "Ong tiếp theo: {word}",
+      "backToBed": "Về luống",
+      "doesntCount": "Lần này không tính. Bạn không mất gì.",
+      "hearFirst": "Nghe từ trước đã",
+      "notHeard": {
+        "quiet": {
+          "title": "Chưa nghe rõ bạn",
+          "body": "Ong gần như không nghe thấy gì.",
+          "tip1": "Cầm điện thoại cách miệng khoảng một bàn tay",
+          "tip1Ipad": "Đặt iPad cách bạn khoảng một cánh tay, quay về phía bạn",
+          "tip2": "Nói to hơn bình thường một chút"
+        },
+        "noisy": {
+          "title": "Ồn quá, khó nghe",
+          "body": "Xung quanh bạn có nhiều tiếng ồn.",
+          "tip1": "Chuyển sang chỗ yên tĩnh hơn",
+          "tip2": "Nói gần điện thoại và chờ tiếng bíp",
+          "tip2Ipad": "Nói hướng về iPad và chờ tiếng bíp"
+        },
+        "other": {
+          "title": "Nghe giống một từ khác",
+          "body": "Ong nghe thành “{heard}”. Chỉ đọc “{word}” thôi.",
+          "tip1": "Chạm Nghe và đọc theo người bản xứ",
+          "tip2": "Bắt đầu từ hòn đá to: {stressed}"
+        }
+      },
+      "pond": {
+        "say": "Các hòn đá cho các âm tiết {list}. {big} là hòn đá to.",
+        "waiting": "Các hòn đá đang chờ giọng của bạn",
+        "lit": "Các hòn đá sáng lên khi Dygo nghe thấy: {list}",
+        "checking": "Các hòn đá lấp lánh trong lúc Dygo kiểm tra",
+        "pass": "Tất cả các hòn đá đều xanh",
+        "retry": "{wobbly} còn chênh vênh, các hòn khác xanh",
+        "notHeard": "Các hòn đá vẫn tối, ong đang chờ"
+      }
     }
   }
 }

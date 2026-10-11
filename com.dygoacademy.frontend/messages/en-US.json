@@ -1497,6 +1497,86 @@
         "reminderOff": "Off",
         "editLater": "You can change any of these later in Profile."
       }
+    },
+    "pronounce": {
+      "eyebrow": "Pronunciation",
+      "eyebrowTopic": "Pronunciation · {topic}",
+      "beeCount": "Bee {n} of {total}",
+      "close": "Close",
+      "bigStone": "Big stone = loud part",
+      "hearIt": "Hear it",
+      "slowly": "Slowly",
+      "hopIntro": "Hop across the stones: ",
+      "hopHard": "land hard on <b>{s}</b>",
+      "hopLight": "light on <b>{s}</b>",
+      "hopThen": "then <b>{s}</b>",
+      "hopSep": ", ",
+      "hopEnd": ".",
+      "tapToSay": "Tap, then say just the word",
+      "micFirstTime": "First time: your phone asks for the microphone",
+      "micFirstTimeIpad": "First time: your iPad asks for the microphone",
+      "startSpeaking": "Start speaking",
+      "stopRecording": "Stop recording",
+      "recording": "Recording",
+      "cancel": "Cancel",
+      "beep": "Beep! Say it now",
+      "sayNow": "Say “{word}” now",
+      "keepGoing": "Keep going…",
+      "listening": "Listening…",
+      "listeningSay": "Listening… say “{word}”",
+      "yourVoice": "Your voice",
+      "autoStop": "Stops by itself when you finish · or tap to stop",
+      "checking": "Got it. Checking each stone…",
+      "usually": "Usually 1–2 seconds",
+      "checkingLabel": "Checking, usually 1 to 2 seconds",
+      "hearMine": "Hear mine",
+      "hearNative": "Hear native",
+      "almost": "Almost · {ok} of {n} stones",
+      "wobbly": "{count, plural, =1 {One wobbly stone} other {# wobbly stones}}",
+      "soundedLike": "sounded like /{ipa}/",
+      "notClear": "wasn't clear",
+      "tryLike": "Try it like the native: <b>/{ipa}/</b>",
+      "hearSyllable": "Hear “{syllable}”",
+      "tryAgain": "Try again",
+      "nextBee": "Next bee",
+      "pollinatedBadge": "Pollinated · {n} of {n} stones",
+      "cleanCrossing": "Clean crossing!",
+      "pollinatedBody": "<b>{word}</b> is pollinated. It's on its way to fruit.",
+      "nextBeeWord": "Next bee: {word}",
+      "backToBed": "Back to the bed",
+      "doesntCount": "This try doesn't count. Nothing is lost.",
+      "hearFirst": "Hear the word first",
+      "notHeard": {
+        "quiet": {
+          "title": "We couldn't hear you",
+          "body": "The bee heard almost nothing.",
+          "tip1": "Hold the phone about a hand away from your mouth",
+          "tip1Ipad": "Hold the iPad about an arm's length away, facing you",
+          "tip2": "Speak a little louder than normal"
+        },
+        "noisy": {
+          "title": "Too noisy to hear",
+          "body": "There was a lot of sound around you.",
+          "tip1": "Move somewhere a bit quieter",
+          "tip2": "Speak close to the phone, then wait for the beep",
+          "tip2Ipad": "Speak toward the iPad, then wait for the beep"
+        },
+        "other": {
+          "title": "That sounded like another word",
+          "body": "We heard “{heard}”. Say just “{word}”.",
+          "tip1": "Tap Hear it and copy the native speaker",
+          "tip2": "Start with the big stone: {stressed}"
+        }
+      },
+      "pond": {
+        "say": "Stepping stones for the syllables {list}. {big} is the big stone.",
+        "waiting": "Stones waiting for your voice",
+        "lit": "Stones light up as Dygo hears each part: {list}",
+        "checking": "The stones shimmer while Dygo checks",
+        "pass": "All the stones are green",
+        "retry": "{wobbly} wobbly, the rest green",
+        "notHeard": "The stones stay dark and the bee waits"
+      }
     }
   }
 }

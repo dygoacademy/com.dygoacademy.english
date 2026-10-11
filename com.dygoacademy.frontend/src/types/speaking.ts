@@ -39,6 +39,12 @@ export interface SpeakingTimings {
   words: WordTiming[];
 }
 
+/** One syllable on a Pronunciation stone (MI · ti · gate); the stressed one is the big stone. */
+export interface SpeakingSyllable {
+  text: string;
+  stressed: boolean;
+}
+
 /** One sentence in `GET /api/v1/speaking/session` and `GET /api/v1/speaking/words/:topicWordId`. */
 export interface SpeakingSessionItem {
   id: string;
@@ -61,6 +67,10 @@ export interface SpeakingSessionItem {
   timings_uk: SpeakingTimings | null;
   timings_us: SpeakingTimings | null;
   is_due: boolean;
+  /** The word said on its own, for Pronunciation's "Hear it"; null if none (optional for older APIs). */
+  word_audio_url?: string | null;
+  /** The word's syllables for the stones, from the default accent's IPA; [] without one (optional for older APIs). */
+  syllables?: SpeakingSyllable[];
 }
 
 /** The Pond (Sound Garden on the Missions tab): `GET /api/v1/speaking/session[?topic_id=]`. */
@@ -160,9 +170,36 @@ export interface SpeakingCheckQueued {
 }
 
 /** `GET /api/v1/speaking/check/:id`: where a queued check is, with the result once done. */
-export interface SpeakingCheckState {
+export interface SpeakingCheckState<R = SpeakingCheckResult> {
   check_id: string;
   status: 'queued' | 'checking' | 'done' | 'failed';
-  result?: SpeakingCheckResult;
+  result?: R;
   reason?: string;
+}
+
+/** One syllable's verdict in a word check (Pronunciation P4). */
+export interface SpeakingWordCheckSyllable {
+  ipa: string;
+  score: number;
+  /** The stone wobbles on P4. */
+  wobbly: boolean;
+  /** What a wobbly syllable sounded like ("taɪ"), when the scorer is sure; else null. */
+  heard_ipa: string | null;
+}
+
+/** `POST /api/v1/speaking/word-check` → `GET /api/v1/speaking/check/:id` result: one word, a score per syllable. */
+export interface SpeakingWordCheckResult {
+  kind: 'word';
+  status: 'ok' | 'not_heard' | 'other_word';
+  /** Said clearly at 80%+: the word is pollinated. */
+  passed: boolean;
+  /** This check pollinated the word (it wasn't before). */
+  pollinated: boolean;
+  total: number;
+  heard_text: string;
+  syllables: SpeakingWordCheckSyllable[];
+  /** The same syllables spelled for the screen; [] if they don't line up. */
+  spelling: SpeakingSyllable[];
+  user_duration_ms: number;
+  check_ms: number;
 }

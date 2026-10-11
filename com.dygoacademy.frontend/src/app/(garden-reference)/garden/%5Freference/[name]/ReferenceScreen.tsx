@@ -45,6 +45,7 @@ import { GARDEN_ROUTES } from '@/constants/garden';
 import type { AppLocale } from '@/i18n/config';
 
 import { GroupReferenceScreen } from './GroupReferenceScreen';
+import { PronounceReferenceScreen } from './PronounceReferenceScreen';
 import { SpeakReferenceScreen } from './SpeakReferenceScreen';
 
 /**
@@ -306,6 +307,22 @@ function ReferenceScreenBody({ name, locale }: { name: ReferenceName; locale: Ap
           drillHref={GARDEN_ROUTES.reference('Q1-quiz-choose')}
         />
       );
+    case 'P1-say-word':
+    case 'P2-recording-beep':
+    case 'P2-recording':
+    case 'P3-checking':
+    case 'P4-result-retry':
+    case 'P4-result-pollinated':
+    case 'P2b-not-heard':
+    case 'P2b-not-heard-noisy':
+    case 'P2b-not-heard-other-word':
+    case 'iP1-say-word':
+    case 'iP2-recording':
+    case 'iP3-checking':
+    case 'iP4-result-retry':
+    case 'iP4-result-pollinated':
+    case 'iP2b-not-heard':
+      return <PronounceReferenceScreen name={name} locale={locale} />;
     case 'SP2-speak-countdown':
     case 'SP2-speak-recording':
     case 'SP3-speak-checking':

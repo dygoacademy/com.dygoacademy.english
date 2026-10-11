@@ -200,6 +200,27 @@
     --bee-body: #f2c744;
     --bee-stripe: #3b3020;
 
+    /* Pronunciation "Stepping stones" (P1–P4, 2026-10-11) */
+    --pond-water: #1f3e33;
+    --pond-wave: #3a5e4f;
+    --pond-ripple: #7fa487;
+    --pond-path: #b7d6ae;
+    --pond-splash: #f2d28b;
+    --stone: #5e7f70;
+    --stone-lit: #e8c66a;
+    --stone-checking: #b7d6ae;
+    --stone-ok: #9cc39a;
+    --stone-wobbly: #e8a87c;
+    --stone-text-light: #f4f1ea;
+    --pron-tip: #fbf4e4;
+    --pron-tip-text: #4a3a10;
+    --pron-almost-text: #6b5215;
+    --pron-pass: #dde7da;
+    --pron-ring: #e8a87c;
+    --pron-card-sunken: #fbf9f4;
+    --pron-card-line: #efeae0;
+    --pron-stress: #9a6e14;
+
     /* §5.2 Rating buttons (bg / text) */
     --rating-again: #f6e3dc;
     --rating-again-text: #8a3e20;
@@ -692,6 +713,129 @@
 @media (prefers-reduced-motion: reduce) {
   .home-speak-wave,
   .home-speak-ring {
+    animation: none;
+  }
+}
+
+/* Pronunciation "Stepping stones" (PronStones*.dc.html, 2026-10-11): the bee
+   hovers (1.8s) or hops (.6s), a lit stone splashes (1.2s), the big stone
+   ripples (2.4s), checking stones shimmer (1.2s) and dots blink (1.4s), the
+   mic rings (1.4s) and its 4 s ring runs down, a pollinated bee flies off
+   (2.4s). Reduced motion: all still. */
+@keyframes pron-hover {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}
+@keyframes pron-hop {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+@keyframes pron-splash {
+  0% {
+    transform: scale(0.6);
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(1.6);
+    opacity: 0;
+  }
+}
+@keyframes pron-ripple {
+  0% {
+    transform: scale(0.7);
+    opacity: 0.6;
+  }
+  100% {
+    transform: scale(1.5);
+    opacity: 0;
+  }
+}
+@keyframes pron-shimmer {
+  0%,
+  100% {
+    opacity: 0.45;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+@keyframes pron-dots {
+  0%,
+  80%,
+  100% {
+    opacity: 0.25;
+  }
+  40% {
+    opacity: 1;
+  }
+}
+@keyframes pron-ring {
+  0% {
+    transform: scale(1);
+    opacity: 0.5;
+  }
+  100% {
+    transform: scale(1.5);
+    opacity: 0;
+  }
+}
+@keyframes pron-away {
+  0% {
+    transform: translate(0, 0);
+  }
+  100% {
+    transform: translate(150px, -60px);
+    opacity: 0;
+  }
+}
+.pron-hover {
+  animation: pron-hover 1.8s ease-in-out infinite;
+}
+.pron-hop {
+  animation: pron-hop 0.6s ease-in-out infinite;
+}
+.pron-splash,
+.pron-ripple {
+  transform-box: fill-box;
+  transform-origin: center;
+}
+.pron-splash {
+  animation: pron-splash 1.2s ease-out infinite;
+}
+.pron-ripple {
+  animation: pron-ripple 2.4s ease-out infinite;
+}
+.pron-shimmer {
+  animation: pron-shimmer 1.2s ease-in-out infinite;
+}
+.pron-dot {
+  animation: pron-dots 1.4s ease-in-out infinite;
+}
+.pron-ring {
+  animation: pron-ring 1.4s ease-out infinite;
+}
+.pron-away {
+  animation: pron-away 2.4s ease-in forwards;
+}
+@media (prefers-reduced-motion: reduce) {
+  .pron-hover,
+  .pron-hop,
+  .pron-splash,
+  .pron-ripple,
+  .pron-shimmer,
+  .pron-dot,
+  .pron-ring,
+  .pron-away {
     animation: none;
   }
 }

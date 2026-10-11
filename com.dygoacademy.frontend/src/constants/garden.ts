@@ -96,6 +96,19 @@ export const GARDEN_ROUTES = {
     const query = params.toString();
     return query ? `/sounds?${query}` : '/sounds';
   },
+  /**
+   * Pronunciation "Stepping stones" (P1–P4): say up to three words, one at
+   * a time ("Bee 1 of 3"), from "Bees are waiting" on a bed. `topic` names
+   * the bed in the iPad header; `back` is where Close and the last
+   * "Back to the bed" go.
+   */
+  pronounce: (opts: { words: readonly string[]; topic?: string; back?: string }) => {
+    const params = new URLSearchParams();
+    params.set('words', opts.words.join(','));
+    if (opts.topic) params.set('topic', opts.topic);
+    if (opts.back) params.set('back', opts.back);
+    return `/sounds/word?${params.toString()}`;
+  },
   /** UI-G shared gardens: GR1 list, GR2 a garden, GR3/GR4 tend (admins), GR6 join. */
   groups: '/groups',
   group: (id: string) => `/groups/${encodeURIComponent(id)}`,

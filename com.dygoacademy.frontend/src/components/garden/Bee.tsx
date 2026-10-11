@@ -28,6 +28,18 @@ export function BeeGlyph({
       focusable="false"
       className={gcn(!still && 'bee-hover', className)}
     >
+      <BeeShape />
+    </svg>
+  );
+}
+
+/**
+ * The bee drawing itself, in a 32 × 32 box, for use inside another SVG
+ * (the Pronunciation pond draws the same bee as A7).
+ */
+export function BeeShape() {
+  return (
+    <>
       <ellipse
         cx="12"
         cy="9"
@@ -53,7 +65,7 @@ export function BeeGlyph({
       <path d="M17 12.2 V25.8" stroke="var(--bee-stripe)" strokeWidth="2.4" />
       <circle cx="23.5" cy="17.5" r="1.3" fill="var(--bee-stripe)" />
       <path d="M7 19 L5 19" stroke="var(--bee-stripe)" strokeWidth="1.6" strokeLinecap="round" />
-    </svg>
+    </>
   );
 }
 

@@ -34,8 +34,8 @@ const push = vi.fn();
 vi.mock('next/navigation', () => ({ useRouter: () => ({ push }) }));
 
 describe('reference fixtures', () => {
-  it('lists the 52 canvas references (15 adult screens, 7 group screens, 6 sign-in, 8 quiz, 7 home, 5 speaking, 4 speaking entry points)', () => {
-    expect(REFERENCE_NAMES).toHaveLength(53);
+  it('lists the 68 canvas references (… 5 speaking, 4 speaking entry points, 15 pronunciation)', () => {
+    expect(REFERENCE_NAMES).toHaveLength(68);
     expect(isReferenceName('A1b-all-watered')).toBe(true);
     expect(isReferenceName('A7c-word-search')).toBe(true);
     expect(isReferenceName('A6b-search-topics')).toBe(true);
@@ -50,6 +50,7 @@ describe('reference fixtures', () => {
     expect(isReferenceName('AU4-reset-password-sent')).toBe(true);
     expect(isReferenceName('GR5-invite')).toBe(true);
     expect(isReferenceName('A7-topic-bed-filter-sprouts')).toBe(true);
+    expect(isReferenceName('iP2b-not-heard')).toBe(true);
     expect(isReferenceName('A9-nope')).toBe(false);
   });
 });

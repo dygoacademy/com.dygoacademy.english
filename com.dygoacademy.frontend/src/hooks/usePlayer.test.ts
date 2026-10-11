@@ -50,4 +50,22 @@ describe('usePlayer', () => {
     expect(result.current.src).toBeNull();
     expect(result.current.error).toBe('NotSupportedError');
   });
+
+  it('plays only a span, at a one-off rate that the next play forgets', async () => {
+    vi.useFakeTimers();
+    try {
+      const { result } = renderHook(() => usePlayer());
+      await act(() => result.current.play('s.m4a', 0.7, { start: 1, end: 1.7 }));
+      const el = play.mock.contexts[0] as HTMLAudioElement;
+      expect(el.currentTime).toBe(1);
+      expect(el.playbackRate).toBe(0.7);
+      expect(result.current.rate).toBe(1);
+      act(() => vi.advanceTimersByTime(999));
+      expect(result.current.src).toBe('s.m4a');
+      act(() => vi.advanceTimersByTime(1));
+      expect(result.current.src).toBeNull();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
 });

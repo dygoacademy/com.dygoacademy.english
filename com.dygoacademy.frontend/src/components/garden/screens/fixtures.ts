@@ -84,6 +84,22 @@ export const REFERENCE_NAMES = [
   'SE2-entry-bed',
   'SE5-entry-harvest',
   'SE6-entry-echo',
+  // Pronunciation "Stepping stones" (2026-10-11): sample data in pronounceReference.ts
+  'P1-say-word',
+  'P2-recording-beep',
+  'P2-recording',
+  'P3-checking',
+  'P4-result-retry',
+  'P4-result-pollinated',
+  'P2b-not-heard',
+  'P2b-not-heard-noisy',
+  'P2b-not-heard-other-word',
+  'iP1-say-word',
+  'iP2-recording',
+  'iP3-checking',
+  'iP4-result-retry',
+  'iP4-result-pollinated',
+  'iP2b-not-heard',
 ] as const;
 export type ReferenceName = (typeof REFERENCE_NAMES)[number];
 

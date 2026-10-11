@@ -6,10 +6,20 @@ import { useCallback, useSyncExternalStore } from 'react';
  * One audio player for the whole app (Phase 13 T3, handover §4): playing a
  * clip stops whatever was playing, so the native clip and the learner's
  * recording never overlap. Works for media URLs and `blob:` URLs of a
- * recording. 0.75× is `playbackRate` (pitch kept).
+ * recording. 0.75× is `playbackRate` (pitch kept). A `span` plays only
+ * part of a clip (Pronunciation: one word or syllable of a sentence clip).
  */
 export const PLAYER_RATES = [1, 0.75] as const;
 export type PlayerRate = (typeof PLAYER_RATES)[number];
+
+/** Part of a clip, in seconds from its start. */
+export interface ClipSpan {
+  start: number;
+  end: number;
+}
+
+const isPlayerRate = (rate: number): rate is PlayerRate =>
+  (PLAYER_RATES as readonly number[]).includes(rate);
 
 export interface PlayerState {
   /** The clip playing now, or null. */
@@ -20,6 +30,8 @@ export interface PlayerState {
 }
 
 let audio: HTMLAudioElement | null = null;
+/** Stops a span at its end. */
+let spanTimer: ReturnType<typeof setTimeout> | null = null;
 let state: PlayerState = { src: null, rate: 1, error: null };
 const listeners = new Set<() => void>();
 
@@ -39,25 +51,50 @@ function element(): HTMLAudioElement {
   return audio;
 }
 
-/** Plays `src` at `rate`, stopping anything else. Resolves when playback starts. */
-export async function playClip(src: string, rate: PlayerRate = state.rate): Promise<void> {
+function clearSpan() {
+  if (spanTimer) clearTimeout(spanTimer);
+  spanTimer = null;
+}
+
+/**
+ * Plays `src` at `rate`, stopping anything else; only `span` of it when
+ * given. Resolves when playback starts. A rate other than PLAYER_RATES
+ * (Pronunciation's "Slowly", 0.7×) plays once without changing the rate
+ * The Pond remembers.
+ */
+export async function playClip(
+  src: string,
+  rate: number = state.rate,
+  span?: ClipSpan,
+): Promise<void> {
   const el = element();
   el.pause();
+  clearSpan();
   if (el.src !== src) el.src = src;
-  el.currentTime = 0;
+  el.currentTime = span ? span.start : 0;
   el.playbackRate = rate;
   (el as HTMLAudioElement & { preservesPitch?: boolean }).preservesPitch = true;
-  set({ src, rate, error: null });
+  set({ src, rate: isPlayerRate(rate) ? rate : state.rate, error: null });
   try {
     await el.play();
   } catch (err) {
     set({ src: null, error: (err as Error)?.message ?? 'play failed' });
     throw err;
   }
+  if (span) {
+    spanTimer = setTimeout(
+      () => {
+        spanTimer = null;
+        if (state.src === src) stopClip();
+      },
+      (Math.max(0, span.end - span.start) * 1000) / rate,
+    );
+  }
 }
 
 /** Stops the clip that's playing, if any. */
 export function stopClip(): void {
+  clearSpan();
   if (audio && !audio.paused) audio.pause();
   if (state.src) set({ src: null });
 }
@@ -70,6 +107,7 @@ export function setPlayerRate(rate: PlayerRate): void {
 
 /** Test hook. */
 export function resetPlayerForTest(): void {
+  clearSpan();
   audio = null;
   state = { src: null, rate: 1, error: null };
   listeners.clear();
@@ -85,7 +123,10 @@ const serverState: PlayerState = { src: null, rate: 1, error: null };
 
 export function usePlayer() {
   const current = useSyncExternalStore(subscribe, getState, () => serverState);
-  const play = useCallback((src: string, rate?: PlayerRate) => playClip(src, rate), []);
+  const play = useCallback(
+    (src: string, rate?: number, span?: ClipSpan) => playClip(src, rate, span),
+    [],
+  );
   return {
     ...current,
     play,
