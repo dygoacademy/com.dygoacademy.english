@@ -12,6 +12,11 @@
 <style>
 body{margin:0;font-family:'DM Sans',sans-serif;background:#F4F1EA;color:#1C2B24}
 a{color:#B4552E}a:hover{color:#8A3E20}
+@keyframes hover{0%,100%{transform:translate(0,0) rotate(-4deg)}50%{transform:translate(2px,-3px) rotate(4deg)}}
+.bee{animation:hover 1.6s ease-in-out infinite}
+@keyframes spark{0%{transform:scale(.4);opacity:0}60%{transform:scale(1.15);opacity:1}100%{transform:scale(1);opacity:1}}
+.spark{animation:spark .5s ease-out}
+@media (prefers-reduced-motion: reduce){*{animation:none !important}}
 </style>
 </helmet>
 <div style="width: 390px; height: 844px; box-sizing: border-box; background: #F4F1EA; display: flex; flex-direction: column; gap: 14px; padding: 20px 16px 0; font-family: 'DM Sans', sans-serif; color: #1C2B24; overflow: hidden">
@@ -22,6 +27,7 @@ a{color:#B4552E}a:hover{color:#8A3E20}
 <span style="font-family: 'Fraunces', serif; font-weight: 600; font-size: 26px; line-height: 1.1">Environment</span>
 <span style="font-size: 13px; color: #5E6A62">IELTS Academic · B2–C1 · 48 words</span>
 </div>
+<a href="TopicWordSearch.dc.html" aria-label="Search words in Environment" style="width: 44px; height: 44px; border-radius: 22px; background: #FFFFFF; border: 1px solid #E3DDD0; display: flex; align-items: center; justify-content: center; color: #1C2B24; flex-shrink: 0"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="M20 20 L16 16"></path></svg></a>
 <button aria-label="Topic options" style="width: 44px; height: 44px; border-radius: 22px; background: #FFFFFF; border: 1px solid #E3DDD0; display: flex; align-items: center; justify-content: center; color: #1C2B24; cursor: pointer"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="5" cy="12" r="2"></circle><circle cx="12" cy="12" r="2"></circle><circle cx="19" cy="12" r="2"></circle></svg></button>
 </div>
 
@@ -43,9 +49,11 @@ a{color:#B4552E}a:hover{color:#8A3E20}
 <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2 C12 2 4 11 4 15 A8 8 0 0 0 20 15 C20 11 12 2 12 2 Z" fill="#FFFFFF"></path></svg>
 Water 6 due</a>
 <a href="AdultQuiz.dc.html" style="height: 52px; padding: 0 16px; border-radius: 16px; background: #FFFFFF; border: 1px solid #E3DDD0; color: #24463A; display: flex; align-items: center; font-weight: 700; font-size: 15px; text-decoration: none">Quiz</a>
-<button aria-label="Add word" style="width: 52px; height: 52px; border-radius: 16px; background: #FFFFFF; border: 1px solid #E3DDD0; color: #24463A; display: flex; align-items: center; justify-content: center; cursor: pointer"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M12 5 V19"></path><path d="M5 12 H19"></path></svg></button>
+<a href="AdultAddWord.dc.html" aria-label="Add word" style="width: 52px; height: 52px; border-radius: 16px; background: #FFFFFF; border: 1px solid #E3DDD0; color: #24463A; display: flex; align-items: center; justify-content: center; cursor: pointer"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M12 5 V19"></path><path d="M5 12 H19"></path></svg></a>
 </div>
+<a href="SpeakListen.dc.html" aria-label="Speak: practise saying this bed" style="flex-shrink: 0; margin-top: -4px; height: 50px; border-radius: 16px; background: #FBEFE9; border: 1px solid #EBC7B6; color: #8A3E20; display: flex; align-items: center; justify-content: center; gap: 8px; font-weight: 700; font-size: 15px; text-decoration: none"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"></rect><path d="M5 11 A7 7 0 0 0 19 11"></path><path d="M12 18 V21"></path></svg>Speak · 5 sentences from this bed</a>
 
+<div style="flex-shrink: 0; background: #FBF4E4; border: 1px solid #EFD9A6; border-radius: 20px; padding: 12px; display: flex; flex-direction: column; gap: 8px"><div style="display: flex; align-items: center; gap: 8px"><svg width="26" height="26" viewBox="0 0 32 32" aria-hidden="true" class="bee"><ellipse cx="12" cy="9" rx="6" ry="4.5" fill="#E8F2F8" stroke="#BFD8E8" stroke-width="1" transform="rotate(-25 12 9)"></ellipse><ellipse cx="20" cy="9" rx="6" ry="4.5" fill="#E8F2F8" stroke="#BFD8E8" stroke-width="1" transform="rotate(25 20 9)"></ellipse><ellipse cx="16" cy="19" rx="9" ry="7" fill="#F2C744"></ellipse><path d="M12 13.2 V24.8" stroke="#3B3020" stroke-width="2.4"></path><path d="M17 12.2 V25.8" stroke="#3B3020" stroke-width="2.4"></path><circle cx="23.5" cy="17.5" r="1.3" fill="#3B3020"></circle><path d="M7 19 L5 19" stroke="#3B3020" stroke-width="1.6" stroke-linecap="round"></path></svg><span style="flex-grow: 1; font-family: 'Fraunces', serif; font-weight: 600; font-size: 18px; color: #1C2B24">Bees are waiting</span><a href="SpeakListen.dc.html" style="font-size: 13px; font-weight: 700; color: #8A3E20; text-decoration: none; white-space: nowrap">Say all</a></div><span style="font-size: 13px; color: #6B5215; line-height: 1.4; margin-top: -4px">{{intro}}</span><sc-for list="{{bees}}" as="b" hint-placeholder-count="3"><div style="display: flex; align-items: center; gap: 12px; background: {{b.bg}}; border: 1px solid {{b.border}}; border-radius: 14px; padding: 6px 6px 6px 8px; min-height: 56px; box-sizing: border-box"><span style="position: relative; width: 34px; height: 40px; flex-shrink: 0; display: flex; align-items: flex-end; justify-content: center"><sc-if value="{{b.waiting}}" hint-placeholder-val="{{true}}"><svg width="30" height="36" viewBox="0 0 40 52" aria-hidden="true"><path d="M20 52 V20" stroke="#9CC39A" stroke-width="2.5"></path><path d="M20 38 C14 37 11 33 13 29 C18 29 20 33 20 38 Z" fill="#9CC39A"></path><circle cx="20" cy="10" r="5" fill="#E8A87C"></circle><circle cx="26" cy="15" r="5" fill="#E8A87C"></circle><circle cx="24" cy="22" r="5" fill="#E8A87C"></circle><circle cx="16" cy="22" r="5" fill="#E8A87C"></circle><circle cx="14" cy="15" r="5" fill="#E8A87C"></circle><circle cx="20" cy="17" r="4" fill="#F2D28B"></circle></svg><span style="position: absolute; top: -10px; right: -4px"><svg width="20" height="20" viewBox="0 0 32 32" aria-hidden="true" class="bee"><ellipse cx="12" cy="9" rx="6" ry="4.5" fill="#E8F2F8" stroke="#BFD8E8" stroke-width="1" transform="rotate(-25 12 9)"></ellipse><ellipse cx="20" cy="9" rx="6" ry="4.5" fill="#E8F2F8" stroke="#BFD8E8" stroke-width="1" transform="rotate(25 20 9)"></ellipse><ellipse cx="16" cy="19" rx="9" ry="7" fill="#F2C744"></ellipse><path d="M12 13.2 V24.8" stroke="#3B3020" stroke-width="2.4"></path><path d="M17 12.2 V25.8" stroke="#3B3020" stroke-width="2.4"></path><circle cx="23.5" cy="17.5" r="1.3" fill="#3B3020"></circle><path d="M7 19 L5 19" stroke="#3B3020" stroke-width="1.6" stroke-linecap="round"></path></svg></span></sc-if><sc-if value="{{b.done}}" hint-placeholder-val="{{false}}"><span class="spark" style="display: flex"><svg width="30" height="36" viewBox="0 0 40 52" aria-hidden="true"><path d="M20 52 V20" stroke="#9CC39A" stroke-width="2.5"></path><path d="M20 38 C14 37 11 33 13 29 C18 29 20 33 20 38 Z" fill="#9CC39A"></path><circle cx="20" cy="10" r="5" fill="#E8A87C"></circle><circle cx="26" cy="15" r="5" fill="#E8A87C"></circle><circle cx="24" cy="22" r="5" fill="#E8A87C"></circle><circle cx="16" cy="22" r="5" fill="#E8A87C"></circle><circle cx="14" cy="15" r="5" fill="#E8A87C"></circle><circle cx="20" cy="17" r="5.5" fill="#E0B04A"></circle></svg></span></sc-if></span><span style="flex-grow: 1; display: flex; flex-direction: column; line-height: 1.25; min-width: 0"><span lang="en" style="font-weight: 700; font-size: 16px">{{b.word}}</span><span lang="en" style="font-size: 12px; color: #6B5215; letter-spacing: .02em">{{b.syl}}</span><span style="font-size: 12px; color: {{b.statusColor}}; font-weight: 600">{{b.status}}</span></span><sc-if value="{{b.waiting}}" hint-placeholder-val="{{true}}"><button onClick="{{b.say}}" aria-label="{{b.label}}" style="width: 44px; height: 44px; border-radius: 22px; border: none; background: #B4552E; color: #FFFFFF; display: flex; align-items: center; justify-content: center; box-shadow: 0 3px 0 #7E3719; cursor: pointer; flex-shrink: 0"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"></rect><path d="M5 11 A7 7 0 0 0 19 11"></path><path d="M12 18 V21"></path></svg></button></sc-if><sc-if value="{{b.done}}" hint-placeholder-val="{{false}}"><span class="spark" style="width: 36px; height: 36px; border-radius: 18px; background: #3E7F5A; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-right: 4px"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12 L10 17 L19 7"></path></svg></span></sc-if></div></sc-for></div>
 <div style="display: flex; justify-content: space-between; align-items: baseline">
 <span style="font-family: 'Fraunces', serif; font-weight: 600; font-size: 18px">{{listTitle}}</span>
 <span style="font-size: 12px; color: #5E6A62">Sorted by next watering</span>
@@ -75,7 +83,7 @@ Water 6 due</a>
 class Component extends DCLogic {
   constructor(props) {
     super(props);
-    this.state = { stage: null };
+    this.state = { stage: null, done: { mitigate: true } };
   }
   renderVals() {
     const sel = this.state.stage;
@@ -122,9 +130,26 @@ class Component extends DCLogic {
           dueColor: dueNow ? '#1D6A9A' : (w.due === 'New' ? '#9A6E14' : '#5E6A62')
         };
       });
+    const W = [["mitigate", "MI \u00b7 ti \u00b7 gate"], ["deforestation", "de \u00b7 for \u00b7 e \u00b7 STA \u00b7 tion"], ["ecosystem", "E \u00b7 co \u00b7 sys \u00b7 tem"]];
+    const left = W.filter(([w]) => !this.state.done[w]).length;
+    const bees = W.map(([word, syl]) => {
+      const done = !!this.state.done[word];
+      return {
+        word, syl, done, waiting: !done,
+        status: done ? "Pollinated \u00b7 on its way to fruit" : "Say it to pollinate",
+        statusColor: done ? '#3E7F5A' : '#8A3E20',
+        bg: done ? '#F1F6EF' : '#FFFFFF',
+        border: done ? '#CFE0C8' : '#EFD9A6',
+        label: "Say {w} to pollinate".replace('{w}', word),
+        say: () => this.setState({ done: Object.assign({}, this.state.done, { [word]: true }) })
+      };
+    });
+    const intro = left === 0 ? "All flowers pollinated today. New bees come tomorrow." : left === 1 ? "1 flower wants to be heard. Say it to pollinate it." : "{n} flowers want to be heard. Say each word to pollinate it.".replace('{n}', left);
     return {
       tabs,
       words,
+      bees,
+      intro,
       listTitle: sel ? names[sel] + ' in this bed' : 'All words'
     };
   }

@@ -2,7 +2,7 @@
 
 Location in the repo: `docs/design/CHANGELOG.md`
 Design source of truth: the **Dygo Word Garden** design canvas (owner: Dylan).
-Last updated: **2026-10-10**
+Last updated: **2026-10-11**
 
 ---
 
@@ -81,10 +81,11 @@ Every row has an English file and a Vietnamese twin (`…Vi.dc.html`) unless not
 | A5 | Welcome Back | `AdultComeback` | Built | No guilt: streak freeze kept the streak; wilting = most overdue only; "Quick revive, 5 min"; escape hatch "Water all 42". | A2, tabs | UI-6 |
 | A5b | Welcome Back · nothing wilting | `AdultComebackStart` | Built | A5 when 0 words are wilting (the common case today): card "Start small · Water the 10 thirstiest words first" → **Quick start** (10 words · about 4 min, only the 10 most overdue) + "Water all 45 instead". ≤10 thirsty: "Water your N thirsty words" / Start watering, no second link. Nothing due after missed days → show A1 / A1b, not A5. Minutes ≈ 25 s a word. | A2, tabs | Built `7c73926` (EN / VI / ZH; plan: `A5 welcome back implementation plan.md`) |
 | A6 | Topics (Beds) | `AdultTopics` | Built | Each topic = a garden bed: stage icon, fruit/flower/sprout bar, due badge, locked seed pack. Filters: All / IELTS Academic / Mine. | A7, tabs | UI-5 (wrap-up `58ab14f`) |
-| A6b | Search | `AdultSearch` | For approval | From the search button on A6. Live results grouped by bed, matched letters highlighted, stage icon per word; "Not in your garden yet" row → Plant (A7b); recent searches when empty. | A7, A7b | Not built |
+| A6b | Search topics | `AdultSearch` | Approved | **Redesigned 2026-10-11:** searches topics only (name, collection, level; matched letters highlighted). "Your topics" = topic cards like A6 → A7; "More topics to plant" = library topics with Plant; last row when a word matches: "Looking for a word? *x* is in Topic" → A7c. Recent searches. | A7, A7c | Not built — plan: `Topics bees and search implementation plan.md` |
 | A6c | No topics yet | `AdultTopicsEmpty` | For approval | Empty bed field + 3 suggested seed packets and "Browse all topics". | A7 | Not built |
-| A7 | Topic Bed | `AdultTopicDetail` | Built | 4 stage tiles (New / Learning / Review / Mastered, tap to filter), words sorted by next due, wilting = leech. Water N due, Quiz, + Add word. **Speaking (2026-10-07, merged from SE2 + SE5):** full-width "Speak · 5 sentences from this bed" row under Water / Quiz / + → SP1; "Ready to harvest" card above the word list (ripe flowers, each with a mic; Fruit at 90%+, D-3). | A2, Q1, A6 | UI-5 (wrap-up `58ab14f`); Quiz + leech drill U5-6 `5f016d7` |
+| A7 | Topic Bed | `AdultTopicDetail` | Built (Bees + search: Approved) | 4 stage tiles (New / Learning / Review / Mastered, tap to filter), words sorted by next due, wilting = leech. Water N due, Quiz, + Add word. **Speaking (2026-10-07, merged from SE2 + SE5):** full-width "Speak · 5 sentences from this bed" row under Water / Quiz / + → SP1; "Ready to harvest" card above the word list (ripe flowers, each with a mic; Fruit at 90%+, D-3). **2026-10-11 (Approved): "Ready to harvest" becomes "Bees are waiting"** (same place, one list: flower + bee, word, syllables with the stress, mic; pollinated = gold centre + tick, "Pollinated · on its way to fruit"; "Say all"), and a search button in the header → A7c. | A2, Q1, A6 | UI-5 (wrap-up `58ab14f`); Quiz + leech drill U5-6 `5f016d7` |
 | A7b | Add word | `AdultAddWord` | For approval | Bottom sheet from + on A7. Type a word → meaning + IPA filled in; pick a bed (chips); Plant → seed drops into the bed (planted state). | A7 | Not built |
+| A7c | Search words in a topic | `TopicWordSearch` | Approved | From the new search button in the A7 header. Only this topic's words; matches the English word **or** the Vietnamese meaning. Results = A7 word rows (stage, next watering). "Not in this topic yet" → Plant here (Add word with the word filled in). Cancel → A7. | A7, A7b | Not built — same plan |
 | A8 | Me | `AdultMe` | Built | Garden calendar (16 weeks), keepsakes, settings (daily goal → A8b, reminder time → A8c, meaning language → A8d; links added 2026-10-07), Family → kid's garden. Gear → Account sheet (who's signed in + Sign out). | Kids, AU1, tabs | UI-6; Account sheet SO-1 `e8fea77` |
 | A8b | Daily goal | `AdultDailyGoal` | For approval | Three pots: Light / Steady / Intense (words + minutes a day), minutes per week, when your target band ripens **[ETA]**. | A8 | Not built |
 | A8c | Reminder time | `AdultReminder` | For approval | Master toggle, sun arc (same as OB4), presets, smart time, days of week, push / email, quiet hours. | A8 | Not built |
@@ -205,6 +206,13 @@ All iPad screens: sidebar (Garden · Missions · Topics · Groups · Me + Shared
 ## 3. Changelog
 
 Newest first. Format: `### YYYY-MM-DD — title` then lines tagged **Added / Changed / Removed / Decision**, with screen IDs and status.
+
+### 2026-10-11 — Topics: pronunciation bees, two searches, Profile tab
+- **Changed** A7 / iA7 (EN + VI): "Ready to harvest" (SE5) becomes **"Bees are waiting"** — same place, one list (Dylan: a bee on every word row would make the words to say hard to find). Each row: ripe flower with a bee, the word, its syllables with the stressed one in capitals (MI · ti · gate), a mic; good attempt → gold flower centre, tick, "Pollinated · on its way to fruit"; header "Say all". At most 3 bees in the whole garden, 1–2 new a day, a bee leaves quietly after 3 days. **D-3 stays:** 90%+ shows Fruit, review dates never change. iPad: same card under Water / Quiz / Add word. *Approved (Dylan, 2026-10-11).*
+- **Changed** A6b → **Search topics** (topics only) and **Added** A7c **Search words in a topic** (search button in the A7 header; English word or Vietnamese meaning; "Plant here"). Dylan: Topics searches topics, a Topic Bed searches words. *Approved (Dylan, 2026-10-11).*
+- **Changed** Canvas tab "Me" → **"Profile"** (VI "Hồ sơ") on all phone and iPad boards, as on the site; board titles A8 / iA8 and page "Adult · Profile" renamed. Board sources in `source/` that weren't touched today still say "Me".
+- `source/`: AdultTopicDetail(Vi), iPadTopicDetail(Vi), AdultTopics(Vi), AdultSearch(Vi), TopicWordSearch(Vi). `reference/`: A6-topics, A6b-search-topics, A7-topic-bed, A7-topic-bed-filter-sprouts, A7c-word-search (EN + VI), new render jobs. **Note:** A7 and A6 references now show the new design, so `garden:diff` for A7 fails until it's built.
+- Build plan: `Topics bees and search implementation plan.md` (repo root).
 
 ### 2026-10-10 — A1b boards take the streak pill and the site's wording
 - **Changed** `source/AdultAllWatered(Vi).dc.html` (Dylan): header gets A1's streak pill ("23 days" / "23 ngày"); EN date "Friday, September 25", "tomorrow 7:30 AM", last tab "Profile"; VI last tab "Hồ sơ". References `A1b-all-watered(-vi)` re-exported. `garden:diff` (local): EN 0.000%, VI 0.094%.
