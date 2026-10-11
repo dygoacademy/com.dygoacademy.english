@@ -988,3 +988,12 @@ Engineering-facing log of shipped fixes and changes, one dated entry per change.
 * **What**: `master` at `756045b` deployed. pm2 (backend and frontend) first via `deploy/request.md`, `Deploy finished OK`; then `dygo_speech` and `dygo_speech_2` rebuilt and recreated one at a time, both healthy.
 * **Verified on UAT**: backend `POST /speaking/check-speech`, `check-pronunciation` and the old `check` / `word-check` aliases answer 401 without a login (so they exist), an unknown path 404. Speech containers: `/check-speech` 200, `/check-pronunciation` 200 ("mitigate" `unclear` 62 on the "migrate" sample, `voiced_ms` returned), `/check` 404, `/check-word` 404, on both.
 * **Not yet checked**: a signed-in recording through the real app (Pond sentence check and the Pronunciation stones). Word-level marks and the stones' thresholds are not validated on Vietnamese learners; `/check-speech` is one revert away if the sentence marks look wrong.
+
+### Fixed: a skipped word is marked `missing`, not `unclear` (`/check-pronunciation`)
+* **Files**: speech server [`app/matching.py`](docker/speech/app/matching.py) (`GOPT_MISSING_SCORE` 40 → 60), `tests/test_gopt.py`, `README.md`
+* **What**: a word Whisper didn't hear at all and that GOPT scores under 60 is `missing`; 60–79 stays `unclear`.
+* **Why**: UAT test of the Pond sentence check: "Drivers should be cautious on icy roads" with "cautious" left out gave `unclear`. GOPT aligns the skipped word's phones onto the neighbouring audio and still gave it 51, above the old cut-off of 40.
+* **Evidence**: 8 clips with one content word skipped scored 34–53 (median about 40); the same words spoken scored 94–99 (7 clips, macOS voice).
+* **Risk**: a word the learner did say but Whisper dropped, scoring under 60, now reads as `missing` rather than `unclear`. Not checked on real learner speech.
+* **Deployed to UAT** 2026-10-11 (`dygo_speech`, then `dygo_speech_2`, both healthy). **Verified**: speech `pytest` 24/24; on UAT through the backend as the fixture user alex: the left-out word → `missing` (total 58), spoken correctly → all ok (100), "careless" for "cautious" → still `unclear` (heard careless).
+* **Seen, not changed**: "Drivers" is flagged `unclear` (Whisper heard "driver", GOPT 88, trust level 90) even though it was said. A plural-s mishearing is read as a different word.

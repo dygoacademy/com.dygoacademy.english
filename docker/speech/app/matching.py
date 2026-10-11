@@ -24,10 +24,12 @@ HEARD_TRUST_SCORE = 85
 
 # GOPT scorer scale (POST /check-pronunciation). GOPT predicts word accuracy 0–100 with a high median
 # (98): the best F1 for catching a human-marked mispronounced word (accuracy <= 5/10) on
-# speechocean762 was at 80 (flags 9% of words; humans marked 7.6%). "Missing" and the
-# Whisper-heard-another-word trust level are provisional: no data to calibrate them yet.
+# speechocean762 was at 80 (flags 9% of words; humans marked 7.6%). "Missing" (Whisper didn't hear
+# the word and GOPT scores it under 60): words skipped in 7 test clips scored 34–53 (GOPT aligns the
+# phones onto the neighbouring audio), spoken words 94–99. The Whisper-heard-another-word trust level
+# is provisional: no data to calibrate it yet.
 GOPT_UNCLEAR_SCORE = 80
-GOPT_MISSING_SCORE = 40
+GOPT_MISSING_SCORE = 60
 GOPT_HEARD_TRUST_SCORE = 90
 
 # Short words the sound model can't judge (a few frames, reduced vowels):

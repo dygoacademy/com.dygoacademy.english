@@ -48,9 +48,11 @@ def test_gopt_word_status_thresholds():
     other = WordMatch("migrate", False)
     assert word_status(95, found, "mitigate", **kw) == ("ok", None)
     assert word_status(70, found, "mitigate", **kw) == ("ok", None)  # heard, mid score: Whisper heard it right
-    assert word_status(30, found, "mitigate", **kw) == ("unclear", None)
+    assert word_status(30, found, "mitigate", **kw) == ("unclear", None)  # heard but sounds wrong
     assert word_status(70, gone, "mitigate", **kw) == ("unclear", None)
     assert word_status(30, gone, "mitigate", **kw) == ("missing", None)
+    assert word_status(53, gone, "mitigate", **kw) == ("missing", None)  # a skipped word scored 34–53
+    assert word_status(65, gone, "mitigate", **kw) == ("unclear", None)
     assert word_status(75, other, "mitigate", **kw) == ("unclear", "migrate")
     assert word_status(92, other, "mitigate", **kw) == ("ok", None)
 
