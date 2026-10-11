@@ -150,10 +150,10 @@ Separate from Speaking (sentences). Starts from "Bees are waiting" on A7. EN + V
 #### Legal — page "Legal"
 | ID | Screen | File | Status | What's on it | Build status |
 |---|---|---|---|---|---|
-| LG1 | Terms of Service · desktop | `LegalTermsDesktop` | Built | Short-version card, "Where do you live?" switch (Vietnam · Australia · Singapore) swapping the region note + "Your local rights", table of contents. `[[…]]` = facts Dylan still fills in. | `/terms` 2026-10-09 (see `Change Log.md`) |
-| LG2 | Privacy Policy · desktop | `LegalPrivacyDesktop` | Built | Same layout; PDPL / Privacy Act / PDPA rights per region. | `/privacy` 2026-10-09 |
-| LG3 | Terms · phone (VI) | `LegalTermsPhoneVi` | Built | Tap-to-open sections, local rights first. | `/terms` below `lg:` |
-| LG4 | Privacy · phone (VI) | `LegalPrivacyPhoneVi` | Built | Same as LG3. | `/privacy` below `lg:` |
+| LG1 | Terms of Service · desktop | `LegalTermsDesktop` | Built (voice donation text: For approval) | Short-version card, "Where do you live?" switch (Vietnam · Australia · Singapore) swapping the region note + "Your local rights", table of contents. `[[…]]` = facts Dylan still fills in. | `/terms` 2026-10-09 (see `Change Log.md`) |
+| LG2 | Privacy Policy · desktop | `LegalPrivacyDesktop` | Built (voice donation text: For approval) | Same layout; PDPL / Privacy Act / PDPA rights per region. | `/privacy` 2026-10-09 |
+| LG3 | Terms · phone (VI) | `LegalTermsPhoneVi` | Built (voice donation text: For approval) | Tap-to-open sections, local rights first. | `/terms` below `lg:` |
+| LG4 | Privacy · phone (VI) | `LegalPrivacyPhoneVi` | Built (voice donation text: For approval) | Same as LG3. | `/privacy` below `lg:` |
 
 #### Brand — page "Brand"
 | ID | Screen | File | Status | What's on it | Build status |
@@ -220,6 +220,12 @@ All iPad screens: sidebar (Garden · Missions · Topics · Groups · Me + Shared
 ## 3. Changelog
 
 Newest first. Format: `### YYYY-MM-DD — title` then lines tagged **Added / Changed / Removed / Decision**, with screen IDs and status.
+
+### 2026-10-11 — Legal: optional voice donation (screens Approved; legal text behind a flag until a lawyer's review)
+- **Changed** LG1–LG4 (canvas): Terms and Privacy now describe **optional voice donation**: learners 16+ can turn on "Help improve Dygo's speech checker" in Profile › Privacy so Dygo keeps their speaking recordings to train its own speech checker. Off by default; child profiles never; random code instead of name; some recordings may be listened to by trained people; up to [[3 years]]; turn off or delete any time. Sections changed: Terms short list, 07 Speaking practice (+ licence); Privacy short list, 02 table row + note, 03 Children, 04 Your voice, 05 sharing, 08 rights, 09 automated decisions, 11 local rights (VN · AU · SG). "Me ›" → "Profile ›". *For approval (Dylan, after a lawyer's review).*
+- **Changed** AU2 Create account (EN + VI): optional, unticked "Help improve Dygo's speech checker" box; terms line links Terms + Privacy. **Changed** A8 Profile: new "Privacy & data" row (calendar squares and rows slightly smaller to fit). **Added** A8e Privacy & data (`AdultPrivacy(Vi)`): "Donate my voice" switch (off, no icon), confirm sheet, donated count + delete, Your data links. *Approved (Dylan, 2026-10-11).* Build: `Voice donation consent plan.md`, everything behind `NEXT_PUBLIC_VOICE_DONATION` / `VOICE_DONATION_ENABLED` (off).
+- **Don't build on the site yet:** the text must go live in the same release as the Profile › Privacy setting and the data handling. Plan and exact EN + VI text: `Voice donation consent plan.md` (repo root).
+- `source/`: LegalTermsDesktop, LegalPrivacyDesktop, LegalTermsPhoneVi, LegalPrivacyPhoneVi updated.
 
 ### 2026-10-11 — Pronunciation: say one word (Stepping stones)
 - **Added** P1 Say the word, P2 Recording, P2b Couldn't hear you, P3 Checking, P4 Result (retry / pollinated), new canvas page "Adult · Pronunciation". A **new feature, separate from Speaking (sentences)**: the learner says one word; one stone per syllable, the big stone = the stressed part; the result shows which stone wobbled. Three directions were drawn (stones, bee flight, sound tiles); Dylan chose the stones, the simplest. *Approved (Dylan, 2026-10-11).*

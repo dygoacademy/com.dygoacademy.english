@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Privacy &amp; data</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&amp;family=DM+Sans:wght@400;500;600;700&amp;display=swap">
+<style>
+body{margin:0;font-family:'DM Sans', sans-serif;background:#F4F1EA;color:#1C2B24}
+a{color:#B4552E}a:hover{color:#8A3E20}
+@keyframes up{0%{transform:translateY(24px);opacity:0}100%{transform:translateY(0);opacity:1}}
+.up{animation:up .25s ease-out}
+@media (prefers-reduced-motion: reduce){*{animation:none !important}}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; background: #F4F1EA; display: flex; flex-direction: column; gap: 14px; padding: 22px 16px 28px; font-family: 'DM Sans', sans-serif; color: #1C2B24; overflow: hidden; position: relative">
+<div style="display: flex; align-items: center; gap: 12px">
+<a href="AdultMe.dc.html" aria-label="Back" style="width: 44px; height: 44px; border-radius: 22px; background: #FFFFFF; border: 1px solid #E3DDD0; display: flex; align-items: center; justify-content: center; color: #1C2B24; flex-shrink: 0"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5 L8 12 L15 19"></path></svg></a>
+<span style="font-family: 'Fraunces', serif; font-weight: 600; font-size: 24px">Privacy &amp; data</span>
+</div>
+<span style="font-size: 12px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: #5E6A62; margin: 4px 4px -6px">Your voice</span>
+<div style="background: #FFFFFF; border: 1px solid {{cardBorder}}; border-radius: 20px; padding: 14px 16px; display: flex; flex-direction: column; gap: 10px">
+<div style="display: flex; gap: 12px; align-items: flex-start">
+<div style="flex-grow: 1; display: flex; flex-direction: column; gap: 4px"><span style="font-weight: 700; font-size: 15px; line-height: 1.35">Help improve Dygo’s speech checker</span><span style="font-size: 13px; line-height: 1.45; color: #5E6A62">Keep my speaking and pronunciation recordings to train Dygo’s own checker for Vietnamese speakers of English.</span></div>
+<button onClick="{{toggle}}" role="switch" aria-checked="{{aria}}" aria-label="Voice donation" style="width: 48px; height: 30px; border-radius: 15px; border: none; background: {{track}}; position: relative; cursor: pointer; padding: 0; flex-shrink: 0"><span style="position: absolute; top: 3px; left: {{knob}}; width: 24px; height: 24px; border-radius: 12px; background: #FFFFFF; transition: left .2s"></span></button>
+</div>
+<sc-if value="{{off}}" hint-placeholder-val="{{true}}"><span style="font-size: 13px; color: #5E6A62">Off: your recordings are checked, then deleted.</span></sc-if>
+<sc-if value="{{on}}" hint-placeholder-val="{{false}}">
+<div style="background: #EEF4EC; border-radius: 14px; padding: 10px 12px; font-size: 14px; color: #24463A"><b>38</b> recordings donated · since 12 Oct 2026</div>
+<ul style="margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 6px"><li style="display: flex; gap: 8px; font-size: 13px; line-height: 1.4; color: #44524A"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#3E7F5A" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex-shrink: 0; margin-top: 2px"><path d="M5 12 L10 17 L19 7"></path></svg><span>Stored under a random code, not your name</span></li><li style="display: flex; gap: 8px; font-size: 13px; line-height: 1.4; color: #44524A"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#3E7F5A" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex-shrink: 0; margin-top: 2px"><path d="M5 12 L10 17 L19 7"></path></svg><span>Some may be listened to by trained people</span></li><li style="display: flex; gap: 8px; font-size: 13px; line-height: 1.4; color: #44524A"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#3E7F5A" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex-shrink: 0; margin-top: 2px"><path d="M5 12 L10 17 L19 7"></path></svg><span>Never sold or published · kept up to 3 years</span></li></ul>
+<button onClick="{{askDelete}}" style="height: 46px; border-radius: 14px; border: 1.5px solid #B4552E; background: #FFFFFF; color: #8A3E20; font-family: inherit; font-weight: 700; font-size: 14px; cursor: pointer">Delete my donated recordings</button>
+</sc-if>
+<a href="LegalPrivacyDesktop.dc.html#p4" style="font-size: 13px; font-weight: 700; color: #24463A">How we use donated recordings</a>
+</div>
+<span style="font-size: 12px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: #5E6A62; margin: 4px 4px -6px">Your data</span>
+<div style="background: #FFFFFF; border: 1px solid #E3DDD0; border-radius: 20px; display: flex; flex-direction: column">
+<a href="AdultMe.dc.html" style="height: 52px; padding: 0 14px; display: flex; align-items: center; gap: 12px; text-decoration: none; color: #1C2B24; border-bottom: 1px solid #EFEAE0"><span style="flex-grow: 1; font-weight: 600; font-size: 15px">Download my data</span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#5E6A62" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5 L16 12 L9 19"></path></svg></a>
+<a href="LegalPrivacyDesktop.dc.html" style="height: 52px; padding: 0 14px; display: flex; align-items: center; gap: 12px; text-decoration: none; color: #1C2B24; border-bottom: 1px solid #EFEAE0"><span style="flex-grow: 1; font-weight: 600; font-size: 15px">Privacy Policy</span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#5E6A62" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5 L16 12 L9 19"></path></svg></a>
+<a href="LegalTermsDesktop.dc.html" style="height: 52px; padding: 0 14px; display: flex; align-items: center; gap: 12px; text-decoration: none; color: #1C2B24; border-bottom: 1px solid #EFEAE0"><span style="flex-grow: 1; font-weight: 600; font-size: 15px">Terms of Service</span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#5E6A62" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5 L16 12 L9 19"></path></svg></a>
+<a href="AdultMe.dc.html" style="height: 52px; padding: 0 14px; display: flex; align-items: center; gap: 12px; text-decoration: none; color: #1C2B24"><span style="flex-grow: 1; font-weight: 600; font-size: 15px; color: #8A3E20">Delete account</span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#5E6A62" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5 L16 12 L9 19"></path></svg></a>
+</div>
+<sc-if value="{{toast}}" hint-placeholder-val="{{false}}"><div class="up" style="margin-top: auto; background: #1C2B24; color: #FFFFFF; border-radius: 14px; padding: 12px 14px; font-size: 14px">Deleting your 38 recordings. Donation is off.</div></sc-if>
+<sc-if value="{{confirm}}" hint-placeholder-val="{{false}}">
+<div style="position: absolute; inset: 0; background: rgba(28, 43, 36, 0.45); display: flex; flex-direction: column; justify-content: flex-end">
+<button onClick="{{notNow}}" aria-label="Not now" style="flex-grow: 1; border: none; background: transparent; cursor: pointer"></button>
+<div class="up" role="dialog" aria-label="Donate your voice recordings?" style="background: #F4F1EA; border-radius: 28px 28px 0 0; padding: 10px 20px 28px; display: flex; flex-direction: column; gap: 14px">
+<span style="align-self: center; width: 40px; height: 5px; border-radius: 3px; background: #CFC8B8"></span>
+<span style="font-family: 'Fraunces', serif; font-weight: 600; font-size: 24px; line-height: 1.15">Donate your voice recordings?</span>
+<ul style="margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 10px"><li style="display: flex; gap: 10px; font-size: 14px; line-height: 1.45; color: #1C2B24"><span style="width: 22px; height: 22px; border-radius: 11px; background: #DDE7DA; color: #24463A; font-size: 12px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0">1</span><span>We keep your recordings from now on, under a random code, not your name.</span></li><li style="display: flex; gap: 10px; font-size: 14px; line-height: 1.45; color: #1C2B24"><span style="width: 22px; height: 22px; border-radius: 11px; background: #DDE7DA; color: #24463A; font-size: 12px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0">2</span><span>Some may be listened to by trained people to mark how words were said.</span></li><li style="display: flex; gap: 10px; font-size: 14px; line-height: 1.45; color: #1C2B24"><span style="width: 22px; height: 22px; border-radius: 11px; background: #DDE7DA; color: #24463A; font-size: 12px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0">3</span><span>We use them only to improve Dygo’s speech checker. Never sold, never public.</span></li><li style="display: flex; gap: 10px; font-size: 14px; line-height: 1.45; color: #1C2B24"><span style="width: 22px; height: 22px; border-radius: 11px; background: #DDE7DA; color: #24463A; font-size: 12px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0">4</span><span>Kept up to 3 years. Turn off or delete any time here.</span></li></ul>
+<div style="display: flex; flex-direction: column; gap: 8px"><span style="font-size: 13px; font-weight: 700; color: #5E6A62">Where did you grow up? (optional)</span><div style="display: flex; flex-wrap: wrap; gap: 6px"><button style="height: 36px; padding: 0 12px; border-radius: 18px; border: 1px solid #E3DDD0; background: #FFFFFF; font-family: inherit; font-size: 13px; font-weight: 600; color: #1C2B24; cursor: pointer">North</button><button style="height: 36px; padding: 0 12px; border-radius: 18px; border: 1px solid #E3DDD0; background: #FFFFFF; font-family: inherit; font-size: 13px; font-weight: 600; color: #1C2B24; cursor: pointer">Central</button><button style="height: 36px; padding: 0 12px; border-radius: 18px; border: 1px solid #24463A; background: #DDE7DA; font-family: inherit; font-size: 13px; font-weight: 600; color: #1C2B24; cursor: pointer">South</button><button style="height: 36px; padding: 0 12px; border-radius: 18px; border: 1px solid #E3DDD0; background: #FFFFFF; font-family: inherit; font-size: 13px; font-weight: 600; color: #1C2B24; cursor: pointer">Elsewhere</button><button style="height: 36px; padding: 0 12px; border-radius: 18px; border: 1px solid #E3DDD0; background: #FFFFFF; font-family: inherit; font-size: 13px; font-weight: 600; color: #1C2B24; cursor: pointer">Prefer not to say</button></div></div>
+<div style="display: flex; gap: 10px; margin-top: 4px">
+<button onClick="{{notNow}}" style="flex: 1; height: 54px; border-radius: 16px; border: 1px solid #CFC8B8; background: #FFFFFF; font-family: inherit; font-weight: 700; font-size: 16px; color: #1C2B24; cursor: pointer">Not now</button>
+<button onClick="{{yes}}" style="flex: 1; height: 54px; border-radius: 16px; border: none; background: #24463A; font-family: inherit; font-weight: 700; font-size: 16px; color: #FFFFFF; cursor: pointer">Yes, donate</button>
+</div>
+</div>
+</div>
+</sc-if>
+<sc-if value="{{del}}" hint-placeholder-val="{{false}}">
+<div style="position: absolute; inset: 0; background: rgba(28, 43, 36, 0.45); display: flex; align-items: center; justify-content: center; padding: 20px">
+<div class="up" role="alertdialog" aria-label="Delete 38 donated recordings?" style="background: #FFFFFF; border-radius: 24px; padding: 20px; display: flex; flex-direction: column; gap: 12px">
+<span style="font-family: 'Fraunces', serif; font-weight: 600; font-size: 22px; line-height: 1.2">Delete 38 donated recordings?</span>
+<span style="font-size: 14px; line-height: 1.5; color: #44524A">We’ll delete them within 30 days and stop keeping new ones. A model already trained can’t forget them, but they won’t be used again. This can’t be undone.</span>
+<button onClick="{{doDelete}}" style="height: 50px; border-radius: 14px; border: none; background: #B4552E; color: #FFFFFF; font-family: inherit; font-weight: 700; font-size: 15px; cursor: pointer">Delete recordings</button>
+<button onClick="{{closeDelete}}" style="height: 44px; border: none; background: none; font-family: inherit; font-weight: 600; font-size: 15px; color: #24463A; cursor: pointer">Cancel</button>
+</div>
+</div>
+</sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844},"state":{"editor":"enum","options":["off","confirm","on","delete","deleted"],"default":"off","section":"Demo"}}'>
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = {}; }
+  renderVals() {
+    const s = this.state.s ?? this.props.state ?? this.state.state ?? 'off';
+    const set = (v) => () => this.setState({ s: v });
+    const on = s === 'on' || s === 'delete';
+    return {
+      on, off: !on, confirm: s === 'confirm', del: s === 'delete', toast: s === 'deleted',
+      aria: on ? 'true' : 'false', track: on ? '#3E7F5A' : '#CFC8B8', knob: on ? '21px' : '3px',
+      cardBorder: on ? '#9CC39A' : '#E3DDD0',
+      toggle: on ? set('off') : set('confirm'), yes: set('on'), notNow: set('off'),
+      askDelete: set('delete'), doDelete: set('deleted'), closeDelete: set('on')
+    };
+  }
+}
+</script>
+</body>
+</html>
