@@ -22,6 +22,14 @@ MISSING_SCORE = 40
 # mishearings of good speech ("months" → "onts") 99–100.
 HEARD_TRUST_SCORE = 85
 
+# GOPT scorer scale (POST /check-gopt). GOPT predicts word accuracy 0–100 with a high median
+# (98): the best F1 for catching a human-marked mispronounced word (accuracy <= 5/10) on
+# speechocean762 was at 80 (flags 9% of words; humans marked 7.6%). "Missing" and the
+# Whisper-heard-another-word trust level are provisional: no data to calibrate them yet.
+GOPT_UNCLEAR_SCORE = 80
+GOPT_MISSING_SCORE = 40
+GOPT_HEARD_TRUST_SCORE = 90
+
 # Short words the sound model can't judge (a few frames, reduced vowels):
 # Whisper decides. Heard → ok; not heard → missing (M4-b). Same list as the
 # app's FUNCTION_WORDS (src/lib/speaking/constants.ts).
@@ -101,8 +109,17 @@ def match_words(reference: list[str], heard: list[dict]) -> list[WordMatch]:
     return out
 
 
-def word_status(score: int, match: WordMatch, word: str = "") -> tuple[str, str | None]:
-    """(status, heard) for one word: `missing`, `unclear` or `ok`."""
+def word_status(
+    score: int,
+    match: WordMatch,
+    word: str = "",
+    *,
+    unclear: int = UNCLEAR_SCORE,
+    missing: int = MISSING_SCORE,
+    trust: int = HEARD_TRUST_SCORE,
+) -> tuple[str, str | None]:
+    """(status, heard) for one word: `missing`, `unclear` or `ok`. The three
+    thresholds default to the GOP scale; the GOPT scorer passes its own."""
     function_word = normalise(word) in FUNCTION_WORDS
     if function_word:
         # Too short to judge by sound: Whisper decides.
@@ -111,14 +128,14 @@ def word_status(score: int, match: WordMatch, word: str = "") -> tuple[str, str 
         if match.heard is None:
             return "missing", None
     if match.heard is not None:
-        if score >= HEARD_TRUST_SCORE:
+        if score >= trust:
             return "ok", None  # Whisper misheard; the sounds are right
         return "unclear", match.heard
-    if not match.found and score < MISSING_SCORE:
+    if not match.found and score < missing:
         return "missing", None
-    if not match.found and score < UNCLEAR_SCORE:
+    if not match.found and score < unclear:
         return "unclear", None
-    if score < MISSING_SCORE:
+    if score < missing:
         return "unclear", None
     return "ok", None
 

@@ -23,7 +23,19 @@ import torchaudio.functional as AF
 from faster_whisper import WhisperModel
 from transformers import Wav2Vec2ForCTC, Wav2Vec2Processor
 
-from .matching import VARIANTS, match_words, normalise, tokens, total_score, word_status
+from .gopt_scorer import Gopt
+from .matching import (
+    GOPT_HEARD_TRUST_SCORE,
+    GOPT_MISSING_SCORE,
+    GOPT_UNCLEAR_SCORE,
+    VARIANTS,
+    match_words,
+    normalise,
+    tokens,
+    total_score,
+    word_status,
+)
+from .phones import sentence_phones
 from . import word as wordcheck
 
 RATE = 16000
@@ -76,8 +88,10 @@ class Scorer:
         self.longest = max(len(k) for k in self.vocab)
         self.phoneme = {v: k for k, v in self.vocab.items()}
         self.pool = ThreadPoolExecutor(max_workers=2)
-        # Warm up both models so the first real check isn't slow.
+        self.gopt = Gopt(vocab, self.blank)
+        # Warm up the models so the first real check isn't slow.
         self.check(np.zeros(RATE, dtype=np.float32), "Hello there.")
+        self.check_gopt(np.zeros(RATE, dtype=np.float32), "Hello there.")
 
     # ── phonemes ──────────────────────────────────────────────────────────
     def word_ids(self, word: str) -> list[int]:
@@ -188,6 +202,54 @@ class Scorer:
             )
         return {
             "total": total_score(scores, statuses, positions, target_index, words),
+            "heard_text": " ".join(h["word"] for h in heard),
+            "duration_ms": round(len(audio) / RATE * 1000),
+            "words": out_words,
+        }
+
+    # ── check with GOPT ───────────────────────────────────────────────────
+    def espeak_phones(self, word: str) -> list[str]:
+        """The phoneme model's own espeak tokens for a word CMUdict doesn't have."""
+        return [self.phoneme[i] for i in self.word_ids(word)]
+
+    def check_gopt(self, audio: np.ndarray, sentence: str, target_index: int | None = None) -> dict:
+        """Same reply shape as `check`, scored by the GOPT transformer (`POST /check-gopt`):
+        word and phone scores 0–100 from speechocean762-trained GOPT on this model's features;
+        Whisper still says what was left out or said as another word."""
+        positions = [i for i, w in enumerate(sentence.split()) if normalise(w)]
+        pairs = sentence_phones(sentence, self.espeak_phones)
+        words = [w for w, _ in pairs]
+        heard_f = self.pool.submit(self.heard_words, audio)
+        res = self.gopt.score(self.logprobs(audio), [p for _, p in pairs])
+        heard = heard_f.result()
+        matches = match_words(words, heard)
+        out_words, scores, statuses = [], [], []
+        for idx, w, g, m in zip(positions, words, res["words"], matches):
+            if g is None:  # no phones known for the word, or audio too short to align: Whisper decides
+                status, heard_word = ("ok", None) if m.found else ("unclear", m.heard) if m.heard else ("missing", None)
+                score = None
+            else:
+                score = g["score"]
+                status, heard_word = word_status(
+                    score, m, w, unclear=GOPT_UNCLEAR_SCORE, missing=GOPT_MISSING_SCORE, trust=GOPT_HEARD_TRUST_SCORE
+                )
+            statuses.append(status)
+            scores.append(score if score is not None else (100 if status == "ok" else 0))
+            out_words.append(
+                {
+                    "index": idx,
+                    "text": w,
+                    "score": score,
+                    "status": status,
+                    "heard": heard_word,
+                    "start": m.start,
+                    "end": m.end,
+                    "phones": g["phones"] if g else [],
+                }
+            )
+        return {
+            "total": total_score(scores, statuses, positions, target_index, words),
+            "gopt": {"accuracy": res["accuracy"], "total": res["total"], "aligned": res["aligned"]},
             "heard_text": " ".join(h["word"] for h in heard),
             "duration_ms": round(len(audio) / RATE * 1000),
             "words": out_words,

@@ -37,6 +37,24 @@ Multipart: `audio` (m4a / webm / wav, ≤ 1 MB, 0.3–30 s), `sentence`. Errors:
 
 `status`: `ok`, `unclear` (low sound score, or `heard` = the word Whisper heard instead) or `missing`. Thresholds (`UNCLEAR_SCORE` 60, `MISSING_SCORE` 40) are first guesses, tuned in M4 with real recordings.
 
+## `POST /check-gopt`
+
+GOPT pronunciation scorer (2026-10-11, `com.dydoacademy.gopt`). Same request and reply shape as `/check`, plus `gopt` (the model's own utterance `accuracy` / `total`, 0–100, and `aligned`) and each word's `phones` (`[{"phone": "EH", "score": 91}]`). Same limits, lock and logging as `/check`; `/check` and `/check-word` are unchanged.
+
+```bash
+curl -s -F audio=@samples/migrate.m4a -F "sentence=Planting more trees can help mitigate the effects of climate change." -F target_index=5 http://127.0.0.1:8100/check-gopt
+```
+
+How it works (`app/phones.py`, `app/gopt_scorer.py`, `app/gopt_model.py`):
+1. **Sentence → phones**: CMUdict (`app/data/cmudict.dict`, BSD) first; a word it lacks (names, numbers, new words) falls back to the phoneme model's espeak tokens converted to ARPAbet (`TOKEN_TO_ARPA`). A word with no phones is left unscored and Whisper alone decides its mark.
+2. **Features**: the same wav2vec2 phoneme model force-aligns those phones and gives 84 features per phone (same layout as GOPT's Kaldi features; keep `gopt_scorer.py` in step with `com.dydoacademy.gopt/wav2vec2/extract_feats.py`).
+3. **GOPT** (`app/data/gopt/gopt_wav2vec2.pth`, 26.6 K parameters, trained on speechocean762) scores each phone, word and the utterance (0–2 × 50 = 0–100). Sentences over 50 phones go through in chunks of whole words.
+4. **Marks**: word score under `GOPT_UNCLEAR_SCORE` (80, best F1 on speechocean762; humans marked 7.6% of words, this flags about 9%) is `unclear`; `missing` and "Whisper heard another word" use Whisper as in `/check` (provisional `GOPT_MISSING_SCORE` 40 and `GOPT_HEARD_TRUST_SCORE` 90, no calibration data yet). `total` uses the same rules and caps as `/check`.
+
+Accuracy on speechocean762 (500 test utterances): word score correlation with human scores 0.55 (current `/check`: 0.32); sentence correlation 0.77 (0.54); mispronounced-word AUC 0.89 (0.81). Cost: about 0.1 s on top of `/check`. All speakers there are Mandarin-accented: the thresholds and the model should be validated on Vietnamese learners' recordings before the app relies on them.
+
+Deploy: `docker compose up -d --build speech speech-2` (restarts both scorers; models load from the volume). Tests: `docker run --rm --entrypoint python <image> -m pytest -q tests`.
+
 ## `POST /check-word`
 
 Pronunciation "Stepping stones" (2026-10-11): one word, a score per syllable. Multipart `audio`, `word`, `ipa` (the word's IPA for the accent, e.g. `/ˈmɪt.ɪ.ɡeɪt/`; empty = espeak's spelling of the word, one syllable). Same limits, lock and logging as `/check`.
