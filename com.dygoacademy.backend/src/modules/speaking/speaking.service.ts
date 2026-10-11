@@ -6,8 +6,9 @@ import { recordMissionProgress } from '../missions/missions.store';
 import { resolveUserTimezone } from '../srs/srs.service';
 import { StorageService } from '../../storage/storage.service';
 import { CreateSpeakingAttemptDto } from './dto/create-attempt.dto';
+import { wordSyllables } from './speaking-syllables';
 import {
-  HARVEST_MIN_SCORE,
+  POLLINATE_MIN_SCORE,
   SPEAKING_LOOKUP_MAX,
   SPEAKING_SESSION_SIZE,
   SpeakingAccent,
@@ -23,7 +24,7 @@ import {
 /** Any 8-4-4-4-12 hex id (seed ids aren't RFC-version UUIDs, so no version check). */
 const UUID_SHAPE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
-interface ItemRow extends Omit<SpeakingSessionItem, 'audio_uk_url' | 'audio_us_url'> {
+interface ItemRow extends Omit<SpeakingSessionItem, 'audio_uk_url' | 'audio_us_url' | 'syllables'> {
   audio_uk_path: string | null;
   audio_us_path: string | null;
   timings_uk: SpeakingTimings | null;
@@ -110,10 +111,11 @@ export class SpeakingService {
           limit $2`,
         [topicId ?? null, SPEAKING_SESSION_SIZE],
       );
+      const accent = await this.defaultAccent(client);
       return {
         item_count: Number(count.rows[0]?.item_count ?? 0),
-        default_accent: await this.defaultAccent(client),
-        items: items.rows.map((row) => this.toItem(row)),
+        default_accent: accent,
+        items: items.rows.map((row) => this.toItem(row, accent)),
       };
     });
   }
@@ -142,10 +144,8 @@ export class SpeakingService {
         [topicWordId],
       );
       if (!rows.rows[0]) throw new NotFoundException('Speaking item not found');
-      return {
-        default_accent: await this.defaultAccent(client),
-        item: this.toItem(rows.rows[0]),
-      };
+      const accent = await this.defaultAccent(client);
+      return { default_accent: accent, item: this.toItem(rows.rows[0], accent) };
     });
   }
 
@@ -231,7 +231,7 @@ export class SpeakingService {
           await recordMissionProgress(client, userId, timezone, new Date(), 'SPEAK');
         }
         let harvested = false;
-        if (dto.harvest && dto.score >= HARVEST_MIN_SCORE) {
+        if (dto.harvest && dto.score >= POLLINATE_MIN_SCORE) {
           const res = await client.query(
             `insert into public.speaking_harvests (lexicon_id, score)
              select si.lexicon_id, $2 from public.speaking_items si where si.id = $1
@@ -262,10 +262,13 @@ export class SpeakingService {
    */
   async harvest(userId: string, topicId: string): Promise<SpeakingHarvestWord[]> {
     if (!UUID_SHAPE.test(topicId)) throw new NotFoundException('Topic not found');
-    return this.db.queryAs<SpeakingHarvestWord>(
+    const rows = await this.db.queryAs<
+      Omit<SpeakingHarvestWord, 'syllables'> & { word: string; ipa_us: string | null }
+    >(
       userId,
       `select tw.id as topic_word_id, si.id as item_id,
-              h.score as harvested_score, h.created_at as harvested_at, ml.ipa_uk
+              h.score as harvested_score, h.created_at as harvested_at, ml.ipa_uk,
+              ml.normalized_word as word, ml.ipa_us
          from public.topic_words tw
          join public.speaking_items si on si.lexicon_id = tw.lexicon_id
          join public.master_lexicon ml on ml.id = tw.lexicon_id
@@ -275,6 +278,10 @@ export class SpeakingService {
         order by tw.created_at, tw.id`,
       [topicId],
     );
+    return rows.map(({ word, ipa_us, ...row }) => ({
+      ...row,
+      syllables: wordSyllables(word, row.ipa_uk ?? ipa_us),
+    }));
   }
 
   /** From profiles.english_variety: en-GB → UK, anything else → US. */
@@ -286,9 +293,14 @@ export class SpeakingService {
   }
 
   /** R2 keys → public URLs; the keys never leave the API. */
-  private toItem({ audio_uk_path, audio_us_path, ...item }: ItemRow): SpeakingSessionItem {
+  private toItem(
+    { audio_uk_path, audio_us_path, ...item }: ItemRow,
+    accent: SpeakingAccent,
+  ): SpeakingSessionItem {
+    const ipa = accent === 'UK' ? (item.ipa_uk ?? item.ipa_us) : (item.ipa_us ?? item.ipa_uk);
     return {
       ...item,
+      syllables: wordSyllables(item.word, ipa),
       audio_uk_url: audio_uk_path ? this.storage.publicUrlFor(audio_uk_path) : null,
       audio_us_url: audio_us_path ? this.storage.publicUrlFor(audio_us_path) : null,
     };

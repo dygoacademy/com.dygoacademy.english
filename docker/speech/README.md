@@ -37,6 +37,31 @@ Multipart: `audio` (m4a / webm / wav, ≤ 1 MB, 0.3–30 s), `sentence`. Errors:
 
 `status`: `ok`, `unclear` (low sound score, or `heard` = the word Whisper heard instead) or `missing`. Thresholds (`UNCLEAR_SCORE` 60, `MISSING_SCORE` 40) are first guesses, tuned in M4 with real recordings.
 
+## `POST /check-word`
+
+Pronunciation "Stepping stones" (2026-10-11): one word, a score per syllable. Multipart `audio`, `word`, `ipa` (the word's IPA for the accent, e.g. `/ˈmɪt.ɪ.ɡeɪt/`; empty = espeak's spelling of the word, one syllable). Same limits, lock and logging as `/check`.
+
+```json
+{
+  "status": "ok",
+  "total": 76,
+  "heard_text": "mitigate",
+  "duration_ms": 900,
+  "latency_ms": 700,
+  "syllables": [
+    { "ipa": "ˈmɪt", "score": 91, "wobbly": false, "heard_ipa": null },
+    { "ipa": "ɪ", "score": 48, "wobbly": true, "heard_ipa": "aɪ" },
+    { "ipa": "ɡeɪt", "score": 88, "wobbly": false, "heard_ipa": null }
+  ]
+}
+```
+
+Rules (`app/word.py`): syllables split on `.` and before `ˈ` / `ˌ` (as the backend's `ipaSyllables`); a syllable's score is the mean of its phonemes' GOP; under 60 = `wobbly`; `heard_ipa` is the phoneme model's own best path over a wobbly syllable's frames when it differs, else null. `status`: `not_heard` (under 0.3 s of voice, or no word heard and every syllable under 20), `other_word` (Whisper heard one other word, UK / US spellings aside, and the total is under 50), else `ok`. `total` = mean of the phoneme scores. The backend calls it pollinated at `ok` and 80+.
+
+```bash
+curl -s -F audio=@samples/migrate.m4a -F word=mitigate -F "ipa=/ˈmɪt.ɪ.ɡeɪt/" http://127.0.0.1:8100/check-word
+```
+
 ## Limits
 
 CPU only (Docker on macOS can't use the GPU). A 4–6 s sentence takes ~1.7–3.3 s, up to ~5 s when the Mac is busy; one check at a time. `mem_limit` 4 GB, ~0.8–1.5 GB used.

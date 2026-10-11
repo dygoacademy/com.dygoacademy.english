@@ -149,6 +149,9 @@ run_rls_suite() {
   # Phase 13 speaking entry points (SPEAK missions, harvests, Echo totals).
   run_file "$DIR/migrations/20261006_speaking_entry_points.sql" "$scratch"
   run_file "$DIR/tests/rls_speaking_entry_test.sql" "$scratch"
+  # Pronunciation: pollinated at 80+ (D-3, 2026-10-11).
+  run_file "$DIR/migrations/20261011_pronunciation_pollinate.sql" "$scratch"
+  run_file "$DIR/tests/rls_pronunciation_test.sql" "$scratch"
   # Onboarding OB1–OB5: profile columns + backfill of the fixtures as onboarded.
   run_file "$DIR/migrations/20261008_onboarding.sql" "$scratch"
   run_file "$DIR/tests/rls_onboarding_test.sql" "$scratch"

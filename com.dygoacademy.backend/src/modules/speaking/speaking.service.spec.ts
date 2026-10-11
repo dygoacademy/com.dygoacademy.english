@@ -253,12 +253,13 @@ describe('SpeakingService.createAttempt', () => {
     expect(again.query.mock.calls.some(([sql]) => sql.includes('daily_missions'))).toBe(false);
   });
 
-  it('harvests only when asked and at 90%+', async () => {
+  it('pollinates only when asked and at 80%+ (D-3, 2026-10-11)', async () => {
     const low = fakeClient({ harvestRows: [{ id: 'h1' }] });
     const lowRes = await (
       await makeService({ withUser: low.withUser })
     ).createAttempt('user-1', {
       ...dto,
+      score: 79,
       harvest: true,
     });
     expect(lowRes.harvested).toBe(false);
@@ -269,14 +270,14 @@ describe('SpeakingService.createAttempt', () => {
       await makeService({ withUser: high.withUser })
     ).createAttempt('user-1', {
       ...dto,
-      score: 94,
-      stage: 'fruit' as const,
+      score: 80,
+      stage: 'bloom' as const,
       harvest: true,
     });
     expect(highRes.harvested).toBe(true);
     const insert = high.query.mock.calls.find(([sql]) => sql.includes('speaking_harvests'))!;
     expect(insert[0]).toContain('on conflict (user_id, lexicon_id) do nothing');
-    expect(insert[1]).toEqual(['item-1', 94]);
+    expect(insert[1]).toEqual(['item-1', 80]);
   });
 
   it('404s for an unknown item', async () => {
@@ -298,16 +299,35 @@ describe('SpeakingService.createAttempt', () => {
 
 describe('SpeakingService.harvest (SE5)', () => {
   it("reads the bed's speakable words with the learner's harvests", async () => {
-    const queryAs = jest
-      .fn()
-      .mockResolvedValue([
-        { topic_word_id: 'tw-1', item_id: 'item-1', harvested_score: 94, harvested_at: 'now', ipa_uk: '/ˈmɪtɪɡeɪt/' },
-      ]);
+    const queryAs = jest.fn().mockResolvedValue([
+      {
+        topic_word_id: 'tw-1',
+        item_id: 'item-1',
+        harvested_score: 94,
+        harvested_at: 'now',
+        ipa_uk: '/ˈmɪt.ɪ.ɡeɪt/',
+        ipa_us: null,
+        word: 'mitigate',
+      },
+    ]);
     const service = await makeService({ queryAs });
 
     const rows = await service.harvest('user-1', TOPIC_ID);
 
-    expect(rows).toHaveLength(1);
+    expect(rows).toEqual([
+      {
+        topic_word_id: 'tw-1',
+        item_id: 'item-1',
+        harvested_score: 94,
+        harvested_at: 'now',
+        ipa_uk: '/ˈmɪt.ɪ.ɡeɪt/',
+        syllables: [
+          { text: 'mi', stressed: true },
+          { text: 'ti', stressed: false },
+          { text: 'gate', stressed: false },
+        ],
+      },
+    ]);
     expect(queryAs.mock.calls[0][1]).toContain('speaking_harvests');
     expect(queryAs.mock.calls[0][1]).toContain('ml.ipa_uk');
     expect(queryAs.mock.calls[0][2]).toEqual([TOPIC_ID]);

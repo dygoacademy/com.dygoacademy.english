@@ -19,6 +19,7 @@ import type { SpeechAudio } from './speech-checker';
 import {
   SPEAKING_CHECK_MAX_BYTES,
   SPEECH_CHECK_AVG_SECONDS,
+  SpeakingAccent,
   SpeakingCheckQueued,
   SpeakingCheckState,
 } from './speaking.types';
@@ -35,6 +36,7 @@ const AUDIO_TYPES = /^audio\/(mp4|x-m4a|aac|webm|ogg|wav|x-wav|wave)\b/;
  * written to disk, Redis, the database or logs (D2: send → check → delete).
  * When the estimated wait passes `speech.busyEtaSeconds`, a new check is
  * refused with 503 and the app shows its own quick result instead.
+ * `enqueueWord` (Pronunciation, 2026-10-11) is the same queue for one word.
  */
 @Injectable()
 export class SpeechCheckService {
@@ -50,14 +52,7 @@ export class SpeechCheckService {
     itemId: string,
     audio: SpeechAudio | undefined,
   ): Promise<SpeakingCheckQueued> {
-    if (!audio || audio.buffer.length === 0) throw new BadRequestException('audio is required');
-    if (audio.buffer.length > SPEAKING_CHECK_MAX_BYTES) {
-      throw new PayloadTooLargeException('The recording is over 1 MB');
-    }
-    if (!AUDIO_TYPES.test(audio.mimetype)) {
-      throw new UnprocessableEntityException('Send the recording as m4a, webm or wav');
-    }
-
+    const recording = this.validAudio(audio);
     const rows = await this.db.queryAs<{ sentence: string; target_index: number }>(
       userId,
       'select sentence, target_index from public.speaking_items where id = $1',
@@ -65,7 +60,68 @@ export class SpeechCheckService {
     );
     const item = rows[0];
     if (!item?.sentence) throw new NotFoundException('Speaking item not found');
+    return this.queueCheck(userId, recording, (checkId) => ({
+      checkId,
+      userId,
+      sentence: item.sentence,
+      targetIndex: item.target_index,
+    }));
+  }
 
+  /**
+   * Pronunciation (P3): one word of the learner's (`topic_word_id`, read as
+   * them, so RLS decides), checked against its IPA for `accent` (the other
+   * accent's when that one is missing).
+   */
+  async enqueueWord(
+    userId: string,
+    topicWordId: string,
+    accent: SpeakingAccent,
+    audio: SpeechAudio | undefined,
+  ): Promise<SpeakingCheckQueued> {
+    const recording = this.validAudio(audio);
+    const rows = await this.db.queryAs<{
+      lexicon_id: string;
+      word: string;
+      ipa_uk: string | null;
+      ipa_us: string | null;
+    }>(
+      userId,
+      `select ml.id as lexicon_id, ml.normalized_word as word, ml.ipa_uk, ml.ipa_us
+         from public.topic_words tw
+         join public.master_lexicon ml on ml.id = tw.lexicon_id
+        where tw.id = $1`,
+      [topicWordId],
+    );
+    const word = rows[0];
+    if (!word?.word) throw new NotFoundException('Word not found');
+    const ipa = accent === 'UK' ? (word.ipa_uk ?? word.ipa_us) : (word.ipa_us ?? word.ipa_uk);
+    return this.queueCheck(userId, recording, (checkId) => ({
+      kind: 'word',
+      checkId,
+      userId,
+      word: word.word,
+      ipa,
+      lexiconId: word.lexicon_id,
+    }));
+  }
+
+  private validAudio(audio: SpeechAudio | undefined): SpeechAudio {
+    if (!audio || audio.buffer.length === 0) throw new BadRequestException('audio is required');
+    if (audio.buffer.length > SPEAKING_CHECK_MAX_BYTES) {
+      throw new PayloadTooLargeException('The recording is over 1 MB');
+    }
+    if (!AUDIO_TYPES.test(audio.mimetype)) {
+      throw new UnprocessableEntityException('Send the recording as m4a, webm or wav');
+    }
+    return audio;
+  }
+
+  private async queueCheck(
+    userId: string,
+    audio: SpeechAudio,
+    job: (checkId: string) => SpeechCheckJob,
+  ): Promise<SpeakingCheckQueued> {
     // Busy: the wait for a new check, at SPEECH_CHECK_AVG_SECONDS per check
     // spread over the scorers, would pass the limit.
     const scorers = this.config.get<string[]>('speech.scorerUrls')?.length || 1;
@@ -79,7 +135,7 @@ export class SpeechCheckService {
     this.store.add(checkId, userId, audio);
     await this.queue.add(
       SPEECH_CHECK_JOB,
-      { checkId, userId, sentence: item.sentence, targetIndex: item.target_index },
+      job(checkId),
       // One try: a retry can't help once the recording was handed out, and a
       // failure is shown at once ("Couldn't check", Check again).
       { jobId: checkId, attempts: 1, removeOnComplete: true, removeOnFail: true },

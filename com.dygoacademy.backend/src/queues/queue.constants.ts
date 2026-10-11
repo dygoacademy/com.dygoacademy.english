@@ -57,9 +57,21 @@ export interface PartitionMaintenanceJob {
  * process's memory (SpeechCheckStore) and never goes into Redis, which
  * saves to disk (Phase 13 D2: recordings are never stored).
  */
-export interface SpeechCheckJob {
-  checkId: string;
-  userId: string;
-  sentence: string;
-  targetIndex: number;
-}
+/** A sentence check (The Pond) or, with `kind: 'word'`, one word (Pronunciation, 2026-10-11). */
+export type SpeechCheckJob =
+  | {
+      kind?: 'sentence';
+      checkId: string;
+      userId: string;
+      sentence: string;
+      targetIndex: number;
+    }
+  | {
+      kind: 'word';
+      checkId: string;
+      userId: string;
+      word: string;
+      /** The word's IPA for the practised accent (null when the word has none). */
+      ipa: string | null;
+      lexiconId: string;
+    };

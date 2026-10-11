@@ -12,12 +12,13 @@ import { Job, Queue } from 'bullmq';
 
 import { DatabaseService } from '../../database/database.service';
 import { SpeechCheckRateLimitGuard } from './speech-check-rate-limit.guard';
-import { stageForScore, toCheckResult } from './speech-check.mapper';
+import { stageForScore, toCheckResult, toWordCheckResult } from './speech-check.mapper';
 import { SpeechCheckJob } from '../../queues/queue.constants';
 import { SpeechCheckProcessor } from './speech-check.processor';
 import { SpeechCheckService } from './speech-check.service';
 import { AUDIO_TTL_MS, RESULT_TTL_MS, ScorerPool, SpeechCheckStore } from './speech-check.store';
-import { ScorerResult, SpeechCheckError } from './speech-checker';
+import { ScorerResult, ScorerWordResult, SpeechCheckError } from './speech-checker';
+import type { SpeakingCheckResult, SpeakingWordCheckResult } from './speaking.types';
 
 const SENTENCE = 'Planting more trees can help mitigate the effects of climate change.';
 
@@ -187,7 +188,7 @@ describe('SpeechCheckService (queue v1)', () => {
     store.done(check_id, toCheckResult(scorer({ 6: { status: 'missing' } }), 11));
     const done = service.status('owner', check_id);
     expect(done.status).toBe('done');
-    expect(done.result?.word_marks[6].reason).toBe('missing');
+    expect((done.result as SpeakingCheckResult).word_marks[6].reason).toBe('missing');
   });
 });
 
@@ -235,19 +236,26 @@ describe('SpeechCheckStore and ScorerPool', () => {
   });
 });
 
+function makeProcessor(
+  check: jest.Mock,
+  checkWord: jest.Mock = jest.fn(),
+  queryAs: jest.Mock = jest.fn(),
+) {
+  const store = new SpeechCheckStore();
+  const config = {
+    get: () => ['http://s0', 'http://s1'],
+  } as unknown as ConfigService;
+  const processor = new SpeechCheckProcessor(store, { check, checkWord }, config, {
+    queryAs,
+  } as unknown as DatabaseService);
+  const job = (checkId: string) =>
+    ({
+      data: { checkId, userId: 'u', sentence: SENTENCE, targetIndex: 5 },
+    }) as Job<SpeechCheckJob>;
+  return { store, processor, job };
+}
 describe('SpeechCheckProcessor', () => {
-  function make(check: jest.Mock) {
-    const store = new SpeechCheckStore();
-    const config = {
-      get: () => ['http://s0', 'http://s1'],
-    } as unknown as ConfigService;
-    const processor = new SpeechCheckProcessor(store, { check }, config);
-    const job = (checkId: string) =>
-      ({
-        data: { checkId, userId: 'u', sentence: SENTENCE, targetIndex: 5 },
-      }) as Job<SpeechCheckJob>;
-    return { store, processor, job };
-  }
+  const make = makeProcessor;
 
   it('takes the recording, checks it on a scorer with the target index, stores the marks', async () => {
     const check = jest.fn().mockResolvedValue(scorer({ 6: { status: 'missing' } }));
@@ -260,7 +268,9 @@ describe('SpeechCheckProcessor', () => {
       5,
       expect.stringMatching(/^http:\/\/s[01]$/),
     );
-    expect(store.get('c1', 'u')?.result?.word_marks[6].reason).toBe('missing');
+    expect((store.get('c1', 'u')?.result as SpeakingCheckResult).word_marks[6].reason).toBe(
+      'missing',
+    );
     expect(store.takeAudio('c1')).toBeNull(); // the recording is gone
     store.onModuleDestroy();
   });
@@ -286,6 +296,182 @@ describe('SpeechCheckProcessor', () => {
     await processor.process(job('c1'));
     expect(check).not.toHaveBeenCalled();
     expect(store.get('c1', 'u')).toMatchObject({ status: 'failed', reason: 'expired' });
+    store.onModuleDestroy();
+  });
+});
+
+describe('Word check (Pronunciation, 2026-10-11)', () => {
+  const MITIGATE = '/ˈmɪt.ɪ.ɡeɪt/';
+  const raw = (over: Partial<ScorerWordResult> = {}): ScorerWordResult => ({
+    status: 'ok',
+    total: 76,
+    heard_text: 'mitigate',
+    duration_ms: 900,
+    latency_ms: 700,
+    syllables: [
+      { ipa: 'ˈmɪt', score: 91, wobbly: false, heard_ipa: null },
+      { ipa: 'ɪ', score: 48, wobbly: true, heard_ipa: 'aɪ' },
+      { ipa: 'ɡeɪt', score: 88, wobbly: false, heard_ipa: null },
+    ],
+    ...over,
+  });
+
+  it('passed = heard as the word at 80+; the spelling lines up with the stones', () => {
+    const almost = toWordCheckResult(raw(), 'mitigate', MITIGATE);
+    expect(almost).toMatchObject({ kind: 'word', status: 'ok', passed: false, total: 76 });
+    expect(almost.spelling.map((s) => s.text)).toEqual(['mi', 'ti', 'gate']);
+    expect(almost.spelling[0].stressed).toBe(true);
+    expect(almost.syllables[1]).toEqual({ ipa: 'ɪ', score: 48, wobbly: true, heard_ipa: 'aɪ' });
+    expect(toWordCheckResult(raw({ total: 80 }), 'mitigate', MITIGATE).passed).toBe(true);
+    expect(
+      toWordCheckResult(raw({ status: 'not_heard', total: 90 }), 'mitigate', MITIGATE).passed,
+    ).toBe(false);
+    expect(
+      toWordCheckResult(raw({ status: 'other_word', total: 40 }), 'mitigate', MITIGATE),
+    ).toMatchObject({
+      status: 'other_word',
+      passed: false,
+    });
+    // The scorer fell back to one syllable (no IPA): no spelled stones.
+    const one = raw({
+      syllables: [{ ipa: 'mitigate', score: 70, wobbly: false, heard_ipa: null }],
+    });
+    expect(toWordCheckResult(one, 'mitigate', null).spelling).toEqual([]);
+  });
+
+  function service(rows: unknown[]) {
+    const queryAs = jest.fn().mockResolvedValue(rows);
+    const queue = {
+      getWaitingCount: jest.fn().mockResolvedValue(0),
+      getActiveCount: jest.fn().mockResolvedValue(0),
+      add: jest.fn().mockResolvedValue({}),
+    };
+    const config = {
+      get: (key: string) =>
+        ({ 'speech.scorerUrls': ['http://s0'], 'speech.busyEtaSeconds': 15 })[key],
+    } as unknown as ConfigService;
+    const s = new SpeechCheckService(
+      { queryAs } as unknown as DatabaseService,
+      new SpeechCheckStore(),
+      config,
+      queue as unknown as Queue<SpeechCheckJob>,
+    );
+    return { s, queryAs, queue };
+  }
+
+  it('queues the word and its IPA for the accent, read as the learner; 404 when unreadable', async () => {
+    const word = {
+      lexicon_id: 'lex-1',
+      word: 'mitigate',
+      ipa_uk: MITIGATE,
+      ipa_us: '/ˈmɪt̬.ə.ɡeɪt/',
+    };
+    const { s, queryAs, queue } = service([word]);
+    const r = await s.enqueueWord('u', 'tw-1', 'UK', audio());
+    expect(queryAs).toHaveBeenCalledWith('u', expect.stringContaining('topic_words'), ['tw-1']);
+    expect(queue.add.mock.calls[0][1]).toEqual({
+      kind: 'word',
+      checkId: r.check_id,
+      userId: 'u',
+      word: 'mitigate',
+      ipa: MITIGATE,
+      lexiconId: 'lex-1',
+    });
+    await s.enqueueWord('u', 'tw-1', 'US', audio());
+    expect(queue.add.mock.calls[1][1].ipa).toBe('/ˈmɪt̬.ə.ɡeɪt/');
+    // No UK IPA: the US one is used.
+    const { s: s2, queue: q2 } = service([{ ...word, ipa_uk: null }]);
+    await s2.enqueueWord('u', 'tw-1', 'UK', audio());
+    expect(q2.add.mock.calls[0][1].ipa).toBe('/ˈmɪt̬.ə.ɡeɪt/');
+    await expect(service([]).s.enqueueWord('u', 'tw-x', 'UK', audio())).rejects.toBeInstanceOf(
+      NotFoundException,
+    );
+    await expect(s.enqueueWord('u', 'tw-1', 'UK', undefined)).rejects.toBeInstanceOf(
+      BadRequestException,
+    );
+  });
+
+  const wordJob = (checkId: string) =>
+    ({
+      data: {
+        kind: 'word',
+        checkId,
+        userId: 'u',
+        word: 'mitigate',
+        ipa: MITIGATE,
+        lexiconId: 'lex-1',
+      },
+    }) as Job<SpeechCheckJob>;
+
+  it('a passed word is pollinated, as the learner, once (never SRS)', async () => {
+    const checkWord = jest.fn().mockResolvedValue(raw({ total: 86 }));
+    const queryAs = jest
+      .fn()
+      .mockResolvedValueOnce([{ id: 'h1' }])
+      .mockResolvedValueOnce([]);
+    const { store, processor } = makeProcessor(jest.fn(), checkWord, queryAs);
+    store.add('w1', 'u', audio());
+    await processor.process(wordJob('w1'));
+    expect(checkWord).toHaveBeenCalledWith(
+      expect.objectContaining({ mimetype: 'audio/mp4' }),
+      'mitigate',
+      MITIGATE,
+      expect.stringMatching(/^http:\/\/s[01]$/),
+    );
+    expect(queryAs).toHaveBeenCalledWith(
+      'u',
+      expect.stringMatching(
+        /insert into public\.speaking_harvests[\s\S]*on conflict \(user_id, lexicon_id\) do nothing/,
+      ),
+      ['lex-1', 86],
+    );
+    expect(String(queryAs.mock.calls[0][1])).not.toMatch(/user_word_srs/);
+    const first = store.get('w1', 'u')?.result as SpeakingWordCheckResult;
+    expect(first).toMatchObject({ passed: true, pollinated: true });
+    // Said well again the same day: no second row.
+    store.add('w2', 'u', audio());
+    await processor.process(wordJob('w2'));
+    expect((store.get('w2', 'u')?.result as SpeakingWordCheckResult).pollinated).toBe(false);
+    store.onModuleDestroy();
+  });
+
+  it('not passed, not heard or another word: nothing is written', async () => {
+    for (const r of [
+      raw(),
+      raw({ status: 'not_heard', total: 0 }),
+      raw({ status: 'other_word', total: 30 }),
+    ]) {
+      const queryAs = jest.fn();
+      const { store, processor } = makeProcessor(
+        jest.fn(),
+        jest.fn().mockResolvedValue(r),
+        queryAs,
+      );
+      store.add('w1', 'u', audio());
+      await processor.process(wordJob('w1'));
+      expect(queryAs).not.toHaveBeenCalled();
+      expect(store.get('w1', 'u')?.result).toMatchObject({
+        status: r.status,
+        passed: false,
+        pollinated: false,
+      });
+      store.onModuleDestroy();
+    }
+  });
+
+  it('a failed save still shows the result', async () => {
+    const queryAs = jest.fn().mockRejectedValue(new Error('check constraint'));
+    const { store, processor } = makeProcessor(
+      jest.fn(),
+      jest.fn().mockResolvedValue(raw({ total: 95 })),
+      queryAs,
+    );
+    store.add('w1', 'u', audio());
+    await processor.process(wordJob('w1'));
+    expect(store.get('w1', 'u')).toMatchObject({
+      status: 'done',
+      result: { passed: true, pollinated: false },
+    });
     store.onModuleDestroy();
   });
 });

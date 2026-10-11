@@ -29,6 +29,16 @@ export interface ScorerResult {
   words: ScorerWord[];
 }
 
+/** The scorer's reply to `POST /check-word` (one word, per syllable). */
+export interface ScorerWordResult {
+  status: 'ok' | 'not_heard' | 'other_word';
+  total: number;
+  heard_text: string;
+  duration_ms: number;
+  latency_ms: number;
+  syllables: { ipa: string; score: number; wobbly: boolean; heard_ipa: string | null }[];
+}
+
 export interface SpeechAudio {
   buffer: Buffer;
   mimetype: string;
@@ -44,6 +54,13 @@ export interface SpeechChecker {
     /** Which scorer: the queue worker picks a free one from SPEECH_SCORER_URLS. */
     scorerUrl: string,
   ): Promise<ScorerResult>;
+  /** One word (Pronunciation): `ipa` for the practised accent, '' when the word has none. */
+  checkWord(
+    audio: SpeechAudio,
+    word: string,
+    ipa: string,
+    scorerUrl: string,
+  ): Promise<ScorerWordResult>;
 }
 
 /** Why a check failed, for the endpoint's status code. */
@@ -58,7 +75,8 @@ export class SpeechCheckError extends Error {
 
 /**
  * The free scorer on this Mac (docker compose service `speech`, README
- * "Speech checking"). Multipart `audio` + `sentence` to `{scorerUrl}/check`.
+ * "Speech checking"). Multipart `audio` + `sentence` to `{scorerUrl}/check`;
+ * `audio` + `word` + `ipa` to `{scorerUrl}/check-word`.
  * Logs status and timings only, never the audio, the sentence or what was
  * heard.
  */
@@ -74,7 +92,25 @@ export class MacSpeechChecker implements SpeechChecker {
     targetIndex: number | undefined,
     scorerUrl: string,
   ): Promise<ScorerResult> {
-    const url = `${scorerUrl}/check`;
+    const fields: Record<string, string> = { sentence };
+    if (targetIndex !== undefined) fields.target_index = String(targetIndex);
+    return this.post<ScorerResult>(`${scorerUrl}/check`, audio, fields);
+  }
+
+  async checkWord(
+    audio: SpeechAudio,
+    word: string,
+    ipa: string,
+    scorerUrl: string,
+  ): Promise<ScorerWordResult> {
+    return this.post<ScorerWordResult>(`${scorerUrl}/check-word`, audio, { word, ipa });
+  }
+
+  private async post<T>(
+    url: string,
+    audio: SpeechAudio,
+    fields: Record<string, string>,
+  ): Promise<T> {
     const timeoutMs = this.config.get<number>('speech.timeoutMs') ?? 8000;
     const form = new FormData();
     form.append(
@@ -82,8 +118,7 @@ export class MacSpeechChecker implements SpeechChecker {
       new Blob([new Uint8Array(audio.buffer)], { type: audio.mimetype }),
       audio.filename,
     );
-    form.append('sentence', sentence);
-    if (targetIndex !== undefined) form.append('target_index', String(targetIndex));
+    for (const [name, value] of Object.entries(fields)) form.append(name, value);
 
     let res: Response;
     try {
@@ -108,6 +143,6 @@ export class MacSpeechChecker implements SpeechChecker {
       this.log.warn(`speech scorer answered ${res.status}`);
       throw new SpeechCheckError('unavailable', 'Speech check is unavailable');
     }
-    return (await res.json()) as ScorerResult;
+    return (await res.json()) as T;
   }
 }

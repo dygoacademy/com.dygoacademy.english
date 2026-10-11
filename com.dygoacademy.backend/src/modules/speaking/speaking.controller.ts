@@ -24,6 +24,7 @@ import {
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { CheckSpeechDto } from './dto/check-speech.dto';
 import { CreateSpeakingAttemptDto } from './dto/create-attempt.dto';
+import { WordCheckDto } from './dto/word-check.dto';
 import { SpeechCheckRateLimitGuard } from './speech-check-rate-limit.guard';
 import { SpeechCheckService } from './speech-check.service';
 import { SpeakingService } from './speaking.service';
@@ -110,8 +111,8 @@ export class SpeakingController {
     summary: '"Ready to harvest" on a topic bed (Phase 13 SE5)',
     description:
       "The bed's words that have a speaking item, with harvested_score / harvested_at when the " +
-      'learner harvested the word (a 90%+ attempt sent with harvest: true). Visual only: ' +
-      'harvesting never changes SRS. 404 for a malformed topic_id.',
+      'learner pollinated the word (80%+), and its syllables for the bee row. Visual only: ' +
+      'it never changes SRS. 404 for a malformed topic_id.',
   })
   @ApiQuery({ name: 'topic_id', required: true })
   async harvest(
@@ -128,7 +129,7 @@ export class SpeakingController {
       "Score, garden stage and per-word marks from the on-device scorer. The learner's " +
       'recording is never uploaded (D2). Try again = another row. 404 for an unknown item_id. ' +
       "The first attempt on a sentence in the learner's day counts toward the SPEAK mission " +
-      '(SE1); with harvest: true and a score of 90+, the word is harvested (SE5, no SRS change).',
+      '(SE1); with harvest: true and a score of 80+, the word is pollinated (no SRS change).',
   })
   async createAttempt(
     @CurrentUser('id') userId: string,
@@ -175,6 +176,51 @@ export class SpeakingController {
     return this.speechCheck.enqueue(
       userId,
       dto.item_id,
+      audio && {
+        buffer: audio.buffer,
+        mimetype: audio.mimetype,
+        filename: audio.originalname || 'recording',
+      },
+    );
+  }
+
+  @Post('word-check')
+  @HttpCode(202)
+  @UseGuards(SpeechCheckRateLimitGuard)
+  @UseInterceptors(
+    // In memory only, as for POST /speaking/check.
+    FileInterceptor('audio', { limits: { fileSize: SPEAKING_CHECK_MAX_BYTES, files: 1 } }),
+  )
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    schema: {
+      type: 'object',
+      required: ['audio', 'topic_word_id', 'accent'],
+      properties: {
+        audio: { type: 'string', format: 'binary', description: 'm4a / webm / wav, ≤ 1 MB' },
+        topic_word_id: { type: 'string', format: 'uuid' },
+        accent: { type: 'string', enum: ['UK', 'US'] },
+      },
+    },
+  })
+  @ApiOperation({
+    summary: 'Queue a check of one word the learner said (Pronunciation, 2026-10-11)',
+    description:
+      'Same queue, limits and polling as POST /speaking/check (poll GET /speaking/check/:id). ' +
+      'The scorer checks the word against its IPA for the accent: a score per syllable, which ' +
+      'ones wobbled (and what they sounded like), not_heard / other_word. passed = ok and 80+; ' +
+      'a passed word is pollinated (speaking_harvests, once per word; never SRS). The ' +
+      'recording is never stored. 404 when the learner cannot read the word.',
+  })
+  async wordCheck(
+    @CurrentUser('id') userId: string,
+    @Body() dto: WordCheckDto,
+    @UploadedFile() audio?: UploadedAudio,
+  ): Promise<SpeakingCheckQueued> {
+    return this.speechCheck.enqueueWord(
+      userId,
+      dto.topic_word_id,
+      dto.accent,
       audio && {
         buffer: audio.buffer,
         mimetype: audio.mimetype,

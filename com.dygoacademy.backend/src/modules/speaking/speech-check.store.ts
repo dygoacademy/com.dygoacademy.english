@@ -1,7 +1,11 @@
 import { Injectable, OnModuleDestroy } from '@nestjs/common';
 
 import type { SpeechAudio } from './speech-checker';
-import type { SpeakingCheckResult, SpeakingCheckStatus } from './speaking.types';
+import type {
+  SpeakingCheckResult,
+  SpeakingCheckStatus,
+  SpeakingWordCheckResult,
+} from './speaking.types';
 
 /** A recording waits at most this long for a worker, then it's dropped. */
 export const AUDIO_TTL_MS = 60_000;
@@ -11,7 +15,7 @@ export const RESULT_TTL_MS = 10 * 60_000;
 interface Entry {
   userId: string;
   status: SpeakingCheckStatus;
-  result?: SpeakingCheckResult;
+  result?: SpeakingCheckResult | SpeakingWordCheckResult;
   /** Why it failed: `bad_audio`, `timeout`, `unavailable`, `expired`. */
   reason?: string;
   audio?: SpeechAudio;
@@ -63,7 +67,7 @@ export class SpeechCheckStore implements OnModuleDestroy {
     return audio;
   }
 
-  done(checkId: string, result: SpeakingCheckResult): void {
+  done(checkId: string, result: SpeakingCheckResult | SpeakingWordCheckResult): void {
     const e = this.entries.get(checkId);
     if (e) Object.assign(e, { status: 'done', result, audio: undefined });
   }

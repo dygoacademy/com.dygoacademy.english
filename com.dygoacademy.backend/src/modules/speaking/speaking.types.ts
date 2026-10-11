@@ -1,5 +1,7 @@
+import type { SpeakingSyllable } from './speaking-syllables';
 import type { SpeakingAccent, SpeakingTimings } from './speaking-timings';
 
+export type { SpeakingSyllable } from './speaking-syllables';
 export type { SpeakingAccent, SpeakingTimings } from './speaking-timings';
 
 /** Phase 13 value lists; mirror the check constraints in 20261004_speaking.sql. */
@@ -43,6 +45,8 @@ export interface SpeakingSessionItem {
   timings_us: SpeakingTimings | null;
   /** Due now or never reviewed; these lead the session. */
   is_due: boolean;
+  /** The word's syllables for the stones (MI · ti · gate), from the default accent's IPA; [] without one. */
+  syllables: SpeakingSyllable[];
 }
 
 /** The Pond (Sound Garden on the Missions tab). */
@@ -70,12 +74,12 @@ export interface SpeakingAttempt {
   word_marks: { index: number; ok: boolean; reason: SpeakingMarkReason | null }[];
   user_duration_ms: number;
   created_at: string;
-  /** SE5: true when this attempt harvested the word (asked, 90%+, not harvested before). */
+  /** SE5: true when this attempt harvested the word (asked, 80%+, not harvested before). */
   harvested: boolean;
 }
 
-/** SE5: harvest needs this score (D-3: Fruit at 90%+). */
-export const HARVEST_MIN_SCORE = 90;
+/** A word said at this score or more is Pollinated (D-3, changed 2026-10-11: one 80 % rule, visual only). */
+export const POLLINATE_MIN_SCORE = 80;
 
 /** `GET /speaking/harvest?topic_id=`: a bed's words with a speaking item, and which are harvested. */
 export interface SpeakingHarvestWord {
@@ -86,6 +90,8 @@ export interface SpeakingHarvestWord {
   harvested_at: string | null;
   /** UK IPA for the "Bees are waiting" row (2026-10-11). */
   ipa_uk: string | null;
+  /** The word's syllables for the bee row (MI · ti · gate), from the UK IPA (else US); [] without one. */
+  syllables: SpeakingSyllable[];
 }
 
 /**
@@ -145,11 +151,42 @@ export interface SpeakingCheckQueued {
   eta_s: number;
 }
 
+/** One syllable in a word check: the scorer's IPA syllable and how it went. */
+export interface SpeakingWordCheckSyllable {
+  ipa: string;
+  score: number;
+  /** Under 60: the stone wobbles on P4. */
+  wobbly: boolean;
+  /** What a wobbly syllable sounded like ("taɪ"), when the scorer is sure; else null. */
+  heard_ipa: string | null;
+}
+
+/**
+ * `POST /speaking/word-check` (Pronunciation P3 → P4): one word, a score
+ * per syllable. `passed` = said clearly at POLLINATE_MIN_SCORE or more,
+ * which pollinates the word (once per word; never touches SRS).
+ */
+export interface SpeakingWordCheckResult {
+  kind: 'word';
+  status: 'ok' | 'not_heard' | 'other_word';
+  passed: boolean;
+  /** True when this check pollinated the word (it wasn't before). */
+  pollinated: boolean;
+  total: number;
+  heard_text: string;
+  /** The scorer's IPA syllables, one stone each. */
+  syllables: SpeakingWordCheckSyllable[];
+  /** The same syllables spelled for the screen (MI · ti · gate); [] if they don't line up. */
+  spelling: SpeakingSyllable[];
+  user_duration_ms: number;
+  check_ms: number;
+}
+
 /** `GET /speaking/check/:id`: the check's state, with the result once done. */
 export interface SpeakingCheckState {
   check_id: string;
   status: SpeakingCheckStatus;
-  result?: SpeakingCheckResult;
+  result?: SpeakingCheckResult | SpeakingWordCheckResult;
   /** When failed: `bad_audio`, `timeout`, `unavailable` or `expired`. */
   reason?: string;
 }

@@ -1,5 +1,12 @@
-import type { ScorerResult } from './speech-checker';
-import type { SpeakingCheckResult, SpeakingCheckMark, SpeakingStage } from './speaking.types';
+import { wordSyllables } from './speaking-syllables';
+import type { ScorerResult, ScorerWordResult } from './speech-checker';
+import {
+  POLLINATE_MIN_SCORE,
+  SpeakingCheckMark,
+  SpeakingCheckResult,
+  SpeakingStage,
+  SpeakingWordCheckResult,
+} from './speaking.types';
 
 /** < 40 seed · 40–69 sprout · 70–89 bloom · ≥ 90 fruit (handover §3, as in the app). */
 export function stageForScore(score: number): SpeakingStage {
@@ -31,6 +38,31 @@ export function toCheckResult(raw: ScorerResult, wordCount: number): SpeakingChe
     score,
     stage: stageForScore(score),
     word_marks,
+    user_duration_ms: raw.duration_ms,
+    check_ms: raw.latency_ms,
+  };
+}
+
+/**
+ * The scorer's word reply → what P4 shows: the IPA syllables (one stone
+ * each), the same syllables spelled (MI · ti · gate) when they line up, and
+ * `passed` = heard as the word at POLLINATE_MIN_SCORE or more.
+ */
+export function toWordCheckResult(
+  raw: ScorerWordResult,
+  word: string,
+  ipa: string | null,
+): Omit<SpeakingWordCheckResult, 'pollinated'> {
+  const total = Math.max(0, Math.min(100, Math.round(raw.total)));
+  const spelled = wordSyllables(word, ipa);
+  return {
+    kind: 'word',
+    status: raw.status,
+    passed: raw.status === 'ok' && total >= POLLINATE_MIN_SCORE,
+    total,
+    heard_text: raw.heard_text,
+    syllables: raw.syllables,
+    spelling: spelled.length === raw.syllables.length ? spelled : [],
     user_duration_ms: raw.duration_ms,
     check_ms: raw.latency_ms,
   };

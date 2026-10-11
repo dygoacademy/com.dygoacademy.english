@@ -24,6 +24,7 @@ from faster_whisper import WhisperModel
 from transformers import Wav2Vec2ForCTC, Wav2Vec2Processor
 
 from .matching import VARIANTS, match_words, normalise, tokens, total_score, word_status
+from . import word as wordcheck
 
 RATE = 16000
 MODELS_DIR = os.environ.get("MODELS_DIR", "/models")
@@ -73,6 +74,7 @@ class Scorer:
         vocab = self.tok.get_vocab()
         self.vocab = {k: v for k, v in vocab.items() if v not in (self.blank, self.tok.unk_token_id)}
         self.longest = max(len(k) for k in self.vocab)
+        self.phoneme = {v: k for k, v in self.vocab.items()}
         self.pool = ThreadPoolExecutor(max_workers=2)
         # Warm up both models so the first real check isn't slow.
         self.check(np.zeros(RATE, dtype=np.float32), "Hello there.")
@@ -189,4 +191,44 @@ class Scorer:
             "heard_text": " ".join(h["word"] for h in heard),
             "duration_ms": round(len(audio) / RATE * 1000),
             "words": out_words,
+        }
+
+    # ── one word (Pronunciation, P1–P4) ───────────────────────────────────
+    def check_word(self, audio: np.ndarray, word: str, ipa: str) -> dict:
+        """One word, scored per syllable (`POST /check-word`). Sounds come
+        from `ipa` (espeak spelling of the word when it's empty); a wobbly
+        syllable gets `heard_ipa` when the model's own best guess for its
+        frames is clearly something else."""
+        syllables = wordcheck.ipa_syllables(ipa)
+        per_syl = [self.ipa_ids(s) for s in syllables]
+        if not any(per_syl):
+            syllables, per_syl = [word], [self.word_ids(word)]
+        heard_f = self.pool.submit(self.heard_words, audio)
+        logp = self.logprobs(audio)
+        flat = [i for ids in per_syl for i in ids]
+        phone_scores, spans = self.gop(logp, flat)
+        scores = wordcheck.syllable_scores(phone_scores, [len(ids) for ids in per_syl])
+        total = round(sum(phone_scores) / len(phone_scores)) if phone_scores else 0
+        heard = heard_f.result()
+        out, i = [], 0
+        for text, ids, score in zip(syllables, per_syl, scores):
+            frames = [f for sp in spans[i : i + len(ids)] for f in sp]
+            i += len(ids)
+            wobbly = score is not None and score < wordcheck.WOBBLY_SCORE
+            heard_ipa = None
+            if wobbly and frames:
+                path = logp[min(frames) : max(frames) + 1].argmax(-1).tolist()
+                guess = "".join(self.phoneme.get(p, "") for p in wordcheck.collapse_path(path, self.blank))
+                expected = "".join(self.phoneme[p] for p in ids)
+                heard_ipa = guess if guess and guess != expected else None
+            out.append({"ipa": text, "score": score if score is not None else total, "wobbly": wobbly, "heard_ipa": heard_ipa})
+        status = wordcheck.word_status(
+            word, [h["word"] for h in heard], total, scores, wordcheck.voiced_seconds(audio, RATE)
+        )
+        return {
+            "status": status,
+            "total": total,
+            "heard_text": " ".join(h["word"] for h in heard),
+            "duration_ms": round(len(audio) / RATE * 1000),
+            "syllables": out,
         }

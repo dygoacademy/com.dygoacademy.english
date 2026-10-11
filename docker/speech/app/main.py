@@ -1,4 +1,4 @@
-"""Dygo speech scorer API (Phase 13 G6): POST /check, GET /health.
+"""Dygo speech scorer API (Phase 13 G6): POST /check, POST /check-word, GET /health.
 
 Only the backend calls this (the port is bound to 127.0.0.1). The upload is
 read into memory, scored and dropped; the log line has timings and the
@@ -71,4 +71,38 @@ def check(
         result = scorer.check(pcm, sentence, target_index)
     result["latency_ms"] = round((time.time() - t) * 1000)
     log.info("check duration_ms=%s latency_ms=%s total=%s", result["duration_ms"], result["latency_ms"], result["total"])
+    return result
+
+
+@app.post("/check-word")
+def check_word(
+    audio: UploadFile = File(...),
+    word: str = Form(...),
+    # The word's IPA for the practised accent ("/ˈmɪt.ɪ.ɡeɪt/"): one stone per syllable.
+    ipa: str = Form(""),
+) -> dict:
+    """Pronunciation (P1–P4): one word, a score per syllable. Same limits,
+    lock and logging as /check: the log never has the audio, the word or
+    what was heard."""
+    scorer: Scorer | None = state["scorer"]
+    if scorer is None:
+        raise HTTPException(503, detail="loading models")
+    data = audio.file.read(MAX_UPLOAD_BYTES + 1)
+    if len(data) > MAX_UPLOAD_BYTES:
+        raise HTTPException(413, detail="audio over 1 MB")
+    if not word.strip() or len(word) > 100 or len(ipa) > 200:
+        raise HTTPException(422, detail="word missing or too long")
+    t = time.time()
+    try:
+        pcm = decode(data)
+    except AudioError as err:
+        raise HTTPException(422, detail=str(err)) from None
+    del data
+    with lock:
+        result = scorer.check_word(pcm, word.strip(), ipa)
+    result["latency_ms"] = round((time.time() - t) * 1000)
+    log.info(
+        "check-word duration_ms=%s latency_ms=%s total=%s status=%s",
+        result["duration_ms"], result["latency_ms"], result["total"], result["status"],
+    )
     return result
