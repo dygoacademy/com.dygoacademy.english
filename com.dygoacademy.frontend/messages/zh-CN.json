@@ -829,6 +829,7 @@
     "bed": {
       "back": "返回主题",
       "options": "主题选项",
+      "searchWords": "在{topic}中搜索单词",
       "stagesLabel": "按生长阶段筛选",
       "unknown": "—",
       "stage": {
@@ -878,6 +879,17 @@
         "waitingRow": "说出来授粉",
         "pollinated": "已授粉 · 快要结果了",
         "say": "说出 {word} 来授粉"
+      },
+      "search": {
+        "placeholder": "搜索{topic}",
+        "hint": "按英文单词或中文释义搜索",
+        "inTopic": "{topic}中 · {count}",
+        "tapHint": "点按打开单词",
+        "notInTopic": "{topic}里还没有",
+        "plantHere": "种在这里",
+        "none": "{topic}里没有匹配的单词。",
+        "recent": "本主题最近搜索",
+        "cancel": "取消"
       }
     },
     "me": {

@@ -825,6 +825,7 @@
     "bed": {
       "back": "Về chủ đề",
       "options": "Tùy chọn chủ đề",
+      "searchWords": "Tìm từ trong {topic}",
       "stagesLabel": "Lọc theo giai đoạn",
       "unknown": "—",
       "stage": {
@@ -874,6 +875,17 @@
         "waitingRow": "Đọc to để thụ phấn",
         "pollinated": "Đã thụ phấn · sắp kết trái",
         "say": "Nói {word} để thụ phấn"
+      },
+      "search": {
+        "placeholder": "Tìm trong {topic}",
+        "hint": "Tìm bằng từ tiếng Anh hoặc nghĩa tiếng Việt",
+        "inTopic": "Trong {topic} · {count}",
+        "tapHint": "Chạm để mở từ",
+        "notInTopic": "Chưa có trong {topic}",
+        "plantHere": "Gieo vào đây",
+        "none": "Không có từ nào trong {topic} khớp.",
+        "recent": "Gần đây trong luống",
+        "cancel": "Huỷ"
       }
     },
     "me": {

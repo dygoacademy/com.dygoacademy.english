@@ -33,6 +33,8 @@ export const REFERENCE_NAMES = [
   'A6-topics',
   'A7-topic-bed',
   'A7-topic-bed-filter-sprouts',
+  // 2026-10-11 Topics search: sample data in WORD_SEARCH below
+  'A7c-word-search',
   'A8-me',
   'A8-me-account',
   // UI-G: sample data in groupFixtures.ts
@@ -388,6 +390,26 @@ export const BED = {
     due: due === 'new' ? { tone: 'new' } : due === 0 ? { tone: 'now' } : { tone: 'later', days: due },
   })),
 };
+
+/**
+ * A7c Search words in a topic (2026-10-11): BED's words searched for
+ * `query`; the word to plant and the recent searches are sample data.
+ */
+export const WORD_SEARCH = {
+  'en-US': {
+    query: 'de',
+    suggestion: { word: 'desertification', line: 'noun · C1 · land slowly turning into desert' },
+  },
+  'vi-VN': {
+    query: 'giảm',
+    suggestion: { word: 'reduce', line: 'động từ · B1 · giảm bớt' },
+  },
+  'zh-CN': {
+    query: 'de',
+    suggestion: { word: 'desertification', line: '名词 · C1 · 土地慢慢变成沙漠' },
+  },
+  recent: ['drought', 'mitigate'],
+} as const;
 
 /**
  * EntryHome / EntryBed / EntryHarvest / EntryEcho (Phase 13 SE1 / SE2 / SE5

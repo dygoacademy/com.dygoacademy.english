@@ -34,9 +34,10 @@ const push = vi.fn();
 vi.mock('next/navigation', () => ({ useRouter: () => ({ push }) }));
 
 describe('reference fixtures', () => {
-  it('lists the 51 canvas references (14 adult screens, 7 group screens, 6 sign-in, 8 quiz, 7 home, 5 speaking, 4 speaking entry points)', () => {
-    expect(REFERENCE_NAMES).toHaveLength(51);
+  it('lists the 52 canvas references (15 adult screens, 7 group screens, 6 sign-in, 8 quiz, 7 home, 5 speaking, 4 speaking entry points)', () => {
+    expect(REFERENCE_NAMES).toHaveLength(52);
     expect(isReferenceName('A1b-all-watered')).toBe(true);
+    expect(isReferenceName('A7c-word-search')).toBe(true);
     expect(isReferenceName('SE5-entry-harvest')).toBe(true);
     expect(isReferenceName('SP3-speak-done')).toBe(true);
     expect(isReferenceName('H1-home-phone')).toBe(true);
@@ -420,6 +421,13 @@ describe('TopicBedScreen', () => {
       expect(container.querySelectorAll('.bee-hover')).toHaveLength(2);
       expect(container.querySelectorAll('.spark')).toHaveLength(2);
     });
+  });
+
+  it('A7c: the header search button opens this bed\'s word search', () => {
+    renderWithIntl(<TopicBedScreen {...props} searchHref="/topics/t1/search" />);
+    expect(
+      screen.getByRole('link', { name: `Search words in ${props.title}` }).getAttribute('href'),
+    ).toBe('/topics/t1/search');
   });
 
   it("can't filter when stage counts are unknown", () => {

@@ -17,6 +17,7 @@ import {
   QUIZ_RESULT,
   REGISTER,
   SIGN_IN,
+  WORD_SEARCH,
   entryBees,
   referenceFixtures,
   type ReferenceName,
@@ -30,6 +31,8 @@ import { ReviewScreen } from '@/components/garden/screens/ReviewScreen';
 import { TodaysGardenScreen } from '@/components/garden/screens/TodaysGardenScreen';
 import { TopicBedScreen } from '@/components/garden/screens/TopicBedScreen';
 import { TopicsScreen } from '@/components/garden/screens/TopicsScreen';
+import { TopicWordSearchScreen } from '@/components/garden/screens/TopicWordSearchScreen';
+import { searchBedWords } from '@/components/garden/live/data';
 import { WeeklyHarvestScreen } from '@/components/garden/screens/WeeklyHarvestScreen';
 import { WelcomeBackScreen } from '@/components/garden/screens/WelcomeBackScreen';
 import { HomeScreen } from '@/components/home/HomeScreen';
@@ -193,10 +196,28 @@ function ReferenceScreenBody({ name, locale }: { name: ReferenceName; locale: Ap
           quizHref={GARDEN_ROUTES.review}
           addWordHref={GARDEN_ROUTES.topics}
           optionsHref={GARDEN_ROUTES.topics}
+          searchHref={GARDEN_ROUTES.reference('A7c-word-search')}
           speak={{ ...ENTRY.bedSpeak, href: GARDEN_ROUTES.reference('SP2-speak-countdown') }}
           bees={entryBees(GARDEN_ROUTES.reference('SP2-speak-countdown'))}
         />
       );
+    case 'A7c-word-search': {
+      const sample = WORD_SEARCH[locale];
+      return (
+        <TopicWordSearchScreen
+          topic={BED.title}
+          query={sample.query}
+          onQueryChange={() => {}}
+          cancelHref={GARDEN_ROUTES.reference('A7-topic-bed')}
+          matches={searchBedWords(BED.words, sample.query)}
+          hrefFor={() => GARDEN_ROUTES.reference('A7-topic-bed')}
+          suggestion={sample.suggestion}
+          onPlant={() => {}}
+          recent={WORD_SEARCH.recent}
+          onRecent={() => {}}
+        />
+      );
+    }
     case 'SE2-entry-bed':
     case 'SE5-entry-harvest':
       return (

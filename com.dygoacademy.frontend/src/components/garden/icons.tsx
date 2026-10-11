@@ -308,6 +308,16 @@ export function PlusIcon(props: IconProps) {
   );
 }
 
+/** Seed (A7c "Not in this topic yet"). Canvas: stroke 2, gold text. */
+export function SeedIcon(props: IconProps) {
+  return (
+    <StrokeIcon {...props}>
+      <ellipse cx="12" cy="15" rx="5" ry="3.5" />
+      <path d="M12 11.5 C12 8 14 6 17 5" />
+    </StrokeIcon>
+  );
+}
+
 /** Rain barrel (streak freezes). */
 export function RainBarrelIcon(props: IconProps) {
   return (

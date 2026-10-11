@@ -10,7 +10,7 @@ import { gcn } from '../cn';
 import { EmptyState } from '../EmptyState';
 import { BeeFlower, BeeGlyph } from '../Bee';
 import { useGardenFormat } from '../format';
-import { BackIcon, CheckIcon, MicIcon, MoreIcon, PlusIcon, WaterIcon } from '../icons';
+import { BackIcon, CheckIcon, MicIcon, MoreIcon, PlusIcon, SearchIcon, WaterIcon } from '../icons';
 import { IconButton } from '../IconButton';
 import { StageTile } from '../StageTile';
 import { WordRow } from '../WordRow';
@@ -81,6 +81,8 @@ export interface TopicBedScreenProps {
   /** Opens the Add word sheet in place; when omitted, + goes to `addWordHref`. */
   onAddWord?: () => void;
   optionsHref?: string;
+  /** A7c: the search button left of ⋯ (search this bed's words); omitted hides it. */
+  searchHref?: string;
   /**
    * SE2 (Phase 13): "Speak · 5 sentences from this bed", The Pond for this
    * bed. Null / omitted hides it (no word here has a speaking item).
@@ -110,6 +112,7 @@ export function TopicBedScreen({
   addWordHref,
   onAddWord,
   optionsHref,
+  searchHref,
   speak,
   bees,
   wiltingHref,
@@ -152,6 +155,13 @@ export function TopicBedScreen({
               .join(topicsT('separator'))}
           </span>
         </div>
+        {searchHref ? (
+          <IconButton asChild aria-label={t('searchWords', { topic: title })}>
+            <Link href={searchHref}>
+              <SearchIcon width={20} height={20} />
+            </Link>
+          </IconButton>
+        ) : null}
         <IconButton
           aria-label={t('options')}
           onClick={optionsHref ? () => router.push(optionsHref) : undefined}
@@ -211,7 +221,7 @@ export function TopicBedScreen({
       {speak ? (
         <Link
           href={speak.href}
-          className="-mt-1 box-border flex h-[50px] shrink-0 items-center justify-center gap-2 rounded-[16px] border border-primary-border bg-primary-soft text-[15px] font-bold text-primary-text"
+          className="-mt-1 box-content flex h-[50px] shrink-0 items-center justify-center gap-2 rounded-[16px] border border-primary-border bg-primary-soft text-[15px] font-bold text-primary-text"
         >
           <MicIcon width={20} height={20} />
           {t('speak')}

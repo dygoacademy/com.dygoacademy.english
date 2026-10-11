@@ -18,6 +18,7 @@ import {
   greetingFor,
   BEE_LIMIT,
   beesCard,
+  searchBedWords,
   liveMissions,
   liveMissionsSummary,
   meCalendar,
@@ -636,5 +637,22 @@ describe('welcome back (A5 / A5b)', () => {
 
   it('nothing due or wilting → no card', () => {
     expect(comebackStart(stats({ due_now: 0 }))).toBeNull();
+  });
+});
+
+describe('searchBedWords (A7c)', () => {
+  const w = (word: string, meaning: string) => ({
+    id: word,
+    word,
+    meaning,
+    stage: 'sprout' as const,
+    due: { tone: 'new' as const },
+  });
+  const words = [w('deteriorate', 'xấu đi, suy giảm'), w('mitigate', 'giảm nhẹ'), w('reduce', 'làm giảm')];
+
+  it('matches word or meaning, words first, earlier matches first', () => {
+    expect(searchBedWords(words, 'giam').map((x) => x.id)).toEqual(['mitigate', 'reduce', 'deteriorate']);
+    expect(searchBedWords(words, 'RED').map((x) => x.id)).toEqual(['reduce']);
+    expect(searchBedWords(words, '  ')).toEqual([]);
   });
 });

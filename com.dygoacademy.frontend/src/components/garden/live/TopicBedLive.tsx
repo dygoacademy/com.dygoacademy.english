@@ -8,14 +8,13 @@ import { useSpeakingHarvest } from '@/hooks/useSpeakingHarvest';
 import { useSpeakingSession } from '@/hooks/useSpeakingSession';
 import { useStudySession } from '@/hooks/useStudySession';
 import { useTopic } from '@/hooks/useTopic';
-import { languageOf } from '@/i18n/config';
 import { POND_SESSION_SIZE } from '@/lib/speaking/constants';
 import { toLocalDateString } from '@/lib/timezone';
 
 import { AddWordSheet } from '../AddWordSheet';
 import { useGardenPreferences } from '../preferences';
 import { TopicBedScreen } from '../screens/TopicBedScreen';
-import { beesCard, toBedWords, type GardenTopicWord } from './data';
+import { bedMeanings, beesCard, toBedWords, type GardenTopicWord } from './data';
 import { LiveError, LiveLoading } from './LiveState';
 import { TopicBedsSidebar } from './SidebarLists';
 
@@ -35,7 +34,8 @@ import { TopicBedsSidebar } from './SidebarLists';
  * U5-4: "Water N due" opens watering scoped to this bed
  * (/review?topic=…, i.e. POST /srs/sessions with the topic); +
  * opens the garden Add word sheet (POST /words, then the bed refetches).
- * Options still opens the classic topic page.
+ * Options still opens the classic topic page. A7c (2026-10-11): the
+ * search button opens /topics/[id]/search.
  *
  * U5-6: Quiz opens the garden quiz for this bed (/quiz?topic=…),
  * and wilting rows open the leech drill (…&mode=leech), which comes back
@@ -65,21 +65,13 @@ export function TopicBedLive({ topicId }: { topicId: string }) {
     return <LiveError message={t('notFound')} onRetry={() => void topic.refetch()} />;
   }
 
-  const dueById = new Map((due.data?.cards ?? []).map((card) => [card.topic_word_id, card]));
-  const meanings = new Map<string, { text: string; lang?: string }>();
-  for (const [id, card] of dueById) {
-    if (meaningLocale && card.meaning_translation) {
-      meanings.set(id, { text: card.meaning_translation, lang: languageOf(card.meaning_locale ?? meaningLocale) });
-    } else if (card.definition_en) {
-      meanings.set(id, { text: card.definition_en, lang: 'en' });
-    }
-  }
+  const cards = due.data?.cards ?? [];
   const { words, stageCounts } = toBedWords(
     topic.data.words as GardenTopicWord[],
-    meanings,
+    bedMeanings(cards, meaningLocale),
     new Date(),
   );
-  const dueCount = [...dueById.values()].length;
+  const dueCount = new Set(cards.map((card) => card.topic_word_id)).size;
   const bedHref = GARDEN_ROUTES.topic(topicId);
   const speakCount = Math.min(speaking.data?.item_count ?? 0, POND_SESSION_SIZE);
   const bees = beesCard(
@@ -107,6 +99,7 @@ export function TopicBedLive({ topicId }: { topicId: string }) {
             : null
         }
         quizHref={GARDEN_ROUTES.quiz(topicId)}
+        searchHref={GARDEN_ROUTES.topicSearch(topicId)}
         addWordHref={bedHref}
         speak={
           speakCount > 0

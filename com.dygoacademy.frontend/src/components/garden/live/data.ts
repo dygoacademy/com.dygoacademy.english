@@ -3,6 +3,7 @@
  * fetching: the live components pass in what the existing hooks returned.
  */
 import type {
+  DueCard,
   SpeakingHarvestWord,
   SrsStageCounts,
   SrsStats,
@@ -12,6 +13,8 @@ import type {
   UpcomingActivity,
 } from '@/types';
 import { GARDEN_ROUTES } from '@/constants/garden';
+import { languageOf } from '@/i18n/config';
+import { findMatch } from '@/lib/search/fold';
 import type { MissionDay, TodayMissions } from '@/hooks/useMissions';
 import type { MyKeepsakes } from '@/hooks/useProfile';
 import { toLocalDateString } from '@/lib/timezone';
@@ -547,6 +550,33 @@ export type GardenTopicWord = TopicWordSummary &
   }>;
 
 /**
+ * A7 / A7c: each due card's meaning for the bed's word list: the learner's
+ * meaning-language translation when `meaningLocale` is set and the card
+ * has one (same source as the review card), English `definition_en`
+ * otherwise. Words with no due card fall back to their note in `toBedWords`.
+ */
+export function bedMeanings(
+  cards: readonly Pick<
+    DueCard,
+    'topic_word_id' | 'meaning_translation' | 'meaning_locale' | 'definition_en'
+  >[],
+  meaningLocale: string | null | undefined,
+): Map<string, { text: string; lang?: string }> {
+  const meanings = new Map<string, { text: string; lang?: string }>();
+  for (const card of cards) {
+    if (meaningLocale && card.meaning_translation) {
+      meanings.set(card.topic_word_id, {
+        text: card.meaning_translation,
+        lang: languageOf(card.meaning_locale ?? meaningLocale),
+      });
+    } else if (card.definition_en) {
+      meanings.set(card.topic_word_id, { text: card.definition_en, lang: 'en' });
+    }
+  }
+  return meanings;
+}
+
+/**
  * A7 live (U5-3): the bed's words with real stages, due labels and stage
  * counts, sorted by next watering as in the canvas: due now (wilting
  * first, then longest overdue), then never-studied seeds, then the rest
@@ -838,4 +868,25 @@ export function beesCard(
     sayAllHref: waitingIds.length > 0 ? sayAllHrefFor(waitingIds) : null,
     words: rows,
   };
+}
+
+/**
+ * A7c: the bed's words matching `query` (case- and accent-insensitive) on
+ * the English word or the meaning. Word matches come first, then meaning
+ * matches; within each, earlier matches first ("giảm nhẹ" before "suy
+ * giảm"), then the bed's own order.
+ */
+export function searchBedWords(words: readonly TopicBedWord[], query: string): TopicBedWord[] {
+  const q = query.trim();
+  if (!q) return [];
+  return words
+    .map((word, index) => {
+      const inWord = findMatch(word.word, q);
+      const inMeaning = inWord ? null : findMatch(word.meaning, q);
+      const at = inWord ? inWord[0] : inMeaning ? 1000 + inMeaning[0] : -1;
+      return { word, index, at };
+    })
+    .filter((row) => row.at >= 0)
+    .sort((a, b) => a.at - b.at || a.index - b.index)
+    .map((row) => row.word);
 }

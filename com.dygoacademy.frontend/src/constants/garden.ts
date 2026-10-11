@@ -41,6 +41,9 @@ export const GARDEN_ROUTES = {
   /** A6 Topics and A7 Topic bed. */
   topics: '/topics',
   topic: (id: string) => `/topics/${encodeURIComponent(id)}`,
+  /** A7c: search this bed's words (`q` prefills the field). */
+  topicSearch: (id: string, q?: string) =>
+    `/topics/${encodeURIComponent(id)}/search${q ? `?q=${encodeURIComponent(q)}` : ''}`,
   /** Garden quiz (U5-5/6): a bed's quiz, or the leech drill back to that bed. */
   quiz: (topicId?: string, mode?: 'leech') => {
     const params = new URLSearchParams();

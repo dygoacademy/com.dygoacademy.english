@@ -11,7 +11,8 @@ import { useAddWordForm } from './useAddWordForm';
  * "Add word" on a topic bed (A7, UI-5 U5-4): a garden bottom sheet with
  * one word field, on the same form logic as the classic add-word modal
  * (`useAddWordForm`). IPA, audio and examples are filled in afterwards
- * by enrichment; the bed refetches when the word is added.
+ * by enrichment; the bed refetches when the word is added. A7c's "Plant
+ * here" opens it with `initialWord` filled in.
  */
 export interface AddWordSheetProps {
   topicId: string;
@@ -19,18 +20,31 @@ export interface AddWordSheetProps {
   onOpenChange: (open: boolean) => void;
   /** Bed name, shown under the title. */
   topicTitle?: string;
+  /** Fills the field each time the sheet opens (A7c "Plant here"). */
+  initialWord?: string;
 }
 
 const FIELD =
   'box-border min-h-12 w-full rounded-[14px] border bg-surface px-[14px] py-3 text-[17px] leading-[1.4] text-text outline-none placeholder:text-placeholder focus:border-forest';
 
-export function AddWordSheet({ topicId, open, onOpenChange, topicTitle }: AddWordSheetProps) {
+export function AddWordSheet({
+  topicId,
+  open,
+  onOpenChange,
+  topicTitle,
+  initialWord,
+}: AddWordSheetProps) {
   const t = useTranslations('screens.bed.addSheet');
   const inputId = React.useId();
   const form = useAddWordForm(topicId, {
     fallbackError: t('error'),
     onAdded: () => onOpenChange(false),
   });
+
+  const { setWord } = form;
+  React.useEffect(() => {
+    if (open && initialWord) setWord(initialWord);
+  }, [open, initialWord, setWord]);
 
   function handleOpenChange(next: boolean) {
     if (!next) form.reset();

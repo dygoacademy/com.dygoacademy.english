@@ -58,6 +58,7 @@ const NAMES = [
   'A6-topics',
   'A7-topic-bed',
   'A7-topic-bed-filter-sprouts',
+  'A7c-word-search',
   'A8-me',
   'A8-me-account',
   // UI-G

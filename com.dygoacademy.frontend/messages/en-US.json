@@ -825,6 +825,7 @@
     "bed": {
       "back": "Back to topics",
       "options": "Topic options",
+      "searchWords": "Search words in {topic}",
       "stagesLabel": "Filter by stage",
       "unknown": "—",
       "stage": {
@@ -874,6 +875,17 @@
         "waitingRow": "Say it to pollinate",
         "pollinated": "Pollinated · on its way to fruit",
         "say": "Say {word} to pollinate"
+      },
+      "search": {
+        "placeholder": "Search {topic}",
+        "hint": "Search by English word or Vietnamese meaning",
+        "inTopic": "In {topic} · {count}",
+        "tapHint": "Tap to open the word",
+        "notInTopic": "Not in {topic} yet",
+        "plantHere": "Plant here",
+        "none": "Nothing in {topic} matches.",
+        "recent": "Recent in this topic",
+        "cancel": "Cancel"
       }
     },
     "me": {
