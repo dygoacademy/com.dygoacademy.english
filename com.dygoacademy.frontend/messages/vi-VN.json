@@ -796,7 +796,6 @@
       "title": "Chủ đề",
       "all": "Tất cả",
       "summary": "{beds, plural, one {# luống} other {# luống}} · {words, plural, one {# từ} other {# từ}}",
-      "search": "Tìm kiếm từ và chủ đề",
       "filterLabel": "Lọc chủ đề",
       "words": "{count, plural, one {# từ} other {# từ}}",
       "fruiting": "{count} kết trái",
@@ -808,9 +807,6 @@
       "mine": "Của tôi",
       "empty": "Chưa có luống nào. Tạo luống đầu tiên ở bên dưới nhé.",
       "library": "Thư viện",
-      "searchTitle": "Tìm một luống chủ đề",
-      "searchPlaceholder": "Tên chủ đề",
-      "searchEmpty": "Không có luống chủ đề nào khớp với “{query}”.",
       "newBedTitle": "Tạo luống mới",
       "newBedDescription": "Đặt tên cho chủ đề, rồi bắt đầu thêm từ.",
       "newBedName": "Tên chủ đề",
@@ -820,6 +816,19 @@
       "newBedError": "Chưa tạo được luống. Bạn kiểm tra kết nối rồi thử lại nhé.",
       "shared": "Dùng chung",
       "searchBeds": "Tìm chủ đề",
+      "find": {
+        "placeholder": "Tìm chủ đề",
+        "yours": "Chủ đề của bạn · {count}",
+        "more": "Chủ đề khác để gieo · {count}",
+        "fromLibrary": "Từ thư viện",
+        "plant": "Gieo",
+        "plantTopic": "Gieo {topic}",
+        "wordHint": "Tìm một từ? <w>{word}</w> nằm trong <b>{topic}</b>",
+        "empty": "Không có chủ đề nào tên “{query}”",
+        "browseAll": "Xem tất cả chủ đề",
+        "recent": "Gần đây",
+        "cancel": "Huỷ"
+      },
       "lockedHint": "Gói hạt giống · Cần thêm {count, plural, one {# Hoa Vàng} other {# Hoa Vàng}} trong tuần này để mở"
     },
     "bed": {

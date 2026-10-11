@@ -7,6 +7,7 @@ import { useTranslations } from 'next-intl';
 import { splitMatch } from '@/lib/search/fold';
 
 import { gcn } from '../cn';
+import { Highlighted } from '../Highlighted';
 import { PlantGlyph } from '../PlantGlyph';
 import { PlusIcon, SearchIcon, SeedIcon } from '../icons';
 import { IPAD_NAV_COLUMN, SCREEN_CLASSES } from './GardenTabBar';
@@ -47,18 +48,6 @@ export interface TopicWordSearchScreenProps {
 
 const SECTION = 'overline-label text-[12px] font-bold tracking-[.08em] text-muted-foreground';
 const CARD = 'flex flex-col rounded-[20px] border border-border bg-surface px-[14px] py-0.5';
-
-function Highlighted({ text, query, lang }: { text: string; query: string; lang?: string }) {
-  const parts = splitMatch(text, query);
-  if (!parts) return <span lang={lang}>{text}</span>;
-  return (
-    <span lang={lang}>
-      {parts[0]}
-      <b className="rounded-[3px] bg-gold-light text-text">{parts[1]}</b>
-      {parts[2]}
-    </span>
-  );
-}
 
 export function TopicWordSearchScreen({
   topic,

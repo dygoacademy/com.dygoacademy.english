@@ -1,3 +1,4 @@
+import type * as React from 'react';
 import Link from 'next/link';
 
 import { gcn } from './cn';
@@ -16,7 +17,8 @@ import type { PlantStage } from './plantStage';
  */
 export interface TopicRowProps {
   href: string;
-  title: string;
+  /** Text, or a node (A6b highlights the matched letters). */
+  title: React.ReactNode;
   meta: string;
   /** Leading plant on the tile: the stage most words are in. */
   stage: PlantStage;

@@ -1,6 +1,7 @@
 'use client';
 
 import * as React from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 
@@ -44,7 +45,7 @@ export interface TopicsScreenProps {
    * it; `groups` lists the filters it shows under.
    */
   lockedPack: { name: string; bloomsNeeded: number; groups: readonly string[] } | null;
-  /** Search: `onSearch` (e.g. open a sheet) wins over `searchHref`; omit both to hide it. */
+  /** Search (A6b): `onSearch` wins over `searchHref` (a link); omit both to hide it. */
   searchHref?: string;
   onSearch?: () => void;
   /** "Plant a new bed": `onNewBed` (e.g. open a sheet) wins over `newBedHref`. */
@@ -107,12 +108,15 @@ export function TopicsScreen({
           </span>
           <h1 className="font-display text-[28px] font-semibold leading-[1.1]">{t('title')}</h1>
         </div>
-        {onSearch || searchHref ? (
-          <IconButton
-            aria-label={onSearch ? t('searchBeds') : t('search')}
-            onClick={() => (onSearch ? onSearch() : searchHref && router.push(searchHref))}
-          >
+        {onSearch ? (
+          <IconButton aria-label={t('searchBeds')} onClick={onSearch}>
             <SearchIcon width={20} height={20} />
+          </IconButton>
+        ) : searchHref ? (
+          <IconButton asChild aria-label={t('searchBeds')}>
+            <Link href={searchHref}>
+              <SearchIcon width={20} height={20} />
+            </Link>
           </IconButton>
         ) : null}
       </header>

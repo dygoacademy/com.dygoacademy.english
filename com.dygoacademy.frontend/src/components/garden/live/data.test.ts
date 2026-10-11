@@ -18,7 +18,10 @@ import {
   greetingFor,
   BEE_LIMIT,
   beesCard,
+  findWordInBeds,
   searchBedWords,
+  searchTopics,
+  toSearchTopics,
   liveMissions,
   liveMissionsSummary,
   meCalendar,
@@ -654,5 +657,66 @@ describe('searchBedWords (A7c)', () => {
     expect(searchBedWords(words, 'giam').map((x) => x.id)).toEqual(['mitigate', 'reduce', 'deteriorate']);
     expect(searchBedWords(words, 'RED').map((x) => x.id)).toEqual(['reduce']);
     expect(searchBedWords(words, '  ')).toEqual([]);
+  });
+});
+
+describe('A6b topic search', () => {
+  const row = (id: string, title: string, extra: Record<string, unknown> = {}) =>
+    ({
+      id,
+      group_id: 'g',
+      title,
+      description: null,
+      is_public: false,
+      word_count: '40',
+      mastered_count: '0',
+      focus_word_count: '0',
+      created_at: '2026-01-01',
+      sprout_count: '0',
+      flower_count: '0',
+      seed_count: '40',
+      due_count: '0',
+      min_level: 'B2',
+      max_level: 'B2',
+      ...extra,
+    }) as never;
+  const all = toSearchTopics(
+    [
+      row('mine', 'Work & careers', { kind: 'mine' }),
+      row('env', 'Environment', { kind: 'library', collection_title: 'IELTS Academic', sprout_count: '4' }),
+      row('energy', 'Energy & resources', { kind: 'library', collection_title: 'IELTS Academic' }),
+      row('daily', 'Entertainment & media', { kind: 'library', collection_title: null, min_level: 'B1' }),
+    ],
+    'Library',
+    'Shared',
+  );
+
+  it('counts a library topic as planted once something has grown', () => {
+    expect(all.map((t) => [t.id, t.planted, t.collection])).toEqual([
+      ['mine', true, null],
+      ['env', true, 'IELTS Academic'],
+      ['energy', false, 'IELTS Academic'],
+      ['daily', false, 'Library'],
+    ]);
+  });
+
+  it('matches title, collection or level, title matches first, split into yours and more', () => {
+    const en = searchTopics(all, 'EN');
+    expect(en.yours.map((t) => t.id)).toEqual(['env']);
+    expect(en.more.map((t) => t.id)).toEqual(['energy', 'daily']);
+    const ielts = searchTopics(all, 'ielts');
+    expect([...ielts.yours, ...ielts.more].map((t) => t.id)).toEqual(['env', 'energy']);
+    expect(searchTopics(all, 'b1').more.map((t) => t.id)).toEqual(['daily']);
+    expect(searchTopics(all, ' ')).toEqual({ yours: [], more: [] });
+  });
+
+  it('finds a word in the loaded beds, earliest match first', () => {
+    const beds = [
+      { id: 't1', title: 'Work', words: [{ source_word: 'agenda' }] },
+      { id: 't2', title: 'Environment', words: [{ source_word: 'environmental' }] },
+    ];
+    expect(findWordInBeds(beds, 'en')).toEqual({ word: 'environmental', topicId: 't2', topic: 'Environment' });
+    expect(findWordInBeds(beds, 'e')).toBeNull();
+    expect(findWordInBeds(beds, 'zz')).toBeNull();
   });
 });

@@ -40,6 +40,8 @@ export const GARDEN_ROUTES = {
   missions: '/missions',
   /** A6 Topics and A7 Topic bed. */
   topics: '/topics',
+  /** A6b: search topics. */
+  topicsSearch: '/topics/search',
   topic: (id: string) => `/topics/${encodeURIComponent(id)}`,
   /** A7c: search this bed's words (`q` prefills the field). */
   topicSearch: (id: string, q?: string) =>

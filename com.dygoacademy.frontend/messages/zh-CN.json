@@ -800,7 +800,6 @@
       "title": "主题",
       "all": "全部",
       "summary": "{beds} 个花圃 · {words} 个单词",
-      "search": "搜索单词和主题",
       "filterLabel": "筛选主题",
       "words": "{count} 个单词",
       "fruiting": "{count} 个结果",
@@ -812,9 +811,6 @@
       "mine": "我的",
       "empty": "还没有花圃。在下面开辟第一个吧。",
       "library": "词库",
-      "searchTitle": "查找花圃",
-      "searchPlaceholder": "主题名称",
-      "searchEmpty": "没有与“{query}”匹配的花圃。",
       "newBedTitle": "开辟新花圃",
       "newBedDescription": "给主题起个名字，然后就可以添加单词了。",
       "newBedName": "主题名称",
@@ -824,6 +820,19 @@
       "newBedError": "花圃没能创建。请检查网络后重试。",
       "shared": "共享",
       "searchBeds": "搜索主题",
+      "find": {
+        "placeholder": "搜索主题",
+        "yours": "你的主题 · {count}",
+        "more": "可以种的主题 · {count}",
+        "fromLibrary": "来自词库",
+        "plant": "种下",
+        "plantTopic": "种下{topic}",
+        "wordHint": "在找单词？<w>{word}</w> 在 <b>{topic}</b> 里",
+        "empty": "没有名为“{query}”的主题",
+        "browseAll": "浏览全部主题",
+        "recent": "最近",
+        "cancel": "取消"
+      },
       "lockedHint": "种子包 · 本周再开 {count} 朵金花就能解锁"
     },
     "bed": {

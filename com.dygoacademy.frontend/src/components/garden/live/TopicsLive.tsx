@@ -11,7 +11,7 @@ import { useTopics } from '@/hooks/useTopics';
 
 import { BottomSheet } from '../BottomSheet';
 import { Button } from '../Button';
-import { TopicsScreen, type TopicsScreenTopic } from '../screens/TopicsScreen';
+import { TopicsScreen } from '../screens/TopicsScreen';
 import { sortBedsByDue, toScreenTopic, topicFilters, type GardenTopicSummary } from './data';
 import { LiveError, LiveLoading } from './LiveState';
 import { TopicBedsSidebar } from './SidebarLists';
@@ -22,15 +22,14 @@ import { TopicBedsSidebar } from './SidebarLists';
  * Real: title, word count, CEFR range, fruiting / flowering / sprouting
  * shares, due badge and the filter chips (library collections, Mine)
  * from the UI-5 fields; shared beds show under All (NAV-1: no Group chip).
- * Beds are sorted by due words, thirstiest first (U5-2). Search opens a sheet that finds beds by
- * name; "Plant a new bed" opens a sheet that creates the topic
+ * Beds are sorted by due words, thirstiest first (U5-2). Search opens A6b
+ * (/topics/search, 2026-10-11; was a sheet finding beds by name); "Plant a new bed" opens a sheet that creates the topic
  * (POST /topics, existing) and opens it. The locked seed pack waits for
  * UI-6 (Golden Blooms), so it isn't shown.
  */
 export function TopicsLive() {
   const t = useTranslations('screens.topics');
   const topics = useTopics();
-  const [searchOpen, setSearchOpen] = React.useState(false);
   const [newBedOpen, setNewBedOpen] = React.useState(false);
 
   if (topics.isPending) return <LiveLoading />;
@@ -49,11 +48,10 @@ export function TopicsLive() {
         topics={beds}
         filters={topicFilters(beds, { mine: t('mine') })}
         lockedPack={null}
-        onSearch={() => setSearchOpen(true)}
+        searchHref={GARDEN_ROUTES.topicsSearch}
         onNewBed={() => setNewBedOpen(true)}
         sidebar={<TopicBedsSidebar />}
       />
-      <SearchSheet open={searchOpen} onOpenChange={setSearchOpen} beds={beds} />
       <NewBedSheet open={newBedOpen} onOpenChange={setNewBedOpen} />
     </>
   );
@@ -61,60 +59,6 @@ export function TopicsLive() {
 
 const INPUT =
   'h-12 w-full rounded-control border border-border bg-surface px-4 text-[16px] text-text placeholder:text-muted-foreground';
-
-function SearchSheet({
-  open,
-  onOpenChange,
-  beds,
-}: {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  beds: readonly TopicsScreenTopic[];
-}) {
-  const t = useTranslations('screens.topics');
-  const router = useRouter();
-  const [query, setQuery] = React.useState('');
-  const q = query.trim().toLocaleLowerCase();
-  const matches = q ? beds.filter((bed) => bed.title.toLocaleLowerCase().includes(q)) : beds;
-
-  return (
-    <BottomSheet open={open} onOpenChange={onOpenChange} title={t('searchTitle')}>
-      <input
-        type="search"
-        autoFocus
-        value={query}
-        onChange={(event) => setQuery(event.target.value)}
-        placeholder={t('searchPlaceholder')}
-        aria-label={t('searchPlaceholder')}
-        className={INPUT}
-      />
-      <ul className="mt-3 flex flex-col">
-        {matches.map((bed) => (
-          <li key={bed.id}>
-            <button
-              type="button"
-              onClick={() => {
-                onOpenChange(false);
-                router.push(bed.href);
-              }}
-              className="flex min-h-11 w-full items-center justify-between gap-3 border-b border-divider py-2 text-left"
-            >
-              <span className="text-[15px] font-semibold">{bed.title}</span>
-              <span className="shrink-0 text-[12px] text-muted-foreground">
-                {t('words', { count: bed.words })}
-              </span>
-            </button>
-          </li>
-        ))}
-        {matches.length === 0 ? (
-          <li className="py-4 text-center text-[13px] text-muted-foreground">
-            {t('searchEmpty', { query: query.trim() })}
-          </li>
-        ) : null}
-      </ul>
-    </BottomSheet>
-  );
-}
 
 function NewBedSheet({
   open,

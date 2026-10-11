@@ -26,6 +26,7 @@ import { stageFromSrs, type GardenFsrsState } from '../plantStage';
 import type { KeepsakeItem } from '../screens/MeScreen';
 import type { BeeWord, BedStage, TopicBedWord } from '../screens/TopicBedScreen';
 import type { TopicsScreenTopic } from '../screens/TopicsScreen';
+import type { SearchTopic } from '../screens/TopicSearchScreen';
 import type { Greeting, MissionItem } from '../screens/TodaysGardenScreen';
 import type { WeeklyHarvestScreenProps } from '../screens/WeeklyHarvestScreen';
 import type { WelcomeBackScreenProps } from '../screens/WelcomeBackScreen';
@@ -889,4 +890,78 @@ export function searchBedWords(words: readonly TopicBedWord[], query: string): T
     .filter((row) => row.at >= 0)
     .sort((a, b) => a.at - b.at || a.index - b.index)
     .map((row) => row.word);
+}
+
+/**
+ * A6b: the topics as search entries. `collection` is the library
+ * collection's name (null for the learner's own and group beds). A
+ * library topic counts as planted once any of its words has been watered
+ * (a stage beyond seed, or something due); until then it's a topic "to
+ * plant".
+ */
+export function toSearchTopics(
+  topics: readonly GardenTopicSummary[],
+  libraryLabel: string,
+  sharedLabel: string,
+): SearchTopic[] {
+  return topics.map((summary) => {
+    const bed = toScreenTopic(summary, libraryLabel, sharedLabel);
+    const grown = bed.stages ? bed.stages.tree + bed.stages.flower + bed.stages.sprout : 0;
+    return {
+      ...bed,
+      collection: summary.kind === 'library' ? (summary.collection_title ?? libraryLabel) : null,
+      planted: summary.kind !== 'library' || grown > 0 || (bed.due ?? 0) > 0,
+    };
+  });
+}
+
+/**
+ * A6b: topics matching `query` on the title, the collection or the CEFR
+ * range (case- and accent-insensitive), split into the learner's and the
+ * ones to plant. Title matches first, earlier matches first, then the
+ * given order.
+ */
+export function searchTopics(
+  topics: readonly SearchTopic[],
+  query: string,
+): { yours: SearchTopic[]; more: SearchTopic[] } {
+  const q = query.trim();
+  if (!q) return { yours: [], more: [] };
+  const ranked = topics
+    .map((topic, index) => {
+      const inTitle = findMatch(topic.title, q);
+      const other =
+        inTitle ??
+        (topic.collection ? findMatch(topic.collection, q) : null) ??
+        (topic.level ? findMatch(topic.level, q) : null);
+      const at = inTitle ? inTitle[0] : other ? 1000 + other[0] : -1;
+      return { topic, index, at };
+    })
+    .filter((row) => row.at >= 0)
+    .sort((a, b) => a.at - b.at || a.index - b.index)
+    .map((row) => row.topic);
+  return { yours: ranked.filter((t) => t.planted), more: ranked.filter((t) => !t.planted) };
+}
+
+/**
+ * A6b "Looking for a word?": the first word in the learner's loaded beds
+ * (topic details already in the React Query cache) that contains `query`
+ * (2+ characters), words starting with it first. Null when none.
+ */
+export function findWordInBeds(
+  beds: ReadonlyArray<{ id: string; title: string; words: ReadonlyArray<{ source_word: string }> }>,
+  query: string,
+): { word: string; topicId: string; topic: string } | null {
+  const q = query.trim();
+  if (q.length < 2) return null;
+  let best: { word: string; topicId: string; topic: string; at: number } | null = null;
+  for (const bed of beds) {
+    for (const w of bed.words) {
+      const m = findMatch(w.source_word, q);
+      if (m && (!best || m[0] < best.at)) {
+        best = { word: w.source_word, topicId: bed.id, topic: bed.title, at: m[0] };
+      }
+    }
+  }
+  return best ? { word: best.word, topicId: best.topicId, topic: best.topic } : null;
 }

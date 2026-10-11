@@ -14,6 +14,7 @@ import type { CalendarLevel } from '../GardenCalendar';
 import type { HeroPlant } from '../HeroGardenCard';
 import type { KeepsakeItem } from './MeScreen';
 import type { BedStage, BeeWord, TopicBedWord } from './TopicBedScreen';
+import type { SearchTopic } from './TopicSearchScreen';
 import type { TopicsScreenTopic } from './TopicsScreen';
 import type { QuizResultScreenProps } from './QuizResultScreen';
 import type { QuizScreenProps } from './QuizScreen';
@@ -33,8 +34,9 @@ export const REFERENCE_NAMES = [
   'A6-topics',
   'A7-topic-bed',
   'A7-topic-bed-filter-sprouts',
-  // 2026-10-11 Topics search: sample data in WORD_SEARCH below
+  // 2026-10-11 Topics search: sample data in WORD_SEARCH / TOPIC_SEARCH below
   'A7c-word-search',
+  'A6b-search-topics',
   'A8-me',
   'A8-me-account',
   // UI-G: sample data in groupFixtures.ts
@@ -410,6 +412,46 @@ export const WORD_SEARCH = {
   },
   recent: ['drought', 'mitigate'],
 } as const;
+
+/**
+ * A6b Search topics (2026-10-11): the query, the learner's topic (A6's
+ * Environment, title per locale), two library topics to plant, the word
+ * hint and the recent searches.
+ */
+const LIBRARY_TOPIC = { group: 'library', stages: null, due: null, collection: null, planted: false };
+export const TOPIC_SEARCH = {
+  'en-US': {
+    query: 'en',
+    more: [
+      { id: 'energy', title: 'Energy & resources', collection: 'IELTS Academic', level: 'B2', words: 40 },
+      { id: 'media', title: 'Entertainment & media', collection: 'Daily life', level: 'B1–B2', words: 36 },
+    ],
+    word: { word: 'environmental', topic: 'Environment' },
+    recent: ['IELTS', 'Travel', 'Work'],
+  },
+  'vi-VN': {
+    query: 'tr',
+    more: [
+      { id: 'media', title: 'Truyền thông & giải trí', collection: 'Đời sống', level: 'B1–B2', words: 36 },
+      { id: 'travel', title: 'Du lịch & trải nghiệm', collection: 'Đời sống', level: 'B1', words: 32 },
+    ],
+    word: { word: 'trend', topic: 'Công việc' },
+    recent: ['IELTS', 'Du lịch', 'Công việc'],
+  },
+  'zh-CN': {
+    query: '环',
+    more: [
+      { id: 'energy', title: '能源与资源环境', collection: 'IELTS 学术', level: 'B2', words: 40 },
+    ],
+    word: { word: 'environmental', topic: '环境' },
+    recent: ['IELTS', '旅行', '工作'],
+  },
+} as const;
+
+/** TOPIC_SEARCH's library topics as A6b entries. */
+export function topicSearchMore(locale: keyof typeof TOPIC_SEARCH, href: string): SearchTopic[] {
+  return TOPIC_SEARCH[locale].more.map((topic) => ({ ...LIBRARY_TOPIC, ...topic, href }));
+}
 
 /**
  * EntryHome / EntryBed / EntryHarvest / EntryEcho (Phase 13 SE1 / SE2 / SE5

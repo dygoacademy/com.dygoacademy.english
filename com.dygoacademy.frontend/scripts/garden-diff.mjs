@@ -56,6 +56,7 @@ const NAMES = [
   'A5-welcome-back',
   'A5b-welcome-back-start',
   'A6-topics',
+  'A6b-search-topics',
   'A7-topic-bed',
   'A7-topic-bed-filter-sprouts',
   'A7c-word-search',

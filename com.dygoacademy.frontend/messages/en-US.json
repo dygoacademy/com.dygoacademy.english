@@ -796,7 +796,6 @@
       "title": "Topics",
       "all": "All",
       "summary": "{beds, plural, one {# bed} other {# beds}} · {words, plural, one {# word} other {# words}}",
-      "search": "Search words and topics",
       "filterLabel": "Filter topics",
       "words": "{count, plural, one {# word} other {# words}}",
       "fruiting": "{count} fruiting",
@@ -808,9 +807,6 @@
       "mine": "Mine",
       "empty": "No beds here yet. Plant your first one below.",
       "library": "Library",
-      "searchTitle": "Find a topic bed",
-      "searchPlaceholder": "Topic name",
-      "searchEmpty": "No topic beds match “{query}”.",
       "newBedTitle": "Plant a new bed",
       "newBedDescription": "Give your topic a name, then start adding words.",
       "newBedName": "Topic name",
@@ -820,6 +816,19 @@
       "newBedError": "We couldn’t plant this bed. Check your connection and try again.",
       "shared": "Shared",
       "searchBeds": "Search topics",
+      "find": {
+        "placeholder": "Search topics",
+        "yours": "Your topics · {count}",
+        "more": "More topics to plant · {count}",
+        "fromLibrary": "From the library",
+        "plant": "Plant",
+        "plantTopic": "Plant {topic}",
+        "wordHint": "Looking for a word? <w>{word}</w> is in <b>{topic}</b>",
+        "empty": "No topics called “{query}”",
+        "browseAll": "Browse all topics",
+        "recent": "Recent",
+        "cancel": "Cancel"
+      },
       "lockedHint": "Seed pack · Earn {count, plural, one {# more Golden Bloom} other {# more Golden Blooms}} this week to open it"
     },
     "bed": {

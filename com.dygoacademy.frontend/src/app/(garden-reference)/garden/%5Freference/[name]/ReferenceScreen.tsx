@@ -17,8 +17,10 @@ import {
   QUIZ_RESULT,
   REGISTER,
   SIGN_IN,
+  TOPIC_SEARCH,
   WORD_SEARCH,
   entryBees,
+  topicSearchMore,
   referenceFixtures,
   type ReferenceName,
 } from '@/components/garden/screens/fixtures';
@@ -31,6 +33,7 @@ import { ReviewScreen } from '@/components/garden/screens/ReviewScreen';
 import { TodaysGardenScreen } from '@/components/garden/screens/TodaysGardenScreen';
 import { TopicBedScreen } from '@/components/garden/screens/TopicBedScreen';
 import { TopicsScreen } from '@/components/garden/screens/TopicsScreen';
+import { TopicSearchScreen } from '@/components/garden/screens/TopicSearchScreen';
 import { TopicWordSearchScreen } from '@/components/garden/screens/TopicWordSearchScreen';
 import { searchBedWords } from '@/components/garden/live/data';
 import { WeeklyHarvestScreen } from '@/components/garden/screens/WeeklyHarvestScreen';
@@ -180,7 +183,7 @@ function ReferenceScreenBody({ name, locale }: { name: ReferenceName; locale: Ap
             { id: 'mine', label: topics('mine') },
           ]}
           lockedPack={TOPICS_LOCKED_PACK}
-          searchHref="/search"
+          searchHref={GARDEN_ROUTES.reference('A6b-search-topics')}
           newBedHref={GARDEN_ROUTES.topics}
           stickyNav={false}
         />
@@ -201,6 +204,28 @@ function ReferenceScreenBody({ name, locale }: { name: ReferenceName; locale: Ap
           bees={entryBees(GARDEN_ROUTES.reference('SP2-speak-countdown'))}
         />
       );
+    case 'A6b-search-topics': {
+      const sample = TOPIC_SEARCH[locale];
+      const yours = TOPICS.slice(0, 1).map((topic) => ({
+        ...topic,
+        collection: BED.meta.collection,
+        planted: true,
+        href: GARDEN_ROUTES.reference('A7-topic-bed'),
+      }));
+      return (
+        <TopicSearchScreen
+          query={sample.query}
+          onQueryChange={() => {}}
+          cancelHref={GARDEN_ROUTES.reference('A6-topics')}
+          yours={yours}
+          more={topicSearchMore(locale, GARDEN_ROUTES.reference('A7-topic-bed'))}
+          plantHref={(topic) => topic.href}
+          wordHint={{ ...sample.word, href: GARDEN_ROUTES.reference('A7c-word-search') }}
+          recent={sample.recent}
+          onRecent={() => {}}
+        />
+      );
+    }
     case 'A7c-word-search': {
       const sample = WORD_SEARCH[locale];
       return (

@@ -35,9 +35,10 @@ vi.mock('next/navigation', () => ({ useRouter: () => ({ push }) }));
 
 describe('reference fixtures', () => {
   it('lists the 52 canvas references (15 adult screens, 7 group screens, 6 sign-in, 8 quiz, 7 home, 5 speaking, 4 speaking entry points)', () => {
-    expect(REFERENCE_NAMES).toHaveLength(52);
+    expect(REFERENCE_NAMES).toHaveLength(53);
     expect(isReferenceName('A1b-all-watered')).toBe(true);
     expect(isReferenceName('A7c-word-search')).toBe(true);
+    expect(isReferenceName('A6b-search-topics')).toBe(true);
     expect(isReferenceName('SE5-entry-harvest')).toBe(true);
     expect(isReferenceName('SP3-speak-done')).toBe(true);
     expect(isReferenceName('H1-home-phone')).toBe(true);
@@ -296,10 +297,9 @@ describe('TopicsScreen', () => {
     expect(screen.queryByText('Work & careers')).toBeNull();
   });
 
-  it('opens search', () => {
+  it('links search to A6b', () => {
     renderTopics();
-    fireEvent.click(screen.getByRole('button', { name: 'Search words and topics' }));
-    expect(push).toHaveBeenCalledWith('/search');
+    expect(screen.getByRole('link', { name: 'Search topics' }).getAttribute('href')).toBe('/search');
   });
 });
 
