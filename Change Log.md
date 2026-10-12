@@ -1032,3 +1032,7 @@ Engineering-facing log of shipped fixes and changes, one dated entry per change.
 * **Decisions**: times show in 24 h ("7:30", "21:00") as on the board. A refused or unsupported notification permission saves the reminder off, so OB5 shows "Off" rather than a time that never fires. PTE is not offered (not on the board) but stays valid in the API. The time zone is only set when the profile still has the default `UTC`. The status rows on the design were Approved by Dylan's build request (2026-10-12).
 * **Needs on UAT**: the migration (`./database/apply-migrations.sh --migrations` or run the file); without it saving Travel / Just for me / IELTS General fails the old `study_goal` check.
 * **Verified**: frontend `tsc --noEmit` clean, eslint on `src` 0 problems; `vitest run` (Linux copy): only the known baseline failures, onboarding tests rewritten and passing. Backend `tsc` clean, profiles `jest` 46/46. RLS suite (`apply-migrations.sh --test`) passes on Postgres 16 with the new test. Local `garden:diff`: OB1-about-you 0.001 %, OB1-about-you-work 0.001 %, OB4-reminder 0.017 %, OB5-ready 0.000 %; VI the same order.
+
+### Docs: design CHANGELOG marks OB1, OB4, OB5 Built (`40a151d`)
+* **Files**: [`docs/design/garden/CHANGELOG.md`](docs/design/garden/CHANGELOG.md)
+* **What**: OB1 About you, OB4 Reminder and OB5 All set rows and the 2026-10-11 / 2026-10-12 onboarding entries now say Built `40a151d`. Deployed to UAT 2026-10-12 13:44 UTC.
