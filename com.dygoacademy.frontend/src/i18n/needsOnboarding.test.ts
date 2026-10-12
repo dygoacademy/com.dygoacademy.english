@@ -65,3 +65,22 @@ describe('needsOnboarding', () => {
     expect(await needs()).toBe(false);
   });
 });
+
+describe('onboardingResumePath (old /welcome/goal and /welcome/bed links)', () => {
+  async function resume() {
+    const { onboardingResumePath } = await import('./garden-locale');
+    return onboardingResumePath();
+  }
+
+  it('is OB1 About you until a goal is saved', async () => {
+    state.row = { id: 'u1', onboarded_at: null, study_goal: null };
+    expect(await resume()).toBe('/welcome/level');
+    state.row = null;
+    expect(await resume()).toBe('/welcome/level');
+  });
+
+  it('is OB4 Reminder once a goal is saved', async () => {
+    state.row = { id: 'u1', onboarded_at: null, study_goal: 'WORK' };
+    expect(await resume()).toBe('/welcome/reminder');
+  });
+});

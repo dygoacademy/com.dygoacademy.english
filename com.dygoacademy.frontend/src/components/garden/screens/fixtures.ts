@@ -45,6 +45,11 @@ export const REFERENCE_NAMES = [
   'A8e-privacy-on',
   'A8e-privacy-delete',
   'A8e-privacy-deleted',
+  // Onboarding in 2 steps (canvas 2026-10-12): sample data in ONBOARDING below
+  'OB1-about-you',
+  'OB1-about-you-work',
+  'OB4-reminder',
+  'OB5-ready',
   // UI-G: sample data in groupFixtures.ts
   'GR1-shared-gardens',
   'GR2-group-garden',
@@ -157,6 +162,24 @@ export const REGISTER = {
     'en-US': { inviterName: 'Minh', groupName: 'IELTS Sprint · Week 3' },
     'vi-VN': { inviterName: 'Minh', groupName: 'IELTS Sprint · Tuần 3' },
     'zh-CN': { inviterName: 'Minh', groupName: 'IELTS Sprint · 第 3 周' },
+  },
+} as const;
+
+/**
+ * OnboardLevel / OnboardReminder / OnboardReady (and the Vi boards): B2,
+ * IELTS Academic at band 7.0 (Work on the `-work` page), Morning 7:30,
+ * Minh with 10 Environment seeds.
+ */
+export const ONBOARDING = {
+  level: 'B2',
+  goal: 'IELTS',
+  band: 7,
+  reminder: { hour: 7, minute: 30 },
+  name: 'Minh',
+  bed: {
+    'en-US': { title: 'Environment', seeds: 10 },
+    'vi-VN': { title: 'Môi trường', seeds: 10 },
+    'zh-CN': { title: '环境', seeds: 10 },
   },
 } as const;
 

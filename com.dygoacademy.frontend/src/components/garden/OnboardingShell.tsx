@@ -5,172 +5,132 @@ import { useTranslations } from 'next-intl';
 import { gcn } from './cn';
 import { IconButton } from './IconButton';
 import { BackIcon } from './icons';
-import { PlantGlyph } from './PlantGlyph';
-import type { PlantStage } from './plantStage';
 import { SCREEN_CLASSES } from './screens/GardenTabBar';
 
 /**
- * Onboarding OB1–OB5 (design changelog, page "Adult · Onboarding"): the
- * shell every onboarding screen shares. Props only; no tab bar.
+ * Onboarding in 2 steps (canvas page "Adult · Onboarding", boards
+ * `OnboardLevel` / `OnboardReminder`, `reference/OB1-about-you.html`,
+ * `reference/OB4-reminder.html`): the frame OB1 About you and OB4 Reminder
+ * share. Props only; no tab bar. OB5 All set draws its own forest header.
  *
- * Top row: Back (OB2–OB5) on the left, Skip (OB1, OB4) on the right. Under
- * it the 4-step plant progress header: one plant per step, seed → sprout →
- * flower → fruit tree; steps done and the current one are drawn, steps to
- * come are faded seeds (OB5 shows all four grown). Then the title (Fraunces
- * 28px), subtitle, the screen's own content, and the footer button pinned
- * to the bottom.
- *
- * NOT matched to the canvas yet: the OnboardLevel / OnboardGoal / OnboardBed
- * / OnboardReminder / OnboardReady boards were not in the repo when this
- * was built (2026-10-08), so sizes follow the AU2 Create account screen
- * (AuthShell) and the garden tokens. Rebuild from reference/OB*.html once
- * the boards are approved and exported (CLAUDE.md rule 13).
+ * 22 / 20 / 24px padding, 14px between rows. Top row: Back (46px, as a
+ * link) and the 2-stage plant progress (seed → sprout, 40px circles joined
+ * by a 3px line). Then the title (Fraunces 30px) and subtitle (15px), the
+ * screen's own rows, and the footer pinned to the bottom.
  */
-export const ONBOARDING_STAGES: readonly PlantStage[] = ['seed', 'sprout', 'flower', 'tree'];
-
 export interface OnboardingShellProps {
-  /** 1–4 = OB1–OB4; 5 = OB5 (every plant grown). */
-  step: 1 | 2 | 3 | 4 | 5;
-  back?: string;
-  onSkip?: () => void;
+  /** 1 = OB1 About you, 2 = OB4 Reminder. */
+  step: 1 | 2;
+  /** A link, or a handler (OB1 goes back to wherever sign-up came from). */
+  back: string | (() => void);
   title: string;
-  subtitle?: string;
+  subtitle: string;
   children: React.ReactNode;
   footer: React.ReactNode;
-  /** false = no progress header (OB5 draws the grown plants in its own bed). */
-  progress?: boolean;
 }
 
-export function OnboardingShell({
-  step,
-  back,
-  onSkip,
-  title,
-  subtitle,
-  children,
-  footer,
-  progress = true,
-}: OnboardingShellProps) {
+export function OnboardingShell({ step, back, title, subtitle, children, footer }: OnboardingShellProps) {
   const t = useTranslations('screens.onboarding');
   return (
-    <div className={gcn(SCREEN_CLASSES, 'gap-5 px-5 pt-[22px] pb-[max(28px,var(--safe-bottom))]')}>
-      <div className="flex min-h-11 items-center justify-between">
-        {back ? (
+    <div className={gcn(SCREEN_CLASSES, 'gap-[14px] px-5 pb-[max(24px,var(--safe-bottom))] pt-[22px]')}>
+      <div className="flex items-center gap-2.5">
+        {typeof back === 'string' ? (
           <IconButton asChild aria-label={t('back')}>
             <Link href={back}>
               <BackIcon width={20} height={20} />
             </Link>
           </IconButton>
         ) : (
-          <span />
+          <IconButton aria-label={t('back')} onClick={back} className="box-content">
+            <BackIcon width={20} height={20} />
+          </IconButton>
         )}
-        {onSkip ? (
-          <button
-            type="button"
-            onClick={onSkip}
-            className="min-h-11 px-2 text-[15px] font-semibold text-forest underline-offset-2 hover:underline"
-          >
-            {t('skip')}
-          </button>
-        ) : null}
+        <OnboardingProgress step={step} />
       </div>
-      {progress ? <OnboardingProgress step={step} /> : null}
-      <div className="flex flex-col gap-1">
-        <h1 className="font-display text-[28px] font-semibold leading-[1.1]">{title}</h1>
-        {subtitle ? <p className="text-[15px] text-muted-foreground">{subtitle}</p> : null}
+      <div className="flex flex-col gap-1.5">
+        <h1 className="font-display text-[30px] font-semibold leading-[1.1]">{title}</h1>
+        <p className="text-[15px] leading-[1.4] text-muted-foreground">{subtitle}</p>
       </div>
-      <div className="flex flex-1 flex-col gap-3">{children}</div>
-      <div className="flex flex-col gap-3">{footer}</div>
+      {children}
+      <div className="mt-auto flex flex-col gap-1">{footer}</div>
     </div>
   );
 }
 
-/** The 4-step plant progress header (one stage per step). */
-export function OnboardingProgress({ step }: { step: OnboardingShellProps['step'] }) {
+/** The 2-stage plant progress: seed (OB1), sprout (OB4); the current one on forest. */
+export function OnboardingProgress({ step }: { step: 1 | 2 }) {
   const t = useTranslations('screens.onboarding');
-  const current = Math.min(step, 4);
   return (
-    <ol
-      aria-label={step === 5 ? t('progressDone') : t('progress', { step: current, total: 4 })}
-      className="flex items-end justify-between gap-2 rounded-card bg-forest px-5 pb-3 pt-4"
+    <div
+      role="progressbar"
+      aria-valuemin={1}
+      aria-valuemax={2}
+      aria-valuenow={step}
+      aria-label={t('progress', { step, total: 2 })}
+      className="flex flex-grow items-center gap-1"
     >
-      {ONBOARDING_STAGES.map((stage, index) => {
-        const reached = index + 1 <= step;
-        const isCurrent = index + 1 === step;
-        return (
-          <li
-            key={stage}
-            aria-current={isCurrent ? 'step' : undefined}
-            className="flex flex-1 flex-col items-center gap-2"
-          >
-            <span
-              className={gcn(
-                'flex h-12 items-end justify-center',
-                reached ? 'opacity-100' : 'opacity-40',
-                isCurrent && 'bloom',
-              )}
-            >
-              <PlantGlyph stage={reached ? stage : 'seed'} variant="topic" size={reached ? 36 : 22} />
-            </span>
-            <span
-              aria-hidden="true"
-              className={gcn(
-                'h-1 w-full rounded-full',
-                reached ? 'bg-on-forest' : 'bg-on-forest-line',
-              )}
-            />
-          </li>
-        );
-      })}
-    </ol>
+      <span
+        className={gcn(
+          'flex h-10 w-10 shrink-0 items-end justify-center overflow-hidden rounded-full',
+          step === 1 ? 'bg-forest' : 'bg-on-forest-muted',
+        )}
+      >
+        <SeedMark />
+      </span>
+      <span
+        className={gcn(
+          'h-[3px] flex-grow rounded-[2px]',
+          step === 1 ? 'bg-border' : 'bg-stage-tree-canopy',
+        )}
+      />
+      {step === 1 ? (
+        <span className="h-10 w-10 shrink-0 rounded-full border-2 border-dashed border-locked-border" />
+      ) : (
+        <span className="flex h-10 w-10 shrink-0 items-end justify-center overflow-hidden rounded-full bg-forest">
+          <SproutMark />
+        </span>
+      )}
+    </div>
   );
 }
 
-/**
- * One choice in an onboarding list (OB1 levels, OB2 goals): a white card,
- * forest border + check when picked. A radio in a `role="radiogroup"`.
- */
-export function OnboardingOption({
-  selected,
-  onSelect,
-  title,
-  detail,
-  badge,
-  icon,
-}: {
-  selected: boolean;
-  onSelect: () => void;
-  title: string;
-  detail?: string;
-  badge?: string;
-  icon?: React.ReactNode;
-}) {
+function SeedMark() {
   return (
-    <button
-      type="button"
-      role="radio"
-      aria-checked={selected}
-      onClick={onSelect}
-      className={gcn(
-        'flex min-h-[64px] w-full items-center gap-3 rounded-control border bg-surface px-4 py-3 text-left',
-        'transition-colors duration-quick ease-garden',
-        selected ? 'border-2 border-forest bg-card-lift-bg' : 'border-border hover:bg-surface-sunken',
-      )}
-    >
-      {icon ? (
-        <span aria-hidden="true" className="flex h-10 w-10 shrink-0 items-center justify-center">
-          {icon}
-        </span>
-      ) : null}
-      <span className="flex min-w-0 flex-1 flex-col gap-0.5">
-        <span className="text-[16px] font-semibold leading-[1.3] text-text">{title}</span>
-        {detail ? <span className="text-[14px] leading-[1.35] text-muted-foreground">{detail}</span> : null}
-      </span>
-      {badge ? (
-        <span className="shrink-0 rounded-full bg-surface-sunken px-2.5 py-1 text-[13px] font-semibold text-forest">
-          {badge}
-        </span>
-      ) : null}
-    </button>
+    <svg width="26" height="26" viewBox="0 0 40 40" aria-hidden="true">
+      <ellipse cx="20" cy="33" rx="6" ry="4" fill="var(--stage-seed)" />
+      <path
+        d="M20 30 C20 26 22 24 25 23"
+        stroke="var(--stage-tree-canopy)"
+        strokeWidth="2.4"
+        fill="none"
+        strokeLinecap="round"
+      />
+    </svg>
   );
 }
+
+function SproutMark() {
+  return (
+    <svg width="26" height="26" viewBox="0 0 40 40" aria-hidden="true">
+      <path d="M20 40 V22" stroke="var(--stage-tree-canopy)" strokeWidth="2.5" />
+      <path d="M20 30 C14 29 11 25 13 21 C18 21 20 25 20 30 Z" fill="var(--stage-sprout-leaf)" />
+      <path d="M20 27 C26 26 29 22 27 18 C22 18 20 22 20 27 Z" fill="var(--stage-sprout)" />
+    </svg>
+  );
+}
+
+/** The gold "couldn't save" line above a footer button (never red). */
+export function SaveError() {
+  const t = useTranslations('screens.onboarding');
+  return (
+    <p
+      role="alert"
+      className="mb-2 rounded-[14px] border border-gold-border bg-gold-wash px-3 py-2.5 text-[14px] leading-[1.35] text-gold-text"
+    >
+      {t('saveError')}
+    </p>
+  );
+}
+
+/** The 56px terracotta footer button of the onboarding boards (16px bold). */
+export const ONBOARDING_BUTTON = 'h-14 w-full text-[16px] md:max-w-none';

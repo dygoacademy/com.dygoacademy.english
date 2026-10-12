@@ -13,7 +13,7 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 /**
- * A learner who hasn't finished onboarding (OB1–OB5, `onboarded_at` null)
+ * A learner who hasn't finished onboarding (OB1, OB4, OB5; `onboarded_at` null)
  * starts there instead. Only the garden home checks, so an invite sign-up
  * still lands straight in their group (/join → /groups/…) and meets
  * onboarding the first time they open the Garden tab.

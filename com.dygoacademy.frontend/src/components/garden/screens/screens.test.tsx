@@ -34,8 +34,8 @@ const push = vi.fn();
 vi.mock('next/navigation', () => ({ useRouter: () => ({ push }) }));
 
 describe('reference fixtures', () => {
-  it('lists the 74 canvas references (… 5 speaking, 4 speaking entry points, 15 pronunciation, 6 voice donation)', () => {
-    expect(REFERENCE_NAMES).toHaveLength(74);
+  it('lists the 78 canvas references (… 5 speaking, 4 speaking entry points, 15 pronunciation, 6 voice donation, 4 onboarding)', () => {
+    expect(REFERENCE_NAMES).toHaveLength(78);
     expect(isReferenceName('A1b-all-watered')).toBe(true);
     expect(isReferenceName('A7c-word-search')).toBe(true);
     expect(isReferenceName('A6b-search-topics')).toBe(true);
@@ -53,6 +53,7 @@ describe('reference fixtures', () => {
     expect(isReferenceName('GR5-invite')).toBe(true);
     expect(isReferenceName('A7-topic-bed-filter-sprouts')).toBe(true);
     expect(isReferenceName('iP2b-not-heard')).toBe(true);
+    expect(isReferenceName('OB1-about-you-work')).toBe(true);
     expect(isReferenceName('A9-nope')).toBe(false);
   });
 });

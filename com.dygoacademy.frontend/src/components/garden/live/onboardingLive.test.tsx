@@ -5,7 +5,8 @@ import { renderWithIntl } from '@/test/render';
 
 const push = vi.fn();
 const refresh = vi.fn();
-vi.mock('next/navigation', () => ({ useRouter: () => ({ push, refresh }) }));
+const back = vi.fn();
+vi.mock('next/navigation', () => ({ useRouter: () => ({ push, refresh, back }) }));
 
 const mutate = vi.fn();
 const onboardingState = { data: undefined as unknown, isPending: false, isError: false, refetch: vi.fn() };
@@ -26,8 +27,14 @@ vi.mock('@/hooks/useUpsertSchedule', () => ({ useUpsertSchedule: () => ({ mutate
 const pushState = { state: 'unsubscribed' as string, subscribe: vi.fn() };
 vi.mock('@/hooks/usePushSubscription', () => ({ usePushSubscription: () => pushState }));
 
-import { OnboardBedLive } from './OnboardBedLive';
-import { OnboardGoalLive } from './OnboardGoalLive';
+const userState = { data: { user_metadata: { full_name: 'Minh Tran' } } as unknown };
+vi.mock('@/hooks/useCurrentUser', () => ({ useCurrentUser: () => userState }));
+
+vi.mock('./data', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('./data')>()),
+  localTimezone: () => 'Asia/Ho_Chi_Minh',
+}));
+
 import { OnboardLevelLive } from './OnboardLevelLive';
 import { OnboardReadyLive } from './OnboardReadyLive';
 import { OnboardReminderLive } from './OnboardReminderLive';
@@ -42,6 +49,7 @@ const garden = (ui: React.ReactElement) => renderWithIntl(<div data-ui="garden">
 beforeEach(() => {
   push.mockReset();
   refresh.mockReset();
+  back.mockReset();
   mutate.mockReset();
   mutateAsync.mockReset().mockResolvedValue({});
   pushState.state = 'unsubscribed';
@@ -58,144 +66,162 @@ beforeEach(() => {
   schedulesState.data = [];
 });
 
-describe('OB1 live', () => {
-  it('Skip saves B1 and opens OB2 (D-7: no level check)', () => {
+describe('OB1 About you live', () => {
+  it('starts on B1 and saves level, goal, band and time zone in one PATCH, then opens OB4', () => {
     succeed();
     garden(<OnboardLevelLive />);
-    fireEvent.click(screen.getByRole('button', { name: 'Skip' }));
-    expect(mutate).toHaveBeenCalledWith({ cefr_level: 'B1' }, expect.anything());
-    expect(push).toHaveBeenCalledWith('/welcome/goal');
-  });
-
-  it('"Not sure?" also starts at B1', () => {
-    succeed();
-    garden(<OnboardLevelLive />);
-    fireEvent.click(screen.getByRole('button', { name: 'Not sure? Start at B1' }));
-    expect(mutate).toHaveBeenCalledWith({ cefr_level: 'B1' }, expect.anything());
-  });
-
-  it('Continue saves the pick; nothing moves on when the save fails', () => {
-    garden(<OnboardLevelLive />);
-    fireEvent.click(screen.getByRole('radio', { name: /academic texts/ }));
-    fireEvent.click(screen.getByRole('button', { name: 'Continue' }));
-    expect(mutate).toHaveBeenCalledWith({ cefr_level: 'C1' }, expect.anything());
-    expect(push).not.toHaveBeenCalled();
-  });
-});
-
-describe('OB2 live', () => {
-  it('saves the goal with its band and opens OB3', () => {
-    succeed();
-    garden(<OnboardGoalLive />);
-    fireEvent.click(screen.getByRole('radio', { name: /IELTS/ }));
+    expect(screen.getByRole('radio', { name: /Getting there/ }).getAttribute('aria-checked')).toBe('true');
+    fireEvent.click(screen.getByRole('radio', { name: /Comfortable/ }));
+    fireEvent.click(screen.getByRole('radio', { name: 'IELTS Academic' }));
     fireEvent.click(screen.getByRole('button', { name: 'Raise target' }));
     fireEvent.click(screen.getByRole('button', { name: 'Continue' }));
-    expect(mutate).toHaveBeenCalledWith({ study_goal: 'IELTS', target_band: 7.5 }, expect.anything());
-    expect(push).toHaveBeenCalledWith('/welcome/bed');
-  });
-
-  it('starts from the saved choice; just for life sends no band', () => {
-    succeed();
-    onboardingState.data = { ...(onboardingState.data as object), study_goal: 'PTE', target_band: 79 };
-    garden(<OnboardGoalLive />);
-    expect(screen.getByText('79')).toBeTruthy();
-    fireEvent.click(screen.getByRole('radio', { name: /Just for life/ }));
-    fireEvent.click(screen.getByRole('button', { name: 'Continue' }));
-    expect(mutate).toHaveBeenCalledWith({ study_goal: 'LIFE', target_band: null }, expect.anything());
-  });
-});
-
-describe('OB3 live', () => {
-  it('saves the picked topic as the first bed', () => {
-    succeed();
-    topicsState.data = [
-      { id: 't1', title: 'AWL Sublist 1', word_count: '60', kind: 'library', min_level: 'B2', max_level: 'C1' },
-    ];
-    garden(<OnboardBedLive />);
-    fireEvent.click(screen.getByRole('radio', { name: /AWL Sublist 1/ }));
-    fireEvent.click(screen.getByRole('button', { name: 'Plant this bed' }));
-    expect(mutate).toHaveBeenCalledWith({ first_topic_id: 't1' }, expect.anything());
+    expect(mutate).toHaveBeenCalledTimes(1);
+    expect(mutate).toHaveBeenCalledWith(
+      { cefr_level: 'B2', study_goal: 'IELTS', target_band: 7.5, timezone: 'Asia/Ho_Chi_Minh' },
+      expect.anything(),
+    );
     expect(push).toHaveBeenCalledWith('/welcome/reminder');
   });
 
-  it('with no topics, continues without saving one', () => {
-    garden(<OnboardBedLive />);
+  it('a goal without a band clears it', () => {
+    garden(<OnboardLevelLive />);
+    fireEvent.click(screen.getByRole('radio', { name: 'IELTS General' }));
+    expect(screen.getByText('Target band')).toBeTruthy();
+    fireEvent.click(screen.getByRole('radio', { name: 'Work' }));
+    expect(screen.queryByText('Target band')).toBeNull();
     fireEvent.click(screen.getByRole('button', { name: 'Continue' }));
-    expect(mutate).not.toHaveBeenCalled();
-    expect(push).toHaveBeenCalledWith('/welcome/reminder');
+    expect(mutate).toHaveBeenCalledWith(
+      { cefr_level: 'B1', study_goal: 'WORK', target_band: null, timezone: 'Asia/Ho_Chi_Minh' },
+      expect.anything(),
+    );
+    // The save failed: nothing moves on.
+    expect(push).not.toHaveBeenCalled();
+  });
+
+  it('comes back to what was saved (Change on OB5)', () => {
+    onboardingState.data = {
+      onboarded_at: null,
+      cefr_level: 'C1',
+      study_goal: 'IELTS_GENERAL',
+      target_band: 6.5,
+      first_topic_id: 't1',
+    };
+    garden(<OnboardLevelLive />);
+    expect(screen.getByRole('radio', { name: /Advanced/ }).getAttribute('aria-checked')).toBe('true');
+    expect(screen.getByRole('radio', { name: 'IELTS General' }).getAttribute('aria-checked')).toBe('true');
+    expect(screen.getByText('6.5')).toBeTruthy();
+  });
+
+  it('an old PTE goal is not on screen, so a goal must be picked again', () => {
+    onboardingState.data = { onboarded_at: null, cefr_level: 'B1', study_goal: 'PTE', target_band: 65, first_topic_id: null };
+    garden(<OnboardLevelLive />);
+    expect((screen.getByRole('button', { name: 'Continue' }) as HTMLButtonElement).disabled).toBe(true);
+  });
+
+  it('Back returns to where sign-up came from', () => {
+    garden(<OnboardLevelLive />);
+    fireEvent.click(screen.getByRole('button', { name: 'Back' }));
+    expect(back.mock.calls.length + push.mock.calls.length).toBe(1);
   });
 });
 
-describe('OB4 live', () => {
+describe('OB4 Reminder live', () => {
   function grant(permission: NotificationPermission) {
     vi.stubGlobal('Notification', { permission });
   }
 
-  it('asks for notifications only after a time is picked, then saves the reminder on', async () => {
+  it('Remind me saves the time on with the time zone, then asks for notifications', async () => {
     grant('granted');
+    const order: string[] = [];
+    mutateAsync.mockImplementation(async () => order.push('save'));
+    pushState.subscribe.mockImplementation(async () => order.push('ask'));
     garden(<OnboardReminderLive />);
     expect(pushState.subscribe).not.toHaveBeenCalled();
-    fireEvent.click(screen.getByRole('button', { name: /^Morning ·/ }));
+    fireEvent.click(screen.getByRole('radio', { name: /^Lunch/ }));
     expect(pushState.subscribe).not.toHaveBeenCalled();
     await act(async () => {
-      fireEvent.click(screen.getByRole('button', { name: /^Remind me at/ }));
+      fireEvent.click(screen.getByRole('button', { name: 'Remind me at 12:30' }));
     });
-    expect(pushState.subscribe).toHaveBeenCalledOnce();
-    expect(mutateAsync).toHaveBeenCalledWith(expect.objectContaining({ reminderTime: '07:30', isEnabled: true }));
+    expect(order).toEqual(['save', 'ask']);
+    expect(mutateAsync).toHaveBeenCalledWith({
+      reminderTime: '12:30',
+      timezone: 'Asia/Ho_Chi_Minh',
+      isEnabled: true,
+    });
     expect(push).toHaveBeenCalledWith('/welcome/ready');
     vi.unstubAllGlobals();
   });
 
-  it('a refused prompt still saves the time, switched off, and explains', async () => {
+  it('starts on Morning; a refused prompt turns the reminder back off and goes on', async () => {
     grant('denied');
     garden(<OnboardReminderLive />);
-    fireEvent.click(screen.getByRole('button', { name: /^Evening ·/ }));
     await act(async () => {
-      fireEvent.click(screen.getByRole('button', { name: /^Remind me at/ }));
+      fireEvent.click(screen.getByRole('button', { name: 'Remind me at 7:30' }));
     });
-    expect(mutateAsync).toHaveBeenCalledWith(expect.objectContaining({ reminderTime: '19:00', isEnabled: false }));
-    expect(push).not.toHaveBeenCalled();
-    expect(screen.getByRole('status').textContent).toMatch(/Notifications are off/);
-    fireEvent.click(screen.getByRole('button', { name: 'Continue' }));
+    expect(mutateAsync.mock.calls.map(([change]) => change.isEnabled)).toEqual([true, false]);
     expect(push).toHaveBeenCalledWith('/welcome/ready');
     vi.unstubAllGlobals();
   });
 
-  it('Skip touches nothing', () => {
+  it('Not now saves the reminder off and asks nothing', async () => {
     garden(<OnboardReminderLive />);
-    fireEvent.click(screen.getByRole('button', { name: 'Skip' }));
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: 'Not now' }));
+    });
     expect(pushState.subscribe).not.toHaveBeenCalled();
-    expect(mutateAsync).not.toHaveBeenCalled();
+    expect(mutateAsync).toHaveBeenCalledWith(expect.objectContaining({ reminderTime: '07:30', isEnabled: false }));
+    expect(push).toHaveBeenCalledWith('/welcome/ready');
+  });
+
+  it('a failed save still lets the learner go on', async () => {
+    mutateAsync.mockRejectedValue(new Error('offline'));
+    garden(<OnboardReminderLive />);
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: 'Remind me at 7:30' }));
+    });
     expect(push).toHaveBeenCalledWith('/welcome/ready');
   });
 });
 
-describe('OB5 live', () => {
-  it('reads back the choices, finishes onboarding and opens the garden', async () => {
+describe('OB5 All set live', () => {
+  it('reads back three rows, finishes onboarding and meets 5 words from the first bed', async () => {
     succeed();
     onboardingState.data = {
       onboarded_at: null,
       cefr_level: 'B2',
-      study_goal: 'PTE',
-      target_band: 65,
+      study_goal: 'IELTS',
+      target_band: 7,
       first_topic_id: 't1',
     };
-    topicsState.data = [{ id: 't1', title: 'AWL Sublist 1', word_count: '60' }];
+    topicsState.data = [{ id: 't1', title: 'Environment', word_count: '60' }];
     schedulesState.data = [{ id: 's1', reminder_time: '07:30:00', timezone: 'UTC', is_enabled: true }];
     garden(<OnboardReadyLive />);
+    expect(screen.getByRole('heading', { name: 'Your garden is planted, Minh' })).toBeTruthy();
+    expect(screen.getByText(/^10 Environment seeds/)).toBeTruthy();
     const text = document.body.textContent ?? '';
-    expect(text).toContain('GoalPTE · 65');
-    expect(text).toContain('First bedAWL Sublist 1');
-    expect(text).toMatch(/Reminder7:30\sAM/);
-    fireEvent.click(screen.getByRole('button', { name: 'Water your first words' }));
+    expect(text).toContain('GoalIELTS Academic · band 7.0');
+    expect(text).toContain('ReminderEvery day · 7:30');
+    expect(text).not.toContain('First bed');
+    fireEvent.click(screen.getByRole('button', { name: 'Meet your first 5 words' }));
     expect(mutate).toHaveBeenCalledWith({ complete: true }, expect.anything());
-    await waitFor(() => expect(push).toHaveBeenCalledWith('/garden'));
+    await waitFor(() => expect(push).toHaveBeenCalledWith('/review?new=5&topic=t1'));
     expect(refresh).toHaveBeenCalled();
   });
 
-  it('a reminder that is switched off reads Off', () => {
-    schedulesState.data = [{ id: 's1', reminder_time: '19:00:00', timezone: 'UTC', is_enabled: false }];
+  it('"Look around the garden first" also finishes, and opens the garden', async () => {
+    succeed();
     garden(<OnboardReadyLive />);
+    fireEvent.click(screen.getByRole('button', { name: 'Look around the garden first' }));
+    expect(mutate).toHaveBeenCalledWith({ complete: true }, expect.anything());
+    await waitFor(() => expect(push).toHaveBeenCalledWith('/garden'));
+  });
+
+  it('a reminder that is switched off reads Off; a small bed plants what it has', () => {
+    onboardingState.data = { onboarded_at: null, cefr_level: 'B1', study_goal: 'TRAVEL', target_band: null, first_topic_id: 't2' };
+    topicsState.data = [{ id: 't2', title: 'Travel', word_count: '6' }];
+    schedulesState.data = [{ id: 's1', reminder_time: '21:00:00', timezone: 'UTC', is_enabled: false }];
+    garden(<OnboardReadyLive />);
+    expect(screen.getByText(/^6 Travel seeds/)).toBeTruthy();
     expect(document.body.textContent).toContain('ReminderOff');
   });
 });

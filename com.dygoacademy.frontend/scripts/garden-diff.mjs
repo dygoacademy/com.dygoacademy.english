@@ -67,6 +67,11 @@ const NAMES = [
   'A8e-privacy-on',
   'A8e-privacy-delete',
   'A8e-privacy-deleted',
+  // Onboarding in 2 steps (2026-10-12)
+  'OB1-about-you',
+  'OB1-about-you-work',
+  'OB4-reminder',
+  'OB5-ready',
   // UI-G
   'GR1-shared-gardens',
   'GR2-group-garden',

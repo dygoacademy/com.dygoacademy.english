@@ -13,6 +13,7 @@ import {
   ENTRY,
   FORGOT_PASSWORD,
   HOME_REFERENCE,
+  ONBOARDING,
   QUIZ,
   QUIZ_RESULT,
   PRIVACY,
@@ -27,6 +28,9 @@ import {
 } from '@/components/garden/screens/fixtures';
 import { AllWateredScreen } from '@/components/garden/screens/AllWateredScreen';
 import { MeScreen } from '@/components/garden/screens/MeScreen';
+import { OnboardLevelScreen } from '@/components/garden/screens/OnboardLevelScreen';
+import { OnboardReadyScreen } from '@/components/garden/screens/OnboardReadyScreen';
+import { OnboardReminderScreen } from '@/components/garden/screens/OnboardReminderScreen';
 import { PrivacyScreen } from '@/components/garden/screens/PrivacyScreen';
 import { VOICE_DONATION_LINKS } from '@/lib/voice-donation';
 import { MissionCompleteScreen } from '@/components/garden/screens/MissionCompleteScreen';
@@ -389,6 +393,47 @@ function ReferenceScreenBody({ name, locale }: { name: ReferenceName; locale: Ap
           registerHref={AUTH_HREFS.register}
           initialEmail={SIGN_IN.email}
           initialPassword={SIGN_IN.password}
+        />
+      );
+    case 'OB1-about-you':
+    case 'OB1-about-you-work':
+      return (
+        <OnboardLevelScreen
+          level={ONBOARDING.level}
+          goal={name === 'OB1-about-you-work' ? 'WORK' : ONBOARDING.goal}
+          band={ONBOARDING.band}
+          onLevelChange={() => {}}
+          onGoalChange={() => {}}
+          onBandStep={() => {}}
+          onContinue={() => {}}
+          back={AUTH_HREFS.register}
+        />
+      );
+    case 'OB4-reminder':
+      return (
+        <OnboardReminderScreen
+          choice="morning"
+          onChoiceChange={() => {}}
+          onConfirm={() => {}}
+          onNotNow={() => {}}
+          back={GARDEN_ROUTES.reference('OB1-about-you')}
+        />
+      );
+    case 'OB5-ready':
+      return (
+        <OnboardReadyScreen
+          name={ONBOARDING.name}
+          bed={ONBOARDING.bed[locale]}
+          level={ONBOARDING.level}
+          goal={{ goal: ONBOARDING.goal, band: ONBOARDING.band }}
+          reminder={ONBOARDING.reminder}
+          links={{
+            level: GARDEN_ROUTES.reference('OB1-about-you'),
+            goal: GARDEN_ROUTES.reference('OB1-about-you'),
+            reminder: GARDEN_ROUTES.reference('OB4-reminder'),
+          }}
+          onMeet={() => {}}
+          onLook={() => {}}
         />
       );
     case 'AU2-create-account':

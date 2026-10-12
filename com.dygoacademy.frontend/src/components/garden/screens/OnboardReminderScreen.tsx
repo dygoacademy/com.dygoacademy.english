@@ -1,225 +1,133 @@
-'use client';
-
 import * as React from 'react';
 import { useTranslations } from 'next-intl';
 
 import { Button } from '../Button';
-import { Chip } from '../Chip';
 import { gcn } from '../cn';
-import type { ClockTime } from '../format';
-import { useGardenFormat } from '../format';
-import {
-  ARC_END_MINUTES,
-  ARC_SNAP_MINUTES,
-  ARC_START_MINUTES,
-  arcFraction,
-  arcPoint,
-  clockToMinutes,
-  minutesToClock,
-  partOfDay,
-  pointToClock,
-  REMINDER_PRESETS,
-} from '../live/onboarding';
-import { OnboardingShell } from '../OnboardingShell';
+import { clockLabel, REMINDER_CHOICES, type ReminderChoice } from '../live/onboarding';
+import { ONBOARDING_BUTTON, OnboardingShell } from '../OnboardingShell';
 
 /**
- * OB4 · Reminder time (board `OnboardReminder`, not in the repo yet).
- * Props only (the drag state is the parent's `time`).
+ * OB4 · Reminder (board `OnboardReminder`, `reference/OB4-reminder.html`).
+ * Props only.
  *
- * Drag the sun along a morning → night arc (06:00–23:00, quarter-hour
- * snaps; arrow keys too, it's a slider), or tap a preset. Nothing is asked
- * of the browser until a time is chosen: the button then reads "Remind me
- * at 7:30", and only pressing it asks for notifications (the live wrapper).
- * Skip goes on without a reminder. `notice` explains a refused or
- * unsupported prompt; the button then just continues.
+ * Three 72px choices: Morning 7:30 and Lunch 12:30 (sun on gold), Evening
+ * 21:00 (moon on forest). "Remind me at …" saves the time and only then
+ * asks the browser for notifications (the live wrapper); "Not now" goes on
+ * with the reminder off. A phone notification is the default; Zalo /
+ * Email and other times are in Profile › Reminder.
  */
 export interface OnboardReminderScreenProps {
-  /** null until the learner picks a time. */
-  time: ClockTime | null;
-  onTimeChange: (time: ClockTime) => void;
+  choice: ReminderChoice;
+  onChoiceChange: (choice: ReminderChoice) => void;
   onConfirm: () => void;
-  onSkip: () => void;
+  onNotNow: () => void;
   back: string;
   saving?: boolean;
-  notice?: 'denied' | 'unsupported' | 'error' | null;
 }
 
-// Arc geometry in SVG units (the SVG scales to the column width).
-const W = 320;
-const H = 176;
-const CX = W / 2;
-const CY = 150;
-const R = 128;
-/** Shown, faded, before anything is chosen. */
-const PLACEHOLDER: ClockTime = { hour: 20, minute: 0 };
-
 export function OnboardReminderScreen({
-  time,
-  onTimeChange,
+  choice,
+  onChoiceChange,
   onConfirm,
-  onSkip,
+  onNotNow,
   back,
   saving = false,
-  notice = null,
 }: OnboardReminderScreenProps) {
   const t = useTranslations('screens.onboarding');
-  const f = useGardenFormat();
-  const shown = time ?? PLACEHOLDER;
-  const svgRef = React.useRef<SVGSVGElement>(null);
-  const dragging = React.useRef(false);
-
-  const fromPointer = (event: React.PointerEvent) => {
-    const svg = svgRef.current;
-    if (!svg) return;
-    const box = svg.getBoundingClientRect();
-    if (box.width === 0 || box.height === 0) return;
-    const x = ((event.clientX - box.left) / box.width) * W;
-    const y = ((event.clientY - box.top) / box.height) * H;
-    onTimeChange(pointToClock(x, y, CX, CY));
-  };
-
-  const onKeyDown = (event: React.KeyboardEvent) => {
-    const minutes = clockToMinutes(shown);
-    const moves: Record<string, number> = {
-      ArrowRight: ARC_SNAP_MINUTES,
-      ArrowUp: ARC_SNAP_MINUTES,
-      ArrowLeft: -ARC_SNAP_MINUTES,
-      ArrowDown: -ARC_SNAP_MINUTES,
-      PageUp: 60,
-      PageDown: -60,
-    };
-    if (event.key === 'Home') onTimeChange(minutesToClock(ARC_START_MINUTES));
-    else if (event.key === 'End') onTimeChange(minutesToClock(ARC_END_MINUTES));
-    else if (moves[event.key] !== undefined) onTimeChange(minutesToClock(minutes + moves[event.key]));
-    else return;
-    event.preventDefault();
-  };
-
-  const sun = arcPoint(arcFraction(shown), CX, CY, R);
-  const label = f.clock(shown);
-  const sky = partOfDay(shown);
-
+  const picked = REMINDER_CHOICES.find((item) => item.id === choice) ?? REMINDER_CHOICES[0];
   return (
     <OnboardingShell
-      step={4}
+      step={2}
       back={back}
-      onSkip={onSkip}
       title={t('reminder.title')}
-      subtitle={t('reminder.subtitle')}
+      subtitle={t('reminder.sub')}
       footer={
         <>
-          {notice ? (
-            <p
-              role="status"
-              className="rounded-[14px] border border-water-border bg-water-soft px-3 py-2.5 text-[14px] leading-[1.35] text-water-text"
-            >
-              {t(`reminder.notice.${notice}`)}
-            </p>
-          ) : null}
-          <Button variant="primary" className="md:max-w-none" onClick={onConfirm} disabled={!time} loading={saving}>
-            {notice ? t('continue') : time ? t('reminder.confirm', { time: label }) : t('reminder.pick')}
+          <Button variant="primary" className={ONBOARDING_BUTTON} onClick={onConfirm} loading={saving}>
+            {t('reminder.cta', { time: clockLabel(picked.time) })}
           </Button>
+          <button
+            type="button"
+            onClick={onNotNow}
+            disabled={saving}
+            className="self-center p-2 text-[14px] font-semibold text-muted-foreground underline"
+          >
+            {t('reminder.notNow')}
+          </button>
         </>
       }
     >
-      <div
-        className={gcn(
-          'flex flex-col items-center rounded-card px-3 pt-3 transition-colors duration-quick',
-          sky === 'night' ? 'bg-forest' : 'bg-water-soft',
-        )}
-      >
-        <p
-          aria-hidden="true"
-          className={gcn(
-            'font-display text-[34px] font-semibold leading-[1.1]',
-            sky === 'night' ? 'text-on-forest' : 'text-water-text',
-            !time && 'opacity-50',
-          )}
-        >
-          {label}
-        </p>
-        <svg
-          ref={svgRef}
-          viewBox={`0 0 ${W} ${H}`}
-          className="w-full touch-none select-none"
-          onPointerDown={(event) => {
-            dragging.current = true;
-            event.currentTarget.setPointerCapture?.(event.pointerId);
-            fromPointer(event);
-          }}
-          onPointerMove={(event) => {
-            if (dragging.current) fromPointer(event);
-          }}
-          onPointerUp={() => {
-            dragging.current = false;
-          }}
-          onPointerCancel={() => {
-            dragging.current = false;
-          }}
-        >
-          <path
-            d={`M ${CX - R} ${CY} A ${R} ${R} 0 0 1 ${CX + R} ${CY}`}
-            fill="none"
-            stroke={sky === 'night' ? 'var(--color-on-forest-line)' : 'var(--color-water-border)'}
-            strokeWidth="3"
-            strokeDasharray="2 8"
-            strokeLinecap="round"
-          />
-          <line
-            x1={CX - R - 16}
-            x2={CX + R + 16}
-            y1={CY}
-            y2={CY}
-            stroke="var(--stage-tree-canopy)"
-            strokeWidth="4"
-            strokeLinecap="round"
-          />
-          <g
-            role="slider"
-            tabIndex={0}
-            aria-label={t('reminder.slider')}
-            aria-valuemin={ARC_START_MINUTES}
-            aria-valuemax={ARC_END_MINUTES}
-            aria-valuenow={clockToMinutes(shown)}
-            aria-valuetext={label}
-            onKeyDown={onKeyDown}
-            className="cursor-grab outline-none focus-visible:[&>circle:first-child]:stroke-forest"
-          >
-            <circle cx={sun.x} cy={sun.y} r="26" fill="transparent" stroke="transparent" strokeWidth="3" />
-            {sky === 'night' ? (
-              <circle cx={sun.x} cy={sun.y} r="16" fill="var(--color-gold-light)" opacity={time ? 1 : 0.5} />
-            ) : (
-              <>
-                <circle cx={sun.x} cy={sun.y} r="22" fill="var(--color-gold-light)" opacity={time ? 0.5 : 0.25} />
-                <circle cx={sun.x} cy={sun.y} r="15" fill="var(--color-gold)" opacity={time ? 1 : 0.5} />
-              </>
-            )}
-          </g>
-        </svg>
-        <div
-          aria-hidden="true"
-          className={gcn(
-            'flex w-full justify-between px-1 pb-2 text-[12px] font-semibold',
-            sky === 'night' ? 'text-on-forest-muted' : 'text-water-text-soft',
-          )}
-        >
-          <span>{t('reminder.morning')}</span>
-          <span>{t('reminder.night')}</span>
-        </div>
-      </div>
-      <div className="flex flex-wrap gap-2">
-        {REMINDER_PRESETS.map((preset) => (
-          <Chip
-            key={preset.id}
-            selected={
-              time !== null && time.hour === preset.time.hour && time.minute === preset.time.minute
-            }
-            onClick={() => onTimeChange(preset.time)}
-          >
-            {t(`reminder.presets.${preset.id}`, { time: f.clock(preset.time) })}
-          </Chip>
-        ))}
+      <div role="radiogroup" aria-label={t('reminder.title')} className="flex flex-col gap-2.5">
+        {REMINDER_CHOICES.map((item) => {
+          const on = item.id === choice;
+          const night = item.id === 'evening';
+          return (
+            <button
+              key={item.id}
+              type="button"
+              role="radio"
+              aria-checked={on}
+              onClick={() => onChoiceChange(item.id)}
+              className={gcn(
+                'flex h-[72px] items-center gap-3.5 rounded-[18px] border-2 px-4 text-left text-text',
+                on ? 'border-forest bg-forest-wash' : 'border-border bg-surface',
+              )}
+            >
+              <span
+                aria-hidden="true"
+                className={gcn(
+                  'flex h-11 w-11 shrink-0 items-center justify-center rounded-full',
+                  night ? 'bg-forest text-gold-light' : 'bg-gold-soft text-[#B07A12]',
+                )}
+              >
+                {night ? <MoonMark /> : <SunMark />}
+              </span>
+              <span className="flex flex-grow flex-col gap-0.5">
+                <span className="text-[16px] font-bold">
+                  {t('reminder.option', {
+                    label: t(`reminder.${item.id}.label`),
+                    time: clockLabel(item.time),
+                  })}
+                </span>
+                <span className="text-[13px] text-muted-foreground">{t(`reminder.${item.id}.line`)}</span>
+              </span>
+              <span
+                aria-hidden="true"
+                className={gcn(
+                  'box-content h-[22px] w-[22px] shrink-0 rounded-full border-2 border-forest shadow-[inset_0_0_0_3px_#FFFFFF]',
+                  on ? 'bg-forest' : 'bg-surface',
+                )}
+              />
+            </button>
+          );
+        })}
       </div>
     </OnboardingShell>
+  );
+}
+
+function SunMark() {
+  return (
+    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+      <circle cx="12" cy="12" r="4" />
+      <path d="M12 2 V4 M12 20 V22 M2 12 H4 M20 12 H22 M4.9 4.9 L6.3 6.3 M17.7 17.7 L19.1 19.1 M4.9 19.1 L6.3 17.7 M17.7 6.3 L19.1 4.9" />
+    </svg>
+  );
+}
+
+function MoonMark() {
+  return (
+    <svg
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M20 14 A8 8 0 1 1 10 4 A6 6 0 0 0 20 14 Z" />
+    </svg>
   );
 }

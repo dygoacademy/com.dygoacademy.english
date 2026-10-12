@@ -1,14 +1,12 @@
-import type { Metadata } from 'next';
-import { getTranslations } from 'next-intl/server';
+import { redirect } from 'next/navigation';
 
-import { OnboardBedLive } from '@/components/garden/live/OnboardBedLive';
+import { onboardingResumePath } from '@/i18n/garden-locale';
 
-/** Onboarding OB3 First topic. */
-export async function generateMetadata(): Promise<Metadata> {
-  const t = await getTranslations('screens.onboarding.bed');
-  return { title: t('metaTitle') };
-}
-
-export default function OnboardBedPage() {
-  return <OnboardBedLive />;
+/**
+ * The old OB3 step, removed 2026-10-11 (onboarding is OB1 About you →
+ * OB4 Reminder → OB5). Old links and half-finished onboardings resume at
+ * OB1, or at OB4 once a goal is saved.
+ */
+export default async function OnboardBedPage() {
+  redirect(await onboardingResumePath());
 }

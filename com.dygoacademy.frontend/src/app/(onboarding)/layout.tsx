@@ -9,7 +9,7 @@ import { getGardenLocaleContext, getGardenUser, needsOnboarding } from '@/i18n/g
 export { generateViewport } from '@/app/(garden)/layout';
 
 /**
- * Onboarding OB1–OB5 (/welcome/…): garden look, no tab bar. Signed in only
+ * Onboarding OB1, OB4, OB5 (/welcome/…): garden look, no tab bar. Signed in only
  * (middleware.ts bounces signed-out visitors; re-checked here). A learner
  * who has already finished (or any existing learner, backfilled by
  * 20261008_onboarding.sql) is sent to the garden: onboarding is never

@@ -1421,91 +1421,85 @@
     },
     "onboarding": {
       "back": "Back",
-      "skip": "Skip",
       "continue": "Continue",
       "progress": "Step {step} of {total}",
-      "progressDone": "All four steps done",
       "saveError": "We couldn't save that. Check your connection and try again.",
-      "level": {
-        "metaTitle": "Your level",
-        "title": "How much English do you have?",
-        "subtitle": "Pick the sentence that sounds most like you.",
-        "notSure": "Not sure? Start at B1",
-        "options": {
-          "A2": "I can talk about my day and ask simple questions.",
-          "B1": "I can follow the main points of a conversation or a short article.",
-          "B2": "I can discuss most topics and read the news without much help.",
-          "C1": "I can read academic texts and say exactly what I mean."
-        }
-      },
-      "goal": {
-        "metaTitle": "Your goal",
-        "title": "What are you working toward?",
-        "subtitle": "Your goal decides which words ripen first.",
-        "options": {
-          "IELTS": {
-            "title": "IELTS",
-            "detail": "Academic or General Training"
-          },
-          "PTE": {
-            "title": "PTE",
-            "detail": "PTE Academic"
-          },
-          "LIFE": {
-            "title": "Just for life",
-            "detail": "Work, travel and everyday English"
-          }
-        },
-        "target": {
-          "IELTS": "Target band",
-          "PTE": "Target score"
-        },
+      "about": {
+        "metaTitle": "About you",
+        "title": "Let’s set up your garden",
+        "sub": "Two quick questions. You can change them later.",
+        "levelLabel": "Your English today",
+        "notSure": "Not sure? Pick the closest; Dygo adjusts as you learn.",
+        "goalLabel": "What are you growing towards?",
+        "band": "Target band",
+        "bandNote": "Higher bands plant more academic words.",
         "lower": "Lower target",
         "raise": "Raise target"
       },
-      "bed": {
-        "metaTitle": "First topic",
-        "title": "Pick your first seed packet",
-        "subtitle": "It becomes the first bed in your garden. You can add more any time.",
-        "plant": "Plant this bed",
-        "empty": "No topics to plant yet. You can add your own words from Topics.",
-        "words": "{count, plural, one {# word} other {# words}}"
-      },
-      "reminder": {
-        "metaTitle": "Reminder time",
-        "title": "When should we remind you?",
-        "subtitle": "Drag the sun to the time you'd like to water your words.",
-        "pick": "Pick a time",
-        "confirm": "Remind me at {time}",
-        "slider": "Reminder time",
-        "morning": "Morning",
-        "night": "Night",
-        "presets": {
-          "morning": "Morning · {time}",
-          "lunch": "Lunch · {time}",
-          "evening": "Evening · {time}",
-          "night": "Night · {time}"
+      "level": {
+        "A2": {
+          "title": "Just starting",
+          "tag": "A1–A2"
         },
-        "notice": {
-          "denied": "Notifications are off in this browser, so we saved your time without reminders. You can turn them on later in Profile.",
-          "unsupported": "This browser can’t show reminders. We saved your time, and you can turn reminders on in Profile from a browser that can.",
-          "error": "We couldn’t save your reminder. You can set it later in Profile."
+        "B1": {
+          "title": "Getting there",
+          "tag": "B1"
+        },
+        "B2": {
+          "title": "Comfortable",
+          "tag": "B2"
+        },
+        "C1": {
+          "title": "Advanced",
+          "tag": "C1"
         }
       },
+      "goal": {
+        "IELTS": "IELTS Academic",
+        "IELTS_GENERAL": "IELTS General",
+        "WORK": "Work",
+        "TRAVEL": "Travel",
+        "LIFE": "Just for me",
+        "PTE": "PTE"
+      },
+      "reminder": {
+        "metaTitle": "Reminder",
+        "title": "When should we water?",
+        "sub": "One reminder a day, when your words are ripe. Change it any time in Profile.",
+        "morning": {
+          "label": "Morning",
+          "line": "Before work or class"
+        },
+        "lunch": {
+          "label": "Lunch",
+          "line": "A short break"
+        },
+        "evening": {
+          "label": "Evening",
+          "line": "Wind down with words"
+        },
+        "option": "{label} · {time}",
+        "cta": "Remind me at {time}",
+        "notNow": "Not now"
+      },
       "ready": {
-        "metaTitle": "Garden ready",
-        "title": "Your garden is ready",
-        "subtitle": "Your first seeds are planted.",
-        "water": "Water your first words",
-        "none": "Not set",
+        "metaTitle": "All set",
+        "eyebrow": "All set",
+        "title": "Your garden is planted, {name}",
+        "titleNoName": "Your garden is planted",
+        "sub": "{count} {bed} seeds are in the ground. Meet the first 5 today; they sprout as you learn them.",
+        "subNoBed": "Your first seeds are in the ground. Meet the first 5 today; they sprout as you learn them.",
         "level": "Level",
-        "levelValue": "{level}",
         "goal": "Goal",
-        "goalWithBand": "{goal} · {band}",
-        "bed": "First bed",
         "reminder": "Reminder",
+        "change": "Change",
+        "levelValue": "{title} · {tag}",
+        "goalWithBand": "{goal} · band {band}",
+        "reminderValue": "Every day · {time}",
         "reminderOff": "Off",
-        "editLater": "You can change any of these later in Profile."
+        "none": "Not set",
+        "meet": "Meet your first 5 words",
+        "look": "Look around the garden first"
       }
     },
     "pronounce": {

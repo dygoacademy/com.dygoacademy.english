@@ -6,7 +6,7 @@ import { validate } from 'class-validator';
 import { DatabaseService } from '../../database/database.service';
 import { SrsService } from '../srs/srs.service';
 import { UpdateOnboardingDto } from './dto/update-onboarding.dto';
-import { ProfilesService } from './profiles.service';
+import { FIRST_BED_TITLES, ProfilesService } from './profiles.service';
 
 const ROW = {
   onboarded_at: null,
@@ -75,14 +75,98 @@ describe('ProfilesService.updateOnboarding (OB1–OB5)', () => {
     expect(params).toEqual(['user-42', 'B1']);
   });
 
-  it('saves the goal with its band, and LIFE clears the band', async () => {
-    const db = fakeDb([{ rows: [ROW] }, { rows: [ROW] }]);
+  it('saves the goal with its band, and goals without one clear the band', async () => {
+    const withBed = { ...ROW, first_topic_id: TOPIC_ID };
+    const db = fakeDb([
+      { rows: [withBed] },
+      { rows: [withBed] },
+      { rows: [withBed] },
+      { rows: [withBed] },
+    ]);
     const service = await makeService(db);
     await service.updateOnboarding('user-42', { study_goal: 'IELTS', target_band: 6.5 });
     expect(db.query.mock.calls[0][0]).toMatch(/study_goal = \$2, target_band = \$3/);
     expect(db.query.mock.calls[0][1]).toEqual(['user-42', 'IELTS', 6.5]);
+    await service.updateOnboarding('user-42', { study_goal: 'IELTS_GENERAL', target_band: 6 });
+    expect(db.query.mock.calls[1][1]).toEqual(['user-42', 'IELTS_GENERAL', 6]);
     await service.updateOnboarding('user-42', { study_goal: 'LIFE' });
-    expect(db.query.mock.calls[1][1]).toEqual(['user-42', 'LIFE', null]);
+    expect(db.query.mock.calls[2][1]).toEqual(['user-42', 'LIFE', null]);
+    await service.updateOnboarding('user-42', { study_goal: 'WORK', target_band: null });
+    expect(db.query.mock.calls[3][1]).toEqual(['user-42', 'WORK', null]);
+    // A first bed is already set: nothing is picked.
+    expect(db.query).toHaveBeenCalledTimes(4);
+  });
+
+  it('saves level, goal and band in one PATCH and picks the first bed from the goal', async () => {
+    const picked = { ...ROW, study_goal: 'TRAVEL', target_band: null, first_topic_id: TOPIC_ID };
+    const db = fakeDb([
+      { rows: [{ ...ROW, study_goal: 'TRAVEL', target_band: null }] },
+      { rows: [picked] },
+    ]);
+    const service = await makeService(db);
+    await expect(
+      service.updateOnboarding('user-42', {
+        cefr_level: 'B2',
+        study_goal: 'TRAVEL',
+        target_band: null,
+      }),
+    ).resolves.toEqual(picked);
+    expect(db.query.mock.calls[0][0]).toMatch(
+      /set cefr_level = \$2, study_goal = \$3, target_band = \$4,/,
+    );
+    expect(db.query.mock.calls[0][1]).toEqual(['user-42', 'B2', 'TRAVEL', null]);
+    const [sql, params] = db.query.mock.calls[1];
+    expect(sql).toMatch(/where p\.id = \$1 and p\.first_topic_id is null/);
+    expect(sql).toMatch(/where t\.is_public/);
+    expect(params).toEqual(['user-42', FIRST_BED_TITLES.TRAVEL]);
+  });
+
+  it.each([
+    ['IELTS', 'environment'],
+    ['IELTS_GENERAL', 'environment'],
+    ['WORK', 'work'],
+    ['TRAVEL', 'travel'],
+    ['LIFE', 'everyday'],
+  ] as const)('the first bed for %s is a %s topic', (goal, word) => {
+    expect(FIRST_BED_TITLES[goal]).toContain(word);
+  });
+
+  it('keeps the current row when no library topic can be picked', async () => {
+    const db = fakeDb([{ rows: [ROW] }, { rows: [] }]);
+    const service = await makeService(db);
+    await expect(service.updateOnboarding('user-42', { study_goal: 'LIFE' })).resolves.toEqual({
+      ...ROW,
+    });
+  });
+
+  it('does not pick a bed when one is sent with the goal', async () => {
+    const db = fakeDb([
+      { rows: [{ id: TOPIC_ID }] },
+      { rows: [{ ...ROW, first_topic_id: TOPIC_ID }] },
+    ]);
+    const service = await makeService(db);
+    await service.updateOnboarding('user-42', { study_goal: 'WORK', first_topic_id: TOPIC_ID });
+    expect(db.query).toHaveBeenCalledTimes(2);
+  });
+
+  it('saves the browser time zone only while the profile has none', async () => {
+    const db = fakeDb([{ rows: [ROW] }]);
+    const service = await makeService(db);
+    await service.updateOnboarding('user-42', { cefr_level: 'B1', timezone: 'Asia/Ho_Chi_Minh' });
+    const [sql, params] = db.query.mock.calls[0];
+    expect(sql).toMatch(
+      /timezone = case when timezone is null or timezone = 'UTC' then \$3 else timezone end/,
+    );
+    expect(params).toEqual(['user-42', 'B1', 'Asia/Ho_Chi_Minh']);
+  });
+
+  it('rejects an unknown time zone', async () => {
+    const db = fakeDb([]);
+    const service = await makeService(db);
+    await expect(
+      service.updateOnboarding('user-42', { timezone: 'Mars/Olympus' }),
+    ).rejects.toBeInstanceOf(BadRequestException);
+    expect(db.withUser).not.toHaveBeenCalled();
   });
 
   it.each([
@@ -91,6 +175,8 @@ describe('ProfilesService.updateOnboarding (OB1–OB5)', () => {
     [{ study_goal: 'PTE' as const, target_band: 65.5 }],
     [{ study_goal: 'PTE' as const, target_band: 20 }],
     [{ study_goal: 'LIFE' as const, target_band: 7 }],
+    [{ study_goal: 'WORK' as const, target_band: 7 }],
+    [{ study_goal: 'IELTS_GENERAL' as const, target_band: 9.5 }],
     [{ target_band: 7 }],
   ])('rejects a band that does not fit its goal: %j', async (body) => {
     const db = fakeDb([]);
@@ -177,6 +263,12 @@ describe('UpdateOnboardingDto', () => {
     ).resolves.toEqual([]);
   });
 
+  it('accepts the new goals and a time zone', async () => {
+    for (const study_goal of ['IELTS_GENERAL', 'WORK', 'TRAVEL', 'LIFE', 'IELTS', 'PTE']) {
+      await expect(errors({ study_goal, timezone: 'Asia/Ho_Chi_Minh' })).resolves.toEqual([]);
+    }
+  });
+
   it('accepts null for target_band and first_topic_id', async () => {
     await expect(
       errors({ study_goal: 'IELTS', target_band: null, first_topic_id: null }),
@@ -187,6 +279,7 @@ describe('UpdateOnboardingDto', () => {
     await expect(errors({ cefr_level: 'A1' })).resolves.toEqual(['cefr_level']);
     await expect(errors({ cefr_level: null })).resolves.toEqual(['cefr_level']);
     await expect(errors({ study_goal: 'TOEFL' })).resolves.toEqual(['study_goal']);
+    await expect(errors({ timezone: 7 })).resolves.toEqual(['timezone']);
     await expect(errors({ target_band: '7' })).resolves.toEqual(['target_band']);
     await expect(errors({ first_topic_id: 'not-a-uuid' })).resolves.toEqual(['first_topic_id']);
     await expect(errors({ complete: 'yes' })).resolves.toEqual(['complete']);

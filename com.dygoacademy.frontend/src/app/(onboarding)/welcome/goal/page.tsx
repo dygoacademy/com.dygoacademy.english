@@ -1,14 +1,12 @@
-import type { Metadata } from 'next';
-import { getTranslations } from 'next-intl/server';
+import { redirect } from 'next/navigation';
 
-import { OnboardGoalLive } from '@/components/garden/live/OnboardGoalLive';
+import { onboardingResumePath } from '@/i18n/garden-locale';
 
-/** Onboarding OB2 Target band. */
-export async function generateMetadata(): Promise<Metadata> {
-  const t = await getTranslations('screens.onboarding.goal');
-  return { title: t('metaTitle') };
-}
-
-export default function OnboardGoalPage() {
-  return <OnboardGoalLive />;
+/**
+ * The old OB2 step, removed 2026-10-11 (onboarding is OB1 About you →
+ * OB4 Reminder → OB5). Old links and half-finished onboardings resume at
+ * OB1, or at OB4 once a goal is saved.
+ */
+export default async function OnboardGoalPage() {
+  redirect(await onboardingResumePath());
 }

@@ -1,114 +1,151 @@
 import * as React from 'react';
+import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 
 import type { OnboardingLevel, StudyGoal } from '@/hooks/useOnboarding';
 
 import { Button } from '../Button';
+import { gcn } from '../cn';
 import type { ClockTime } from '../format';
-import { useGardenFormat } from '../format';
-import { WaterIcon } from '../icons';
-import { formatBand, hasBand } from '../live/onboarding';
-import { ONBOARDING_STAGES, OnboardingShell } from '../OnboardingShell';
-import { PlantGlyph } from '../PlantGlyph';
-import { SaveError } from './OnboardLevelScreen';
+import { clockLabel, formatBand, hasBand } from '../live/onboarding';
+import { ONBOARDING_BUTTON, SaveError } from '../OnboardingShell';
+import { SCREEN_CLASSES } from './GardenTabBar';
 
 /**
- * OB5 · Garden ready (board `OnboardReady`, not in the repo yet). Props only.
+ * OB5 · All set (board `OnboardReady`, `reference/OB5-ready.html`). Props
+ * only.
  *
- * One forest bed instead of the shell's progress header: the four step
- * plants, all grown (seed → sprout → flower → fruit tree), pop in one after
- * the other (bloom animation; still under reduced motion). Then a summary
- * of the four choices (all can be changed later in Me), and "Water your
- * first words" → A1.
+ * A forest header that blooms in ("All set", "Your garden is planted,
+ * Minh", how many seeds of the first bed are in the ground) over a row of
+ * ten seeds and sprouts, then a summary of the three choices (Level, Goal,
+ * Reminder), each with Change back to its step. "Meet your first 5 words"
+ * and "Look around the garden first" both finish onboarding (the live
+ * wrapper) and go to the first bed's new words or the garden.
  */
 export interface OnboardReadyScreenProps {
+  /** First name, or null (the title then has none). */
+  name: string | null;
+  /** The first bed (picked from the goal) and how many seeds it plants; null = none. */
+  bed: { title: string; seeds: number } | null;
   level: OnboardingLevel | null;
   goal: { goal: StudyGoal; band: number | null } | null;
-  bed: string | null;
-  /** null = no reminder (skipped, or notifications refused). */
+  /** null = no reminder (Not now, or notifications refused). */
   reminder: ClockTime | null;
-  onWater: () => void;
-  back: string;
+  links: { level: string; goal: string; reminder: string };
+  onMeet: () => void;
+  onLook: () => void;
   saving?: boolean;
   error?: boolean;
 }
 
+/** Which of the ten plants in the header are sprouts (the rest are seeds). */
+const SPROUTS = new Set([1, 4, 7]);
+
 export function OnboardReadyScreen({
+  name,
+  bed,
   level,
   goal,
-  bed,
   reminder,
-  onWater,
-  back,
+  links,
+  onMeet,
+  onLook,
   saving = false,
   error = false,
 }: OnboardReadyScreenProps) {
   const t = useTranslations('screens.onboarding');
-  const f = useGardenFormat();
   const none = t('ready.none');
 
   const goalText = goal
     ? hasBand(goal.goal) && goal.band !== null
-      ? t('ready.goalWithBand', { goal: t(`goal.options.${goal.goal}.title`), band: formatBand(goal.goal, goal.band) })
-      : t(`goal.options.${goal.goal}.title`)
+      ? t('ready.goalWithBand', { goal: t(`goal.${goal.goal}`), band: formatBand(goal.goal, goal.band) })
+      : t(`goal.${goal.goal}`)
     : none;
 
-  const rows: Array<{ id: string; label: string; value: string }> = [
-    { id: 'level', label: t('ready.level'), value: level ? t('ready.levelValue', { level }) : none },
-    { id: 'goal', label: t('ready.goal'), value: goalText },
-    { id: 'bed', label: t('ready.bed'), value: bed ?? none },
+  const rows = [
+    {
+      id: 'level',
+      label: t('ready.level'),
+      value: level ? t('ready.levelValue', { title: t(`level.${level}.title`), tag: t(`level.${level}.tag`) }) : none,
+      href: links.level,
+    },
+    { id: 'goal', label: t('ready.goal'), value: goalText, href: links.goal },
     {
       id: 'reminder',
       label: t('ready.reminder'),
-      value: reminder ? f.clock(reminder) : t('ready.reminderOff'),
+      value: reminder ? t('ready.reminderValue', { time: clockLabel(reminder) }) : t('ready.reminderOff'),
+      href: links.reminder,
     },
   ];
 
   return (
-    <OnboardingShell
-      step={5}
-      progress={false}
-      back={back}
-      title={t('ready.title')}
-      subtitle={t('ready.subtitle')}
-      footer={
-        <>
-          {error ? <SaveError /> : null}
-          <Button
-            variant="primary"
-            className="md:max-w-none"
-            onClick={onWater}
-            loading={saving}
-            leadingIcon={<WaterIcon width={20} height={20} fill="currentColor" />}
+    <div className={gcn(SCREEN_CLASSES, 'relative gap-[14px] overflow-hidden px-5 pb-[max(24px,var(--safe-bottom))] pt-[22px]')}>
+      <div className="bloom -mx-5 -mt-[22px] flex flex-col gap-2 overflow-hidden rounded-b-[32px] bg-forest px-5 pt-10 text-on-forest">
+        <span className="text-[12px] font-bold uppercase tracking-[.08em] text-stage-sprout">{t('ready.eyebrow')}</span>
+        <h1 className="font-display text-[32px] font-semibold leading-[1.1]">
+          {name ? t('ready.title', { name }) : t('ready.titleNoName')}
+        </h1>
+        <p className="text-[15px] leading-[1.4] text-on-forest-muted">
+          {bed ? t('ready.sub', { count: bed.seeds, bed: bed.title }) : t('ready.subNoBed')}
+        </p>
+        <div className="-mx-5 mt-1.5">
+          <svg width="100%" viewBox="0 0 330 96" aria-hidden="true" className="block h-auto">
+            <rect x="0" y="84" width="330" height="12" fill="var(--color-forest-deep)" />
+            {Array.from({ length: 10 }, (_, index) => (
+              <g key={index} transform={`translate(${-3.5 + index * 33},0)`}>
+                {SPROUTS.has(index) ? (
+                  <g className="sway">
+                    <path d="M20 84 V64" stroke="var(--stage-sprout-leaf)" strokeWidth="2.5" />
+                    <path d="M20 72 C13 71 9 66 11 61 C17 61 20 66 20 72 Z" fill="var(--stage-sprout-leaf)" />
+                    <path d="M20 68 C27 67 31 62 29 57 C23 57 20 62 20 68 Z" fill="var(--stage-sprout)" />
+                  </g>
+                ) : (
+                  <g>
+                    <ellipse cx="20" cy="81" rx="7" ry="3.5" fill="var(--stage-seed)" />
+                    <path
+                      d="M20 78 C20 74 22 72 24 71"
+                      stroke="var(--stage-sprout-leaf)"
+                      strokeWidth="2"
+                      fill="none"
+                      strokeLinecap="round"
+                    />
+                  </g>
+                )}
+              </g>
+            ))}
+          </svg>
+        </div>
+      </div>
+      <div className="flex flex-col rounded-[20px] border border-border bg-surface px-3.5 py-1">
+        {rows.map((row, index) => (
+          <Link
+            key={row.id}
+            href={row.href}
+            className={gcn(
+              'box-content flex h-12 items-center gap-2.5 text-text no-underline',
+              index > 0 && 'border-t border-divider',
+            )}
           >
-            {t('ready.water')}
-          </Button>
-        </>
-      }
-    >
-      <ol
-        aria-label={t('progressDone')}
-        className="flex h-[96px] items-end justify-center gap-6 rounded-card bg-forest pb-3"
-      >
-        {ONBOARDING_STAGES.map((stage, index) => (
-          <li
-            key={stage}
-            className="bloom flex items-end"
-            style={{ animationDelay: `${index * 120}ms`, animationFillMode: 'both' }}
-          >
-            <PlantGlyph stage={stage} variant="topic" size={36} />
-          </li>
+            <span className="w-[92px] text-[13px] text-muted-foreground">{row.label}</span>
+            <span className="flex-grow text-[15px] font-semibold">{row.value}</span>
+            <span className="text-[13px] font-semibold text-forest">{t('ready.change')}</span>
+          </Link>
         ))}
-      </ol>
-      <dl className="flex flex-col divide-y divide-divider rounded-card border border-border bg-surface">
-        {rows.map((row) => (
-          <div key={row.id} className="flex min-h-[52px] items-center justify-between gap-3 px-4 py-2.5">
-            <dt className="text-[14px] text-muted-foreground">{row.label}</dt>
-            <dd className="text-right text-[15px] font-semibold text-text">{row.value}</dd>
-          </div>
-        ))}
-      </dl>
-      <p className="text-center text-[13px] text-muted-foreground">{t('ready.editLater')}</p>
-    </OnboardingShell>
+      </div>
+      <div className="mt-auto flex flex-col gap-1">
+        {error ? <SaveError /> : null}
+        <Button variant="primary" className={gcn(ONBOARDING_BUTTON, 'px-4')} onClick={onMeet} loading={saving}>
+          {t('ready.meet')}
+        </Button>
+        <button
+          type="button"
+          onClick={onLook}
+          disabled={saving}
+          className="self-center p-2 text-[14px] font-semibold text-forest underline"
+        >
+          {t('ready.look')}
+        </button>
+      </div>
+    </div>
   );
 }

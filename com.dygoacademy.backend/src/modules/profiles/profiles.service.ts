@@ -2,7 +2,7 @@ import { BadRequestException, Injectable, NotFoundException } from '@nestjs/comm
 
 import { DatabaseService } from '../../database/database.service';
 import { SrsService } from '../srs/srs.service';
-import { StudyGoal, TARGET_BANDS, UpdateOnboardingDto } from './dto/update-onboarding.dto';
+import { hasBand, StudyGoal, TARGET_BANDS, UpdateOnboardingDto } from './dto/update-onboarding.dto';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 
 /**
@@ -65,6 +65,50 @@ export interface Onboarding {
 const ONBOARDING_COLUMNS =
   'onboarded_at, cefr_level::text as cefr_level, study_goal, ' +
   'target_band::float8 as target_band, first_topic_id';
+
+/**
+ * The first bed for each goal (OB3 is gone, 2026-10-11): a library topic
+ * whose title starts a word with this (Postgres `~*`, `\m` = word start).
+ * Topics have no slugs, so titles are matched; with no match, the biggest
+ * library topic is used (as OB3's seed packets were ranked).
+ */
+export const FIRST_BED_TITLES: Record<StudyGoal, string> = {
+  IELTS: '\\menvironment',
+  IELTS_GENERAL: '\\menvironment',
+  PTE: '\\menvironment',
+  WORK: '\\m(work|career)',
+  TRAVEL: '\\mtravel',
+  LIFE: '\\m(everyday|daily life)',
+};
+
+/**
+ * Sets `first_topic_id` from the goal when it is still empty: the library
+ * (public) topic with words whose title fits the goal, the biggest first;
+ * else the biggest library topic. Runs under the caller's JWT, so only
+ * topics they can see are picked. $1 = user, $2 = title pattern.
+ */
+const PICK_FIRST_BED = `
+  update public.profiles p
+     set first_topic_id = (
+           select t.id
+             from public.topics t
+             join public.topic_words tw on tw.topic_id = t.id
+            where t.is_public
+            group by t.id
+            order by (t.title ~* $2) desc, count(tw.id) desc, t.created_at
+            limit 1),
+         updated_at = now()
+   where p.id = $1 and p.first_topic_id is null
+  returning ${ONBOARDING_COLUMNS}`;
+
+function isValidTimezone(tz: string): boolean {
+  try {
+    Intl.DateTimeFormat(undefined, { timeZone: tz });
+    return true;
+  } catch {
+    return false;
+  }
+}
 
 /**
  * The caller's own profile preferences (UI-L; the Phase 11 WS1 preference
@@ -142,16 +186,23 @@ export class ProfilesService {
   }
 
   /**
-   * `PATCH /profiles/me/onboarding`: saves the fields that were sent (each
-   * step saves its own), and with `complete` sets `onboarded_at` once.
-   * The band is checked against the goal sent with it; the table's checks
-   * stay the last word. `first_topic_id` must be a topic the caller can
-   * see: the read runs under RLS in the same transaction as the update, so
-   * a hidden or missing topic is a 404 (a foreign key alone would accept a
-   * topic the caller can't read).
+   * `PATCH /profiles/me/onboarding`: saves the fields that were sent, and
+   * with `complete` sets `onboarded_at` once. The band is checked against
+   * the goal sent with it; the table's checks stay the last word.
+   * `first_topic_id` must be a topic the caller can see: the read runs
+   * under RLS in the same transaction as the update, so a hidden or
+   * missing topic is a 404 (a foreign key alone would accept a topic the
+   * caller can't read). When a goal is saved and the learner has no first
+   * bed yet (and none is sent), one is picked from the goal
+   * (`FIRST_BED_TITLES`). `timezone` fills `profiles.timezone` only while
+   * it is still the 'UTC' "never set" default, so server reminders count
+   * the learner's own day.
    */
   async updateOnboarding(userId: string, dto: UpdateOnboardingDto): Promise<Onboarding> {
     const band = this.checkBand(dto);
+    if (dto.timezone !== undefined && !isValidTimezone(dto.timezone)) {
+      throw new BadRequestException('timezone is not a known IANA time zone.');
+    }
 
     const sets: string[] = [];
     const params: unknown[] = [userId];
@@ -165,10 +216,16 @@ export class ProfilesService {
       set('target_band', band);
     }
     if (dto.first_topic_id !== undefined) set('first_topic_id', dto.first_topic_id);
+    if (dto.timezone !== undefined) {
+      params.push(dto.timezone);
+      sets.push(
+        `timezone = case when timezone is null or timezone = 'UTC' then $${params.length} else timezone end`,
+      );
+    }
     if (dto.complete === true) sets.push('onboarded_at = coalesce(onboarded_at, now())');
     if (sets.length === 0) {
       throw new BadRequestException(
-        'Send cefr_level, study_goal (+ target_band), first_topic_id and/or complete.',
+        'Send cefr_level, study_goal (+ target_band), first_topic_id, timezone and/or complete.',
       );
     }
 
@@ -192,11 +249,19 @@ export class ProfilesService {
       if (result.rows.length === 0) {
         throw new NotFoundException('Profile not found.');
       }
-      return result.rows[0];
+      const row = result.rows[0];
+      if (dto.study_goal !== undefined && dto.first_topic_id === undefined && !row.first_topic_id) {
+        const picked = await client.query<Onboarding>(PICK_FIRST_BED, [
+          userId,
+          FIRST_BED_TITLES[dto.study_goal],
+        ]);
+        return picked.rows[0] ?? row;
+      }
+      return row;
     });
   }
 
-  /** The band to store with `dto.study_goal`: null for LIFE, else in range for that test. */
+  /** The band to store with `dto.study_goal`: null for goals without one, else in range. */
   private checkBand(dto: UpdateOnboardingDto): number | null {
     if (dto.study_goal === undefined) {
       if (dto.target_band !== undefined) {
@@ -205,9 +270,9 @@ export class ProfilesService {
       return null;
     }
     const band = dto.target_band ?? null;
-    if (dto.study_goal === 'LIFE') {
+    if (!hasBand(dto.study_goal)) {
       if (band !== null) {
-        throw new BadRequestException('study_goal LIFE has no target_band.');
+        throw new BadRequestException(`study_goal ${dto.study_goal} has no target_band.`);
       }
       return null;
     }

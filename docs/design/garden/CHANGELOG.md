@@ -2,7 +2,7 @@
 
 Location in the repo: `docs/design/CHANGELOG.md`
 Design source of truth: the **Dygo Word Garden** design canvas (owner: Dylan).
-Last updated: **2026-10-11**
+Last updated: **2026-10-12**
 
 ---
 
@@ -64,11 +64,11 @@ Every row has an English file and a Vietnamese twin (`…Vi.dc.html`) unless not
 #### Onboarding — page "Adult · Onboarding" (after AU2 Create account)
 | ID | Screen | File | Status | What's on it | Goes to | Build status |
 |---|---|---|---|---|---|---|
-| OB1 | About you (level + goal) | `OnboardLevel` | For approval (changed 2026-10-11) | 2-step plant header (seed → sprout). Level as 4 compact tiles (A1–A2 … C1) + goal chips (IELTS Academic / General, Work, Travel, Just for me); IELTS target band inline. "Not sure? Pick the closest; Dygo adjusts." | OB4 | Not built |
+| OB1 | About you (level + goal) | `OnboardLevel` | Approved (Dylan, 2026-10-12) | 2-step plant header (seed → sprout). Level as 4 compact tiles (A1–A2 … C1) + goal chips (IELTS Academic / General, Work, Travel, Just for me); IELTS target band inline. "Not sure? Pick the closest; Dygo adjusts." | OB4 | Not built |
 | OB2 | Target band | `OnboardGoal` | Removed 2026-10-11 (merged into OB1) | IELTS / PTE / just for life; target band; decides which words ripen first. | OB3 | Not built |
 | OB3 | First topic | `OnboardBed` | Removed 2026-10-11 (bed picked from the goal) | Topics as seed packets; the one you pick becomes the first bed in A6. | OB4 | Not built |
-| OB4 | Reminder time | `OnboardReminder` | For approval | 3 choices: Morning 7:30 / Lunch 12:30 / Evening 21:00; "Remind me at …"; Not now. Phone notification by default (Zalo / Email in A8c). Asks for notifications after the button. | OB4b, OB5 | Not built |
-| OB5 | Garden ready | `OnboardReady` | For approval | First seeds planted (animation), summary of the 4 choices (all editable in Me A8b–A8d), "Water your first words". | A1 | Not built |
+| OB4 | Reminder time | `OnboardReminder` | Approved (Dylan, 2026-10-12) | 3 choices: Morning 7:30 / Lunch 12:30 / Evening 21:00; "Remind me at …"; Not now. Phone notification by default (Zalo / Email in A8c). Asks for notifications after the button. | OB5 | Not built |
+| OB5 | Garden ready | `OnboardReady` | Approved (Dylan, 2026-10-12) | First seeds planted (animation), summary of Level, Goal, Reminder (each with Change), "Meet your first 5 words" / "Look around the garden first". | A2, A1 | Not built |
 
 #### Adult core — pages "Adult · Garden" (A1, A5), "Adult · Review" (A2, A3), "Adult · Missions" (A4), "Adult · Topics" (A6, A7), "Adult · Me" (A8)
 | ID | Screen | File | Status | What's on it | Goes to | Build status |
@@ -224,7 +224,7 @@ Newest first. Format: `### YYYY-MM-DD — title` then lines tagged **Added / Cha
 ### 2026-10-12 — Onboarding: no "Say 5 words", no First bed row (For approval)
 - **Removed** OB4b Say 5 words (Dylan: it doesn't help). Board deleted from the canvas; `source/OnboardVoice(Vi).dc.html` kept for history. Voice donation is offered only on AU2 (sign-up box) and A8e (Profile › Privacy); donated recordings come from normal pronunciation practice.
 - **Changed** OB4 Reminder: "Remind me at …" and "Not now" → OB5. **Changed** OB5 Ready: summary is Level, Goal, Reminder; the "First bed" and "Sounds" rows are removed (the bed is still picked from the goal and shows in Topics).
-- Flow: AU2 → OB1 About you → OB4 Reminder → OB5. *For approval.* Supersedes the OB4b entry below.
+- Flow: AU2 → OB1 About you → OB4 Reminder → OB5. *Approved (Dylan, 2026-10-12).* Supersedes the OB4b entry below.
 
 ### 2026-10-11 — Onboarding: 2 steps (For approval)
 - **Removed** OB3 First bed (Dylan: keep it simple). The first bed is picked from the goal: IELTS → Environment, Work → Work & careers, Travel → Travel, Just for me → Everyday life (or the closest library topic). OB5 shows "First bed · Environment · picked for IELTS · Change" → Topics (A6). Board deleted from the canvas; `source/OnboardBed(Vi).dc.html` kept for history.

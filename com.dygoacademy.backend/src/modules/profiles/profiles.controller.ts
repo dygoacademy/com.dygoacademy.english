@@ -54,7 +54,8 @@ export class ProfilesController {
     summary: "Save the caller's onboarding choices; `complete` finishes onboarding",
     description:
       'snake_case body, every field optional: `cefr_level` (A2, B1, B2, C1), `study_goal` ' +
-      '(IELTS, PTE, LIFE) with `target_band` (IELTS 4–9 in 0.5, PTE 30–90; null / none for LIFE), ' +
+      '(IELTS, IELTS_GENERAL, WORK, TRAVEL, LIFE; PTE for old rows) with `target_band` (IELTS 4–9 in 0.5, ' +
+      'PTE 30–90; null / none for the others), `timezone` (kept only while unset), ' +
       '`first_topic_id` (a topic the caller can see, else 404; null clears), `complete: true` ' +
       '(sets onboarded_at once). Empty body 400. Own row only (profiles_update_self).',
   })

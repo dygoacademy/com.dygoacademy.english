@@ -12,6 +12,7 @@
 import { cache } from 'react';
 import { cookies, headers } from 'next/headers';
 
+import { GARDEN_ROUTES } from '@/constants/garden';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 
 import {
@@ -47,6 +48,7 @@ interface ProfileLocaleRow {
   timezone?: string | null;
   /** Onboarding (20261008_onboarding.sql); missing until that migration is applied. */
   onboarded_at?: string | null;
+  study_goal?: string | null;
 }
 
 /** The session user, once per request (the (garden) layout uses it too). */
@@ -74,7 +76,7 @@ const getProfileLocaleRow = cache(async (): Promise<ProfileLocaleRow | null> => 
 });
 
 /**
- * Onboarding OB1–OB5: true only when the profile says this learner hasn't
+ * Onboarding: true only when the profile says this learner hasn't
  * finished (`onboarded_at` is null). Everything else counts as done, so
  * nobody is ever stuck in onboarding: no profile row, a failed read, or a
  * database without the 20261008 migration (the column is then missing,
@@ -84,6 +86,16 @@ const getProfileLocaleRow = cache(async (): Promise<ProfileLocaleRow | null> => 
 export const needsOnboarding = cache(async (): Promise<boolean> => {
   const profile = await getProfileLocaleRow();
   return profile !== null && profile.onboarded_at === null;
+});
+
+/**
+ * Where an unfinished onboarding resumes when someone opens a step that no
+ * longer exists (the old /welcome/goal and /welcome/bed, removed
+ * 2026-10-11): OB4 Reminder once OB1 has saved a goal, else OB1 About you.
+ */
+export const onboardingResumePath = cache(async (): Promise<string> => {
+  const profile = await getProfileLocaleRow();
+  return profile?.study_goal ? GARDEN_ROUTES.welcome.reminder : GARDEN_ROUTES.welcome.level;
 });
 
 export const getGardenLocaleContext = cache(async (): Promise<GardenLocaleContext> => {

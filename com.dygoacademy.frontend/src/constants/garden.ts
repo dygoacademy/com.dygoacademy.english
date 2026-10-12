@@ -59,12 +59,14 @@ export const GARDEN_ROUTES = {
   /** A8e Privacy & data (voice donation; 404 unless NEXT_PUBLIC_VOICE_DONATION). */
   privacy: '/me/privacy',
   /**
-   * Onboarding OB1–OB5 (design changelog, page "Adult · Onboarding"): after
-   * AU2 Create account, before the first garden. The garden home sends a
-   * learner whose `profiles.onboarded_at` is null to OB1.
+   * Onboarding OB1 About you → OB4 Reminder → OB5 All set (design
+   * changelog, page "Adult · Onboarding", 2026-10-12): after AU2 Create
+   * account, before the first garden. The garden home sends a learner
+   * whose `profiles.onboarded_at` is null to OB1.
    */
   welcome: {
     level: '/welcome/level',
+    /** Old OB2 / OB3 steps (removed 2026-10-11): they only redirect now. */
     goal: '/welcome/goal',
     bed: '/welcome/bed',
     reminder: '/welcome/reminder',
