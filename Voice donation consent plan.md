@@ -188,14 +188,7 @@ And change the note under the table:
 
 ---
 
-## Part 4 · Onboarding OB4b "Say 5 words" (EN + VI) — design: `source/OnboardVoice(Vi).dc.html`, `OnboardReminder(Vi)`, `OnboardReady(Vi)`
-
-- **Where:** optional bonus step after OB4 Reminder. OB4 "Continue" → OB4b; "Not now" and OB4b "Skip" → OB5. Header: back, "Bonus step · about 1 minute", Skip.
-- **Flow:** 5 fixed words, one at a time: think /θɪŋk/, ship /ʃɪp/, world /wɜːld/, very /ˈveri/, sixth /sɪksθ/. Chips show done / current / next. Word card (word, IPA, Hear it). Mic as in P2 (beep, auto-stop). Each word uses the existing word check (`POST /speaking/word-check`); a "couldn't hear" result asks again once, then moves on.
-- **Result:** "Your mic works!" + "Sounds to practise first" = the 1–2 weakest sounds across the 5 checks (chips like "th · think, sixth", "final d · world"). Save them on the profile (`starter_sounds`) so the first bees prefer words with those sounds. OB5 shows a "Sounds" row with "Redo" → OB4b.
-- **Consent (only with the voice-donation flag on):** the quiet unticked box "Let Dygo keep these 5 and my future speaking recordings to help improve speaking scores. Optional. Learn more" (VI on the board). If AU2 already gave consent, show it ticked. **Keep the 5 recordings in memory on the device** until Continue; if ticked, upload them to `voice_donations` (kind `onboarding`, the fixed word as text) and create/keep the consent (method `onboarding`); if not ticked, drop them. "Where did you grow up?" chips appear only when ticked and are stored as `region_answer`.
-- **Why these 5 words:** the same short script from every donor gives clean, labelled data across the sounds Vietnamese learners find hardest (th, sh, final consonant clusters, v), without the app saying so.
-- **Tests:** skip at any point; 5 checks then the result; sounds chosen from the weakest scores; box unticked → no upload; ticked → 5 uploads + consent row; region only when ticked; flag off → no box, nothing uploaded.
+## Part 4 · Onboarding OB4b "Say 5 words" — REMOVED 2026-10-12 (Dylan: it doesn't help). Don't build it.
 
 ## Before Dylan turns the flag on
 - **Lawyer review** of Part 3 (Vietnam; Singapore if the company moves). Ask: is a voice recording "biometric data" under Decree 356 when never used to identify anyone (the plan treats it as sensitive)? Does training Dygo's own model need a data-processing-service licence (Decree 356, Arts. 21–27; likely not for your own product)?

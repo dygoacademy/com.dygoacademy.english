@@ -64,10 +64,10 @@ Every row has an English file and a Vietnamese twin (`…Vi.dc.html`) unless not
 #### Onboarding — page "Adult · Onboarding" (after AU2 Create account)
 | ID | Screen | File | Status | What's on it | Goes to | Build status |
 |---|---|---|---|---|---|---|
-| OB1 | Your level | `OnboardLevel` | For approval | 4-step plant progress header (seed → fruit tree, one stage per step). CEFR picked by "I can…" sentences (A2–C1), not letters. "Not sure? 2-min level check" link (check itself not designed, D-7). Skip → B1. | OB2 | Not built |
-| OB2 | Target band | `OnboardGoal` | For approval | IELTS / PTE / just for life; target band; decides which words ripen first. | OB3 | Not built |
-| OB3 | First topic | `OnboardBed` | For approval | Topics as seed packets; the one you pick becomes the first bed in A6. | OB4 | Not built |
-| OB4 | Reminder time | `OnboardReminder` | For approval | Drag the sun along a morning → night arc; presets. Asks the OS for notifications only after a time is chosen. Skip allowed. | OB5 | Not built |
+| OB1 | About you (level + goal) | `OnboardLevel` | For approval (changed 2026-10-11) | 2-step plant header (seed → sprout). Level as 4 compact tiles (A1–A2 … C1) + goal chips (IELTS Academic / General, Work, Travel, Just for me); IELTS target band inline. "Not sure? Pick the closest; Dygo adjusts." | OB4 | Not built |
+| OB2 | Target band | `OnboardGoal` | Removed 2026-10-11 (merged into OB1) | IELTS / PTE / just for life; target band; decides which words ripen first. | OB3 | Not built |
+| OB3 | First topic | `OnboardBed` | Removed 2026-10-11 (bed picked from the goal) | Topics as seed packets; the one you pick becomes the first bed in A6. | OB4 | Not built |
+| OB4 | Reminder time | `OnboardReminder` | For approval | 3 choices: Morning 7:30 / Lunch 12:30 / Evening 21:00; "Remind me at …"; Not now. Phone notification by default (Zalo / Email in A8c). Asks for notifications after the button. | OB4b, OB5 | Not built |
 | OB5 | Garden ready | `OnboardReady` | For approval | First seeds planted (animation), summary of the 4 choices (all editable in Me A8b–A8d), "Water your first words". | A1 | Not built |
 
 #### Adult core — pages "Adult · Garden" (A1, A5), "Adult · Review" (A2, A3), "Adult · Missions" (A4), "Adult · Topics" (A6, A7), "Adult · Me" (A8)
@@ -220,6 +220,26 @@ All iPad screens: sidebar (Garden · Missions · Topics · Groups · Me + Shared
 ## 3. Changelog
 
 Newest first. Format: `### YYYY-MM-DD — title` then lines tagged **Added / Changed / Removed / Decision**, with screen IDs and status.
+
+### 2026-10-12 — Onboarding: no "Say 5 words", no First bed row (For approval)
+- **Removed** OB4b Say 5 words (Dylan: it doesn't help). Board deleted from the canvas; `source/OnboardVoice(Vi).dc.html` kept for history. Voice donation is offered only on AU2 (sign-up box) and A8e (Profile › Privacy); donated recordings come from normal pronunciation practice.
+- **Changed** OB4 Reminder: "Remind me at …" and "Not now" → OB5. **Changed** OB5 Ready: summary is Level, Goal, Reminder; the "First bed" and "Sounds" rows are removed (the bed is still picked from the goal and shows in Topics).
+- Flow: AU2 → OB1 About you → OB4 Reminder → OB5. *For approval.* Supersedes the OB4b entry below.
+
+### 2026-10-11 — Onboarding: 2 steps (For approval)
+- **Removed** OB3 First bed (Dylan: keep it simple). The first bed is picked from the goal: IELTS → Environment, Work → Work & careers, Travel → Travel, Just for me → Everyday life (or the closest library topic). OB5 shows "First bed · Environment · picked for IELTS · Change" → Topics (A6). Board deleted from the canvas; `source/OnboardBed(Vi).dc.html` kept for history.
+- Header is now 2 stages (seed → sprout). Flow: AU2 → OB1 About you → OB4 Reminder → (OB4b Say 5 words) → OB5. *For approval.*
+
+### 2026-10-11 — Onboarding: 3 steps instead of 4 (For approval)
+- **Changed** OB1 → **About you**: level (4 compact tiles) + goal chips on one screen; IELTS target band inline only when an IELTS goal is picked. Test day removed from onboarding (Profile header already has "Test day: add date").
+- **Removed** OB2 Goal (merged into OB1). Board deleted from the canvas; `source/OnboardGoal(Vi).dc.html` kept for history.
+- **Changed** OB3 First bed: 3-step header, back → OB1. **Changed** OB4 Reminder: 3 choices (Morning 7:30 / Lunch 12:30 / Evening 21:00) + "Remind me at …" + Not now; phone notification by default; Zalo / Email and custom time move to Profile › Reminder (A8c). Continue / Not now → OB4b (bonus, Skip) → OB5.
+- **Changed** OB5: Goal "Change" → OB1. Flow is now: AU2 → OB1 About you → OB3 First bed → OB4 Reminder → (OB4b Say 5 words) → OB5. *For approval.*
+
+### 2026-10-11 — Onboarding: OB4b "Say 5 words" (voice data, For approval)
+- **Added** OB4b Say 5 words (`OnboardVoice(Vi)`), an optional bonus step after OB4 Reminder (Skip any time; OB4 "Continue" → OB4b, "Not now" → OB5). The learner reads 5 set words (think · ship · world · very · sixth: th, sh, final consonants, v), one at a time with the mic; result = mic check + "Sounds to practise first", which seeds the first bees.
+- Voice data: the quiet unticked box "Let Dygo keep these 5 and my future speaking recordings to help improve speaking scores. Optional. Learn more". The 5 recordings stay on the device until this screen; they're uploaded to the donation store **only if ticked**, otherwise dropped. "Where did you grow up?" (North / Central / South / Elsewhere) appears only when ticked. Same consent as AU2 / A8e (method `onboarding`); reflects the AU2 choice if already given.
+- **Changed** OB5 Ready: new row "Sounds · th · final d · Redo". *For approval.* Build: `Voice donation consent plan.md`, Part 4 (behind the voice-donation flag for the box; the 5-word step itself can ship without it).
 
 ### 2026-10-11 — Legal: optional voice donation (screens Approved; legal text behind a flag until a lawyer's review)
 - **Changed** LG1–LG4 (canvas): Terms and Privacy now describe **optional voice donation**: learners 16+ can turn on "Help improve Dygo's speech checker" in Profile › Privacy so Dygo keeps their speaking recordings to train its own speech checker. Off by default; child profiles never; random code instead of name; some recordings may be listened to by trained people; up to [[3 years]]; turn off or delete any time. Sections changed: Terms short list, 07 Speaking practice (+ licence); Privacy short list, 02 table row + note, 03 Children, 04 Your voice, 05 sharing, 08 rights, 09 automated decisions, 11 local rights (VN · AU · SG). "Me ›" → "Profile ›". *For approval (Dylan, after a lawyer's review).*

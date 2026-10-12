@@ -204,6 +204,16 @@ const JOBS = [
   // AU2 with the donate box ticked.
   ['AdultRegister.dc.html', 'en', 'AU2-create-account-donate', { donate: true }],
   ['AdultRegisterVi.dc.html', 'vi', 'AU2-create-account-donate-vi', { donate: true }],
+  // Onboarding (canvas page "Adult · Onboarding", 2026-10-12): OB1 About you → OB4 Reminder → OB5 All set.
+  // OB2 Goal, OB3 First bed and OB4b Say 5 words were removed; their sources stay for history only.
+  ['OnboardLevel.dc.html', 'en', 'OB1-about-you', {}],
+  ['OnboardLevel.dc.html', 'en', 'OB1-about-you-work', { goal: 'work' }],
+  ['OnboardReminder.dc.html', 'en', 'OB4-reminder', {}],
+  ['OnboardReady.dc.html', 'en', 'OB5-ready', {}],
+  ['OnboardLevelVi.dc.html', 'vi', 'OB1-about-you-vi', {}],
+  ['OnboardLevelVi.dc.html', 'vi', 'OB1-about-you-work-vi', { goal: 'work' }],
+  ['OnboardReminderVi.dc.html', 'vi', 'OB4-reminder-vi', {}],
+  ['OnboardReadyVi.dc.html', 'vi', 'OB5-ready-vi', {}],
 ].filter(([, , name]) => !FILTER || name.includes(FILTER));
 
 // English pages redrawn with the app's body stack (DM Sans, then Be Vietnam
