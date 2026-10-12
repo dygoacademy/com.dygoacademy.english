@@ -12,21 +12,23 @@ Dygo Academy is a web app for learning English vocabulary. A learner adds a word
 | `com.dygoacademy.frontend/` | Next.js App Router (port 3000) |
 | `com.dygoacademy.automationtesting/` | `backend/` live API tests, `ui/` Playwright tests |
 | `database/` | Postgres schema, migrations, seeds, RLS tests |
+| `docs/` | `product/`, `architecture/`, `plans/` (`archive/` for superseded), `reports/`, `ops/` |
 | `docs/design/garden/` | Design canvases and reference PNGs |
 
 ## Where to read more
 
 The detail lives in these files, not here:
 
-- Requirements: `dygo_academy_final_master_brd.md`
-- Project plan and status: `dygo_academy_master_project_schedule.md`, plus the active `phase 12 implementation plan.md` and `phase 13 implementation plan.md`
-- Architecture: `dygo_academy_complete_system_architecture_master.md`, `dygo_academy_frontend_architecture.md`
-- Conventions: `dygo_academy_tech_spec_and_conventions.md`
-- API and database: `dygo_academy_api_surface.md`, `dygo_academy_database_dictionary.md`, `database/README.md`
-- UI design: `dygo_academy_ui_ux_design_system.md`; how screens are matched to the canvas: `docs/design/garden/README.md`
+- Requirements: `docs/product/dygo_academy_final_master_brd.md`
+- Project plan and status: `docs/product/dygo_academy_master_project_schedule.md`, plus the active `docs/plans/phase 12 implementation plan.md` and `docs/plans/phase 13 implementation plan.md`
+- Architecture: `docs/architecture/dygo_academy_complete_system_architecture_master.md`, `docs/architecture/dygo_academy_frontend_architecture.md`
+- Conventions: `docs/architecture/dygo_academy_tech_spec_and_conventions.md`
+- API and database: `docs/architecture/dygo_academy_api_surface.md`, `docs/architecture/dygo_academy_database_dictionary.md`, `database/README.md`
+- UI design: `docs/architecture/dygo_academy_ui_ux_design_system.md`; how screens are matched to the canvas: `docs/design/garden/README.md`
 - Setup and running: `README.md`
-- UAT deploy: `dygo_uat_deployment_guide.md`
+- UAT deploy: `docs/ops/dygo_uat_deployment_guide.md`
 - Shipped changes: `Change Log.md`
+- New plans go in `docs/plans/`, reports in `docs/reports/`. Only `README.md`, `CLAUDE.md` and `Change Log.md` stay at the root.
 
 ## Common commands
 

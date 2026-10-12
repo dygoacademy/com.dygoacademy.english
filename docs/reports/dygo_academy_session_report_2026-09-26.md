@@ -3,7 +3,7 @@
 ## Pass 1: Phase 12 UI-2 components (automated, 2026-09-25 22:22 UTC)
 
 **Run**: scheduled task "Dygo Phase 12: continue UI-2 components", no user present.
-**Plan followed**: `phase 12 implementation plan.md` §1, §4, §5 (UI-2) and §10 (rules for automated passes).
+**Plan followed**: `docs/plans/phase 12 implementation plan.md` §1, §4, §5 (UI-2) and §10 (rules for automated passes).
 **Result**: every UI-2 component is built, in `/garden/_gallery` in every state, with a Vitest runner and 131 passing tests. Stopped at gate G1; UI-3 not started. Classic UI unchanged.
 
 ### Commits (frontend only; nothing in the backend or `database/`)
@@ -15,7 +15,7 @@
 | `7a8be4e` | UI-2 (part 4) | `MissionRow`, `HeroGardenCard`, `StageTile`, `WordRow`, `--color-forest-muted` token; Prettier on the UI-2 files |
 | `1063de0` | UI-2 (part 5) | `BottomTabBar`, `BottomSheet`, `Toast`; `Button` made a client component (fix); 44px hit areas on `Chip` / `Switch` |
 
-Each commit staged exact paths only. `git status` showed 111 entries before and after the pass (the other work in the tree was not touched). Not committed on purpose: `phase 12 implementation plan.md` (it's untracked, so the whole file is uncommitted and not mine to commit), `dygo_academy_master_project_schedule.md` (has your own edits; changelog line 5.50 added). This report is committed on its own as a `docs:` commit.
+Each commit staged exact paths only. `git status` showed 111 entries before and after the pass (the other work in the tree was not touched). Not committed on purpose: `docs/plans/phase 12 implementation plan.md` (it's untracked, so the whole file is uncommitted and not mine to commit), `docs/product/dygo_academy_master_project_schedule.md` (has your own edits; changelog line 5.50 added). This report is committed on its own as a `docs:` commit.
 
 ### Components built (`src/components/garden/`)
 
@@ -218,7 +218,7 @@ Left behind (gitignored, safe to delete): `com.dygoacademy.frontend/.garden-diff
 
 ## UI-L pass: the garden in English, 简体中文 and Tiếng Việt (automated, 2026-09-26 08:10–12:20 UTC)
 
-Scheduled task "UI-L — the app in three languages", continued by Dylan after the repo folder was connected. Spec: `phase 12 implementation plan.md` → UI-L. UI-G was not started. One interruption: the connection dropped during part 3 and the pass resumed from the same state.
+Scheduled task "UI-L — the app in three languages", continued by Dylan after the repo folder was connected. Spec: `docs/plans/phase 12 implementation plan.md` → UI-L. UI-G was not started. One interruption: the connection dropped during part 3 and the pass resumed from the same state.
 
 ### Commits
 
@@ -303,7 +303,7 @@ All 11 fixture pages at the 8 viewports of design system §16.1 (88 screenshots)
 ### Things to know
 
 - **Another agent was working in the repo at the same time.** `88fdefe` was committed by a Claude Sonnet session during this pass, and around 11:44 UTC `messages/vi.json` briefly held different, non-canvas Vietnamese copy before going back to the committed version. This pass only committed exact paths, and every commit was checked on `git archive HEAD`. If another UI-L task is scheduled, please stop it.
-- `dygo_academy_api_surface.md` has other people's uncommitted edits: only the new row was committed (staged as HEAD + that row); the working copy keeps both.
+- `docs/architecture/dygo_academy_api_surface.md` has other people's uncommitted edits: only the new row was committed (staged as HEAD + that row); the working copy keeps both.
 - `package.json` / lockfile are unchanged. `@formatjs/icu-messageformat-parser` (used by the parity test) comes with next-intl.
 - Left behind (gitignored): `.garden-diff/uil-snap.tgz`, `.garden-diff/uil-zh-CN*`.
 
@@ -320,7 +320,7 @@ UI-G (Groups), built in all three languages from the start and diffed against th
 
 ## UI-G pass: Groups, "shared gardens" (automated, 2026-09-26 12:41–22:10 UTC)
 
-Scheduled task "UI-G — Groups". UI-L was already finished (last commit `a64d74f` at 12:03, no unreported work under the garden or message folders), so the pass went straight to UI-G. Spec: `phase 12 implementation plan.md` → UI-G, decisions 9–11, §10. One interruption: the link to the Mac dropped during part 4 and the pass resumed from the same state when Dylan asked it to continue.
+Scheduled task "UI-G — Groups". UI-L was already finished (last commit `a64d74f` at 12:03, no unreported work under the garden or message folders), so the pass went straight to UI-G. Spec: `docs/plans/phase 12 implementation plan.md` → UI-G, decisions 9–11, §10. One interruption: the link to the Mac dropped during part 4 and the pass resumed from the same state when Dylan asked it to continue.
 
 ### Commits
 
@@ -419,7 +419,7 @@ Everything the classic group pages do is there: create, rename / describe / visi
 
 ### Things to know
 
-- **`dygo_academy_api_surface.md` was briefly emptied by this pass and restored.** A script wrote the file before reading it. The pass restored it from git's object store (the uncommitted version from 25 Sep 14:06, blob `9ee0042`) plus the UI-L `PATCH /profiles/me` row; `git diff --stat` against HEAD is again exactly the 10 insertions / 5 deletions it showed at the start of the pass. Please skim that file's uncommitted diff once to confirm nothing newer than 25 Sep 14:06 was in it. The four new rows were committed as HEAD + rows; the working copy keeps both.
+- **`docs/architecture/dygo_academy_api_surface.md` was briefly emptied by this pass and restored.** A script wrote the file before reading it. The pass restored it from git's object store (the uncommitted version from 25 Sep 14:06, blob `9ee0042`) plus the UI-L `PATCH /profiles/me` row; `git diff --stat` against HEAD is again exactly the 10 insertions / 5 deletions it showed at the start of the pass. Please skim that file's uncommitted diff once to confirm nothing newer than 25 Sep 14:06 was in it. The four new rows were committed as HEAD + rows; the working copy keeps both.
 - **git here can create files but not delete them**, so each commit leaves `.git/HEAD.lock` / `.git/index.lock` behind. The pass moved only the locks its own commits left (and the UI-L pass's stale `HEAD.lock` from 12:03, checked stale first) into `.git/stale-locks/`. An older `.git/next-index-19.lock` (12:03) is still there, and git left a few `tmp_obj_*` files under `.git/objects/` that it couldn't unlink; all harmless, safe to delete on the Mac.
 - Nothing else in the ~110 uncommitted changes was touched; only exact paths were staged. `package.json` / lockfiles unchanged.
 - Left behind (gitignored): `com.dygoacademy.frontend/.garden-diff/uig/` (snapshot and the messages script).
@@ -465,7 +465,7 @@ Apply `20260926_group_garden.sql`, then the Mac checks below. After that: rain-d
 
 ## UI-5 finish
 
-- **U5-1** `6e86063`: `GET /topics/:id` words now carry the caller's own `fsrs_state`, `mastered_at`, `is_leech`, `next_due_at` (left join to `user_word_srs` on `topic_word_id` and `user_id = caller`, on top of the owner-only RLS policy; all null when never studied). `TopicWordRow` type extended; API surface row updated. Files: `topics.service.ts`, `topics.service.spec.ts`, `dygo_academy_api_surface.md`.
+- **U5-1** `6e86063`: `GET /topics/:id` words now carry the caller's own `fsrs_state`, `mastered_at`, `is_leech`, `next_due_at` (left join to `user_word_srs` on `topic_word_id` and `user_id = caller`, on top of the owner-only RLS policy; all null when never studied). `TopicWordRow` type extended; API surface row updated. Files: `topics.service.ts`, `topics.service.spec.ts`, `docs/architecture/dygo_academy_api_surface.md`.
 - Checks (VM scratch mirror of the backend, fresh `npm ci`): `tsc --noEmit` clean; `jest src/modules/topics` 20/20 pass (2 new: join is on the caller's id and stays a left join; nulls pass through for never-studied words).
 - Unverified: the SQL was not run against a real Postgres/Supabase (mocked `queryAs` only); no signed-in call to the endpoint. Waited 3 × 15 min for `UI-3 U3-5` (none; U3 is at U3-0), then went ahead as instructed — U5-1 touches no U3 files. A stale `.git/HEAD.lock` (08:27) moved to `.git/stale-locks/`. **Next: U5-2.**
 - **U5-2** `03a6962`: A6 beds now sorted by due words, most due first (`sortBedsByDue` in `live/data.ts`, stable; ties / nothing due / no `due_count` keep API order). Stage-mix bar, due badge and "all watered" were already wired from `GET /topics` (seed/sprout/flower/due counts), so nothing else changed.
@@ -536,7 +536,7 @@ Next: UI-6 (missions, including the collocation quiz as mission 3), or the open 
 - Things to know: `_gallery` and `_tokens` live under `(garden)/`, whose layout still redirects signed-out visitors to `/login`, so they're public in the middleware only — signed out they still end at `/login` (as before this change). `_reference` is in `(garden-reference)` and really is public. Unverified: no signed-out redirect seen in a real browser/dev server, no `garden:diff` or Playwright run, no `next build`. `HEAD.lock` / `index.lock` moved to `.git/stale-locks/`; undeletable `tmp_obj_*` leftovers in `.git/objects/`.
 
 - **U3-5** (2026-09-30 ~13:05 UTC, automated pass, report + plan only, nothing committed). U3-5a `3e602f8` present (and `03a1ede`, the e2e sign-in exact-label fix, after it). No code changed.
-- Dylan's Mac results (`ui3_mac_checks.md`, 2026-09-30 ~20:50–21:01 SGT): `tsc --noEmit` ✅, `next lint` ✅, Vitest 34 files / 299 ✅ (incl. `routes.test.ts` 14); plain `npm run build` fails at "Collecting page data" only because the frontend has no `.env.local` (missing `NEXT_PUBLIC_*`), and the real `npm run build:prod:domain` ✅ (26/26 pages, all `/garden` routes, middleware 106 kB). **Playwright 448 passed / 0 failed / 0 skipped** (8 viewports × 56, signed in via `.env.e2e`; tab-bar no-jump, Back from Topic bed and Group garden ran on all 8; gallery and every `/garden/_reference` page in en-US + vi-VN).
+- Dylan's Mac results (`docs/reports/ui3_mac_checks.md`, 2026-09-30 ~20:50–21:01 SGT): `tsc --noEmit` ✅, `next lint` ✅, Vitest 34 files / 299 ✅ (incl. `routes.test.ts` 14); plain `npm run build` fails at "Collecting page data" only because the frontend has no `.env.local` (missing `NEXT_PUBLIC_*`), and the real `npm run build:prod:domain` ✅ (26/26 pages, all `/garden` routes, middleware 106 kB). **Playwright 448 passed / 0 failed / 0 skipped** (8 viewports × 56, signed in via `.env.e2e`; tab-bar no-jump, Back from Topic bed and Group garden ran on all 8; gallery and every `/garden/_reference` page in en-US + vi-VN).
 - Checks on the device VM (in the repo with the Mac `node_modules`; Linux arm64 rolldown + lightningcss bindings in a scratch folder outside the repo via `NODE_PATH`, deleted after; only ~270 MB free, so no full mirror): `tsc --noEmit` app ✅; `next lint` ✅ no warnings; `vitest run` 34 files / 299 ✅. `tsc -p tsconfig.test.json` ✗ with the **same one pre-existing error** as U3-5a/SO-1: `src/i18n/config.test.ts:61` passes a second (time-zone) argument to `localeFromAcceptLanguage`, whose signature lost it in `806dd12` (the test line is from `452a893`). Not UI-3; not fixed here (one-line test fix: drop `'America/Chicago'`).
 - Not run here: `next build` (disk) and Playwright (no browser on the VM) — covered by Dylan's Mac runs above.
 - Plan updated (on top of its other uncommitted edits): UI-3 checklist all six items ticked (`/garden` protection, tab bar + routes, back buttons + full-screen review, loading/error/empty, rail/sidebar behind the flag, Playwright suite); §4.1 open item closed; "Done when" left open; U3-5 row 🟡; U3-5a row added; §1 UI-3 row 🟡; status line updated. Master schedule changelog 5.58.

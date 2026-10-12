@@ -1,11 +1,11 @@
 # Dygo Academy — Adult UI/UX Rebuild Plan
 
-> **Superseded (2026-09-26) by `phase 12 implementation plan.md`.** Kept because the 2026-09-25 session report points at it; its Inventory table is still the list UI-8 deletes from.
+> **Superseded (2026-09-26) by `docs/plans/phase 12 implementation plan.md`.** Kept because the 2026-09-25 session report points at it; its Inventory table is still the list UI-8 deletes from.
 
 
 **Date**: 2026-09-25 · **Owner**: Dylan
 **Live version**: the "Dygo Academy — Adult UI/UX Rebuild Plan" doc in Claude (this file is an export of it; if they differ, the doc wins)
-**Spec it builds to**: `dygo_academy_ui_ux_design_system.md` v0.2 · **Visual reference**: the "Dygo Word Garden" design canvas, Adult page (A1–A8)
+**Spec it builds to**: `docs/architecture/dygo_academy_ui_ux_design_system.md` v0.2 · **Visual reference**: the "Dygo Word Garden" design canvas, Adult page (A1–A8)
 
 The adult experience is rebuilt in 9 phases (UI-0 to UI-8). The Word Garden design is built next to the current screens, the new version becomes the default, and then the old UI code is deleted. Data, auth and API code are kept.
 
@@ -25,7 +25,7 @@ Read this section first if you are an automated pass picking this file up.
 5. **Commit per phase, and only your own files.** One commit each, message `UI-0: …` / `UI-1: …`. On 2026-09-25 the repo has about 110 uncommitted changes that are **not yours** (Phase 10 FSRS work, the database squash, new frontend files such as `LearningPath.tsx`, `timezone.ts`). Never `git add -A`, `git add .`, `git stash`, `git reset` or `git checkout` them: stage only the exact paths you created or edited. If a file you must edit (`globals.css`, `tailwind.config.ts`, `middleware.ts`, `layout.ts`) already has someone else's uncommitted changes, edit on top of them and say so in the report. Follow the git lock-file workaround from earlier passes (retry loop, `mv` the lock files, never bare `/tmp`).
 6. **Don't touch the backend or `database/`** in this plan's UI-0 to UI-2.
 7. **Verification the sandbox can do:** `tsc --noEmit`, `next lint`, `npm test`. `next build` hangs in the sandbox; say so in the report rather than claiming a build passed.
-8. **Write the day's session report** (`dygo_academy_session_report_<today's date>.md`, or append a pass section if it exists) with what was done, what was assumed and the next open item. Add a changelog line to `dygo_academy_master_project_schedule.md` pointing at this plan.
+8. **Write the day's session report** (`dygo_academy_session_report_<today's date>.md`, or append a pass section if it exists) with what was done, what was assumed and the next open item. Add a changelog line to `docs/product/dygo_academy_master_project_schedule.md` pointing at this plan.
 9. **Stop and report instead of guessing** if `src/` doesn't match the Inventory closely enough to know where the flag and route group go.
 
 ---

@@ -13,9 +13,9 @@ AI-powered collaborative vocabulary platform — automated word enrichment (dual
 > open** — deliberately not started this close to UAT; see the schedule
 > doc's Phase 4 section. UAT is scheduled for the morning of 2026-09-02 —
 > see
-> [`dygo_academy_session_report_2026-09-01.md`](dygo_academy_session_report_2026-09-01.md)
+> [`docs/reports/dygo_academy_session_report_2026-09-01.md`](docs/reports/dygo_academy_session_report_2026-09-01.md)
 > (tenth pass) for exactly what to click through, and
-> [`dygo_academy_master_project_schedule.md`](dygo_academy_master_project_schedule.md)
+> [`docs/product/dygo_academy_master_project_schedule.md`](docs/product/dygo_academy_master_project_schedule.md)
 > for the full 12-week plan and per-phase status notes. **None of this has
 > run against a live Postgres/GoTrue/Redis stack** — every session so far
 > ran in a sandbox with no Docker; verify against a real `docker compose up`
@@ -286,7 +286,7 @@ signed-in UI; there is no `NEXT_PUBLIC_GARDEN_UI` flag or `?ui=classic`
 any more. Old links redirect permanently in `src/middleware.ts`:
 `/garden/<x>/**` → `/<x>/**`, `/study` → `/review`, `/analytics` and
 `/settings` → `/me`. Paths live in `src/constants/routes.ts` and
-`src/constants/garden.ts`; see `dygo_academy_frontend_architecture.md` §4.
+`src/constants/garden.ts`; see `docs/architecture/dygo_academy_frontend_architecture.md` §4.
 
 Requires the backend (step 4) to be running for `/api/v1/topics` to resolve;
 the landing page itself has no data dependency.
@@ -823,11 +823,11 @@ too short / too long / no sentence. Full details: `docker/speech/README.md`.
 
 | Document | Contents |
 | :--- | :--- |
-| [Master BRD](dygo_academy_final_master_brd.md) | Product vision, 8 functional modules, NFR/SLO targets |
-| [System Architecture](dygo_academy_complete_system_architecture_master.md) | Subsystem diagrams, ERD, billing flows |
-| [Tech Spec & Conventions](dygo_academy_tech_spec_and_conventions.md) | Stack matrix, directory structure, naming rules |
-| [Frontend Architecture](dygo_academy_frontend_architecture.md) | Request flow, auth guard, state ownership, performance strategy, extension checklist |
-| [Project Schedule](dygo_academy_master_project_schedule.md) | 12-week, 6-sprint phased plan |
-| [Competitive Analysis](dygo_academy_competitive_analysis.md) | Market positioning vs. Anki, Quizlet, Memrise |
+| [Master BRD](docs/product/dygo_academy_final_master_brd.md) | Product vision, 8 functional modules, NFR/SLO targets |
+| [System Architecture](docs/architecture/dygo_academy_complete_system_architecture_master.md) | Subsystem diagrams, ERD, billing flows |
+| [Tech Spec & Conventions](docs/architecture/dygo_academy_tech_spec_and_conventions.md) | Stack matrix, directory structure, naming rules |
+| [Frontend Architecture](docs/architecture/dygo_academy_frontend_architecture.md) | Request flow, auth guard, state ownership, performance strategy, extension checklist |
+| [Project Schedule](docs/product/dygo_academy_master_project_schedule.md) | 12-week, 6-sprint phased plan |
+| [Competitive Analysis](docs/product/dygo_academy_competitive_analysis.md) | Market positioning vs. Anki, Quizlet, Memrise |
 | [Phase 10 Plan — FSRS](phase%2010%20implementation%20plan.md) | FSRS scheduler (replaced SM-2); quiz answers feed the SRS; rollout steps |
 | [Phase 11 Plan — Locale, Household & i18n](phase%2011%20implementation%20plan.md) | Timezone/locale preferences, child profiles, internationalization |

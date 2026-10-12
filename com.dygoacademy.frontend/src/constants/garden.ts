@@ -1,5 +1,5 @@
 /**
- * Paths for the Word Garden screens (ui rebuild implementation plan.md).
+ * Paths for the Word Garden screens (docs/plans/archive/ui rebuild implementation plan.md).
  *
  * UI-8 U8-5 (decision 1): the final short URLs. `/garden` stays the home;
  * the other screens moved up from `/garden/<x>` to `/<x>`, and

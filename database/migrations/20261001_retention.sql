@@ -1,4 +1,4 @@
--- UI-6 U6-1 (phase 12 implementation plan.md, "UI-6 finish"): tables and
+-- UI-6 U6-1 (docs/plans/phase 12 implementation plan.md, "UI-6 finish"): tables and
 -- profile columns for daily missions, streak freezes, keepsakes and the two
 -- new learner preferences (UK/US English, daily goal in minutes).
 --

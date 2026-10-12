@@ -69,7 +69,7 @@ export default () => ({
     busyEtaSeconds: parseInt(process.env.SPEECH_BUSY_ETA_SECONDS || '15', 10),
   },
 
-  // Voice donation (`Voice donation consent plan.md`, 2026-10-11). Off unless
+  // Voice donation (`docs/plans/Voice donation consent plan.md`, 2026-10-11). Off unless
   // VOICE_DONATION_ENABLED=true (UAT only until the legal text is approved).
   // VOICE_DONATION_KEY = 32 random bytes, base64 (`openssl rand -base64 32`):
   // donated recordings are encrypted with it before they are stored; without

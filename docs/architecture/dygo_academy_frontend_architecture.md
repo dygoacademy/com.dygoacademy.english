@@ -2,7 +2,7 @@
 **Document Version**: 1.5
 **Author**: Principal Cloud & SaaS Solutions Advisory
 **Status**: Approved Standard — describes `com.dygoacademy.frontend` as of the Topics grid screen (2026-08-31), plus the §16 responsive-breakpoint standard and §17 shared content-width config (updated same day to a single wide width across all tiers), both added 2026-09-17. Note: §3's tree and §4's route table below still reflect the pre-2026-09-17 URL layout (`/` as the guest landing, `/topics` as the dashboard home, `/topics/browse` as the grid) — the 2026-09-17 URL reshuffle (`/` → dashboard home, `/topics` → grid, guest landing → `/search`) and everything built since 1.2 (groups, invites/`/join`, quiz, settings) aren't reconciled into those sections yet. Flagged here rather than silently left wrong; §16 and §17 are current.
-**Companion documents**: [`dygo_academy_tech_spec_and_conventions.md`](dygo_academy_tech_spec_and_conventions.md) (naming rules, full stack matrix), [`dygo_academy_api_surface.md`](dygo_academy_api_surface.md) (backend contract)
+**Companion documents**: [`docs/architecture/dygo_academy_tech_spec_and_conventions.md`](dygo_academy_tech_spec_and_conventions.md) (naming rules, full stack matrix), [`docs/architecture/dygo_academy_api_surface.md`](dygo_academy_api_surface.md) (backend contract)
 
 **Changelog**
 * **1.5** (2026-09-17) — §17 updated: all three `CONTENT_WIDTH` tiers now resolve to `max-w-2xl` (672px) — live-requested "wide layout" for every page and popup, after the tradeoff (forms/popups stretching at 672px) was flagged and confirmed anyway. Tier names kept as-is so the values can diverge again later without touching call sites.
@@ -232,7 +232,7 @@ Same nesting for `loading.tsx`. The scoping is deliberate: a bug in, say, the SR
 | Custom CSS classes | `kebab-case` in `globals.css` only | `.perspective-1000` |
 | Route paths | Defined once in `constants/routes.ts`, never inline | `ROUTES.topics` |
 
-Full rationale and the backend-side conventions live in [`dygo_academy_tech_spec_and_conventions.md`](dygo_academy_tech_spec_and_conventions.md) §3.3 — this table is a quick reference, not the source of truth.
+Full rationale and the backend-side conventions live in [`docs/architecture/dygo_academy_tech_spec_and_conventions.md`](dygo_academy_tech_spec_and_conventions.md) §3.3 — this table is a quick reference, not the source of truth.
 
 ---
 
@@ -248,7 +248,7 @@ None of these block Phase 1 feature work, but they're debt that compounds with c
 
 ## 14. Adding a new feature — the checklist
 
-Follow this order for every new module (matches the vertical-slice approach in `dygo_academy_master_project_schedule.md`):
+Follow this order for every new module (matches the vertical-slice approach in `docs/product/dygo_academy_master_project_schedule.md`):
 
 1. **Types** — add/extend the relevant file in `types/`, matching the backend DTO or DB schema exactly (casing included).
 2. **Routes** — if it's a new page, add the path to `constants/routes.ts` first; add it to `PROTECTED_PATH_PREFIXES` there if it needs auth, and middleware picks it up automatically.
@@ -256,7 +256,7 @@ Follow this order for every new module (matches the vertical-slice approach in `
 4. **Client-only state** — only if the feature has genuine UI-only state (§6); add a store, don't extend an unrelated one.
 5. **Components** — a new folder under `components/` named after the feature if it doesn't already exist, built from `components/ui/` primitives.
 6. **Page** — compose the above in `app/(dashboard)/<feature>/page.tsx`. Inherits the segment's `error.tsx`/`loading.tsx` unless the feature needs its own.
-7. **Docs** — update this file's §3 tree and `dygo_academy_api_surface.md` if new endpoints are involved, with a version bump if the change is structural.
+7. **Docs** — update this file's §3 tree and `docs/architecture/dygo_academy_api_surface.md` if new endpoints are involved, with a version bump if the change is structural.
 
 ---
 

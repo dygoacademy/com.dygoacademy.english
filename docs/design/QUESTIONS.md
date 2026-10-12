@@ -4,7 +4,7 @@ Things in `docs/design/garden/CHANGELOG.md` that are unclear, or that differ fro
 
 ## 2026-10-08 · Onboarding OB1–OB5, built ahead of the boards (Claude Code)
 
-Dylan asked (2026-10-07) for OB1–OB5 to be built while they are still *For approval*. They are on branch `feature/onboarding-ob1-ob5`, not merged; see `ONBOARDING-REPORT.md` there. The OB rows of the design changelog are not committed yet (only in the main working tree), so their Build status column is not filled in on the branch. Once that section is committed, set it to "built on branch feature/onboarding-ob1-ob5, not yet verified against boards".
+Dylan asked (2026-10-07) for OB1–OB5 to be built while they are still *For approval*. They are on branch `feature/onboarding-ob1-ob5`, not merged; see `docs/reports/ONBOARDING-REPORT.md` there. The OB rows of the design changelog are not committed yet (only in the main working tree), so their Build status column is not filled in on the branch. Once that section is committed, set it to "built on branch feature/onboarding-ob1-ob5, not yet verified against boards".
 
 | # | The changelog says | What the branch does | Question / suggestion |
 |---|---|---|---|

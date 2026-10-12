@@ -1,4 +1,4 @@
--- UI-G RD-1 (phase 12 implementation plan.md, "UI-G follow-up: store rain
+-- UI-G RD-1 (docs/plans/phase 12 implementation plan.md, "UI-G follow-up: store rain
 -- days"): keep a row for each group rain day, so GR1 / GR2 / GR3 can show
 -- the banner ("3/5 done · you: 4/10") and "Last rain day" on live data.
 --

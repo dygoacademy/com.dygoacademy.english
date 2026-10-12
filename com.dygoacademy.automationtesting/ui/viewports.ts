@@ -1,6 +1,6 @@
 /**
  * The 8 QA viewports of the design system, §16.1
- * (dygo_academy_ui_ux_design_system.md). One Playwright project each.
+ * (docs/architecture/dygo_academy_ui_ux_design_system.md). One Playwright project each.
  */
 export interface QaViewport {
   name: string;

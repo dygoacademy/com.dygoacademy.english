@@ -85,7 +85,7 @@ export class GroupsService {
    * Groups this user belongs to — deliberately narrower than
    * `groups_select` in 002_rls_policies.sql, which also lets a caller see
    * every public group and (for tenant admins) every group in their tenant.
-   * "GET /groups" means "my groups" (dygo_academy_api_surface.md §4), so this
+   * "GET /groups" means "my groups" (docs/architecture/dygo_academy_api_surface.md §4), so this
    * adds an explicit membership join on top of RLS rather than relying on the
    * select policy alone — narrowing business semantics, not re-implementing
    * authorization: RLS still gates every row underneath this query.
@@ -185,7 +185,7 @@ export class GroupsService {
 
   /**
    * The roster. `group_members_select` lets a READ member see only their
-   * own row and a WRITE-or-above member see everyone (dygo_academy_api_surface.md
+   * own row and a WRITE-or-above member see everyone (docs/architecture/dygo_academy_api_surface.md
    * §4: "READ members cannot enumerate classmates") — enforced entirely by
    * RLS, so a READ caller gets back a one-row list rather than a 403. That
    * is a deliberate product choice already encoded in the policy, not
@@ -343,7 +343,7 @@ export class GroupsService {
    * invite's audit trail (who created it, how many times it was redeemed)
    * survives being turned off. `group_invites_update_admin` gates this
    * (revoking is implemented as an UPDATE, not a DELETE, even though the
-   * route is `DELETE /invites/:id` per dygo_academy_api_surface.md §4).
+   * route is `DELETE /invites/:id` per docs/architecture/dygo_academy_api_surface.md §4).
    */
   async revokeInvite(userId: string, inviteId: string): Promise<void> {
     const rows = await this.db.queryAs<{ id: string }>(

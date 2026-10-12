@@ -9,7 +9,7 @@ export type SessionMode = (typeof MODES)[number];
  * Body for `POST /api/v1/srs/sessions` — FR-4.3's three study modes.
  *
  * There is no `study_sessions` table in the schema (checked
- * `dygo_academy_database_dictionary.md` — Module 4's modes are a *display*
+ * `docs/architecture/dygo_academy_database_dictionary.md` — Module 4's modes are a *display*
  * concern: which face of the card shows first and whether audio is the only
  * clue. So this endpoint does not create a persisted session row; it hands
  * back a batch of due cards tagged with the requested mode, and the mode

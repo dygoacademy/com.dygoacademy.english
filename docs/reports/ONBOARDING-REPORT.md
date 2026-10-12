@@ -77,7 +77,7 @@ It then runs `update profiles set onboarded_at = created_at where onboarded_at i
   - An empty body is 400.
 - `GET /profiles/me` is **unchanged**, so the Me screen doesn't depend on the new migration.
 
-Docs updated: `dygo_academy_api_surface.md`, `dygo_academy_database_dictionary.md`, `database/README.md`, `README.md`, and `docs/design/QUESTIONS.md` (Q-12 to Q-16).
+Docs updated: `docs/architecture/dygo_academy_api_surface.md`, `docs/architecture/dygo_academy_database_dictionary.md`, `database/README.md`, `README.md`, and `docs/design/QUESTIONS.md` (Q-12 to Q-16).
 
 ## Test results
 

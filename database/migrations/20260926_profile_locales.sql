@@ -1,4 +1,4 @@
--- UI-L (phase 12 implementation plan.md): the learner's two language settings.
+-- UI-L (docs/plans/phase 12 implementation plan.md): the learner's two language settings.
 --
 --   ui_locale       the garden's app language: 'en', 'zh-CN' or 'vi'.
 --                   null = not chosen yet; the dygo_locale cookie, then the

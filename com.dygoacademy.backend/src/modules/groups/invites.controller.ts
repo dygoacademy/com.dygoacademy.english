@@ -7,7 +7,7 @@ import { GroupsService, RedeemedInvite } from './groups.service';
 
 /**
  * Split from GroupsController because these two routes are not nested under
- * `/groups/:id` — dygo_academy_api_surface.md §4 names them `DELETE
+ * `/groups/:id` — docs/architecture/dygo_academy_api_surface.md §4 names them `DELETE
  * /invites/:id` and `POST /invites/:token/redeem` at the top level. Revoking
  * needs the invite's own id, not its group's; redeeming needs only the
  * token, since the whole point (see GroupsService.redeemInvite) is that the

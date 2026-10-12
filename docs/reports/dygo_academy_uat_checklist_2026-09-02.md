@@ -2,7 +2,7 @@
 
 Consolidated from the thirteen automated development passes' individual
 "UAT checklist for tomorrow" sections scattered across
-`dygo_academy_session_report_2026-09-01.md` (checklists appended by the
+`docs/reports/dygo_academy_session_report_2026-09-01.md` (checklists appended by the
 6th through 12th passes, each superseding or adding to the last). This is
 the single script to actually run tomorrow — it supersedes all of those;
 they don't need to be read separately. Written by the 13th pass.

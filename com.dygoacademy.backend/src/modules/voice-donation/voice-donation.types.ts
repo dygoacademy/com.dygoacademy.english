@@ -1,5 +1,5 @@
 /**
- * Voice donation (`Voice donation consent plan.md`, design CHANGELOG
+ * Voice donation (`docs/plans/Voice donation consent plan.md`, design CHANGELOG
  * 2026-10-11): a learner who turns on "Help improve Dygo's speech checker"
  * has their speaking and pronunciation recordings kept, encrypted, under a
  * random donor code, to train and test Dygo's own speech checker.

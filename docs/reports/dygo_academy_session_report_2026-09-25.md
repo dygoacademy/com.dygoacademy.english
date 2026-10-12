@@ -1,7 +1,7 @@
 # Dygo Academy — session report, 2026-09-25 (overnight UI rebuild pass)
 
 **Run**: automated scheduled task ("Dygo UI rebuild: UI-0 + UI-1 overnight pass"), no user present.
-**Plan followed**: `ui rebuild implementation plan.md` → "Instructions for the automated pass".
+**Plan followed**: `docs/plans/archive/ui rebuild implementation plan.md` → "Instructions for the automated pass".
 **Result**: UI-0 and UI-1 committed and verified; a first slice of UI-2 committed. Classic UI unchanged.
 
 ---
@@ -119,7 +119,7 @@ These are the components that §11 specifies fully without the mockup canvas. Th
 - **`node_modules` was patched by hand.** The 11 new packages were copied in so the Mac's platform-specific binaries weren't disturbed. `package.json` and `package-lock.json` are correct and committed. **Run `npm install` on your Mac once** so npm's own bookkeeping matches.
 - **Builds now need Google Fonts at build time.** That includes Docker and CI. It's how `next/font/google` works, and the fonts are then served from our own domain, which is what §14.6 wants for China. If a build machine can't reach Google, switch `fonts.ts` to `next/font/local` with the woff2 files committed.
 - **The garden session guard is only in the layout.** Because pages render in parallel with layouts, add `/garden` to `PROTECTED_PATH_PREFIXES` in `routes.ts` before any garden page renders user data on the server (UI-3/UI-4). I didn't do it tonight because `routes.ts` has someone else's uncommitted changes.
-- **The master schedule changelog line (5.48) is added but not committed.** `dygo_academy_master_project_schedule.md` already had uncommitted edits (5.45–5.47) from other work, and committing it would have swept those in. It will go in with that work's commit.
+- **The master schedule changelog line (5.48) is added but not committed.** `docs/product/dygo_academy_master_project_schedule.md` already had uncommitted edits (5.45–5.47) from other work, and committing it would have swept those in. It will go in with that work's commit.
 - Scratch files from this pass: `com.dygoacademy.frontend/.next/garden-snapshot/` (gitignored) and `.git/stale-locks/`. Both are safe to delete.
 
 ## Skipped, and why

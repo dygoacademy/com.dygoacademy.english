@@ -1,5 +1,5 @@
 /**
- * Word Garden languages (phase 12 implementation plan.md, step UI-L).
+ * Word Garden languages (docs/plans/phase 12 implementation plan.md, step UI-L).
  *
  * Deliberately free of next/headers so the same helpers work in the
  * request config, server actions, client components and tests.

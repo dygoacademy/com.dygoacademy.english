@@ -2,7 +2,7 @@
  * `group_role` enum, database/schema/01_extensions_types.sql.
  * ADMIN > WRITE > READ — full control, add/edit words, study & quiz only
  * (tech spec §3.2 enum example; permission matrix in
- * dygo_academy_api_surface.md §"Module 1").
+ * docs/architecture/dygo_academy_api_surface.md §"Module 1").
  */
 export type GroupRole = 'ADMIN' | 'WRITE' | 'READ';
 

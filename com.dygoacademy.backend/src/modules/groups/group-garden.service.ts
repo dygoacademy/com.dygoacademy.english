@@ -4,7 +4,7 @@ import { DatabaseService } from '../../database/database.service';
 import type { GroupRole } from './groups.service';
 
 /**
- * UI-G (phase 12 implementation plan.md) — the reads behind the garden's
+ * UI-G (docs/plans/phase 12 implementation plan.md) — the reads behind the garden's
  * group screens. Aggregates only (plan decision 10, FR-1.2): nothing here
  * returns another learner's word-level progress, or who did what.
  *

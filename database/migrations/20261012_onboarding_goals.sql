@@ -1,5 +1,5 @@
 -- Onboarding in 2 steps (docs/design/garden/CHANGELOG.md, 2026-10-11 and
--- 2026-10-12; "Onboarding simplify implementation plan.md"): OB1 About you
+-- 2026-10-12; "docs/plans/Onboarding simplify implementation plan.md"): OB1 About you
 -- asks the level and the goal together, with goal chips IELTS Academic,
 -- IELTS General, Work, Travel and Just for me.
 --

@@ -104,7 +104,7 @@ blob at its own line still parses independently — `git diff --stat`
 shows the expected single-line change. Still unrenderable in this
 sandbox (no `file://` support, nothing to serve it over http); now five
 unrenderable turns (10–14) instead of four.
-`dygo_academy_uat_checklist_2026-09-02.md` item 23 updated to name turn
+`docs/reports/dygo_academy_uat_checklist_2026-09-02.md` item 23 updated to name turn
 14 and its two screens; while there, also caught and fixed a stale
 "47 RLS assertions" line in that same file's "Read this first" section
 — the 17th pass's own migration raised the real count to 54 but never
@@ -215,7 +215,7 @@ aggregate output, which has no `user_id` column to begin with.
 
 Updated `database/apply-migrations.sh` to run 009 (idempotent like
 005–007, via `CREATE OR REPLACE FUNCTION` / `DROP POLICY IF EXISTS`)
-and `dygo_academy_database_dictionary.md`'s RLS policy and function
+and `docs/architecture/dygo_academy_database_dictionary.md`'s RLS policy and function
 tables to describe the widened `group_members_select`,
 `can_read_group()`, and the new `group_tenant_id()` helper, and to
 reframe `is_tenant_admin()`'s own row as "this function **is** the
@@ -247,7 +247,7 @@ sandbox — no Docker here, the same standing limitation as every
 migration since the first pass. Static review is the ceiling: read the
 policy definitions and the trigger they depend on line by line rather
 than assuming correctness. Added as UAT checklist item 24
-(`dygo_academy_uat_checklist_2026-09-02.md`) — section J actually
+(`docs/reports/dygo_academy_uat_checklist_2026-09-02.md`) — section J actually
 passing against real Postgres is itself part of what tomorrow's UAT is
 expected to confirm, not a given.
 
@@ -299,7 +299,7 @@ every tag type used in the document (`div`, `section`, `p`, `span`,
 file as "1 line changed," as expected for this bundle format. This
 sandbox still cannot open the file in a real browser to confirm visual
 rendering — now four unverified turns (10, 11, 12, 13) instead of
-three; `dygo_academy_uat_checklist_2026-09-02.md` item 23 updated to
+three; `docs/reports/dygo_academy_uat_checklist_2026-09-02.md` item 23 updated to
 list all four and to point to item 24 for the backend-side follow-up.
 
 ### What this pass did not do, and why
@@ -398,7 +398,7 @@ from the backend's own mocked unit tests, and that it's written for
 whoever runs it against a real Docker Compose stack — including UAT
 tomorrow — not for this sandbox. Updated the `## Layout` tree in the
 same file to list the new package. Added a "## K. Live-stack integration
-tests" section to `dygo_academy_uat_checklist_2026-09-02.md` covering
+tests" section to `docs/reports/dygo_academy_uat_checklist_2026-09-02.md` covering
 how to run it and which of its own assertions are documented one-shot
 (self-skip with a `console.warn` on a second run without a database
 re-seed, not a false failure).
@@ -481,7 +481,7 @@ blob re-parses as JSON, all HTML tags balance across the full
 117,335-character decoded document, and none of the 74 total `id=`
 anchors collide (up from 70). This sandbox still cannot render it in a
 real browser — same standing limitation, now covering three unverified
-turns (10, 11, 12) instead of two; `dygo_academy_uat_checklist_2026-09-02.md`
+turns (10, 11, 12) instead of two; `docs/reports/dygo_academy_uat_checklist_2026-09-02.md`
 item 23 was updated accordingly, including a note about turn 12's own
 open product question above and beyond the usual "does it render"
 check.
@@ -568,7 +568,7 @@ Added **turn 11** (screens 11a–11d) to `Dygo Academy Wireframes.html`:
 
 One finding worth flagging that isn't just a restatement of turn 10: while
 writing 11a/11b/11d's captions and checking them against
-`dygo_academy_database_dictionary.md`, confirmed `tenants` has **no
+`docs/architecture/dygo_academy_database_dictionary.md`, confirmed `tenants` has **no
 `subscription_status`-shaped column today** — only `purchased_seats`,
 `active_seats_used`, `price_per_seat_cents`. All three of those screens
 therefore imply a schema column (and a webhook target to write it) that
@@ -647,7 +647,7 @@ remain deliberately untouched.
 ### UAT checklist for tomorrow
 
 No change to the actual test script's structure —
-`dygo_academy_uat_checklist_2026-09-02.md` still supersedes and merges
+`docs/reports/dygo_academy_uat_checklist_2026-09-02.md` still supersedes and merges
 everything, run that file. Its §I item 23 (wireframe review) was updated
 this pass to also cover turn 11.
 
@@ -764,7 +764,7 @@ remain deliberately untouched.
 
 ### UAT checklist for tomorrow
 
-No change to the actual test script — `dygo_academy_uat_checklist_2026-09-02.md`
+No change to the actual test script — `docs/reports/dygo_academy_uat_checklist_2026-09-02.md`
 still supersedes and merges everything, run that file. Its §I (wireframe
 review) now also covers turn 10 — added as a line item there this pass.
 
@@ -816,7 +816,7 @@ failure to find something.
    has no endpoint yet. No app code changed — this is a documentation-of-
    reality fix in the mockup file only.
 2. **Consolidated UAT script**: `dygo_academy_uat_checklist_2026-09-01.md`
-   → written as `dygo_academy_uat_checklist_2026-09-02.md`, merging the
+   → written as `docs/reports/dygo_academy_uat_checklist_2026-09-02.md`, merging the
    ten separate "UAT checklist for tomorrow" sections appended by the
    6th–12th passes (each one explicitly "supersedes" or "adds to" the
    last, so reading them in order was the only way to reconstruct the
@@ -864,7 +864,7 @@ failure to find something.
 
 ### UAT checklist for tomorrow
 
-Superseded by the new standalone `dygo_academy_uat_checklist_2026-09-02.md`
+Superseded by the new standalone `docs/reports/dygo_academy_uat_checklist_2026-09-02.md`
 — run that file, not the accumulated per-pass sections below it in this
 report. It supersedes and merges all of them.
 
@@ -944,7 +944,7 @@ ENRICHING, re-enqueued with the right payload) and the zero-rows →
 
 ### Documentation
 
-`dygo_academy_api_surface.md`: moved `POST /words/:id/re-enrich` from the
+`docs/architecture/dygo_academy_api_surface.md`: moved `POST /words/:id/re-enrich` from the
 "Implied by the requirements" table (§4, was 14 operations) to the live
 table (§2, now 37), added a dated note in the same style as the two existing
 2026-09-01 notes at the top of the doc. Also annotated the still-implied
@@ -1183,7 +1183,7 @@ already means a Redis client is coming into this codebase anyway.
 
 Standing instruction, run the evening before UAT (2026‑09‑02, tomorrow
 morning): compared the working tree against
-`dygo_academy_master_project_schedule.md` and the two open items the ninth
+`docs/product/dygo_academy_master_project_schedule.md` and the two open items the ninth
 pass's own report flagged. `git status` was clean; `git log` showed nine
 prior commits landed, most recent being the ninth pass's docs commit.
 
@@ -1215,7 +1215,7 @@ can *enumerate* the roster at all (WRITE+ only) — this migration only
 widens what a caller who can already see a `group_members` row also gets
 to see about the person in it.
 
-`GroupsService`'s `GroupMember` comment, `dygo_academy_api_surface.md`'s
+`GroupsService`'s `GroupMember` comment, `docs/architecture/dygo_academy_api_surface.md`'s
 `GET /groups/:id/members` row, and wireframe turn 3c's caption (the one
 mocking up the roster screen) were all updated to describe the fix instead
 of the gap — the wireframe edit used the same JSON-round-trip verification
@@ -1288,7 +1288,7 @@ then write.
 
 Same standing instruction as every prior pass, run the evening before UAT
 (2026‑09‑02, tomorrow morning): compared the working tree against
-`dygo_academy_master_project_schedule.md` and `dygo_academy_api_surface.md`.
+`docs/product/dygo_academy_master_project_schedule.md` and `docs/architecture/dygo_academy_api_surface.md`.
 `git status` was clean and `git log` showed eight prior commits all landed,
 the most recent being the 8th pass's roster-naming fix. This pass read the
 relevant source files closely before touching anything (`GroupsService`,
@@ -1316,7 +1316,7 @@ things actually worth doing tonight.
 stayed `NULL`. `groups.tenant_id` is `NOT NULL references tenants`, and
 `GroupsService.create()` inserts using `public.current_user_tenant_id()`,
 which reads `profiles.tenant_id`. Net effect, flagged as "unspecified" in
-`dygo_academy_api_surface.md` since the very first session report: **any
+`docs/architecture/dygo_academy_api_surface.md` since the very first session report: **any
 freshly-registered user who isn't one of the 5 seeded fixtures could not
 create their first group at all** — `POST /groups` failed outright on a
 `NOT NULL` violation. This is exactly the kind of rough edge someone
@@ -1360,11 +1360,11 @@ roster-name gap for invite-redeemed members** — that needs a different
 fix (e.g. a `profiles` SELECT policy clause keyed on shared group
 membership, not shared tenant), flagged below rather than guessed at here.
 `GroupsService`'s `GroupMember`/`create()` comments, `types/group.ts`, and
-`dygo_academy_api_surface.md`'s `POST /groups` row were all updated to
+`docs/architecture/dygo_academy_api_surface.md`'s `POST /groups` row were all updated to
 state this precisely rather than repeat the prior pass's approximation.
 
 Added two new `rls_test.sql` sections (G, H — see below) and updated the
-stale "26 assertions" count in `README.md`/`dygo_academy_database_dictionary.md`
+stale "26 assertions" count in `README.md`/`docs/architecture/dygo_academy_database_dictionary.md`
 to the actual 45 (it had already drifted from 26 before this pass; not
 newly introduced, just finally corrected while this pass was touching the
 file anyway).
@@ -1444,8 +1444,8 @@ turn 8g already established for the teacher-sprint trigger.
 `rankHeatmap` (failure-rate math, sort order, tiebreak, capping,
 mutation-safety), 5 for `AnalyticsService.groupHeatmap` (the ADMIN gate,
 the exact `has_group_role` call shape, bigint-string normalization, limit
-pass-through, empty-group handling). `dygo_academy_api_surface.md` and
-`dygo_academy_master_project_schedule.md`'s Phase 4 section were both
+pass-through, empty-group handling). `docs/architecture/dygo_academy_api_surface.md` and
+`docs/product/dygo_academy_master_project_schedule.md`'s Phase 4 section were both
 updated; Module 7 (Stripe billing) is explicitly still fully open and
 flagged as the next pass's top item, not attempted here.
 
@@ -1596,7 +1596,7 @@ collisions), not visual.
 
 Same standing instruction as every prior pass, run the morning of UAT
 (2026‑09‑02, tomorrow): compared the working tree against
-`dygo_academy_master_project_schedule.md` and `dygo_academy_api_surface.md`.
+`docs/product/dygo_academy_master_project_schedule.md` and `docs/architecture/dygo_academy_api_surface.md`.
 `git status` was clean, `git log` showed seven prior commits all landed, and
 `npm run test` reproduced the seventh pass's 129/129 backend pass before any
 new work started. Also re-checked whether this sandbox now has Docker
@@ -1746,8 +1746,8 @@ needed for a data-shape fix to a screen already designed correctly.
 ### What this pass did
 
 Same standing instruction as every prior pass: compared the working tree
-against `dygo_academy_master_project_schedule.md` and
-`dygo_academy_api_surface.md`. `git status` was clean, `git log` showed six
+against `docs/product/dygo_academy_master_project_schedule.md` and
+`docs/architecture/dygo_academy_api_surface.md`. `git status` was clean, `git log` showed six
 prior commits all landed, and `npm run test` reproduced the sixth pass's
 129/129 backend pass before any new work started. Phase 3 (both modules) is
 code-complete and the master schedule's own Phase 4 (Stripe billing,
@@ -1950,8 +1950,8 @@ limitation) since the file wasn't edited.
 ### What this pass did
 
 Same standing instruction as every prior pass: compared the working tree
-against `dygo_academy_master_project_schedule.md` and
-`dygo_academy_api_surface.md`. `git status` was clean and `git log` showed
+against `docs/product/dygo_academy_master_project_schedule.md` and
+`docs/architecture/dygo_academy_api_surface.md`. `git status` was clean and `git log` showed
 five prior commits, all landed — no repeat of the second pass's
 `.git/index.lock` blocker. `npm run test` reproduced the fifth pass's
 107/107 backend pass before any new work started. Phase 3's other half was
@@ -2162,8 +2162,8 @@ sandbox limitation as every prior turn.
 ### What this pass did
 
 Same standing instruction as every prior pass: compared the working tree
-against `dygo_academy_master_project_schedule.md` and
-`dygo_academy_api_surface.md`. Phases 0–2 held up exactly as the fourth pass
+against `docs/product/dygo_academy_master_project_schedule.md` and
+`docs/architecture/dygo_academy_api_surface.md`. Phases 0–2 held up exactly as the fourth pass
 left them — `git log --oneline` showed a clean, fully-committed tree (no
 repeat of the second pass's `.git/index.lock` blocker), and `npm run test`
 reproduced the fourth pass's 75/75 backend pass before any new work started.
@@ -2178,14 +2178,14 @@ New `src/modules/quiz/` on the backend, following the same split the SRS
 module already established: `quiz-generator.ts` holds pure, DB-free
 generation and grading functions (unit tested in isolation), `quiz.service.ts`
 owns the Postgres reads and the one Gemini call FR-5.5 needs, `quiz.controller.ts`
-exposes the three routes `dygo_academy_api_surface.md`'s own §4 table had
+exposes the three routes `docs/architecture/dygo_academy_api_surface.md`'s own §4 table had
 already sketched as "implied": `POST /quizzes/generate`, `POST
 /quizzes/:id/answer`, `GET /quizzes/leech-drill`.
 
 The one design call that had to be made before writing any service code,
 same as Module 3's `recent_mistakes`-decay decision last pass: **no
 persisted quiz/session/attempt row.** Checked
-`dygo_academy_database_dictionary.md` — nothing like a `quiz_attempts` table
+`docs/architecture/dygo_academy_database_dictionary.md` — nothing like a `quiz_attempts` table
 exists, and `StartSessionDto`'s own precedent (Phase 2) already treats
 "which cards, what shape" as recomputable rather than stored. Took that one
 step further here: a quiz item's id is deterministic
@@ -2396,8 +2396,8 @@ run on your machine before UAT depends on a production build existing.
 
 ### What this pass did
 
-Compared the working tree against `dygo_academy_master_project_schedule.md`
-and `dygo_academy_api_surface.md` per the task's standing instruction ("check
+Compared the working tree against `docs/product/dygo_academy_master_project_schedule.md`
+and `docs/architecture/dygo_academy_api_surface.md` per the task's standing instruction ("check
 the tasks have done then compare with project plan"). Phase 0 and Phase 1
 held up exactly as the third pass left them — `git log` showed a clean,
 fully-committed tree (no repeat of the second pass's `.git/index.lock`
@@ -2414,7 +2414,7 @@ the clear next step: `SrsService`/`SrsController` were the Phase 0 stub
 — same split as `GeminiEnrichmentService.pcmToWav`) implements FR-3.1's
 formula and FR-3.2's four rating actions. Three assumptions had to be made
 because nothing pins them, all documented in that file's header comment and
-cross-referenced from `dygo_academy_api_surface.md`:
+cross-referenced from `docs/architecture/dygo_academy_api_surface.md`:
 
 - **Rating → SM-2 `q` mapping.** FR-3.1's formula expects `q` on a 0–5
   scale; FR-3.2 only gives four named buttons. Mapped onto the conventional
@@ -2425,7 +2425,7 @@ cross-referenced from `dygo_academy_api_surface.md`:
   stays comparable in magnitude to the formula's own AGAIN/EASY swing
   without letting it alone drive EF negative.
 - **`recent_mistakes` decay — resolves the open question
-  `dygo_academy_api_surface.md` §5.4 flagged for Phase 2.** Recomputed from
+  `docs/architecture/dygo_academy_api_surface.md` §5.4 flagged for Phase 2.** Recomputed from
   `review_logs` inside the same transaction as `POST /srs/rate`, not decayed
   on a schedule. This was the one design call that had to be made *before*
   writing any service code, not discovered along the way — no third
@@ -2457,7 +2457,7 @@ failures rather than failing the whole batch — same philosophy as
 rather than duplicating the due-card query on two controllers.
 
 `POST /srs/sessions` does **not** create a persisted session row. Checked
-`dygo_academy_database_dictionary.md` — no `study_sessions` table exists.
+`docs/architecture/dygo_academy_database_dictionary.md` — no `study_sessions` table exists.
 FR-4.3's three modes are a display concern (which face of the card shows
 first, whether audio is the only clue), not server state, so the endpoint
 just returns a due-card batch tagged with the requested mode. Documented in
@@ -2501,7 +2501,7 @@ Rewired `/study` to real data:
   the sentence. Implemented the four-step version, since Module 4's front
   face already promises audio per FR-4.1 — flagged as a spec disagreement
   in both the component's header comment and
-  `dygo_academy_api_surface.md`, the same way the billing route name
+  `docs/architecture/dygo_academy_api_surface.md`, the same way the billing route name
   conflict is already flagged there, rather than picking one silently.
 - **`AudioButton.tsx`** — FR-2.4's 0.75x/1.0x speed toggle, one `<audio>`
   element per mount, reused across all three modes' front and back faces
@@ -2684,7 +2684,7 @@ actual Gemini/TTS calls were a `TODO`. Implemented:
   pure function, unit tested) needs zero dependencies while playing natively
   in every browser `<audio>` tag. Swapping to real MP3 later is a drop-in
   change to that one function plus the storage key extension — flagged in
-  `dygo_academy_api_surface.md` note (4) and here for whoever picks this up
+  `docs/architecture/dygo_academy_api_surface.md` note (4) and here for whoever picks this up
   with ffmpeg available.
 - **Failure handling**: a TTS/upload failure no longer fails the whole word
   — `topic_words_ready_requires_lexicon` only requires a `lexicon_id`, not
@@ -2836,7 +2836,7 @@ before committing rather than blindly `git add -A`.
 Picked up exactly where the first pass's own report (§6 checklist item 1
 aside) left off: Module 1's schedule status said "Groups leads Phase 1" with
 only `GET`/`POST /groups` live. Compared the working tree again against
-`dygo_academy_master_project_schedule.md` and `dygo_academy_api_surface.md`
+`docs/product/dygo_academy_master_project_schedule.md` and `docs/architecture/dygo_academy_api_surface.md`
 and built the rest of Module 1's implied-endpoint table — 14 endpoints,
 now all live:
 
@@ -2954,8 +2954,8 @@ before UAT to sanity-check turn 4 renders as intended.
 
 ### What was checked against the plan
 
-Compared the working tree against `dygo_academy_master_project_schedule.md`
-and `dygo_academy_api_surface.md`. Phase 0 (Foundations) was previously
+Compared the working tree against `docs/product/dygo_academy_master_project_schedule.md`
+and `docs/architecture/dygo_academy_api_surface.md`. Phase 0 (Foundations) was previously
 marked complete and that held up. Phase 1 (Module 1 — Groups/RBAC, Module 2
 — AI enrichment) had a first slice in progress but uncommitted: `POST
 /words` and `GET /topics`, plus matching frontend screens (topic detail,
@@ -2997,4 +2997,4 @@ ADMIN inside the same insert.
 Backend — `GroupsModule` first slice (`GET`/`POST /groups`), 5 unit tests.
 Wireframes — turn 3 (screens 3a–3d): teacher's "Your Groups" dashboard,
 "Create a group," the roster, and the magic-invite-link screen. Docs —
-`dygo_academy_api_surface.md` updated, live endpoint count 3→5.
+`docs/architecture/dygo_academy_api_surface.md` updated, live endpoint count 3→5.

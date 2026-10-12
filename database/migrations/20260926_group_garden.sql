@@ -1,4 +1,4 @@
--- UI-G (phase 12 implementation plan.md): aggregate-only reads for the
+-- UI-G (docs/plans/phase 12 implementation plan.md): aggregate-only reads for the
 -- shared-garden screens (GR1, GR2, GR3, GR6).
 --
 -- Why SECURITY DEFINER at all: RLS hides most of a group from a READ

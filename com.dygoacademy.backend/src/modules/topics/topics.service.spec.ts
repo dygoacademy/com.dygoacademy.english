@@ -22,7 +22,7 @@ async function makeService(
 }
 
 /**
- * Phase 0 has exactly one live query (see dygo_academy_api_surface.md
+ * Phase 0 has exactly one live query (see docs/architecture/dygo_academy_api_surface.md
  * §"Live today"), so this suite is small on purpose. What it protects
  * against: (1) someone adding a tenant/group WHERE clause to "help"
  * filtering, which would duplicate — and could contradict — the RLS

@@ -1,4 +1,4 @@
--- Voice donation (`Voice donation consent plan.md` §4, design CHANGELOG
+-- Voice donation (`docs/plans/Voice donation consent plan.md` §4, design CHANGELOG
 -- 2026-10-11 "Legal: optional voice donation"). A learner can turn on
 -- "Help improve Dygo's speech checker" (Profile › Privacy & data, or the box
 -- on Create account); from then on the backend keeps a copy of each speaking

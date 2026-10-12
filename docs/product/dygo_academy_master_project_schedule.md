@@ -17,33 +17,33 @@
 * **5.60** (2026-10-01, automated pass, not committed) — Phase 12 **UI-5 quiz design QZ-4 wrap-up** (QZ-1 `d924173`, QZ-2 `956dd43`, QZ-4 `a95b5e2` wires the live "Drill tricky words" link): frontend tsc/lint/Vitest 313 pass. Open: QZ-3 Q1–Q8 pixel diff (en + vi) and a live quiz check on the Mac.
 * **5.59** (2026-09-30, automated pass, not committed) — Phase 12 **UI-4 code complete (U4-5 wrap-up)**: U4-1 `365a13c` → U4-4 `6e7eb53` plus the classic↔garden parity Playwright spec `7300da9`; srs jest 77/77, frontend tsc/lint/Vitest pass; UI-4 checklist ticked except the beta. Open: **G2** (migrations from `20260926_*`, Playwright on the Mac, 3–5 beta users).
 * **5.58** (2026-09-30, automated pass, not committed) — Phase 12 **UI-3 wrap-up (U3-5)**: `/garden` now protected in the middleware (U3-5a `3e602f8`); UI-3 checklist fully ticked; on the Mac tsc/lint/vitest 299, `build:prod:domain` and the Playwright suite (448/448, signed in, 8 viewports) pass. **UI-3 done**: Dylan's real-iPhone check passed the same evening. Next: UI-4 stage counts in `GET /srs/stats` + preview-equals-rate test. See session report 2026-09-26, "UI-3 finish".
-* **5.57** (2026-09-29, automated pass, not committed) — Phase 12 **UI-A code complete** (A-1 `8be6590` → A-4 `7a5e342`, wrap-up A-5): garden Sign in, Create account (+ invite), Forgot / set new password behind the garden flag, classic auth pages unchanged; tsc/lint/`next build` pass, AU pixel diffs and real Supabase flows still to be checked on the Mac. See `phase 12 implementation plan.md` → UI-A.
+* **5.57** (2026-09-29, automated pass, not committed) — Phase 12 **UI-A code complete** (A-1 `8be6590` → A-4 `7a5e342`, wrap-up A-5): garden Sign in, Create account (+ invite), Forgot / set new password behind the garden flag, classic auth pages unchanged; tsc/lint/`next build` pass, AU pixel diffs and real Supabase flows still to be checked on the Mac. See `docs/plans/phase 12 implementation plan.md` → UI-A.
 * **5.56** (2026-09-27, automated pass, not committed) — Phase 12 **UI-5 done** (U5-1 `6e86063` → U5-6 `5f016d7`, fix `b467190`, wrap-up U5-7): per-word SRS state on `GET /topics/:id`, A6 beds sorted by due words, A7 live stage tiles/filter/next-due sort, "Water N due", garden Add word sheet, garden quiz with results and leech drill. Frontend tsc/lint/vitest/`next build` and backend tsc/jest pass; `garden:diff` A6/A7 not re-run (no browser on the VM). Collocation quiz → mission 3 moves to UI-6.
 * **5.55** (2026-09-26, not committed) — Phase 12 locale codes are now full tags everywhere: `en-SG`, `en-US`, `vi-VN`, `zh-CN` (message files `messages/<code>.json`, new `en-US.json`, profile values + `20260926_profile_locales_codes.sql`, cookie, `?locale=`, `PATCH /profiles/me`); old `en` / `vi` still read. Commit `452a893`.
 * **5.54** (2026-09-26, automated pass, not committed) — Phase 12 **UI-G built** (`d9ab4d8` → `92e86bb`): shared gardens GR1–GR7 as components, screens and reference pages (all 7 English and 7 Vietnamese ≤ 0.013%), fifth "Groups" tab for group members, aggregate-only backend (`20260926_group_garden.sql`: garden counts, activity, tricky patches, invite preview; 30 RLS assertions) and the live routes `/garden/groups`, `/garden/groups/[id]`, `/manage`, `/garden/join/[token]` on the existing group endpoints. Rain days aren't stored yet. Details: session report 2026-09-26, "UI-G pass".
 * **5.53** (2026-09-26, automated pass, not committed) — Phase 12 **UI-L built** (`33466be` → `4d6f4eb`): garden in English, 简体中文 and Tiếng Việt (profile → cookie → Accept-Language → en; en-SG/en-US/vi-VN/zh-CN formats), all garden copy through next-intl, `vi.json` from the canvas, `zh-CN.json` draft for native review, per-language fixture pages; all 11 Vietnamese references ≤ 0.088%, English unchanged (A7 0.738%, font decision); zh-CN screenshot check at 8 viewports; `profiles.ui_locale` / `meaning_locale` + `PATCH /api/v1/profiles/me`; Language sheet on A8. Details: session report 2026-09-26, "UI-L pass".
-* **5.52** (2026-09-26) — Phase 12 gains step **UI-L: Languages** (English, 简体中文, Tiếng Việt), done before UI-G, with English and Vietnamese as the pixel-checked reference languages. Groups design approved (G-design passed). References for GR1–GR7 and all Vietnamese screens committed in `5884ddf`. See `phase 12 implementation plan.md`, UI-L.
+* **5.52** (2026-09-26) — Phase 12 gains step **UI-L: Languages** (English, 简体中文, Tiếng Việt), done before UI-G, with English and Vietnamese as the pixel-checked reference languages. Groups design approved (G-design passed). References for GR1–GR7 and all Vietnamese screens committed in `5884ddf`. See `docs/plans/phase 12 implementation plan.md`, UI-L.
 * **5.51** (2026-09-26) — Phase 12 gains step **UI-G: Groups ("shared
   gardens")**. The Word Garden canvas never designed groups (only a group
   card on A4 and a "Group" chip on A6), so groups, roles, invites, join,
   sprints and the heatmap get 7 new artboards (GR1–GR7), a design gate,
   then a build to the same 100% fidelity rule. Classic group pages are
-  deleted in UI-8 instead of restyled. See `phase 12 implementation plan.md`.
-* **5.51** (2026-09-26, automated pass, not committed) — Phase 12 canvas fidelity: all 8 adult garden screens rebuilt to the design canvas and pixel-diffed against it (`061a08d` → `c058552`); 10 of 11 references at the noise floor, A7 0.74% from the decided Vietnamese fallback font only. Live `/garden` routes on existing data, `npm run garden:diff`. Details: `dygo_academy_session_report_2026-09-26.md`.
-* **5.50** (2026-09-26, automated pass, not committed) — Phase 12 UI-2 components finished (`f06702b` → `1063de0`): plant glyph + `stageFromSrs`, rating bar, review card, garden audio button, mission row, hero card, stage tile, word row, tab bar, bottom sheet, toast, and a Vitest runner (131 tests). G1 waits on the mockup PNGs and Dylan's check. Details: `dygo_academy_session_report_2026-09-26.md`.
+  deleted in UI-8 instead of restyled. See `docs/plans/phase 12 implementation plan.md`.
+* **5.51** (2026-09-26, automated pass, not committed) — Phase 12 canvas fidelity: all 8 adult garden screens rebuilt to the design canvas and pixel-diffed against it (`061a08d` → `c058552`); 10 of 11 references at the noise floor, A7 0.74% from the decided Vietnamese fallback font only. Live `/garden` routes on existing data, `npm run garden:diff`. Details: `docs/reports/dygo_academy_session_report_2026-09-26.md`.
+* **5.50** (2026-09-26, automated pass, not committed) — Phase 12 UI-2 components finished (`f06702b` → `1063de0`): plant glyph + `stageFromSrs`, rating bar, review card, garden audio button, mission row, hero card, stage tile, word row, tab bar, bottom sheet, toast, and a Vitest runner (131 tests). G1 waits on the mockup PNGs and Dylan's check. Details: `docs/reports/dygo_academy_session_report_2026-09-26.md`.
 * **5.49** (2026-09-26) — Added **Phase 12: Adult UI Rebuild ("Word
-  Garden")** with a companion `phase 12 implementation plan.md`, which
-  supersedes `ui rebuild implementation plan.md`. Records what the
+  Garden")** with a companion `docs/plans/phase 12 implementation plan.md`, which
+  supersedes `docs/plans/archive/ui rebuild implementation plan.md`. Records what the
   2026-09-25 overnight pass built (UI-0, UI-1, UI-2 part 1), maps every
   garden screen to FSRS data from Phase 10, and takes over Phase 11's
   frontend i18n (next-intl) and its Settings UI (as the A8 Me screen).
   Phase 11's household work (WS2) is unchanged and stays separate.
 * **5.48** (2026-09-25, overnight automated pass) — Adult UI rebuild started per
-  `ui rebuild implementation plan.md`: UI-0 (garden flag, `?ui=garden` cookie,
+  `docs/plans/archive/ui rebuild implementation plan.md`: UI-0 (garden flag, `?ui=garden` cookie,
   `(garden)` route group) and UI-1 (scoped tokens, fonts, next-intl,
   `/garden/_tokens`) committed, plus a first slice of UI-2 components and
   `/garden/_gallery`. Classic UI unchanged. Details:
-  `dygo_academy_session_report_2026-09-25.md`.
+  `docs/reports/dygo_academy_session_report_2026-09-25.md`.
 * **5.47** (2026-09-25, same day as 5.46) — Owner asked to simplify the
   migrations and rebuild the database from scratch. Migrations 001–021
   are squashed into `database/schema/` (6 ordered files) plus
@@ -609,7 +609,7 @@
   worst-first/attempts-tiebreak ranking logic for the wider shape.
 
   While wiring this up, found and fixed a real, unrelated doc gap in
-  `dygo_academy_api_surface.md`: `GET /api/v1/groups/:id/heatmap` — live
+  `docs/architecture/dygo_academy_api_surface.md`: `GET /api/v1/groups/:id/heatmap` — live
   since Module 8 shipped in the 8th pass — had never been added to that
   file's §2 "Live today" table at all, eleven passes' worth of drift. The
   file's own header count (37, then incorrectly "36" in the section body)
@@ -632,7 +632,7 @@
   live route. None of this has run against a real Postgres in this
   Docker-less sandbox — same standing limitation as every migration since
   the first pass — so §K passing for real is itself a new UAT item
-  (`dygo_academy_uat_checklist_2026-09-02.md` item 25).
+  (`docs/reports/dygo_academy_uat_checklist_2026-09-02.md` item 25).
 
   Did not touch the wireframes this pass (turns 12–14 already sketch this
   screen; the standing note from the 18th pass was explicit that another
@@ -645,7 +645,7 @@
   an open UAT question (item 23) rather than guessed at, since nothing in
   the BRD specifies whether that's in scope for this release or deferred
   like Module 7. See the nineteenth pass entry in
-  `dygo_academy_session_report_2026-09-01.md`.
+  `docs/reports/dygo_academy_session_report_2026-09-01.md`.
 * **5.16** (2026-09-01) — Eighteenth pass, still the same day, still ahead
   of tomorrow morning's UAT (2026-09-02). Full regression confirmed no
   drift from 5.15 (153/153 backend jest, clean `tsc`/lint both sides,
@@ -671,11 +671,11 @@
   balanced, 80 total `id=` anchors with no collisions, up from 77).
   Still unrenderable in this sandbox — five turns (10–14) now unverified
   in a real browser instead of four. Also caught and fixed a stale "47
-  RLS assertions" line in `dygo_academy_uat_checklist_2026-09-02.md`'s
+  RLS assertions" line in `docs/reports/dygo_academy_uat_checklist_2026-09-02.md`'s
   own summary section — the 17th pass's `009` migration raised the real
   count to 54 but that number never propagated past that pass's own
   checklist item 24. See the eighteenth pass entry in
-  `dygo_academy_session_report_2026-09-01.md`.
+  `docs/reports/dygo_academy_session_report_2026-09-01.md`.
 * **5.15** (2026-09-01) — Seventeenth pass, still the same day, still ahead
   of tomorrow morning's UAT (2026-09-02). Full regression confirmed no
   drift from 5.14 (153/153 backend jest, clean `tsc`/lint both sides,
@@ -706,12 +706,12 @@
   touching `004_seed_data.sql` (avoids perturbing any of that file's
   existing exact-count assertions elsewhere in the suite). Updated
   `database/apply-migrations.sh` to run 009 and
-  `dygo_academy_database_dictionary.md`'s RLS policy/function tables to
+  `docs/architecture/dygo_academy_database_dictionary.md`'s RLS policy/function tables to
   match. None of this has run against a real Postgres in this
   Docker-less sandbox — same standing limitation as every migration
   since the first pass — so section J passing for real is itself an
   open UAT item, added as item 24 in
-  `dygo_academy_uat_checklist_2026-09-02.md`.
+  `docs/reports/dygo_academy_uat_checklist_2026-09-02.md`.
 
   Also continued the wireframe work: added **turn 13** (screens 13a–13b)
   to `Dygo Academy Wireframes.html`, picking up the other half of turn
@@ -733,11 +733,11 @@
   full 124,775-character decoded document, and none of the 77 total
   `id=` anchors collide (up from 74). This sandbox still cannot render
   it in a real browser — now four unrenderable turns (10–13) instead of
-  three; `dygo_academy_uat_checklist_2026-09-02.md` item 23 updated
+  three; `docs/reports/dygo_academy_uat_checklist_2026-09-02.md` item 23 updated
   accordingly. `next build` not re-attempted — 14-for-14 hang standing,
   not re-tried a 15th time, same token-budget judgment call as passes
   12–16. See the seventeenth pass entry in
-  `dygo_academy_session_report_2026-09-01.md`.
+  `docs/reports/dygo_academy_session_report_2026-09-01.md`.
 * **5.14** (2026-09-01) — Sixteenth pass, still the same day, still
   ahead of tomorrow morning's UAT. Full regression confirmed no drift
   from 5.13 (153/153 backend jest, clean `tsc`/lint both sides). Two
@@ -790,11 +790,11 @@
   guard. Validated afterward the same three ways as turns 10-11: the new
   blob re-parses as JSON, all HTML tags balance across the full
   117,335-char decoded document, and none of the 74 total `id=` anchors
-  collide. Updated `dygo_academy_uat_checklist_2026-09-02.md` with a new
+  collide. Updated `docs/reports/dygo_academy_uat_checklist_2026-09-02.md` with a new
   section K covering the integration-test package and folded turn 12
   into item 23 alongside turns 10-11. `next build` not re-attempted —
   14-for-14 hang standing, unchanged. See the sixteenth pass entry in
-  `dygo_academy_session_report_2026-09-01.md`.
+  `docs/reports/dygo_academy_session_report_2026-09-01.md`.
 * **5.13** (2026-09-01) — Fifteenth pass, still the same day, still
   ahead of tomorrow morning's UAT (2026-09-02). Full regression confirmed
   no drift from 5.12 (153/153 backend jest, clean `tsc`/lint both sides,
@@ -815,7 +815,7 @@
   as turn 10. One genuinely new finding surfaced while writing this
   turn's captions, not just a restatement of turn 10: `tenants` has no
   `subscription_status`-shaped column today per
-  `dygo_academy_database_dictionary.md` — only `purchased_seats`/
+  `docs/architecture/dygo_academy_database_dictionary.md` — only `purchased_seats`/
   `active_seats_used`/`price_per_seat_cents` — so screens 11a/11b/11d
   imply a migration that doesn't exist yet; flagged in the turn's own
   opening note and folded into its "Try next" line rather than silently
@@ -828,7 +828,7 @@
   turns (10 and 11) instead of one; the UAT checklist's item 23 was
   updated accordingly. `next build` not re-attempted — 14-for-14 hang
   standing, unchanged. See the fifteenth pass entry in
-  `dygo_academy_session_report_2026-09-01.md`.
+  `docs/reports/dygo_academy_session_report_2026-09-01.md`.
 * **5.12** (2026-09-01) — Fourteenth pass, still the day of tomorrow
   morning's UAT. Full regression confirmed no drift from 5.11 (153/153
   backend jest, clean `tsc`/lint both sides). Backend-wide `TODO`/`FIXME`
@@ -849,7 +849,7 @@
   and no `id=` collides with the existing 61 anchors — this sandbox still
   cannot render it in a real browser to confirm visually. `next build`
   not re-attempted — 13-for-13 hang standing, unchanged. See the
-  fourteenth pass entry in `dygo_academy_session_report_2026-09-01.md`.
+  fourteenth pass entry in `docs/reports/dygo_academy_session_report_2026-09-01.md`.
 * **5.11** (2026-09-01) — Thirteenth pass, the day of tomorrow morning's
   UAT. Full regression run first (153/153 backend jest, clean `tsc`/lint
   both sides) confirmed no drift from 5.10. Searched for a new small
@@ -862,8 +862,8 @@
   updated to reflect the 12th pass shipping the former and disabling the
   latter in the real frontend), and replaced the ten scattered, serially
   "superseding" per-pass UAT checklist sections in
-  `dygo_academy_session_report_2026-09-01.md` with one linear,
-  deduplicated script, `dygo_academy_uat_checklist_2026-09-02.md`, that
+  `docs/reports/dygo_academy_session_report_2026-09-01.md` with one linear,
+  deduplicated script, `docs/reports/dygo_academy_uat_checklist_2026-09-02.md`, that
   also states plainly up front which three things (live-Postgres
   migrations/RLS, `next build`, real-browser behavior) have never
   actually run anywhere outside this Docker-less sandbox. Module 7
@@ -871,7 +871,7 @@
   deferred, still the standing top item for the first pass after UAT
   feedback lands. `next build` not re-attempted — 12-for-12 hang standing,
   unchanged. See the thirteenth pass entry in
-  `dygo_academy_session_report_2026-09-01.md`.
+  `docs/reports/dygo_academy_session_report_2026-09-01.md`.
 * **5.10** (2026-09-01) — Twelfth pass, same day as the eleventh, still
   ahead of tomorrow morning's UAT. Module 7 (Stripe seat billing) reasoning
   is unchanged from the 7th–11th passes — still deliberately deferred to
@@ -886,13 +886,13 @@
   topic-detail query `useTopic`'s existing 2.5s poll already watches. Also
   disabled (rather than left silently inert) the adjacent "Write it myself"
   button, a separate unbuilt feature. 2 new backend unit tests (153 total,
-  up from 151). `dygo_academy_api_surface.md` updated: the endpoint moved
+  up from 151). `docs/architecture/dygo_academy_api_surface.md` updated: the endpoint moved
   from "implied" to "live" (37 live, 13 implied), and the `GET /words/:id`
   implied row was annotated as possibly unneeded — the frontend actually
   polls `GET /topics/:id`, not a per-word route. `next build` was not
   re-attempted this pass (11-for-11 hang standing, unchanged, not
   re-verified a 12th time — token budget judgment call). See the twelfth
-  pass entry in `dygo_academy_session_report_2026-09-01.md`.
+  pass entry in `docs/reports/dygo_academy_session_report_2026-09-01.md`.
 * **5.9** (2026-09-01) — Eleventh pass, same day as the tenth, still ahead
   of tomorrow morning's UAT. Module 7 (Stripe seat billing) reasoning is
   unchanged from the 7th–10th passes — still deliberately deferred to
@@ -928,7 +928,7 @@
   occurrence across 11 sessions. Nothing this pass touched has run against
   a live Postgres/Redis stack or a real browser's IndexedDB/`online`
   event — same standing sandbox limitation as every earlier pass. See the
-  eleventh pass entry in `dygo_academy_session_report_2026-09-01.md`.
+  eleventh pass entry in `docs/reports/dygo_academy_session_report_2026-09-01.md`.
 * **5.8** (2026-09-01) — Tenth pass, evening before UAT. Closed the standing
   "roster shows no name for an invite-redeemed member" gap, open since the
   6th pass and precisely diagnosed (but not fixed) by the 9th:
@@ -951,7 +951,7 @@
   further. Not run against a live Postgres — same standing limitation as
   every earlier pass; the new migration and RLS section are unverified
   against a real database. See the 10th pass entry in
-  `dygo_academy_session_report_2026-09-01.md`.
+  `docs/reports/dygo_academy_session_report_2026-09-01.md`.
 * **5.7** (2026-09-01) — Ninth pass. Fixed a real, UAT-blocking bug: a
   freshly-registered user (anyone not one of the 5 seeded fixtures)
   couldn't create their first group at all, because `handle_new_auth_user()`
@@ -971,14 +971,14 @@
   exception). Module 7 (Stripe billing) deliberately untouched — flagged
   for the next pass. Added wireframe turn 9 (student analytics + teacher
   heatmap screens). 15 new backend unit tests (145 total). See the 9th
-  pass entry in `dygo_academy_session_report_2026-09-01.md`.
+  pass entry in `docs/reports/dygo_academy_session_report_2026-09-01.md`.
 * **5.6** (2026-09-01) — UAT-prep pass, no new module work: closed the
   known "`GET /groups/:id/members` has no email/display-name join" gap
   flagged since the 7th pass (`RosterPanel` showed a shortened user id).
   Also corrected two stale wireframe captions (turns 3c/3d) that still said
   their endpoints were "Implied, not built" long after both shipped. See
   status notes under §2 (Phase 1) and the 8th pass entry in
-  `dygo_academy_session_report_2026-09-01.md`.
+  `docs/reports/dygo_academy_session_report_2026-09-01.md`.
 * **5.5** (2026-09-01) — No new backend phase work; this pass closed the standing "no group-management frontend" gap (Phase 1's own status note below) and, more importantly, discovered and fixed that `(auth)/login`/`(auth)/register` had never been built — see status notes under §2 (Phase 1) for both.
 * **5.4** (2026-09-01) — Phase 3, Module 6 (Web Push & Habit Scheduling) marked code-complete — Phase 3 as a whole is now done. See status notes under §2.
 * **5.3** (2026-09-01) — Phase 3, Module 5 (Dynamic Multi-Modal Quiz Engine) marked code-complete; Module 6 (Push & Habit Scheduling) is still open. See status notes under §2. Also fixed a standing Phase 1 gap: the last-ADMIN-removal guard.
@@ -990,7 +990,7 @@
 
 ## 1. Executive Summary & Phasing Overview
 
-To successfully deliver **Dygo Academy** within a predictable timeline while maintaining high architectural integrity and strict SLOs (as detailed in `dygo_academy_final_master_brd.md` and `dygo_academy_complete_system_architecture_master.md`), development is organized into a **12-week, 6-sprint phased execution plan**.
+To successfully deliver **Dygo Academy** within a predictable timeline while maintaining high architectural integrity and strict SLOs (as detailed in `docs/product/dygo_academy_final_master_brd.md` and `docs/architecture/dygo_academy_complete_system_architecture_master.md`), development is organized into a **12-week, 6-sprint phased execution plan**.
 
 The core engineering principle is **"Foundations & Asynchronous Pipelines First $\rightarrow$ Retention & Practice Loop Second $\rightarrow$ Monetization & Enterprise Tooling Third."**
 
@@ -1050,7 +1050,7 @@ gantt
    * Configure Supabase JWT Guard with in-memory cryptographic verification (`<0.2ms` overhead).
    * Integrate Global `ValidationPipe` with `class-validator` DTOs.
    * Auto-generate interactive OpenAPI / Swagger docs at `/api/docs`.
-   * *Done — `com.dygoacademy.backend/src/modules/*`, `common/guards/supabase-jwt.guard.ts`, `main.ts`. Route implementations inside these modules are Phase 1+ work — see `dygo_academy_api_surface.md` for what's actually live today.*
+   * *Done — `com.dygoacademy.backend/src/modules/*`, `common/guards/supabase-jwt.guard.ts`, `main.ts`. Route implementations inside these modules are Phase 1+ work — see `docs/architecture/dygo_academy_api_surface.md` for what's actually live today.*
 
 3. ✅ **Asynchronous Queues & Cloud Storage**:
    * Configure Redis cluster with BullMQ (`enrichment-queue`, `notification-cron-queue`).
@@ -1070,11 +1070,11 @@ gantt
 * **Primary Objective**: Implement **Module 1** (Multi-Tenant Groups & RBAC) and **Module 2** (Automated AI Word Enrichment Engine).
 * **Status** (2026-09-01, updated): Module 1 backend is code-complete — 19
   live endpoints covering groups, roster/RBAC management, magic invites, and
-  topic CRUD + clone (`dygo_academy_api_surface.md` §2). Module 2's ingestion
+  topic CRUD + clone (`docs/architecture/dygo_academy_api_surface.md` §2). Module 2's ingestion
   endpoint (`POST /words`) and `EnrichmentProcessor` are both code-complete
   now too: dedup lookup, real Gemini 1.5 Flash calls for IPA/POS/synonyms/
   antonyms/examples, Gemini TTS for audio, R2/MinIO upload, `master_lexicon`
-  upsert (see `dygo_academy_api_surface.md` note (4) for the `.wav`-not-`.mp3`
+  upsert (see `docs/architecture/dygo_academy_api_surface.md` note (4) for the `.wav`-not-`.mp3`
   deviation and why). Frontend task 3 below (word creation modal + polling)
   is also done. **None of this has been run against a live
   Postgres/Redis/MinIO stack** — no Docker in the sandbox this work was done
@@ -1149,7 +1149,7 @@ gantt
   and FR-3.3's leech flag; the scoring math is isolated in
   `src/modules/srs/srs-algorithm.ts` as pure, unit-tested functions (24 new
   tests, 75 total). This also **settles the `recent_mistakes` decay question**
-  flagged in `dygo_academy_api_surface.md` §5.4 — recomputed from
+  flagged in `docs/architecture/dygo_academy_api_surface.md` §5.4 — recomputed from
   `review_logs` on every rating, not decayed on a schedule. Module 4 wires
   the Phase 0 flashcard scaffold (`components/flashcard/Flashcard.tsx`,
   `RatingButtons.tsx`) to real data via two new hooks
@@ -1200,7 +1200,7 @@ gantt
   Biggest design call: **no persisted quiz/session/attempt row** — a quiz
   item's id is deterministic and its correct answer always derived the same
   way, so grading needs no database memory of what was generated (see
-  `dygo_academy_api_surface.md` note (6) for the full reasoning). FR-5.3
+  `docs/architecture/dygo_academy_api_surface.md` note (6) for the full reasoning). FR-5.3
   ("drag-and-drop semantic pairing") is implemented as one-word-at-a-time
   multiple choice rather than a literal drag-and-drop board — flagged as a
   deliberate simplification, not a silent scope cut. The frontend's `/quiz`
@@ -1437,7 +1437,7 @@ Not equal-weight work, and Workstream 2 is materially riskier than the other two
 ### 🌱 Phase 12: Adult UI Rebuild ("Word Garden")
 * **Timeline**: Started 2026-09-25 (overnight automated pass). Nine steps, UI-0 to UI-8, with three gates (G1 components, G2 core loop in beta, G3 full QA).
 * **Primary Objective**: Replace every adult screen with the Word Garden design (words as plants, three daily missions, Mission complete / Weekly harvest / Welcome back screens) on iPhone and iPad, in English, Chinese and Vietnamese. It's built beside the classic UI behind `NEXT_PUBLIC_GARDEN_UI` and the `?ui=garden` cookie, becomes the default, and then the classic adult UI is deleted.
-* **Status** (2026-09-26): UI-0 (`1173901`) and UI-1 (`3b530d5`) built and committed; UI-2 part 1 (`4ebf713`, 7 of 18 components + `/garden/_gallery`). Classic UI unchanged. Full detail — screen-to-API mapping, backend additions per step, verification, rollout, open decisions and rules for automated passes — lives in the companion `phase 12 implementation plan.md`. Spec: `dygo_academy_ui_ux_design_system.md` v0.2.
+* **Status** (2026-09-26): UI-0 (`1173901`) and UI-1 (`3b530d5`) built and committed; UI-2 part 1 (`4ebf713`, 7 of 18 components + `/garden/_gallery`). Classic UI unchanged. Full detail — screen-to-API mapping, backend additions per step, verification, rollout, open decisions and rules for automated passes — lives in the companion `docs/plans/phase 12 implementation plan.md`. Spec: `docs/architecture/dygo_academy_ui_ux_design_system.md` v0.2.
 
 #### Relationship to Phases 10 and 11:
 * **Phase 10 (FSRS)** is the data model the garden shows: `New` = seed, `Learning`/`Relearning` = sprout, `Review` = flower, `mastered_at` = fruiting tree, `is_leech` = wilting. The review screen uses all four ratings (hold-to-rate is dropped), with per-rating interval previews computed server-side by `ts-fsrs`.

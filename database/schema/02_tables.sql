@@ -4,7 +4,7 @@
 --
 -- Conventions: tables snake_case plural; PK id uuid default gen_random_uuid();
 -- FK [singular_table]_id; enums snake_case with UPPERCASE literals.
--- Source of truth: dygo_academy_complete_system_architecture_master.md (ERD).
+-- Source of truth: docs/architecture/dygo_academy_complete_system_architecture_master.md (ERD).
 --
 -- Part of the squashed baseline schema (2026-09-25). It folds the final
 -- state of migrations 001–021 into one ordered set; the originals live in

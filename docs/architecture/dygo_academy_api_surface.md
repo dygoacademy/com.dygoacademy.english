@@ -13,7 +13,7 @@ Conflating them is how a roadmap quietly turns into a status report.
 | Tier | Count | Meaning |
 | :--- | :---: | :--- |
 | **Live** | 39 | Exists and responds today. Verified by direct code read (not yet re-verified against a running boot — see note below) 2026-09-01. |
-| **Specified** | 4 | Named verbatim in `dygo_academy_tech_spec_and_conventions.md` §3.4 or in `dygo_academy_complete_system_architecture_master.md`. The only endpoints committed to in writing. |
+| **Specified** | 4 | Named verbatim in `docs/architecture/dygo_academy_tech_spec_and_conventions.md` §3.4 or in `docs/architecture/dygo_academy_complete_system_architecture_master.md`. The only endpoints committed to in writing. |
 | **Implied** | 13 | Derived from the BRD's functional requirements. **Carries no authority** — review before treating as a plan. |
 
 > **The live API is the authority, not this file.** Swagger is generated from the
@@ -249,7 +249,7 @@ Conflating them is how a roadmap quietly turns into a status report.
 > untouched this pass — no UI consumes this route yet; the wireframe turns
 > 12–14 already sketch what one would look like, still unrenderable in
 > this sandbox). See the nineteenth-pass entry in
-> `dygo_academy_session_report_2026-09-01.md` for the full writeup.
+> `docs/reports/dygo_academy_session_report_2026-09-01.md` for the full writeup.
 
 ---
 
@@ -318,7 +318,7 @@ it answers `404`, not `401`.
 | `DELETE` | `/api/v1/notifications/schedules/:id` | bearer | Removes a reminder schedule. |
 | `POST` | `/api/v1/notifications/groups/:groupId/sprint` | bearer | FR-6.2 — ADMIN-only, immediate (not tick-scheduled) push to every other group member's registered devices. `403` via an explicit `has_group_role` check — see note (7) for why this one doesn't lean on RLS like most writes here. **`429` after one call per group per 60s** (11th pass, `SprintRateLimitGuard`) — was unrated since the 5th pass, flagged as a known gap through the 10th. **UI-G RD-2:** optional `wordsPerGardener` (5/10/20, default 10); every sprint first stores today's rain day (`start_group_rain_day`) and the response adds `rainDay: { id, endsAt, wordsPerGardener }`. A second one the same local day (admin's time zone) is `409` "A rain day is already running today" and no push is sent. Backwards compatible for the classic trigger. |
 | `GET` | `/api/v1/groups/:id/heatmap` | bearer | FR-8.2 — class-wide mistake heatmap. **Missing from this table since Module 8 shipped (8th–18th passes); added by the 19th pass, which found the gap while adding the row below.** ADMIN only (not WRITE, despite §4's original guess) via an explicit `has_group_role` check, re-checked inside `public.group_word_heatmap()` (007) itself. Registered on `AnalyticsController` under the `groups` path, not its own `analytics` prefix — see that controller's header comment. |
-| `GET` | `/api/v1/analytics/tenant/heatmap` | bearer | **New (19th pass).** FR-8.2 "across cohorts" — the tenant-wide widening of the row above, spanning every group in the caller's own tenant rather than one. Tenant admin only (`is_tenant_admin()`, the same role 009's RLS expansion made consistent), re-checked inside `public.tenant_word_heatmap()` (010) itself. Takes no `tenantId` param — always the caller's own, resolved server-side via `current_user_tenant_id()`. Narrower than §4's original `/analytics/tenant` guess (that row envisioned a broader institution-wide retention-report persona table, FR-8.1-shaped, and the retention curve itself is still unbuilt). Path chosen as `/analytics/tenant/heatmap`, not the bare guessed `/analytics/tenant`, so the two don't collide if that broader endpoint is ever built later — see note (8) and the nineteenth-pass entry in `dygo_academy_session_report_2026-09-01.md`. |
+| `GET` | `/api/v1/analytics/tenant/heatmap` | bearer | **New (19th pass).** FR-8.2 "across cohorts" — the tenant-wide widening of the row above, spanning every group in the caller's own tenant rather than one. Tenant admin only (`is_tenant_admin()`, the same role 009's RLS expansion made consistent), re-checked inside `public.tenant_word_heatmap()` (010) itself. Takes no `tenantId` param — always the caller's own, resolved server-side via `current_user_tenant_id()`. Narrower than §4's original `/analytics/tenant` guess (that row envisioned a broader institution-wide retention-report persona table, FR-8.1-shaped, and the retention curve itself is still unbuilt). Path chosen as `/analytics/tenant/heatmap`, not the bare guessed `/analytics/tenant`, so the two don't collide if that broader endpoint is ever built later — see note (8) and the nineteenth-pass entry in `docs/reports/dygo_academy_session_report_2026-09-01.md`. |
 | `PATCH` | `/api/v1/profiles/me` | bearer | **New (Phase 12 UI-L, 2026-09-26).** The caller's language settings: `uiLocale` (garden app locale: `en-US`, `vi-VN`, `zh-CN`) and `meaningLocale` (the review card's extra meaning line: `vi-VN`, `zh-CN`); full locale codes since 2026-09-26 (`20260926_profile_locales_codes.sql` converts stored `en` / `vi`). Omit a field to keep it, send `null` to clear it; an empty body is `400`, any other code is `400` (validation). Own row only — an RLS-scoped `UPDATE` (`profiles_update_self`), `404` if no row comes back. Returns `{ id, ui_locale, meaning_locale }`. Columns and check constraints: `database/migrations/20260926_profile_locales.sql`. Nothing wrote `profiles.timezone` through the API before this either; timezone stays out of this endpoint until the Phase 11 WS1 setting exists. **UI-6 U6-4 (2026-10-01):** also accepts `englishVariety` (`en-US` \| `en-GB`) and `dailyGoalMinutes` (integer 1–120); both not nullable (`null` is `400`). Returns `{ id, ui_locale, meaning_locale, english_variety, daily_goal_minutes }`. |
 | `GET` | `/api/v1/profiles/me` | bearer | **New (UI-6 U6-4, 2026-10-01).** The caller's settings: `{ id, ui_locale, meaning_locale, english_variety, daily_goal_minutes }`. RLS-scoped read, `404` if no row. |
 | `GET` | `/api/v1/profiles/me/onboarding` | bearer | **New (onboarding OB1–OB5, 2026-10-08, branch `feature/onboarding-ob1-ob5`).** `{ onboarded_at, cefr_level, study_goal, target_band, first_topic_id }` (`target_band` a number, `cefr_level` text). `onboarded_at` null = not finished. RLS-scoped read, `404` if no row. Needs `20261008_onboarding.sql`. |
@@ -559,8 +559,8 @@ month gets them without doing anything.
 
 - **Live surface** — read from the running application's OpenAPI document
   (`/api/docs-json`) on 30 August 2026, not from reading source.
-- **Specified endpoints** — quoted from `dygo_academy_tech_spec_and_conventions.md` §3.4
-  and `dygo_academy_complete_system_architecture_master.md` §§4 and 6.
+- **Specified endpoints** — quoted from `docs/architecture/dygo_academy_tech_spec_and_conventions.md` §3.4
+  and `docs/architecture/dygo_academy_complete_system_architecture_master.md` §§4 and 6.
 - **Implied endpoints** — inference from the functional requirements in
-  `dygo_academy_final_master_brd.md`. These carry no authority; review them
+  `docs/product/dygo_academy_final_master_brd.md`. These carry no authority; review them
   before they become a plan.

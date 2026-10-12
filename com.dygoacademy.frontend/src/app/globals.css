@@ -62,7 +62,7 @@
 /*
  * 3D transform utilities for the flashcard player (Phase 2 —
  * src/components/flashcard). Scaffolded now per the naming convention in
- * dygo_academy_tech_spec_and_conventions.md §3.3: custom classes here must
+ * docs/architecture/dygo_academy_tech_spec_and_conventions.md §3.3: custom classes here must
  * be kebab-case.
  */
 @layer utilities {
@@ -85,8 +85,8 @@
 
 /*
  * ---------------------------------------------------------------------
- * Word Garden tokens (ui rebuild implementation plan.md, UI-1).
- * Values from dygo_academy_ui_ux_design_system.md v0.2 §4–§7 and §12.
+ * Word Garden tokens (docs/plans/archive/ui rebuild implementation plan.md, UI-1).
+ * Values from docs/architecture/dygo_academy_ui_ux_design_system.md v0.2 §4–§7 and §12.
  *
  * On :root and [data-ui="garden"] (set by GardenRoot). UI-8 U8-3 deleted
  * the classic palette; the shadcn colour names in tailwind.config.ts now

@@ -38,7 +38,7 @@ export async function generateViewport(): Promise<Viewport> {
 }
 
 /**
- * Word Garden route group (ui rebuild implementation plan.md, UI-0/UI-1).
+ * Word Garden route group (docs/plans/archive/ui rebuild implementation plan.md, UI-0/UI-1).
  *
  * The only signed-in adult UI since UI-8 U8-3 deleted the classic
  * dashboard group. Re-checks the session server-side as defense in

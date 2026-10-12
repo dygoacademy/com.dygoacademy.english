@@ -9,7 +9,7 @@ import {
 import { DatabaseService } from '../../database/database.service';
 
 /**
- * UI-G RD-2 (phase 12 implementation plan.md, "store rain days") — the
+ * UI-G RD-2 (docs/plans/phase 12 implementation plan.md, "store rain days") — the
  * backend side of `migrations/20260927_group_rain_days.sql`. A rain day is
  * a group-wide goal ("water N words of the shared beds today") that ends at
  * 23:59 in the starting ADMIN's time zone. One per group per local day,

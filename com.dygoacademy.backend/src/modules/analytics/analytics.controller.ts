@@ -8,7 +8,7 @@ import { HeatmapEntry } from './heatmap-aggregator';
 /**
  * Registered under the `groups` path (not its own `analytics` prefix) so
  * the route reads as `GET /api/v1/groups/:id/heatmap` per
- * `dygo_academy_api_surface.md` — a group-scoped resource, same URL shape
+ * `docs/architecture/dygo_academy_api_surface.md` — a group-scoped resource, same URL shape
  * as `GroupsController`'s `:id/members` and `:id/invites`. Nest allows two
  * controllers to share a path prefix as long as their routes don't
  * literally collide; this module is kept separate from `GroupsModule`

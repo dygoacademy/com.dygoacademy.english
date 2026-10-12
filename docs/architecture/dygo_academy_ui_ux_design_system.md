@@ -4,7 +4,7 @@
 **Date**: 2026-09-25
 **Status**: Draft for review. Nothing here is built yet.
 **Source of truth for visuals**: the "Dygo Word Garden" design canvas (Adult page: A1–A8, Kids page: 1–4)
-**Companion documents**: `dygo_academy_frontend_architecture.md` (§16 breakpoints, §17 `CONTENT_WIDTH`), `dygo_academy_tech_spec_and_conventions.md`
+**Companion documents**: `docs/architecture/dygo_academy_frontend_architecture.md` (§16 breakpoints, §17 `CONTENT_WIDTH`), `docs/architecture/dygo_academy_tech_spec_and_conventions.md`
 
 **Changelog**
 * **0.2** (2026-09-25): learners come from four markets: US, Singapore, China and Vietnam. Added §14 Localization (UI language vs meaning language, English variety, per-locale formats, China delivery). Principle 6, §4.1, §4.3 and §13 now cover all four languages instead of Vietnamese only. Sections after §13 renumbered.

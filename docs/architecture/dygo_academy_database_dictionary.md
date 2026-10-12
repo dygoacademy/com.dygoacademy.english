@@ -864,7 +864,7 @@ Phase 13 SE5 (2026-10-06): a ripe word the learner said at 90%+ from a bed's "Re
 
 #### Voice donation: `voice_donation_consents`, `voice_donors`, `voice_donations`, `voice_donation_deletions`
 
-`20261011_voice_donation.sql` (`Voice donation consent plan.md` §4). A learner who turns on "Help improve Dygo's speech checker" (A8e, or the AU2 box) has an encrypted copy of each scored speaking / pronunciation recording kept in the private bucket `VOICE_DONATION_BUCKET` (default `voice-donations`), under a random donor code. The API offers it only with `VOICE_DONATION_ENABLED=true`.
+`20261011_voice_donation.sql` (`docs/plans/Voice donation consent plan.md` §4). A learner who turns on "Help improve Dygo's speech checker" (A8e, or the AU2 box) has an encrypted copy of each scored speaking / pronunciation recording kept in the private bucket `VOICE_DONATION_BUCKET` (default `voice-donations`), under a random donor code. The API offers it only with `VOICE_DONATION_ENABLED=true`.
 
 | Table | Columns | Written by | RLS |
 | :--- | :--- | :--- | :--- |

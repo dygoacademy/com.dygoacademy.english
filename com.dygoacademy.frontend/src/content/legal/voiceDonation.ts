@@ -2,7 +2,7 @@ import type { LegalBlock, LegalContent, LegalRegion, LegalSection } from './type
 
 /**
  * Voice donation text for the Terms and the Privacy Policy (plan
- * `Voice donation consent plan.md` §5, canvas LG boards 2026-10-11:
+ * `docs/plans/Voice donation consent plan.md` §5, canvas LG boards 2026-10-11:
  * LegalTermsDesktop, LegalPrivacyDesktop, LegalTerms/PrivacyPhoneVi; zh-CN
  * is ours). Shown only with NEXT_PUBLIC_VOICE_DONATION on: the pages then
  * describe the optional donation; otherwise they keep saying recordings

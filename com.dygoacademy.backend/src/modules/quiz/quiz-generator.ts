@@ -9,7 +9,7 @@
  * ## Design decisions made here (none of these are pinned by the BRD)
  *
  * **No persisted quiz/session/attempt row.** Checked
- * `dygo_academy_database_dictionary.md` — no such table exists, and
+ * `docs/architecture/dygo_academy_database_dictionary.md` — no such table exists, and
  * `StartSessionDto`'s own precedent (Module 3/4, Phase 2) already treats
  * "which cards, in what shape" as something that can be recomputed rather
  * than stored. Applied the same idea here, one step further: a quiz item's

@@ -1,7 +1,7 @@
 import { ApiPropertyOptional, ApiProperty } from '@nestjs/swagger';
 import { IsBoolean, IsOptional, IsString, Length } from 'class-validator';
 
-/** Body for `POST /api/v1/groups` (dygo_academy_api_surface.md §4, Module 1). */
+/** Body for `POST /api/v1/groups` (docs/architecture/dygo_academy_api_surface.md §4, Module 1). */
 export class CreateGroupDto {
   @ApiProperty({ description: 'Class or workspace name.', example: "Sarah's IELTS Cohort" })
   @IsString()

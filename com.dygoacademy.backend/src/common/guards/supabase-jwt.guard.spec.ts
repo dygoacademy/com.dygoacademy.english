@@ -8,7 +8,7 @@ import { SupabaseJwtGuard } from './supabase-jwt.guard';
 /**
  * This guard is the only thing standing between an unauthenticated caller
  * and the entire API (it's registered globally as an APP_GUARD — see
- * dygo_academy_api_surface.md §6, "Auth is opt-out"). A regression here is
+ * docs/architecture/dygo_academy_api_surface.md §6, "Auth is opt-out"). A regression here is
  * a full-tenant data leak, not a 500, so it gets the most thorough test
  * coverage in the backend even though it is the smallest module.
  */

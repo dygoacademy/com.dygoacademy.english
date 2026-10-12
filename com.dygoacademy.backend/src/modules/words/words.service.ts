@@ -78,7 +78,7 @@ export class WordsService {
   /**
    * Inserts the word row and returns immediately with status ENRICHING —
    * the Gemini/TTS work happens in EnrichmentProcessor, off the request path,
-   * which is what keeps this under the <50ms SLO (dygo_academy_api_surface.md
+   * which is what keeps this under the <50ms SLO (docs/architecture/dygo_academy_api_surface.md
    * §3).
    *
    * No app-level permission check here on purpose: `topic_words_insert_write`

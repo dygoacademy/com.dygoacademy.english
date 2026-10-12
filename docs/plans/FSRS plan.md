@@ -1,6 +1,6 @@
 # Phase 10 Implementation Plan — FSRS Scheduler (Replaces SM-2)
 
-Developer-facing companion to `dygo_academy_master_project_schedule.md`'s Phase 10 section (the *why*: scope, blockers, sequencing). This file has the *how*: real files, real migrations, real signatures, real numbers. Same companion-plan convention `phase 9 implementation plan.md` uses: summarize it back into the master schedule and retire it once Phase 10 closes.
+Developer-facing companion to `docs/product/dygo_academy_master_project_schedule.md`'s Phase 10 section (the *why*: scope, blockers, sequencing). This file has the *how*: real files, real migrations, real signatures, real numbers. Same companion-plan convention `phase 9 implementation plan.md` uses: summarize it back into the master schedule and retire it once Phase 10 closes.
 
 **Renumbering note (2026-09-25)**: the former Phase 10 (Locale, Timezone, Household Profiles & i18n) is now **Phase 11** — see `phase 11 implementation plan.md`. FSRS lands first because Phase 11's Workstream 2 rewrites RLS on `user_word_srs`/`review_logs`. Changing those tables' columns once, before that RLS rewrite, is cheaper than changing them on both sides of it.
 
@@ -272,9 +272,9 @@ Every site that hard-codes `repetitions >= MASTERY_THRESHOLD` switches to `stabi
 
 ### 4.1 Docs updated in the same change as step C
 
-* `dygo_academy_final_master_brd.md` — **FR-3.1** (the SM-2 EF formula) is replaced by "FSRS-6 memory model (stability, difficulty, retrievability) with a target retention of R"; **FR-3.2** keeps the four buttons, with their meaning restated as FSRS grades and "< 10 min" as the relearning step. FR-3.3 and FR-3.4 are unchanged.
-* `dygo_academy_api_surface.md` — `/srs/rate` row, and §5.4's "SM-2 `q` mapping" note.
-* `dygo_academy_database_dictionary.md` — `user_word_srs` column list (drop the "SM-2 floor" note at `ease_factor`).
+* `docs/product/dygo_academy_final_master_brd.md` — **FR-3.1** (the SM-2 EF formula) is replaced by "FSRS-6 memory model (stability, difficulty, retrievability) with a target retention of R"; **FR-3.2** keeps the four buttons, with their meaning restated as FSRS grades and "< 10 min" as the relearning step. FR-3.3 and FR-3.4 are unchanged.
+* `docs/architecture/dygo_academy_api_surface.md` — `/srs/rate` row, and §5.4's "SM-2 `q` mapping" note.
+* `docs/architecture/dygo_academy_database_dictionary.md` — `user_word_srs` column list (drop the "SM-2 floor" note at `ease_factor`).
 * `README.md` — spaced-repetition description.
 * `Change Log.md` — one entry per step (A–D).
 

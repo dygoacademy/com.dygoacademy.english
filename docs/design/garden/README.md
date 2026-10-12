@@ -53,7 +53,7 @@ Every screen above also has a **Vietnamese reference**, `<name>-vi` (for example
 
 ## Languages
 
-The app ships in **English (`en-US`), Simplified Chinese (`zh-CN`) and Vietnamese (`vi-VN`)** (full locale codes since 2026-09-26; the old `en` / `vi` still work in `?locale=` and `--locale`); see `phase 12 implementation plan.md`, step UI-L.
+The app ships in **English (`en-US`), Simplified Chinese (`zh-CN`) and Vietnamese (`vi-VN`)** (full locale codes since 2026-09-26; the old `en` / `vi` still work in `?locale=` and `--locale`); see `docs/plans/phase 12 implementation plan.md`, step UI-L.
 
 - **Vietnamese references use Be Vietnam Pro for body text** (re-exported 2026-10-04). Since Dylan's fix on 2026-10-03, Vietnamese pages draw every body letter in Be Vietnam Pro (`globals.css`, `:lang(vi)`), because the DM Sans-first stack mixed two fonts inside one word (DM Sans drew ế, ỗ, ố; Be Vietnam Pro drew ệ, ộ, ư, đ). The canvas still draws them DM Sans first, so `tools/render.js` swaps the body stack for every `vi` job (`withVietnameseBody`); headings (Fraunces, Baloo 2) and the canvas sources are unchanged. This is a deliberate difference from the canvas files: line breaks can move (e.g. the SP2 countdown hint wraps to two lines).
 - **English and Vietnamese are the two reference languages.** Both must match their references (same pixel-diff rule). The Vietnamese references fix the translations, the shortened labels and the two layout tweaks the canvas made for Vietnamese (topic chips and the Weekly Harvest "Hôm nay" label don't wrap).

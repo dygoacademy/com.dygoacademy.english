@@ -1,5 +1,5 @@
 /**
- * Voice donation (`Voice donation consent plan.md`, design CHANGELOG
+ * Voice donation (`docs/plans/Voice donation consent plan.md`, design CHANGELOG
  * 2026-10-11): A8e Privacy & data, the AU2 box, the A8 row and the Pond's
  * "kept" privacy line. Off unless NEXT_PUBLIC_VOICE_DONATION is the literal
  * "true" (baked in at `next build`; UAT only until the Terms / Privacy text

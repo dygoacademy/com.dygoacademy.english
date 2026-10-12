@@ -11,7 +11,7 @@
 * `phase/phase 13/PHASE-13-SPEAKING-PLAN.md`: the handover (screens, data, scoring algorithm, tasks T0–T10, copy keys)
 * `phase/phase 13/phase13-speaking-design/`: the 8 phone screens (`SpeakListen`, `SpeakRecording`, `SpeakCompare`, `SpeakDone`, each en + `Vi`), the "Adult · Speaking" page of the canvas
 * `phase/phase 13/PHASE-13-RECORD.md`: decisions (D1–D7 outcomes, the decisions table, G3 / S15 / S16 / G6 / M4 / entry points), the QA matrix, the speech-scorer and calibration notes, the to-do list and the session log. Moved there on 2026-10-06 from `phase/phase 13/PHASE-13-RECORD.md` and the record's session log (deleted; in git history)
-* `dygo_academy_api_surface.md`, `dygo_academy_database_dictionary.md`: updated in the same commit as each backend step
+* `docs/architecture/dygo_academy_api_surface.md`, `docs/architecture/dygo_academy_database_dictionary.md`: updated in the same commit as each backend step
 
 ---
 
@@ -173,7 +173,7 @@ Rules for every task:
 | Task | What | Files (expected) | Done when |
 | --- | --- | --- | --- |
 | **T0** | Discovery: stack, how Review "Listen" gets audio, where audio is served (China?), native wrapper or not, test setup, words/topics tables, differences from the handover (§3), D1 options, risks | `phase/phase 13/PHASE-13-RECORD.md` | Notes committed; no other changes |
-| **T1** | Migration for both tables + RLS + indexes; `rls_speaking_test.sql` wired into `apply-migrations.sh --test`; DB dictionary | `database/migrations/20261004_speaking.sql`, `database/tests/rls_speaking_test.sql`, `database/apply-migrations.sh`, `dygo_academy_database_dictionary.md` | `--test` passes: user A can't read user B's attempts; nobody can write items |
+| **T1** | Migration for both tables + RLS + indexes; `rls_speaking_test.sql` wired into `apply-migrations.sh --test`; DB dictionary | `database/migrations/20261004_speaking.sql`, `database/tests/rls_speaking_test.sql`, `database/apply-migrations.sh`, `docs/architecture/dygo_academy_database_dictionary.md` | `--test` passes: user A can't read user B's attempts; nobody can write items |
 | **T2** | `scripts/speaking/generate` (backend scripts folder, repo style): for each word in a bed, take the first example sentence, get UK + US audio **with word timings** (D1), upload to R2 with deterministic keys, build timings (target syllables from IPA), upsert `speaking_items`. `--dry-run`; no overwrite without `--force`. Zod/schema check of timings. Seed Environment. API: `GET /speaking/topics/:topicId/session` (5 items, due/new first) + `POST /speaking/attempts`; API doc; `src/types/speaking.ts` | script, `modules/speaking/**` (backend), docs, types | 5 Environment items with playable UK/US audio and valid timings. With no TTS credentials: script + schema + one fixture item with a local test clip, then stop and log it |
 | **T3** | Audio core (§6) + a dev-only page that records and replays, reached only by Dylan on UAT after deploy (no local `next dev`) | `src/lib/speaking/audio.ts`, hooks, dev page | Unit tests for envelope/resample pass; Dylan confirms record + replay on iPhone Safari |
 | **T4** | Scorer (§5) | `src/lib/speaking/envelopeScorer.ts`, `constants.ts`, tests | The four synthetic tests pass; run time logged |

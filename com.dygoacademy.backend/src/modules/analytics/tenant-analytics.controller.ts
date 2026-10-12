@@ -6,7 +6,7 @@ import { AnalyticsService } from './analytics.service';
 import { TenantHeatmapEntry } from './heatmap-aggregator';
 
 /**
- * `dygo_academy_api_surface.md` §4 originally guessed `GET /analytics/tenant`
+ * `docs/architecture/dygo_academy_api_surface.md` §4 originally guessed `GET /analytics/tenant`
  * for a broader, still-unbuilt "institution-wide retention reports" persona
  * table (FR-8.1-shaped). This route ships the narrower, already-specified
  * FR-8.2 "across cohorts" scope instead — the tenant-wide widening of

@@ -9,7 +9,7 @@ import { CONTENT_WIDTH } from '@/constants/layout';
  * in English, Chinese and Vietnamese). The folder is `%5Ftokens` because
  * a plain `_tokens` folder is private (non-routable) in the App Router.
  *
- * The hex values below are copied from dygo_academy_ui_ux_design_system.md
+ * The hex values below are copied from docs/architecture/dygo_academy_ui_ux_design_system.md
  * on purpose: each swatch paints the CSS variable, so a swatch that
  * doesn't match its printed hex means globals.css drifted from the spec.
  */

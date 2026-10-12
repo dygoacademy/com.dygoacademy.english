@@ -7,7 +7,7 @@ import type { GroupRole } from '@/types';
 
 /**
  * UI-G reads for the garden's group screens (backend GroupGardenService,
- * dygo_academy_api_surface.md). Aggregates only: nothing here carries
+ * docs/architecture/dygo_academy_api_surface.md). Aggregates only: nothing here carries
  * another learner's progress. The shapes live here rather than in
  * types/group.ts until that file's other uncommitted edits land.
  */

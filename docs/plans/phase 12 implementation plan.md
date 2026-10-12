@@ -5,11 +5,11 @@
 **Owner**: Dylan
 **Status** (2026-10-03): Home page v2: **G-home passed** (Dylan approved the boards, the Vietnamese copy and the word meanings), references committed in `f254fbd`; HP-6 … HP-11 scheduled overnight 10-04 (02:00 → 08:15 SGT). HP-3/HP-4 (v1) are folded into HP-11. **Status** (2026-10-02): **Phase 12 done in code** apart from Dylan's checks. UI-8 finished (U8-1 … U8-6, `bc999be` → `bac901a`): the classic UI is deleted, the garden is the only signed-in UI at the final short URLs, old links 308-redirect; tsc/lint/Vitest green. Dylan to do: deploy, `next build` on the Mac, `npx playwright test` (ui), `garden:diff --locale en-US,vi-VN` on all references, real iPhone + iPad on the new URLs incl. old `/garden/...` and `/study` redirects. Earlier: UI-0 … UI-6, UI-L, UI-G, UI-A done; UI-4 beta week 2026-10-02 → 10-09 and UI-7 continue separately.
 **Companion documents**:
-* `dygo_academy_master_project_schedule.md`: the Phase 12 section (summary, status, sequencing)
-* `dygo_academy_ui_ux_design_system.md` v0.2: **the spec**. Tokens §4–§7, breakpoints §2, screens §10, components §11, localization §14.
+* `docs/product/dygo_academy_master_project_schedule.md`: the Phase 12 section (summary, status, sequencing)
+* `docs/architecture/dygo_academy_ui_ux_design_system.md` v0.2: **the spec**. Tokens §4–§7, breakpoints §2, screens §10, components §11, localization §14.
 * The "Dygo Word Garden" design canvas, Adult page (A1–A8): **the visual reference**
-* `dygo_academy_session_report_2026-09-25.md`: what the first build pass did and assumed
-* `ui rebuild implementation plan.md`: the first draft of this plan. It's **superseded by this file** and kept only because the 2026-09-25 pass and its report point at it.
+* `docs/reports/dygo_academy_session_report_2026-09-25.md`: what the first build pass did and assumed
+* `docs/plans/archive/ui rebuild implementation plan.md`: the first draft of this plan. It's **superseded by this file** and kept only because the 2026-09-25 pass and its report point at it.
 
 ---
 
@@ -38,7 +38,7 @@ Sizes are rough estimates for one developer working with Claude: S = 2–3 days,
 
 ### Design fidelity: 100% match with the canvas
 
-**The garden UI must match the "Dygo Word Garden" canvas 100%**: layout, spacing, sizes, colours, fonts, radii, shadows, icons, illustrations and copy. Where the code, this plan or `dygo_academy_ui_ux_design_system.md` disagree with the canvas, **the canvas wins**.
+**The garden UI must match the "Dygo Word Garden" canvas 100%**: layout, spacing, sizes, colours, fonts, radii, shadows, icons, illustrations and copy. Where the code, this plan or `docs/architecture/dygo_academy_ui_ux_design_system.md` disagree with the canvas, **the canvas wins**.
 
 The canvas is exported into the repo at `docs/design/garden/` (2026-09-26): PNG references at 390 × 844 @2x, static HTML with every exact value, the artboard sources, and a script to re-export. `docs/design/garden/README.md` explains how each screen is checked: a flag-only fixture page per screen with the canvas's sample data, and a Playwright pixel diff that must stay at or below 0.5%, with anti-aliasing the only difference allowed.
 
@@ -153,7 +153,7 @@ Built: scoped tokens, the responsive type scale, fonts, `GARDEN_CONTENT_WIDTH`, 
 
 Done in part 1 (`4ebf713`): `Button` (primary / secondary / forest, pressed, disabled, loading), `IconButton`, `Chip`, `Card`, `StatTile`, `Switch`, `ProgressVine`, `gcn()`, and `/garden/_gallery`.
 
-Done in parts 2–5 (2026-09-26, see `dygo_academy_session_report_2026-09-26.md`):
+Done in parts 2–5 (2026-09-26, see `docs/reports/dygo_academy_session_report_2026-09-26.md`):
 - [x] `PlantGlyph`: seed, sprout, flower, tree, wilting, thirsty drop; sizes 24, 32, 40, 56, 72; drip/bloom animation that respects reduced motion. `stageFromSrs(fsrs_state, mastered_at, is_leech)` with unit tests (`f06702b`)
 - [x] `RatingBar`: 4 buttons with intervals; disabled while saving; keys 1–4 with hints after keyboard use (`f06702b`)
 - [x] `ReviewCard`: chips → word + IPA + audio → answer (meaning, meaning-language line with its own `lang`, example, collocations); hidden and shown states (`6ed48f0`)
@@ -198,7 +198,7 @@ Small passes, **one commit each**, 75 minutes apart, so none runs out of budget.
 Backend:
 - [x] Plant-stage counts in `GET /srs/stats` (`e53f988`, U4-2) (`new`, `learning` = Learning + Relearning, `review`, `mastered`), in the learner's timezone like the existing stats
 - [x] Interval preview per rating on each `DueCard` (`interval_preview: { AGAIN, HARD, GOOD, EASY }` as due timestamps), from `ts-fsrs` `repeat()` in `fsrs-scheduler.ts`, with unit tests next to `fsrs-scheduler.spec.ts` (`df9125e`, `238c10d`; returned as formatted intervals; preview-equals-rate test added in U4-1 `365a13c`)
-- [x] Update `dygo_academy_api_surface.md` and `types/srs.ts` in the same change
+- [x] Update `docs/architecture/dygo_academy_api_surface.md` and `types/srs.ts` in the same change
 
 Frontend:
 - [x] (U4-3 `4b701fd`, U4-4 `6e7eb53`) **A1 Today's Garden** on real data: greeting, streak, hero garden (thirsty / ripe / wilting counts), missions card, the primary "Continue" button, "ripens tomorrow"
@@ -218,7 +218,7 @@ Found 2026-09-30 (review of `df9125e`): the rating previews can disagree with `r
 | Step | What | Files (expected) | Status |
 | --- | --- | --- | --- |
 | **U4-1** | Previews match `rate()`: apply `gradeFlashcard(rating, isNewCard)` before scheduling each preview (so EASY on a new card previews the GOOD interval) and pass the row's real `learning_steps` (select it in the due-cards query if missing). New tests: for a New, Learning, Review and Relearning card, `computeRatingIntervals(card)[r]` equals `formatInterval(schedule(card, gradeFlashcard(r, isNew), now).card.dueAt)` for all four ratings. | `com.dygoacademy.backend/src/modules/srs/fsrs-scheduler.ts` (+ spec), `srs.service.ts` (+ spec) | ✅ `365a13c` |
-| **U4-2** | `GET /srs/stats` gains `stage_counts: { new, learning, review, mastered }` inside `computeSrsSummary` (same query style and RLS as today). `new` = the learner's words with no `user_word_srs` row or `fsrs_state = 'New'` (same rule as A7's `stageFromSrs`: never studied → seed); `learning` = Learning + Relearning; `review` = Review with `mastered_at is null`; `mastered` = `mastered_at is not null`. Leeches stay counted in their stage (A7 rule). Update `dygo_academy_api_surface.md` and frontend `src/types/srs.ts` in the same commit. Jest. | `srs.service.ts` (+ spec), `notification.processor.spec.ts` only if its mock breaks, API doc, `com.dygoacademy.frontend/src/types/srs.ts` | ✅ `e53f988` |
+| **U4-2** | `GET /srs/stats` gains `stage_counts: { new, learning, review, mastered }` inside `computeSrsSummary` (same query style and RLS as today). `new` = the learner's words with no `user_word_srs` row or `fsrs_state = 'New'` (same rule as A7's `stageFromSrs`: never studied → seed); `learning` = Learning + Relearning; `review` = Review with `mastered_at is null`; `mastered` = `mastered_at is not null`. Leeches stay counted in their stage (A7 rule). Update `docs/architecture/dygo_academy_api_surface.md` and frontend `src/types/srs.ts` in the same commit. Jest. | `srs.service.ts` (+ spec), `notification.processor.spec.ts` only if its mock breaks, API doc, `com.dygoacademy.frontend/src/types/srs.ts` | ✅ `e53f988` |
 | **U4-3** | A1/A5 live: `HomeLive` builds the garden plants from `stage_counts` (replace the `sampleGarden` estimate; keep it as fallback when the field is missing), "Ripens tomorrow" from `GET /srs/activity/upcoming` (existing hook if there is one), streak on Welcome back = `current_streak_days`. Reference fixture pages unchanged. Vitest. | `components/garden/live/HomeLive.tsx`, `live/data.ts` (+ tests), a hook in `src/hooks/` only if none exists | ✅ `4b701fd` (A5 streak left null: freeze card, see report) |
 | **U4-4** | Missions v0 (existing data only): mission 1 "Water today's thirsty words" on A1 (`missions`) and A3 (`DoneLive`), target = reviewed today + still due, progress = reviewed today (from `/srs/activity` today + `/srs/stats` `due_now`); done when nothing is due. Missions 2–3 not shown. New strings in `en-US`, `vi-VN`, `zh-CN` (glossary). Vitest. | `live/HomeLive.tsx`, `live/DoneLive.tsx`, `live/data.ts` (+ tests), `messages/*.json` | ✅ `6e7eb53` (+ `TodaysGardenScreen` `thirsty` kind) |
 | **U4-5** | Wrap up: backend jest (srs) + frontend tsc/lint/vitest; add a Playwright spec `ui/tests/parity.spec.ts` (signed in; skips without `.env.e2e`) comparing due count, streak and mastered count between the classic home and `/garden`; tick the UI-4 checklist items that are done (G2 stays open); §1 UI-4 row; report; changelog line. | `com.dygoacademy.automationtesting/ui/tests/parity.spec.ts`, report, plan, master schedule (don't commit the last three) | ✅ `7300da9` (parity checks the `/srs/stats` each home loads + classic streak label; runs on one viewport) |
@@ -246,7 +246,7 @@ State on 2026-09-27: per-topic `new_count` / `learning_count` / `review_count` /
 
 | Step | What | Files (expected) |
 | --- | --- | --- |
-| **U5-1** | Backend: `GET /topics/:id` words gain the caller's `fsrs_state`, `mastered_at`, `is_leech`, `next_due_at` (null when never studied), through the same RLS-scoped `user_word_srs` join style as the counts; never another learner's rows. Jest + API doc row. | `topics.service.ts` (+ spec), `dygo_academy_api_surface.md` | ✅ `6e86063`
+| **U5-1** | Backend: `GET /topics/:id` words gain the caller's `fsrs_state`, `mastered_at`, `is_leech`, `next_due_at` (null when never studied), through the same RLS-scoped `user_word_srs` join style as the counts; never another learner's rows. Jest + API doc row. | `topics.service.ts` (+ spec), `docs/architecture/dygo_academy_api_surface.md` | ✅ `6e86063`
 | **U5-2** | A6 live: stage-mix bar, due badge and "all watered" from the counts; beds sorted by due words; loading/empty states from U3-1. | `live/TopicsLive.tsx`, `live/data.ts` (+ tests) | ✅ `03a6962`
 | **U5-3** | A7 live: stage tiles with real counts that filter the list (`stageFromSrs`), words sorted by next due, "due now" / date labels via the i18n formatter, wilting rows for leeches. | `live/TopicBedLive.tsx`, `live/data.ts` (+ tests) | ✅ `57b441c`
 | **U5-4** | A7 actions: "Water N due" = review scoped to this topic (existing `POST /srs/sessions` with the topic / `GET /topics/:id/cards/due`); **Add word** as a garden `BottomSheet` reusing `AddWordModal`'s form logic (don't edit the classic file: extract a hook in a garden-owned file); Options → classic page for now. | `live/TopicBedLive.tsx`, new `AddWordSheet.tsx`, messages | ✅ `321cb6c`
@@ -272,7 +272,7 @@ Frontend:
 
 ### UI-6 finish (U6-1 … U6-8), added 2026-10-01
 
-**Token budget rules (every U6 pass):** same as "UI-4 finish": read only this section + the files listed for your step (grep/sed the parts you need), one commit per pass `UI-6 U6-n: …`, check the previous U6 commit first (`GIT_OPTIONAL_LOCKS=0 git log --oneline -20 | grep "U6-"`; if one is missing do the earliest missing step instead and stop), §10 rules, smallest checks that prove the change (backend `tsc` + touched jest; frontend `tsc` + `next lint` on touched files + touched Vitest; no `next build`/Playwright), ≤ 8-line report under "UI-6 finish" in `dygo_academy_session_report_2026-09-26.md` (create the heading if missing), don't commit the report or this plan; set your row's status to ✅ + hash.
+**Token budget rules (every U6 pass):** same as "UI-4 finish": read only this section + the files listed for your step (grep/sed the parts you need), one commit per pass `UI-6 U6-n: …`, check the previous U6 commit first (`GIT_OPTIONAL_LOCKS=0 git log --oneline -20 | grep "U6-"`; if one is missing do the earliest missing step instead and stop), §10 rules, smallest checks that prove the change (backend `tsc` + touched jest; frontend `tsc` + `next lint` on touched files + touched Vitest; no `next build`/Playwright), ≤ 8-line report under "UI-6 finish" in `docs/reports/dygo_academy_session_report_2026-09-26.md` (create the heading if missing), don't commit the report or this plan; set your row's status to ✅ + hash.
 
 **Decisions used (defaults, Dylan can change later):** missions per day = 3: `REVIEW_DUE` (target = due words at the day's first read, min 1; 0 due → mission done), `LEARN_NEW` (target 5 new words), `QUIZ` (target 1 finished quiz; the collocation challenge link). Golden Bloom = all 3 done that local day. Streak freezes (decision 7): 2 available, refilled to 2 every Monday in the learner's time zone, one used automatically per missed day while any are left (applied lazily when the streak is computed). Keepsakes: first harvest (first mastered word), streak 7/30/100 days, Golden Blooms 10/50. Existing screens already have the props (`MeScreen`, `WeeklyHarvestScreen`, `WelcomeBackScreen.streak`, `MissionCompleteScreen`, `TodaysGardenScreen.missions`); fixture/reference pages must not change.
 
@@ -338,7 +338,7 @@ English words being learned (headwords, IPA, examples, collocations) are never t
 - [x] **Language sheet** on A8 wired to the profile (optimistic, then refetch); changing the app language re-renders the garden without a full reload.
 - [x] Lint: `react/jsx-no-literals` (or an equivalent check) on `src/components/garden/**` and `src/app/(garden)/**`, so a raw English string fails CI.
 
-**Status (2026-09-26, UI-L pass):** every step above is built and committed (`33466be` → `4d6f4eb`). The 11 A-screens: Vietnamese 0.000–0.088% (A5's 0.088% is one letter, ICU's "Chủ Nhật" vs the canvas's "Chủ nhật"), English unchanged (A7 0.738%: the English references predate Be Vietnam Pro; decided). The 7 GR references are diffed when UI-G builds those screens. The font chain now follows the canvas renderer's order (see the README). Open: apply the migration, a native review of `zh-CN.json`, the language switch signed in on a real device. Report: `dygo_academy_session_report_2026-09-26.md`, "UI-L pass".
+**Status (2026-09-26, UI-L pass):** every step above is built and committed (`33466be` → `4d6f4eb`). The 11 A-screens: Vietnamese 0.000–0.088% (A5's 0.088% is one letter, ICU's "Chủ Nhật" vs the canvas's "Chủ nhật"), English unchanged (A7 0.738%: the English references predate Be Vietnam Pro; decided). The 7 GR references are diffed when UI-G builds those screens. The font chain now follows the canvas renderer's order (see the README). Open: apply the migration, a native review of `zh-CN.json`, the language switch signed in on a real device. Report: `docs/reports/dygo_academy_session_report_2026-09-26.md`, "UI-L pass".
 
 **Done when:** all 18 English and 18 Vietnamese references are at or below 0.5% (anti-aliasing only; the noise floor rule in the README applies), the three message files have identical keys, the `zh-CN` screenshots pass the check above, and a signed-in learner can switch language on A8 and keep it on another device.
 
@@ -386,7 +386,7 @@ The academy director rollup (tenant heatmap) stays **restyle only** for now, bec
 - [x] **Backend:** group garden summary (aggregate), member count + my due count per group, invite preview; RLS assertions for each
 - [x] Topics (A6) "Group" chip and the A4 group card link to the real group gardens — *superseded by NAV-1 (2026-09-27): the Group chip is gone; the A4 card links to the learner's own group garden*
 
-**Status (2026-09-26, UI-G pass):** every step above is built and committed (`d9ab4d8` → `92e86bb`). Pixel diff: all 7 GR screens 0.000–0.013% in English and 0.000–0.001% in Vietnamese; A1–A8 unchanged. Backend: `database/migrations/20260926_group_garden.sql` (four SECURITY DEFINER aggregate functions) with `GET /groups/garden-counts`, `GET /groups/:id/garden`, `GET /groups/:id/tricky-patches`, `GET /invites/:token/preview`; `database/tests/rls_group_garden_test.sql` (30 assertions) passes, and so does the main suite with the migration applied. Invite links are the classic `/join/<token>`; the middleware sends flagged users to `/garden/join/<token>`. Open: apply the migration and add the new test file to `apply-migrations.sh --test` (that script has other uncommitted edits); rain days aren't stored (no table), so the GR1/GR2 rain-day banners and GR3's "Last rain day" stay hidden on live data; signed-in flows not verified on a real device. Report: `dygo_academy_session_report_2026-09-26.md`, "UI-G pass".
+**Status (2026-09-26, UI-G pass):** every step above is built and committed (`d9ab4d8` → `92e86bb`). Pixel diff: all 7 GR screens 0.000–0.013% in English and 0.000–0.001% in Vietnamese; A1–A8 unchanged. Backend: `database/migrations/20260926_group_garden.sql` (four SECURITY DEFINER aggregate functions) with `GET /groups/garden-counts`, `GET /groups/:id/garden`, `GET /groups/:id/tricky-patches`, `GET /invites/:token/preview`; `database/tests/rls_group_garden_test.sql` (30 assertions) passes, and so does the main suite with the migration applied. Invite links are the classic `/join/<token>`; the middleware sends flagged users to `/garden/join/<token>`. Open: apply the migration and add the new test file to `apply-migrations.sh --test` (that script has other uncommitted edits); rain days aren't stored (no table), so the GR1/GR2 rain-day banners and GR3's "Last rain day" stay hidden on live data; signed-in flows not verified on a real device. Report: `docs/reports/dygo_academy_session_report_2026-09-26.md`, "UI-G pass".
 
 **Done when:** everything the classic group pages can do works in the garden, each GR screen matches its approved artboard (≤ 0.5%), and the RLS suite passes with the new assertions.
 
@@ -402,7 +402,7 @@ Split into **five small passes, one commit each**, so no pass runs out of budget
 | Step | What | Files (expected) | Status |
 | --- | --- | --- | --- |
 | **RD-1** | Migration + SQL functions + RLS tests. Nothing else. | `database/migrations/20260927_group_rain_days.sql`, `database/tests/rls_group_rain_days_test.sql` | ✅ `d89f6c8`
-| **RD-2** | Backend: sprint endpoint stores the rain day; `GET /groups/:id/rain-day`; `DELETE /groups/:id/rain-day`; jest; API doc row(s) | `notifications.service.ts`, `trigger-sprint.dto.ts`, `groups.controller.ts`, a `rain-day.service.ts` (+ spec), `dygo_academy_api_surface.md` | ✅ `cb1fcc9`
+| **RD-2** | Backend: sprint endpoint stores the rain day; `GET /groups/:id/rain-day`; `DELETE /groups/:id/rain-day`; jest; API doc row(s) | `notifications.service.ts`, `trigger-sprint.dto.ts`, `groups.controller.ts`, a `rain-day.service.ts` (+ spec), `docs/architecture/dygo_academy_api_surface.md` | ✅ `cb1fcc9`
 | **RD-3** | Backend: `rainDay` on each group in `GET /groups/garden-counts` (GR1); jest | `group-garden.service.ts` (+ spec), API doc | ✅ `39d855b`
 | **RD-4** | Frontend: types + hooks, GR1/GR2/GR3 rain-day blocks shown on live data, "Start rain day" sends `wordsPerGardener` and handles 409, "Water" opens the shared bed with the most due words; Vitest | `src/components/garden/live/*Group*`, `src/hooks/`, `src/types/`, messages only if a string is missing (all three files) | ✅ `97ad9c1`
 | **RD-5** | Verify + report: tsc, lint, vitest, jest, `next build` in the mirror, GR pixel diffs unchanged (en + vi); session report section; §1 + this checklist; changelog line | report, plan (don't commit), master schedule (don't commit) | ✅ done in U3-0 `08b4f33`: tsc/lint/vitest/jest/`next build` pass, GR1–GR7 ≤ 0.013% en + vi
@@ -462,7 +462,7 @@ The in-memory `SprintRateLimitGuard` stays (it still stops push spam); the uniqu
 | Commit | What |
 | --- | --- |
 | `b30b6a0` | `design: …` the re-exported references (A1/A4/A5/A6/A8 × en/vi, PNG + HTML) and the 10 changed `source/*.dc.html`. English references re-rendered with the current `tools/render.js` (DM Sans + Be Vietnam Pro fallback). |
-| `f00dc6e` | `NAV-1: …` code, messages, Vitest, and the NAV-1 section of `dygo_academy_session_report_2026-09-26.md` |
+| `f00dc6e` | `NAV-1: …` code, messages, Vitest, and the NAV-1 section of `docs/reports/dygo_academy_session_report_2026-09-26.md` |
 
 How it's built (read these if you touch it):
 - **5 tabs on the reference pages:** `ReferenceScreen.tsx` wraps every non-GR reference in `<GroupsTabProvider value>`, so the sample learner is "in a group". Live pages are unchanged: `GroupsTabLive` still decides from `GET /groups`.
@@ -547,7 +547,7 @@ How it's built (read these if you touch it):
 
 - [x] Set `NEXT_PUBLIC_GARDEN_UI=true` in production; `?ui=classic` stays for one week
 - [x] Classic group pages (`groups/**`, `components/groups/*`, `join/[token]`) deleted with the rest once UI-G is live; only the tenant director rollup is restyled
-- [x] After a stable week, **in one commit that's easy to revert**: delete every "Remove" row of the inventory in `ui rebuild implementation plan.md`, the classic tokens, `Navbar`/`PublicNavbar`, `CONTENT_WIDTH` and the flag
+- [x] After a stable week, **in one commit that's easy to revert**: delete every "Remove" row of the inventory in `docs/plans/archive/ui rebuild implementation plan.md`, the classic tokens, `Navbar`/`PublicNavbar`, `CONTENT_WIDTH` and the flag
 - [x] Rename: drop the `garden-` Tailwind prefix, `medium`/`expanded` → `md`/`lg`, `GARDEN_CONTENT_WIDTH` → `CONTENT_WIDTH`, move the `/garden` paths to their final URLs (see §8, decision 1)
 - [x] Update the frontend architecture doc (§3, §4, §16, §17), `routes.ts`, the API surface doc, the UAT checklist and the README
 
@@ -563,7 +563,7 @@ How it's built (read these if you touch it):
 
 | Step | What | Files (expected) | Status |
 | --- | --- | --- | --- |
-| **U8-1** | Prep: restyle the tenant director rollup (the only classic group page kept); check every "Remove" row in `ui rebuild implementation plan.md` has a garden replacement (list any gap and stop if one is missing). Vitest. | director rollup page, the inventory | ✅ `bc999be` (inventory OK; rollup restyle dropped by Dylan 10-02, no classic tenant rollup page exists) |
+| **U8-1** | Prep: restyle the tenant director rollup (the only classic group page kept); check every "Remove" row in `docs/plans/archive/ui rebuild implementation plan.md` has a garden replacement (list any gap and stop if one is missing). Vitest. | director rollup page, the inventory | ✅ `bc999be` (inventory OK; rollup restyle dropped by Dylan 10-02, no classic tenant rollup page exists) |
 | **U8-2** | Switch: `NEXT_PUBLIC_GARDEN_UI=true` in `env-profiles/prod.env`, `?ui=classic` still works for a week. Dylan deploys, then runs the parity spec + Playwright on UAT and a real iPhone/iPad. Rollback: unset the flag and redeploy. | `env-profiles/prod.env` | ✅ 10-02, not committed (`prod.env` is gitignored); **waiting for Dylan to deploy** |
 | **U8-3** | Delete, **one revertable commit**: every "Remove" row, classic tokens, `Navbar`/`PublicNavbar`, `CONTENT_WIDTH`, classic group pages (`groups/**`, `components/groups/*`, `join/[token]`), the flag and `?ui=classic`. tsc/lint/Vitest green; `grep -r` of the removed names in `src/` empty. | the inventory's files | ✅ `62bb379` (10-02, run early at Dylan's request before G3 / the "Stable" line; `?ui=classic` removed first in `69c00c9`; not deployed) |
 | **U8-4** | Renames: drop the `garden-` Tailwind prefix, `medium`/`expanded` → `md`/`lg`, `GARDEN_CONTENT_WIDTH` → `CONTENT_WIDTH`; no visual change. Dylan: `garden:diff` on **every** reference en+vi must match the pre-rename numbers. | `tailwind.config.*`, all garden files | ✅ `cb6026a` (10-02; CSS before/after identical; old 768px `md:` → `tablet:`; Dylan still to run `garden:diff` en+vi) |
@@ -598,7 +598,7 @@ How it's built (read these if you touch it):
 - **Results:** Close top right; 148px forest circle with the watering-can art (missed > 0) or the bloom art (all right) — copy the SVGs from the reference HTML into `garden/illustrations` style components; overline (Quiz done / Drill done), Fraunces 30 title, subtitle; two white tiles (Fraunces 26 value: Right `#3E7F5A`, Need water `#9A6E14`, or `#8A938C` when 0); gold missed card (radius 20, water-drop icon, chips, note); bottom: "Drill tricky words" as a white 56px secondary link only for a normal quiz with misses, then "Back to bed" primary 58px.
 - **Messages** (en-US, vi-VN, zh-CN): add `screens.quiz.matchQ` ("Which word means the same as" / "Từ nào đồng nghĩa với" / "哪个词的意思相同："), `matchQAntonym` ("Which word means the opposite of" / "Từ nào trái nghĩa với" / "哪个词的意思相反："), `listenQ` ("Listen, then type the word you hear." / "Nghe rồi gõ lại từ bạn nghe được." / "听一听，然后输入你听到的单词。"). zh-CN needs the native review (decision 8).
 
-**Steps.** Same rules as the U5/U6 passes: **one commit per pass, 75 minutes apart**; read only this section + §10 + the files for the step; check the previous step's commit first (`GIT_OPTIONAL_LOCKS=0 git log --oneline -30 | grep "QZ-"`) and if it's missing do that step instead and stop. Commit message `UI-5 QZ-n: …`. Stage exact paths. ≤ 8-line report under "UI-5 quiz design" in `dygo_academy_session_report_2026-09-26.md` (not committed); set the row ✅ + hash.
+**Steps.** Same rules as the U5/U6 passes: **one commit per pass, 75 minutes apart**; read only this section + §10 + the files for the step; check the previous step's commit first (`GIT_OPTIONAL_LOCKS=0 git log --oneline -30 | grep "QZ-"`) and if it's missing do that step instead and stop. Commit message `UI-5 QZ-n: …`. Stage exact paths. ≤ 8-line report under "UI-5 quiz design" in `docs/reports/dygo_academy_session_report_2026-09-26.md` (not committed); set the row ✅ + hash.
 
 | Step | What | Files (expected) |
 | --- | --- | --- |
@@ -624,7 +624,7 @@ Sections, top to bottom: header (logo, Features · How it works · For parents a
 
 **Responsive.** Phone layout below `lg` (1024 px); desktop layout from `lg`, content max width 1280 with 64 px side padding. Tablet widths use the phone layout (centred, max width 560 like the garden screens) until a tablet board exists.
 
-**Steps.** Same rules as the QZ/U6 passes: one commit per pass, 75 minutes apart; read only this section + §10 + the files for the step; check the previous step's commit first (`GIT_OPTIONAL_LOCKS=0 git log --oneline -30 | grep "HP-"`) and if it's missing do that step instead and stop. Commit message `Home HP-n: …`. Stage exact paths. ≤ 8-line report under "Home page" in `dygo_academy_session_report_2026-09-26.md` (not committed); set the row ✅ + hash. Don't deploy (Dylan deploys).
+**Steps.** Same rules as the QZ/U6 passes: one commit per pass, 75 minutes apart; read only this section + §10 + the files for the step; check the previous step's commit first (`GIT_OPTIONAL_LOCKS=0 git log --oneline -30 | grep "HP-"`) and if it's missing do that step instead and stop. Commit message `Home HP-n: …`. Stage exact paths. ≤ 8-line report under "Home page" in `docs/reports/dygo_academy_session_report_2026-09-26.md` (not committed); set the row ✅ + hash. Don't deploy (Dylan deploys).
 
 | Step | What | Files (expected) |
 | --- | --- | --- |
