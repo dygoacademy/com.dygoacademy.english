@@ -163,8 +163,8 @@ Separate from Speaking (sentences). Starts from "Bees are waiting" on A7. EN + V
 #### Loading — page "Loading"
 | ID | Screen | File | Status | What's on it | Goes to | Build status |
 |---|---|---|---|---|---|---|
-| LD1 | Loading · Seed to sprout | `LoadingSprout` (`lang` tweak, no Vi file) | Built `ed2165a` | App start. Full screen, cream. The logo grows in a 4 s loop: seed → stem → leaves → the bee lands. "dygo" + rotating line (Watering your garden… / Waking the bees… / Ripening today's words…). | LD3 after 4 s; the screen when ready | — |
-| LD3 | Loading · Bee's flight | `LoadingBee` (`lang` tweak, no Vi file) | Built `ed2165a` | Slow loads. The bee circles "dygo" on a dotted path; "While you wait" word card (bloom, thrive, nurture…). After 10 s: "Still loading… check your connection" + Try again. | the screen when ready | — |
+| LD1 | Loading · Seed to sprout | `LoadingSprout` (`lang` tweak, no Vi file) | Built `ed2165a` | App start. Full screen, cream. The logo grows in a 4 s loop: seed → stem → leaves → the bee lands. "dygo" + rotating line (Watering your garden… / Waking the bees… / Ripening today's words…). | LD3b after 4 s; the screen when ready | — |
+| LD3b | Loading · Bee's flight (slow loads) | `LoadingBeeNav` (`lang` + `tab` tweaks, no Vi file) | Approved | Slow loads. The bee circles "dygo" on a dotted path, rotating line; **no word card**. The tab bar stays at the bottom on tab screens (tab being loaded highlighted); other screens show it without the tab bar. After 10 s: "Still loading… check your connection" + Try again. | the screen when ready | — |
 | LD2 | Loading · Morning rain | `LoadingRain` | Not used | Kept on the canvas for reference only. Don't build. | — | — |
 
 #### Kids — page "Kids" (English only)
@@ -217,6 +217,7 @@ All iPad screens: sidebar (Garden · Missions · Topics · Groups · Me + Shared
 | ID | Screen | Removed | Replaced by |
 |---|---|---|---|
 | H1–H2 | Home page v1 (phone, desktop) | 2026-10-06 | H3–H4 (Home v2) |
+| LD3 | Loading · Bee's flight, full screen with "While you wait" word card (`LoadingBee`, built `ed2165a`) | 2026-10-13 | LD3b |
 | SP2a | Ready (listening, voice-activated start) | 2026-10-06 | SP2 countdown |
 | SP2c | Checking (own screen) | 2026-10-06 | SP3 checking state |
 | SP2d | Couldn't check (own screen) | 2026-10-06 | SP3 failed state |
@@ -227,6 +228,12 @@ All iPad screens: sidebar (Garden · Missions · Topics · Groups · Me + Shared
 ## 3. Changelog
 
 Newest first. Format: `### YYYY-MM-DD — title` then lines tagged **Added / Changed / Removed / Decision**, with screen IDs and status.
+
+### 2026-10-13 — Loading: LD3b replaces LD3 (Approved)
+- **Removed** LD3 Bee's flight full screen with the "While you wait" word card (Dylan). Board deleted from the canvas; `source/LoadingBee.dc.html` kept for history.
+- **Added** LD3b Bee's flight (`LoadingBeeNav`): same bee orbit and lines, no word card, the art centred above the **tab bar**, which stays on tab screens (Garden, Missions, Topics, Groups, Profile) with the tab being loaded highlighted, so the learner can still switch tab. Screens without a tab bar (Review, Quiz, Speak, Join, onboarding) show the same art without it.
+- Unchanged: LD1 full screen at app start, timings (400 ms / 4 s / 10 s), continue-the-wait, slow message + Try again, reduced motion.
+- *Approved (Dylan, 2026-10-13).* Build: `docs/plans/Loading screen LD3b implementation plan.md`. References `LD3b-loading-bee-nav(-vi)`, `LD3b-loading-bee-nav-topics` replace `LD3-loading-bee(-vi)`.
 
 ### 2026-10-13 — Loading screen: LD1 Seed to sprout + LD3 Bee's flight (Built `ed2165a`)
 - **Added** canvas page "Loading" with three full-screen ideas; Dylan picked **LD1 for app start** and **LD3 for slow loads**. LD2 Morning rain is not used.
