@@ -59,7 +59,7 @@ export function SproutArt() {
           </g>
         </g>
       </svg>
-      <div className="mt-[6px] font-display text-[38px] font-semibold leading-normal tracking-[-0.01em] text-forest">
+      <div className="mt-[6px] font-display text-[38px] font-semibold tracking-[-0.01em] text-forest">
         {'dygo'}
       </div>
       <div className="dg-ld-lines relative mt-[14px] h-[22px] w-full text-[15px] text-muted-foreground">

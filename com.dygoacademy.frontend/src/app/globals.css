@@ -84,11 +84,14 @@
   offset-path: path('M195 82 C 280 80, 322 112, 322 150 C 322 190, 280 220, 195 218 C 110 220, 68 190, 68 150 C 68 112, 110 84, 195 82');
   offset-rotate: 0deg;
   offset-distance: 8%;
+  /* As in the canvas: the path point is the corner of the bee's box, not its middle. */
+  transform-box: fill-box;
 }
 .dg-ld-beeA {
   offset-path: path('M-30 10 C 0 -10, 40 40, 66 20');
   offset-rotate: 0deg;
   offset-distance: 100%;
+  transform-box: fill-box;
 }
 .dg-ld-lines span {
   position: absolute;
