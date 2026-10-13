@@ -2,7 +2,7 @@
 
 Location in the repo: `docs/design/CHANGELOG.md`
 Design source of truth: the **Dygo Word Garden** design canvas (owner: Dylan).
-Last updated: **2026-10-12**
+Last updated: **2026-10-13**
 
 ---
 
@@ -160,6 +160,13 @@ Separate from Speaking (sentences). Starts from "Bees are waiting" on A7. EN + V
 |---|---|---|---|---|---|
 | BR1 | Logo, favicon, app icon | `Logo*` boards | Approved | Logo "The Sprout" (option A, Dylan 2026-10-09): mark + wordmark, favicon, app icon. Files in `docs/design/brand/`. | Favicon / `icon.svg` / `apple-icon.png` live 2026-10-09 |
 
+#### Loading — page "Loading"
+| ID | Screen | File | Status | What's on it | Goes to | Build status |
+|---|---|---|---|---|---|---|
+| LD1 | Loading · Seed to sprout | `LoadingSprout` (`lang` tweak, no Vi file) | Approved | App start. Full screen, cream. The logo grows in a 4 s loop: seed → stem → leaves → the bee lands. "dygo" + rotating line (Watering your garden… / Waking the bees… / Ripening today's words…). | LD3 after 4 s; the screen when ready | — |
+| LD3 | Loading · Bee's flight | `LoadingBee` (`lang` tweak, no Vi file) | Approved | Slow loads. The bee circles "dygo" on a dotted path; "While you wait" word card (bloom, thrive, nurture…). After 10 s: "Still loading… check your connection" + Try again. | the screen when ready | — |
+| LD2 | Loading · Morning rain | `LoadingRain` | Not used | Kept on the canvas for reference only. Don't build. | — | — |
+
 #### Kids — page "Kids" (English only)
 | ID | Screen | File | Status | What's on it | Build status |
 |---|---|---|---|---|---|
@@ -220,6 +227,12 @@ All iPad screens: sidebar (Garden · Missions · Topics · Groups · Me + Shared
 ## 3. Changelog
 
 Newest first. Format: `### YYYY-MM-DD — title` then lines tagged **Added / Changed / Removed / Decision**, with screen IDs and status.
+
+### 2026-10-13 — Loading screen: LD1 Seed to sprout + LD3 Bee's flight (Approved)
+- **Added** canvas page "Loading" with three full-screen ideas; Dylan picked **LD1 for app start** and **LD3 for slow loads**. LD2 Morning rain is not used.
+- Flow: app start → nothing for 400 ms → LD1 → still loading at 4 s → LD3 → at 10 s the slow message + Try again. Later loads in the same session keep today's spinner / tab skeleton (tab bar stays, `f050396`) and switch to LD3 only after 2.5 s. No minimum time: a ready screen is never held back.
+- Reduced motion: still frames, first line only. Screen readers hear "Loading your garden…" once. Pure CSS/SVG.
+- *Approved (Dylan, 2026-10-13).* Build: `docs/plans/Loading screen implementation plan.md`. Sources `source/LoadingSprout.dc.html`, `source/LoadingBee.dc.html`; references `LD1-loading-sprout(-vi)`, `LD3-loading-bee(-vi)`.
 
 ### 2026-10-12 — Onboarding: no "Say 5 words", no First bed row (Built `40a151d`)
 - **Removed** OB4b Say 5 words (Dylan: it doesn't help). Board deleted from the canvas; `source/OnboardVoice(Vi).dc.html` kept for history. Voice donation is offered only on AU2 (sign-up box) and A8e (Profile › Privacy); donated recordings come from normal pronunciation practice.

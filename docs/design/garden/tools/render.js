@@ -214,6 +214,12 @@ const JOBS = [
   ['OnboardLevelVi.dc.html', 'vi', 'OB1-about-you-work-vi', { goal: 'work' }],
   ['OnboardReminderVi.dc.html', 'vi', 'OB4-reminder-vi', {}],
   ['OnboardReadyVi.dc.html', 'vi', 'OB5-ready-vi', {}],
+  // Loading (canvas page "Loading", 2026-10-13, Approved): LD1 app start, LD3 slow loads.
+  // One board per screen with a `lang` tweak (no …Vi file); still frames (animations frozen).
+  ['LoadingSprout.dc.html', 'en', 'LD1-loading-sprout', { lang: 'en' }],
+  ['LoadingSprout.dc.html', 'vi', 'LD1-loading-sprout-vi', { lang: 'vi' }],
+  ['LoadingBee.dc.html', 'en', 'LD3-loading-bee', { lang: 'en' }],
+  ['LoadingBee.dc.html', 'vi', 'LD3-loading-bee-vi', { lang: 'vi' }],
 ].filter(([, , name]) => !FILTER || name.includes(FILTER));
 
 // English pages redrawn with the app's body stack (DM Sans, then Be Vietnam
