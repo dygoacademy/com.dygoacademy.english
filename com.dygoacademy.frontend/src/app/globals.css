@@ -65,6 +65,324 @@
  * docs/architecture/dygo_academy_tech_spec_and_conventions.md §3.3: custom classes here must
  * be kebab-case.
  */
+/*
+ * Loading screen LD1 "Seed to sprout" and LD3 "Bee's flight"
+ * (components/garden/loader, canvas LoadingSprout / LoadingBee, 2026-10-13).
+ * The base styles are the still frame (the full sprout with the bee landed;
+ * the bee at the top of its path, card shown; first line only). Motion is
+ * added only when the learner has not asked for reduced motion, so the
+ * reduced-motion frame needs no extra rules. `transform-box: fill-box` is
+ * set per animated element, never on `svg *` (it would move the bee's wings).
+ */
+.dg-ld-appear {
+  animation: dg-ld-appear 0.2s ease-out 0.4s both;
+}
+.dg-ld-in {
+  animation: dg-ld-in 0.3s ease-out both;
+}
+.dg-ld-beeC {
+  offset-path: path('M195 82 C 280 80, 322 112, 322 150 C 322 190, 280 220, 195 218 C 110 220, 68 190, 68 150 C 68 112, 110 84, 195 82');
+  offset-rotate: 0deg;
+  offset-distance: 8%;
+}
+.dg-ld-beeA {
+  offset-path: path('M-30 10 C 0 -10, 40 40, 66 20');
+  offset-rotate: 0deg;
+  offset-distance: 100%;
+}
+.dg-ld-lines span {
+  position: absolute;
+  inset-inline: 0;
+  text-align: center;
+  opacity: 0;
+}
+.dg-ld-lines span:first-child {
+  opacity: 1;
+}
+.dg-ld-pol {
+  opacity: 0.25;
+}
+
+@keyframes dg-ld-appear {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes dg-ld-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .dg-ld-seed {
+    animation: dg-ld-seed 4s ease-in infinite;
+  }
+  .dg-ld-seedc {
+    animation: dg-ld-seedc 4s infinite;
+  }
+  .dg-ld-soil {
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: dg-ld-soil 4s infinite;
+  }
+  .dg-ld-stem {
+    stroke-dasharray: 36;
+    animation: dg-ld-stem 4s ease-out infinite;
+  }
+  .dg-ld-leafL {
+    transform-box: fill-box;
+    transform-origin: right bottom;
+    animation: dg-ld-leafL 4s cubic-bezier(0.3, 1.5, 0.5, 1) infinite;
+  }
+  .dg-ld-leafR {
+    transform-box: fill-box;
+    transform-origin: left bottom;
+    animation: dg-ld-leafR 4s cubic-bezier(0.3, 1.5, 0.5, 1) infinite;
+  }
+  .dg-ld-beeA {
+    animation: dg-ld-beeA 4s ease-in-out infinite;
+  }
+  .dg-ld-beebob {
+    animation: dg-ld-bob 0.9s ease-in-out infinite alternate;
+  }
+  .dg-ld-fadeAll {
+    animation: dg-ld-fadeAll 4s infinite;
+  }
+  .dg-ld-sway {
+    transform-box: fill-box;
+    transform-origin: 50% 79%;
+    animation: dg-ld-sway 2s ease-in-out infinite alternate;
+  }
+  .dg-ld-wl,
+  .dg-ld-wr {
+    transform-box: fill-box;
+    transform-origin: center bottom;
+    animation: dg-ld-flap 0.16s ease-in-out infinite alternate;
+  }
+  .dg-ld-lines span {
+    animation: dg-ld-line 7.5s infinite;
+  }
+  .dg-ld-lines span:nth-child(2) {
+    animation-delay: 2.5s;
+  }
+  .dg-ld-lines span:nth-child(3) {
+    animation-delay: 5s;
+  }
+  .dg-ld-beeC {
+    offset-distance: 0%;
+    animation: dg-ld-fly 4.2s linear infinite;
+  }
+  .dg-ld-trail {
+    stroke-dasharray: 3 7;
+    animation: dg-ld-trail 1s linear infinite;
+  }
+  .dg-ld-pol {
+    animation: dg-ld-pol 4.2s infinite;
+  }
+  .dg-ld-face {
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: dg-ld-face 4.2s step-end infinite;
+  }
+  .dg-ld-card {
+    animation: dg-ld-card 0.5s ease-out 0.3s both;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .dg-ld-appear {
+    animation-duration: 0.01s;
+  }
+  .dg-ld-in {
+    animation: none;
+  }
+  .dg-ld-trail {
+    stroke-dasharray: 3 7;
+  }
+}
+
+@keyframes dg-ld-seed {
+  0% {
+    transform: translateY(-46px);
+    opacity: 0;
+  }
+  8% {
+    opacity: 1;
+  }
+  18%,
+  100% {
+    transform: none;
+    opacity: 1;
+  }
+}
+@keyframes dg-ld-seedc {
+  0%,
+  30% {
+    opacity: 1;
+  }
+  36%,
+  100% {
+    opacity: 0;
+  }
+}
+@keyframes dg-ld-soil {
+  0%,
+  16% {
+    transform: scaleX(1);
+  }
+  20% {
+    transform: scaleX(1.12);
+  }
+  26%,
+  100% {
+    transform: scaleX(1);
+  }
+}
+@keyframes dg-ld-stem {
+  0%,
+  22% {
+    stroke-dashoffset: 36;
+  }
+  42%,
+  100% {
+    stroke-dashoffset: 0;
+  }
+}
+@keyframes dg-ld-leafL {
+  0%,
+  38% {
+    transform: scale(0);
+  }
+  54%,
+  100% {
+    transform: scale(1);
+  }
+}
+@keyframes dg-ld-leafR {
+  0%,
+  48% {
+    transform: scale(0);
+  }
+  64%,
+  100% {
+    transform: scale(1);
+  }
+}
+@keyframes dg-ld-beeA {
+  0%,
+  60% {
+    offset-distance: 0%;
+    opacity: 0;
+  }
+  64% {
+    opacity: 1;
+  }
+  84%,
+  100% {
+    offset-distance: 100%;
+    opacity: 1;
+  }
+}
+@keyframes dg-ld-bob {
+  to {
+    transform: translateY(-2px);
+  }
+}
+@keyframes dg-ld-fadeAll {
+  0%,
+  92% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+@keyframes dg-ld-sway {
+  from {
+    transform: rotate(-2deg);
+  }
+  to {
+    transform: rotate(2deg);
+  }
+}
+@keyframes dg-ld-flap {
+  to {
+    transform: scaleY(0.5);
+  }
+}
+@keyframes dg-ld-line {
+  0% {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  5%,
+  28% {
+    opacity: 1;
+    transform: none;
+  }
+  33%,
+  100% {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+}
+@keyframes dg-ld-fly {
+  from {
+    offset-distance: 0%;
+  }
+  to {
+    offset-distance: 100%;
+  }
+}
+@keyframes dg-ld-trail {
+  to {
+    stroke-dashoffset: -10;
+  }
+}
+@keyframes dg-ld-pol {
+  0%,
+  8% {
+    opacity: 0.25;
+    r: 3;
+  }
+  12% {
+    opacity: 1;
+    r: 5;
+  }
+  40%,
+  100% {
+    opacity: 0.25;
+    r: 3;
+  }
+}
+@keyframes dg-ld-face {
+  0% {
+    transform: scaleX(1);
+  }
+  25% {
+    transform: scaleX(-1);
+  }
+  75% {
+    transform: scaleX(1);
+  }
+}
+@keyframes dg-ld-card {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
 @layer utilities {
   .perspective-1000 {
     perspective: 1000px;

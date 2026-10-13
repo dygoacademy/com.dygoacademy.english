@@ -8,6 +8,7 @@ import { ForgotPasswordScreen } from '@/components/garden/auth/ForgotPasswordScr
 import { RegisterScreen } from '@/components/garden/auth/RegisterScreen';
 import { SignInScreen } from '@/components/garden/auth/SignInScreen';
 import { GroupsTabProvider } from '@/components/garden/groupsTab';
+import { GardenLoader } from '@/components/garden/loader/GardenLoader';
 import {
   ACCOUNT,
   ENTRY,
@@ -436,6 +437,10 @@ function ReferenceScreenBody({ name, locale }: { name: ReferenceName; locale: Ap
           onLook={() => {}}
         />
       );
+    case 'LD1-loading-sprout':
+      return <GardenLoader phase="sprout" />;
+    case 'LD3-loading-bee':
+      return <GardenLoader phase="bee" word="bloom" />;
     case 'AU2-create-account':
     case 'AU2-create-account-donate':
     case 'AU3-create-account-invite':

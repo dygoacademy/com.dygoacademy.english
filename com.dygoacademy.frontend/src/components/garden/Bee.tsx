@@ -35,31 +35,30 @@ export function BeeGlyph({
 
 /**
  * The bee drawing itself, in a 32 × 32 box, for use inside another SVG
- * (the Pronunciation pond draws the same bee as A7).
+ * (the Pronunciation pond draws the same bee as A7). `flap` wraps each wing
+ * in a <g> the loading screen animates (LD1, LD3).
  */
-export function BeeShape() {
+export function BeeShape({ flap = false }: { flap?: boolean }) {
+  const wing = (cx: number, angle: number, cls: string) => {
+    const ellipse = (
+      <ellipse
+        cx={cx}
+        cy="9"
+        rx="6"
+        ry="4.5"
+        fill="var(--bee-wing)"
+        stroke="var(--bee-wing-line)"
+        strokeWidth="1"
+        transform={`rotate(${angle} ${cx} 9)`}
+      />
+    );
+    // The loading screen flaps each wing on a wrapper <g> (the ellipse keeps its own rotate).
+    return flap ? <g className={cls}>{ellipse}</g> : ellipse;
+  };
   return (
     <>
-      <ellipse
-        cx="12"
-        cy="9"
-        rx="6"
-        ry="4.5"
-        fill="var(--bee-wing)"
-        stroke="var(--bee-wing-line)"
-        strokeWidth="1"
-        transform="rotate(-25 12 9)"
-      />
-      <ellipse
-        cx="20"
-        cy="9"
-        rx="6"
-        ry="4.5"
-        fill="var(--bee-wing)"
-        stroke="var(--bee-wing-line)"
-        strokeWidth="1"
-        transform="rotate(25 20 9)"
-      />
+      {wing(12, -25, 'dg-ld-wl')}
+      {wing(20, 25, 'dg-ld-wr')}
       <ellipse cx="16" cy="19" rx="9" ry="7" fill="var(--bee-body)" />
       <path d="M12 13.2 V24.8" stroke="var(--bee-stripe)" strokeWidth="2.4" />
       <path d="M17 12.2 V25.8" stroke="var(--bee-stripe)" strokeWidth="2.4" />

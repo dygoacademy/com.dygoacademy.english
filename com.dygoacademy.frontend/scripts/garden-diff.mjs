@@ -72,6 +72,8 @@ const NAMES = [
   'OB1-about-you-work',
   'OB4-reminder',
   'OB5-ready',
+  'LD1-loading-sprout',
+  'LD3-loading-bee',
   // UI-G
   'GR1-shared-gardens',
   'GR2-group-garden',

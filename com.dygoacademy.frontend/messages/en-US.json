@@ -958,6 +958,30 @@
       "plantTitle": "Plant {count, plural, one {# new word} other {# new words}}",
       "topicMeta": "{count, plural, one {# word} other {# words}}"
     },
+    "loader": {
+      "sprout": {
+        "1": "Watering your garden…",
+        "2": "Waking the bees…",
+        "3": "Ripening today's words…"
+      },
+      "bee": {
+        "1": "Pollinating your words…",
+        "2": "Watering your garden…",
+        "3": "Almost ready…"
+      },
+      "slow": "Still loading… check your connection",
+      "wait": "While you wait",
+      "words": {
+        "bloom": "to produce flowers; to grow and do well",
+        "sprout": "to start to grow",
+        "thrive": "to grow or develop very well",
+        "nurture": "to help something grow and develop",
+        "harvest": "the crops gathered; the result of work",
+        "flourish": "to be very successful; to grow well",
+        "cultivate": "to develop a skill or habit",
+        "resilient": "able to recover quickly from difficulty"
+      }
+    },
     "groups": {
       "list": {
         "title": "Shared Gardens",

@@ -3,20 +3,16 @@
 import { useTranslations } from 'next-intl';
 
 import { Button } from '../Button';
-import { Spinner } from '../Spinner';
+import { GardenLoader } from '../loader/GardenLoader';
 
-/** Loading and error states for the live garden routes. */
-export function LiveLoading() {
-  const t = useTranslations('screens.live');
-  return (
-    <div
-      role="status"
-      className="flex min-h-screen-dvh flex-col items-center justify-center gap-3 bg-bg text-muted-foreground"
-    >
-      <Spinner />
-      <span className="text-[15px]">{t('loading')}</span>
-    </div>
-  );
+/**
+ * Loading and error states for the live garden routes. `LiveLoading` is the
+ * loading screen (LD1 at app start, LD3 for slow loads, see
+ * `loader/GardenLoader.tsx`); pass a screen's `refetch` as `onRetry` for the
+ * slow state's Try again (default: reload the page).
+ */
+export function LiveLoading({ onRetry }: { onRetry?: () => void } = {}) {
+  return <GardenLoader onRetry={onRetry} />;
 }
 
 export function LiveError({ onRetry, message }: { onRetry?: () => void; message?: string }) {

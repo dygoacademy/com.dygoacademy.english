@@ -50,6 +50,9 @@ export const REFERENCE_NAMES = [
   'OB1-about-you-work',
   'OB4-reminder',
   'OB5-ready',
+  // Loading screen (canvas 2026-10-13): still frames of LD1 and LD3 (GardenLoader pinned to a phase)
+  'LD1-loading-sprout',
+  'LD3-loading-bee',
   // UI-G: sample data in groupFixtures.ts
   'GR1-shared-gardens',
   'GR2-group-garden',
