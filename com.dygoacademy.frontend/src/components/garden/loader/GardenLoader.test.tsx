@@ -6,9 +6,11 @@ import { renderWithIntl } from '@/test/render';
 
 import {
   GardenLoader,
+  CONTINUE_MS,
   SLOW_MS,
   SPINNER_MS,
   SPROUT_MS,
+  markAppStarted,
   resetLoaderBootForTests,
 } from './GardenLoader';
 import { WAIT_WORDS } from './words';
@@ -46,11 +48,50 @@ describe('GardenLoader at app start', () => {
 describe('GardenLoader after the app has started', () => {
   it('shows the spinner, LD3 at 2.5 s, the slow state at 10 s', () => {
     renderWithIntl(<GardenLoader />).unmount();
+    advance(CONTINUE_MS + 1);
     const { container } = renderWithIntl(<GardenLoader />);
     expect(phase()).toBe('spinner');
     expect(container.querySelector('svg.animate-spin')).not.toBeNull();
     expect(container.querySelector('.dg-ld-appear')).toBeNull();
     advance(SPINNER_MS);
+    expect(phase()).toBe('bee');
+    advance(SLOW_MS - SPINNER_MS);
+    expect(phase()).toBe('slow');
+  });
+});
+
+describe('GardenLoader hand-over', () => {
+  it('a loader that mounts right after another continues its wait', () => {
+    const first = renderWithIntl(<GardenLoader />);
+    advance(SPROUT_MS + 500);
+    expect(phase()).toBe('bee');
+    first.unmount();
+    advance(100);
+    renderWithIntl(<GardenLoader />);
+    expect(phase()).toBe('bee');
+    advance(SLOW_MS - SPROUT_MS - 600);
+    expect(phase()).toBe('slow');
+  });
+
+  it('a loader that mounts while the first is still on screen continues it too', () => {
+    const first = renderWithIntl(<GardenLoader />);
+    advance(1000);
+    const second = renderWithIntl(<GardenLoader />);
+    first.unmount();
+    expect(second.container.querySelector('[data-phase="sprout"]')).not.toBeNull();
+    expect(second.container.querySelector('.dg-ld-appear')).toBeNull();
+    advance(SPROUT_MS - 1000);
+    expect(second.container.querySelector('[data-phase="bee"]')).not.toBeNull();
+  });
+
+  it('markAppStarted makes the next loader a later load', () => {
+    markAppStarted();
+    renderWithIntl(<GardenLoader />);
+    expect(phase()).toBe('spinner');
+  });
+
+  it('startAtBee shows LD3 at once and the slow state at 10 s in total', () => {
+    renderWithIntl(<GardenLoader startAtBee />);
     expect(phase()).toBe('bee');
     advance(SLOW_MS - SPINNER_MS);
     expect(phase()).toBe('slow');

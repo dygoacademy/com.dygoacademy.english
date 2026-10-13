@@ -1,7 +1,9 @@
-import { fireEvent, render, screen } from '@testing-library/react';
+import { act, fireEvent, render, screen } from '@testing-library/react';
 import { NextIntlClientProvider } from 'next-intl';
 import type { ReactElement } from 'react';
 import { describe, expect, it, vi } from 'vitest';
+
+import { markAppStarted, resetLoaderBootForTests } from '@/components/garden/loader/GardenLoader';
 
 import en from '../../../messages/en-US.json';
 import vi_messages from '../../../messages/vi-VN.json';
@@ -30,11 +32,34 @@ describe.each(LOCALES)('garden route states (%s)', (locale, messages) => {
   const live = messages.screens.live;
 
   it('loading: a busy skeleton in the screen column', () => {
+    markAppStarted();
     renderIn(locale, messages, <GardenLoading />);
     const status = screen.getByRole('status');
     expect(status.getAttribute('aria-busy')).toBe('true');
     expect(status.textContent).toContain(live.loading);
     expect(status.className).toContain('max-w-[560px]');
+    expect(status.getAttribute('data-phase')).toBeNull();
+  });
+
+  it('loading at app start: the garden loader (LD1)', () => {
+    resetLoaderBootForTests();
+    renderIn(locale, messages, <GardenLoading />);
+    expect(screen.getByRole('status').getAttribute('data-phase')).toBe('sprout');
+  });
+
+  it('loading later: after 2.5 s the bee screen takes over, the slow message at 10 s', () => {
+    vi.useFakeTimers();
+    try {
+      markAppStarted();
+      renderIn(locale, messages, <GardenLoading />);
+      act(() => void vi.advanceTimersByTime(2500));
+      expect(screen.getByRole('status').getAttribute('data-phase')).toBe('bee');
+      act(() => void vi.advanceTimersByTime(7500));
+      expect(screen.getByRole('status').getAttribute('data-phase')).toBe('slow');
+      expect(screen.getByRole('button', { name: live.retry })).toBeTruthy();
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it('error: friendly message, retry calls reset, link home', () => {

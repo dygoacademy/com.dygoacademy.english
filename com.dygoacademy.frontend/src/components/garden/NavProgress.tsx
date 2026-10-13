@@ -4,7 +4,7 @@ import * as React from 'react';
 import { usePathname } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 
-import { GardenLoader, SPINNER_MS } from './loader/GardenLoader';
+import { GardenLoader, SPINNER_MS, markAppStarted } from './loader/GardenLoader';
 import { Spinner } from './Spinner';
 
 /** A click on a link shows the spinner after this long, so fast loads don't flash it. */
@@ -54,6 +54,7 @@ export function NavProgress() {
       if (url.pathname === window.location.pathname && url.search === window.location.search) {
         return;
       }
+      markAppStarted();
       setPending(true);
     };
     document.addEventListener('click', onClick);

@@ -19,6 +19,22 @@ export const SPINNER_MS = 2500;
 /** Either way, the slow message and Try again after this long. */
 export const SLOW_MS = 10000;
 
+/** A loader that mounts this soon after another one went continues the same wait. */
+export const CONTINUE_MS = 500;
+
+/**
+ * The wait in progress: when it began and whether it is the app-start wait
+ * (LD1 first). Screens often hand over from one loader to the next (the route
+ * fallback, then a screen's own `LiveLoading`); the next one continues the wait
+ * instead of starting the timers again.
+ */
+interface Wait {
+  start: number;
+  first: boolean;
+}
+let wait: Wait | null = null;
+let active = 0;
+let lastEnd = 0;
 /**
  * Has a loader already been shown (and gone) since this page loaded? The
  * server render and the first client render both see `false`, so there is
@@ -26,9 +42,35 @@ export const SLOW_MS = 10000;
  */
 let booted = false;
 
+/** Whether the first loader since the page loaded is still to come (the route fallback uses it). */
+export function isAppStart(): boolean {
+  return !booted;
+}
+
+/** The learner has used the app (clicked a link): later loaders are "later loads", not app start. */
+export function markAppStarted(): void {
+  booted = true;
+}
+
 /** For tests only. */
 export function resetLoaderBootForTests(): void {
   booted = false;
+  wait = null;
+  active = 0;
+  lastEnd = 0;
+}
+
+function joinWait(startAtBee: boolean): Wait {
+  const now = Date.now();
+  if (wait && (active > 0 || now - lastEnd < CONTINUE_MS)) return wait;
+  wait = { start: startAtBee ? now - SPINNER_MS : now, first: !booted && !startAtBee };
+  return wait;
+}
+
+function phaseAt(elapsed: number, first: boolean): LoaderPhase {
+  if (elapsed >= SLOW_MS) return 'slow';
+  if (elapsed >= (first ? SPROUT_MS : SPINNER_MS)) return 'bee';
+  return first ? 'sprout' : 'spinner';
 }
 
 /**
@@ -39,10 +81,14 @@ export function resetLoaderBootForTests(): void {
  *   sprout"; at 4 s LD3 "Bee's flight" with a "While you wait" word; at
  *   10 s "Still loading… check your connection" and Try again.
  * - Later loads: today's spinner, LD3 at 2.5 s, the slow message at 10 s.
+ * - A loader that follows another within 0.5 s continues its wait (same
+ *   phase, same clock), so a screen handing over from the route fallback
+ *   to its own loader does not start over.
  * - No minimum display time: it unmounts the moment data arrives.
  *
  * `data-phase` carries the phase for tests. `phase` pins it (reference
- * pages): no timers, and `word` pins the card's word. Reduced motion shows
+ * pages): no timers, and `word` pins the card's word. `startAtBee` is for a
+ * caller that has already made the learner wait 2.5 s. Reduced motion shows
  * the still frames (globals.css); the phase changes still happen.
  */
 export function GardenLoader({
@@ -54,32 +100,36 @@ export function GardenLoader({
   onRetry?: () => void;
   phase?: LoaderPhase;
   word?: string;
-  /**
-   * Another loader has already waited SPINNER_MS (the route skeleton): start at LD3
-   * and show the slow state SLOW_MS after that loader began.
-   */
   startAtBee?: boolean;
 }) {
   const live = useTranslations('screens.live');
   const t = useTranslations('screens.loader');
-  const [later] = React.useState(() => booted);
+  const [joined] = React.useState(() => joinWait(startAtBee));
+  const [continued] = React.useState(() => Date.now() - joined.start > 50);
   const [phase, setPhase] = React.useState<LoaderPhase>(
-    pinned ?? (startAtBee ? 'bee' : later ? 'spinner' : 'sprout'),
+    () => pinned ?? phaseAt(Date.now() - joined.start, joined.first),
   );
+  const later = !joined.first;
 
   React.useEffect(() => {
     if (pinned) return;
+    active += 1;
+    const elapsed = Date.now() - joined.start;
     const timers = [
-      ...(startAtBee
-        ? []
-        : [window.setTimeout(() => setPhase('bee'), later ? SPINNER_MS : SPROUT_MS)]),
-      window.setTimeout(() => setPhase('slow'), startAtBee ? SLOW_MS - SPINNER_MS : SLOW_MS),
-    ];
+      [joined.first ? SPROUT_MS : SPINNER_MS, 'bee'],
+      [SLOW_MS, 'slow'],
+    ].flatMap(([at, next]) =>
+      elapsed < (at as number)
+        ? [window.setTimeout(() => setPhase(next as LoaderPhase), (at as number) - elapsed)]
+        : [],
+    );
     return () => {
       timers.forEach((id) => window.clearTimeout(id));
+      active -= 1;
+      lastEnd = Date.now();
       booted = true;
     };
-  }, [pinned, later, startAtBee]);
+  }, [pinned, joined]);
 
   const current = pinned ?? phase;
   const slow = current === 'slow';
@@ -104,7 +154,12 @@ export function GardenLoader({
         </div>
       ) : null}
       {current === 'sprout' ? (
-        <div className={gcn('flex w-full flex-col items-center', !later && 'dg-ld-appear')}>
+        <div
+          className={gcn(
+            'flex w-full flex-col items-center',
+            !later && !continued && 'dg-ld-appear',
+          )}
+        >
           <SproutArt />
         </div>
       ) : null}
