@@ -214,6 +214,25 @@ export const MIC_CONSTRAINTS: MediaStreamConstraints = {
   audio: { channelCount: 1, echoCancellation: true, noiseSuppression: true },
 };
 
+/** Mic streams opened so far (see `micGeneration()`). */
+let micGeneration = 0;
+/** Mic streams opened and not yet released. */
+let openStreams = 0;
+
+/**
+ * Goes up every time the mic opens. The app's audio player makes a fresh
+ * <audio> element when it changed: on iOS an element that lived through a
+ * recording could stay silent afterwards (Dylan's iPhone, 2026-10-13).
+ */
+export function getMicGeneration(): number {
+  return micGeneration;
+}
+
+/** True while a mic stream is open (recording or about to). */
+export function isMicOpen(): boolean {
+  return openStreams > 0;
+}
+
 /** Opens the mic. Call from a tap. Throws a `MicError` with a kind the UI can show. */
 export async function requestMic(
   nav: Navigator | undefined = typeof navigator !== 'undefined' ? navigator : undefined,
@@ -222,7 +241,10 @@ export async function requestMic(
     throw new MicError('unsupported', 'getUserMedia is not available');
   }
   try {
-    return await nav.mediaDevices.getUserMedia(MIC_CONSTRAINTS);
+    const stream = await nav.mediaDevices.getUserMedia(MIC_CONSTRAINTS);
+    micGeneration += 1;
+    openStreams += 1;
+    return stream;
   } catch (err) {
     const name = (err as { name?: string })?.name;
     if (name === 'NotAllowedError' || name === 'SecurityError') {
@@ -243,6 +265,9 @@ export async function requestMic(
  * (Dylan's iPhone, 2026-10-13). The next recording resumes it in its tap.
  */
 export function releaseStream(stream: MediaStream | null | undefined): void {
+  if (stream && stream.getTracks().some((t) => t.readyState !== 'ended')) {
+    openStreams = Math.max(0, openStreams - 1);
+  }
   stream?.getTracks().forEach((t) => t.stop());
   if (sharedContext && sharedContext.state === 'running') {
     void sharedContext.suspend().catch(() => undefined);
@@ -336,9 +361,10 @@ export async function resumeAudioContext(
   return ctx;
 }
 
-/** Test hook: forget the shared context. */
+/** Test hook: forget the shared context and the mic counters. */
 export function resetAudioContextForTest(): void {
   sharedContext = null;
+  openStreams = 0;
 }
 
 // ── Decoding ──────────────────────────────────────────────────────────────

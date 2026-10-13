@@ -2,6 +2,8 @@
 
 import { useCallback, useSyncExternalStore } from 'react';
 
+import { getMicGeneration, isMicOpen, setAudioSession } from '@/lib/speaking/audio';
+
 /**
  * One audio player for the whole app (Phase 13 T3, handover §4): playing a
  * clip stops whatever was playing, so the native clip and the learner's
@@ -30,6 +32,8 @@ export interface PlayerState {
 }
 
 let audio: HTMLAudioElement | null = null;
+/** `getMicGeneration()` when `audio` was made. */
+let audioMicGeneration = 0;
 /** Stops a span at its end. */
 let spanTimer: ReturnType<typeof setTimeout> | null = null;
 let state: PlayerState = { src: null, rate: 1, error: null };
@@ -41,7 +45,16 @@ function set(next: Partial<PlayerState>) {
 }
 
 function element(): HTMLAudioElement {
+  // iPhone: an element that lived through a recording could play silently
+  // afterwards (second visit to a speaking screen, Dylan's iPhone,
+  // 2026-10-13). A new one after each recording plays normally.
+  if (audio && audioMicGeneration !== getMicGeneration()) {
+    audio.pause();
+    audio.removeAttribute('src');
+    audio = null;
+  }
   if (!audio) {
+    audioMicGeneration = getMicGeneration();
     audio = new Audio();
     audio.preload = 'auto';
     // Not 'pause': playClip pauses before switching clips, and that event
@@ -67,6 +80,9 @@ export async function playClip(
   rate: number = state.rate,
   span?: ClipSpan,
 ): Promise<void> {
+  // Not recording: make sure iOS isn't still routing sound as a call
+  // (`play-and-record` plays through the earpiece, too quietly to hear).
+  if (!isMicOpen()) setAudioSession('auto');
   const el = element();
   el.pause();
   clearSpan();

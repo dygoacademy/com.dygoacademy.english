@@ -1,6 +1,8 @@
 import { act, renderHook } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { releaseStream, requestMic, resetAudioContextForTest } from '@/lib/speaking/audio';
+
 import { playClip, resetPlayerForTest, stopClip, usePlayer } from './usePlayer';
 
 describe('usePlayer', () => {
@@ -67,5 +69,43 @@ describe('usePlayer', () => {
     } finally {
       vi.useRealTimers();
     }
+  });
+
+  describe('after a recording (iPhone, 2026-10-13)', () => {
+    afterEach(() => {
+      vi.unstubAllGlobals();
+      resetAudioContextForTest();
+    });
+
+    async function recordOnce(nav: { mediaDevices: unknown; audioSession: { type: string } }) {
+      const stream = await requestMic(nav as unknown as Navigator);
+      expect(nav.audioSession.type).toBe('play-and-record');
+      releaseStream(stream);
+    }
+
+    it('plays through a fresh element and puts the audio session back to auto', async () => {
+      const track = { readyState: 'live', stop: vi.fn() };
+      const nav = {
+        mediaDevices: {
+          getUserMedia: vi.fn(async () => {
+            nav.audioSession.type = 'play-and-record';
+            return { getTracks: () => [track] };
+          }),
+        },
+        audioSession: { type: 'auto' },
+      };
+      vi.stubGlobal('navigator', nav);
+
+      await playClip('a.m4a');
+      await recordOnce(nav);
+      nav.audioSession.type = 'play-and-record'; // iOS kept the call route
+      await playClip('a.m4a');
+
+      expect(play.mock.contexts[1]).not.toBe(play.mock.contexts[0]);
+      expect(nav.audioSession.type).toBe('auto');
+
+      await playClip('b.m4a'); // no new recording: same element
+      expect(play.mock.contexts[2]).toBe(play.mock.contexts[1]);
+    });
   });
 });
