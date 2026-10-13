@@ -1042,3 +1042,11 @@ Engineering-facing log of shipped fixes and changes, one dated entry per change.
 * **What**: only `README.md`, `CLAUDE.md` and `Change Log.md` stay at the root. `docs/design/` is unchanged because code and tooling use that path.
 * **Left alone**: `database/archive/2026-09-25_pre_squash/` and `messages/bak/` (frozen copies). README links to `phase 10` / `phase 11 implementation plan.md` were already broken before this move.
 * **Verified**: comment and Markdown changes only; no file outside `docs/` references an old root path (`git grep`).
+
+## 2026-10-13
+
+### Added: instant loading feedback when moving between garden screens on slow networks
+* **Files**: frontend [`NavProgress.tsx`](com.dygoacademy.frontend/src/components/garden/NavProgress.tsx) (+ test), [`(garden)/layout.tsx`](com.dygoacademy.frontend/src/app/(garden)/layout.tsx), `globals.css` (`nav-progress` keyframes)
+* **What**: clicking any internal link in the garden (tab bar, rail, sidebar, cards) starts a thin gold bar at the top at once, and after 200 ms a spinner over the screen. Both go when the path changes (20 s safety stop). New-tab, modified, external and same-page clicks are ignored. Status text reuses `screens.live.loading`, so no new copy.
+* **Why**: on 3G the menu click left the old screen frozen or blank for ~2 s. `loading.tsx` only shows once its boundary has been prefetched and its chunk downloaded, which a slow network may not have done; this feedback does not depend on either.
+* **Verified**: `tsc --noEmit` clean; vitest `NavProgress` 2/2, `routeStates` passing. Not yet checked on UAT with 3G throttling.

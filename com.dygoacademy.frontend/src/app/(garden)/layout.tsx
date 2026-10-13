@@ -4,6 +4,7 @@ import { redirect } from 'next/navigation';
 
 import { GroupsTabLive } from '@/components/garden/live/GroupsTabLive';
 import { AppUpdateWatcher } from '@/components/garden/AppUpdateWatcher';
+import { NavProgress } from '@/components/garden/NavProgress';
 import { MediaCacheRegistrar } from '@/components/garden/MediaCacheRegistrar';
 import { ROUTES } from '@/constants/routes';
 import { getGardenLocaleContext, getGardenUser } from '@/i18n/garden-locale';
@@ -71,6 +72,7 @@ export default async function GardenLayout({ children }: { children: React.React
     >
       <MediaCacheRegistrar />
       <AppUpdateWatcher />
+      <NavProgress />
       <GroupsTabLive>{children}</GroupsTabLive>
     </GardenRoot>
   );
