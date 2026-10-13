@@ -1117,3 +1117,8 @@ Engineering-facing log of shipped fixes and changes, one dated entry per change.
 ### Fixed: LD3b tab bar spanned only its content, not the screen
 * **Files**: frontend `loader/GardenLoader.tsx`
 * **What**: the loader's column centres its children, so the tab bar shrank to its labels. It now sits in a full-width wrapper. Found by `garden:diff` on UAT (LD3b 0.452 % with the bar misplaced).
+
+### Docs: loading LD3b marked Built; garden:diff on UAT
+* **Files**: [`docs/design/garden/CHANGELOG.md`](docs/design/garden/CHANGELOG.md)
+* **What**: the 2026-10-13 "LD3b replaces LD3" entry and the LD3b row say Built `d71799d`. Deployed to UAT 2026-10-13.
+* **Verified**: `garden:diff --base https://www.dygoacademy.com --only LD1-loading-sprout,LD3b-loading-bee-nav,LD3b-loading-bee-nav-topics --locale en-US,vi-VN`: LD1 0.003 % / vi 0.001 %, LD3b nav 0.009 % / vi 0.006 %, LD3b nav-topics 0.009 % (its vi has no reference PNG, by design: three references only).
