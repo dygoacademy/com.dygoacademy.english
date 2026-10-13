@@ -1050,3 +1050,9 @@ Engineering-facing log of shipped fixes and changes, one dated entry per change.
 * **What**: clicking any internal link in the garden (tab bar, rail, sidebar, cards) starts a thin gold bar at the top at once, and after 200 ms a spinner over the screen. Both go when the path changes (20 s safety stop). New-tab, modified, external and same-page clicks are ignored. Status text reuses `screens.live.loading`, so no new copy.
 * **Why**: on 3G the menu click left the old screen frozen or blank for ~2 s. `loading.tsx` only shows once its boundary has been prefetched and its chunk downloaded, which a slow network may not have done; this feedback does not depend on either.
 * **Verified**: `tsc --noEmit` clean; vitest `NavProgress` 2/2, `routeStates` passing. Not yet checked on UAT with 3G throttling.
+
+### Fixed: garden loading skeleton was nearly invisible, so it still looked blank on 3G
+* **Files**: frontend [`(garden)/loading.tsx`](com.dygoacademy.frontend/src/app/(garden)/loading.tsx)
+* **What**: skeleton blocks use `bg-border` (#e3ddd0) instead of `bg-surface-sunken` (#f7f4ec), and a spinner sits above them.
+* **Why**: `surface-sunken` is almost the screen background (#f4f1ea). When the navigation bar ended and the real screen was still loading, the skeleton showed but could not be seen. Found by reading the code and colours; not reproduced on a throttled connection.
+* **Verified**: `tsc --noEmit` clean, `routeStates` 9/9.
