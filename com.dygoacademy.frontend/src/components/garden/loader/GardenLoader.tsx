@@ -192,7 +192,12 @@ export function GardenLoader({
               </div>
             )}
           </div>
-          {tab ? <GardenTabBar active={tab} /> : null}
+          {tab ? (
+            // The column centres its children; the tab bar must span it.
+            <div className="w-full">
+              <GardenTabBar active={tab} />
+            </div>
+          ) : null}
         </>
       ) : null}
     </div>
