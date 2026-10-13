@@ -83,7 +83,7 @@ describe('usePlayer', () => {
       releaseStream(stream);
     }
 
-    it('plays through a fresh element and puts the audio session back to auto', async () => {
+    it('plays through a fresh element in the playback audio session', async () => {
       const track = { readyState: 'live', stop: vi.fn() };
       const nav = {
         mediaDevices: {
@@ -102,7 +102,7 @@ describe('usePlayer', () => {
       await playClip('a.m4a');
 
       expect(play.mock.contexts[1]).not.toBe(play.mock.contexts[0]);
-      expect(nav.audioSession.type).toBe('auto');
+      expect(nav.audioSession.type).toBe('playback');
 
       await playClip('b.m4a'); // no new recording: same element
       expect(play.mock.contexts[2]).toBe(play.mock.contexts[1]);

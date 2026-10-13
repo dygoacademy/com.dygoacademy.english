@@ -285,7 +285,7 @@ export function releaseStream(stream: MediaStream | null | undefined): void {
  * No-op where the API doesn't exist.
  */
 export function setAudioSession(
-  type: 'play-and-record' | 'auto',
+  type: 'play-and-record' | 'playback' | 'auto',
   nav: unknown = typeof navigator !== 'undefined' ? navigator : undefined,
 ): void {
   const session = (nav as { audioSession?: { type: string } } | undefined)?.audioSession;
@@ -295,6 +295,20 @@ export function setAudioSession(
   } catch {
     // an older implementation that refuses the type: nothing to do
   }
+}
+
+/**
+ * Call right before playing a clip. Unless the mic is open, iOS gets the
+ * `playback` session: sound through the speaker even with the silent
+ * switch on. The home-screen app follows the silent switch under `auto`,
+ * and after a recording iOS could keep the earpiece route, so the voice
+ * was silent there (Dylan's iPhone, 2026-10-13). Safari tabs already
+ * played through the switch; this makes the installed app match.
+ */
+export function prepareForPlayback(
+  nav: unknown = typeof navigator !== 'undefined' ? navigator : undefined,
+): void {
+  if (!isMicOpen()) setAudioSession('playback', nav);
 }
 
 // ── AudioContext ──────────────────────────────────────────────────────────

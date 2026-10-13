@@ -4,6 +4,7 @@ import * as React from 'react';
 import { useTranslations } from 'next-intl';
 
 import { type MediaKind, trackAudioStart } from '@/lib/media-timing';
+import { prepareForPlayback } from '@/lib/speaking/audio';
 
 import { gcn } from './cn';
 import { SpeakerIcon, SpeakerOffIcon } from './icons';
@@ -90,6 +91,7 @@ export function AudioButton({
     audio.playbackRate = playbackRate;
     audio.currentTime = 0;
     setStatus('playing');
+    prepareForPlayback(); // speaker, through the silent switch (iOS home-screen app)
     trackAudioStart(audio, src, mediaKind);
     void audio.play().catch((error: unknown) => {
       // A newer play()/pause() interrupting this one isn't a failure.

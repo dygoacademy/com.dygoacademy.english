@@ -2,7 +2,7 @@
 
 import { useCallback, useSyncExternalStore } from 'react';
 
-import { getMicGeneration, isMicOpen, setAudioSession } from '@/lib/speaking/audio';
+import { getMicGeneration, prepareForPlayback } from '@/lib/speaking/audio';
 
 /**
  * One audio player for the whole app (Phase 13 T3, handover §4): playing a
@@ -80,9 +80,8 @@ export async function playClip(
   rate: number = state.rate,
   span?: ClipSpan,
 ): Promise<void> {
-  // Not recording: make sure iOS isn't still routing sound as a call
-  // (`play-and-record` plays through the earpiece, too quietly to hear).
-  if (!isMicOpen()) setAudioSession('auto');
+  // Not recording: speaker, and through the silent switch (iOS).
+  prepareForPlayback();
   const el = element();
   el.pause();
   clearSpan();
