@@ -52,7 +52,8 @@ export const config = {
      * Match every path except static assets and Next internals — running
      * the session refresh on those would be wasted work, not a security
      * issue, but there's no reason to pay for it.
+     * The PWA files (manifest, service worker, offline page) are static too.
      */
-    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+    '/((?!_next/static|_next/image|favicon.ico|manifest.webmanifest|sw.js|offline.html|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
   ],
 };

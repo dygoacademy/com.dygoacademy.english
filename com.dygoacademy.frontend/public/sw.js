@@ -16,14 +16,35 @@
  * other hosts) is not touched: no respondWith, the browser handles it.
  * Any failure (e.g. a response without CORS headers) falls back to a
  * plain network fetch of the original request.
+ *
+ * Offline page (PWA, 2026-10-13): `/offline.html` is cached on install.
+ * Page loads still always go to the network (with navigation preload, so
+ * the worker adds no start-up delay); only when that fails (no
+ * connection) does the learner get the offline page instead of the
+ * browser's error screen. It retries by itself when the phone is back
+ * online. API calls and other requests are untouched.
  */
 
 const MEDIA_CACHE = 'dygo-media-v1';
 const MEDIA_HOSTS = ['media.dygoacademy.com'];
 const MEDIA_CACHE_MAX = 400;
+const OFFLINE_CACHE = 'dygo-offline-v1';
+const OFFLINE_PATH = '/offline.html';
 
-self.addEventListener('install', () => {
+function offlineUrl() {
+  return new URL(OFFLINE_PATH, self.location.origin).href;
+}
+
+self.addEventListener('install', (event) => {
   self.skipWaiting();
+  event.waitUntil(
+    caches
+      .open(OFFLINE_CACHE)
+      .then((cache) => cache.add(new Request(offlineUrl(), { cache: 'reload' })))
+      .catch(() => {
+        // Offline at install: page loads just show the browser's own error.
+      }),
+  );
 });
 
 self.addEventListener('activate', (event) => {
@@ -33,10 +54,18 @@ self.addEventListener('activate', (event) => {
       .then((names) =>
         Promise.all(
           names
-            .filter((n) => n.startsWith('dygo-media-') && n !== MEDIA_CACHE)
+            .filter(
+              (n) =>
+                (n.startsWith('dygo-media-') && n !== MEDIA_CACHE) ||
+                (n.startsWith('dygo-offline-') && n !== OFFLINE_CACHE),
+            )
             .map((n) => caches.delete(n)),
         ),
       )
+      .then(() => self.registration.navigationPreload?.enable())
+      .catch(() => {
+        // No navigation preload (Safari < 15.4): pages load through fetch().
+      })
       .then(() => self.clients.claim()),
   );
 });
@@ -105,8 +134,24 @@ async function rangeResponse(full, rangeHeader) {
   });
 }
 
+/** A page load: the network (preloaded when possible), or the offline page if that fails. */
+async function pageResponse(event) {
+  try {
+    const preloaded = await event.preloadResponse;
+    if (preloaded) return preloaded;
+    return await fetch(event.request);
+  } catch {
+    const offline = await caches.match(offlineUrl(), { cacheName: OFFLINE_CACHE });
+    return offline || Response.error();
+  }
+}
+
 self.addEventListener('fetch', (event) => {
   const { request } = event;
+  if (request.mode === 'navigate' && request.method === 'GET') {
+    event.respondWith(pageResponse(event));
+    return;
+  }
   if (!isMediaRequest(request)) return;
   event.respondWith(
     (async () => {

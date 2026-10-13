@@ -36,6 +36,8 @@ function fakeCaches() {
     },
     keys: async () => [...byName.keys()],
     delete: async (name: string) => byName.delete(name),
+    match: async (req: string | Request, opts?: { cacheName?: string }) =>
+      opts?.cacheName ? byName.get(opts.cacheName)?.match(req) : undefined,
   };
 }
 
@@ -52,7 +54,8 @@ function loadServiceWorker(fetchMock: ReturnType<typeof vi.fn>) {
     },
     skipWaiting: vi.fn(),
     clients: { claim: vi.fn(async () => undefined) },
-    registration: {},
+    registration: { navigationPreload: { enable: vi.fn(async () => undefined) } },
+    location: { origin: 'https://www.dygoacademy.com' },
   };
   const caches = fakeCaches();
   const src = readFileSync(path.resolve(__dirname, '../../public/sw.js'), 'utf8');
@@ -64,7 +67,24 @@ function loadServiceWorker(fetchMock: ReturnType<typeof vi.fn>) {
     listeners.fetch({ request: new Request(url, init), respondWith: (p: Promise<Response>) => (responded = p) });
     return responded ? await responded : null;
   }
-  return { request, caches, listeners };
+  /** Fires a page-load fetch event (`mode: 'navigate'` can't be set on a real Request). */
+  async function navigate(url: string, preloadResponse?: Promise<Response | undefined>) {
+    let responded: Promise<Response> | null = null;
+    const pageRequest = { url, method: 'GET', mode: 'navigate', headers: new Headers() };
+    listeners.fetch({
+      request: pageRequest,
+      preloadResponse: preloadResponse ?? Promise.resolve(undefined),
+      respondWith: (p: Promise<Response>) => (responded = p),
+    });
+    return { response: responded ? await responded : null, pageRequest };
+  }
+  /** Runs an install or activate event to completion. */
+  async function lifecycle(type: 'install' | 'activate') {
+    let done: Promise<unknown> = Promise.resolve();
+    listeners[type]({ waitUntil: (p: Promise<unknown>) => (done = p) });
+    await done;
+  }
+  return { request, navigate, lifecycle, caches, listeners, self };
 }
 
 describe('public/sw.js media cache', () => {
@@ -146,6 +166,79 @@ describe('public/sw.js media cache', () => {
     sw.listeners.activate({ waitUntil: (p: Promise<unknown>) => (done = p) });
     await done;
     expect([...sw.caches.byName.keys()].sort()).toEqual([MEDIA_CACHE, 'something-else']);
+  });
+});
+
+describe('public/sw.js offline page', () => {
+  const PAGE = 'https://www.dygoacademy.com/review';
+  const OFFLINE = 'https://www.dygoacademy.com/offline.html';
+  const offlinePage = () => new Response('<h1>offline</h1>', { status: 200 });
+
+  it('caches /offline.html on install', async () => {
+    const fetchMock = vi.fn(async () => offlinePage());
+    const sw = loadServiceWorker(fetchMock);
+    // cache.add(request) on the fake: fetch it and store it, like the real one.
+    const cache = await sw.caches.open('dygo-offline-v1');
+    Object.assign(cache, {
+      add: async (req: Request) => cache.put(req, await fetchMock()),
+    });
+    await sw.lifecycle('install');
+    expect(sw.self.skipWaiting).toHaveBeenCalled();
+    expect(await cache.match(OFFLINE)).toBeDefined();
+  });
+
+  it('install still finishes when the offline page can not be fetched', async () => {
+    const sw = loadServiceWorker(vi.fn());
+    const cache = await sw.caches.open('dygo-offline-v1');
+    Object.assign(cache, { add: async () => Promise.reject(new TypeError('offline')) });
+    await expect(sw.lifecycle('install')).resolves.toBeUndefined();
+  });
+
+  it('loads pages from the network when online', async () => {
+    const page = new Response('<h1>review</h1>');
+    const fetchMock = vi.fn(async () => page);
+    const sw = loadServiceWorker(fetchMock);
+    const { response, pageRequest } = await sw.navigate(PAGE);
+    expect(response).toBe(page);
+    expect(fetchMock).toHaveBeenCalledWith(pageRequest);
+  });
+
+  it('uses the navigation preload response when there is one', async () => {
+    const preloaded = new Response('<h1>preloaded</h1>');
+    const fetchMock = vi.fn();
+    const sw = loadServiceWorker(fetchMock);
+    const { response } = await sw.navigate(PAGE, Promise.resolve(preloaded));
+    expect(response).toBe(preloaded);
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it('shows the cached offline page when the network fails', async () => {
+    const fetchMock = vi.fn().mockRejectedValue(new TypeError('Failed to fetch'));
+    const sw = loadServiceWorker(fetchMock);
+    await (await sw.caches.open('dygo-offline-v1')).put(OFFLINE, offlinePage());
+
+    const viaFetch = await sw.navigate(PAGE);
+    expect(await viaFetch.response!.text()).toBe('<h1>offline</h1>');
+
+    const viaPreload = await sw.navigate(PAGE, Promise.reject(new TypeError('Failed to fetch')));
+    expect(await viaPreload.response!.text()).toBe('<h1>offline</h1>');
+  });
+
+  it('returns a network error when offline and the offline page was never cached', async () => {
+    const sw = loadServiceWorker(vi.fn().mockRejectedValue(new TypeError('Failed to fetch')));
+    const { response } = await sw.navigate(PAGE);
+    expect(response!.type).toBe('error');
+  });
+
+  it('on activate, enables navigation preload and replaces older offline caches', async () => {
+    const sw = loadServiceWorker(vi.fn());
+    await sw.caches.open('dygo-offline-v0');
+    await sw.caches.open('dygo-offline-v1');
+    await sw.lifecycle('activate');
+    expect(sw.caches.byName.has('dygo-offline-v0')).toBe(false);
+    expect(sw.caches.byName.has('dygo-offline-v1')).toBe(true);
+    expect(sw.self.registration.navigationPreload.enable).toHaveBeenCalled();
+    expect(sw.self.clients.claim).toHaveBeenCalled();
   });
 });
 

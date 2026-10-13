@@ -38,6 +38,22 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   const homeLocale = normalizeLocale((await headers()).get(URL_LOCALE_HEADER));
   return (
     <html lang={homeLocale ?? 'en'} suppressHydrationWarning>
+      {/* PWA (2026-10-13): install tags, written here rather than through
+          `metadata` because Next 15.2+ streams metadata into <body> for
+          browsers, and Chrome (manifest) and iOS Safari (home-screen
+          name and full-screen launch) only read them in <head>.
+          src/app/manifest.ts is the manifest itself. The default status bar
+          keeps auth and onboarding screens, which have no safe-area
+          padding, clear of the notch. */}
+      <head>
+        <link rel="manifest" href="/manifest.webmanifest" />
+        <meta name="application-name" content="Dygo" />
+        <meta name="mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-title" content="Dygo" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+        <link rel="apple-touch-icon" href="/apple-icon.png" sizes="180x180" />
+      </head>
       <body>
         {/* Pinned to light regardless of OS/browser dark-mode setting — the
             app's dark palette (bg-card etc.) was rendering every card/form

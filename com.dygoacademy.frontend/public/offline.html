@@ -1,0 +1,127 @@
+<!doctype html>
+<!--
+  PWA offline page (2026-10-13). public/sw.js caches this file on install and
+  shows it when a page can't load because the phone has no connection.
+  Self-contained (no Next.js, fonts or network): the text follows the
+  dygo_locale cookie, then the browser language. The body and button reuse
+  garden.states.error / retry from messages/*.json; keep them in sync.
+-->
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#24463A" />
+    <meta name="robots" content="noindex" />
+    <title>Dygo</title>
+    <style>
+      :root {
+        color-scheme: light;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        margin: 0;
+        min-height: 100%;
+      }
+      body {
+        min-height: 100vh;
+        min-height: 100dvh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: max(24px, env(safe-area-inset-top)) max(24px, env(safe-area-inset-right))
+          max(24px, env(safe-area-inset-bottom)) max(24px, env(safe-area-inset-left));
+        background: #f4f1ea;
+        color: #1c2b24;
+        font-family: 'DM Sans', 'Be Vietnam Pro', system-ui, -apple-system, 'Segoe UI', Roboto,
+          'PingFang SC', 'Noto Sans SC', sans-serif;
+        -webkit-text-size-adjust: 100%;
+      }
+      main {
+        width: 100%;
+        max-width: 360px;
+        text-align: center;
+      }
+      svg {
+        width: 88px;
+        height: 88px;
+      }
+      h1 {
+        margin: 20px 0 8px;
+        font-size: 24px;
+        line-height: 1.25;
+        font-weight: 700;
+      }
+      p {
+        margin: 0 0 24px;
+        font-size: 16px;
+        line-height: 1.5;
+        color: #5e6a62;
+      }
+      button {
+        min-height: 48px;
+        padding: 0 28px;
+        border: 0;
+        border-radius: 14px;
+        background: #24463a;
+        color: #fff;
+        font: inherit;
+        font-size: 16px;
+        font-weight: 700;
+        cursor: pointer;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <svg viewBox="0 0 16 16" aria-hidden="true">
+        <circle cx="8" cy="8" r="8" fill="#24463A" />
+        <path d="M8 13.2V7" stroke="#9CC39A" stroke-width="1.6" stroke-linecap="round" fill="none" />
+        <path d="M8 10.5C5 10.5 3.3 8.6 3.8 6C6.4 6 8 7.6 8 10.5Z" fill="#9CC39A" />
+        <path d="M8 8.5C11 8.5 12.7 6.3 12.2 3.4C9.6 3.4 8 5.4 8 8.5Z" fill="#B7D6AE" />
+      </svg>
+      <h1 id="title">You’re offline</h1>
+      <p id="body">We couldn’t load your garden. Check your connection and try again.</p>
+      <button id="retry" type="button">Try again</button>
+    </main>
+    <script>
+      (function () {
+        var copy = {
+          en: {
+            title: 'You’re offline',
+            body: 'We couldn’t load your garden. Check your connection and try again.',
+            retry: 'Try again',
+          },
+          vi: {
+            title: 'Bạn đang ngoại tuyến',
+            body: 'Chưa tải được khu vườn. Bạn kiểm tra kết nối rồi thử lại nhé.',
+            retry: 'Thử lại',
+          },
+          zh: {
+            title: '你已离线',
+            body: '花园没能加载，请检查网络后再试。',
+            retry: '重试',
+          },
+        };
+        var match = /(?:^|;\s*)dygo_locale=([^;]+)/.exec(document.cookie);
+        var lang = ((match && decodeURIComponent(match[1])) || navigator.language || 'en')
+          .slice(0, 2)
+          .toLowerCase();
+        var t = copy[lang] || copy.en;
+        document.documentElement.lang = copy[lang] ? lang : 'en';
+        document.getElementById('title').textContent = t.title;
+        document.getElementById('body').textContent = t.body;
+        document.getElementById('retry').textContent = t.retry;
+
+        function retry() {
+          window.location.reload();
+        }
+        document.getElementById('retry').addEventListener('click', retry);
+        // Back online: load the page the learner asked for.
+        window.addEventListener('online', retry);
+      })();
+    </script>
+  </body>
+</html>
