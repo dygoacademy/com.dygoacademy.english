@@ -73,7 +73,8 @@ const NAMES = [
   'OB4-reminder',
   'OB5-ready',
   'LD1-loading-sprout',
-  'LD3-loading-bee',
+  'LD3b-loading-bee-nav',
+  'LD3b-loading-bee-nav-topics',
   // UI-G
   'GR1-shared-gardens',
   'GR2-group-garden',

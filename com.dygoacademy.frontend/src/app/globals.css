@@ -69,7 +69,7 @@
  * Loading screen LD1 "Seed to sprout" and LD3 "Bee's flight"
  * (components/garden/loader, canvas LoadingSprout / LoadingBee, 2026-10-13).
  * The base styles are the still frame (the full sprout with the bee landed;
- * the bee at the top of its path, card shown; first line only). Motion is
+ * the bee at the top of its path; first line only). Motion is
  * added only when the learner has not asked for reduced motion, so the
  * reduced-motion frame needs no extra rules. `transform-box: fill-box` is
  * set per animated element, never on `svg *` (it would move the bee's wings).
@@ -193,9 +193,6 @@
     transform-box: fill-box;
     transform-origin: center;
     animation: dg-ld-face 4.2s step-end infinite;
-  }
-  .dg-ld-card {
-    animation: dg-ld-card 0.5s ease-out 0.3s both;
   }
 }
 @media (prefers-reduced-motion: reduce) {
@@ -373,16 +370,6 @@
   }
   75% {
     transform: scaleX(1);
-  }
-}
-@keyframes dg-ld-card {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: none;
   }
 }
 

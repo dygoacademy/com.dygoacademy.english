@@ -439,8 +439,10 @@ function ReferenceScreenBody({ name, locale }: { name: ReferenceName; locale: Ap
       );
     case 'LD1-loading-sprout':
       return <GardenLoader phase="sprout" />;
-    case 'LD3-loading-bee':
-      return <GardenLoader phase="bee" word="bloom" />;
+    case 'LD3b-loading-bee-nav':
+      return <GardenLoader phase="bee" pathname={GARDEN_ROUTES.home} />;
+    case 'LD3b-loading-bee-nav-topics':
+      return <GardenLoader phase="bee" pathname={GARDEN_ROUTES.topics} />;
     case 'AU2-create-account':
     case 'AU2-create-account-donate':
     case 'AU3-create-account-invite':

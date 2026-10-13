@@ -969,18 +969,7 @@
         "2": "Đang tưới khu vườn…",
         "3": "Sắp xong rồi…"
       },
-      "slow": "Vẫn đang tải… kiểm tra kết nối mạng",
-      "wait": "Trong lúc chờ",
-      "words": {
-        "bloom": "nở hoa; phát triển tốt",
-        "sprout": "nảy mầm; mọc lên",
-        "thrive": "phát triển mạnh",
-        "nurture": "nuôi dưỡng, vun đắp",
-        "harvest": "mùa gặt; thành quả",
-        "flourish": "hưng thịnh; phát triển tốt",
-        "cultivate": "trau dồi; vun đắp",
-        "resilient": "kiên cường, bền bỉ"
-      }
+      "slow": "Vẫn đang tải… kiểm tra kết nối mạng"
     },
     "groups": {
       "list": {

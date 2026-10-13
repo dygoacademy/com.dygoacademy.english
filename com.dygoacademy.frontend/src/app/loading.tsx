@@ -21,7 +21,7 @@ import { GardenRoot } from './(garden)/GardenRoot';
  *
  * It must appear at once, so it does not look the learner up (no session
  * call): the language is the `dygo_locale` cookie, then Accept-Language, then
- * English. Only the messages the loader reads are sent to the browser.
+ * English. Only the messages the loader reads (its lines and the tab bar's labels) are sent to the browser.
  */
 export default async function Loading() {
   const [cookieStore, headerStore] = await Promise.all([cookies(), headers()]);
@@ -35,7 +35,7 @@ export default async function Loading() {
       live: { loading: all.screens.live.loading, retry: all.screens.live.retry },
       loader: all.screens.loader,
     },
-    components: { partOfSpeech: all.components.partOfSpeech },
+    components: { tabBar: all.components.tabBar },
   };
   return (
     <GardenRoot

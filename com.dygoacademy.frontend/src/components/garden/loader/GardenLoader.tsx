@@ -3,10 +3,13 @@
 import * as React from 'react';
 import { useTranslations } from 'next-intl';
 
+import { usePathname } from 'next/navigation';
+
 import { gcn } from '../cn';
+import { GardenTabBar } from '../screens/GardenTabBar';
 import { BeeOrbitArt } from './BeeOrbitArt';
 import { SproutArt } from './SproutArt';
-import { WaitWordCard } from './WaitWordCard';
+import { tabFor } from './tabs';
 
 export type LoaderPhase = 'sprout' | 'bee' | 'slow';
 
@@ -86,19 +89,20 @@ function phaseAt(elapsed: number, first: boolean): LoaderPhase {
  * - No minimum display time: it unmounts the moment data arrives.
  *
  * `data-phase` carries the phase for tests. `phase` pins it (reference
- * pages): no timers, and `word` pins the card's word. `startAtBee` is for a
+ * pages): no timers, and `pathname` pins the path (the tab bar). `startAtBee` is for a
  * caller that has already made the learner wait 2.5 s. Reduced motion shows
  * the still frames (globals.css); the phase changes still happen.
  */
 export function GardenLoader({
   onRetry,
   phase: pinned,
-  word,
+  pathname: pinnedPath,
   startAtBee = false,
 }: {
   onRetry?: () => void;
   phase?: LoaderPhase;
-  word?: string;
+  /** The path being loaded (default: the current one); pins it for the reference pages and tests. */
+  pathname?: string;
   startAtBee?: boolean;
 }) {
   const live = useTranslations('screens.live');
@@ -108,6 +112,8 @@ export function GardenLoader({
     () => pinned ?? phaseAt(Date.now() - joined.start, joined.first),
   );
   const later = !joined.first;
+  const currentPath = usePathname();
+  const tab = tabFor(pinnedPath ?? currentPath);
 
   React.useEffect(() => {
     if (pinned) return;
@@ -154,38 +160,40 @@ export function GardenLoader({
         </div>
       ) : null}
       {art ? (
-        <div
-          className={gcn(
-            'flex w-full flex-col items-center',
-            later && !startAtBee && !continued ? 'dg-ld-appear' : 'dg-ld-in',
-          )}
-        >
-          <div className="mt-[150px] flex w-full justify-center">
-            <BeeOrbitArt />
-          </div>
-          {slow ? (
-            <div className="-mt-5 flex flex-col items-center px-6 text-center text-[15px] text-muted-foreground">
-              <span>{t('slow')}</span>
-              <button
-                type="button"
-                onClick={() => (onRetry ? onRetry() : window.location.reload())}
-                className="mt-1 inline-flex h-11 items-center px-4 text-[15px] font-semibold text-forest"
+        <>
+          <div
+            className={gcn(
+              'flex w-full flex-1 flex-col items-center justify-center pb-5',
+              later && !startAtBee && !continued ? 'dg-ld-appear' : 'dg-ld-in',
+            )}
+          >
+            <div className="-mt-10 flex w-full justify-center">
+              <BeeOrbitArt />
+            </div>
+            {slow ? (
+              <div className="-mt-[70px] flex flex-col items-center px-6 text-center text-[15px] text-muted-foreground">
+                <span>{t('slow')}</span>
+                <button
+                  type="button"
+                  onClick={() => (onRetry ? onRetry() : window.location.reload())}
+                  className="mt-1 inline-flex h-11 items-center px-4 text-[15px] font-semibold text-forest"
+                >
+                  {live('retry')}
+                </button>
+              </div>
+            ) : (
+              <div
+                aria-hidden="true"
+                className="dg-ld-lines relative -mt-[70px] h-[22px] w-full text-[15px] text-muted-foreground"
               >
-                {live('retry')}
-              </button>
-            </div>
-          ) : (
-            <div
-              aria-hidden="true"
-              className="dg-ld-lines relative -mt-5 h-[22px] w-full text-[15px] text-muted-foreground"
-            >
-              <span>{t('bee.1')}</span>
-              <span>{t('bee.2')}</span>
-              <span>{t('bee.3')}</span>
-            </div>
-          )}
-          <WaitWordCard word={word} />
-        </div>
+                <span>{t('bee.1')}</span>
+                <span>{t('bee.2')}</span>
+                <span>{t('bee.3')}</span>
+              </div>
+            )}
+          </div>
+          {tab ? <GardenTabBar active={tab} /> : null}
+        </>
       ) : null}
     </div>
   );

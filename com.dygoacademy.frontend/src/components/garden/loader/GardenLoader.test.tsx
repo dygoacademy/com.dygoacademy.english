@@ -13,12 +13,15 @@ import {
   markAppStarted,
   resetLoaderBootForTests,
 } from './GardenLoader';
-import { WAIT_WORDS } from './words';
+
+const nav = vi.hoisted(() => ({ path: '/garden' }));
+vi.mock('next/navigation', () => ({ usePathname: () => nav.path }));
 
 const phase = () => screen.getByRole('status').getAttribute('data-phase');
 const advance = (ms: number) => act(() => void vi.advanceTimersByTime(ms));
 
 beforeEach(() => {
+  nav.path = '/garden';
   vi.useFakeTimers();
   resetLoaderBootForTests();
 });
@@ -110,8 +113,8 @@ describe('GardenLoader timers', () => {
   });
 
   it('a pinned phase sets no timers', () => {
-    renderWithIntl(<GardenLoader phase="bee" word="bloom" />);
-    expect(phase()).toBe('bee');
+    renderWithIntl(<GardenLoader phase="sprout" />);
+    expect(phase()).toBe('sprout');
     expect(vi.getTimerCount()).toBe(0);
   });
 });
@@ -146,32 +149,6 @@ describe('GardenLoader slow state', () => {
   });
 });
 
-describe('GardenLoader word card', () => {
-  it('shows one of the words, with lang="en" on the word', () => {
-    renderWithIntl(<GardenLoader />);
-    advance(SPROUT_MS);
-    const word = WAIT_WORDS.map((w) => w.word).find(
-      (w) => document.querySelector(`[lang="en"]`)?.textContent === w,
-    );
-    expect(word).toBeTruthy();
-    expect(screen.getByText(en.screens.loader.wait)).toBeTruthy();
-  });
-
-  it('pins the word, with its meaning and part of speech', () => {
-    renderWithIntl(<GardenLoader phase="bee" word="resilient" />);
-    expect(screen.getByText('resilient').getAttribute('lang')).toBe('en');
-    expect(screen.getByText(/able to recover quickly from difficulty/)).toBeTruthy();
-    expect(screen.getByText(/adjective/)).toBeTruthy();
-  });
-
-  it('has a meaning in every language for all 8 words', () => {
-    expect(WAIT_WORDS).toHaveLength(8);
-    for (const w of WAIT_WORDS) {
-      expect((en.screens.loader.words as Record<string, string>)[w.key]).toBeTruthy();
-    }
-  });
-});
-
 describe('GardenLoader screen reader text', () => {
   it('says "Loading your garden…" and switches once to the slow text', () => {
     renderWithIntl(<GardenLoader />);
@@ -192,5 +169,51 @@ describe('GardenLoader screen reader text', () => {
     advance(SPROUT_MS);
     expect(container.querySelector('svg')?.getAttribute('aria-hidden')).toBe('true');
     expect(container.querySelector('.dg-ld-lines')?.getAttribute('aria-hidden')).toBe('true');
+  });
+});
+
+describe('GardenLoader tab bar (LD3b)', () => {
+  const tabBar = () => screen.queryByRole('navigation', { name: en.components.tabBar.label });
+  const active = () => tabBar()?.querySelector('[aria-current="page"]')?.textContent;
+
+  it('shows the tab bar with the tab being loaded highlighted, from the bee phase on', () => {
+    nav.path = '/topics/abc';
+    renderWithIntl(<GardenLoader />);
+    expect(tabBar()).toBeNull(); // LD1 is full screen, even on a tab screen
+    advance(SPROUT_MS);
+    expect(phase()).toBe('bee');
+    expect(active()).toBe(en.components.tabBar.topics);
+    advance(SLOW_MS - SPROUT_MS);
+    expect(phase()).toBe('slow');
+    expect(active()).toBe(en.components.tabBar.topics);
+  });
+
+  it('highlights Garden on /garden', () => {
+    renderWithIntl(<GardenLoader phase="bee" />);
+    expect(active()).toBe(en.components.tabBar.garden);
+  });
+
+  it('has no tab bar on screens without one', () => {
+    for (const path of ['/review', '/quiz', '/welcome/level', '/join/abc']) {
+      nav.path = path;
+      const { unmount } = renderWithIntl(<GardenLoader phase="bee" />);
+      expect(tabBar()).toBeNull();
+      expect(screen.getByRole('status').querySelector('svg')).not.toBeNull();
+      unmount();
+    }
+  });
+
+  it('keeps Try again working beside the tab bar', () => {
+    const onRetry = vi.fn();
+    renderWithIntl(<GardenLoader phase="slow" onRetry={onRetry} />);
+    expect(tabBar()).not.toBeNull();
+    fireEvent.click(screen.getByRole('button', { name: en.screens.live.retry }));
+    expect(onRetry).toHaveBeenCalledTimes(1);
+  });
+
+  it('has no "While you wait" card', () => {
+    renderWithIntl(<GardenLoader phase="bee" />);
+    expect(screen.queryByText(/while you wait/i)).toBeNull();
+    expect(Object.keys(en.screens.loader)).not.toContain('words');
   });
 });

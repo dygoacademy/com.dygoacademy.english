@@ -14,7 +14,10 @@ const apiGet = vi.fn();
 /** The live mic bars the screen sees (room first, then the take). */
 const env = { levels: [] as number[] };
 
-vi.mock('next/navigation', () => ({ useRouter: () => ({ push }) }));
+vi.mock('next/navigation', () => ({
+  useRouter: () => ({ push }),
+  usePathname: () => '/sounds/word',
+}));
 vi.mock('@/hooks/useTopic', () => ({ useTopic: () => ({ data: undefined }) }));
 vi.mock('@/hooks/useLiveLevels', () => ({
   LIVE_LEVELS_PER_SECOND: 20,
