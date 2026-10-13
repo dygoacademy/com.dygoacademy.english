@@ -1,10 +1,10 @@
-"use client";
+'use client';
 
-import * as React from "react";
-import { usePathname } from "next/navigation";
-import { useTranslations } from "next-intl";
+import * as React from 'react';
+import { usePathname } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 
-import { Spinner } from "./Spinner";
+import { Spinner } from './Spinner';
 
 /** A click on a link shows the spinner after this long, so fast loads don't flash it. */
 export const SPINNER_AFTER_MS = 200;
@@ -19,7 +19,7 @@ export const SPINNER_AFTER_MS = 200;
  * ignored. The status text reuses `screens.live.loading` (no new copy).
  */
 export function NavProgress() {
-  const t = useTranslations("screens.live");
+  const t = useTranslations('screens.live');
   const pathname = usePathname();
   const [pending, setPending] = React.useState(false);
   const [spinner, setSpinner] = React.useState(false);
@@ -32,28 +32,24 @@ export function NavProgress() {
   React.useEffect(() => {
     const onClick = (event: MouseEvent) => {
       if (event.defaultPrevented || event.button !== 0) return;
-      if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey)
-        return;
-      const anchor = (event.target as Element | null)?.closest?.("a");
+      if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+      const anchor = (event.target as Element | null)?.closest?.('a');
       if (
         !anchor ||
-        (anchor.target && anchor.target !== "_self") ||
-        anchor.hasAttribute("download")
+        (anchor.target && anchor.target !== '_self') ||
+        anchor.hasAttribute('download')
       ) {
         return;
       }
       const url = new URL(anchor.href, window.location.href);
       if (url.origin !== window.location.origin) return;
-      if (
-        url.pathname === window.location.pathname &&
-        url.search === window.location.search
-      ) {
+      if (url.pathname === window.location.pathname && url.search === window.location.search) {
         return;
       }
       setPending(true);
     };
-    document.addEventListener("click", onClick);
-    return () => document.removeEventListener("click", onClick);
+    document.addEventListener('click', onClick);
+    return () => document.removeEventListener('click', onClick);
   }, []);
 
   React.useEffect(() => {
@@ -69,12 +65,8 @@ export function NavProgress() {
 
   if (!pending) return null;
   return (
-    <div
-      role="status"
-      aria-busy="true"
-      className="pointer-events-none fixed inset-0 z-50"
-    >
-      <span className="sr-only">{t("loading")}</span>
+    <div role="status" aria-busy="true" className="pointer-events-none fixed inset-0 z-50">
+      <span className="sr-only">{t('loading')}</span>
       <div
         aria-hidden="true"
         className="absolute inset-x-0 top-0 h-[3px] overflow-hidden bg-gold/20"

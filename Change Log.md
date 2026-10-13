@@ -1056,3 +1056,8 @@ Engineering-facing log of shipped fixes and changes, one dated entry per change.
 * **What**: skeleton blocks use `bg-border` (#e3ddd0) instead of `bg-surface-sunken` (#f7f4ec), and a spinner sits above them.
 * **Why**: `surface-sunken` is almost the screen background (#f4f1ea). When the navigation bar ended and the real screen was still loading, the skeleton showed but could not be seen. Found by reading the code and colours; not reproduced on a throttled connection.
 * **Verified**: `tsc --noEmit` clean, `routeStates` 9/9.
+
+### Changed: garden loading screen keeps the tab bar
+* **Files**: frontend [`(garden)/loading.tsx`](com.dygoacademy.frontend/src/app/(garden)/loading.tsx), `NavProgress.tsx` (quotes back to the repo style)
+* **What**: the loading skeleton now ends with the tab bar, with the tab for the new path highlighted (from `usePathname`), so the whole page never turns grey while a screen loads on 3G.
+* **Verified**: `tsc --noEmit` clean, `routeStates` and `NavProgress` tests pass. Traced on UAT with the server response delayed 4–9 s: skeleton showed, no page reload.
