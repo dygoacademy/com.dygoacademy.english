@@ -49,27 +49,37 @@ export function GardenLoader({
   onRetry,
   phase: pinned,
   word,
+  startAtBee = false,
 }: {
   onRetry?: () => void;
   phase?: LoaderPhase;
   word?: string;
+  /**
+   * Another loader has already waited SPINNER_MS (the route skeleton): start at LD3
+   * and show the slow state SLOW_MS after that loader began.
+   */
+  startAtBee?: boolean;
 }) {
   const live = useTranslations('screens.live');
   const t = useTranslations('screens.loader');
   const [later] = React.useState(() => booted);
-  const [phase, setPhase] = React.useState<LoaderPhase>(pinned ?? (later ? 'spinner' : 'sprout'));
+  const [phase, setPhase] = React.useState<LoaderPhase>(
+    pinned ?? (startAtBee ? 'bee' : later ? 'spinner' : 'sprout'),
+  );
 
   React.useEffect(() => {
     if (pinned) return;
     const timers = [
-      window.setTimeout(() => setPhase('bee'), later ? SPINNER_MS : SPROUT_MS),
-      window.setTimeout(() => setPhase('slow'), SLOW_MS),
+      ...(startAtBee
+        ? []
+        : [window.setTimeout(() => setPhase('bee'), later ? SPINNER_MS : SPROUT_MS)]),
+      window.setTimeout(() => setPhase('slow'), startAtBee ? SLOW_MS - SPINNER_MS : SLOW_MS),
     ];
     return () => {
       timers.forEach((id) => window.clearTimeout(id));
       booted = true;
     };
-  }, [pinned, later]);
+  }, [pinned, later, startAtBee]);
 
   const current = pinned ?? phase;
   const slow = current === 'slow';

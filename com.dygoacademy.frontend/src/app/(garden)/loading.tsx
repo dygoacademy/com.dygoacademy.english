@@ -1,7 +1,9 @@
 'use client';
 
+import * as React from 'react';
 import { useTranslations } from 'next-intl';
 
+import { GardenLoader, SPINNER_MS } from '@/components/garden/loader/GardenLoader';
 import { GardenTabBar, type GardenTab } from '@/components/garden/screens/GardenTabBar';
 import { Spinner } from '@/components/garden/Spinner';
 import { usePathname } from 'next/navigation';
@@ -16,6 +18,9 @@ import { usePathname } from 'next/navigation';
  * layout: small label + display title, then a hero card and list rows.
  * The shimmer stops for reduced motion. A spinner on top shows even then. The tab bar
  * stays on screen so the page is never empty and the learner can still switch tab.
+ *
+ * After 2.5 s (loading screen plan) LD3 "Bee's flight" takes over, then the slow
+ * message and Try again at 10 s: see `GardenLoading` below.
  */
 // bg-border, not bg-surface-sunken: that one (#f7f4ec) is almost the same colour as the
 // screen background (#f4f1ea), so on a slow network the skeleton looked like a blank page.
@@ -29,7 +34,7 @@ function tabFor(pathname: string): GardenTab {
     : 'garden';
 }
 
-export default function GardenLoading() {
+function RouteSkeleton() {
   const t = useTranslations('screens.live');
   const pathname = usePathname();
   return (
@@ -56,4 +61,13 @@ export default function GardenLoading() {
       <GardenTabBar active={tabFor(pathname)} />
     </div>
   );
+}
+
+export default function GardenLoading() {
+  const [late, setLate] = React.useState(false);
+  React.useEffect(() => {
+    const id = window.setTimeout(() => setLate(true), SPINNER_MS);
+    return () => window.clearTimeout(id);
+  }, []);
+  return late ? <GardenLoader startAtBee /> : <RouteSkeleton />;
 }

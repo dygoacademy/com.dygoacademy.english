@@ -1072,3 +1072,8 @@ Engineering-facing log of shipped fixes and changes, one dated entry per change.
 * **Files**: [`docs/design/garden/CHANGELOG.md`](docs/design/garden/CHANGELOG.md)
 * **What**: the 2026-10-13 entry and the LD1 / LD3 rows now say Built `ed2165a`. Code fix after the first diff run (next commit): the bee's path anchor is the corner of its box (`transform-box: fill-box`, as in the canvas) and the "dygo" wordmark uses the normal line height. Deployed to UAT 2026-10-13.
 * **Verified**: `garden:diff --base https://www.dygoacademy.com --only LD1-loading-sprout,LD3-loading-bee --locale en-US,vi-VN`: LD1 0.003 % / vi 0.001 %, LD3 0.060 % / vi 0.073 % (first run: LD1 0.897 %, which the fix removed).
+
+### Changed: tab-to-tab loading now shows LD3 after 2.5 s
+* **Files**: frontend [`(garden)/loading.tsx`](com.dygoacademy.frontend/src/app/(garden)/loading.tsx), `loader/GardenLoader.tsx` (`startAtBee`), `routeStates.test.tsx`
+* **What**: the route skeleton with the tab bar still shows first; if the screen takes longer than 2.5 s, LD3 "Bee's flight" replaces it, and at 10 s the slow message and Try again appear. Reported 2026-10-13: clicking another tab never showed LD3 (the earlier build left the skeleton as it was).
+* **Verified**: `tsc --noEmit`, `next lint` clean; `routeStates` (new fake-timer test in en, vi, zh) and loader tests pass.
