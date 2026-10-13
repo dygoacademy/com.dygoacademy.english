@@ -1077,3 +1077,9 @@ Engineering-facing log of shipped fixes and changes, one dated entry per change.
 * **Files**: frontend [`(garden)/loading.tsx`](com.dygoacademy.frontend/src/app/(garden)/loading.tsx), `loader/GardenLoader.tsx` (`startAtBee`), `routeStates.test.tsx`
 * **What**: the route skeleton with the tab bar still shows first; if the screen takes longer than 2.5 s, LD3 "Bee's flight" replaces it, and at 10 s the slow message and Try again appear. Reported 2026-10-13: clicking another tab never showed LD3 (the earlier build left the skeleton as it was).
 * **Verified**: `tsc --noEmit`, `next lint` clean; `routeStates` (new fake-timer test in en, vi, zh) and loader tests pass.
+
+### Fixed: LD3 now shows on any slow navigation, not only when Next shows the route skeleton
+* **Files**: frontend [`NavProgress.tsx`](com.dygoacademy.frontend/src/components/garden/NavProgress.tsx) (+ test)
+* **What**: after a link click, if the next screen has not arrived in 2.5 s, `NavProgress` covers the page with `GardenLoader startAtBee` (LD3; slow message and Try again at 10 s). It goes when the path changes. The give-up timer is now 60 s.
+* **Why**: reported on UAT: clicking a tab still showed only the grey skeleton and never LD3. Traced on UAT with the server answer delayed: the route `loading.tsx` shows only when Next had prefetched the route in time, otherwise the old screen just stays with the top bar, so LD3 inside `loading.tsx` (`f9…` "LD3 on tab navigation") could not be relied on. `NavProgress` runs on every click, so it can.
+* **Verified**: `tsc --noEmit`, `next lint` clean; `NavProgress` tests pass (new fake-timer test: bee at 2.5 s, slow at 10 s).

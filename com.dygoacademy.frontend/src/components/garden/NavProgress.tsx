@@ -4,6 +4,7 @@ import * as React from 'react';
 import { usePathname } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 
+import { GardenLoader, SPINNER_MS } from './loader/GardenLoader';
 import { Spinner } from './Spinner';
 
 /** A click on a link shows the spinner after this long, so fast loads don't flash it. */
@@ -17,16 +18,23 @@ export const SPINNER_AFTER_MS = 200;
  * document so it covers every link (tab bar, rail, sidebar, cards) without
  * touching them. New tabs, downloads, hash-only and same-page links are
  * ignored. The status text reuses `screens.live.loading` (no new copy).
+ *
+ * After 2.5 s still waiting, the loading screen LD3 "Bee's flight" covers the
+ * page (slow message and Try again at 10 s). This does not depend on Next's
+ * route `loading.tsx`, which only shows when the route was prefetched in
+ * time: on a slow network the old screen otherwise just stays.
  */
 export function NavProgress() {
   const t = useTranslations('screens.live');
   const pathname = usePathname();
   const [pending, setPending] = React.useState(false);
   const [spinner, setSpinner] = React.useState(false);
+  const [bee, setBee] = React.useState(false);
 
   React.useEffect(() => {
     setPending(false);
     setSpinner(false);
+    setBee(false);
   }, [pathname]);
 
   React.useEffect(() => {
@@ -55,15 +63,27 @@ export function NavProgress() {
   React.useEffect(() => {
     if (!pending) return;
     const timer = window.setTimeout(() => setSpinner(true), SPINNER_AFTER_MS);
+    const beeTimer = window.setTimeout(() => setBee(true), SPINNER_MS);
     // Safety net: a navigation that never finishes (offline) must not hang the overlay.
-    const giveUp = window.setTimeout(() => setPending(false), 20000);
+    const giveUp = window.setTimeout(() => {
+      setPending(false);
+      setBee(false);
+    }, 60000);
     return () => {
       window.clearTimeout(timer);
+      window.clearTimeout(beeTimer);
       window.clearTimeout(giveUp);
     };
   }, [pending]);
 
   if (!pending) return null;
+  if (bee) {
+    return (
+      <div className="fixed inset-0 z-50 overflow-y-auto bg-bg">
+        <GardenLoader startAtBee />
+      </div>
+    );
+  }
   return (
     <div role="status" aria-busy="true" className="pointer-events-none fixed inset-0 z-50">
       <span className="sr-only">{t('loading')}</span>

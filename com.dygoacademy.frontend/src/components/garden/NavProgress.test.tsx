@@ -18,6 +18,17 @@ function link(href: string, attrs: Record<string, string> = {}) {
 }
 
 describe('NavProgress', () => {
+  it('shows the bee screen after 2.5 s and the slow message at 10 s', () => {
+    vi.useFakeTimers();
+    renderWithIntl(<NavProgress />);
+    fireEvent.click(link('/missions'));
+    expect(screen.getByRole('status').getAttribute('data-phase')).toBeNull();
+    act(() => void vi.advanceTimersByTime(2500));
+    expect(screen.getByRole('status').getAttribute('data-phase')).toBe('bee');
+    act(() => void vi.advanceTimersByTime(7500));
+    expect(screen.getByRole('status').getAttribute('data-phase')).toBe('slow');
+  });
+
   it('shows a busy bar at once, then a spinner, after clicking an internal link', () => {
     vi.useFakeTimers();
     renderWithIntl(<NavProgress />);
