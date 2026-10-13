@@ -8,6 +8,16 @@ import { Queue } from 'bullmq';
 import { DatabaseService } from '../../database/database.service';
 import { MAINTENANCE_QUEUE, VOICE_DONATION_CLEANUP_JOB } from '../../queues/queue.constants';
 import type { SpeechAudio } from '../speaking/speech-checker';
+import {
+  bypassesQuota,
+  DEFAULT_DONATION_POLICY,
+  DonationPolicy,
+  DropReason,
+  KeptReason,
+  normalizeText,
+  qualityGate,
+  usefulReason,
+} from './donation-policy';
 import { SetVoiceDonationDto } from './dto/set-voice-donation.dto';
 import { encryptDonation, parseDonationKey } from './voice-donation.crypto';
 import { VoiceDonationStorage } from './voice-donation.storage';
@@ -36,6 +46,9 @@ export interface DonationMeta {
 /** Each kept recording is two objects: `<prefix>.audio.enc` and `<prefix>.json.enc`. */
 const OBJECT_SUFFIXES = ['.audio.enc', '.json.enc'] as const;
 
+/** "Today" for the daily cap starts at midnight in Vietnam. */
+const DAY_ZONE = 'Asia/Ho_Chi_Minh';
+
 /**
  * Voice donation (plan §4). Off unless VOICE_DONATION_ENABLED=true: the
  * routes answer 404 and nothing is kept. Kept only while the learner's
@@ -48,6 +61,11 @@ const OBJECT_SUFFIXES = ['.audio.enc', '.json.enc'] as const;
 export class VoiceDonationService {
   private readonly logger = new Logger(VoiceDonationService.name);
   private readonly key: Buffer | null;
+  private readonly policy: DonationPolicy;
+  /** Kept / dropped counts for the current day, logged once the day is over (no audio, no text). */
+  private tally: { day: string; counts: Record<string, number> } = { day: '', counts: {} };
+  /** Overridable in tests. */
+  random: () => number = Math.random;
   readonly enabled: boolean;
 
   constructor(
@@ -58,6 +76,17 @@ export class VoiceDonationService {
   ) {
     this.key = parseDonationKey(config.get<string>('voiceDonation.key'));
     this.enabled = config.get<boolean>('voiceDonation.enabled', false);
+    const d = DEFAULT_DONATION_POLICY;
+    const n = (k: keyof DonationPolicy) => {
+      const v = Number(config.get<number>(`voiceDonation.${k}`, d[k]));
+      return Number.isFinite(v) && v >= 0 ? v : d[k];
+    };
+    this.policy = {
+      maxPerPrompt: n('maxPerPrompt'),
+      maxPerDay: n('maxPerDay'),
+      sampleRate: Math.min(1, n('sampleRate')),
+      promptRegionQuota: n('promptRegionQuota'),
+    };
     if (this.enabled && !this.key) {
       this.logger.warn(
         'VOICE_DONATION_ENABLED is on but VOICE_DONATION_KEY is missing or not 32 bytes: ' +
@@ -165,27 +194,44 @@ export class VoiceDonationService {
   /**
    * Called by the speech-check worker after scoring, before the recording is
    * dropped. Keeps an encrypted copy when the learner's consent is active
-   * now. Never throws.
+   * now and the recording passes the quality rules (donation-policy.ts):
+   * it can be labelled, the donor is under the per-prompt and daily caps,
+   * and it is useful (or picked as a random sample) and under the region
+   * quota. Never throws.
    */
   async keep(userId: string, audio: SpeechAudio, meta: DonationMeta): Promise<boolean> {
     if (!this.enabled || !this.key) return false;
     try {
+      const gate = qualityGate(meta.kind, meta.text, meta.scores);
+      if (gate) return this.count(gate);
+
+      const textNorm = normalizeText(meta.text);
       const rows = await this.db.queryAs<{
         donor_code: string;
         region: VoiceDonationRegion | null;
         ui_locale: string | null;
+        prompt_count: string;
+        today_count: string;
       }>(
         userId,
-        `select d.donor_code, d.region, p.ui_locale
+        `select d.donor_code, d.region, p.ui_locale,
+                (select count(*) from public.voice_donations v
+                  where v.donor_code = d.donor_code and v.kind = $2 and v.text_norm = $3) as prompt_count,
+                (select count(*) from public.voice_donations v
+                  where v.donor_code = d.donor_code
+                    and v.created_at >= (date_trunc('day', now() at time zone $4) at time zone $4)) as today_count
            from public.voice_donors d
            join public.voice_donation_consents c
              on c.user_id = d.user_id and c.withdrawn_at is null
            join public.profiles p on p.id = d.user_id
           where d.user_id = $1`,
-        [userId],
+        [userId, meta.kind, textNorm, DAY_ZONE],
       );
       const donor = rows[0];
       if (!donor) return false;
+
+      const choice = await this.choose(meta, textNorm, donor);
+      if (typeof choice !== 'object') return this.count(choice);
 
       const now = new Date();
       const prefix = `donations/${donor.donor_code}/${now.toISOString().slice(0, 7)}/${randomUUID()}`;
@@ -200,6 +246,7 @@ export class VoiceDonationService {
         app_locale: donor.ui_locale,
         device: meta.device,
         region: donor.region,
+        kept_reason: choice.reason,
         audio_type: audio.mimetype,
         text_version: VOICE_DONATION_TEXT_VERSION,
         created_at: now.toISOString(),
@@ -211,14 +258,60 @@ export class VoiceDonationService {
       );
       await this.db.queryAs(
         userId,
-        `insert into public.voice_donations (donor_code, object_key, kind) values ($1, $2, $3)`,
-        [donor.donor_code, prefix, meta.kind],
+        `insert into public.voice_donations (donor_code, object_key, kind, text_norm, region, kept_reason)
+         values ($1, $2, $3, $4, $5, $6)`,
+        [donor.donor_code, prefix, meta.kind, textNorm, donor.region, choice.reason],
       );
+      this.count(`kept_${choice.reason}`);
       return true;
     } catch (err) {
       this.logger.warn(`voice donation not kept: ${String(err)}`);
       return false;
     }
+  }
+
+  /** Caps, then usefulness or the random sample, then the region quota. */
+  private async choose(
+    meta: DonationMeta,
+    textNorm: string,
+    donor: { region: VoiceDonationRegion | null; prompt_count: string; today_count: string },
+  ): Promise<{ reason: KeptReason } | DropReason> {
+    const p = this.policy;
+    if (Number(donor.prompt_count) >= p.maxPerPrompt) return 'repeat_attempt';
+    if (Number(donor.today_count) >= p.maxPerDay) return 'daily_cap';
+    let reason = usefulReason(meta.kind, meta.targetIpa, meta.scores);
+    if (!reason) {
+      if (this.random() >= p.sampleRate) return 'not_sampled';
+      reason = 'sample';
+    }
+    if (!bypassesQuota(reason)) {
+      // Across donors, so as the service role; only a count comes back.
+      const res = await this.db.queryAsService<{ count: string }>(
+        `select count(*) from public.voice_donations
+          where kind = $1 and text_norm = $2 and region is not distinct from $3`,
+        [meta.kind, textNorm, donor.region],
+      );
+      if (Number(res[0]?.count ?? 0) >= p.promptRegionQuota) return 'region_quota';
+    }
+    return { reason };
+  }
+
+  /** Adds to today's tally; logs yesterday's when the day changes. Returns false (not kept). */
+  private count(what: string): false {
+    const day = new Date().toLocaleDateString('en-CA', { timeZone: DAY_ZONE });
+    if (this.tally.day !== day) {
+      const { day: was, counts } = this.tally;
+      const kept = Object.entries(counts)
+        .filter(([k]) => k.startsWith('kept_'))
+        .reduce((a, [, v]) => a + v, 0);
+      if (was) {
+        const fn = kept === 0 ? 'warn' : 'log';
+        this.logger[fn](`voice donation ${was}: kept ${kept}; ${JSON.stringify(counts)}`);
+      }
+      this.tally = { day, counts: {} };
+    }
+    this.tally.counts[what] = (this.tally.counts[what] ?? 0) + 1;
+    return false;
   }
 
   /**

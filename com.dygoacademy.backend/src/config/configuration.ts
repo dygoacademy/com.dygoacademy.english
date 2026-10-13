@@ -78,6 +78,13 @@ export default () => ({
     enabled: process.env.VOICE_DONATION_ENABLED === 'true',
     key: process.env.VOICE_DONATION_KEY ?? '',
     bucket: process.env.VOICE_DONATION_BUCKET || 'voice-donations',
+    // Which recordings are kept ("docs/plans/Voice donation quality plan.md", 2026-10-12):
+    // per donor 2 per prompt and 20 per day, 1 in 5 of the clear passes / fails,
+    // and 30 per prompt per region unless the scorer flagged a word.
+    maxPerPrompt: Number(process.env.VOICE_DONATION_MAX_PER_PROMPT) || 2,
+    maxPerDay: Number(process.env.VOICE_DONATION_MAX_PER_DAY) || 20,
+    sampleRate: Number(process.env.VOICE_DONATION_SAMPLE_RATE || 0.2),
+    promptRegionQuota: Number(process.env.VOICE_DONATION_PROMPT_REGION_QUOTA) || 30,
   },
 
   // Module 6 (Web Push & Habit Scheduling) — VAPID identifies this server to

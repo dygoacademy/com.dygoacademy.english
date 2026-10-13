@@ -12,6 +12,28 @@ import { deviceFromUserAgent, VOICE_DONATION_TEXT_VERSION } from './voice-donati
 
 const KEY = randomBytes(32);
 const AUDIO = { buffer: Buffer.from('fake m4a bytes'), mimetype: 'audio/mp4', filename: 'r.m4a' };
+const DONOR = {
+  donor_code: 'c',
+  region: null,
+  ui_locale: null,
+  prompt_count: '0',
+  today_count: '0',
+};
+const SENTENCE: DonationMeta = {
+  kind: 'sentence',
+  text: 'I think so.',
+  targetIpa: null,
+  accent: 'US',
+  device: 'phone',
+  scores: {
+    total: 92,
+    heard_text: 'I think so',
+    duration_ms: 1500,
+    voiced_ms: 900,
+    gopt: { total: 90 },
+    words: [{ status: 'ok' }, { status: 'ok' }, { status: 'ok' }],
+  },
+};
 const META: DonationMeta = {
   kind: 'word',
   text: 'mitigate',
@@ -175,9 +197,12 @@ describe('VoiceDonationService', () => {
   it('keep: encrypted audio and metadata under the donor code, no account id', async () => {
     const queryAs = jest
       .fn()
-      .mockResolvedValueOnce([{ donor_code: 'code-1', region: 'south', ui_locale: 'vi-VN' }])
+      .mockResolvedValueOnce([
+        { ...DONOR, donor_code: 'code-1', region: 'south', ui_locale: 'vi-VN' },
+      ])
       .mockResolvedValueOnce([]);
     const { service, storage } = make({ queryAs });
+    service.random = () => 0; // picked as the 1-in-5 sample
     await expect(service.keep('user-uuid', AUDIO, META)).resolves.toBe(true);
 
     const [[audioKey, audioBody], [metaKey, metaBody]] = storage.put.mock.calls as [
@@ -199,20 +224,100 @@ describe('VoiceDonationService', () => {
       region: 'south',
       audio_type: 'audio/mp4',
       text_version: VOICE_DONATION_TEXT_VERSION,
+      kept_reason: 'sample',
     });
     expect(JSON.stringify(meta)).not.toContain('user-uuid');
 
     const [, insertSql, insertArgs] = queryAs.mock.calls[1] as [string, string, unknown[]];
     expect(insertSql).toContain('insert into public.voice_donations');
-    expect(insertArgs).toEqual(['code-1', audioKey.replace('.audio.enc', ''), 'word']);
+    expect(insertArgs).toEqual([
+      'code-1',
+      audioKey.replace('.audio.enc', ''),
+      'word',
+      'mitigate',
+      'south',
+      'sample',
+    ]);
   });
 
   it('keep: a storage failure is swallowed (the check result is unaffected)', async () => {
-    const { service, storage } = make({
-      queryAs: jest.fn().mockResolvedValue([{ donor_code: 'c', region: null, ui_locale: null }]),
-    });
+    const { service, storage } = make({ queryAs: jest.fn().mockResolvedValue([DONOR]) });
+    service.random = () => 0;
     storage.put.mockRejectedValue(new Error('rustfs down'));
     await expect(service.keep('u', AUDIO, META)).resolves.toBe(false);
+  });
+
+  describe('keep: quality rules', () => {
+    const sentence = (scores: object): DonationMeta => ({
+      ...SENTENCE,
+      scores: { ...(SENTENCE.scores as object), ...scores },
+    });
+
+    it('a recording that cannot be labelled is dropped before any database call', async () => {
+      const { service, queryAs, storage } = make();
+      const notHeard = { ...META, scores: { status: 'not_heard', total: 0 } };
+      await expect(service.keep('u', AUDIO, notHeard)).resolves.toBe(false);
+      await expect(service.keep('u', AUDIO, sentence({ voiced_ms: 200 }))).resolves.toBe(false);
+      await expect(service.keep('u', AUDIO, sentence({ heard_text: 'hello there' }))).resolves.toBe(
+        false,
+      );
+      expect(queryAs).not.toHaveBeenCalled();
+      expect(storage.put).not.toHaveBeenCalled();
+    });
+
+    it('counts attempts per prompt by the normalised text, and today in Vietnam time', async () => {
+      const queryAs = jest.fn().mockResolvedValue([{ ...DONOR, prompt_count: '2' }]);
+      const { service, storage } = make({ queryAs });
+      await expect(service.keep('u', AUDIO, SENTENCE)).resolves.toBe(false);
+      expect(queryAs.mock.calls[0][2]).toEqual(['u', 'sentence', 'i think so', 'Asia/Ho_Chi_Minh']);
+      expect(storage.put).not.toHaveBeenCalled();
+    });
+
+    it('stops at 20 a day', async () => {
+      const { service, storage } = make({
+        queryAs: jest.fn().mockResolvedValue([{ ...DONOR, today_count: '20' }]),
+      });
+      service.random = () => 0;
+      await expect(service.keep('u', AUDIO, SENTENCE)).resolves.toBe(false);
+      expect(storage.put).not.toHaveBeenCalled();
+    });
+
+    it('keeps 1 in 5 clear passes', async () => {
+      const { service, storage } = make({ queryAs: jest.fn().mockResolvedValue([DONOR]) });
+      service.random = () => 0.5;
+      await expect(service.keep('u', AUDIO, SENTENCE)).resolves.toBe(false);
+      service.random = () => 0.1;
+      await expect(service.keep('u', AUDIO, SENTENCE)).resolves.toBe(true);
+      expect(storage.put).toHaveBeenCalledTimes(2);
+    });
+
+    it('always keeps a flagged word, past the region quota', async () => {
+      const queryAs = jest.fn().mockResolvedValue([DONOR]);
+      const queryAsService = jest.fn().mockResolvedValue([{ count: '99' }]);
+      const { service } = make({ queryAs, queryAsService });
+      service.random = () => 0.99;
+      const flagged = sentence({
+        words: [{ status: 'ok' }, { status: 'unclear' }, { status: 'ok' }],
+      });
+      await expect(service.keep('u', AUDIO, flagged)).resolves.toBe(true);
+      expect(queryAsService).not.toHaveBeenCalled();
+      expect(queryAs.mock.calls[1][2][5]).toBe('flagged');
+    });
+
+    it('an uncertain score is kept until the prompt has 30 from the region', async () => {
+      const queryAsService = jest
+        .fn()
+        .mockResolvedValueOnce([{ count: '29' }])
+        .mockResolvedValueOnce([{ count: '30' }]);
+      const { service } = make({
+        queryAs: jest.fn().mockResolvedValue([{ ...DONOR, region: 'north' }]),
+        queryAsService,
+      });
+      const unsure = sentence({ total: 60, gopt: { total: 62 } });
+      await expect(service.keep('u', AUDIO, unsure)).resolves.toBe(true);
+      await expect(service.keep('u', AUDIO, unsure)).resolves.toBe(false);
+      expect(queryAsService.mock.calls[0][1]).toEqual(['sentence', 'i think so', 'north']);
+    });
   });
 
   it('cleanup: deletes both files of each queued code, marks it done, then the expired ones', async () => {
