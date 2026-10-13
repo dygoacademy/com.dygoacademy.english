@@ -7,7 +7,11 @@ import {
   encodeWav,
   estimateOffsetMs,
   levelOf,
+  getAudioContext,
   releaseStream,
+  resetAudioContextForTest,
+  resumeAudioContext,
+  RESUME_TIMEOUT_MS,
   setAudioSession,
   toneRms,
   ENVELOPE_FPS,
@@ -357,5 +361,80 @@ describe('setAudioSession (iOS silent switch)', () => {
     expect(stop).toHaveBeenCalled();
     expect(nav.audioSession.type).toBe('auto');
     vi.unstubAllGlobals();
+  });
+});
+
+describe('resumeAudioContext (iOS interrupted context, 2026-10-13)', () => {
+  /** A fake AudioContext; `hangs` makes resume() never settle, like iOS when interrupted. */
+  function fakeContextClass(opts: { startState?: string; hangs?: boolean[] } = {}) {
+    const made: FakeCtx[] = [];
+    class FakeCtx {
+      state: string;
+      resume = vi.fn(() => {
+        const hang = opts.hangs?.[made.indexOf(this)] ?? false;
+        if (hang) return new Promise<void>(() => undefined);
+        this.state = 'running';
+        return Promise.resolve();
+      });
+      suspend = vi.fn(async () => {
+        this.state = 'suspended';
+      });
+      close = vi.fn(async () => {
+        this.state = 'closed';
+      });
+      constructor() {
+        this.state = made.length === 0 ? (opts.startState ?? 'suspended') : 'suspended';
+        made.push(this);
+      }
+    }
+    return { win: { AudioContext: FakeCtx } as unknown as typeof globalThis, made };
+  }
+
+  beforeEach(() => resetAudioContextForTest());
+  afterEach(() => {
+    vi.useRealTimers();
+    vi.unstubAllGlobals();
+    resetAudioContextForTest();
+  });
+
+  it('resumes a suspended context and keeps it', async () => {
+    const { win, made } = fakeContextClass();
+    const ctx = await resumeAudioContext(win);
+    expect(ctx).toBe(made[0]);
+    expect(ctx.state).toBe('running');
+    expect(made).toHaveLength(1);
+  });
+
+  it('replaces an interrupted context at once instead of waiting on resume()', async () => {
+    const { win, made } = fakeContextClass({ startState: 'interrupted', hangs: [true] });
+    getAudioContext(win); // the context from the first attempt
+    const ctx = await resumeAudioContext(win);
+    expect(made[0].close).toHaveBeenCalled();
+    expect(made[0].resume).not.toHaveBeenCalled();
+    expect(ctx).toBe(made[1]);
+    expect(ctx.state).toBe('running');
+  });
+
+  it('replaces a context whose resume() never settles', async () => {
+    vi.useFakeTimers();
+    const { win, made } = fakeContextClass({ hangs: [true] });
+    const pending = resumeAudioContext(win);
+    await vi.advanceTimersByTimeAsync(RESUME_TIMEOUT_MS);
+    const ctx = await pending;
+    expect(made[0].close).toHaveBeenCalled();
+    expect(ctx).toBe(made[1]);
+    expect(ctx.state).toBe('running');
+  });
+
+  it('releasing the mic suspends the running context before the session goes back to auto', async () => {
+    const { win, made } = fakeContextClass();
+    await resumeAudioContext(win);
+    const nav = { audioSession: { type: 'play-and-record' } };
+    vi.stubGlobal('navigator', nav);
+    releaseStream({ getTracks: () => [] } as unknown as MediaStream);
+    expect(made[0].suspend).toHaveBeenCalled();
+    expect(nav.audioSession.type).toBe('auto');
+    // The next attempt resumes the same context.
+    expect(await resumeAudioContext(win)).toBe(made[0]);
   });
 });

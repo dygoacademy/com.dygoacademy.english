@@ -235,9 +235,18 @@ export async function requestMic(
   }
 }
 
-/** Stops every track so the browser's mic indicator turns off. */
+/**
+ * Stops every track so the browser's mic indicator turns off. The shared
+ * AudioContext is suspended before the audio session goes back to `auto`:
+ * switching the session under a running context left it `interrupted` on
+ * iOS, and the next tap could then neither record nor play sound
+ * (Dylan's iPhone, 2026-10-13). The next recording resumes it in its tap.
+ */
 export function releaseStream(stream: MediaStream | null | undefined): void {
   stream?.getTracks().forEach((t) => t.stop());
+  if (sharedContext && sharedContext.state === 'running') {
+    void sharedContext.suspend().catch(() => undefined);
+  }
   setAudioSession('auto');
 }
 
@@ -276,15 +285,54 @@ export function getAudioContext(win: typeof globalThis = globalThis): AudioConte
   return sharedContext;
 }
 
-/** Creates/resumes the shared context. Call inside the tap handler (iOS). */
+/** How long `resume()` gets before the context is replaced. */
+export const RESUME_TIMEOUT_MS = 1000;
+
+/** Resumes `ctx`; true once it runs. Never waits longer than `ms`. */
+async function resumeWithin(ctx: AudioContext, ms: number): Promise<boolean> {
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  try {
+    await Promise.race([
+      ctx.resume().catch(() => undefined),
+      new Promise((resolve) => {
+        timer = setTimeout(resolve, ms);
+      }),
+    ]);
+  } finally {
+    if (timer) clearTimeout(timer);
+  }
+  return ctx.state === 'running';
+}
+
+/** Closes the shared context (if any) so the next `getAudioContext` makes a new one. */
+function dropContext(): void {
+  const old = sharedContext;
+  sharedContext = null;
+  if (old && old.state !== 'closed') void old.close().catch(() => undefined);
+}
+
+/**
+ * Creates/resumes the shared context. Call inside the tap handler (iOS).
+ *
+ * iOS can leave the context `interrupted` (a call, a silent-switch or audio
+ * session change), and `resume()` on it may never settle: the tap then
+ * hung before asking for the mic, and other sound stopped too (second
+ * attempt on Dylan's iPhone, 2026-10-13). An interrupted context is
+ * replaced straight away, still inside the tap; one that doesn't run
+ * within RESUME_TIMEOUT_MS is replaced too.
+ */
 export async function resumeAudioContext(
   win: typeof globalThis = globalThis,
 ): Promise<AudioContext> {
   // Inside the tap that starts recording: tell iOS first (silent switch).
   setAudioSession('play-and-record', (win as { navigator?: Navigator }).navigator);
-  const ctx = getAudioContext(win);
-  // `interrupted` (iOS, e.g. after a call or a switch change) resumes like `suspended`.
-  if ((ctx.state as string) !== 'running') await ctx.resume();
+  if (sharedContext && (sharedContext.state as string) === 'interrupted') dropContext();
+  let ctx = getAudioContext(win);
+  if (ctx.state === 'running') return ctx;
+  if (await resumeWithin(ctx, RESUME_TIMEOUT_MS)) return ctx;
+  dropContext();
+  ctx = getAudioContext(win);
+  if (ctx.state !== 'running') await resumeWithin(ctx, RESUME_TIMEOUT_MS);
   return ctx;
 }
 
