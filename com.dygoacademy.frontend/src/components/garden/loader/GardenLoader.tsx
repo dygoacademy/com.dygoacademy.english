@@ -60,11 +60,11 @@ export function resetLoaderBootForTests(): void {
   lastEnd = 0;
 }
 
-function joinWait(startAtBee: boolean): Wait {
+function joinWait(startAtBee: boolean): { wait: Wait; continued: boolean } {
   const now = Date.now();
-  if (wait && (active > 0 || now - lastEnd < CONTINUE_MS)) return wait;
+  if (wait && (active > 0 || now - lastEnd < CONTINUE_MS)) return { wait, continued: true };
   wait = { start: startAtBee ? now - SPINNER_MS : now, first: !booted && !startAtBee };
-  return wait;
+  return { wait, continued: false };
 }
 
 function phaseAt(elapsed: number, first: boolean): LoaderPhase {
@@ -96,16 +96,18 @@ export function GardenLoader({
   phase: pinned,
   word,
   startAtBee = false,
+  delay = false,
 }: {
   onRetry?: () => void;
   phase?: LoaderPhase;
   word?: string;
   startAtBee?: boolean;
+  /** With `startAtBee`: fade LD3 in after 400 ms (like LD1) instead of at once. */
+  delay?: boolean;
 }) {
   const live = useTranslations('screens.live');
   const t = useTranslations('screens.loader');
-  const [joined] = React.useState(() => joinWait(startAtBee));
-  const [continued] = React.useState(() => Date.now() - joined.start > 50);
+  const [{ wait: joined, continued }] = React.useState(() => joinWait(startAtBee));
   const [phase, setPhase] = React.useState<LoaderPhase>(
     () => pinned ?? phaseAt(Date.now() - joined.start, joined.first),
   );
@@ -164,7 +166,12 @@ export function GardenLoader({
         </div>
       ) : null}
       {art ? (
-        <div className="dg-ld-in flex w-full flex-col items-center">
+        <div
+          className={gcn(
+            'flex w-full flex-col items-center',
+            delay && !continued ? 'dg-ld-appear' : 'dg-ld-in',
+          )}
+        >
           <div className="mt-[150px] flex w-full justify-center">
             <BeeOrbitArt />
           </div>

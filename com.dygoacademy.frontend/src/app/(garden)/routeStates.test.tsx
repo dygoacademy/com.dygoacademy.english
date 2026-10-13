@@ -31,29 +31,25 @@ function renderIn(locale: string, messages: typeof en, ui: ReactElement) {
 describe.each(LOCALES)('garden route states (%s)', (locale, messages) => {
   const live = messages.screens.live;
 
-  it('loading: a busy skeleton in the screen column', () => {
-    markAppStarted();
+  it('loading at app start: the garden loader (LD1), busy, in the screen column', () => {
+    resetLoaderBootForTests();
     renderIn(locale, messages, <GardenLoading />);
     const status = screen.getByRole('status');
     expect(status.getAttribute('aria-busy')).toBe('true');
+    expect(status.getAttribute('data-phase')).toBe('sprout');
     expect(status.textContent).toContain(live.loading);
     expect(status.className).toContain('max-w-[560px]');
-    expect(status.getAttribute('data-phase')).toBeNull();
   });
 
-  it('loading at app start: the garden loader (LD1)', () => {
-    resetLoaderBootForTests();
-    renderIn(locale, messages, <GardenLoading />);
-    expect(screen.getByRole('status').getAttribute('data-phase')).toBe('sprout');
-  });
-
-  it('loading later: after 2.5 s the bee screen takes over, the slow message at 10 s', () => {
+  it('loading later: the bee screen (LD3), no grey skeleton, slow message at 7.5 s', () => {
     vi.useFakeTimers();
     try {
+      resetLoaderBootForTests();
       markAppStarted();
-      renderIn(locale, messages, <GardenLoading />);
-      act(() => void vi.advanceTimersByTime(2500));
+      const { container } = renderIn(locale, messages, <GardenLoading />);
       expect(screen.getByRole('status').getAttribute('data-phase')).toBe('bee');
+      expect(container.querySelector('.animate-pulse')).toBeNull();
+      expect(container.querySelector('.dg-ld-appear')).not.toBeNull();
       act(() => void vi.advanceTimersByTime(7500));
       expect(screen.getByRole('status').getAttribute('data-phase')).toBe('slow');
       expect(screen.getByRole('button', { name: live.retry })).toBeTruthy();
