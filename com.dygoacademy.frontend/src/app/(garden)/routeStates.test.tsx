@@ -41,7 +41,7 @@ describe.each(LOCALES)('garden route states (%s)', (locale, messages) => {
     expect(status.className).toContain('max-w-[560px]');
   });
 
-  it('loading later: the bee screen (LD3), no grey skeleton, slow message at 7.5 s', () => {
+  it('loading later: the bee screen (LD3), no grey skeleton, slow message at 10 s', () => {
     vi.useFakeTimers();
     try {
       resetLoaderBootForTests();
@@ -50,7 +50,7 @@ describe.each(LOCALES)('garden route states (%s)', (locale, messages) => {
       expect(screen.getByRole('status').getAttribute('data-phase')).toBe('bee');
       expect(container.querySelector('.animate-pulse')).toBeNull();
       expect(container.querySelector('.dg-ld-appear')).not.toBeNull();
-      act(() => void vi.advanceTimersByTime(7500));
+      act(() => void vi.advanceTimersByTime(10000));
       expect(screen.getByRole('status').getAttribute('data-phase')).toBe('slow');
       expect(screen.getByRole('button', { name: live.retry })).toBeTruthy();
     } finally {

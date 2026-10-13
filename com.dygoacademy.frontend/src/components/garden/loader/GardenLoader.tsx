@@ -4,17 +4,15 @@ import * as React from 'react';
 import { useTranslations } from 'next-intl';
 
 import { gcn } from '../cn';
-import { Spinner } from '../Spinner';
 import { BeeOrbitArt } from './BeeOrbitArt';
 import { SproutArt } from './SproutArt';
 import { WaitWordCard } from './WaitWordCard';
 
-/** `spinner` is today's plain loader, kept for loads after the app has started. */
-export type LoaderPhase = 'spinner' | 'sprout' | 'bee' | 'slow';
+export type LoaderPhase = 'sprout' | 'bee' | 'slow';
 
-/** First loader: LD1 for this long, then LD3. */
+/** App start: LD1 for this long, then LD3. */
 export const SPROUT_MS = 4000;
-/** Later loaders: the plain spinner for this long, then LD3. */
+/** A caller that has already made the learner wait this long (`NavProgress`) starts at LD3. */
 export const SPINNER_MS = 2500;
 /** Either way, the slow message and Try again after this long. */
 export const SLOW_MS = 10000;
@@ -69,8 +67,8 @@ function joinWait(startAtBee: boolean): { wait: Wait; continued: boolean } {
 
 function phaseAt(elapsed: number, first: boolean): LoaderPhase {
   if (elapsed >= SLOW_MS) return 'slow';
-  if (elapsed >= (first ? SPROUT_MS : SPINNER_MS)) return 'bee';
-  return first ? 'sprout' : 'spinner';
+  if (!first || elapsed >= SPROUT_MS) return 'bee';
+  return 'sprout';
 }
 
 /**
@@ -80,7 +78,8 @@ function phaseAt(elapsed: number, first: boolean): LoaderPhase {
  *   (CSS delay, so it also holds before hydration), then LD1 "Seed to
  *   sprout"; at 4 s LD3 "Bee's flight" with a "While you wait" word; at
  *   10 s "Still loading… check your connection" and Try again.
- * - Later loads: today's spinner, LD3 at 2.5 s, the slow message at 10 s.
+ * - Later loads: LD3 (fades in after 400 ms, so a fast load never flashes it),
+ *   the slow message at 10 s. No spinner.
  * - A loader that follows another within 0.5 s continues its wait (same
  *   phase, same clock), so a screen handing over from the route fallback
  *   to its own loader does not start over.
@@ -96,14 +95,11 @@ export function GardenLoader({
   phase: pinned,
   word,
   startAtBee = false,
-  delay = false,
 }: {
   onRetry?: () => void;
   phase?: LoaderPhase;
   word?: string;
   startAtBee?: boolean;
-  /** With `startAtBee`: fade LD3 in after 400 ms (like LD1) instead of at once. */
-  delay?: boolean;
 }) {
   const live = useTranslations('screens.live');
   const t = useTranslations('screens.loader');
@@ -117,13 +113,11 @@ export function GardenLoader({
     if (pinned) return;
     active += 1;
     const elapsed = Date.now() - joined.start;
-    const timers = [
-      [joined.first ? SPROUT_MS : SPINNER_MS, 'bee'],
-      [SLOW_MS, 'slow'],
-    ].flatMap(([at, next]) =>
-      elapsed < (at as number)
-        ? [window.setTimeout(() => setPhase(next as LoaderPhase), (at as number) - elapsed)]
-        : [],
+    const timers = [...(joined.first ? [[SPROUT_MS, 'bee']] : []), [SLOW_MS, 'slow']].flatMap(
+      ([at, next]) =>
+        elapsed < (at as number)
+          ? [window.setTimeout(() => setPhase(next as LoaderPhase), (at as number) - elapsed)]
+          : [],
     );
     return () => {
       timers.forEach((id) => window.clearTimeout(id));
@@ -149,12 +143,6 @@ export function GardenLoader({
       )}
     >
       <span className="sr-only">{slow ? t('slow') : live('loading')}</span>
-      {current === 'spinner' ? (
-        <div aria-hidden="true" className="flex flex-col items-center gap-3 text-muted-foreground">
-          <Spinner />
-          <span className="text-[15px]">{live('loading')}</span>
-        </div>
-      ) : null}
       {current === 'sprout' ? (
         <div
           className={gcn(
@@ -169,7 +157,7 @@ export function GardenLoader({
         <div
           className={gcn(
             'flex w-full flex-col items-center',
-            delay && !continued ? 'dg-ld-appear' : 'dg-ld-in',
+            later && !startAtBee && !continued ? 'dg-ld-appear' : 'dg-ld-in',
           )}
         >
           <div className="mt-[150px] flex w-full justify-center">

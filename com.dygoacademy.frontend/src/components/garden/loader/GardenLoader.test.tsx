@@ -46,16 +46,19 @@ describe('GardenLoader at app start', () => {
 });
 
 describe('GardenLoader after the app has started', () => {
-  it('shows the spinner, LD3 at 2.5 s, the slow state at 10 s', () => {
+  it('shows LD3 at once (fading in after 400 ms, no spinner), the slow state at 10 s', () => {
     renderWithIntl(<GardenLoader />).unmount();
     advance(CONTINUE_MS + 1);
     const { container } = renderWithIntl(<GardenLoader />);
-    expect(phase()).toBe('spinner');
-    expect(container.querySelector('svg.animate-spin')).not.toBeNull();
-    expect(container.querySelector('.dg-ld-appear')).toBeNull();
-    advance(SPINNER_MS);
     expect(phase()).toBe('bee');
-    advance(SLOW_MS - SPINNER_MS);
+    expect(container.querySelector('svg.animate-spin')).toBeNull();
+    expect(container.querySelector('.dg-ld-appear')).not.toBeNull();
+    expect(container.querySelector('[data-phase="bee"] .sr-only')?.textContent).toBe(
+      en.screens.live.loading,
+    );
+    advance(SLOW_MS - 1);
+    expect(phase()).toBe('bee');
+    advance(1);
     expect(phase()).toBe('slow');
   });
 });
@@ -87,7 +90,7 @@ describe('GardenLoader hand-over', () => {
   it('markAppStarted makes the next loader a later load', () => {
     markAppStarted();
     renderWithIntl(<GardenLoader />);
-    expect(phase()).toBe('spinner');
+    expect(phase()).toBe('bee');
   });
 
   it('startAtBee shows LD3 at once and the slow state at 10 s in total', () => {
