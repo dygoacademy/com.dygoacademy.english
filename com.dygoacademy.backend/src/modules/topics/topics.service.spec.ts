@@ -188,6 +188,28 @@ describe('TopicsService — create', () => {
     const [, , params] = queryAsMock.mock.calls[0];
     expect(params).toEqual(['group-1', 'New Topic', null, false]);
   });
+
+  it("without a group, puts the bed in the caller's personal group", async () => {
+    const queryAsMock = jest
+      .fn()
+      .mockResolvedValueOnce([{ id: 'personal-1' }])
+      .mockResolvedValueOnce([
+        {
+          id: 'topic-1',
+          group_id: 'personal-1',
+          title: 'Kitchen',
+          description: null,
+          is_public: false,
+          created_at: new Date(),
+        },
+      ]);
+    const service = await makeService(queryAsMock);
+
+    await service.create('user-1', { title: 'Kitchen' });
+
+    expect(queryAsMock.mock.calls[0][1]).toMatch(/public\.my_personal_group_id\(\)/);
+    expect(queryAsMock.mock.calls[1][2]).toEqual(['personal-1', 'Kitchen', null, false]);
+  });
 });
 
 describe('TopicsService — findById', () => {

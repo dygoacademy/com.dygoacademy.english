@@ -813,7 +813,6 @@
       "newBedName": "Topic name",
       "newBedGroup": "Plant it in",
       "newBedSubmit": "Plant it",
-      "newBedNoGroup": "You need a group where you can edit. Create one in Groups first.",
       "newBedError": "We couldn’t plant this bed. Check your connection and try again.",
       "shared": "Shared",
       "searchBeds": "Search topics",
@@ -830,7 +829,9 @@
         "recent": "Recent",
         "cancel": "Cancel"
       },
-      "lockedHint": "Seed pack · Earn {count, plural, one {# more Golden Bloom} other {# more Golden Blooms}} this week to open it"
+      "lockedHint": "Seed pack · Earn {count, plural, one {# more Golden Bloom} other {# more Golden Blooms}} this week to open it",
+      "newBedJustMe": "Just me",
+      "myWords": "My words"
     },
     "bed": {
       "back": "Back to topics",
@@ -874,7 +875,12 @@
         "hint": "We’ll add the pronunciation, audio and examples for you.",
         "submit": "Plant word",
         "adding": "Planting…",
-        "error": "We couldn’t add this word. Please try again."
+        "error": "We couldn’t add this word. Please try again.",
+        "descriptionMyWords": "Saved to My words",
+        "addedToMyWords": "Added to My words",
+        "forbidden": "You can’t add words to this topic.",
+        "duplicate": "This word is already in this bed.",
+        "duplicateMyWords": "This word is already in My words."
       },
       "speak": "Speak",
       "speakSentences": "{count, plural, one {# sentence} other {# sentences}} from this bed",
@@ -896,7 +902,8 @@
         "plantHere": "Plant here",
         "none": "Nothing in {topic} matches.",
         "recent": "Recent in this topic",
-        "cancel": "Cancel"
+        "cancel": "Cancel",
+        "saveToMyWords": "Save to My words"
       }
     },
     "me": {

@@ -6,7 +6,8 @@ import { apiClient } from '@/lib/api-client';
 import type { Topic, TopicRow } from '@/types';
 
 export interface CreateTopicInput {
-  groupId: string;
+  /** Left out, the bed goes in the learner's personal group (My words). */
+  groupId?: string;
   title: string;
   description?: string;
   isPublic?: boolean;

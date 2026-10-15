@@ -817,7 +817,6 @@
       "newBedName": "主题名称",
       "newBedGroup": "放在",
       "newBedSubmit": "开辟",
-      "newBedNoGroup": "你需要一个可以添加主题的小组。请先在“小组”里创建一个。",
       "newBedError": "花圃没能创建。请检查网络后重试。",
       "shared": "共享",
       "searchBeds": "搜索主题",
@@ -834,7 +833,9 @@
         "recent": "最近",
         "cancel": "取消"
       },
-      "lockedHint": "种子包 · 本周再开 {count} 朵金花就能解锁"
+      "lockedHint": "种子包 · 本周再开 {count} 朵金花就能解锁",
+      "newBedJustMe": "仅自己",
+      "myWords": "我的单词"
     },
     "bed": {
       "back": "返回主题",
@@ -878,7 +879,12 @@
         "hint": "Dygo 会自动补上音标、发音和例句。",
         "submit": "种下单词",
         "adding": "正在种下…",
-        "error": "这个单词没能添加，请再试一次。"
+        "error": "这个单词没能添加，请再试一次。",
+        "descriptionMyWords": "保存到“我的单词”",
+        "addedToMyWords": "已添加到“我的单词”",
+        "forbidden": "你不能向这个主题添加单词。",
+        "duplicate": "这个单词已经在这块花圃里了。",
+        "duplicateMyWords": "这个单词已经在“我的单词”里了。"
       },
       "speak": "开口说",
       "speakSentences": "这个花圃里的 {count} 个句子",
@@ -900,7 +906,8 @@
         "plantHere": "种在这里",
         "none": "{topic}里没有匹配的单词。",
         "recent": "本主题最近搜索",
-        "cancel": "取消"
+        "cancel": "取消",
+        "saveToMyWords": "保存到“我的单词”"
       }
     },
     "me": {

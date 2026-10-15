@@ -484,6 +484,7 @@ export type GardenTopicSummary = TopicSummary &
     max_level: string | null;
     kind: 'mine' | 'group' | 'library';
     collection_title: string | null;
+    is_my_words: boolean;
   }>;
 
 const num = (value: string | null | undefined) => {
@@ -712,16 +713,22 @@ export function showAllWatered(stats: SrsStats, missions: TodayMissions | undefi
 }
 
 /**
- * A1b "Plant 5 new words · From {bed}": the learner's first bed (picked
+ * A1b "Plant 5 new words · From {bed}": the learner's My words bed while
+ * it has seeds (their own words are planted first, as in the daily Plant
+ * mission), then their first bed (picked
  * from their goal at onboarding, `firstTopicId`) while it has seeds, else
  * the bed with the most seeds (`GET /topics` `seed_count`, the first on a
  * tie). Null hides the row when no bed has seeds left (or the topics call
  * failed).
  */
 export function extraPlantBed(
-  topics: ReadonlyArray<Pick<GardenTopicSummary, 'id' | 'title' | 'seed_count'>> | undefined,
+  topics:
+    | ReadonlyArray<Pick<GardenTopicSummary, 'id' | 'title' | 'seed_count' | 'is_my_words'>>
+    | undefined,
   firstTopicId?: string | null,
 ): { id: string; title: string } | null {
+  const mine = topics?.find((topic) => topic.is_my_words);
+  if (mine && num(mine.seed_count) > 0) return { id: mine.id, title: mine.title };
   const first = firstTopicId ? topics?.find((topic) => topic.id === firstTopicId) : undefined;
   if (first && num(first.seed_count) > 0) return { id: first.id, title: first.title };
   let best: { id: string; title: string; seeds: number } | null = null;

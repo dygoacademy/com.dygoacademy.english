@@ -1,6 +1,8 @@
 'use client';
 
+import { useCallback } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { useTranslations } from 'next-intl';
 
 import { apiClient } from '@/lib/api-client';
 import type { TopicSummary } from '@/types';
@@ -15,8 +17,17 @@ import type { TopicSummary } from '@/types';
  * what the signed-in caller may see.
  */
 export function useTopics() {
+  // The My words bed is stored as "My words"; show it in the learner's language.
+  const t = useTranslations('screens.topics');
+  const myWords = t('myWords');
+  const select = useCallback(
+    (topics: TopicSummary[]) =>
+      topics.map((topic) => (topic.is_my_words ? { ...topic, title: myWords } : topic)),
+    [myWords],
+  );
   return useQuery({
     queryKey: ['topics'],
     queryFn: () => apiClient.get<TopicSummary[]>('/topics'),
+    select,
   });
 }

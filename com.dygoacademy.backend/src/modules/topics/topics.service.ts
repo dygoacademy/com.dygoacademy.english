@@ -54,6 +54,8 @@ export interface TopicSummary {
    * `library` (a public topic from a group the caller isn't in).
    */
   kind: 'mine' | 'group' | 'library';
+  /** The caller's My words bed (20261015_my_words.sql), where words from beds they can't edit are saved. */
+  is_my_words: boolean;
   /** For `library` topics, the owning group's name (e.g. "IELTS Academic") when visible. */
   collection_title: string | null;
   created_at: Date;
@@ -135,6 +137,7 @@ export class TopicsService {
               t.title,
               t.description,
               t.is_public,
+              t.is_my_words and g.owner_id = $1 as is_my_words,
               count(distinct tw.id) as word_count,
               count(distinct uws.topic_word_id) filter (where uws.mastered_at is not null) as mastered_count,
               count(distinct uws.topic_word_id) filter (where uws.is_leech) as focus_word_count,
@@ -180,15 +183,21 @@ export class TopicsService {
    * caller without WRITE on `dto.groupId` gets a 403 from the INSERT itself
    * (`with check` failure raises, unlike UPDATE/DELETE's silent row
    * filtering — see update()/remove() below for that distinction).
+   *
+   * Without a `groupId` the bed goes in the caller's personal group, which
+   * `my_personal_group_id()` creates if it's missing, so a learner with no
+   * shared group can still make beds. Resolved in its own statement first
+   * so the INSERT's RLS check sees the owner's ADMIN row.
    */
   async create(userId: string, dto: CreateTopicDto): Promise<TopicRow> {
+    const groupId = dto.groupId ?? (await this.personalGroupId(userId));
     try {
       const rows = await this.db.queryAs<TopicRow>(
         userId,
         `insert into public.topics (group_id, title, description, is_public)
          values ($1, $2, $3, $4)
          returning id, group_id, title, description, is_public, created_at`,
-        [dto.groupId, dto.title.trim(), dto.description ?? null, dto.isPublic ?? false],
+        [groupId, dto.title.trim(), dto.description ?? null, dto.isPublic ?? false],
       );
       return rows[0];
     } catch (err) {
@@ -347,6 +356,17 @@ export class TopicsService {
 
       return newTopic;
     });
+  }
+
+  private async personalGroupId(userId: string): Promise<string> {
+    const rows = await this.db.queryAs<{ id: string | null }>(
+      userId,
+      `select public.my_personal_group_id() as id`,
+    );
+    if (!rows[0]?.id) {
+      throw new NotFoundException('Profile not found.');
+    }
+    return rows[0].id;
   }
 
   private translateWriteError(err: unknown): Error {

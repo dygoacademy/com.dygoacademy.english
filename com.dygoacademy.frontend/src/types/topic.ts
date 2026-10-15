@@ -30,6 +30,8 @@ export interface TopicSummary {
    * as `word_count` above.
    */
   focus_word_count: string;
+  /** The learner's own My words bed (where words from beds they can't edit go). Optional until the backend sends it. */
+  is_my_words?: boolean;
   created_at: string;
 }
 

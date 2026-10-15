@@ -3,9 +3,13 @@ import { IsBoolean, IsOptional, IsString, IsUUID, Length } from 'class-validator
 
 /** Body for `POST /api/v1/topics` — FR-1.1. */
 export class CreateTopicDto {
-  @ApiProperty({ description: 'The group this vocabulary set belongs to.' })
+  @ApiPropertyOptional({
+    description:
+      "The group this vocabulary set belongs to. Left out, it goes in the caller's personal group (My words).",
+  })
+  @IsOptional()
   @IsUUID('loose')
-  groupId!: string;
+  groupId?: string;
 
   @ApiProperty({ description: 'Topic title.', example: 'Phrasal Verbs — Business English' })
   @IsString()

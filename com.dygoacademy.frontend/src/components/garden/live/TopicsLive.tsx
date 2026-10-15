@@ -73,14 +73,14 @@ function NewBedSheet({
   const create = useCreateTopic();
   const writable = (groups.data ?? []).filter((g) => g.role === 'ADMIN' || g.role === 'WRITE');
   const [title, setTitle] = React.useState('');
+  // '' = the learner's own garden (personal group), the default.
   const [groupId, setGroupId] = React.useState('');
-  const chosen = groupId || writable[0]?.id || '';
 
   function submit(event: React.FormEvent) {
     event.preventDefault();
-    if (!title.trim() || !chosen) return;
+    if (!title.trim()) return;
     create.mutate(
-      { groupId: chosen, title: title.trim() },
+      { groupId: groupId || undefined, title: title.trim() },
       {
         onSuccess: (topic) => {
           onOpenChange(false);
@@ -103,7 +103,7 @@ function NewBedSheet({
           form="garden-new-bed"
           className="w-full"
           loading={create.isPending}
-          disabled={!title.trim() || !chosen}
+          disabled={!title.trim()}
         >
           {t('newBedSubmit')}
         </Button>
@@ -120,14 +120,15 @@ function NewBedSheet({
             className={INPUT}
           />
         </label>
-        {writable.length > 1 ? (
+        {writable.length > 0 ? (
           <label className="flex flex-col gap-1.5 text-[13px] font-semibold text-muted-foreground">
             {t('newBedGroup')}
             <select
-              value={chosen}
+              value={groupId}
               onChange={(event) => setGroupId(event.target.value)}
               className={INPUT}
             >
+              <option value="">{t('newBedJustMe')}</option>
               {writable.map((group) => (
                 <option key={group.id} value={group.id}>
                   {group.name}
@@ -135,9 +136,6 @@ function NewBedSheet({
               ))}
             </select>
           </label>
-        ) : null}
-        {groups.data && writable.length === 0 ? (
-          <p className="text-[13px] text-primary-text">{t('newBedNoGroup')}</p>
         ) : null}
         {create.isError ? (
           <p role="alert" className="text-[13px] text-primary-text">

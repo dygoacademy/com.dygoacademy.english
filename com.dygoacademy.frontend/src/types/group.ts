@@ -25,6 +25,8 @@ export interface GroupSummary {
   name: string;
   description: string | null;
   is_public: boolean;
+  /** The learner's private My words group; `useGroups` leaves it out. Optional until the backend sends it. */
+  is_personal?: boolean;
   role: GroupRole;
   created_at: string;
 }

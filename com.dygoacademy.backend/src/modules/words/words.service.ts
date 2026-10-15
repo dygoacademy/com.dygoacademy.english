@@ -88,6 +88,10 @@ export class WordsService {
    */
   async ingest(userId: string, dto: CreateWordDto): Promise<TopicWord> {
     const languageCode = dto.languageCode ?? 'en';
+    // No topic: the caller's My words bed (+ on a bed they can't edit),
+    // created if missing. Its own statement, so the INSERT's RLS check
+    // below sees the owner's ADMIN row.
+    const topicId = dto.topicId ?? (await this.myWordsTopicId(userId));
 
     let row: TopicWord;
     try {
@@ -96,7 +100,7 @@ export class WordsService {
         `insert into public.topic_words (topic_id, source_word, language_code, added_by)
          values ($1, $2, $3, $4)
          returning id, topic_id, source_word, language_code, status, created_at`,
-        [dto.topicId, dto.word.trim(), languageCode, userId],
+        [topicId, dto.word.trim(), languageCode, userId],
       );
       row = rows[0];
     } catch (err) {
@@ -271,6 +275,17 @@ export class WordsService {
     }
 
     return rows[0];
+  }
+
+  private async myWordsTopicId(userId: string): Promise<string> {
+    const rows = await this.db.queryAs<{ id: string | null }>(
+      userId,
+      `select public.my_words_topic_id() as id`,
+    );
+    if (!rows[0]?.id) {
+      throw new NotFoundException('Profile not found.');
+    }
+    return rows[0].id;
   }
 
   private translateInsertError(err: unknown): Error {

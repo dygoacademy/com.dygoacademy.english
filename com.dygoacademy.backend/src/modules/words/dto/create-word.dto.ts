@@ -6,9 +6,12 @@ export type CefrLevel = (typeof CEFR_LEVELS)[number];
 
 /** Body for `POST /api/v1/words` — tech spec §3.4. */
 export class CreateWordDto {
-  @ApiProperty({ description: 'Topic the word is added to.' })
+  @ApiPropertyOptional({
+    description: "Topic the word is added to. Left out, it goes in the caller's My words bed.",
+  })
+  @IsOptional()
   @IsUUID('loose')
-  topicId!: string;
+  topicId?: string;
 
   @ApiProperty({ description: 'The raw word or phrase to enrich.', example: 'resilient' })
   @IsString()

@@ -161,6 +161,9 @@ run_rls_suite() {
   # Onboarding in 2 steps: new goals, IELTS General bands, first bed from the goal.
   run_file "$DIR/migrations/20261012_onboarding_goals.sql" "$scratch"
   run_file "$DIR/tests/rls_onboarding_goals_test.sql" "$scratch"
+  # My words: a personal group and bed for every learner (backfill + signup).
+  run_file "$DIR/migrations/20261015_my_words.sql" "$scratch"
+  run_file "$DIR/tests/rls_my_words_test.sql" "$scratch"
 }
 
 # -----------------------------------------------------------------------------

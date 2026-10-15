@@ -175,6 +175,7 @@ export class GroupGardenService {
                 where r.is_current
                 limit 1
               ) rd on true
+        where not g.is_personal
         order by g.created_at desc`,
       [userId],
     );

@@ -10,12 +10,21 @@ import type { GroupRow, GroupSummary } from '@/types';
  * GroupsService.findMine's own header comment). First real data hook for
  * Module 1's frontend, following useTopics's precedent exactly: one hook
  * per resource, built on apiClient + TanStack Query.
+ *
+ * Shared groups only: the learner's personal group (My words) is left out,
+ * so it never shows as a group or turns on the Groups tab. Its beds still
+ * come through `GET /topics`.
  */
 export function useGroups() {
   return useQuery({
     queryKey: ['groups'],
     queryFn: () => apiClient.get<GroupSummary[]>('/groups'),
+    select: sharedGroups,
   });
+}
+
+function sharedGroups(groups: GroupSummary[]): GroupSummary[] {
+  return groups.filter((g) => !g.is_personal);
 }
 
 export interface CreateGroupInput {

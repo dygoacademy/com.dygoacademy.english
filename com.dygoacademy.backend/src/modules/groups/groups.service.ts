@@ -16,6 +16,8 @@ export interface GroupSummary {
   name: string;
   description: string | null;
   is_public: boolean;
+  /** The owner's private group for My words (20261015_my_words.sql); the Groups tab hides it. */
+  is_personal: boolean;
   /** The caller's own role in this group — always 'ADMIN' on the row just created. */
   role: GroupRole;
   created_at: Date;
@@ -98,6 +100,7 @@ export class GroupsService {
               g.name,
               g.description,
               g.is_public,
+              g.is_personal,
               gm.role,
               g.created_at
          from public.groups g
@@ -140,7 +143,7 @@ export class GroupsService {
       [userId, dto.name.trim(), dto.description ?? null, dto.isPublic ?? false],
     );
 
-    return { ...rows[0], role: 'ADMIN' };
+    return { ...rows[0], is_personal: false, role: 'ADMIN' };
   }
 
   /**
@@ -171,11 +174,14 @@ export class GroupsService {
     return rows[0];
   }
 
-  /** ADMIN only, via `groups_delete_admin`. Same 404-for-both-cases reasoning as update(). */
+  /**
+   * ADMIN only, via `groups_delete_admin`. Same 404-for-both-cases reasoning as update().
+   * A personal group can't be deleted: it holds the learner's own words.
+   */
   async remove(userId: string, groupId: string): Promise<void> {
     const rows = await this.db.queryAs<{ id: string }>(
       userId,
-      `delete from public.groups where id = $1 returning id`,
+      `delete from public.groups where id = $1 and not is_personal returning id`,
       [groupId],
     );
     if (rows.length === 0) {

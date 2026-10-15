@@ -16,6 +16,7 @@ import { useGardenPreferences } from '../preferences';
 import { TopicWordSearchScreen } from '../screens/TopicWordSearchScreen';
 import { bedMeanings, searchBedWords, toBedWords, type GardenTopicWord } from './data';
 import { LiveError, LiveLoading } from './LiveState';
+import { useBedTitle, useSaveToMyWords } from './useSaveToMyWords';
 import { loadRecent, saveRecent } from './recentSearches';
 
 /** Looks like one English word or short phrase worth a dictionary lookup. */
@@ -48,6 +49,8 @@ export function TopicWordSearchLive({
   const [settled, setSettled] = useState(initialQuery.trim());
   const [recent, setRecent] = useState<string[]>([]);
   const [planting, setPlanting] = useState<string | null>(null);
+  const saveToMyWords = useSaveToMyWords(topicId);
+  const bedTitle = useBedTitle(topicId, topic.data?.title ?? '');
 
   useEffect(() => setRecent(loadRecent(topicId)), [topicId]);
   useEffect(() => {
@@ -102,7 +105,7 @@ export function TopicWordSearchLive({
   return (
     <>
       <TopicWordSearchScreen
-        topic={topic.data.title}
+        topic={bedTitle}
         query={query}
         onQueryChange={setQuery}
         onSubmit={() => q && remember(q)}
@@ -115,12 +118,14 @@ export function TopicWordSearchLive({
           remember(word);
           setPlanting(word);
         }}
+        saveToMyWords={saveToMyWords}
         recent={recent}
         onRecent={setQuery}
       />
       <AddWordSheet
         topicId={topicId}
-        topicTitle={topic.data.title}
+        topicTitle={bedTitle}
+        saveToMyWords={saveToMyWords}
         open={planting !== null}
         initialWord={planting ?? undefined}
         onOpenChange={(open) => {

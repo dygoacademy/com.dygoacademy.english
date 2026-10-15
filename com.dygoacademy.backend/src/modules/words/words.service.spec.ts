@@ -68,6 +68,25 @@ describe('WordsService', () => {
     });
   });
 
+  it('without a topic, saves the word to My words', async () => {
+    queryAsMock.mockResolvedValueOnce([{ id: 'my-words-1' }]).mockResolvedValueOnce([
+      {
+        id: 'word-1',
+        topic_id: 'my-words-1',
+        source_word: 'resilient',
+        language_code: 'en',
+        status: 'ENRICHING',
+        created_at: new Date(),
+      },
+    ]);
+
+    await service.ingest('user-1', { word: 'resilient' });
+
+    expect(queryAsMock.mock.calls[0][1]).toMatch(/public\.my_words_topic_id\(\)/);
+    expect(queryAsMock.mock.calls[1][2]).toEqual(['my-words-1', 'resilient', 'en', 'user-1']);
+    expect(queueAddMock).toHaveBeenCalledTimes(1);
+  });
+
   it('maps a unique-constraint violation to ConflictException and never enqueues', async () => {
     queryAsMock.mockRejectedValue({ code: '23505', message: 'duplicate key' });
 

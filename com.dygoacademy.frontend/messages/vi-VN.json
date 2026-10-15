@@ -813,7 +813,6 @@
       "newBedName": "Tên chủ đề",
       "newBedGroup": "Đặt trong",
       "newBedSubmit": "Tạo luống",
-      "newBedNoGroup": "Bạn cần một nhóm mà bạn có quyền chỉnh sửa. Hãy tạo nhóm trong mục Nhóm trước.",
       "newBedError": "Chưa tạo được luống. Bạn kiểm tra kết nối rồi thử lại nhé.",
       "shared": "Dùng chung",
       "searchBeds": "Tìm chủ đề",
@@ -830,7 +829,9 @@
         "recent": "Gần đây",
         "cancel": "Huỷ"
       },
-      "lockedHint": "Gói hạt giống · Cần thêm {count, plural, one {# Hoa Vàng} other {# Hoa Vàng}} trong tuần này để mở"
+      "lockedHint": "Gói hạt giống · Cần thêm {count, plural, one {# Hoa Vàng} other {# Hoa Vàng}} trong tuần này để mở",
+      "newBedJustMe": "Chỉ mình tôi",
+      "myWords": "Từ của tôi"
     },
     "bed": {
       "back": "Về chủ đề",
@@ -874,7 +875,12 @@
         "hint": "Dygo sẽ tự thêm phiên âm, âm thanh và ví dụ.",
         "submit": "Gieo từ",
         "adding": "Đang gieo…",
-        "error": "Chưa thêm được từ này. Bạn thử lại nhé."
+        "error": "Chưa thêm được từ này. Bạn thử lại nhé.",
+        "descriptionMyWords": "Lưu vào Từ của tôi",
+        "addedToMyWords": "Đã thêm vào Từ của tôi",
+        "forbidden": "Bạn không thể thêm từ vào chủ đề này.",
+        "duplicate": "Từ này đã có trong luống này.",
+        "duplicateMyWords": "Từ này đã có trong Từ của tôi."
       },
       "speak": "Nói",
       "speakSentences": "{count} câu từ luống này",
@@ -896,7 +902,8 @@
         "plantHere": "Gieo vào đây",
         "none": "Không có từ nào trong {topic} khớp.",
         "recent": "Gần đây trong luống",
-        "cancel": "Huỷ"
+        "cancel": "Huỷ",
+        "saveToMyWords": "Lưu vào Từ của tôi"
       }
     },
     "me": {

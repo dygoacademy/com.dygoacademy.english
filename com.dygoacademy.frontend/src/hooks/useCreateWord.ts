@@ -6,7 +6,8 @@ import { apiClient } from '@/lib/api-client';
 import type { CefrLevel, TopicWord } from '@/types';
 
 export interface CreateWordInput {
-  topicId: string;
+  /** Left out, the word goes in the learner's My words bed. */
+  topicId?: string;
   word: string;
   languageCode?: string;
   targetCEFR?: CefrLevel;
@@ -19,13 +20,19 @@ export interface CreateWordInput {
  * result lands asynchronously and is picked up by useTopic's polling once
  * this invalidates the topic query.
  */
-export function useCreateWord(topicId: string) {
+export function useCreateWord(topicId: string | null) {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: (input: Omit<CreateWordInput, 'topicId'>) =>
-      apiClient.post<TopicWord>('/words', { topicId, ...input }),
-    onSuccess: () => {
+      apiClient.post<TopicWord>('/words', topicId ? { topicId, ...input } : input),
+    onSuccess: (word) => {
+      if (!topicId) {
+        // Saved to My words: that bed and the list changed, not this bed.
+        void queryClient.invalidateQueries({ queryKey: ['topics', word.topic_id] });
+        void queryClient.invalidateQueries({ queryKey: ['topics'], exact: true });
+        return;
+      }
       // Refetches topic detail (new ENRICHING row) and the topics list
       // (word_count changed) rather than hand-patching the cache — Module 2
       // writes land through a queue worker anyway, so the cache is never

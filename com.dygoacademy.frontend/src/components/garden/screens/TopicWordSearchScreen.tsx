@@ -42,6 +42,8 @@ export interface TopicWordSearchScreenProps {
    */
   suggestion: { word: string; line: string | null } | null;
   onPlant: (word: string) => void;
+  /** The learner can't edit this bed: the button saves to My words. */
+  saveToMyWords?: boolean;
   recent: readonly string[];
   onRecent: (query: string) => void;
 }
@@ -60,6 +62,7 @@ export function TopicWordSearchScreen({
   onOpen,
   suggestion,
   onPlant,
+  saveToMyWords = false,
   recent,
   onRecent,
 }: TopicWordSearchScreenProps) {
@@ -188,7 +191,7 @@ export function TopicWordSearchScreen({
                 className="flex h-10 shrink-0 items-center gap-1.5 rounded-[20px] bg-forest px-[14px] text-[14px] font-bold text-surface"
               >
                 <PlusIcon width={16} height={16} strokeWidth="2.6" />
-                {s('plantHere')}
+                {saveToMyWords ? s('saveToMyWords') : s('plantHere')}
               </button>
             </div>
           </div>
