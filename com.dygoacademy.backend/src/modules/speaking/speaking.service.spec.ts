@@ -84,10 +84,16 @@ describe('SpeakingService.session (The Pond)', () => {
       target_index: 5,
     });
     expect(session.items[0]).not.toHaveProperty('audio_uk_path');
-    // All the learner's words (no topic), 5 per session, due then new first.
+    // The learner's own words (no topic), 5 per session: due, then the
+    // most recently planted, then new ones.
     expect(calls[0].params).toEqual([null]);
     expect(calls[1].params).toEqual([null, 5]);
-    expect(calls[1].text).toMatch(/order by w\.due_now desc, w\.is_new desc/);
+    expect(calls[1].text).toMatch(/order by w\.due_now desc, w\.planted_at desc nulls last/);
+    // Without a topic: planted words, or the first bed's (all words if none).
+    expect(calls[1].text).toMatch(
+      /\$1::uuid is not null or coalesce\(s\.fsrs_state <> 'New', false\)\s+or \(select p\.first_topic_id from public\.profiles p where p\.id = auth\.uid\(\)\) is null or tw\.topic_id = \(select p\.first_topic_id/,
+    );
+    expect(calls[0].text).toMatch(/\$1::uuid is not null or coalesce/);
     // One row per word, joined by lexicon_id (items belong to the word).
     expect(calls[1].text).toMatch(/distinct on \(tw\.lexicon_id\)/);
     expect(calls[1].text).toMatch(/si\.lexicon_id = w\.lexicon_id/);

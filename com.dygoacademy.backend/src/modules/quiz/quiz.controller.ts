@@ -28,7 +28,8 @@ export class QuizController {
     summary: 'Generate a quiz batch (FR-5.1–5.4)',
     description:
       'Cloze, Dictation, Matching, and Contextual Choice items drawn from ' +
-      "READY words the caller can read. Stateless — an item's id encodes " +
+      "the caller's planted words first (wilting and due ones on top), then their " +
+      "first bed's (or the given bed's) other READY words. Stateless — an item's id encodes " +
       'enough to grade it later without a persisted quiz/session row; see ' +
       'quiz-generator.ts.',
   })

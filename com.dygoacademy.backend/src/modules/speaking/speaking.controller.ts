@@ -61,8 +61,8 @@ export class SpeakingController {
   @ApiOperation({
     summary: 'A speaking session for The Pond (Phase 13)',
     description:
-      "Up to 5 of the learner's words that have a speaking item: due first, then new, then " +
-      'the rest. Native UK/US audio URLs and word timings. item_count = how many of their ' +
+      "Up to 5 of the learner's own words (planted, or from their first bed) that have a " +
+      'speaking item: due first, then the most recently planted, then new. Native UK/US audio URLs and word timings. item_count = how many of their ' +
       'words have an item. topic_id narrows it to one bed.',
   })
   @ApiQuery({ name: 'topic_id', required: false })

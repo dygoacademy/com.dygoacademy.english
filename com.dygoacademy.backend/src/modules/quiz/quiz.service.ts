@@ -3,7 +3,7 @@ import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { GeminiEnrichmentService } from '../../ai/gemini-enrichment.service';
 import { nuanceLanguage, stripMarkdown } from '../../ai/nuance-text';
 import { DatabaseService } from '../../database/database.service';
-import { SrsService } from '../srs/srs.service';
+import { FIRST_BED_TOPIC, SrsService } from '../srs/srs.service';
 import { GenerateQuizDto } from './dto/generate-quiz.dto';
 import { SubmitAnswerDto } from './dto/submit-answer.dto';
 import {
@@ -89,6 +89,9 @@ export interface AnswerResult {
   };
 }
 
+/** A word the caller has planted: an SRS row (RLS: theirs) that has left New. */
+const PLANTED = `coalesce(uws.fsrs_state <> 'New', false)`;
+
 const WORD_COLUMNS = `
   tw.id as topic_word_id,
   tw.topic_id,
@@ -137,6 +140,13 @@ export class QuizService {
    * `buildQuizItem` returning `null` for, say, a word with no example
    * sentence is expected, not an error, so the fetch asks for more raw
    * material than the final answer needs rather than round-tripping again.
+   *
+   * Practice stays on the learner's own words (2026-10-15): planted words
+   * (an SRS row past New) come first, the wilting and due ones before the
+   * rest, then random. Without a scope, unplanted words only come from the
+   * first bed (the goal's), so a learner who has planted little still gets
+   * a quiz; a learner with no first bed falls back to every readable word.
+   * In one bed, its planted words come first, then the rest of the bed.
    */
   async generate(userId: string, dto: GenerateQuizDto): Promise<QuizItem[]> {
     const types: QuizType[] = dto.types?.length ? dto.types : [...QUIZ_TYPES];
@@ -157,15 +167,24 @@ export class QuizService {
       ? dto.topicWordIds
       : dto.topicId;
     const params = scopeParam !== undefined ? [scopeParam, candidateLimit] : [candidateLimit];
+    const ownWordsClause =
+      scopeParam === undefined
+        ? `and (${PLANTED} or ${FIRST_BED_TOPIC} is null or tw.topic_id = ${FIRST_BED_TOPIC})`
+        : '';
 
     const rows = await this.db.queryAs<QuizWordRow>(
       userId,
       `select ${WORD_COLUMNS}
          from public.topic_words tw
          join public.master_lexicon ml on ml.id = tw.lexicon_id
+         left join public.user_word_srs uws on uws.topic_word_id = tw.id
         where tw.status = 'READY'
           ${scopeClause}
-        order by random()
+          ${ownWordsClause}
+        order by ${PLANTED} desc,
+                 coalesce(uws.is_leech or uws.next_due_at <= now(), false) desc,
+                 (tw.topic_id is not distinct from ${FIRST_BED_TOPIC}) desc,
+                 random()
         limit ${scopeParam !== undefined ? '$2' : '$1'}`,
       params,
     );

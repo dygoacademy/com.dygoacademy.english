@@ -85,6 +85,26 @@ describe('QuizService.generate', () => {
     const [, sql, params] = queryAsMock.mock.calls[0];
     expect(sql).toMatch(/tw\.topic_id = \$1/);
     expect(params).toEqual(['topic-9', 40]); // limit defaults to 10, candidateLimit = 10*4
+    // the whole bed stays available, its planted words first
+    expect(sql).not.toMatch(/is null or tw\.topic_id =/);
+    expect(sql).toMatch(/order by coalesce\(uws\.fsrs_state <> 'New', false\) desc/);
+  });
+
+  it("without a scope, keeps to the caller's planted words and first bed, weak ones first", async () => {
+    const queryAsMock = jest.fn().mockResolvedValueOnce([]);
+    const service = await makeService({ queryAsMock });
+
+    await service.generate('user-1', {});
+
+    const [, sql, params] = queryAsMock.mock.calls[0];
+    expect(sql).toMatch(/left join public\.user_word_srs uws on uws\.topic_word_id = tw\.id/);
+    expect(sql).toMatch(
+      /and \(coalesce\(uws\.fsrs_state <> 'New', false\) or \(select p\.first_topic_id from public\.profiles p where p\.id = auth\.uid\(\)\) is null or tw\.topic_id = \(select p\.first_topic_id/,
+    );
+    expect(sql).toMatch(
+      /order by coalesce\(uws\.fsrs_state <> 'New', false\) desc,\s+coalesce\(uws\.is_leech or uws\.next_due_at <= now\(\), false\) desc,\s+\(tw\.topic_id is not distinct from \(select p\.first_topic_id[^\n]+auth\.uid\(\)\)\) desc,\s+random\(\)/,
+    );
+    expect(params).toEqual([40]);
   });
 
   it('scopes the candidate query to an exact word-id set when topicWordIds is given (Phase 9, Targeted Re-Quiz)', async () => {

@@ -277,12 +277,18 @@ const DUE_CARD_COLUMNS = `
 // queryAs's JWT claims), so this keeps that shape instead of threading a
 // new param through both queries' positional $1/$2 lists. One indexed
 // profiles lookup by primary key, same cost class as resolveUserTimezone's.
+/**
+ * The caller's first bed (picked from their goal at onboarding; null for
+ * learners who never had one). By auth.uid() for the same reason as
+ * MEANING_TRANSLATION_JOIN below. Also used by Quiz and Speaking to keep
+ * practice on the learner's own words.
+ */
+export const FIRST_BED_TOPIC = `(select p.first_topic_id from public.profiles p where p.id = auth.uid())`;
+
 // New cards from the learner's first bed sort first (findDue without a
-// topic). By auth.uid() for the same reason as MEANING_TRANSLATION_JOIN
-// below; `is not distinct from` keeps it false, never null, when the
+// topic); `is not distinct from` keeps it false, never null, when the
 // profile has no first bed.
-const FIRST_BED_FIRST = `(tw.topic_id is not distinct from
-  (select p.first_topic_id from public.profiles p where p.id = auth.uid())) desc`;
+const FIRST_BED_FIRST = `(tw.topic_id is not distinct from ${FIRST_BED_TOPIC}) desc`;
 
 const MEANING_TRANSLATION_JOIN = `
   left join public.word_translations wt

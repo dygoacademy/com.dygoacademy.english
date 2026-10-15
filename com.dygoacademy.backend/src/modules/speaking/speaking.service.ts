@@ -3,7 +3,7 @@ import { PoolClient } from 'pg';
 
 import { DatabaseService } from '../../database/database.service';
 import { recordMissionProgress } from '../missions/missions.store';
-import { resolveUserTimezone } from '../srs/srs.service';
+import { FIRST_BED_TOPIC, resolveUserTimezone } from '../srs/srs.service';
 import { StorageService } from '../../storage/storage.service';
 import { CreateSpeakingAttemptDto } from './dto/create-attempt.dto';
 import { wordSyllables } from './speaking-syllables';
@@ -49,9 +49,11 @@ const MEANING_TRANSLATION_JOIN = `
 
 /**
  * The learner's words that have a speaking item, one row per word (a word
- * in two beds counts once). Same scope as Review's new cards
- * (`SrsService.findDue`): every READY word the learner can read; RLS on
- * topic_words and user_word_srs does the filtering (master rule 1).
+ * in two beds counts once): READY words they can read (RLS on topic_words
+ * and user_word_srs does the filtering, master rule 1). Without a topic
+ * (2026-10-15) only their own words: planted ones (an SRS row past New)
+ * plus the first bed's (the goal's), so The Pond never asks for a library
+ * word they have never met; a learner with no first bed keeps every word.
  * $1 = optional topic id.
  */
 const LEARNER_WORDS = `
@@ -60,12 +62,15 @@ const LEARNER_WORDS = `
            tw.id as topic_word_id, tw.lexicon_id,
            (s.id is not null and s.next_due_at <= now()) as due_now,
            (s.id is null or s.fsrs_state = 'New') as is_new,
-           s.next_due_at
+           s.next_due_at,
+           case when s.fsrs_state <> 'New' then s.created_at end as planted_at
       from public.topic_words tw
       join public.speaking_items si0 on si0.lexicon_id = tw.lexicon_id
       left join public.user_word_srs s on s.topic_word_id = tw.id
      where tw.status = 'READY'
        and ($1::uuid is null or tw.topic_id = $1::uuid)
+       and ($1::uuid is not null or coalesce(s.fsrs_state <> 'New', false)
+            or ${FIRST_BED_TOPIC} is null or tw.topic_id = ${FIRST_BED_TOPIC})
      order by tw.lexicon_id, s.next_due_at asc nulls last, tw.created_at
   ),
   w as (select words.*, (due_now or is_new) as is_due from words)
@@ -87,9 +92,10 @@ export class SpeakingService {
   ) {}
 
   /**
-   * The Pond: up to 5 of the learner's words with speaking items, due words
-   * first, then new ones (no SRS row or state New), then the rest by next
-   * due date. `topicId` narrows it to one bed.
+   * The Pond: up to 5 of the learner's words with speaking items (see
+   * LEARNER_WORDS): due words first, then the most recently planted, then
+   * new ones (no SRS row or state New, from the first bed or `topicId`'s
+   * bed). `topicId` narrows it to one bed.
    */
   async session(userId: string, topicId?: string): Promise<SpeakingSession> {
     if (topicId !== undefined && !UUID_SHAPE.test(topicId)) {
@@ -107,7 +113,7 @@ export class SpeakingService {
            join public.speaking_items si on si.lexicon_id = w.lexicon_id
            join public.master_lexicon ml on ml.id = si.lexicon_id
            ${MEANING_TRANSLATION_JOIN}
-          order by w.due_now desc, w.is_new desc, w.next_due_at asc nulls last, si.created_at, si.id
+          order by w.due_now desc, w.planted_at desc nulls last, si.created_at, si.id
           limit $2`,
         [topicId ?? null, SPEAKING_SESSION_SIZE],
       );
