@@ -856,6 +856,7 @@
       },
       "water": "浇水 {count} 个待复习",
       "nothingDue": "暂无待复习",
+      "plant": "种下 {count} 个新词",
       "quiz": "测验",
       "addWord": "添加单词",
       "allWords": "全部单词",

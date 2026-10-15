@@ -10,7 +10,16 @@ import { gcn } from '../cn';
 import { EmptyState } from '../EmptyState';
 import { BeeFlower, BeeGlyph } from '../Bee';
 import { useGardenFormat } from '../format';
-import { BackIcon, CheckIcon, MicIcon, MoreIcon, PlusIcon, SearchIcon, WaterIcon } from '../icons';
+import {
+  BackIcon,
+  CheckIcon,
+  MicIcon,
+  MoreIcon,
+  PlusIcon,
+  SearchIcon,
+  SeedIcon,
+  WaterIcon,
+} from '../icons';
 import { IconButton } from '../IconButton';
 import { StageTile } from '../StageTile';
 import { WordRow } from '../WordRow';
@@ -26,7 +35,8 @@ import { GardenTabBar, IPAD_NAV_COLUMN, SCREEN_CLASSES } from './GardenTabBar';
  * master–detail view, this bed being the detail.
  *
  * Header (Back, title + meta, options) → four stage tiles that filter the
- * list (tap again to clear) → Water / Quiz / Add word → the "Speak" row
+ * list (tap again to clear) → Water (or Plant) / Quiz / Add word → "Plant N
+ * new" when there's both something due and seeds → the "Speak" row
  * (SE2, restyled with the 2026-10-11 A7 board) → "Bees are waiting"
  * (2026-10-11, was SE5 "Ready to harvest") → the word list.
  * Stages come from the API in UI-5; until then `stageCounts` is null, the
@@ -74,8 +84,14 @@ export interface TopicBedScreenProps {
   stageCounts: Record<BedStage, number> | null;
   words: readonly TopicBedWord[];
   initialStage?: BedStage | null;
-  /** Null when nothing in the bed is due. */
+  /** Null when nothing in the bed is due (reviewed words only, as on A6). */
   water: { count: number; href: string } | null;
+  /**
+   * "Plant N new": a planting session of this bed's seeds. Takes the main
+   * button's place when nothing is due, else sits under it. Null / omitted
+   * hides it (no seeds left).
+   */
+  plant?: { count: number; href: string } | null;
   quizHref: string;
   addWordHref: string;
   /** Opens the Add word sheet in place; when omitted, + goes to `addWordHref`. */
@@ -108,6 +124,7 @@ export function TopicBedScreen({
   words,
   initialStage = null,
   water,
+  plant,
   quizHref,
   addWordHref,
   onAddWord,
@@ -198,6 +215,16 @@ export function TopicBedScreen({
             <WaterIcon width={20} height={20} fill="var(--color-surface)" />
             {t('water', { count: water.count })}
           </Link>
+        ) : plant ? (
+          <Link
+            href={plant.href}
+            className={buttonClassName('primary', {
+              className: 'h-[52px] flex-grow rounded-control text-[16px] md:max-w-none',
+            })}
+          >
+            <SeedIcon width={20} height={20} />
+            {t('plant', { count: plant.count })}
+          </Link>
         ) : (
           <span className="flex h-[52px] flex-grow items-center justify-center rounded-control bg-surface-sunken text-[15px] font-semibold text-muted-foreground">
             {t('nothingDue')}
@@ -217,6 +244,16 @@ export function TopicBedScreen({
           <PlusIcon width={20} height={20} />
         </IconButton>
       </div>
+
+      {water && plant ? (
+        <Link
+          href={plant.href}
+          className="-mt-1 box-content flex h-[50px] shrink-0 items-center justify-center gap-2 rounded-[16px] border border-forest-wash-border bg-forest-wash text-[15px] font-bold text-forest"
+        >
+          <SeedIcon width={20} height={20} />
+          {t('plant', { count: plant.count })}
+        </Link>
+      ) : null}
 
       {speak ? (
         <Link

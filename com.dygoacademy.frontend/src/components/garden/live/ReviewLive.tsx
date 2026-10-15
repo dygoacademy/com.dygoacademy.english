@@ -33,16 +33,20 @@ import { LiveError, LiveLoading } from './LiveState';
  * With `newWords` (the "Plant new words" mission, `/review?new=<n>`) the
  * session holds only never-reviewed words, up to that many. With `limit`
  * (A5b "Quick start", `/review?limit=<n>`) it holds at most n words; the
- * API orders due words most overdue first.
+ * API orders due words most overdue first. With `dueOnly` (A7 "Water N
+ * due", `/review?topic=…&due=1`) it holds reviewed words only: the API
+ * sends due words before seeds, so dropping the seeds keeps every due one.
  */
 export function ReviewLive({
   topicId,
   newWords,
   limit,
+  dueOnly = false,
 }: {
   topicId?: string;
   newWords?: number;
   limit?: number;
+  dueOnly?: boolean;
 }) {
   const t = useTranslations('screens.review');
   const live = useTranslations('screens.live');
@@ -59,8 +63,10 @@ export function ReviewLive({
   const startedAt = React.useRef<number>(0);
 
   if (cards === null && session.data) {
-    // A planting session shows new words only, whatever the server sends.
-    setCards(planting ? session.data.cards.filter((c) => c.is_new) : session.data.cards);
+    // A planting session shows new words only, whatever the server sends;
+    // a due-only one shows no new words.
+    const all = session.data.cards;
+    setCards(planting ? all.filter((c) => c.is_new) : dueOnly ? all.filter((c) => !c.is_new) : all);
   }
   React.useEffect(() => {
     if (cards !== null && startedAt.current === 0) startedAt.current = Date.now();

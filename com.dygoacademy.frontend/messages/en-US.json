@@ -852,6 +852,7 @@
       },
       "water": "Water {count} due",
       "nothingDue": "Nothing due",
+      "plant": "Plant {count} new",
       "quiz": "Quiz",
       "addWord": "Add word",
       "allWords": "All words",

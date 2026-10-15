@@ -329,6 +329,23 @@ describe('TopicBedScreen', () => {
     expect(screen.getByRole('heading', { name: 'All words' })).toBeTruthy();
   });
 
+  it('Plant N new takes the main button when nothing is due, else sits under Water', () => {
+    const plant = { count: 5, href: '/review?new=5&topic=t1' };
+    const { unmount } = renderWithIntl(<TopicBedScreen {...props} water={null} plant={plant} />);
+    expect(screen.queryByText('Nothing due')).toBeNull();
+    expect(screen.getByRole('link', { name: 'Plant 5 new' }).getAttribute('href')).toBe(plant.href);
+    unmount();
+    renderWithIntl(<TopicBedScreen {...props} plant={plant} />);
+    expect(screen.getByRole('link', { name: /Water 6 due/ })).toBeTruthy();
+    expect(screen.getByRole('link', { name: 'Plant 5 new' })).toBeTruthy();
+  });
+
+  it('shows Nothing due when the bed has neither due words nor seeds', () => {
+    renderWithIntl(<TopicBedScreen {...props} water={null} plant={null} />);
+    expect(screen.getByText('Nothing due')).toBeTruthy();
+    expect(screen.queryByRole('link', { name: /Plant/ })).toBeNull();
+  });
+
   it('SE2: shows the Speak row only when the bed has sentences', () => {
     const { unmount } = renderWithIntl(
       <TopicBedScreen {...props} speak={{ count: 5, href: '/sounds?topic=t1' }} />,

@@ -127,15 +127,27 @@ describe('SrsService.findDue', () => {
     expect(secondSql).not.toMatch(/first_topic_id/);
   });
 
-  it("without a topic, new cards from the learner's first bed come first", async () => {
+  it("without a topic, the learner's own words come first, then their first bed", async () => {
     const queryAsMock = jest.fn().mockResolvedValueOnce([]);
     const service = await makeService(queryAsMock);
 
     await service.findDue('user-1', undefined, 5, true);
 
     const [, sql] = queryAsMock.mock.calls[0];
-    expect(sql).toMatch(/order by \(tw\.topic_id is not distinct from\s+\(select p\.first_topic_id/);
+    expect(sql).toMatch(
+      /order by \(tw\.added_by is not distinct from auth\.uid\(\)\) desc, \(tw\.topic_id is not distinct from\s+\(select p\.first_topic_id/,
+    );
     expect(sql).toMatch(/\) desc, tw\.created_at asc/);
+  });
+
+  it('with a topic, new cards keep plain oldest-first order', async () => {
+    const queryAsMock = jest.fn().mockResolvedValueOnce([]).mockResolvedValueOnce([]);
+    const service = await makeService(queryAsMock);
+
+    await service.findDue('user-1', 'topic-9', 10);
+
+    const [, secondSql] = queryAsMock.mock.calls[1];
+    expect(secondSql).not.toMatch(/added_by/);
   });
 
   it('newOnly skips the existing-due query and asks for new cards up to the limit', async () => {

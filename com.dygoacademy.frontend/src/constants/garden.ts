@@ -33,6 +33,11 @@ export const GARDEN_ROUTES = {
    */
   plant: (count: number, topicId?: string) =>
     `/review?new=${Math.max(1, Math.round(count))}${topicId ? `&topic=${encodeURIComponent(topicId)}` : ''}`,
+  /**
+   * A2 for one bed's due words only (A7 "Water N due"): reviewed words,
+   * never its seeds, which "Plant N new" sows instead.
+   */
+  waterBed: (topicId: string) => `/review?topic=${encodeURIComponent(topicId)}&due=1`,
   /** A2 with only the `count` most overdue due words (A5b "Quick start"). */
   reviewFirst: (count: number) => `/review?limit=${Math.max(1, Math.round(count))}`,
   reviewDone: '/review/done',

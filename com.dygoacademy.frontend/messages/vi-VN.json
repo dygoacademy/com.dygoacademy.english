@@ -852,6 +852,7 @@
       },
       "water": "Tưới {count} từ đến hạn",
       "nothingDue": "Chưa có từ đến hạn",
+      "plant": "Gieo {count} từ mới",
       "quiz": "Kiểm tra nhanh",
       "addWord": "Thêm từ",
       "allWords": "Tất cả các từ",

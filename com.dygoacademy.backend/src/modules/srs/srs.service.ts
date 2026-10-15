@@ -290,6 +290,12 @@ export const FIRST_BED_TOPIC = `(select p.first_topic_id from public.profiles p 
 // profile has no first bed.
 const FIRST_BED_FIRST = `(tw.topic_id is not distinct from ${FIRST_BED_TOPIC}) desc`;
 
+// Words the learner added themselves sort before everything else (findDue
+// without a topic): they chose them, and library words are always older,
+// so oldest-first alone planted them last. `is not distinct from` for the
+// same never-null reason as FIRST_BED_FIRST (added_by can be null).
+const OWN_WORDS_FIRST = `(tw.added_by is not distinct from auth.uid()) desc`;
+
 const MEANING_TRANSLATION_JOIN = `
   left join public.word_translations wt
          on wt.word_id = ml.id
@@ -321,10 +327,11 @@ export class SrsService {
    * `newOnly` skips the existing-due query: the home screen's "Plant new
    * words" mission starts a session of never-reviewed words only.
    *
-   * Without a topic, new cards come from the learner's first bed (the one
-   * onboarding picked from their goal, `profiles.first_topic_id`) before
-   * any other bed, so the daily mission keeps planting from their goal;
-   * once that bed has no seeds left, the oldest words anywhere follow.
+   * Without a topic, new cards come from words the learner added
+   * themselves first, then from their first bed (the one onboarding picked
+   * from their goal, `profiles.first_topic_id`), so the daily mission
+   * plants what they chose, then keeps to their goal; once both have no
+   * seeds left, the oldest words anywhere follow.
    */
   async findDue(userId: string, topicId?: string, limit = 50, newOnly = false): Promise<DueCard[]> {
     const dueExisting = newOnly
@@ -376,7 +383,7 @@ export class SrsService {
             select 1 from public.user_word_srs uws where uws.topic_word_id = tw.id
           )
           ${topicId ? 'and tw.topic_id = $1' : ''}
-        order by ${topicId ? '' : `${FIRST_BED_FIRST}, `}tw.created_at asc
+        order by ${topicId ? '' : `${OWN_WORDS_FIRST}, ${FIRST_BED_FIRST}, `}tw.created_at asc
         limit ${topicId ? '$2' : '$1'}`,
       topicId ? [topicId, remaining] : [remaining],
     );

@@ -18,6 +18,9 @@ import { bedMeanings, beesCard, toBedWords, type GardenTopicWord } from './data'
 import { LiveError, LiveLoading } from './LiveState';
 import { TopicBedsSidebar } from './SidebarLists';
 
+/** How many seeds "Plant N new" sows at a time (as A1b's extra and A6b's Plant). */
+const PLANT_COUNT = 5;
+
 /**
  * /topics/[id]: a topic bed (A7) from GET /topics/:id and the
  * topic's due cards (POST /srs/sessions with the topic).
@@ -31,8 +34,10 @@ import { TopicBedsSidebar } from './SidebarLists';
  * §14.8), English `definition_en` otherwise (2026-09-29 — previously
  * always English, ignoring the meaning-language preference).
  *
- * U5-4: "Water N due" opens watering scoped to this bed
- * (/review?topic=…, i.e. POST /srs/sessions with the topic); +
+ * U5-4: "Water N due" opens watering scoped to this bed's due words
+ * (/review?topic=…&due=1; 2026-10-15: seeds no longer count as due, so
+ * the number matches A6's badge). "Plant N new" sows up to 5 of its seeds
+ * (/review?new=5&topic=…), and takes Water's place when nothing is due; +
  * opens the garden Add word sheet (POST /words, then the bed refetches).
  * Options still opens the classic topic page. A7c (2026-10-11): the
  * search button opens /topics/[id]/search.
@@ -71,7 +76,11 @@ export function TopicBedLive({ topicId }: { topicId: string }) {
     bedMeanings(cards, meaningLocale),
     new Date(),
   );
-  const dueCount = new Set(cards.map((card) => card.topic_word_id)).size;
+  // Reviewed words due now, the same count as A6's badge; seeds (new
+  // cards) are planted through "Plant N new" instead of counted as due.
+  const dueCount = new Set(cards.filter((c) => !c.is_new).map((c) => c.topic_word_id)).size;
+  const seedCount = new Set(cards.filter((c) => c.is_new).map((c) => c.topic_word_id)).size;
+  const plantCount = Math.min(seedCount, PLANT_COUNT);
   const bedHref = GARDEN_ROUTES.topic(topicId);
   const speakCount = Math.min(speaking.data?.item_count ?? 0, POND_SESSION_SIZE);
   const bees = beesCard(
@@ -94,8 +103,13 @@ export function TopicBedLive({ topicId }: { topicId: string }) {
           dueCount > 0
             ? {
                 count: dueCount,
-                href: `${GARDEN_ROUTES.review}?topic=${encodeURIComponent(topicId)}`,
+                href: GARDEN_ROUTES.waterBed(topicId),
               }
+            : null
+        }
+        plant={
+          plantCount > 0
+            ? { count: plantCount, href: GARDEN_ROUTES.plant(plantCount, topicId) }
             : null
         }
         quizHref={GARDEN_ROUTES.quiz(topicId)}
