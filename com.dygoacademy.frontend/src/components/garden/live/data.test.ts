@@ -326,6 +326,20 @@ describe('A1b All watered', () => {
     expect(extraPlantBed(undefined)).toBeNull();
   });
 
+  it('extraPlantBed prefers the first bed while it has seeds', () => {
+    const beds = [
+      { id: 't1', title: 'Travel', seed_count: '3' },
+      { id: 't2', title: 'Environment', seed_count: '9' },
+    ];
+    expect(extraPlantBed(beds, 't1')).toEqual({ id: 't1', title: 'Travel' });
+    expect(extraPlantBed([{ ...beds[0], seed_count: '0' }, beds[1]], 't1')).toEqual({
+      id: 't2',
+      title: 'Environment',
+    });
+    expect(extraPlantBed(beds, 'gone')).toEqual({ id: 't2', title: 'Environment' });
+    expect(extraPlantBed(beds, null)).toEqual({ id: 't2', title: 'Environment' });
+  });
+
   it('plant route takes the bed', () => {
     expect(GARDEN_ROUTES.plant(5, 't 2')).toBe('/review?new=5&topic=t%202');
     expect(GARDEN_ROUTES.plant(5)).toBe('/review?new=5');

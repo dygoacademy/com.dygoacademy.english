@@ -7,6 +7,7 @@ import { GARDEN_ROUTES } from '@/constants/garden';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
 import { useDailyActivity } from '@/hooks/useDailyActivity';
 import { useTodayMissions } from '@/hooks/useMissions';
+import { useOnboarding } from '@/hooks/useOnboarding';
 import { useNotificationSchedules } from '@/hooks/useNotificationSchedules';
 import { useSrsStats } from '@/hooks/useSrsStats';
 import { useTopics } from '@/hooks/useTopics';
@@ -63,8 +64,9 @@ import { LiveError, LiveLoading } from './LiveState';
  * are all done (`showAllWatered`; the due count alone when the missions
  * call failed, and then without the Golden Bloom line): the Golden Bloom
  * card with the next ripening (the count stays without a reminder,
- * `nextRipening`) and three extras: plant 5 new words from the bed with
- * the most seeds (`extraPlantBed`, hidden without seeds), The Pond, and
+ * `nextRipening`) and three extras: plant 5 new words from the first bed
+ * (from the goal) while it has seeds, else the bed with the most seeds
+ * (`extraPlantBed`, hidden without seeds), The Pond, and
  * the mission quiz link.
  */
 export function HomeLive() {
@@ -76,6 +78,7 @@ export function HomeLive() {
   const schedules = useNotificationSchedules();
   const missions = useTodayMissions();
   const topics = useTopics();
+  const onboarding = useOnboarding();
 
   if (stats.isPending || activity.isPending || missions.isPending) return <LiveLoading />;
   if (stats.isError || !stats.data) {
@@ -108,7 +111,7 @@ export function HomeLive() {
   const tomorrow = isoDay(addDays(today, 1));
 
   if (showAllWatered(s, missions.data)) {
-    const bed = extraPlantBed(topics.data);
+    const bed = extraPlantBed(topics.data, onboarding.data?.first_topic_id);
     return (
       <AllWateredScreen
         date={today}

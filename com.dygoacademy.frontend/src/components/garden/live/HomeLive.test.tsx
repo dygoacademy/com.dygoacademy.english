@@ -26,6 +26,7 @@ const missions: { data: TodayMissions | undefined } = { data: undefined };
 const topics: { data: Array<{ id: string; title: string; seed_count?: string; due_count?: string }> } = {
   data: [],
 };
+const onboarding: { data: { first_topic_id: string | null } } = { data: { first_topic_id: null } };
 
 vi.mock('@/hooks/useSrsStats', () => ({ useSrsStats: () => query(stats.data) }));
 vi.mock('@/hooks/useDailyActivity', () => ({ useDailyActivity: () => query(activity.data) }));
@@ -34,6 +35,7 @@ vi.mock('@/hooks/useUpcomingActivity', () => ({ useUpcomingActivity: () => query
 vi.mock('@/hooks/useNotificationSchedules', () => ({ useNotificationSchedules: () => query([]) }));
 vi.mock('@/hooks/useMissions', () => ({ useTodayMissions: () => query(missions.data) }));
 vi.mock('@/hooks/useTopics', () => ({ useTopics: () => query(topics.data) }));
+vi.mock('@/hooks/useOnboarding', () => ({ useOnboarding: () => query(onboarding.data) }));
 
 import { HomeLive } from './HomeLive';
 
@@ -84,6 +86,7 @@ describe('HomeLive all watered (A1b)', () => {
       { id: 't1', title: 'Education', seed_count: '2', due_count: '0' },
       { id: 't2', title: 'Environment', seed_count: '7', due_count: '0' },
     ];
+    onboarding.data = { first_topic_id: null };
   });
 
   it('nothing due and the Golden Bloom grown → All watered', () => {
@@ -95,6 +98,16 @@ describe('HomeLive all watered (A1b)', () => {
       '/review?new=5&topic=t2',
     );
     expect(screen.getByRole('link', { name: /From Environment/ })).toBeTruthy();
+  });
+
+  it('All watered plants from the goal bed while it has seeds', () => {
+    missions.data = today([true, true, true]);
+    onboarding.data = { first_topic_id: 't1' };
+    renderWithIntl(<HomeLive />);
+    expect(screen.getByRole('link', { name: /Plant 5 new words/ }).getAttribute('href')).toBe(
+      '/review?new=5&topic=t1',
+    );
+    expect(screen.getByRole('link', { name: /From Education/ })).toBeTruthy();
   });
 
   it("nothing due but a mission still open → Today's Garden", () => {

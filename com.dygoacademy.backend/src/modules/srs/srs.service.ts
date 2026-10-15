@@ -277,6 +277,13 @@ const DUE_CARD_COLUMNS = `
 // queryAs's JWT claims), so this keeps that shape instead of threading a
 // new param through both queries' positional $1/$2 lists. One indexed
 // profiles lookup by primary key, same cost class as resolveUserTimezone's.
+// New cards from the learner's first bed sort first (findDue without a
+// topic). By auth.uid() for the same reason as MEANING_TRANSLATION_JOIN
+// below; `is not distinct from` keeps it false, never null, when the
+// profile has no first bed.
+const FIRST_BED_FIRST = `(tw.topic_id is not distinct from
+  (select p.first_topic_id from public.profiles p where p.id = auth.uid())) desc`;
+
 const MEANING_TRANSLATION_JOIN = `
   left join public.word_translations wt
          on wt.word_id = ml.id
@@ -307,6 +314,11 @@ export class SrsService {
    *
    * `newOnly` skips the existing-due query: the home screen's "Plant new
    * words" mission starts a session of never-reviewed words only.
+   *
+   * Without a topic, new cards come from the learner's first bed (the one
+   * onboarding picked from their goal, `profiles.first_topic_id`) before
+   * any other bed, so the daily mission keeps planting from their goal;
+   * once that bed has no seeds left, the oldest words anywhere follow.
    */
   async findDue(userId: string, topicId?: string, limit = 50, newOnly = false): Promise<DueCard[]> {
     const dueExisting = newOnly
@@ -358,7 +370,7 @@ export class SrsService {
             select 1 from public.user_word_srs uws where uws.topic_word_id = tw.id
           )
           ${topicId ? 'and tw.topic_id = $1' : ''}
-        order by tw.created_at asc
+        order by ${topicId ? '' : `${FIRST_BED_FIRST}, `}tw.created_at asc
         limit ${topicId ? '$2' : '$1'}`,
       topicId ? [topicId, remaining] : [remaining],
     );

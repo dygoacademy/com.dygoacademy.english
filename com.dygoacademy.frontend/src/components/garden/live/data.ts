@@ -113,7 +113,8 @@ export function missionsSummary(mission: { done: number; total: number }): {
  * order (REVIEW_DUE, LEARN_NEW, then QUIZ or SPEAK). Progress is capped at
  * the target so extra reviews don't overflow the bar. Every open row links
  * to its activity: water → watering, plant → a new-words session for
- * what's left, QUIZ → `quizHref`, SPEAK (Phase 13 SE1) → The Pond.
+ * what's left (the server takes them from the learner's first bed
+ * first), QUIZ → `quizHref`, SPEAK (Phase 13 SE1) → The Pond.
  *
  * The water row follows the live due count (`GET /srs/stats` `due_now`,
  * the hero card's "thirsty" number) rather than the target frozen when
@@ -711,13 +712,18 @@ export function showAllWatered(stats: SrsStats, missions: TodayMissions | undefi
 }
 
 /**
- * A1b "Plant 5 new words · From {bed}": the bed with the most seeds
- * (`GET /topics` `seed_count`, the first on a tie). Null hides the row
- * when no bed has seeds left (or the topics call failed).
+ * A1b "Plant 5 new words · From {bed}": the learner's first bed (picked
+ * from their goal at onboarding, `firstTopicId`) while it has seeds, else
+ * the bed with the most seeds (`GET /topics` `seed_count`, the first on a
+ * tie). Null hides the row when no bed has seeds left (or the topics call
+ * failed).
  */
 export function extraPlantBed(
   topics: ReadonlyArray<Pick<GardenTopicSummary, 'id' | 'title' | 'seed_count'>> | undefined,
+  firstTopicId?: string | null,
 ): { id: string; title: string } | null {
+  const first = firstTopicId ? topics?.find((topic) => topic.id === firstTopicId) : undefined;
+  if (first && num(first.seed_count) > 0) return { id: first.id, title: first.title };
   let best: { id: string; title: string; seeds: number } | null = null;
   for (const topic of topics ?? []) {
     const seeds = num(topic.seed_count);
