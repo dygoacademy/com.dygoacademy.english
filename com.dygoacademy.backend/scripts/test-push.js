@@ -79,7 +79,7 @@ async function main() {
   }
 
   const { rows } = await client.query(
-    `select ps.endpoint, ps.p256dh_key, ps.auth_key
+    `select ps.endpoint, ps.p256dh_key, ps.auth_key, ps.user_agent, ps.last_used_at
        from public.push_subscriptions ps
        join public.profiles p on p.id = ps.user_id
       where p.email = $1`,
@@ -100,7 +100,7 @@ async function main() {
   const payload = JSON.stringify({
     title: 'Test push',
     body: `Sent manually at ${new Date().toLocaleTimeString()} — if you see this, delivery works end to end.`,
-    url: `${frontendUrl}/study`,
+    url: `${frontendUrl}/garden`,
     tag: 'test',
   });
 
@@ -113,6 +113,9 @@ async function main() {
     try {
       await webpush.sendNotification(subscription, payload);
       sent += 1;
+      // Which device: fcm.googleapis.com = Chrome, web.push.apple.com = Safari / iPhone app,
+      // updates.push.services.mozilla.com = Firefox.
+      console.log(`  sent → ${new URL(row.endpoint).host}  ${row.user_agent || '(no user agent)'}`);
     } catch (err) {
       console.error(`Failed for endpoint ${row.endpoint.slice(0, 60)}...: ${err.statusCode || ''} ${err.message}`);
     }
