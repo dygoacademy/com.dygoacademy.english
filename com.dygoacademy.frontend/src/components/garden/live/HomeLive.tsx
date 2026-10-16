@@ -21,6 +21,7 @@ import {
   displayName,
   comebackStart,
   EXTRA_PLANT_COUNT,
+  plantAllowance,
   extraPlantBed,
   freezeStreak,
   gardenPlants,
@@ -112,6 +113,7 @@ export function HomeLive() {
 
   if (showAllWatered(s, missions.data)) {
     const bed = extraPlantBed(topics.data, onboarding.data?.first_topic_id);
+    const plantLeft = plantAllowance(missions.data);
     return (
       <AllWateredScreen
         date={today}
@@ -129,11 +131,16 @@ export function HomeLive() {
         }
         ripens={nextRipening(upcoming.data, tomorrow, schedules.data)}
         extras={{
-          plant: bed
-            ? { bed: bed.title, href: GARDEN_ROUTES.plant(EXTRA_PLANT_COUNT, bed.id) }
-            : null,
+          // Daily goal missions: only while today's seeds aren't all planted.
+          plant:
+            bed && plantLeft > 0
+              ? {
+                  bed: bed.title,
+                  href: GARDEN_ROUTES.plant(Math.min(EXTRA_PLANT_COUNT, plantLeft), bed.id),
+                }
+              : null,
           speakHref: GARDEN_ROUTES.sounds,
-          quizHref: missionQuizHref(topics.data),
+          quizHref: missionQuizHref(topics.data, missions.data?.quiz_questions),
         }}
       />
     );
@@ -154,7 +161,11 @@ export function HomeLive() {
       }}
       missions={
         missions.data
-          ? liveMissions(missions.data, missionQuizHref(topics.data), s.due_now)
+          ? liveMissions(
+              missions.data,
+              missionQuizHref(topics.data, missions.data.quiz_questions),
+              s.due_now,
+            )
           : activity.data
             ? [
                 {

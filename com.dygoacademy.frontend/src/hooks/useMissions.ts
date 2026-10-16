@@ -7,7 +7,8 @@ import { getResolvedTimezone } from '@/lib/timezone';
 
 /**
  * UI-6 daily mission types (backend `modules/missions/missions.store.ts`).
- * SPEAK (Phase 13 SE1) takes QUIZ's place as the 3rd mission on alternate days.
+ * SPEAK (Phase 13 SE1) takes QUIZ's place as the 3rd mission on alternate days;
+ * since daily goal missions (2026-10-15) a day has 2 to 4 of them.
  */
 export type MissionType = 'REVIEW_DUE' | 'LEARN_NEW' | 'QUIZ' | 'SPEAK';
 
@@ -23,14 +24,18 @@ export interface TodayMissions {
   /** The learner's local date, YYYY-MM-DD. */
   date: string;
   missions: DailyMission[];
-  /** All 3 missions done today. */
+  /** Every mission of today done (2 to 4 a day, from the daily goal). */
   goldenBloom: boolean;
+  /** Questions in today's QUIZ mission (daily goal tier); absent on older backends. */
+  quiz_questions?: number;
+  /** About how long today's missions take, in minutes; absent on older backends. */
+  estimate_minutes?: number;
 }
 
 /** One row of `GET /missions/week` (oldest first, today last). */
 export interface MissionDay {
   date: string;
-  /** Missions completed that local day (0–3). */
+  /** Missions completed that local day (0–4). */
   done: number;
   goldenBloom: boolean;
 }

@@ -40,11 +40,20 @@ import { addMissed, type MissedWord } from './results';
  * QZ-4: a normal quiz with misses links "Drill tricky words" to that
  * drill (`?topic=<id>&mode=leech`, so it comes back to the same bed).
  */
-export function QuizLive({ topicId, mode }: { topicId?: string; mode?: 'leech' }) {
+export function QuizLive({
+  topicId,
+  mode,
+  questions = 10,
+}: {
+  topicId?: string;
+  mode?: 'leech';
+  /** Questions in a normal quiz (`?n=`, the QUIZ mission's length). */
+  questions?: number;
+}) {
   const t = useTranslations('screens.quiz');
   const locale = useLocale();
   const isDrill = mode === 'leech';
-  const generated = useGenerateQuiz(topicId, undefined, undefined, 10, !isDrill);
+  const generated = useGenerateQuiz(topicId, undefined, undefined, questions, !isDrill);
   const drill = useLeechDrillQuiz(isDrill);
   const source = isDrill ? drill : generated;
   const topics = useTopics();

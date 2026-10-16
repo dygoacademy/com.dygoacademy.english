@@ -719,6 +719,8 @@
       "backToGarden": "Back to garden",
       "empty": "Nothing needs water right now. Come back when your words are due.",
       "emptyPlant": "No new words to plant right now. Add a word or choose a new bed in Topics.",
+      "emptyPlantDone": "You’ve planted today’s seeds. Water them tomorrow, or raise your daily goal in Profile to plant more.",
+      "emptyPlantCatchUp": "Lots of words need water today, so no new seeds. Watering them keeps your garden alive, and seeds come back tomorrow.",
       "error": "We couldn’t save this word. Check your connection and try again."
     },
     "complete": {

@@ -29,6 +29,8 @@ import {
   minutesFor,
   missedDays,
   missionQuizHref,
+  missionsForGoal,
+  plantAllowance,
   missionsSummary,
   nextRipening,
   ripensTomorrow,
@@ -253,9 +255,20 @@ describe('live missions (U6-5)', () => {
     expect(liveMissions(today, href, 5)[0]).toMatchObject({ done: 8, total: 8 });
   });
 
-  it('summarises A3: done count, and the quiz as next while it is open', () => {
+  it('summarises A3: done count, the open Plant mission first, then the quiz', () => {
     expect(liveMissionsSummary(today, href)).toEqual({
       done: 1,
+      total: 3,
+      next: { mission: 'plant', minutes: null, href: '/review?new=3', count: 3 },
+    });
+    const planted = {
+      ...today,
+      missions: today.missions.map((m) =>
+        m.type === 'LEARN_NEW' ? { ...m, progress: 5, done: true } : m,
+      ),
+    };
+    expect(liveMissionsSummary(planted, href)).toEqual({
+      done: 2,
       total: 3,
       next: { mission: 'challenge', minutes: null, href },
     });
@@ -266,7 +279,11 @@ describe('live missions (U6-5)', () => {
   it('SE1: a SPEAK mission is a speak row to The Pond, and the next mission on A3', () => {
     const speakDay = {
       ...today,
-      missions: [today.missions[0], today.missions[1], { type: 'SPEAK' as const, target: 3, progress: 1, done: false }],
+      missions: [
+        today.missions[0],
+        { ...today.missions[1], progress: 5, done: true },
+        { type: 'SPEAK' as const, target: 3, progress: 1, done: false },
+      ],
     };
     expect(liveMissions(speakDay, href, 0)[2]).toEqual({
       kind: 'speak',
@@ -292,6 +309,18 @@ describe('live missions (U6-5)', () => {
     expect(missionQuizHref(topics)).toBe('/quiz?topic=t2');
     expect(missionQuizHref([{ id: 't1', due_count: '0' }, { id: 't2' }])).toBe('/quiz');
     expect(missionQuizHref(undefined)).toBe('/quiz');
+    // The daily goal sets the quiz length.
+    expect(missionQuizHref(topics, 15)).toBe('/quiz?topic=t2&n=15');
+  });
+
+  it("plantAllowance: what's left of today's Plant mission, 0 on a catch-up day", () => {
+    expect(plantAllowance(today)).toBe(3);
+    expect(plantAllowance({ ...today, missions: [today.missions[0], today.missions[2]] })).toBe(0);
+    expect(plantAllowance(undefined)).toBe(5);
+  });
+
+  it('missionsForGoal: 3 missions up to 15 min, 4 from 20 min', () => {
+    expect([5, 10, 15, 20, 30].map(missionsForGoal)).toEqual([3, 3, 3, 4, 4]);
   });
 });
 

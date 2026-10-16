@@ -1,7 +1,12 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 
 import { DatabaseService } from '../../database/database.service';
-import { MissionClient, recordMissionProgress } from '../missions/missions.store';
+import {
+  MissionClient,
+  localDateOf,
+  newWordAllowance,
+  recordMissionProgress,
+} from '../missions/missions.store';
 import { RateWordDto } from './dto/rate-word.dto';
 import { SessionMode, StartSessionDto } from './dto/start-session.dto';
 import { SyncReviewItemDto, SyncReviewsDto } from './dto/sync-reviews.dto';
@@ -332,8 +337,17 @@ export class SrsService {
    * from their goal, `profiles.first_topic_id`), so the daily mission
    * plants what they chose, then keeps to their goal; once both have no
    * seeds left, the oldest words anywhere follow.
+   *
+   * `newCap` caps the new cards (daily goal missions: a session plants at
+   * most what is left of today's Plant mission; 0 = due reviews only).
    */
-  async findDue(userId: string, topicId?: string, limit = 50, newOnly = false): Promise<DueCard[]> {
+  async findDue(
+    userId: string,
+    topicId?: string,
+    limit = 50,
+    newOnly = false,
+    newCap = Number.POSITIVE_INFINITY,
+  ): Promise<DueCard[]> {
     const dueExisting = newOnly
       ? []
       : await this.db.queryAs<DueCard>(
@@ -356,7 +370,7 @@ export class SrsService {
         );
 
     const now = new Date();
-    const remaining = Math.max(0, limit - dueExisting.length);
+    const remaining = Math.max(0, Math.min(limit - dueExisting.length, newCap));
     if (remaining === 0) {
       return withRetrievability(dueExisting, now);
     }
@@ -883,8 +897,31 @@ export class SrsService {
   /** FR-4.3 — see StartSessionDto's header comment for why this has no persisted "session" row. */
   async startSession(userId: string, dto: StartSessionDto): Promise<SessionResult> {
     const mode: SessionMode = dto.mode ?? 'STANDARD';
-    const cards = await this.findDue(userId, dto.topicId, dto.limit ?? 20, dto.newOnly ?? false);
+    const newCap = dto.dueOnly ? 0 : await this.newWordAllowance(userId);
+    const cards = await this.findDue(
+      userId,
+      dto.topicId,
+      dto.limit ?? 20,
+      dto.newOnly ?? false,
+      newCap,
+    );
     return { mode, cards };
+  }
+
+  /**
+   * Daily goal missions: how many new words a session may still plant
+   * today (what's left of the LEARN_NEW mission; 0 on a catch-up day).
+   */
+  private async newWordAllowance(userId: string): Promise<number> {
+    return this.db.withUser(userId, async (client) => {
+      const missionClient = client as unknown as MissionClient;
+      const timezone = await resolveUserTimezone(
+        async <T extends Record<string, unknown>>(text: string, params: unknown[]) =>
+          (await missionClient.query<T>(text, params)).rows,
+        userId,
+      );
+      return newWordAllowance(missionClient, userId, localDateOf(new Date(), timezone));
+    });
   }
 
   /**

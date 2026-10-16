@@ -20,7 +20,7 @@ import { LanguageSheet } from "../LanguageSheet";
 import { useGardenPreferences } from "../preferences";
 import { MeScreen } from "../screens/MeScreen";
 import { AccountSheetLive } from "./AccountSheetLive";
-import { displayName, gardenHours, meCalendar, meKeepsakes } from "./data";
+import { displayName, gardenHours, meCalendar, meKeepsakes, missionsForGoal } from "./data";
 import { useLanguageSettings } from "./useLanguageSettings";
 import { useReminderSwitch } from "./useReminderSwitch";
 
@@ -88,7 +88,9 @@ export function MeLive() {
         calendar={week.data ? meCalendar(week.data, new Date()) : null}
         keepsakes={keepsakes.data ? meKeepsakes(keepsakes.data) : null}
         dailyGoal={
-          goalMinutes === null ? null : { missions: 3, minutes: goalMinutes }
+          goalMinutes === null
+            ? null
+            : { missions: missionsForGoal(goalMinutes), minutes: goalMinutes }
         }
         onDailyGoalClick={() => setGoalOpen(true)}
         reminder={

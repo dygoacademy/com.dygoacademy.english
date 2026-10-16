@@ -110,7 +110,7 @@ export function missionsSummary(mission: { done: number; total: number }): {
 
 /**
  * UI-6 (U6-5): A1's mission rows from `GET /missions/today`, in the API's
- * order (REVIEW_DUE, LEARN_NEW, then QUIZ or SPEAK). Progress is capped at
+ * order (REVIEW_DUE, LEARN_NEW, then QUIZ and/or SPEAK). Progress is capped at
  * the target so extra reviews don't overflow the bar. Every open row links
  * to its activity: water → watering, plant → a new-words session for
  * what's left (the server takes them from the learner's first bed
@@ -148,22 +148,29 @@ export function liveMissionsSummary(
   done: number;
   total: number;
   next: {
-    mission: 'challenge' | 'speak';
+    mission: 'plant' | 'challenge' | 'speak';
     minutes: null;
     href: string;
     count?: number;
   } | null;
 } {
+  // Daily goal missions: after watering, the open Plant mission comes first
+  // ("Plant 5 new words"), so planting is offered, never slipped in.
+  const plant = today.missions.find((m) => m.type === 'LEARN_NEW' && !m.done);
+  const plantLeft = plant ? Math.max(0, plant.target - plant.progress) : 0;
   const quiz = today.missions.find((m) => m.type === 'QUIZ' && !m.done);
   const speak = today.missions.find((m) => m.type === 'SPEAK' && !m.done);
   return {
     done: today.missions.filter((m) => m.done).length,
     total: today.missions.length,
-    next: quiz
-      ? { mission: 'challenge', minutes: null, href: quizHref }
-      : speak
-        ? { mission: 'speak', minutes: null, href: GARDEN_ROUTES.sounds, count: speak.target }
-        : null,
+    next:
+      plantLeft > 0
+        ? { mission: 'plant', minutes: null, href: GARDEN_ROUTES.plant(plantLeft), count: plantLeft }
+        : quiz
+          ? { mission: 'challenge', minutes: null, href: quizHref }
+          : speak
+            ? { mission: 'speak', minutes: null, href: GARDEN_ROUTES.sounds, count: speak.target }
+            : null,
   };
 }
 
@@ -174,13 +181,14 @@ export function liveMissionsSummary(
  */
 export function missionQuizHref(
   topics: ReadonlyArray<Pick<GardenTopicSummary, 'id' | 'due_count'>> | undefined,
+  questions?: number,
 ): string {
   let best: { id: string; due: number } | null = null;
   for (const topic of topics ?? []) {
     const due = num(topic.due_count);
     if (due > 0 && (!best || due > best.due)) best = { id: topic.id, due };
   }
-  return GARDEN_ROUTES.quiz(best?.id);
+  return GARDEN_ROUTES.quiz(best?.id, undefined, questions);
 }
 
 /**
@@ -741,6 +749,27 @@ export function extraPlantBed(
 
 /** A1b: how many new words "Plant 5 new words" plants. */
 export const EXTRA_PLANT_COUNT = 5;
+
+/**
+ * Missions a day for a daily goal (backend missions.plan.ts tiers): water,
+ * plant and one practice up to 15 min; from 20 min both the quiz and
+ * speaking. A catch-up day can have one less.
+ */
+export function missionsForGoal(minutes: number): number {
+  return minutes >= 20 ? 4 : 3;
+}
+
+/**
+ * New words the learner may still plant today (daily goal missions): what's
+ * left of today's Plant mission, 0 on a catch-up day (no Plant mission).
+ * Without missions (the call failed) planting isn't limited here; the
+ * server still caps it.
+ */
+export function plantAllowance(today: TodayMissions | undefined): number {
+  if (!today || today.missions.length === 0) return EXTRA_PLANT_COUNT;
+  const plant = today.missions.find((m) => m.type === 'LEARN_NEW');
+  return plant ? Math.max(0, plant.target - plant.progress) : 0;
+}
 
 /**
  * A5 / A5b "Start small" card from `GET /srs/stats`:

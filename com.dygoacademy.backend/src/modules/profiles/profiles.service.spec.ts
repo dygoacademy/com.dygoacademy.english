@@ -123,7 +123,9 @@ describe('ProfilesService.keepsakes (UI-6)', () => {
     const result = await service.keepsakes('user-42', 'Asia/Ho_Chi_Minh');
 
     expect(statsMock).toHaveBeenCalledWith('user-42', 'Asia/Ho_Chi_Minh');
-    expect(queryAs.mock.calls[0][1]).toMatch(/having count\(\*\) filter \(where completed_at is not null\) >= 3/);
+    expect(queryAs.mock.calls[0][1]).toMatch(
+      /having count\(\*\) filter \(where completed_at is not null\) = count\(\*\)/,
+    );
     const [userId, insertSql, insertParams] = queryAs.mock.calls[1];
     expect(userId).toBe('user-42');
     expect(insertSql).toMatch(/on conflict \(user_id, kind, value\) do nothing/);

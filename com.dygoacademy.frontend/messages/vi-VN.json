@@ -719,6 +719,8 @@
       "backToGarden": "Về vườn",
       "empty": "Giờ chưa có từ nào cần tưới. Khi có từ đến hạn, bạn quay lại nhé.",
       "emptyPlant": "Hiện chưa có từ mới để gieo. Bạn thêm từ hoặc chọn luống mới trong mục Chủ đề nhé.",
+      "emptyPlantDone": "Bạn đã gieo đủ hạt hôm nay rồi. Mai nhớ tưới nhé, hoặc tăng mục tiêu mỗi ngày trong Hồ sơ để gieo thêm.",
+      "emptyPlantCatchUp": "Hôm nay nhiều từ cần tưới nên chưa gieo hạt mới. Tưới xong là khu vườn khỏe lại, mai lại có hạt mới nhé.",
       "error": "Chưa lưu được từ này. Bạn kiểm tra kết nối rồi thử lại nhé."
     },
     "complete": {

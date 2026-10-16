@@ -4,6 +4,7 @@ import * as React from 'react';
 import { useTranslations } from 'next-intl';
 
 import { GARDEN_ROUTES } from '@/constants/garden';
+import { type TodayMissions, useTodayMissions } from '@/hooks/useMissions';
 import { useRateWord } from '@/hooks/useRateWord';
 import { useStudySession } from '@/hooks/useStudySession';
 import { useTopics } from '@/hooks/useTopics';
@@ -36,6 +37,10 @@ import { LiveError, LiveLoading } from './LiveState';
  * API orders due words most overdue first. With `dueOnly` (A7 "Water N
  * due", `/review?topic=…&due=1`) it holds reviewed words only: the API
  * sends due words before seeds, so dropping the seeds keeps every due one.
+ * Daily goal missions (2026-10-15): every session without `newWords` is
+ * due-only, and the server plants at most what's left of today's Plant
+ * mission; an empty planting session says why (today's seeds planted, or
+ * a catch-up day with no Plant mission).
  */
 export function ReviewLive({
   topicId,
@@ -51,7 +56,14 @@ export function ReviewLive({
   const t = useTranslations('screens.review');
   const live = useTranslations('screens.live');
   const planting = newWords !== undefined;
-  const session = useStudySession(topicId, 'STANDARD', newWords ?? limit ?? 20, planting);
+  const session = useStudySession(
+    topicId,
+    'STANDARD',
+    newWords ?? limit ?? 20,
+    planting,
+    !planting && dueOnly,
+  );
+  const missions = useTodayMissions();
   const topics = useTopics();
   const rate = useRateWord();
   const { meaningLocale } = useGardenPreferences();
@@ -153,8 +165,18 @@ export function ReviewLive({
         }}
         bloomHref={`${GARDEN_ROUTES.reviewDone}?${params.toString()}`}
         secondaryAction={{ label: t('backToGarden'), href: GARDEN_ROUTES.home }}
-        emptyText={total === 0 ? t(planting ? 'emptyPlant' : 'empty') : undefined}
+        emptyText={total === 0 ? t(planting ? emptyPlantKey(missions.data) : 'empty') : undefined}
       />
     </>
   );
+}
+
+/** Why a planting session came back empty (daily goal missions). */
+function emptyPlantKey(
+  today: TodayMissions | undefined,
+): 'emptyPlant' | 'emptyPlantDone' | 'emptyPlantCatchUp' {
+  if (!today || today.missions.length === 0) return 'emptyPlant';
+  const plant = today.missions.find((m) => m.type === 'LEARN_NEW');
+  if (!plant) return 'emptyPlantCatchUp';
+  return plant.done ? 'emptyPlantDone' : 'emptyPlant';
 }

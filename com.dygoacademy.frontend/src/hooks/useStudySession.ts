@@ -19,16 +19,18 @@ export function useStudySession(
   mode: SessionMode,
   limit = 20,
   newOnly = false,
+  dueOnly = false,
 ) {
   return useQuery({
-    queryKey: ['srs', 'sessions', topicId ?? 'all', mode, limit, newOnly],
-    // `newOnly` is only sent when set, so older backends still accept the body.
+    queryKey: ['srs', 'sessions', topicId ?? 'all', mode, limit, newOnly, dueOnly],
+    // `newOnly` / `dueOnly` are only sent when set, so older backends still accept the body.
     queryFn: () =>
       apiClient.post<SrsSession>('/srs/sessions', {
         topicId,
         mode,
         limit,
         ...(newOnly ? { newOnly } : {}),
+        ...(dueOnly ? { dueOnly } : {}),
       }),
   });
 }

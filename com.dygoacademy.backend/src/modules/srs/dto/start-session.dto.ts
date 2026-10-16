@@ -42,4 +42,14 @@ export class StartSessionDto {
   @IsOptional()
   @IsBoolean()
   newOnly?: boolean;
+
+  @ApiPropertyOptional({
+    description:
+      'Only due reviews, no new words (watering). Without it, a session tops up with ' +
+      "new words, at most what is left of today's Plant mission.",
+    default: false,
+  })
+  @IsOptional()
+  @IsBoolean()
+  dueOnly?: boolean;
 }

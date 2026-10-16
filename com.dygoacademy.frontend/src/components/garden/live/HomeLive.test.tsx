@@ -70,7 +70,7 @@ describe('HomeLive welcome back (A5 / A5b)', () => {
 describe('HomeLive all watered (A1b)', () => {
   const today = (done: boolean[]): TodayMissions => ({
     date: isoDate(new Date()),
-    missions: (['REVIEW_DUE', 'NEW_WORDS', 'QUIZ'] as const).map((type, i) => ({
+    missions: (['REVIEW_DUE', 'LEARN_NEW', 'QUIZ'] as const).map((type, i) => ({
       type,
       target: 5,
       progress: done[i] ? 5 : 0,
@@ -89,11 +89,18 @@ describe('HomeLive all watered (A1b)', () => {
     onboarding.data = { first_topic_id: null };
   });
 
-  it('nothing due and the Golden Bloom grown → All watered', () => {
+  it("nothing due and the Golden Bloom grown → All watered, with no more seeds once today's are planted", () => {
     missions.data = today([true, true, true]);
     renderWithIntl(<HomeLive />);
     expect(screen.getByRole('heading', { name: 'All watered today' })).toBeTruthy();
     expect(screen.getByText('3 of 3 missions · Golden Bloom grown')).toBeTruthy();
+    // Daily goal missions: the Plant mission is done, so the day's seeds are planted.
+    expect(screen.queryByRole('link', { name: /Plant 5 new words/ })).toBeNull();
+  });
+
+  it('All watered without missions offers seeds from the bed with the most', () => {
+    missions.data = undefined;
+    renderWithIntl(<HomeLive />);
     expect(screen.getByRole('link', { name: /Plant 5 new words/ }).getAttribute('href')).toBe(
       '/review?new=5&topic=t2',
     );
@@ -101,7 +108,7 @@ describe('HomeLive all watered (A1b)', () => {
   });
 
   it('All watered plants from the goal bed while it has seeds', () => {
-    missions.data = today([true, true, true]);
+    missions.data = undefined;
     onboarding.data = { first_topic_id: 't1' };
     renderWithIntl(<HomeLive />);
     expect(screen.getByRole('link', { name: /Plant 5 new words/ }).getAttribute('href')).toBe(

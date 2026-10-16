@@ -167,6 +167,54 @@ describe('SrsService.findDue', () => {
   });
 });
 
+describe('SrsService.startSession (daily goal missions)', () => {
+  /** A withUser client for newWordAllowance: tz, today's rows exist, then the LEARN_NEW row. */
+  const allowanceClient = (learnNew: { target: number; progress: number } | null) =>
+    jest.fn((sql: string) => {
+      if (sql.includes('timezone')) return { rows: [{ timezone: 'UTC' }] };
+      if (sql.includes('count(*) as n from public.daily_missions')) return { rows: [{ n: '3' }] };
+      if (sql.includes("type = 'LEARN_NEW'")) return { rows: learnNew ? [learnNew] : [] };
+      throw new Error(`unexpected SQL: ${sql}`);
+    });
+
+  it('dueOnly waters only: no new-card query, no mission read', async () => {
+    const due = { topic_word_id: 'w1', is_new: false, next_due_at: new Date() };
+    const queryAsMock = jest.fn().mockResolvedValueOnce([due]);
+    const withUser = jest.fn();
+    const service = await makeService(queryAsMock, withUser);
+
+    const res = await service.startSession('user-1', { limit: 20, dueOnly: true });
+
+    expect(withUser).not.toHaveBeenCalled();
+    expect(queryAsMock).toHaveBeenCalledTimes(1);
+    expect(res.cards.map((c) => c.topic_word_id)).toEqual(['w1']);
+  });
+
+  it("planting stops at what is left of today's Plant mission", async () => {
+    const queryAsMock = jest.fn().mockResolvedValueOnce([]);
+    const service = await makeService(
+      queryAsMock,
+      withUserOf(allowanceClient({ target: 5, progress: 3 })),
+    );
+
+    await service.startSession('user-1', { limit: 5, newOnly: true });
+
+    const [, sql, params] = queryAsMock.mock.calls[0];
+    expect(sql).toMatch(/not exists/);
+    expect(params).toEqual([2]);
+  });
+
+  it('a catch-up day (no Plant mission) plants nothing', async () => {
+    const queryAsMock = jest.fn();
+    const service = await makeService(queryAsMock, withUserOf(allowanceClient(null)));
+
+    const res = await service.startSession('user-1', { limit: 5, newOnly: true });
+
+    expect(queryAsMock).not.toHaveBeenCalled();
+    expect(res.cards).toEqual([]);
+  });
+});
+
 describe('SrsService.rate (Phase 10 — FSRS)', () => {
   const NOW = new Date('2026-09-01T12:00:00.000Z');
   const DAY = 86_400_000;
@@ -400,16 +448,31 @@ describe('SrsService.rate (Phase 10 — FSRS)', () => {
       queryMock
         .mockResolvedValueOnce({ rows: [{ n: '0' }] }) // no rows yet
         .mockResolvedValueOnce({ rows: [{ n: '4' }] }) // 4 due
+        .mockResolvedValueOnce({ rows: [{ daily_goal_minutes: 10 }] }) // 10 min goal
         .mockResolvedValueOnce({ rows: [{ n: '0' }] }); // 2026-09-01 is a speak day: 0 speakable words
       const service = await makeService(jest.fn(), withUserOf(queryMock));
 
       await service.rate('user-1', { topicWordId: 'w1', rating: 'GOOD' }, NOW);
 
       const calls = missionSql(queryMock);
-      expect(calls[2][0]).toContain('speaking_items');
-      expect(calls[3][0]).toContain('insert into public.daily_missions');
-      expect(calls[3][1]).toEqual(['user-1', '2026-09-01', 4, 5, 'QUIZ', 1]);
-      expect(calls[4][1]).toEqual(['user-1', '2026-09-01', 'LEARN_NEW']);
+      expect(calls[2][0]).toContain('daily_goal_minutes');
+      expect(calls[3][0]).toContain('speaking_items');
+      expect(calls[4][0]).toContain('insert into public.daily_missions');
+      // The 10 min goal's day: water 4, plant 5, quiz (no speakable words).
+      expect(calls[4][1]).toEqual([
+        'user-1',
+        '2026-09-01',
+        'REVIEW_DUE',
+        4,
+        false,
+        'LEARN_NEW',
+        5,
+        false,
+        'QUIZ',
+        1,
+        false,
+      ]);
+      expect(calls[5][1]).toEqual(['user-1', '2026-09-01', 'LEARN_NEW']);
     });
 
     it('an ungraded review does not touch missions', async () => {

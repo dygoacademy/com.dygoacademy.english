@@ -33,9 +33,9 @@ export interface MissionCompleteScreenProps {
   missions: {
     done: number;
     total: number;
-    /** The next mission to do: the collocation challenge, or the SPEAK mission (SE1). */
+    /** The next mission to do: the open Plant mission, the collocation challenge, or SPEAK (SE1). */
     next: {
-      mission: 'challenge' | 'speak';
+      mission: 'plant' | 'challenge' | 'speak';
       minutes: number | null;
       href: string;
       /** Words to say, for `speak`. */

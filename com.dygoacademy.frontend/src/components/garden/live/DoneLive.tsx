@@ -78,7 +78,10 @@ export function DoneLive({ result }: { result: SessionResult }) {
       week={week}
       missions={
         todayMissions.data
-          ? liveMissionsSummary(todayMissions.data, missionQuizHref(topics.data))
+          ? liveMissionsSummary(
+              todayMissions.data,
+              missionQuizHref(topics.data, todayMissions.data.quiz_questions),
+            )
           : stats.data && activity.data
             ? missionsSummary(
                 thirstyMission(activity.data, todayIso, stats.data.due_now, result.watered),

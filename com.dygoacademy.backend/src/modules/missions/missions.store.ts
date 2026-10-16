@@ -14,16 +14,18 @@
  * mission is SPEAK ("Say 3 ripe words": 3 different sentences spoken in
  * The Pond) instead of QUIZ, when the learner has at least SPEAK_TARGET
  * words with a speaking item. Still 3 missions a day.
+ *
+ * Daily goal missions (2026-10-15, docs/plans/Daily goal missions plan.md):
+ * the day's rows now come from `daily_goal_minutes` via missions.plan.ts,
+ * 2 to 4 a day; Golden Bloom = every row of the day done.
  */
+
+import { planDay, type DayPlan } from './missions.plan';
 
 export type MissionType = 'REVIEW_DUE' | 'LEARN_NEW' | 'QUIZ' | 'SPEAK';
 
-/** Display order; a day has 3 of these (QUIZ or SPEAK third). */
+/** Display order; a day has 2 to 4 of these (missions.plan.ts). */
 export const MISSION_TYPES: MissionType[] = ['REVIEW_DUE', 'LEARN_NEW', 'QUIZ', 'SPEAK'];
-export const MISSIONS_PER_DAY = 3;
-export const LEARN_NEW_TARGET = 5;
-export const QUIZ_TARGET = 1;
-export const SPEAK_TARGET = 3;
 
 /** SE1: SPEAK takes QUIZ's place on odd days (days since 1970-01-01 of the local date). */
 export function isSpeakDay(localDate: string): boolean {
@@ -58,9 +60,12 @@ export function localDateOf(now: Date, timezone: string): string {
 }
 
 /**
- * Creates `localDate`'s 3 rows if they don't exist yet. `extraDue` lets a
- * caller that just took a due card out of the due set (a review landing
- * before the day's first read) still count it.
+ * Creates `localDate`'s rows from the learner's daily goal
+ * (missions.plan.ts `planDay`) if the day has none yet: 2 to 4 rows.
+ * `extraDue` lets a caller that just took a due card out of the due set
+ * (a review landing before the day's first read) still count it. The
+ * plan is fixed on the day's first read, so a goal change applies from
+ * the next day.
  */
 export async function ensureMissions(
   client: MissionClient,
@@ -73,39 +78,78 @@ export async function ensureMissions(
     `select count(*) as n from public.daily_missions where user_id = $1 and local_date = $2`,
     [userId, localDate],
   );
-  if (Number(existing[0]?.n ?? 0) >= MISSIONS_PER_DAY) return;
+  if (Number(existing[0]?.n ?? 0) > 0) return;
 
+  const plan = await planToday(client, userId, localDate, extraDue);
+  const values: unknown[] = [userId, localDate];
+  const rows = plan.missions.map((m) => {
+    values.push(m.type, Math.max(m.target, 1), m.target === 0);
+    const i = values.length;
+    // A REVIEW_DUE with nothing due is done from the start (target stays >= 1).
+    return `($1, $2, $${i - 2}, $${i - 1}, case when $${i}::boolean then $${i - 1} else 0 end,
+             case when $${i}::boolean then now() end)`;
+  });
+  await client.query(
+    `insert into public.daily_missions (user_id, local_date, type, target, progress, completed_at)
+     values ${rows.join(',\n            ')}
+     on conflict (user_id, local_date, type) do nothing`,
+    values,
+  );
+}
+
+/** Today's plan from the learner's goal, due words and speakable words. */
+export async function planToday(
+  client: MissionClient,
+  userId: string,
+  localDate: string,
+  extraDue = 0,
+): Promise<DayPlan> {
   const due = await rowsOf<{ n: string }>(
     client,
     `select count(*) as n from public.user_word_srs where user_id = $1 and next_due_at <= now()`,
     [userId],
   );
-  const dueCount = Number(due[0]?.n ?? 0) + extraDue;
-
-  let third: { type: MissionType; target: number } = { type: 'QUIZ', target: QUIZ_TARGET };
-  if (isSpeakDay(localDate)) {
-    // Words the learner can read that have a speaking item (RLS scopes topic_words).
-    const speakable = await rowsOf<{ n: string }>(
-      client,
-      `select count(distinct tw.lexicon_id) as n
-         from public.topic_words tw
-         join public.speaking_items si on si.lexicon_id = tw.lexicon_id
-        where tw.status = 'READY'`,
-      [],
-    );
-    if (Number(speakable[0]?.n ?? 0) >= SPEAK_TARGET)
-      third = { type: 'SPEAK', target: SPEAK_TARGET };
-  }
-
-  await client.query(
-    `insert into public.daily_missions (user_id, local_date, type, target, progress, completed_at)
-     values ($1, $2, 'REVIEW_DUE', greatest($3::int, 1), case when $3::int = 0 then 1 else 0 end,
-             case when $3::int = 0 then now() end),
-            ($1, $2, 'LEARN_NEW', $4, 0, null),
-            ($1, $2, $5, $6, 0, null)
-     on conflict (user_id, local_date, type) do nothing`,
-    [userId, localDate, dueCount, LEARN_NEW_TARGET, third.type, third.target],
+  const goal = await rowsOf<{ daily_goal_minutes: number | null }>(
+    client,
+    `select daily_goal_minutes from public.profiles where id = $1`,
+    [userId],
   );
+  // Words the learner can read that have a speaking item (RLS scopes topic_words).
+  const speakable = await rowsOf<{ n: string }>(
+    client,
+    `select count(distinct tw.lexicon_id) as n
+       from public.topic_words tw
+       join public.speaking_items si on si.lexicon_id = tw.lexicon_id
+      where tw.status = 'READY'`,
+    [],
+  );
+  return planDay({
+    goalMinutes: goal[0]?.daily_goal_minutes ?? null,
+    dueCount: Number(due[0]?.n ?? 0) + extraDue,
+    speakable: Number(speakable[0]?.n ?? 0),
+    speakDay: isSpeakDay(localDate),
+  });
+}
+
+/**
+ * New words a session may still plant today: what's left of today's
+ * LEARN_NEW mission (0 on a catch-up day, which has none). Ensures the
+ * day's rows first.
+ */
+export async function newWordAllowance(
+  client: MissionClient,
+  userId: string,
+  localDate: string,
+): Promise<number> {
+  await ensureMissions(client, userId, localDate);
+  const rows = await rowsOf<{ target: number; progress: number }>(
+    client,
+    `select target, progress from public.daily_missions
+      where user_id = $1 and local_date = $2 and type = 'LEARN_NEW'`,
+    [userId, localDate],
+  );
+  const row = rows[0];
+  return row ? Math.max(0, Number(row.target) - Number(row.progress)) : 0;
 }
 
 /** +1 progress (capped at target); stamps completed_at when it reaches target. */

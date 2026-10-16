@@ -302,7 +302,7 @@ export class ProfilesService {
                  from public.daily_missions
                 where user_id = $1
                 group by local_date
-               having count(*) filter (where completed_at is not null) >= 3) d`,
+               having count(*) filter (where completed_at is not null) = count(*)) d`,
       [userId],
     );
     const goldenBlooms = Number(bloomRows[0]?.blooms ?? 0);

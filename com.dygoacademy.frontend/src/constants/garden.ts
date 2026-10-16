@@ -51,11 +51,15 @@ export const GARDEN_ROUTES = {
   /** A7c: search this bed's words (`q` prefills the field). */
   topicSearch: (id: string, q?: string) =>
     `/topics/${encodeURIComponent(id)}/search${q ? `?q=${encodeURIComponent(q)}` : ''}`,
-  /** Garden quiz (U5-5/6): a bed's quiz, or the leech drill back to that bed. */
-  quiz: (topicId?: string, mode?: 'leech') => {
+  /**
+   * Garden quiz (U5-5/6): a bed's quiz, or the leech drill back to that bed.
+   * `questions` sets the quiz length (the QUIZ mission's, from the daily goal).
+   */
+  quiz: (topicId?: string, mode?: 'leech', questions?: number) => {
     const params = new URLSearchParams();
     if (topicId) params.set('topic', topicId);
     if (mode) params.set('mode', mode);
+    if (questions) params.set('n', String(Math.max(1, Math.round(questions))));
     const query = params.toString();
     return query ? `/quiz?${query}` : '/quiz';
   },
