@@ -7,6 +7,7 @@ import type { SrsStats } from '@/types';
 
 import { isoDate } from './data';
 
+vi.mock('./usePlantPendingSeed', () => ({ usePlantPendingSeed: () => undefined }));
 vi.mock('next/navigation', () => ({ useRouter: () => ({ push: vi.fn() }) }));
 
 const query = <T,>(data: T) => ({ data, isPending: false, isError: false, refetch: vi.fn() });

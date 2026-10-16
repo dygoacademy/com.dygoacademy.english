@@ -36,6 +36,7 @@ import {
   thirstyMission,
 } from './data';
 import { LiveError, LiveLoading } from './LiveState';
+import { usePlantPendingSeed } from './usePlantPendingSeed';
 
 /**
  * /garden: Today's Garden (A1), or Welcome back (A5 / A5b) when the
@@ -80,6 +81,7 @@ export function HomeLive() {
   const missions = useTodayMissions();
   const topics = useTopics();
   const onboarding = useOnboarding();
+  usePlantPendingSeed();
 
   if (stats.isPending || activity.isPending || missions.isPending) return <LiveLoading />;
   if (stats.isError || !stats.data) {

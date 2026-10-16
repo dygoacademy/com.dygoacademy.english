@@ -14,6 +14,7 @@ import {
 
 import { OnboardLevelScreen } from '../screens/OnboardLevelScreen';
 import { localTimezone } from './data';
+import { usePlantPendingSeed } from './usePlantPendingSeed';
 import { DEFAULT_LEVEL, hasBand, initialBand, stepBand, STUDY_GOALS, type BandGoal } from './onboarding';
 
 /**
@@ -28,6 +29,8 @@ export function OnboardLevelLive() {
   const router = useRouter();
   const onboarding = useOnboarding();
   const save = useUpdateOnboarding();
+  // The landing page's saved word goes to My words now, so it's ready by OB5.
+  usePlantPendingSeed();
   const saved = onboarding.data;
   const [pickedLevel, setPickedLevel] = React.useState<OnboardingLevel | null>(null);
   const [pickedGoal, setPickedGoal] = React.useState<StudyGoal | null>(null);

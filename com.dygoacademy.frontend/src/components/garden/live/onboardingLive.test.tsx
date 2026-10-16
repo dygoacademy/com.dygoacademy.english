@@ -6,6 +6,7 @@ import { renderWithIntl } from '@/test/render';
 const push = vi.fn();
 const refresh = vi.fn();
 const back = vi.fn();
+vi.mock('./usePlantPendingSeed', () => ({ usePlantPendingSeed: () => undefined }));
 vi.mock('next/navigation', () => ({ useRouter: () => ({ push, refresh, back }) }));
 
 const mutate = vi.fn();
@@ -186,7 +187,7 @@ describe('OB4 Reminder live', () => {
 });
 
 describe('OB5 All set live', () => {
-  it('reads back three rows, finishes onboarding and meets 5 words from the first bed', async () => {
+  it('reads back three rows, finishes onboarding and meets 5 words (own words, then the first bed)', async () => {
     succeed();
     onboardingState.data = {
       onboarded_at: null,
@@ -206,7 +207,7 @@ describe('OB5 All set live', () => {
     expect(text).not.toContain('First bed');
     fireEvent.click(screen.getByRole('button', { name: 'Meet your first 5 words' }));
     expect(mutate).toHaveBeenCalledWith({ complete: true }, expect.anything());
-    await waitFor(() => expect(push).toHaveBeenCalledWith('/review?new=5&topic=t1'));
+    await waitFor(() => expect(push).toHaveBeenCalledWith('/review?new=5'));
     expect(refresh).toHaveBeenCalled();
   });
 

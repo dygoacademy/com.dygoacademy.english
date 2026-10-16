@@ -25,8 +25,11 @@ export const FIRST_WORDS = 5;
  * via GET /topics, the reminder from GET /notifications/schedules, shown
  * only when on) and the learner's first name. Both buttons set
  * `onboarded_at` (`complete: true`); "Meet your first 5 words" then opens
- * A2 with 5 new words from the first bed, "Look around the garden first"
- * the garden (A1). From then on /welcome sends the learner to the garden.
+ * A2 with 5 new words, "Look around the garden first" the garden (A1).
+ * From then on /welcome sends the learner to the garden. The 5 words are
+ * not scoped to the first bed: the server plants the learner's own words
+ * first (the landing page's saved word, usePlantPendingSeed), then the
+ * first bed, so it's the same bed without waiting for GET /topics.
  */
 export function OnboardReadyLive() {
   const router = useRouter();
@@ -69,7 +72,7 @@ export function OnboardReadyLive() {
         goal: GARDEN_ROUTES.welcome.level,
         reminder: GARDEN_ROUTES.welcome.reminder,
       }}
-      onMeet={() => finish(GARDEN_ROUTES.plant(FIRST_WORDS, topic?.id))}
+      onMeet={() => finish(GARDEN_ROUTES.plant(FIRST_WORDS))}
       onLook={() => finish(GARDEN_ROUTES.home)}
       saving={save.isPending}
       error={save.isError}

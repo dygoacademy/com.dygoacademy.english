@@ -7,6 +7,7 @@ import { setGardenLocaleCookie } from '@/app/(garden)/actions';
 import { GARDEN_ROUTES } from '@/constants/garden';
 import type { AppLocale } from '@/i18n/config';
 import { apiClient } from '@/lib/api-client';
+import { keepPendingSeed } from '@/lib/pending-seed';
 import { createClient } from '@/lib/supabase/client';
 import { isVoiceDonationOn, VOICE_DONATION_LINKS } from '@/lib/voice-donation';
 
@@ -49,6 +50,11 @@ export function RegisterLive() {
 
   const next = safeNextPath(searchParams.get('next'));
   const joining = inviteTokenFromNext(next) !== null;
+
+  // HP-9 "Save this word": keep the landing page's word until the learner
+  // is signed in; onboarding (or Home) then saves it to My words.
+  const seed = searchParams.get('seed');
+  React.useEffect(() => keepPendingSeed(seed), [seed]);
 
   async function changeLanguage(locale: AppLocale) {
     await setGardenLocaleCookie(locale);
