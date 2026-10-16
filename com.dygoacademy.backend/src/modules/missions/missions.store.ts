@@ -86,7 +86,9 @@ export async function ensureMissions(
     values.push(m.type, Math.max(m.target, 1), m.target === 0);
     const i = values.length;
     // A REVIEW_DUE with nothing due is done from the start (target stays >= 1).
-    return `($1, $2, $${i - 2}, $${i - 1}, case when $${i}::boolean then $${i - 1} else 0 end,
+    // Typed casts: the target param appears twice, and Postgres can't infer
+    // one type for it from a smallint column and an integer `else 0`.
+    return `($1, $2, $${i - 2}::text, $${i - 1}::int, case when $${i}::boolean then $${i - 1}::int else 0 end,
              case when $${i}::boolean then now() end)`;
   });
   await client.query(
