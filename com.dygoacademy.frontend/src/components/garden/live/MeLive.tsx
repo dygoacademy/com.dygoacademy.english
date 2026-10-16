@@ -20,7 +20,14 @@ import { LanguageSheet } from "../LanguageSheet";
 import { useGardenPreferences } from "../preferences";
 import { MeScreen } from "../screens/MeScreen";
 import { AccountSheetLive } from "./AccountSheetLive";
-import { displayName, gardenHours, meCalendar, meKeepsakes, missionsForGoal } from "./data";
+import {
+  DEFAULT_REMINDER_TIME,
+  displayName,
+  gardenHours,
+  meCalendar,
+  meKeepsakes,
+  missionsForGoal,
+} from "./data";
 import { useLanguageSettings } from "./useLanguageSettings";
 import { useReminderSwitch } from "./useReminderSwitch";
 
@@ -93,11 +100,13 @@ export function MeLive() {
             : { missions: missionsForGoal(goalMinutes), minutes: goalMinutes }
         }
         onDailyGoalClick={() => setGoalOpen(true)}
+        // Always shown, so a learner who skipped it in onboarding can turn it on.
         reminder={
-          schedule
+          reminder.schedules
             ? {
-                time: parseClock(schedule.reminder_time),
-                on: schedule.is_enabled,
+                time: parseClock(schedule?.reminder_time ?? DEFAULT_REMINDER_TIME),
+                on: reminder.on,
+                blocked: reminder.blocked,
               }
             : null
         }

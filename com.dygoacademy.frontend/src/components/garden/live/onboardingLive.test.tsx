@@ -130,11 +130,13 @@ describe('OB4 Reminder live', () => {
     vi.stubGlobal('Notification', { permission });
   }
 
-  it('Remind me saves the time on with the time zone, then asks for notifications', async () => {
-    grant('granted');
+  it('Remind me asks for notifications first, then saves the time on with the time zone', async () => {
     const order: string[] = [];
     mutateAsync.mockImplementation(async () => order.push('save'));
-    pushState.subscribe.mockImplementation(async () => order.push('ask'));
+    pushState.subscribe.mockImplementation(async () => {
+      order.push('ask');
+      return true;
+    });
     garden(<OnboardReminderLive />);
     expect(pushState.subscribe).not.toHaveBeenCalled();
     fireEvent.click(screen.getByRole('radio', { name: /^Lunch/ }));
@@ -142,25 +144,25 @@ describe('OB4 Reminder live', () => {
     await act(async () => {
       fireEvent.click(screen.getByRole('button', { name: 'Remind me at 12:30' }));
     });
-    expect(order).toEqual(['save', 'ask']);
+    // Asking first keeps the prompt inside the tap (iPhone needs that), and
+    // the reminder is only saved on once the subscription reached the server.
+    expect(order).toEqual(['ask', 'save']);
     expect(mutateAsync).toHaveBeenCalledWith({
       reminderTime: '12:30',
       timezone: 'Asia/Ho_Chi_Minh',
       isEnabled: true,
     });
     expect(push).toHaveBeenCalledWith('/welcome/ready');
-    vi.unstubAllGlobals();
   });
 
-  it('starts on Morning; a refused prompt turns the reminder back off and goes on', async () => {
-    grant('denied');
+  it('starts on Morning; a refused or failed subscribe saves the reminder off and goes on', async () => {
+    pushState.subscribe.mockResolvedValue(false);
     garden(<OnboardReminderLive />);
     await act(async () => {
       fireEvent.click(screen.getByRole('button', { name: 'Remind me at 7:30' }));
     });
-    expect(mutateAsync.mock.calls.map(([change]) => change.isEnabled)).toEqual([true, false]);
+    expect(mutateAsync.mock.calls.map(([change]) => change.isEnabled)).toEqual([false]);
     expect(push).toHaveBeenCalledWith('/welcome/ready');
-    vi.unstubAllGlobals();
   });
 
   it('Not now saves the reminder off and asks nothing', async () => {

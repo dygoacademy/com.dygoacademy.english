@@ -23,37 +23,51 @@ export function usePushSubscription() {
   const [state, setState] = useState<PushPermissionState>('default');
   const [isPending, setIsPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  /** False until the first check of this browser's real state has finished. */
+  const [checked, setChecked] = useState(false);
 
   const refreshState = useCallback(async () => {
-    if (!isPushSupported()) {
-      setState('unsupported');
-      return;
+    try {
+      if (!isPushSupported()) {
+        setState('unsupported');
+        return;
+      }
+      if (Notification.permission === 'denied') {
+        setState('denied');
+        return;
+      }
+      const registration = await navigator.serviceWorker.getRegistration('/sw.js');
+      const existing = await registration?.pushManager.getSubscription();
+      setState(existing ? 'subscribed' : 'unsubscribed');
+    } finally {
+      setChecked(true);
     }
-    if (Notification.permission === 'denied') {
-      setState('denied');
-      return;
-    }
-    const registration = await navigator.serviceWorker.getRegistration('/sw.js');
-    const existing = await registration?.pushManager.getSubscription();
-    setState(existing ? 'subscribed' : 'unsubscribed');
   }, []);
 
   useEffect(() => {
     void refreshState();
   }, [refreshState]);
 
-  const subscribe = useCallback(async () => {
+  /**
+   * Asks for permission if needed, subscribes this browser and saves the
+   * subscription on the server. Resolves true only when the server has it,
+   * so a caller never shows a reminder as on when nothing can arrive. Safe
+   * to call when already subscribed: it re-saves the subscription, which
+   * repairs a server row that was pruned or taken over by another account.
+   */
+  const subscribe = useCallback(async (): Promise<boolean> => {
     setError(null);
     setIsPending(true);
     try {
       if (!isPushSupported()) {
         setState('unsupported');
-        return;
+        return false;
       }
-      const permission = await Notification.requestPermission();
+      const permission =
+        Notification.permission === 'granted' ? 'granted' : await Notification.requestPermission();
       if (permission !== 'granted') {
         setState(permission === 'denied' ? 'denied' : 'default');
-        return;
+        return false;
       }
 
       const registration = await registerServiceWorker();
@@ -74,8 +88,10 @@ export function usePushSubscription() {
       });
 
       setState('subscribed');
+      return true;
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Could not enable push notifications.');
+      return false;
     } finally {
       setIsPending(false);
     }
@@ -102,5 +118,5 @@ export function usePushSubscription() {
     }
   }, []);
 
-  return { state, isPending, error, subscribe, unsubscribe };
+  return { state, checked, isPending, error, subscribe, unsubscribe };
 }

@@ -47,3 +47,5 @@ grant select on public.topics, public.topic_words, public.master_lexicon to anon
 grant select, insert, update on public.master_lexicon to service_role;
 grant select, insert, update on public.topic_words    to service_role;
 grant select, update, delete on public.push_subscriptions to service_role;
+-- The 15-minute reminder tick lists every learner's schedule (20261016).
+grant select on public.study_schedules to service_role;

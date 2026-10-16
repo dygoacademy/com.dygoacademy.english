@@ -936,6 +936,11 @@
       "dailyGoalValue": "{missions} missions · {minutes} min",
       "comingSoonShort": "Coming soon",
       "reminder": "Reminder",
+      "reminderBlocked": {
+        "install": "Add to Home Screen first",
+        "unsupported": "Not in this browser",
+        "blocked": "Notifications blocked"
+      },
       "meanings": "Meanings in",
       "family": "Family",
       "familyValue": "Open {name}'s garden",
@@ -1488,7 +1493,7 @@
       "reminder": {
         "metaTitle": "Reminder",
         "title": "When should we water?",
-        "sub": "One reminder a day, when your words are ripe. Change it any time in Profile.",
+        "sub": "One reminder a day, at the time you pick. Change it any time in Profile.",
         "morning": {
           "label": "Morning",
           "line": "Before work or class"
@@ -1503,7 +1508,12 @@
         },
         "option": "{label} · {time}",
         "cta": "Remind me at {time}",
-        "notNow": "Not now"
+        "notNow": "Not now",
+        "blocked": {
+          "install": "On iPhone, reminders work once Dygo is on your Home Screen (Share › Add to Home Screen).",
+          "unsupported": "This browser can’t show reminders. You can turn one on later in Profile.",
+          "blocked": "Notifications are blocked for Dygo. Turn them on in your browser settings, then try again."
+        }
       },
       "ready": {
         "metaTitle": "All set",

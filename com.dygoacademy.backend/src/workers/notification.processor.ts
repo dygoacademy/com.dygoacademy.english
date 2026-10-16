@@ -1,4 +1,4 @@
-import { Processor, WorkerHost } from '@nestjs/bullmq';
+import { OnWorkerEvent, Processor, WorkerHost } from '@nestjs/bullmq';
 import { Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Job } from 'bullmq';
@@ -44,7 +44,12 @@ export class NotificationProcessor extends WorkerHost {
   }
 
   async process(job: Job<NotificationCronJob>): Promise<void> {
-    const dueUsers = await this.db.query<DueScheduleRow>(
+    // service_role, not the bare `authenticator` query(): authenticator has
+    // no table grants (see PushDispatchService), so this select failed with
+    // "permission denied for table study_schedules" on every tick and no
+    // reminder was ever sent (found 2026-10-16). The failure was silent
+    // because BullMQ only marks the job failed; onFailed below logs it now.
+    const dueUsers = await this.db.queryAsService<DueScheduleRow>(
       `select distinct s.user_id
          from public.study_schedules s
         where s.is_enabled
@@ -87,36 +92,48 @@ export class NotificationProcessor extends WorkerHost {
     );
   }
 
+  @OnWorkerEvent('failed')
+  onFailed(job: Job<NotificationCronJob> | undefined, err: Error): void {
+    this.logger.error(`notification tick ${job?.data?.tickAt ?? '?'} failed: ${err.message}`);
+  }
+
   /**
    * FR-6.1/6.3/6.4's shared decision — see notification-message.ts.
    *
    * Delegates the due/leech/streak numbers to `computeSrsSummary` (see its
-   * own comment in srs.service.ts) instead of this method's own
-   * hand-maintained copy of the query — this file is exactly the second
-   * caller that comment describes. Runs unscoped (`this.db.query`, the
-   * bare `authenticator` role) rather than `queryAs`, since a BullMQ cron
-   * tick has no per-request JWT to scope by and iterates many users per
-   * tick; `computeSrsSummary`'s explicit `where user_id = $1` is what keeps
-   * this safe on that path.
+   * own comment in srs.service.ts), the same numbers GET /srs/stats shows.
+   * Every read runs RLS-scoped as the learner (`queryAs`), exactly like
+   * that endpoint: the bare `authenticator` role `query()` uses has no
+   * table grants, so the old unscoped path could never have worked.
    */
   private async buildPayload(userId: string) {
     const queryFn = <T extends Record<string, unknown> = Record<string, unknown>>(
       text: string,
       params: unknown[],
-    ) => this.db.query<T>(text, params);
+    ) => this.db.queryAs<T>(userId, text, params);
     // No `detectedTz` here -- a cron tick has no request/browser to detect
     // one from, so this only ever resolves profiles.timezone (once a user
-    // has actually set it) or DEFAULT_TIMEZONE. Still closes the same bug
-    // class as the ribbon/stats fix: a streak/leech/due count computed on
-    // hardcoded UTC day boundaries, independent of whether it's read via
-    // GET /srs/stats or this worker.
+    // has actually set it) or DEFAULT_TIMEZONE.
     const timezone = await resolveUserTimezone(queryFn, userId);
     const summary = await computeSrsSummary(queryFn, userId, timezone);
+    const [learner] = await queryFn<{ ui_locale: string | null; studied_today: boolean }>(
+      `select p.ui_locale,
+              exists (
+                select 1 from public.review_logs r
+                 where r.user_id = $1
+                   and r.reviewed_at >= (date_trunc('day', now() at time zone $2) at time zone $2)
+              ) as studied_today
+         from public.profiles p
+        where p.id = $1`,
+      [userId, timezone],
+    );
 
     return buildReminderPayload({
       dueNow: summary.due_now,
       leechCount: summary.leech_count,
       currentStreakDays: summary.current_streak_days,
+      studiedToday: learner?.studied_today ?? false,
+      locale: learner?.ui_locale,
     });
   }
 }

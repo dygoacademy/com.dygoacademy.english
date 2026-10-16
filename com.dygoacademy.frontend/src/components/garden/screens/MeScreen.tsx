@@ -65,7 +65,8 @@ export interface MeScreenProps {
   /** The row links to `href`, or (U6-7) opens the goal sheet via `onDailyGoalClick`. */
   dailyGoal: { missions: number; minutes: number; href?: string } | null;
   onDailyGoalClick?: () => void;
-  reminder: { time: ClockTime; on: boolean } | null;
+  /** `blocked`: why this browser can't get reminders; the row then says so instead of showing a switch. */
+  reminder: { time: ClockTime; on: boolean; blocked?: 'install' | 'unsupported' | 'blocked' | null } | null;
   onReminderChange?: (on: boolean) => void;
   /**
    * The review card's meaning language ('none' = English only); null
@@ -277,10 +278,16 @@ export function MeScreen({
               icon={<BellIcon {...ICON} />}
               label={t('reminder')}
               labelId="garden-me-reminder"
-              value={reminder ? f.clock(reminder.time) : undefined}
+              value={
+                reminder?.blocked
+                  ? t(`reminderBlocked.${reminder.blocked}`)
+                  : reminder
+                    ? f.clock(reminder.time)
+                    : undefined
+              }
               compact={compact}
               control={
-                reminder ? (
+                reminder && !reminder.blocked ? (
                   <Switch
                     size="sm"
                     checked={remindOn}

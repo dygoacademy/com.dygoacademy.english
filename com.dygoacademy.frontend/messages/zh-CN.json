@@ -940,6 +940,11 @@
       "dailyGoalValue": "{missions} 个任务 · {minutes} 分钟",
       "comingSoonShort": "即将上线",
       "reminder": "提醒时间",
+      "reminderBlocked": {
+        "install": "请先添加到主屏幕",
+        "unsupported": "此浏览器不支持",
+        "blocked": "通知已被屏蔽"
+      },
       "meanings": "释义语言",
       "family": "家庭",
       "familyValue": "打开 {name} 的花园",
@@ -1492,7 +1497,7 @@
       "reminder": {
         "metaTitle": "提醒",
         "title": "什么时候浇水？",
-        "sub": "每天一条提醒，在单词成熟的时候。随时可以在“我的”里修改。",
+        "sub": "每天一条提醒，在你选的时间。随时可以在“我的”里修改。",
         "morning": {
           "label": "早上",
           "line": "上班或上课前"
@@ -1507,7 +1512,12 @@
         },
         "option": "{label} · {time}",
         "cta": "在 {time} 提醒我",
-        "notNow": "以后再说"
+        "notNow": "以后再说",
+        "blocked": {
+          "install": "在 iPhone 上，需要先把 Dygo 添加到主屏幕（分享 › 添加到主屏幕）才能收到提醒。",
+          "unsupported": "此浏览器无法显示提醒。之后可以在“我的”里开启。",
+          "blocked": "Dygo 的通知已被屏蔽。请在浏览器设置中开启后再试。"
+        }
       },
       "ready": {
         "metaTitle": "准备好了",

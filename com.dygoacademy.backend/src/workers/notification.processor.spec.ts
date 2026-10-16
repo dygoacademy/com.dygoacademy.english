@@ -12,19 +12,53 @@ function makeJob(tickAt = '2026-09-01T20:00:00.000Z'): Job<NotificationCronJob> 
   return { data: { tickAt } } as unknown as Job<NotificationCronJob>;
 }
 
+/**
+ * The worker's queries, answered by SQL text rather than call order (the
+ * stats queries run in parallel). `rows` overrides one learner's answers.
+ */
+function learnerDb(
+  rows: Record<string, Partial<Record<'tz' | 'totals' | 'learner', unknown>>> = {},
+) {
+  const answer = (userId: string, text: string) => {
+    const r = rows[userId] ?? {};
+    if (text.includes('select timezone from public.profiles')) return r.tz ?? [{ timezone: 'UTC' }];
+    if (text.includes('from public.user_word_srs')) {
+      const totals = r.totals ?? [{ due_now: '0', leech_count: '0' }];
+      if (totals instanceof Error) throw totals;
+      return totals;
+    }
+    if (text.includes('studied_today'))
+      return r.learner ?? [{ ui_locale: null, studied_today: false }];
+    if (text.includes('select display_name')) return [{ display_name: null }];
+    return [];
+  };
+  return jest.fn((userId: string, text: string) =>
+    Promise.resolve().then(() => answer(userId, text)),
+  );
+}
+
 describe('NotificationProcessor', () => {
+  let queryAsServiceMock: jest.Mock;
+  let queryAsMock: jest.Mock;
   let queryMock: jest.Mock;
   let sendToUserMock: jest.Mock;
   let processor: NotificationProcessor;
 
-  beforeEach(async () => {
-    queryMock = jest.fn();
+  async function build(learners: Parameters<typeof learnerDb>[0] = {}) {
+    queryAsServiceMock = jest.fn();
+    queryAsMock = learnerDb(learners);
+    queryMock = jest
+      .fn()
+      .mockRejectedValue(new Error('permission denied (authenticator has no grants)'));
     sendToUserMock = jest.fn().mockResolvedValue({ sent: 1, pruned: 0, failed: 0 });
 
     const moduleRef = await Test.createTestingModule({
       providers: [
         NotificationProcessor,
-        { provide: DatabaseService, useValue: { query: queryMock } },
+        {
+          provide: DatabaseService,
+          useValue: { query: queryMock, queryAs: queryAsMock, queryAsService: queryAsServiceMock },
+        },
         { provide: PushDispatchService, useValue: { sendToUser: sendToUserMock } },
         {
           provide: ConfigService,
@@ -34,23 +68,46 @@ describe('NotificationProcessor', () => {
     }).compile();
 
     processor = moduleRef.get(NotificationProcessor);
-  });
+  }
 
-  it('does nothing when no schedule bucket matches this tick', async () => {
-    queryMock.mockResolvedValueOnce([]); // due-schedules query
+  it('reads due schedules as service_role, never as bare authenticator', async () => {
+    await build();
+    queryAsServiceMock.mockResolvedValueOnce([]);
 
     await processor.process(makeJob());
 
+    expect(queryAsServiceMock.mock.calls[0][0]).toContain('from public.study_schedules');
+    expect(queryMock).not.toHaveBeenCalled();
     expect(sendToUserMock).not.toHaveBeenCalled();
   });
 
-  it('skips a matched user with nothing due and no leeches (buildReminderPayload -> null)', async () => {
-    queryMock
-      .mockResolvedValueOnce([{ user_id: 'user-1' }]) // due schedules
-      .mockResolvedValueOnce([{ timezone: 'UTC' }]) // timezone resolution (unset -> DEFAULT_TIMEZONE)
-      .mockResolvedValueOnce([{ due_now: '0', leech_count: '0' }]) // stats
-      .mockResolvedValueOnce([]) // streak dates
-      .mockResolvedValueOnce([{ display_name: null }]); // profile
+  it("reads each learner's numbers RLS-scoped as that learner", async () => {
+    await build({ 'user-1': { totals: [{ due_now: '2', leech_count: '0' }] } });
+    queryAsServiceMock.mockResolvedValueOnce([{ user_id: 'user-1' }]);
+
+    await processor.process(makeJob());
+
+    expect(queryAsMock.mock.calls.length).toBeGreaterThan(0);
+    expect(queryAsMock.mock.calls.every(([userId]) => userId === 'user-1')).toBe(true);
+    expect(queryMock).not.toHaveBeenCalled();
+    expect(sendToUserMock.mock.calls[0][1].tag).toBe('habit');
+  });
+
+  it('nudges a matched learner with nothing due who has not studied today', async () => {
+    await build({ 'user-1': { learner: [{ ui_locale: 'vi-VN', studied_today: false }] } });
+    queryAsServiceMock.mockResolvedValueOnce([{ user_id: 'user-1' }]);
+
+    await processor.process(makeJob());
+
+    expect(sendToUserMock).toHaveBeenCalledTimes(1);
+    const [, payload] = sendToUserMock.mock.calls[0];
+    expect(payload.tag).toBe('nudge');
+    expect(payload.title).toBe('Khu vườn đang chờ bạn');
+  });
+
+  it('skips a matched learner with nothing due who already studied today', async () => {
+    await build({ 'user-1': { learner: [{ ui_locale: null, studied_today: true }] } });
+    queryAsServiceMock.mockResolvedValueOnce([{ user_id: 'user-1' }]);
 
     await processor.process(makeJob());
 
@@ -58,12 +115,8 @@ describe('NotificationProcessor', () => {
   });
 
   it('dispatches a leech-priority push for a matched user with due leeches', async () => {
-    queryMock
-      .mockResolvedValueOnce([{ user_id: 'user-1' }])
-      .mockResolvedValueOnce([{ timezone: 'UTC' }]) // timezone resolution
-      .mockResolvedValueOnce([{ due_now: '5', leech_count: '2' }])
-      .mockResolvedValueOnce([])
-      .mockResolvedValueOnce([{ display_name: null }]); // profile
+    await build({ 'user-1': { totals: [{ due_now: '5', leech_count: '2' }] } });
+    queryAsServiceMock.mockResolvedValueOnce([{ user_id: 'user-1' }]);
 
     await processor.process(makeJob());
 
@@ -75,30 +128,29 @@ describe('NotificationProcessor', () => {
   });
 
   it('isolates a per-user failure — one bad stats query does not stop the tick', async () => {
-    // buildPayload resolves each user's timezone first (one query), then
-    // fires stats + streak + profile + freeze uses together via Promise.all — five
-    // queue slots per user (+ a refill write when due), not one. The failing user's *stats* (totals)
-    // query rejects; its streak and profile queries still get called (and
-    // must resolve to something) before the rejection is observed by the
-    // caller.
-    queryMock
-      .mockResolvedValueOnce([{ user_id: 'user-1' }, { user_id: 'user-2' }]) // due schedules
-      .mockResolvedValueOnce([{ timezone: 'UTC' }]) // user-1 timezone resolution
-      .mockRejectedValueOnce(new Error('db down')) // user-1 stats query fails
-      .mockResolvedValueOnce([]) // user-1 streak query (result discarded — Promise.all already rejects)
-      .mockResolvedValueOnce([{ display_name: null }]) // user-1 profile query (discarded)
-      .mockResolvedValueOnce([]) // user-1 freeze-uses query (UI-6 U6-3, discarded)
-      .mockResolvedValueOnce([{ timezone: 'UTC' }]) // user-2 timezone resolution
-      .mockResolvedValueOnce([{ due_now: '3', leech_count: '0' }]) // user-2 stats
-      .mockResolvedValueOnce([]) // user-2 streak
-      .mockResolvedValueOnce([{ display_name: null }]) // user-2 profile
-      .mockResolvedValueOnce([]) // user-2 freeze uses (UI-6 U6-3)
-      .mockResolvedValueOnce([]); // user-2 weekly freeze refill write
+    await build({
+      'user-1': { totals: new Error('db down') },
+      'user-2': { totals: [{ due_now: '3', leech_count: '0' }] },
+    });
+    queryAsServiceMock.mockResolvedValueOnce([{ user_id: 'user-1' }, { user_id: 'user-2' }]);
 
     await processor.process(makeJob());
 
     expect(sendToUserMock).toHaveBeenCalledTimes(1);
     expect(sendToUserMock.mock.calls[0][0]).toBe('user-2');
+  });
+
+  it('logs a failed tick instead of failing silently', async () => {
+    await build();
+    const error = jest.spyOn(
+      (processor as unknown as { logger: { error: jest.Mock } }).logger,
+      'error',
+    );
+    error.mockImplementation(() => undefined);
+
+    processor.onFailed(makeJob('2026-10-16T12:00:00.000Z'), new Error('permission denied'));
+
+    expect(error).toHaveBeenCalledWith(expect.stringContaining('permission denied'));
   });
 });
 
@@ -128,7 +180,7 @@ describe('NotificationProcessor / SrsService.stats — shared summary source (Wa
       }).compile();
       const statsViaApi = await srsModuleRef.get(SrsService).stats('user-1');
 
-      // Path 2: the worker's payload builder — unscoped via query(text, params).
+      // Path 2: computeSrsSummary called directly with a plain queryFn(text, params).
       const workerQueryMock = jest
         .fn()
         .mockResolvedValueOnce(fixtureTotals)

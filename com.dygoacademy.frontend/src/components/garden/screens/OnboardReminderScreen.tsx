@@ -23,6 +23,8 @@ export interface OnboardReminderScreenProps {
   onNotNow: () => void;
   back: string;
   saving?: boolean;
+  /** Why this browser can't get reminders, shown under the choices. */
+  blocked?: 'install' | 'unsupported' | 'blocked' | null;
 }
 
 export function OnboardReminderScreen({
@@ -32,6 +34,7 @@ export function OnboardReminderScreen({
   onNotNow,
   back,
   saving = false,
+  blocked = null,
 }: OnboardReminderScreenProps) {
   const t = useTranslations('screens.onboarding');
   const picked = REMINDER_CHOICES.find((item) => item.id === choice) ?? REMINDER_CHOICES[0];
@@ -102,6 +105,11 @@ export function OnboardReminderScreen({
           );
         })}
       </div>
+      {blocked ? (
+        <p role="note" className="mt-3 text-[13px] leading-snug text-muted-foreground">
+          {t(`reminder.blocked.${blocked}`)}
+        </p>
+      ) : null}
     </OnboardingShell>
   );
 }

@@ -936,6 +936,11 @@
       "dailyGoalValue": "{missions} nhiệm vụ · {minutes} phút",
       "comingSoonShort": "Sắp có",
       "reminder": "Giờ nhắc",
+      "reminderBlocked": {
+        "install": "Thêm vào MH chính trước",
+        "unsupported": "Trình duyệt chưa hỗ trợ",
+        "blocked": "Thông báo đang bị chặn"
+      },
       "meanings": "Nghĩa bằng",
       "family": "Gia đình",
       "familyValue": "Mở khu vườn của {name}",
@@ -1488,7 +1493,7 @@
       "reminder": {
         "metaTitle": "Lời nhắc",
         "title": "Khi nào nên tưới?",
-        "sub": "Mỗi ngày một lời nhắc, đúng lúc từ đã chín. Đổi bất cứ lúc nào trong Hồ sơ.",
+        "sub": "Mỗi ngày một lời nhắc, vào giờ bạn chọn. Đổi bất cứ lúc nào trong Hồ sơ.",
         "morning": {
           "label": "Sáng",
           "line": "Trước giờ làm hoặc đi học"
@@ -1503,7 +1508,12 @@
         },
         "option": "{label} · {time}",
         "cta": "Nhắc tôi lúc {time}",
-        "notNow": "Để sau"
+        "notNow": "Để sau",
+        "blocked": {
+          "install": "Trên iPhone, lời nhắc chỉ hoạt động khi Dygo đã ở Màn hình chính (Chia sẻ › Thêm vào MH chính).",
+          "unsupported": "Trình duyệt này không hiện được lời nhắc. Bạn có thể bật sau trong Hồ sơ.",
+          "blocked": "Thông báo của Dygo đang bị chặn. Hãy bật lại trong cài đặt trình duyệt rồi thử lại."
+        }
       },
       "ready": {
         "metaTitle": "Xong rồi",

@@ -61,6 +61,11 @@ export function DoneLive({ result }: { result: SessionResult }) {
         return { day, state };
       })
     : null;
+  // Hidden where this browser can't get reminders; `on` only when this device will.
+  const reminderRow =
+    reminder.supported && !reminder.blocked
+      ? doneReminder(upcoming.data, isoDay(addDays(today, 1)), reminder.schedules)
+      : null;
 
   return (
     <MissionCompleteScreen
@@ -88,11 +93,7 @@ export function DoneLive({ result }: { result: SessionResult }) {
               )
             : null
       }
-      reminder={
-        reminder.supported
-          ? doneReminder(upcoming.data, isoDay(addDays(today, 1)), reminder.schedules)
-          : null
-      }
+      reminder={reminderRow && { ...reminderRow, on: reminder.on }}
       onReminderChange={(on) => void reminder.change(on)}
     />
   );

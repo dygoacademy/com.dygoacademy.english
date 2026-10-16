@@ -15,6 +15,19 @@ export function isPushSupported(): boolean {
   );
 }
 
+/** Why this browser can't get reminders: `install` = iPhone/iPad Safari outside the home-screen app (iOS only allows Web Push there). */
+export type PushBlocker = 'install' | 'unsupported' | 'blocked';
+
+export function pushBlocker(): PushBlocker | null {
+  if (typeof window === 'undefined') return null;
+  if (!isPushSupported()) {
+    const ios = /iPhone|iPad|iPod/.test(navigator.userAgent) ||
+      (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    return ios ? 'install' : 'unsupported';
+  }
+  return Notification.permission === 'denied' ? 'blocked' : null;
+}
+
 /**
  * The Push API wants the VAPID public key as a `Uint8Array`, not the
  * base64url string the backend hands back — this is the standard
@@ -41,12 +54,28 @@ export async function registerServiceWorker(): Promise<ServiceWorkerRegistration
   return navigator.serviceWorker.ready.then(() => registration);
 }
 
-/** Subscribes (or reuses an existing subscription) and returns it as plain JSON, ready to POST to `/notifications/subscribe`. */
+function sameKey(a: ArrayBuffer | null | undefined, b: Uint8Array): boolean {
+  if (!a) return true; // the browser doesn't say which key; trust the subscription
+  const bytes = new Uint8Array(a);
+  return bytes.length === b.length && bytes.every((byte, i) => byte === b[i]);
+}
+
+/**
+ * Subscribes (or reuses an existing subscription) and returns it as plain
+ * JSON, ready to POST to `/notifications/subscribe`. A subscription made
+ * with a different VAPID key (the server's keys changed) can never receive
+ * this server's pushes, so it is replaced rather than reused.
+ */
 export async function subscribeToPush(
   registration: ServiceWorkerRegistration,
   vapidPublicKey: string,
 ): Promise<PushSubscriptionJSON> {
-  const existing = await registration.pushManager.getSubscription();
+  const key = urlBase64ToUint8Array(vapidPublicKey);
+  let existing = await registration.pushManager.getSubscription();
+  if (existing && !sameKey(existing.options?.applicationServerKey, key)) {
+    await existing.unsubscribe();
+    existing = null;
+  }
   const subscription =
     existing ??
     (await registration.pushManager.subscribe({
@@ -54,7 +83,7 @@ export async function subscribeToPush(
       // TS's lib.dom BufferSource type doesn't line up with Uint8Array's own
       // generic ArrayBufferLike param across TS versions — the browser only
       // cares that this is a byte view, so a cast is safe here.
-      applicationServerKey: urlBase64ToUint8Array(vapidPublicKey) as BufferSource,
+      applicationServerKey: key as BufferSource,
     }));
   return subscription.toJSON();
 }
