@@ -19,6 +19,8 @@ import {
   URL_LOCALE_HEADER,
 } from '@/i18n/config';
 
+import { AUTH_COOKIE_OPTIONS } from '@/lib/supabase/cookie';
+
 export async function updateSession(request: NextRequest) {
   // The home page's language comes from its URL (`/`, `/vi`, `/zh`): pass
   // it to the server components in a request header, and never trust one
@@ -33,6 +35,7 @@ export async function updateSession(request: NextRequest) {
     env.NEXT_PUBLIC_SUPABASE_URL,
     env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
     {
+      cookieOptions: AUTH_COOKIE_OPTIONS,
       cookies: {
         getAll() {
           return request.cookies.getAll();

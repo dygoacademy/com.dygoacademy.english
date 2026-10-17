@@ -431,7 +431,8 @@ cloudflared tunnel create dygo-academy
 # 5. Point each subdomain at the tunnel (repeat per hostname).
 cloudflared tunnel route dns dygo-academy www.dygoacademy.com
 cloudflared tunnel route dns dygo-academy api.dygoacademy.com
-cloudflared tunnel route dns dygo-academy supabase.dygoacademy.com
+cloudflared tunnel route dns dygo-academy sso.dygoacademy.com        # Supabase (Kong), 2026-10-17
+cloudflared tunnel route dns dygo-academy supabase.dygoacademy.com   # old Supabase host, still routed
 cloudflared tunnel route dns dygo-academy media.dygoacademy.com   # RustFS `media` bucket (2026-10-04)
 # The bare domain -> www redirect is a Cloudflare dashboard rule
 # (Rules > Redirect Rules), not something cloudflared handles. See

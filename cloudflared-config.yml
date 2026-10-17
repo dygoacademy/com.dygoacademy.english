@@ -11,7 +11,9 @@
 # host:port pattern .env.stg already uses (see .env.prod's header comment):
 #   www.dygoacademy.com      -> :3000 (frontend)
 #   api.dygoacademy.com      -> :3001 (backend)
-#   supabase.dygoacademy.com -> :8000 (Kong gateway)
+#   sso.dygoacademy.com      -> :8000 (Kong gateway; was supabase.dygoacademy.com
+#                               until 2026-10-17, which still routes here
+#                               while old app builds age out)
 #   media.dygoacademy.com    -> :9100 (RustFS S3 API, bucket `media`, public
 #                               read-only; added 2026-10-04)
 #
@@ -32,6 +34,10 @@ ingress:
     service: http://localhost:3000
   - hostname: api.dygoacademy.com
     service: http://localhost:3001
+  - hostname: sso.dygoacademy.com
+    service: http://localhost:8000
+  # Old Supabase host, kept so cached PWA builds and open tabs still sign
+  # in after the move to sso (2026-10-17). Remove once they've aged out.
   - hostname: supabase.dygoacademy.com
     service: http://localhost:8000
   # RustFS keeps the Host header (media.dygoacademy.com) and maps it to the
