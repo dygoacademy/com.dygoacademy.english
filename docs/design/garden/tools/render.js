@@ -41,6 +41,9 @@ const JOBS = [
   ['AdultComebackStart.dc.html', 'en', 'A5b-welcome-back-start', {}],
   ['AdultTopics.dc.html', 'en', 'A6-topics', {}],
   ['AdultSearch.dc.html', 'en', 'A6b-search-topics', {}],
+  // A6 filter states (2026-10-17): fixed filter groups slide sideways; the selected chip scrolls into view.
+  ['AdultTopics.dc.html', 'en', 'A6-topics-filter-travel', { filter: 'travel' }],
+  ['AdultTopicsVi.dc.html', 'vi', 'A6-topics-filter-shared-vi', { filter: 'shared' }],
   ['TopicWordSearch.dc.html', 'en', 'A7c-word-search', {}],
   ['AdultTopicDetail.dc.html', 'en', 'A7-topic-bed', {}],
   ['AdultTopicDetail.dc.html', 'en', 'A7-topic-bed-filter-sprouts', { stage: 'sprout' }],
