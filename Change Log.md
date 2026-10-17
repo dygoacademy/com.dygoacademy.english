@@ -1153,4 +1153,4 @@ Engineering-facing log of shipped fixes and changes, one dated entry per change.
 
 ### Docs: A6 Topics filters marked Built
 * **Files**: [`docs/design/garden/CHANGELOG.md`](docs/design/garden/CHANGELOG.md)
-* **What**: the 2026-10-17 "A6 Topics: fixed filter groups, long names" entry and the A6 row say Built `d1c8402`. Not deployed to UAT yet.
+* **What**: the 2026-10-17 "A6 Topics: fixed filter groups, long names" entry and the A6 row say Built `d1c8402`. Deployed to UAT 2026-10-17 02:47 UTC, after Dylan applied migration `20261017_library_shelf` on UAT.
