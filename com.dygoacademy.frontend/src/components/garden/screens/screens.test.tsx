@@ -12,6 +12,7 @@ import {
   COMEBACK,
   COMEBACK_START,
   HARVEST,
+  HARVEST_DONE,
   HOME,
   ME,
   REFERENCE_NAMES,
@@ -34,8 +35,9 @@ const push = vi.fn();
 vi.mock('next/navigation', () => ({ useRouter: () => ({ push }) }));
 
 describe('reference fixtures', () => {
-  it('lists the 83 canvas references (… 5 speaking, 4 speaking entry points, 15 pronunciation, 6 voice donation, 4 onboarding, 3 loading, 2 A6 filters)', () => {
-    expect(REFERENCE_NAMES).toHaveLength(85);
+  it('lists the 83 canvas references (… 5 speaking, 4 speaking entry points, 15 pronunciation, 6 voice donation, 4 onboarding, 3 loading, 2 A6 filters, A4 done)', () => {
+    expect(REFERENCE_NAMES).toHaveLength(86);
+    expect(isReferenceName('A4-weekly-harvest-done')).toBe(true);
     expect(isReferenceName('A1b-all-watered')).toBe(true);
     expect(isReferenceName('A7c-word-search')).toBe(true);
     expect(isReferenceName('A6b-search-topics')).toBe(true);
@@ -251,22 +253,102 @@ describe('ReviewScreen', () => {
   });
 });
 
-describe('WeeklyHarvestScreen', () => {
-  const base = HARVEST;
-
-  it("links the group card to that group's garden", () => {
-    renderWithIntl(
-      <WeeklyHarvestScreen {...base} group={{ ...HARVEST.group, href: '/groups/g1' }} />,
-    );
-    const card = screen.getByRole('link', { name: /IELTS Sprint group/ });
-    expect(card.getAttribute('href')).toBe('/groups/g1');
-    expect(card.textContent).toContain('4 of 5 watered today · 126 shared words');
+describe('WeeklyHarvestScreen (A4 This week)', () => {
+  const W = messages.screens.missions.weekly;
+  const ROUTES = {
+    rescue: '/quiz?mode=leech',
+    water: '/review',
+    sentence: '/sounds?words=a&back=%2Fmissions',
+    sound: '/sounds/word?words=b&back=%2Fmissions',
+  } as const;
+  const withHrefs = (props: typeof HARVEST) => ({
+    ...props,
+    weekly: {
+      ...props.weekly,
+      missions: props.weekly.missions.map((m) => ({ ...m, href: ROUTES[m.key] })),
+    },
   });
 
-  it('has no group card without a group', () => {
-    renderWithIntl(<WeeklyHarvestScreen {...base} group={null} />);
+  it('shows the week, then each mission with count/goal and its button', () => {
+    renderWithIntl(<WeeklyHarvestScreen {...withHrefs(HARVEST)} />);
+    expect(screen.getByText('Week of October 12 · 2 days left')).toBeTruthy();
+    expect(screen.getByRole('heading', { level: 1 }).textContent).toBe('This week');
+    const card = screen.getByRole('region', { name: W.label });
+    const rows = within(card).getAllByRole('link');
+    expect(rows.map((r) => r.getAttribute('href'))).toEqual([
+      ROUTES.rescue,
+      ROUTES.sentence,
+      ROUTES.sound,
+    ]);
+    expect(rows[0].textContent).toContain('Rescue wilting words');
+    expect(rows[0].textContent).toContain('3 words are wilting');
+    expect(rows[0].textContent).toContain('1/3');
+    expect(rows[0].textContent).toContain('Rescue');
+    expect(rows[1].textContent).toContain('2/3');
+    expect(rows[1].textContent).toContain('Speak');
+    expect(rows[2].textContent).toContain('2/5');
+    expect(rows[2].textContent).toContain('Say');
+    expect(within(card).queryByText(W.done)).toBeNull();
+  });
+
+  it('shows the sound chip in English and the example words', () => {
+    renderWithIntl(<WeeklyHarvestScreen {...withHrefs(HARVEST)} />);
+    const chip = screen.getByText('th', { selector: 'span[lang="en"]' });
+    expect(chip.parentElement?.textContent).toBe('Sound of the week: th');
+    expect(screen.getByText('think, three, growth…').getAttribute('lang')).toBe('en');
+  });
+
+  it('reward line: to do, then done with the blue background', () => {
+    const { unmount } = renderWithIntl(<WeeklyHarvestScreen {...withHrefs(HARVEST)} />);
+    const todo = screen.getByText('+1 rain barrel').closest('div');
+    expect(todo?.textContent).toBe('Finish all 3 → +1 rain barrel0/3');
+    expect(todo?.className).toContain('bg-surface-sunken');
+    unmount();
+
+    renderWithIntl(<WeeklyHarvestScreen {...withHrefs(HARVEST_DONE)} />);
+    const done = screen.getByText('+1 rain barrel').closest('div');
+    expect(done?.textContent).toBe('All 3 done · +1 rain barrel added3/3');
+    expect(done?.className).toContain('bg-water-soft');
+    expect(screen.getAllByText(W.done)).toHaveLength(3);
+    expect(screen.queryByText('Rescue', { selector: 'span' })).toBeNull();
+  });
+
+  it('nothing wilting: the Water 20 words row instead of Rescue', () => {
+    const props = withHrefs(HARVEST);
+    renderWithIntl(
+      <WeeklyHarvestScreen
+        {...props}
+        weekly={{
+          ...props.weekly,
+          wilting: 0,
+          missions: [
+            { key: 'water', goal: 20, count: 7, done: false, href: ROUTES.water },
+            ...props.weekly.missions.slice(1),
+          ],
+        }}
+      />,
+    );
+    const row = screen.getAllByRole('link')[0];
+    expect(row.getAttribute('href')).toBe('/review');
+    expect(row.textContent).toContain('Water 20 words');
+    expect(row.textContent).toContain('7/20');
+    expect(row.textContent).toContain('Water');
+  });
+
+  it('keeps the week plants, the seed pack, Road to Band 7 and the tab bar; no barrel or group tiles', () => {
+    renderWithIntl(<WeeklyHarvestScreen {...withHrefs(HARVEST)} />);
+    expect(screen.getByText('11 of 21 daily missions')).toBeTruthy();
+    expect(screen.getByText('Academic Word List')).toBeTruthy();
+    expect(screen.getByText('Road to Band 7')).toBeTruthy();
+    expect(screen.getByRole('link', { name: /Missions/ })).toBeTruthy();
+    expect(screen.queryByText(/Rain barrel ·/)).toBeNull();
     expect(screen.queryByText(/watered today/)).toBeNull();
-    expect(screen.queryByText('IELTS Sprint group')).toBeNull();
+  });
+
+  it('without weekly missions (loading or failed) shows no missions card', () => {
+    renderWithIntl(<WeeklyHarvestScreen {...withHrefs(HARVEST)} weekly={null} />);
+    expect(screen.queryByRole('region', { name: W.label })).toBeNull();
+    expect(screen.getByText('11 of 21 daily missions')).toBeTruthy();
   });
 });
 

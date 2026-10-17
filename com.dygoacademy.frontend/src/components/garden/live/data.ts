@@ -16,7 +16,7 @@ import { GARDEN_ROUTES } from '@/constants/garden';
 import { languageOf } from '@/i18n/config';
 import { findMatch } from '@/lib/search/fold';
 import { stoneText } from '@/lib/speaking/ipa';
-import type { MissionDay, TodayMissions } from '@/hooks/useMissions';
+import type { MissionDay, TodayMissions, WeeklyMissions } from '@/hooks/useMissions';
 import type { MyKeepsakes } from '@/hooks/useProfile';
 import { toLocalDateString } from '@/lib/timezone';
 
@@ -29,7 +29,7 @@ import type { BeeWord, BedStage, TopicBedWord } from '../screens/TopicBedScreen'
 import type { TopicsScreenTopic } from '../screens/TopicsScreen';
 import type { SearchTopic } from '../screens/TopicSearchScreen';
 import type { Greeting, MissionItem } from '../screens/TodaysGardenScreen';
-import type { WeeklyHarvestScreenProps } from '../screens/WeeklyHarvestScreen';
+import type { WeeklyHarvestScreenProps, WeeklyMissionRow } from '../screens/WeeklyHarvestScreen';
 import type { WelcomeBackScreenProps } from '../screens/WelcomeBackScreen';
 
 /** Morning until noon, afternoon until 18:00, then evening. */
@@ -668,6 +668,41 @@ export function toBedWords(
   const stageCounts: Record<BedStage, number> = { seed: 0, sprout: 0, flower: 0, tree: 0 };
   for (const word of sorted) stageCounts[word.stage] += 1;
   return { words: sorted, stageCounts };
+}
+
+/**
+ * A4 This week: the 3 weekly mission rows from `GET /missions/weekly`, each
+ * linked to the screen where its practice happens (no new practice screen):
+ * Rescue → the leech drill, Water → Review (due words), Speak → the
+ * sentence flow over this week's words (the whole Pond when there are
+ * none), Say → Pronunciation for the next words with the sound (Topics when
+ * there are none to pollinate). Close / the last Next come back here.
+ */
+export function weeklyRows(weekly: WeeklyMissions): WeeklyMissionRow[] {
+  const back = GARDEN_ROUTES.missions;
+  return weekly.missions.map((m) => {
+    let href: string;
+    switch (m.key) {
+      case 'rescue':
+        href = GARDEN_ROUTES.quiz(undefined, 'leech');
+        break;
+      case 'water':
+        href = GARDEN_ROUTES.review;
+        break;
+      case 'sentence':
+        href = GARDEN_ROUTES.speak(
+          weekly.sentenceWords.length > 0 ? { words: weekly.sentenceWords, back } : { back },
+        );
+        break;
+      case 'sound':
+        href =
+          weekly.soundWords.length > 0
+            ? GARDEN_ROUTES.pronounce({ words: weekly.soundWords, back })
+            : GARDEN_ROUTES.topics;
+        break;
+    }
+    return { key: m.key, goal: m.goal, count: Math.min(m.count, m.goal), done: m.done, href };
+  });
 }
 
 /**

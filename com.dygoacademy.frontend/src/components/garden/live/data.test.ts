@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { GARDEN_ROUTES } from '@/constants/garden';
-import type { TodayMissions } from '@/hooks/useMissions';
+import type { TodayMissions, WeeklyMissions } from '@/hooks/useMissions';
 import { toLocalDateString } from '@/lib/timezone';
 import type { SrsStats, StudySchedule, UpcomingActivity } from '@/types';
 
@@ -40,6 +40,7 @@ import {
   stageGarden,
   thirstyMission,
   weekHarvest,
+  weeklyRows,
   weekOf,
 } from './data';
 
@@ -415,6 +416,46 @@ describe('A1b All watered', () => {
     expect(nextRipening(upcoming, '2026-09-26', [])).toEqual({ time: null, count: 14 });
     expect(nextRipening(upcoming, '2026-09-27', reminder)).toBeNull();
     expect(ripensTomorrow(upcoming, '2026-09-26', [])).toBeNull();
+  });
+});
+
+describe('weeklyRows (A4 This week)', () => {
+  const weekly = {
+    weekStart: '2026-10-12',
+    daysLeft: 2,
+    sound: { key: 'th_think', label: 'th', examples: ['think'] },
+    missions: [
+      { key: 'rescue', goal: 3, count: 1, done: false },
+      { key: 'sentence', goal: 3, count: 3, done: true },
+      { key: 'sound', goal: 5, count: 7, done: true },
+    ],
+    rewardEarned: false,
+    freezes: 2,
+    wilting: 3,
+    sentenceWords: ['tw-1', 'tw-2'],
+    soundWords: ['tw-3'],
+  } satisfies WeeklyMissions;
+
+  it('links each row to the screen where its practice happens, back to /missions', () => {
+    expect(weeklyRows(weekly).map((r) => r.href)).toEqual([
+      '/quiz?mode=leech',
+      '/sounds?words=tw-1%2Ctw-2&back=%2Fmissions',
+      '/sounds/word?words=tw-3&back=%2Fmissions',
+    ]);
+  });
+
+  it('caps the count at the goal', () => {
+    expect(weeklyRows(weekly)[2]).toMatchObject({ key: 'sound', count: 5, goal: 5, done: true });
+  });
+
+  it('Water goes to Review; no words: the whole Pond, and Topics for the sound', () => {
+    const rows = weeklyRows({
+      ...weekly,
+      missions: [{ key: 'water', goal: 20, count: 0, done: false }, ...weekly.missions.slice(1)],
+      sentenceWords: [],
+      soundWords: [],
+    });
+    expect(rows.map((r) => r.href)).toEqual(['/review', '/sounds?back=%2Fmissions', '/topics']);
   });
 });
 

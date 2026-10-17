@@ -4,6 +4,8 @@ import { ConfigService } from '@nestjs/config';
 import { Job } from 'bullmq';
 
 import { DatabaseService } from '../../database/database.service';
+import { settleWeek } from '../missions/weekly.store';
+import { resolveUserTimezone } from '../srs/srs.service';
 import { SPEECH_CHECK_QUEUE, SpeechCheckJob } from '../../queues/queue.constants';
 import { toCheckResult, toWordCheckResult } from './speech-check.mapper';
 import { ScorerPool, SpeechCheckStore } from './speech-check.store';
@@ -106,10 +108,30 @@ export class SpeechCheckProcessor extends WorkerHost implements OnModuleInit {
          returning id`,
         [lexiconId, score],
       );
+      if (rows.length > 0) await this.settleWeek(userId);
       return rows.length > 0;
     } catch (err) {
       this.logger.warn(`pollinate failed: ${String(err)}`);
       return false;
+    }
+  }
+
+  /**
+   * A4: a pollinated word with the week's sound counts toward "Sound of the
+   * week" and may finish the week (+1 rain barrel). Never fails the check.
+   */
+  private async settleWeek(userId: string): Promise<void> {
+    try {
+      await this.db.withUser(userId, async (client) => {
+        const timezone = await resolveUserTimezone(
+          async <T extends Record<string, unknown>>(text: string, params: unknown[]) =>
+            (await client.query<T>(text, params)).rows,
+          userId,
+        );
+        await settleWeek(client, userId, timezone, new Date());
+      });
+    } catch (err) {
+      this.logger.warn(`weekly missions: ${String(err)}`);
     }
   }
 }

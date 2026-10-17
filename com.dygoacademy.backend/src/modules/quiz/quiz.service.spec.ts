@@ -274,8 +274,26 @@ describe('QuizService.answer', () => {
       correct: false,
       hintUsed: false,
       responseMs: 900,
+      source: 'quiz',
       quizFinished: false,
     });
+  });
+
+  it('drill: true records the answer as a leech drill review (A4 Rescue)', async () => {
+    const queryAsMock = jest.fn().mockResolvedValueOnce([wordRow()]);
+    const recordQuizResultMock = jest.fn().mockResolvedValue(SRS_RESULT);
+    const service = await makeService({
+      queryAsMock,
+      recordQuizResultMock,
+      explainNuanceMock: jest.fn().mockResolvedValue('nuance'),
+    });
+
+    await service.answer('user-1', 'tw-1:MATCHING', { answer: 'brave', drill: true });
+
+    expect(recordQuizResultMock).toHaveBeenCalledWith(
+      'user-1',
+      expect.objectContaining({ source: 'leech_drill' }),
+    );
   });
 
   it('final: true marks the quiz finished for the QUIZ daily mission (UI-6 U6-2)', async () => {

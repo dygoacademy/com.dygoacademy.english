@@ -105,6 +105,7 @@ const config: Config = {
         'gold-wash': 'var(--color-gold-wash)',
         'forest-wash': 'var(--color-forest-wash)',
         'forest-wash-border': 'var(--color-forest-wash-border)',
+        'wilt-wash': 'var(--color-wilt-wash)',
         'primary-soft': 'var(--color-primary-soft)',
         'primary-border': 'var(--color-primary-border)',
         'gold-border': 'var(--color-gold-border)',
@@ -142,6 +143,8 @@ const config: Config = {
           'tree-canopy': 'var(--stage-tree-canopy)',
           'tree-fruit': 'var(--stage-tree-fruit)',
           wilt: 'var(--stage-wilt)',
+          'wilt-light': 'var(--stage-wilt-light)',
+          'wilt-soil': 'var(--stage-wilt-soil)',
           due: 'var(--stage-due)',
         },
         // §5.2 rating buttons (bg + text pairs).

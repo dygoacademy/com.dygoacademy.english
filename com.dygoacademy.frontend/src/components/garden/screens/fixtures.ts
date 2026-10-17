@@ -19,7 +19,7 @@ import type { TopicsScreenTopic } from './TopicsScreen';
 import type { QuizResultScreenProps } from './QuizResultScreen';
 import type { QuizScreenProps } from './QuizScreen';
 import type { MissionItem } from './TodaysGardenScreen';
-import type { AvatarTone } from './WeeklyHarvestScreen';
+import type { WeeklyHarvestScreenProps } from './WeeklyHarvestScreen';
 
 export const REFERENCE_NAMES = [
   'A1-todays-garden',
@@ -29,6 +29,8 @@ export const REFERENCE_NAMES = [
   'A2-review-finished',
   'A3-mission-complete',
   'A4-weekly-harvest',
+  // A4 This week (canvas 2026-10-17): all 3 weekly missions done
+  'A4-weekly-harvest-done',
   'A5-welcome-back',
   'A5b-welcome-back-start',
   'A6-topics',
@@ -271,32 +273,40 @@ export const COMPLETE = {
 
 /** AdultMissions.dc.html */
 export const HARVEST = {
-  weekStart: calendarDay(2026, 9, 21),
+  weekStart: calendarDay(2026, 10, 12),
+  daysLeft: 2,
+  weekly: {
+    missions: [
+      { key: 'rescue', goal: 3, count: 1, done: false, href: '#' },
+      { key: 'sentence', goal: 3, count: 2, done: false, href: '#' },
+      { key: 'sound', goal: 5, count: 2, done: false, href: '#' },
+    ],
+    wilting: 3,
+    sound: { label: 'th', examples: ['think', 'three', 'growth'] },
+    rewardEarned: false,
+  },
   harvest: {
     done: 11,
     total: 21,
-    days: weekDays(calendarDay(2026, 9, 25), 1).map((day, index) => ({
+    days: weekDays(calendarDay(2026, 10, 16), 1).map((day, index) => ({
       day,
       missions: ([3, 2, 3, 1, 2, 0, 0] as const)[index],
       today: index === 4,
     })),
     seedPack: { name: 'Academic Word List', need: 3, have: 2 },
   },
-  goal: { band: 7, mastered: 412, target: 1200, growing: 104, eta: 'pending' as const },
-  freezes: 2,
-  group: {
-    name: 'IELTS Sprint group',
-    watered: 4,
-    members: 5,
-    sharedWords: 126,
-    avatars: [
-      { text: 'L', tone: 'flower' },
-      { text: 'M', tone: 'sprout' },
-      { text: 'T', tone: 'due' },
-      { text: '+2', tone: 'more' },
-    ] as Array<{ text: string; tone: AvatarTone }>,
+  goal: { band: 7, mastered: 412, target: 1200, growing: 104 },
+} satisfies WeeklyHarvestScreenProps;
+
+/** AdultMissions.dc.html, all 3 done (`A4-weekly-harvest-done`). */
+export const HARVEST_DONE = {
+  ...HARVEST,
+  weekly: {
+    ...HARVEST.weekly,
+    missions: HARVEST.weekly.missions.map((m) => ({ ...m, count: m.goal, done: true })),
+    rewardEarned: true,
   },
-};
+} satisfies WeeklyHarvestScreenProps;
 
 /** AdultComeback.dc.html */
 export const COMEBACK = {
@@ -849,7 +859,8 @@ export function referenceFixtures(locale: AppLocale) {
       },
     },
     COMPLETE,
-    HARVEST: { ...HARVEST, group: { ...HARVEST.group, name: sample.group } },
+    HARVEST,
+    HARVEST_DONE,
     COMEBACK,
     COMEBACK_START,
     TOPICS: TOPICS.map((topic, index) => ({

@@ -1,8 +1,9 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { PoolClient } from 'pg';
 
 import { DatabaseService } from '../../database/database.service';
 import { recordMissionProgress } from '../missions/missions.store';
+import { settleWeek, weeklySafely } from '../missions/weekly.store';
 import { FIRST_BED_TOPIC, resolveUserTimezone } from '../srs/srs.service';
 import { StorageService } from '../../storage/storage.service';
 import { CreateSpeakingAttemptDto } from './dto/create-attempt.dto';
@@ -86,6 +87,8 @@ const LEARNER_WORDS = `
  */
 @Injectable()
 export class SpeakingService {
+  private readonly logger = new Logger(SpeakingService.name);
+
   constructor(
     private readonly db: DatabaseService,
     private readonly storage: StorageService,
@@ -236,6 +239,14 @@ export class SpeakingService {
         );
         if (!before.rows[0]?.spoken) {
           await recordMissionProgress(client, userId, timezone, new Date(), 'SPEAK');
+        }
+        // A4: an accepted sentence (bloom / fruit) counts toward "Use it in a sentence".
+        if (dto.stage === 'bloom' || dto.stage === 'fruit') {
+          await weeklySafely(
+            client,
+            () => settleWeek(client, userId, timezone, new Date()),
+            (err) => this.logger.warn(`weekly missions: ${String(err)}`),
+          );
         }
         return inserted.rows[0];
       });

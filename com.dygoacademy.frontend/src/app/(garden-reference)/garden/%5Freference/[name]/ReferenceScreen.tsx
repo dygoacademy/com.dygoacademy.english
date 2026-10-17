@@ -79,6 +79,7 @@ function ReferenceScreenBody({ name, locale }: { name: ReferenceName; locale: Ap
     COMEBACK_START,
     COMPLETE,
     HARVEST,
+    HARVEST_DONE,
     HOME,
     ME,
     QUIZ_TOPIC,
@@ -154,10 +155,10 @@ function ReferenceScreenBody({ name, locale }: { name: ReferenceName; locale: Ap
         />
       );
     case 'A4-weekly-harvest':
+    case 'A4-weekly-harvest-done':
       return (
         <WeeklyHarvestScreen
-          {...HARVEST}
-          group={{ ...HARVEST.group, href: GARDEN_ROUTES.reference('GR2-group-garden') }}
+          {...(name === 'A4-weekly-harvest' ? HARVEST : HARVEST_DONE)}
           stickyNav={false}
         />
       );

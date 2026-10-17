@@ -487,6 +487,52 @@ describe('SrsService.rate (Phase 10 — FSRS)', () => {
       expect(queryMock.mock.calls.some((c) => String(c[0]).includes('daily_missions'))).toBe(false);
     });
   });
+
+  describe('weekly missions (A4 Rescue)', () => {
+    const rescueSql = (m: jest.Mock): unknown[][] =>
+      (m.mock.calls as unknown[][]).filter((c) =>
+        String(c[0]).includes('rescued_word_ids = array_append'),
+      );
+
+    it('a wilting word answered right in the leech drill is rescued this week', async () => {
+      const queryMock = txMock({ state: reviewRow({ is_leech: true }) });
+      const service = await makeService(jest.fn(), withUserOf(queryMock));
+
+      await service.recordQuizResult(
+        'user-1',
+        {
+          topicWordId: 'w1',
+          quizType: 'CLOZE',
+          correct: true,
+          hintUsed: false,
+          source: 'leech_drill',
+        },
+        NOW,
+      );
+
+      const calls = rescueSql(queryMock);
+      expect(calls).toHaveLength(1);
+      // Asia/Singapore (txMock's tz): Tuesday 1 September 2026 is in the week of Monday 31 August.
+      expect(calls[0][1]).toEqual(['user-1', '2026-08-31', 'w1']);
+    });
+
+    it.each([
+      ['a wrong answer', { is_leech: true }, false, 'leech_drill'],
+      ['a word that is not wilting', { is_leech: false }, true, 'leech_drill'],
+      ['a normal quiz', { is_leech: true }, true, 'quiz'],
+    ] as const)('%s rescues nothing', async (_label, state, correct, source) => {
+      const queryMock = txMock({ state: reviewRow(state) });
+      const service = await makeService(jest.fn(), withUserOf(queryMock));
+
+      await service.recordQuizResult(
+        'user-1',
+        { topicWordId: 'w1', quizType: 'CLOZE', correct, hintUsed: false, source },
+        NOW,
+      );
+
+      expect(rescueSql(queryMock)).toHaveLength(0);
+    });
+  });
 });
 
 describe('SrsService.recordQuizResult (Phase 10 — quizzes grade the SRS)', () => {

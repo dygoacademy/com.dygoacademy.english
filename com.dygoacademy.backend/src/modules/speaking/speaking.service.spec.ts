@@ -269,7 +269,9 @@ describe('SpeakingService.createAttempt', () => {
       stage: 'fruit' as const,
       harvest: true,
     });
-    expect(client.query.mock.calls.some(([sql]) => sql.includes('speaking_harvests'))).toBe(false);
+    expect(
+      client.query.mock.calls.some(([sql]) => sql.includes('insert into public.speaking_harvests')),
+    ).toBe(false);
   });
 
   it('404s for an unknown item', async () => {

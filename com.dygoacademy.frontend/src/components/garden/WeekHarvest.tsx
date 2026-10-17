@@ -3,8 +3,9 @@ import { gcn } from './cn';
 /**
  * Weekly harvest (canvas A4): one plant per day on dark soil, grown by how
  * many of that day's missions were done: 0 = bare soil, 1 = sprout,
- * 2 = flower, 3 = fruit tree. Each column is the plant (in a 56px box,
+ * 2 = flower, 3 = fruit tree. Each column is the plant (in a 42px box,
  * bottom-aligned) over the day's name; today's name is gold and bold.
+ * A4 This week (2026-10-17) made the plants 3/4 of their drawn size.
  */
 export interface HarvestDay {
   /** e.g. "Mon" or "Today". */
@@ -22,7 +23,7 @@ function DayPlant({ missions, label }: { missions: HarvestDay['missions']; label
   switch (missions) {
     case 3:
       return (
-        <svg width="44" height="56" viewBox="0 0 44 56" role="img" aria-label={label}>
+        <svg width="33" height="42" viewBox="0 0 44 56" role="img" aria-label={label}>
           <ellipse cx="22" cy="52" rx="13" ry="3" fill={SOIL} />
           <rect x="20" y="30" width="4" height="22" fill="var(--stage-trunk)" />
           <circle cx="22" cy="20" r="15" fill="var(--stage-tree-canopy)" />
@@ -35,7 +36,7 @@ function DayPlant({ missions, label }: { missions: HarvestDay['missions']; label
       );
     case 2:
       return (
-        <svg width="40" height="52" viewBox="0 0 40 52" role="img" aria-label={label}>
+        <svg width="30" height="39" viewBox="0 0 40 52" role="img" aria-label={label}>
           <ellipse cx="20" cy="48" rx="12" ry="3" fill={SOIL} />
           <path d="M20 47 V20" stroke={LEAF} strokeWidth="2.5" />
           <path d="M20 38 C14 37 11 33 13 29 C18 29 20 33 20 38 Z" fill={LEAF} />
@@ -49,7 +50,7 @@ function DayPlant({ missions, label }: { missions: HarvestDay['missions']; label
       );
     case 1:
       return (
-        <svg width="40" height="40" viewBox="0 0 40 40" role="img" aria-label={label}>
+        <svg width="30" height="30" viewBox="0 0 40 40" role="img" aria-label={label}>
           <ellipse cx="20" cy="36" rx="12" ry="3" fill={SOIL} />
           <path d="M20 35 V22" stroke={LEAF} strokeWidth="2.5" />
           <path d="M20 28 C14 27 11 23 13 19 C18 19 20 23 20 28 Z" fill={LEAF} />
@@ -58,7 +59,7 @@ function DayPlant({ missions, label }: { missions: HarvestDay['missions']; label
       );
     default:
       return (
-        <svg width="40" height="40" viewBox="0 0 40 40" role="img" aria-label={label}>
+        <svg width="30" height="30" viewBox="0 0 40 40" role="img" aria-label={label}>
           <ellipse cx="20" cy="36" rx="12" ry="3" fill={SOIL} />
         </svg>
       );
@@ -75,13 +76,13 @@ export function WeekHarvest({
   return (
     <div className={gcn('grid grid-cols-7 items-end gap-0.5', className)}>
       {days.map((day, index) => (
-        <div key={index} className="flex flex-col items-center gap-1">
-          <div className="flex h-14 items-end">
+        <div key={index} className="flex flex-col items-center gap-0.5">
+          <div className="flex h-[42px] items-end">
             <DayPlant missions={day.missions} label={day.plantLabel} />
           </div>
           <span
             className={gcn(
-              'whitespace-nowrap text-[12px]',
+              'whitespace-nowrap text-[11px]',
               day.today ? 'font-bold text-gold-light' : 'font-medium text-stage-sprout',
             )}
           >

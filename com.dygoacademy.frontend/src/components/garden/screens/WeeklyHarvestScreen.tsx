@@ -1,27 +1,48 @@
 import * as React from 'react';
 import Link from 'next/link';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 
+import { BeeShape } from '../Bee';
 import { gcn } from '../cn';
 import { useGardenFormat } from '../format';
-import { RainBarrelIcon, SeedPackIcon } from '../icons';
+import { CheckIcon, MicIcon, RainBarrelIcon, SeedPackIcon, WaterIcon, WiltingPlantIcon } from '../icons';
 import { WeekHarvest, type HarvestDay } from '../WeekHarvest';
 import { GardenTabBar, IPAD_NAV_COLUMN, SCREEN_CLASSES } from './GardenTabBar';
 
 /**
- * A4 · Weekly harvest (canvas `reference/A4-weekly-harvest`). Props only.
+ * A4 · This week (canvas `reference/A4-weekly-harvest`, `-done`; redrawn
+ * 2026-10-17). Props only.
  *
- * The week's plants (one per day, grown by missions done) with the seed
- * pack they unlock → the vocabulary goal → streak freezes and the study
- * group → tab bar. Missions, freezes and goals arrive with UI-6, and until
- * then their block shows "coming soon". NAV-1: the group card links to that
- * group's garden; without a group there is no card.
+ * Header "Week of … · n days left" → the 3 weekly missions (Rescue wilting
+ * words or Water 20 words, Use it in a sentence, Sound of the week), each
+ * row a link to the screen where the practice happens, and the "+1 rain
+ * barrel" line → the week's daily-mission plants with the seed pack → Road
+ * to Band 7 → tab bar. Daily missions stay on A1.
  */
-export type AvatarTone = 'flower' | 'sprout' | 'due' | 'more';
+export type WeeklyMissionKey = 'rescue' | 'water' | 'sentence' | 'sound';
+
+export interface WeeklyMissionRow {
+  key: WeeklyMissionKey;
+  goal: number;
+  count: number;
+  done: boolean;
+  /** Where the row goes: the leech drill, Review, the sentence flow or Pronunciation. */
+  href: string;
+}
 
 export interface WeeklyHarvestScreenProps {
-  /** First calendar day of the week (format.ts), shown as "Week of 21 September". */
+  /** The week's Monday (format.ts calendar day), shown as "Week of 12 October". */
   weekStart: Date;
+  /** Days after today until Sunday. */
+  daysLeft: number;
+  weekly: {
+    /** Always 3, in display order. */
+    missions: readonly WeeklyMissionRow[];
+    /** Wilting words now (the Rescue row's line). */
+    wilting: number;
+    sound: { label: string; examples: readonly string[] };
+    rewardEarned: boolean;
+  } | null;
   harvest: {
     done: number;
     total: number;
@@ -35,157 +56,240 @@ export interface WeeklyHarvestScreenProps {
     mastered: number;
     target: number;
     growing: number;
-    /** The projected day, 'pending' while it can't be worked out yet; null hides "At this pace". */
-    eta: Date | 'pending' | null;
-  } | null;
-  freezes: number | null;
-  /** The learner's study group; null hides the card. */
-  group: {
-    name: string;
-    /** The group's garden (`/groups/[id]`); without it the card is not a link. */
-    href?: string;
-    watered: number;
-    members: number;
-    /** Words in the group's shared beds. */
-    sharedWords: number;
-    /** Initials; the live page has none (aggregates only), so the row is left out. */
-    avatars: ReadonlyArray<{ text: string; tone: AvatarTone }>;
   } | null;
   stickyNav?: boolean;
 }
 
-const AVATAR: Record<AvatarTone, string> = {
-  flower: 'bg-stage-flower text-avatar-flower-text',
-  sprout: 'bg-stage-sprout-leaf text-avatar-sprout-text',
-  due: 'bg-stage-due text-avatar-due-text',
-  more: 'bg-track text-muted-foreground',
+const ICON_WELL: Record<WeeklyMissionKey, string> = {
+  rescue: 'bg-wilt-wash',
+  water: 'bg-water-soft',
+  sentence: 'bg-primary-soft',
+  sound: 'bg-gold-soft',
 };
 
-const GROUP_CARD =
-  'flex flex-col gap-1.5 rounded-card border border-border bg-surface p-[14px] text-text';
+function MissionIcon({ kind }: { kind: WeeklyMissionKey }) {
+  switch (kind) {
+    case 'rescue':
+      return <WiltingPlantIcon width={30} height={30} />;
+    case 'water':
+      return <WaterIcon width={26} height={26} />;
+    case 'sentence':
+      return <MicIcon width={26} height={26} className="text-primary" />;
+    case 'sound':
+      return (
+        <svg width={34} height={34} viewBox="-17 -17 34 34" aria-hidden="true" focusable="false">
+          <g transform="scale(0.95)">
+            <g transform="translate(-16,-17)">
+              <BeeShape />
+            </g>
+          </g>
+        </svg>
+      );
+  }
+}
 
-function ComingSoon({ children }: { children: React.ReactNode }) {
-  return <p className="text-[13px] text-muted-foreground">{children}</p>;
+function SoundChip({ children }: { children: React.ReactNode }) {
+  return (
+    <span lang="en" className="rounded-[6px] bg-gold-soft px-[5px] font-display text-gold-soft-text">
+      {children}
+    </span>
+  );
 }
 
 export function WeeklyHarvestScreen({
   weekStart,
+  daysLeft,
+  weekly,
   harvest,
   goal,
-  freezes,
-  group,
   stickyNav = true,
 }: WeeklyHarvestScreenProps) {
   const t = useTranslations('screens.harvest');
+  const tw = useTranslations('screens.missions.weekly');
   const f = useGardenFormat();
+  const locale = useLocale();
 
   const masteredPct = goal && goal.target > 0 ? Math.round((goal.mastered / goal.target) * 100) : 0;
   const growingPct = goal && goal.target > 0 ? Math.round((goal.growing / goal.target) * 100) : 0;
+  const doneCount = weekly ? weekly.missions.filter((m) => m.done).length : 0;
 
-  const groupCard = group ? (
-    <>
-      {group.avatars.length > 0 ? (
-        <div aria-hidden="true" className="flex">
-          {group.avatars.map((avatar, index) => (
-            <span
-              key={index}
-              className={gcn(
-                'box-content flex h-7 w-7 items-center justify-center rounded-[14px] border-2 border-surface text-[11px] font-bold',
-                index > 0 && '-ml-2',
-                AVATAR[avatar.tone],
-              )}
-            >
-              {avatar.text}
-            </span>
-          ))}
-        </div>
-      ) : null}
-      <span className="text-[15px] font-bold">{group.name}</span>
-      <span className="text-[12px] leading-[1.35] text-muted-foreground">
-        {t('groupBody', {
-          watered: group.watered,
-          members: group.members,
-          words: group.sharedWords,
-        })}
-      </span>
-    </>
-  ) : null;
+  const title = (row: WeeklyMissionRow): React.ReactNode => {
+    switch (row.key) {
+      case 'rescue':
+        return tw('rescueTitle');
+      case 'water':
+        return tw('waterTitle', { goal: row.goal });
+      case 'sentence':
+        return tw('sentenceTitle');
+      case 'sound':
+        return tw.rich('soundTitle', {
+          sound: weekly?.sound.label ?? '',
+          chip: (c) => <SoundChip>{c}</SoundChip>,
+        });
+    }
+  };
+  const sub = (row: WeeklyMissionRow): React.ReactNode => {
+    switch (row.key) {
+      case 'rescue':
+        return tw('rescueSub', { count: weekly?.wilting ?? 0 });
+      case 'water':
+        return tw('waterSub');
+      case 'sentence':
+        return tw('sentenceSub', { goal: row.goal });
+      case 'sound':
+        return weekly?.sound.examples.length
+          ? tw.rich('soundSubExamples', {
+              goal: row.goal,
+              sound: weekly.sound.label,
+              examples: weekly.sound.examples.join(', '),
+              ex: (c) => <span lang="en">{c}</span>,
+            })
+          : tw('soundSub', { goal: row.goal, sound: weekly?.sound.label ?? '' });
+    }
+  };
 
   return (
-    <div className={gcn(SCREEN_CLASSES, IPAD_NAV_COLUMN, 'gap-[14px] pt-[22px]')}>
+    <div className={gcn(SCREEN_CLASSES, IPAD_NAV_COLUMN, 'gap-3 pt-[22px]')}>
       <header className="flex flex-col px-5">
         <span className="text-[13px] font-medium text-muted-foreground">
-          {t('weekOf', { date: f.dayMonth(weekStart) })}
+          {tw('weekOf', {
+            date: locale.startsWith('vi') ? f.shortDay(weekStart) : f.dayMonth(weekStart),
+            days: daysLeft,
+          })}
         </span>
-        <h1 className="font-display text-[28px] font-semibold leading-[1.1]">{t('title')}</h1>
+        <h1 className="font-display text-[28px] font-semibold leading-[1.1]">{tw('title')}</h1>
       </header>
 
-      <section className="mx-4 flex flex-col gap-3 rounded-[24px] bg-forest p-4 text-on-forest">
-        {harvest ? (
-          <>
-            <div className="flex items-baseline justify-between">
-              <h2 className="text-[15px] font-bold">
-                {t('missionsCount', {
-                  done: harvest.done,
-                  total: harvest.total,
-                })}
-              </h2>
-              <span className="text-[12px] text-stage-sprout">{t('missionsHint')}</span>
-            </div>
-            <WeekHarvest
-              days={harvest.days.map((day) => ({
-                ...day,
-                label: day.today ? t('today') : f.weekdayShort(day.day),
-                plantLabel: t('dayPlant', { count: day.missions }),
-              }))}
-            />
-            {harvest.seedPack ? (
-              <div className="flex items-center gap-2.5 rounded-[14px] bg-forest-deep px-3 py-2.5">
-                <SeedPackIcon width={28} height={28} />
-                <span className="flex-grow text-[13px] text-on-forest-muted">
-                  {t.rich('seedPack', {
-                    need: harvest.seedPack.need,
-                    name: harvest.seedPack.name,
-                    b: (c) => <b className="whitespace-nowrap text-gold-light">{c}</b>,
-                  })}
+      {weekly ? (
+        <section
+          aria-label={tw('label')}
+          className="mx-4 flex flex-col rounded-[22px] border border-border bg-surface px-4 pb-3 pt-1"
+        >
+          {weekly.missions.map((row, index) => (
+            <Link
+              key={row.key}
+              href={row.href}
+              className={gcn(
+                'flex items-center gap-3 py-3 text-text',
+                index > 0 && 'border-t border-divider',
+              )}
+            >
+              <span
+                className={gcn(
+                  'relative flex h-12 w-12 shrink-0 items-center justify-center rounded-[14px]',
+                  ICON_WELL[row.key],
+                )}
+              >
+                <MissionIcon kind={row.key} />
+                {row.done ? (
+                  <span className="absolute -bottom-1 -right-1 box-content flex h-[22px] w-[22px] items-center justify-center rounded-[11px] border-2 border-surface bg-success">
+                    <CheckIcon width={12} height={12} strokeWidth="3.4" className="text-white" />
+                  </span>
+                ) : null}
+              </span>
+              <span className="flex min-w-0 flex-grow flex-col gap-1">
+                <span className="text-[16px] font-bold leading-[1.25]">{title(row)}</span>
+                <span className="text-[12px] leading-[1.35] text-muted-foreground">{sub(row)}</span>
+                <span className="flex items-center gap-2">
+                  <span className="flex h-1.5 flex-grow overflow-hidden rounded-[3px] bg-track">
+                    <span
+                      className={row.done ? 'bg-success' : 'bg-stage-tree-fruit'}
+                      style={{
+                        width: `${row.goal > 0 ? Math.round((Math.min(row.count, row.goal) / row.goal) * 100) : 0}%`,
+                      }}
+                    />
+                  </span>
+                  <span
+                    className={gcn(
+                      'whitespace-nowrap text-[12px] font-bold',
+                      row.done ? 'text-success' : 'text-gold-soft-text',
+                    )}
+                  >
+                    {tw('progress', { count: row.count, goal: row.goal })}
+                  </span>
                 </span>
-                <span className="text-[13px] font-bold text-gold-light">
-                  {t('seedPackCount', {
-                    have: harvest.seedPack.have,
-                    need: harvest.seedPack.need,
-                  })}
+              </span>
+              {row.done ? (
+                <span className="shrink-0 text-[13px] font-bold text-success">{tw('done')}</span>
+              ) : (
+                <span className="flex h-9 shrink-0 items-center rounded-[18px] bg-forest px-3 text-[13px] font-bold text-white">
+                  {tw(`${row.key}Action`)}
                 </span>
-              </div>
-            ) : null}
-          </>
-        ) : (
-          <>
-            <h2 className="text-[15px] font-bold">{t('missionsTitle')}</h2>
-            <p className="text-[13px] text-on-forest-muted">{t('missionsComingSoon')}</p>
-          </>
-        )}
-      </section>
+              )}
+            </Link>
+          ))}
+          <div
+            className={gcn(
+              'mt-0.5 flex items-center gap-2 rounded-[12px] px-[10px] py-2 text-[13px] text-soft-text',
+              weekly.rewardEarned ? 'bg-water-soft' : 'bg-surface-sunken',
+            )}
+          >
+            <RainBarrelIcon width={20} height={20} stroke="var(--color-water)" />
+            <span className="flex-grow">
+              {tw.rich(weekly.rewardEarned ? 'rewardDone' : 'rewardTodo', {
+                b: (c) => <b className="text-text">{c}</b>,
+              })}
+            </span>
+            <span className="font-bold text-water-text">
+              {tw('rewardCount', { done: doneCount })}
+            </span>
+          </div>
+        </section>
+      ) : null}
 
-      {/*
-        Design system §10, A4: under the full-width harvest, iPad portrait
-        puts the goal beside the rain barrel + group (2 columns), landscape
-        gives goal, barrel and group a column each (3 columns).
-      */}
-      <div className="contents ipad:mx-4 ipad:grid ipad:grid-cols-2 ipad:gap-[14px] ipad-lg:grid-cols-3">
-        <section className="mx-4 flex flex-col gap-2.5 rounded-[22px] border border-border bg-surface p-4 ipad:mx-0">
+      {/* iPad: the week's plants beside Road to Band 7, under the full-width missions. */}
+      <div className="contents ipad:mx-4 ipad:grid ipad:grid-cols-2 ipad:gap-3">
+        <section className="mx-4 flex flex-col gap-2 rounded-[22px] bg-forest px-[14px] py-3 text-on-forest ipad:mx-0">
+          {harvest ? (
+            <>
+              <h2 className="text-[14px] font-bold">
+                {t('missionsCount', { done: harvest.done, total: harvest.total })}
+              </h2>
+              <WeekHarvest
+                days={harvest.days.map((day) => ({
+                  ...day,
+                  label: day.today ? t('today') : f.weekdayShort(day.day),
+                  plantLabel: t('dayPlant', { count: day.missions }),
+                }))}
+              />
+              {harvest.seedPack ? (
+                <div className="flex items-center gap-2 rounded-[12px] bg-forest-deep px-[10px] py-2">
+                  <SeedPackIcon width={22} height={22} />
+                  <span className="flex-grow text-[12px] leading-[1.35] text-on-forest-muted">
+                    {t.rich('seedPack', {
+                      need: harvest.seedPack.need,
+                      name: harvest.seedPack.name,
+                      b: (c) => <b className="text-gold-light">{c}</b>,
+                    })}
+                  </span>
+                  <span className="text-[12px] font-bold text-gold-light">
+                    {t('seedPackCount', {
+                      have: harvest.seedPack.have,
+                      need: harvest.seedPack.need,
+                    })}
+                  </span>
+                </div>
+              ) : null}
+            </>
+          ) : (
+            <p className="text-[13px] text-on-forest-muted">{t('missionsComingSoon')}</p>
+          )}
+        </section>
+
+        <section className="mx-4 flex flex-col gap-2 rounded-[22px] border border-border bg-surface px-4 py-3 ipad:mx-0">
           {goal ? (
             <>
               <div className="flex items-baseline justify-between">
-                <h2 className="font-display text-[19px] font-semibold">
+                <h2 className="font-display text-[17px] font-semibold">
                   {t('goalBand', { band: goal.band })}
                 </h2>
-                <span className="text-[13px] text-muted-foreground">{t('goalHint')}</span>
+                <span className="text-[12px] text-muted-foreground">{t('goalHint')}</span>
               </div>
               <div className="flex items-baseline gap-1.5">
-                <span className="font-display text-[32px] font-semibold text-forest">
+                <span className="font-display text-[26px] font-semibold text-forest">
                   {f.number(goal.mastered)}
                 </span>
-                <span className="text-[14px] text-muted-foreground">
+                <span className="text-[13px] text-muted-foreground">
                   {t('goalMastered', { target: goal.target })}
                 </span>
               </div>
@@ -196,55 +300,19 @@ export function WeeklyHarvestScreen({
                   growing: goal.growing,
                   target: goal.target,
                 })}
-                className="flex h-2.5 overflow-hidden rounded-[5px] bg-track"
+                className="flex h-2 overflow-hidden rounded-[4px] bg-track"
               >
                 <div className="bg-success" style={{ width: `${masteredPct}%` }} />
                 <div className="bg-stage-sprout" style={{ width: `${growingPct}%` }} />
               </div>
-              <div className="flex gap-[14px] text-[12px] text-muted-foreground">
-                <span className="flex items-center gap-[5px]">
-                  <span aria-hidden="true" className="h-2 w-2 rounded-[4px] bg-success" />
-                  {t('legendMastered')}
-                </span>
-                <span className="flex items-center gap-[5px]">
-                  <span aria-hidden="true" className="h-2 w-2 rounded-[4px] bg-stage-sprout" />
-                  {t('legendGrowing', { count: goal.growing })}
-                </span>
-                {goal.eta ? (
-                  <span className="ml-auto">
-                    {t('eta', {
-                      eta: goal.eta === 'pending' ? t('etaPending') : f.dayMonth(goal.eta),
-                    })}
-                  </span>
-                ) : null}
-              </div>
             </>
           ) : (
             <>
-              <h2 className="font-display text-[19px] font-semibold">{t('goalTitle')}</h2>
-              <ComingSoon>{t('goalComingSoon')}</ComingSoon>
+              <h2 className="font-display text-[17px] font-semibold">{t('goalTitle')}</h2>
+              <p className="text-[13px] text-muted-foreground">{t('goalComingSoon')}</p>
             </>
           )}
         </section>
-
-        <div className="mx-4 grid grid-cols-2 gap-2.5 ipad:mx-0 ipad-lg:contents">
-          <div className="flex flex-col gap-1.5 rounded-card border border-border bg-surface p-[14px]">
-            <RainBarrelIcon width={30} height={30} stroke="var(--color-water)" />
-            <span className="text-[15px] font-bold">
-              {freezes !== null ? t('barrelTitle', { count: freezes }) : t('barrelName')}
-            </span>
-            <span className="text-[12px] leading-[1.35] text-muted-foreground">
-              {freezes !== null ? t('barrelBody') : t('comingSoon')}
-            </span>
-          </div>
-          {group?.href ? (
-            <Link href={group.href} className={GROUP_CARD}>
-              {groupCard}
-            </Link>
-          ) : group ? (
-            <div className={GROUP_CARD}>{groupCard}</div>
-          ) : null}
-        </div>
       </div>
 
       <GardenTabBar active="missions" sticky={stickyNav} />

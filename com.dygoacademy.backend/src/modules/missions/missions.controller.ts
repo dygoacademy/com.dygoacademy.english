@@ -3,6 +3,7 @@ import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { MissionDay, MissionsService, TodayMissions } from './missions.service';
+import type { WeeklyMissions } from './weekly.store';
 
 @ApiBearerAuth()
 @ApiTags('missions')
@@ -29,5 +30,21 @@ export class MissionsController {
   })
   async week(@CurrentUser('id') userId: string, @Query('tz') tz?: string): Promise<MissionDay[]> {
     return this.missions.week(userId, tz);
+  }
+
+  @Get('weekly')
+  @ApiOperation({
+    summary: "This week's 3 weekly missions (A4 This week)",
+    description:
+      "Rescue wilting words (or Water 20 words when nothing was wilting at the week's first " +
+      'read), Use it in a sentence, Sound of the week. Week = local Monday to Sunday (same `tz` ' +
+      "fallback as /missions/today); the week's row (sound + goals) is created on the first " +
+      'read. All 3 done → +1 rain barrel, once a week, max 3 held.',
+  })
+  async weekly(
+    @CurrentUser('id') userId: string,
+    @Query('tz') tz?: string,
+  ): Promise<WeeklyMissions> {
+    return this.missions.weekly(userId, tz);
   }
 }

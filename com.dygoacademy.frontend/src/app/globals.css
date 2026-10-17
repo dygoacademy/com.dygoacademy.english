@@ -460,6 +460,7 @@
     --color-divider: #efeae0; /* rows inside a settings card */
     --color-forest-wash: #f1f6ef; /* A1b "Want a little more?" icon wells */
     --color-forest-wash-border: #cfe0c8; /* A7 pollinated bee row */
+    --color-wilt-wash: #f3eedd; /* A4 Rescue wilting words icon well */
     --color-dashed: #b9ae96; /* "Plant a new bed" */
     --color-locked-bg: #efeadf;
     --color-locked-border: #cfc6b2;
@@ -500,6 +501,8 @@
     --stage-tree-canopy: #7fa487;
     --stage-tree-fruit: #e0b04a;
     --stage-wilt: #a89f6b;
+    --stage-wilt-light: #c2b47e; /* A4 wilting plant, right leaf */
+    --stage-wilt-soil: #c9b98f; /* A4 wilting plant, soil */
     --stage-due: #8ec5e8;
 
     /* A7 "Bees are waiting" (2026-10-11) */

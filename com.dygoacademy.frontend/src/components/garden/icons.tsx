@@ -340,6 +340,25 @@ export function RainBarrelIcon(props: IconProps) {
   );
 }
 
+/** A wilting plant with a drop of water above it (A4 Rescue wilting words). Canvas: 30px. */
+export function WiltingPlantIcon(props: IconProps) {
+  return (
+    <svg aria-hidden="true" viewBox="0 0 30 30" focusable="false" {...props}>
+      <ellipse cx="15" cy="26" rx="9" ry="2.5" fill="var(--stage-wilt-soil)" />
+      <path
+        d="M15 25 C15 18 16 14 21 12"
+        stroke="var(--stage-wilt)"
+        strokeWidth="2.4"
+        fill="none"
+        strokeLinecap="round"
+      />
+      <path d="M16 19 C10 21 6 19 5 14 C11 13 15 15 16 19 Z" fill="var(--stage-wilt)" />
+      <path d="M21 12 C26 14 27 19 25 23 C21 21 20 16 21 12 Z" fill="var(--stage-wilt-light)" />
+      <path d="M23 4 C23 4 20 8 20 9.5 A3 3 0 0 0 26 9.5 C26 8 23 4 23 4 Z" fill="var(--color-water)" />
+    </svg>
+  );
+}
+
 /** Seed pack: a seed with its seam, and (unlocked) a curl of sprout. */
 export function SeedPackIcon({
   seed = 'var(--stage-tree-fruit)',

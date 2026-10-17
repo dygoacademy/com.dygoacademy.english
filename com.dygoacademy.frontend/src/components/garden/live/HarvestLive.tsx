@@ -2,54 +2,43 @@
 
 import { useTimeZone } from 'next-intl';
 
-import { GARDEN_ROUTES } from '@/constants/garden';
-import { useGroupGarden } from '@/hooks/useGroupGarden';
-import { useGroups } from '@/hooks/useGroups';
-import { useWeekMissions } from '@/hooks/useMissions';
-import { useSrsStats } from '@/hooks/useSrsStats';
+import { useWeekMissions, useWeeklyMissions } from '@/hooks/useMissions';
 
 import { WeeklyHarvestScreen } from '../screens/WeeklyHarvestScreen';
-import { todayIn, useGardenFormat, weekDays } from '../format';
-import { weekHarvest } from './data';
+import { todayIn, weekDays } from '../format';
+import { weeklyRows, weekHarvest } from './data';
 
 /**
- * /missions: Weekly harvest (A4). U6-6: the harvest is the calendar
- * week's missions per day from GET /missions/week (Golden Blooms = 3/3
- * days); the rain barrel shows `freezes.available` from GET /srs/stats.
- * Either call failing (or loading) keeps that block's "coming soon" state.
- * The vocabulary goal stays "coming soon": no target band exists yet.
- * NAV-1: the group card is the learner's first group (GET /groups, the
- * shared `['groups']` query) with its garden's totals (GET
- * /groups/:id/garden: watered today, gardeners, shared words), and links
- * to that garden. No group, or its garden not loaded (yet): no card.
+ * /missions: This week (A4, 2026-10-17). The 3 weekly missions come from
+ * GET /missions/weekly (Monday to Sunday in the learner's time zone, so
+ * the page's week starts on Monday in every language); each row links to
+ * the screen where the practice happens (`weeklyRows`). Below, the week's
+ * daily missions per day from GET /missions/week. Either call failing (or
+ * loading) leaves its card out / in its "coming soon" state. The
+ * vocabulary goal stays "coming soon": no target band exists yet.
  */
 export function HarvestLive() {
   const timeZone = useTimeZone();
-  const { weekStart } = useGardenFormat();
   const today = todayIn(timeZone);
-  const days = weekDays(today, weekStart);
+  const days = weekDays(today, 1);
   const week = useWeekMissions(timeZone).data;
-  const freezes = useSrsStats().data?.freezes;
-  const groupId = useGroups().data?.[0]?.id ?? '';
-  const garden = useGroupGarden(groupId, timeZone).data;
+  const weekly = useWeeklyMissions(timeZone).data;
   return (
     <WeeklyHarvestScreen
       weekStart={days[0]}
-      harvest={week ? weekHarvest(week, days, today) : null}
-      goal={null}
-      freezes={freezes ? freezes.available : null}
-      group={
-        groupId && garden
+      daysLeft={weekly?.daysLeft ?? 6 - Math.round((today.getTime() - days[0].getTime()) / 86_400_000)}
+      weekly={
+        weekly
           ? {
-              name: garden.name,
-              href: GARDEN_ROUTES.group(groupId),
-              watered: garden.watered_today,
-              members: garden.member_count,
-              sharedWords: garden.word_count,
-              avatars: [],
+              missions: weeklyRows(weekly),
+              wilting: weekly.wilting,
+              sound: weekly.sound,
+              rewardEarned: weekly.rewardEarned,
             }
           : null
       }
+      harvest={week ? weekHarvest(week, days, today) : null}
+      goal={null}
     />
   );
 }

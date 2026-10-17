@@ -29,4 +29,14 @@ describe('useSubmitQuizAnswer', () => {
     expect(post.mock.calls[1][0]).toBe('/quizzes/q10/answer');
     expect(post.mock.calls[1][1]).toMatchObject({ answer: 'b', final: true });
   });
+
+  it('sends drill: true only from the leech drill (A4 Rescue)', async () => {
+    const { result } = renderHook(() => useSubmitQuizAnswer(), { wrapper });
+
+    await act(() => result.current.mutateAsync({ itemId: 'q1', answer: 'a' }));
+    expect(post.mock.calls[0][1]).not.toHaveProperty('drill');
+
+    await act(() => result.current.mutateAsync({ itemId: 'q2', answer: 'b', drill: true }));
+    expect(post.mock.calls[1][1]).toMatchObject({ answer: 'b', drill: true });
+  });
 });

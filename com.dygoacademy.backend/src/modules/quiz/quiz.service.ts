@@ -260,6 +260,7 @@ export class QuizService {
         correct,
         hintUsed: dto.hintUsed ?? false,
         responseMs: dto.responseMs,
+        source: dto.drill === true ? 'leech_drill' : 'quiz',
         quizFinished: dto.final === true,
       });
       result.srs = {

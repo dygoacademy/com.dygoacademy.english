@@ -164,6 +164,9 @@ run_rls_suite() {
   # My words: a personal group and bed for every learner (backfill + signup).
   run_file "$DIR/migrations/20261015_my_words.sql" "$scratch"
   run_file "$DIR/tests/rls_my_words_test.sql" "$scratch"
+  # A4 This week: weekly missions + up to 3 rain barrels.
+  run_file "$DIR/migrations/20261017_weekly_missions.sql" "$scratch"
+  run_file "$DIR/tests/rls_weekly_missions_test.sql" "$scratch"
 }
 
 # -----------------------------------------------------------------------------

@@ -21,6 +21,8 @@ export interface SubmitQuizAnswerInput {
    * QUIZ daily mission) only when this is true.
    */
   final?: boolean;
+  /** An answer in the leech drill: a wilting word answered right counts toward A4's Rescue. */
+  drill?: boolean;
 }
 
 /**
@@ -34,13 +36,22 @@ export function useSubmitQuizAnswer() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ itemId, answer, responseMs, hintUsed, locale, final }: SubmitQuizAnswerInput) =>
+    mutationFn: ({
+      itemId,
+      answer,
+      responseMs,
+      hintUsed,
+      locale,
+      final,
+      drill,
+    }: SubmitQuizAnswerInput) =>
       apiClient.post<QuizAnswerResult>(`/quizzes/${encodeURIComponent(itemId)}/answer`, {
         answer,
         responseMs,
         hintUsed,
         locale,
         ...(final ? { final: true } : {}),
+        ...(drill ? { drill: true } : {}),
       }),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ['srs'] });

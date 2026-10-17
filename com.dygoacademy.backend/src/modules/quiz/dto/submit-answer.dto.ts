@@ -51,4 +51,14 @@ export class SubmitAnswerDto {
   @IsOptional()
   @IsBoolean()
   final?: boolean;
+
+  @ApiPropertyOptional({
+    description:
+      'A4: true when the answer is from the leech drill (GET /quizzes/leech-drill). A wilting ' +
+      "word answered right there counts toward this week's Rescue mission.",
+    default: false,
+  })
+  @IsOptional()
+  @IsBoolean()
+  drill?: boolean;
 }

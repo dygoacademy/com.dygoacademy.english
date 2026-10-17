@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 
 import { DatabaseService } from '../../database/database.service';
 import {
@@ -7,6 +7,8 @@ import {
   newWordAllowance,
   recordMissionProgress,
 } from '../missions/missions.store';
+import { STREAK_FREEZES_MAX } from '../missions/weekly.plan';
+import { recordRescue, settleWeek, weeklySafely } from '../missions/weekly.store';
 import { RateWordDto } from './dto/rate-word.dto';
 import { SessionMode, StartSessionDto } from './dto/start-session.dto';
 import { SyncReviewItemDto, SyncReviewsDto } from './dto/sync-reviews.dto';
@@ -155,8 +157,8 @@ export interface SrsStats {
    */
   stage_counts: SrsStageCounts;
   /**
-   * UI-6 U6-3: streak freezes (decision 7) -- 2 a week, refilled to 2 on the
-   * learner's local Monday, one used automatically per missed day while the
+   * UI-6 U6-3: streak freezes (decision 7) -- 2 a week, refilled to at least 2
+   * on the learner's local Monday (A4's weekly reward can make it 3), one used automatically per missed day while the
    * whole current gap can be covered. `refills_on` = next local Monday.
    */
   freezes: SrsFreezes;
@@ -315,6 +317,8 @@ const MEANING_TRANSLATION_JOIN = `
  */
 @Injectable()
 export class SrsService {
+  private readonly logger = new Logger(SrsService.name);
+
   constructor(protected readonly db: DatabaseService) {}
 
   /**
@@ -594,6 +598,19 @@ export class SrsService {
         }
         if (input.quizFinished) {
           await recordMissionProgress(missionClient, userId, timezone, now, 'QUIZ', extraDue);
+        }
+        // A4 weekly missions: a wilting word answered right in the leech drill
+        // is rescued (once a week), which may finish the week (+1 rain barrel).
+        // Flashcard reviews ("Water 20 words") are counted on A4's next read.
+        if (input.source === 'leech_drill' && existing?.is_leech === true && rating !== 'AGAIN') {
+          await weeklySafely(
+            missionClient,
+            async () => {
+              await recordRescue(missionClient, userId, timezone, now, input.topicWordId);
+              await settleWeek(missionClient, userId, timezone, now);
+            },
+            (err) => this.logger.warn(`weekly missions: ${String(err)}`),
+          );
         }
       };
 
@@ -1005,7 +1022,11 @@ export function computeStreak(descendingDates: string[], todayDateString?: strin
   return streak;
 }
 
-/** Max freezes a learner holds; refilled to this every local Monday. */
+/**
+ * Freezes refilled every local Monday: up to this many, keeping more when the
+ * learner holds more (A4's weekly reward can add one, up to
+ * STREAK_FREEZES_MAX = 3 in missions/weekly.plan.ts).
+ */
 export const STREAK_FREEZES_PER_WEEK = 2;
 
 const DAY_MS = 86_400_000;
@@ -1072,10 +1093,14 @@ export function applyStreakFreezes(input: {
   const monday = today - ((dow + 6) % 7);
   const mondayStr = fromDayNum(monday);
 
-  let available = Math.max(0, Math.min(STREAK_FREEZES_PER_WEEK, Number(input.available ?? STREAK_FREEZES_PER_WEEK)));
+  let available = Math.max(
+    0,
+    Math.min(STREAK_FREEZES_MAX, Number(input.available ?? STREAK_FREEZES_PER_WEEK)),
+  );
   let changed = false;
   if (!input.refilledOn || toDayNum(input.refilledOn) < monday) {
-    available = STREAK_FREEZES_PER_WEEK;
+    // max(current, 2): a rain barrel earned from A4's weekly missions survives Monday.
+    available = Math.max(available, STREAK_FREEZES_PER_WEEK);
     changed = true;
   }
   const refilledOn = changed ? mondayStr : (input.refilledOn as string);

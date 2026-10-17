@@ -53,6 +53,7 @@ const NAMES = [
   'A2-review-finished',
   'A3-mission-complete',
   'A4-weekly-harvest',
+  'A4-weekly-harvest-done',
   'A5-welcome-back',
   'A5b-welcome-back-start',
   'A6-topics',

@@ -744,31 +744,18 @@
       "dayLabel": "{day}{today, select, true {, hôm nay} other {}}{done, select, true {, đã xong} other {}}"
     },
     "harvest": {
-      "title": "Thu hoạch tuần này",
-      "missionsCount": "{done}/{total} nhiệm vụ",
-      "missionsHint": "Mỗi nhiệm vụ bạn làm xong giúp cây của ngày đó lớn thêm",
+      "missionsCount": "{done}/{total} nhiệm vụ hằng ngày",
       "today": "Hôm nay",
       "dayPlant": "{count, plural, =0 {không có nhiệm vụ} one {# nhiệm vụ} other {# nhiệm vụ}}",
-      "seedPack": "Có {need} Hoa Vàng trong tuần này để mở gói hạt giống <b>{name}</b> 📦",
+      "seedPack": "{need} Hoa Vàng trong tuần sẽ mở khóa gói hạt giống <b>{name}</b>",
       "seedPackCount": "{have}/{need}",
-      "missionsTitle": "Nhiệm vụ tuần này",
-      "missionsComingSoon": "Nhiệm vụ hằng ngày sắp có. Mỗi nhiệm vụ bạn làm xong sẽ giúp cây của ngày đó lớn lên ở đây.",
       "goalHint": "mục tiêu từ vựng",
-      "goalMastered": "trên {target, number} từ đã thuộc",
+      "goalMastered": "/ {target, number} từ đã thuộc",
       "goalBar": "Đã thuộc {mastered, number} · Đang lớn {growing, number} · Tổng {target, number}",
-      "legendMastered": "Đã thuộc",
-      "legendGrowing": "Đang lớn ({count, number})",
-      "eta": "Với tốc độ này: {eta}",
       "goalTitle": "Mục tiêu từ vựng",
       "goalComingSoon": "Đang ôn thi? Sắp tới bạn sẽ đặt được mục tiêu số từ ở đây.",
-      "barrelTitle": "Thùng nước mưa · {count}",
-      "barrelName": "Thùng nước mưa",
-      "barrelBody": "Giữ chuỗi ngày cho bạn. Hôm nào bận quá không vào được, thùng nước mưa sẽ tưới vườn thay bạn.",
-      "comingSoon": "Sắp có",
-      "groupBody": "Hôm nay {watered}/{members} người đã tưới · {words, number} từ chung",
-      "weekOf": "Tuần {date}",
-      "goalBand": "Hướng tới Band {band}",
-      "etaPending": "[Đang tính]"
+      "goalBand": "Đường đến Band {band}",
+      "missionsComingSoon": "Nhiệm vụ hằng ngày sắp có. Mỗi nhiệm vụ bạn làm xong sẽ giúp cây của ngày đó lớn lên ở đây."
     },
     "comeback": {
       "title": "Chào {name} quay lại.<br></br>Vườn vẫn chờ bạn.",
@@ -1678,6 +1665,31 @@
       "toast": {
         "deleted": "{count, plural, =0 {Đã tắt góp giọng.} other {Đang xoá # bản ghi của bạn. Đã tắt góp giọng.}}",
         "error": "Chưa lưu được. Kiểm tra kết nối rồi thử lại."
+      }
+    },
+    "missions": {
+      "weekly": {
+        "weekOf": "Tuần từ {date} · {days, plural, =0 {ngày cuối} other {còn # ngày}}",
+        "title": "Tuần này",
+        "label": "Nhiệm vụ tuần",
+        "rescueTitle": "Cứu từ đang héo",
+        "rescueSub": "{count, plural, =0 {Không còn từ nào đang héo} other {# từ đang héo · bài tập mới để nhớ lại}}",
+        "rescueAction": "Cứu",
+        "waterTitle": "Tưới {goal} từ",
+        "waterSub": "Không có từ nào héo · tưới các từ đến hạn",
+        "waterAction": "Tưới",
+        "sentenceTitle": "Dùng từ trong câu",
+        "sentenceSub": "Nói {goal} câu với từ của tuần này",
+        "sentenceAction": "Nói",
+        "soundTitle": "Âm của tuần: <chip>{sound}</chip>",
+        "soundSub": "Thụ phấn {goal} từ có âm {sound}",
+        "soundSubExamples": "Thụ phấn {goal} từ có âm {sound} · <ex>{examples}…</ex>",
+        "soundAction": "Phát âm",
+        "progress": "{count}/{goal}",
+        "done": "Xong",
+        "rewardTodo": "Xong cả 3 → <b>+1 thùng nước mưa</b>",
+        "rewardDone": "Đã xong cả 3 · thêm <b>1 thùng nước mưa</b>",
+        "rewardCount": "{done}/3"
       }
     }
   }

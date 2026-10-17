@@ -11,6 +11,7 @@ import {
   ensureMissions,
   localDateOf,
 } from './missions.store';
+import { readWeek, type WeeklyMissions } from './weekly.store';
 
 export interface TodayMissions {
   date: string;
@@ -117,6 +118,24 @@ export class MissionsService {
       const done = Number(row?.done ?? 0);
       // Golden Bloom = every mission of that day done (2 to 4 a day).
       return { date, done, goldenBloom: done > 0 && done >= Number(row?.total ?? 0) };
+    });
+  }
+
+  /** A4 This week: the week's 3 missions, created on the week's first read; grants the reward when due. */
+  async weekly(
+    userId: string,
+    detectedTz?: string,
+    now: Date = new Date(),
+  ): Promise<WeeklyMissions> {
+    return this.db.withUser(userId, async (pg) => {
+      const client = pg as unknown as MissionClient;
+      const timezone = await resolveUserTimezone(
+        async <T extends Record<string, unknown>>(text: string, params: unknown[]) =>
+          (await client.query<T>(text, params)).rows,
+        userId,
+        detectedTz,
+      );
+      return readWeek(client, userId, timezone, now);
     });
   }
 }

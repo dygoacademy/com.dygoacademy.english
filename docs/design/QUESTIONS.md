@@ -2,6 +2,14 @@
 
 Things in `docs/design/garden/CHANGELOG.md` that are unclear, or that differ from what is built, written down instead of guessed (CHANGELOG "How to use this file", rule 5). Newest first. When one is answered, note the answer and date here and update the changelog.
 
+## 2026-10-17 · A4 This week (Claude Code)
+
+| # | The plan says | What the build does | Question / suggestion |
+|---|---|---|---|
+| Q-23 | Rescue wilting words: goal 3 words. | When fewer than 3 words are wilting at the week's first read, the goal is that many (1 or 2), so the week can still be finished. | OK, or keep 3 and let new leeches during the week fill it? |
+| Q-22 | Fallback "Water 20 words": same row layout with the blue water-drop icon (no board). | Blue drop on the water wash, line "Nothing is wilting · water the words that are due", button "Water" → Review (EN / VI / ZH written by Claude). | Draw the fallback row (or change the copy) if it should look different. |
+| Q-21 | Personal sound of the week (from the learner's own GOP results) is v2. | v1 only: a fixed rotation, the same for everyone. Per-phoneme results are not stored today (they live only in the check queue), and no storage was added. | When v2 comes: store per-phoneme results per word check, then pick the learner's weakest sound. |
+
 ## 2026-10-17 · A7b Add word (Claude Code)
 
 | # | The plan says | What the build does | Question / suggestion |

@@ -128,6 +128,7 @@ export function QuizLive({
         hintUsed: hint.data != null,
         locale,
         final: isLast,
+        drill: isDrill,
       },
       {
         onSuccess: (res) => {

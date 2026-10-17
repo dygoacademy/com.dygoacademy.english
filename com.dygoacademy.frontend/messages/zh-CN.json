@@ -748,31 +748,18 @@
       "dayLabel": "{day}{today, select, true {，今天} other {}}{done, select, true {，已完成} other {}}"
     },
     "harvest": {
-      "title": "本周收获",
-      "missionsCount": "{done}/{total} 个任务",
-      "missionsHint": "每完成一个任务，当天的植物就长大一点",
+      "missionsCount": "{done}/{total} 个每日任务",
       "today": "今天",
       "dayPlant": "{count, plural, =0 {没有任务} other {# 个任务}}",
-      "seedPack": "本周集齐 {need} 朵金花，就能解锁 <b>{name}</b> 种子包 📦",
+      "seedPack": "本周集齐 {need} 朵金花，解锁 <b>{name}</b> 种子包",
       "seedPackCount": "{have}/{need}",
-      "missionsTitle": "本周任务",
-      "missionsComingSoon": "每日任务即将上线。你完成的每个任务都会让当天的植物在这里长大。",
       "goalHint": "词汇目标",
       "goalMastered": "/ {target, number} 个单词已掌握",
       "goalBar": "共 {target, number} 个单词：已掌握 {mastered, number}，生长中 {growing, number}",
-      "legendMastered": "已掌握",
-      "legendGrowing": "生长中 ({count, number})",
-      "eta": "照此速度：{eta}",
       "goalTitle": "词汇目标",
       "goalComingSoon": "在备考吗？很快就能在这里设定单词目标。",
-      "barrelTitle": "雨水桶 · {count}",
-      "barrelName": "雨水桶",
-      "barrelBody": "帮你保住连续天数。哪天实在太忙，雨水桶会替你给花园浇水。",
-      "comingSoon": "即将上线",
-      "groupBody": "今天 {watered}/{members} 人已浇水 · {words, number} 个共享单词",
-      "weekOf": "{date} 这一周",
       "goalBand": "冲刺 {band} 分",
-      "etaPending": "[ETA]"
+      "missionsComingSoon": "每日任务即将上线。你完成的每个任务都会让当天的植物在这里长大。"
     },
     "comeback": {
       "title": "欢迎回来，{name}。<br></br>花园一直在等你。",
@@ -1682,6 +1669,31 @@
       "toast": {
         "deleted": "{count, plural, =0 {已关闭语音捐赠。} other {正在删除你的 # 条录音。已关闭语音捐赠。}}",
         "error": "没能保存。请检查网络后重试。"
+      }
+    },
+    "missions": {
+      "weekly": {
+        "weekOf": "{date} 这一周 · {days, plural, =0 {最后一天} other {还剩 # 天}}",
+        "title": "本周",
+        "label": "每周任务",
+        "rescueTitle": "拯救枯萎的单词",
+        "rescueSub": "{count, plural, =0 {现在没有枯萎的单词} other {# 个单词正在枯萎 · 用新练习把它们救回来}}",
+        "rescueAction": "拯救",
+        "waterTitle": "浇灌 {goal} 个单词",
+        "waterSub": "没有枯萎的单词 · 给到期的单词浇水",
+        "waterAction": "浇水",
+        "sentenceTitle": "用在句子里",
+        "sentenceSub": "用本周的单词说 {goal} 个句子",
+        "sentenceAction": "说",
+        "soundTitle": "本周发音：<chip>{sound}</chip>",
+        "soundSub": "给 {goal} 个含 {sound} 音的单词授粉",
+        "soundSubExamples": "给 {goal} 个含 {sound} 音的单词授粉 · <ex>{examples}…</ex>",
+        "soundAction": "发音",
+        "progress": "{count}/{goal}",
+        "done": "完成",
+        "rewardTodo": "完成全部 3 个 → <b>+1 雨水桶</b>",
+        "rewardDone": "3 个全部完成 · 已添加 <b>+1 雨水桶</b>",
+        "rewardCount": "{done}/3"
       }
     }
   }

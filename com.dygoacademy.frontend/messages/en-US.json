@@ -744,31 +744,18 @@
       "dayLabel": "{day}{today, select, true {, today} other {}}{done, select, true {, done} other {}}"
     },
     "harvest": {
-      "title": "Weekly Harvest",
-      "missionsCount": "{done} of {total} missions",
-      "missionsHint": "Each mission you finish helps that day’s plant grow",
+      "missionsCount": "{done} of {total} daily missions",
       "today": "Today",
       "dayPlant": "{count, plural, =0 {no missions} one {# mission} other {# missions}}",
-      "seedPack": "Earn {need} Golden Blooms this week to open the <b>{name}</b> seed pack 📦",
+      "seedPack": "{need} Golden Blooms this week unlocks the <b>{name}</b>",
       "seedPackCount": "{have}/{need}",
-      "missionsTitle": "This week’s missions",
-      "missionsComingSoon": "Daily missions are on the way. Each one you finish will grow that day’s plant here.",
       "goalHint": "vocabulary goal",
       "goalMastered": "of {target, number} words mastered",
       "goalBar": "{mastered, number} mastered · {growing, number} growing · {target, number} in total",
-      "legendMastered": "Mastered",
-      "legendGrowing": "Growing ({count, number})",
-      "eta": "At this pace: {eta}",
       "goalTitle": "Vocabulary goal",
       "goalComingSoon": "Studying for an exam? Soon you’ll be able to set a word goal here.",
-      "barrelTitle": "Rain barrel · {count}",
-      "barrelName": "Rain barrel",
-      "barrelBody": "Keeps your streak safe. If you miss a busy day, the rain barrel waters your garden for you.",
-      "comingSoon": "Coming soon",
-      "groupBody": "{watered} of {members} watered today · {words, number} shared words",
-      "weekOf": "Week of {date}",
       "goalBand": "Road to Band {band}",
-      "etaPending": "[ETA]"
+      "missionsComingSoon": "Daily missions are on the way. Each one you finish will grow that day’s plant here."
     },
     "comeback": {
       "title": "Welcome back, {name}.<br></br>Your garden kept your spot.",
@@ -1678,6 +1665,31 @@
       "toast": {
         "deleted": "{count, plural, =0 {Donation is off.} one {Deleting your recording. Donation is off.} other {Deleting your # recordings. Donation is off.}}",
         "error": "Couldn’t save that. Check your connection and try again."
+      }
+    },
+    "missions": {
+      "weekly": {
+        "weekOf": "Week of {date} · {days, plural, =0 {last day} one {# day left} other {# days left}}",
+        "title": "This week",
+        "label": "Weekly missions",
+        "rescueTitle": "Rescue wilting words",
+        "rescueSub": "{count, plural, =0 {No words are wilting now} one {# word is wilting · a new exercise to bring it back} other {# words are wilting · a new exercise to bring them back}}",
+        "rescueAction": "Rescue",
+        "waterTitle": "Water {goal} words",
+        "waterSub": "Nothing is wilting · water the words that are due",
+        "waterAction": "Water",
+        "sentenceTitle": "Use it in a sentence",
+        "sentenceSub": "Say {goal, plural, one {# sentence} other {# sentences}} with this week’s words",
+        "sentenceAction": "Speak",
+        "soundTitle": "Sound of the week: <chip>{sound}</chip>",
+        "soundSub": "Pollinate {goal} words with {sound}",
+        "soundSubExamples": "Pollinate {goal} words with {sound} · <ex>{examples}…</ex>",
+        "soundAction": "Say",
+        "progress": "{count}/{goal}",
+        "done": "Done",
+        "rewardTodo": "Finish all 3 → <b>+1 rain barrel</b>",
+        "rewardDone": "All 3 done · <b>+1 rain barrel</b> added",
+        "rewardCount": "{done}/3"
       }
     }
   }
