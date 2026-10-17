@@ -3,6 +3,8 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { renderWithIntl } from '@/test/render';
 
+import type { WordLookup } from '@/types';
+
 import { AddWordSheet } from './AddWordSheet';
 
 // api-client reads env at import time; only its error class matters here.
@@ -28,7 +30,35 @@ vi.mock('@/hooks/useCreateWord', () => ({
   },
 }));
 
-function renderSheet(onOpenChange = vi.fn(), saveToMyWords = false) {
+let lookup: { data?: WordLookup; settled: boolean; isError: boolean } = {
+  settled: false,
+  isError: false,
+};
+const lookedUp = vi.fn();
+vi.mock('@/hooks/useWordLookup', () => ({
+  useWordLookup: (word: string) => {
+    lookedUp(word);
+    return lookup;
+  },
+}));
+
+const RESILIENT: WordLookup = {
+  word: 'resilient',
+  found: true,
+  part_of_speech: 'adjective',
+  cefr_level: 'B2',
+  ipa_us: '/rɪˈzɪl.jənt/',
+  ipa_uk: '/rɪˈzɪl.i.ənt/',
+  meaning: 'Able to recover quickly from difficulties.',
+  audio_url: null,
+  in_topic_ids: [],
+};
+
+function renderSheet(
+  onOpenChange = vi.fn(),
+  saveToMyWords = false,
+  beds?: { id: string | null; title: string }[],
+) {
   renderWithIntl(
     <div data-ui="garden">
       <AddWordSheet
@@ -37,17 +67,26 @@ function renderSheet(onOpenChange = vi.fn(), saveToMyWords = false) {
         open
         onOpenChange={onOpenChange}
         saveToMyWords={saveToMyWords}
+        beds={beds}
       />
     </div>,
   );
   return onOpenChange;
 }
 
+const BEDS = [
+  { id: 't1', title: 'Environment' },
+  { id: 'mw', title: 'My words' },
+  { id: 't2', title: 'Work & careers' },
+];
+
 describe('AddWordSheet', () => {
   beforeEach(() => {
     mutateAsync.mockReset();
     reset.mockReset();
     createdFor.mockReset();
+    lookedUp.mockReset();
+    lookup = { settled: false, isError: false };
   });
 
   it('is a garden sheet named "Add a word" for this bed, with submit off until a word is typed', () => {
@@ -60,13 +99,86 @@ describe('AddWordSheet', () => {
     expect(submit.disabled).toBe(true);
   });
 
-  it('posts the trimmed word and closes', async () => {
+  it('posts the trimmed word, then shows it planted; Done closes', async () => {
     mutateAsync.mockResolvedValue({});
     const onOpenChange = renderSheet();
     fireEvent.change(screen.getByLabelText('Word'), { target: { value: '  resilient ' } });
     fireEvent.click(screen.getByRole('button', { name: 'Plant word' }));
-    await waitFor(() => expect(onOpenChange).toHaveBeenCalledWith(false));
+    expect(await screen.findByRole('dialog', { name: 'Planted' })).toBeTruthy();
     expect(mutateAsync).toHaveBeenCalledWith({ word: 'resilient' });
+    expect(screen.getByText(/is planted in Environment/).textContent).toBe(
+      'resilient is planted in Environment',
+    );
+    expect(onOpenChange).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByRole('button', { name: 'Done' }));
+    expect(onOpenChange).toHaveBeenCalledWith(false);
+  });
+
+  it('Plant another goes back to an empty field', async () => {
+    mutateAsync.mockResolvedValue({});
+    renderSheet();
+    fireEvent.change(screen.getByLabelText('Word'), { target: { value: 'resilient' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Plant word' }));
+    fireEvent.click(await screen.findByRole('button', { name: 'Plant another word' }));
+    expect((screen.getByLabelText('Word') as HTMLInputElement).value).toBe('');
+    expect(screen.getByRole('dialog', { name: 'Add a word' })).toBeTruthy();
+  });
+
+  it('fills in the meaning, IPA, part of speech and level while typing', () => {
+    lookup = { data: RESILIENT, settled: true, isError: false };
+    renderSheet();
+    fireEvent.change(screen.getByLabelText('Word'), { target: { value: 'resilient' } });
+    expect(lookedUp).toHaveBeenLastCalledWith('resilient');
+    expect(screen.getByText('/rɪˈzɪl.jənt/')).toBeTruthy();
+    expect(screen.getByText('adjective · B2')).toBeTruthy();
+    expect(screen.getByText('Able to recover quickly from difficulties.')).toBeTruthy();
+  });
+
+  it('says a word new to Dygo gets its meaning after planting', () => {
+    lookup = {
+      data: { ...RESILIENT, word: 'zorbing', found: false, meaning: null, ipa_us: null },
+      settled: true,
+      isError: false,
+    };
+    renderSheet();
+    fireEvent.change(screen.getByLabelText('Word'), { target: { value: 'zorbing' } });
+    expect(screen.getByText(/New to Dygo/)).toBeTruthy();
+    expect((screen.getByRole('button', { name: 'Plant word' }) as HTMLButtonElement).disabled).toBe(
+      false,
+    );
+  });
+
+  it('shows "Looking it up…" until the lookup settles', () => {
+    renderSheet();
+    fireEvent.change(screen.getByLabelText('Word'), { target: { value: 'resil' } });
+    expect(screen.getByText('Looking it up…')).toBeTruthy();
+  });
+
+  it('picks a bed from the chips, this bed first, and plants there', async () => {
+    mutateAsync.mockResolvedValue({});
+    renderSheet(vi.fn(), false, BEDS);
+    expect(screen.queryByText('To Environment')).toBeNull();
+    const chips = screen.getAllByRole('button').filter((b) => b.hasAttribute('aria-pressed'));
+    expect(chips.map((c) => c.textContent)).toEqual(['Environment', 'My words', 'Work & careers']);
+    expect(chips[0].getAttribute('aria-pressed')).toBe('true');
+    expect(createdFor).toHaveBeenLastCalledWith('t1');
+    fireEvent.click(screen.getByRole('button', { name: 'Work & careers' }));
+    expect(createdFor).toHaveBeenLastCalledWith('t2');
+    fireEvent.change(screen.getByLabelText('Word'), { target: { value: 'resilient' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Plant word' }));
+    expect(await screen.findByText(/is planted in Work & careers/)).toBeTruthy();
+  });
+
+  it('says the word is already in the chosen bed and turns Plant off', () => {
+    lookup = { data: { ...RESILIENT, in_topic_ids: ['t1'] }, settled: true, isError: false };
+    renderSheet(vi.fn(), false, BEDS);
+    fireEvent.change(screen.getByLabelText('Word'), { target: { value: 'resilient' } });
+    expect(screen.getByText('Already in Environment.')).toBeTruthy();
+    const submit = screen.getByRole('button', { name: 'Plant word' }) as HTMLButtonElement;
+    expect(submit.disabled).toBe(true);
+    fireEvent.click(screen.getByRole('button', { name: 'My words' }));
+    expect(screen.queryByText('Already in Environment.')).toBeNull();
+    expect(submit.disabled).toBe(false);
   });
 
   it('says the word is already here on a 409, and stays open', async () => {
@@ -98,8 +210,8 @@ describe('AddWordSheet', () => {
     expect(createdFor).toHaveBeenLastCalledWith(null);
     fireEvent.change(screen.getByLabelText('Word'), { target: { value: 'resilient' } });
     fireEvent.click(screen.getByRole('button', { name: 'Plant word' }));
-    await waitFor(() => expect(onOpenChange).toHaveBeenCalledWith(false));
-    expect(await screen.findByText('Added to My words')).toBeTruthy();
+    expect(await screen.findByText(/is planted in My words/)).toBeTruthy();
+    expect(onOpenChange).not.toHaveBeenCalled();
   });
 
   it('a duplicate in My words names My words', async () => {

@@ -140,4 +140,29 @@ describe('WordsService', () => {
       expect(queueAddMock).not.toHaveBeenCalled();
     });
   });
+  describe('lookup (A7b Add word)', () => {
+    it('reads the preview as the caller, with the trimmed word, and never enqueues', async () => {
+      const preview = {
+        word: 'resilient',
+        found: true,
+        part_of_speech: 'adjective',
+        cefr_level: 'B2',
+        ipa_us: '/rɪˈzɪliənt/',
+        ipa_uk: '/rɪˈzɪliənt/',
+        meaning: 'kiên cường',
+        audio_url: null,
+        in_topic_ids: ['topic-1'],
+      };
+      queryAsMock.mockResolvedValue([preview]);
+
+      await expect(service.lookup('user-1', '  resilient ')).resolves.toEqual(preview);
+      const [userId, sql, params] = queryAsMock.mock.calls[0];
+      expect(userId).toBe('user-1');
+      expect(sql).toMatch(/join public\.master_lexicon/i);
+      expect(sql).toMatch(/word_translations/);
+      expect(sql).not.toMatch(/insert/i);
+      expect(params).toEqual(['user-1', 'resilient']);
+      expect(queueAddMock).not.toHaveBeenCalled();
+    });
+  });
 });

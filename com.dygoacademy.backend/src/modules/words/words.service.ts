@@ -63,6 +63,27 @@ export interface GuestWordCard {
   example_sentences: unknown;
 }
 
+/**
+ * GET /words/lookup (A7b Add word, 2026-10-17): what the Add word sheet
+ * shows while the learner types, before anything is planted. `found` is
+ * false when `master_lexicon` has no entry yet (the word is enriched after
+ * planting); the card fields are then null. `meaning` is the translation
+ * in the learner's meaning language, else `definition_en`, as A7c shows
+ * it. `in_topic_ids`: the beds the caller can see that already hold this
+ * word, so the sheet can say so before a 409.
+ */
+export interface WordLookup {
+  word: string;
+  found: boolean;
+  part_of_speech: string | null;
+  cefr_level: string | null;
+  ipa_us: string | null;
+  ipa_uk: string | null;
+  meaning: string | null;
+  audio_url: string | null;
+  in_topic_ids: string[];
+}
+
 /** Postgres error codes this service translates into HTTP responses. */
 const PG_UNIQUE_VIOLATION = '23505';
 const PG_ROW_LEVEL_SECURITY_VIOLATION = '42501';
@@ -274,6 +295,39 @@ export class WordsService {
       throw new NotFoundException('This word is not in the lexicon yet.');
     }
 
+    return rows[0];
+  }
+
+  /**
+   * Read-only, like `lookupGuestWord`: never inserts or enqueues
+   * enrichment. Runs as the caller so RLS limits `in_topic_ids` to beds
+   * they can read, and their profile gives the meaning language.
+   */
+  async lookup(userId: string, word: string): Promise<WordLookup> {
+    const rows = await this.db.queryAs<WordLookup>(
+      userId,
+      `select $2::text as word,
+              ml.id is not null as found,
+              ml.part_of_speech,
+              ml.cefr_level::text as cefr_level,
+              ml.ipa_us,
+              ml.ipa_uk,
+              coalesce(wt.meaning, ml.definition_en) as meaning,
+              ml.audio_url,
+              array(
+                select distinct tw.topic_id
+                  from public.topic_words tw
+                 where lower(trim(tw.source_word)) = lower($2)
+              )::text[] as in_topic_ids
+         from (select 1) as one
+         left join public.master_lexicon ml
+                on ml.normalized_word = lower($2)
+               and ml.language_code = 'en'
+         left join public.word_translations wt
+                on wt.word_id = ml.id
+               and wt.locale = (select p.meaning_locale from public.profiles p where p.id = $1)`,
+      [userId, word.trim()],
+    );
     return rows[0];
   }
 

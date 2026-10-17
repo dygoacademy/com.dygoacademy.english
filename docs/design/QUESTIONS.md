@@ -2,6 +2,12 @@
 
 Things in `docs/design/garden/CHANGELOG.md` that are unclear, or that differ from what is built, written down instead of guessed (CHANGELOG "How to use this file", rule 5). Newest first. When one is answered, note the answer and date here and update the changelog.
 
+## 2026-10-17 · A7b Add word (Claude Code)
+
+| # | The plan says | What the build does | Question / suggestion |
+|---|---|---|---|
+| Q-19 | A7b is *For approval* and has no `AdultAddWord` board in `source/` (the A7 + and A7c "Plant here" link to it). | Built on Dylan's request (2026-10-17) from the changelog line, in the existing sheet's style: seed card with word, IPA, "part of speech · level", meaning; "Plant in" chips (this bed, My words, other beds they can add to; wrap, not a slider); "Already in {bed}." note; planted state with the seed dropping into a soil mound, "Plant another word" / "Done". | Draw the `AdultAddWord(Vi)` boards (or send changes) so the sheet can be checked with `garden:diff`. |
+
 ## 2026-10-17 · A6b word search (Claude Code)
 
 | # | The plan says | What the build does | Question / suggestion |

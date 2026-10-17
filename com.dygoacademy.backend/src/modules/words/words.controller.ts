@@ -15,7 +15,8 @@ import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { Public } from '../../common/decorators/public.decorator';
 import { CreateWordDto } from './dto/create-word.dto';
 import { GuestWordLookupDto } from './dto/guest-word-lookup.dto';
-import { GuestWordCard, TopicWord, WordCard, WordsService } from './words.service';
+import { WordLookupDto } from './dto/word-lookup.dto';
+import { GuestWordCard, TopicWord, WordCard, WordLookup, WordsService } from './words.service';
 
 @ApiBearerAuth()
 @ApiTags('words')
@@ -56,6 +57,23 @@ export class WordsController {
   })
   async guestLookup(@Query() query: GuestWordLookupDto): Promise<GuestWordCard> {
     return this.wordsService.lookupGuestWord(query.word, query.languageCode);
+  }
+
+  // Also ahead of `:id`, for the same reason as guest-lookup.
+  @Get('lookup')
+  @ApiOperation({
+    summary: 'Preview a word before planting it (A7b Add word)',
+    description:
+      "Part of speech, CEFR level, IPA and the meaning in the caller's meaning " +
+      'language from master_lexicon (found: false when not cached yet), plus ' +
+      'the ids of the beds the caller can see that already hold the word. ' +
+      'Read-only: never enqueues enrichment.',
+  })
+  async lookup(
+    @CurrentUser('id') userId: string,
+    @Query() query: WordLookupDto,
+  ): Promise<WordLookup> {
+    return this.wordsService.lookup(userId, query.word);
   }
 
   @Get(':id')

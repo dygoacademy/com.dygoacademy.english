@@ -64,3 +64,22 @@ export interface GuestWordCard {
   antonyms: LexiconRelatedWord[];
   example_sentences: LexiconExampleSentence[];
 }
+
+/**
+ * `GET /api/v1/words/lookup?word=` (A7b Add word, 2026-10-17) —
+ * WordsService.WordLookup. What the sheet shows before planting: the
+ * cached lexicon entry (`found: false` when the word is new to Dygo; it
+ * is enriched after planting), the meaning in the learner's meaning
+ * language, and the beds the learner can see that already hold the word.
+ */
+export interface WordLookup {
+  word: string;
+  found: boolean;
+  part_of_speech: string | null;
+  cefr_level: string | null;
+  ipa_us: string | null;
+  ipa_uk: string | null;
+  meaning: string | null;
+  audio_url: string | null;
+  in_topic_ids: string[];
+}

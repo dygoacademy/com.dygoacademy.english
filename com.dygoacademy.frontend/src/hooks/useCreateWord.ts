@@ -27,6 +27,8 @@ export function useCreateWord(topicId: string | null) {
     mutationFn: (input: Omit<CreateWordInput, 'topicId'>) =>
       apiClient.post<TopicWord>('/words', topicId ? { topicId, ...input } : input),
     onSuccess: (word) => {
+      // The Add word preview (A7b) says which beds already hold a word.
+      void queryClient.invalidateQueries({ queryKey: ['words', 'lookup'] });
       if (!topicId) {
         // Saved to My words: that bed and the list changed, not this bed.
         void queryClient.invalidateQueries({ queryKey: ['topics', word.topic_id] });

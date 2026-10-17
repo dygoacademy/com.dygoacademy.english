@@ -16,7 +16,7 @@ import { useGardenPreferences } from '../preferences';
 import { TopicBedScreen } from '../screens/TopicBedScreen';
 import { bedMeanings, beesCard, toBedWords, type GardenTopicWord } from './data';
 import { LiveError, LiveLoading } from './LiveState';
-import { useBedTitle, useSaveToMyWords } from './useSaveToMyWords';
+import { useAddWordBeds, useBedTitle, useSaveToMyWords } from './useSaveToMyWords';
 import { TopicBedsSidebar } from './SidebarLists';
 
 /** How many seeds "Plant N new" sows at a time (as A1b's extra and A6b's Plant). */
@@ -67,6 +67,7 @@ export function TopicBedLive({ topicId }: { topicId: string }) {
   const harvests = useSpeakingHarvest(topicId);
   const saveToMyWords = useSaveToMyWords(topicId);
   const bedTitle = useBedTitle(topicId, topic.data?.title ?? '');
+  const addWordBeds = useAddWordBeds(topicId, bedTitle, t('addSheet.myWords'));
 
   if (topic.isPending) return <LiveLoading />;
   if (topic.isError || !topic.data) {
@@ -132,6 +133,7 @@ export function TopicBedLive({ topicId }: { topicId: string }) {
         topicId={topicId}
         topicTitle={bedTitle}
         saveToMyWords={saveToMyWords}
+        beds={addWordBeds}
         open={adding}
         onOpenChange={setAdding}
       />

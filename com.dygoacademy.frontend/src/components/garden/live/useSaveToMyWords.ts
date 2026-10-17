@@ -3,6 +3,7 @@
 import { useGroups } from '@/hooks/useGroups';
 import { useTopics } from '@/hooks/useTopics';
 
+import type { AddWordBed } from '../AddWordSheet';
 import type { GardenTopicSummary } from './data';
 
 /**
@@ -29,4 +30,36 @@ export function useBedTitle(topicId: string, title: string): string {
   const topics = useTopics();
   const topic = topics.data?.find((t) => t.id === topicId);
   return topic?.is_my_words ? topic.title : title;
+}
+
+/**
+ * The bed chips on A7b Add word (2026-10-17): the beds the learner can add
+ * words to, this bed first (or My words first when this bed can't be
+ * edited, as `useSaveToMyWords` decides), then My words, then their other
+ * beds in GET /topics order. Group beds count only where their role isn't
+ * READ. My words is `id: null` until the learner has that bed. Empty while
+ * GET /topics loads (the sheet then plants in this bed or My words alone).
+ */
+export function useAddWordBeds(topicId: string, bedTitle: string, myWordsTitle: string) {
+  const topics = useTopics();
+  const groups = useGroups();
+  const saveToMyWords = useSaveToMyWords(topicId);
+  const list = (topics.data as GardenTopicSummary[] | undefined) ?? [];
+  if (list.length === 0) return [];
+
+  const writable = (t: GardenTopicSummary) => {
+    if (t.is_my_words || t.kind === 'mine') return true;
+    if (t.kind !== 'group') return false;
+    const group = groups.data?.find((g) => g.id === t.group_id);
+    return Boolean(group && group.role !== 'READ');
+  };
+  const myWords = list.find((t) => t.is_my_words);
+  const beds: AddWordBed[] = [];
+  const add = (bed: AddWordBed) => {
+    if (!beds.some((b) => b.id === bed.id)) beds.push(bed);
+  };
+  if (!saveToMyWords) add({ id: topicId, title: bedTitle });
+  add(myWords ? { id: myWords.id, title: myWords.title } : { id: null, title: myWordsTitle });
+  for (const t of list) if (writable(t)) add({ id: t.id, title: t.title });
+  return beds;
 }
