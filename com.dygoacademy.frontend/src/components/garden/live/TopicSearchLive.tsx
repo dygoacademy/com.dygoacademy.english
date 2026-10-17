@@ -6,6 +6,8 @@ import { useTranslations } from 'next-intl';
 
 import { GARDEN_ROUTES } from '@/constants/garden';
 import { useTopics } from '@/hooks/useTopics';
+import { useWordSearch } from '@/hooks/useWordSearch';
+import { findMatch } from '@/lib/search/fold';
 import type { TopicDetail } from '@/types';
 
 import { TopicSearchScreen } from '../screens/TopicSearchScreen';
@@ -22,10 +24,13 @@ const PLANT_COUNT = 5;
  * returns the public library topics, which the learner waters in place
  * (no copy), so "More topics to plant" = library topics with nothing
  * watered yet, and Plant sows their first words (/review?new=5&topic=…);
- * after that they count as the learner's. "Looking for a word?" searches
- * the words of the beds already loaded this visit (topic details in the
- * React Query cache) and is hidden when none match; a cross-topic word
- * search endpoint is v2. Recent searches (3) live in localStorage.
+ * after that they count as the learner's. "Looking for a word?" is the
+ * first `GET /topics/word-search` result (all the learner's beds, the
+ * English word or its meaning; 2026-10-17). Until that answers for what's
+ * typed now, the beds already loaded this visit (topic details in the
+ * React Query cache) answer instantly, else the previous result while its
+ * word still matches, so the row doesn't flicker. Hidden when nothing
+ * matches. Recent searches (3) live in localStorage.
  */
 export function TopicSearchLive() {
   const t = useTranslations('screens.topics');
@@ -33,6 +38,7 @@ export function TopicSearchLive() {
   const queryClient = useQueryClient();
   const [query, setQuery] = useState('');
   const [recent, setRecent] = useState<string[]>([]);
+  const wordSearch = useWordSearch(query);
 
   useEffect(() => setRecent(loadRecent('topics')), []);
 
@@ -45,7 +51,27 @@ export function TopicSearchLive() {
   const loadedBeds = queryClient
     .getQueriesData<TopicDetail>({ queryKey: ['topics'] })
     .flatMap(([, data]) => (data && !Array.isArray(data) && Array.isArray(data.words) ? [data] : []));
-  const hit = findWordInBeds(loadedBeds, q);
+  const found = wordSearch.data?.[0];
+  const apiHit = found
+    ? {
+        word: found.word,
+        topicId: found.topic_id,
+        // The bed's title as A6 shows it (My words is translated there).
+        topic: topics.data.find((topic) => topic.id === found.topic_id)?.title ?? found.topic_title,
+        matched: found.matched,
+      }
+    : null;
+  const cacheHit = findWordInBeds(loadedBeds, q);
+  const hit =
+    q.length < 2
+      ? null
+      : wordSearch.settled
+        ? apiHit
+        : cacheHit
+          ? { ...cacheHit, matched: 'word' as const }
+          : apiHit?.matched === 'word' && findMatch(apiHit.word, q)
+            ? apiHit
+            : null;
   const remember = () => {
     if (q) setRecent(saveRecent('topics', q));
   };
@@ -62,7 +88,12 @@ export function TopicSearchLive() {
       onOpen={remember}
       wordHint={
         hit
-          ? { word: hit.word, topic: hit.topic, href: GARDEN_ROUTES.topicSearch(hit.topicId, q) }
+          ? {
+              word: hit.word,
+              topic: hit.topic,
+              href: GARDEN_ROUTES.topicSearch(hit.topicId, q),
+              highlight: hit.matched === 'word',
+            }
           : null
       }
       recent={recent}

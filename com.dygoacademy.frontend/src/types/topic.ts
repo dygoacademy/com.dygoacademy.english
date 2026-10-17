@@ -84,3 +84,15 @@ export interface TopicWordSummary {
 export interface TopicDetail extends Topic {
   words: TopicWordSummary[];
 }
+
+/**
+ * One `GET /api/v1/topics/word-search?q=` result (A6b "Looking for a
+ * word?", 2026-10-17) — TopicsService.WordSearchHit. `matched` says
+ * whether the English word matched or only its meaning.
+ */
+export interface WordSearchHit {
+  word: string;
+  topic_id: string;
+  topic_title: string;
+  matched: 'word' | 'meaning';
+}

@@ -2,6 +2,12 @@
 
 Things in `docs/design/garden/CHANGELOG.md` that are unclear, or that differ from what is built, written down instead of guessed (CHANGELOG "How to use this file", rule 5). Newest first. When one is answered, note the answer and date here and update the changelog.
 
+## 2026-10-17 · A6b word search (Claude Code)
+
+| # | The plan says | What the build does | Question / suggestion |
+|---|---|---|---|
+| Q-18 | Match Vietnamese without accents with `unaccent` if the database has it, else plain `ilike` and note it | No migration or schema file enables `unaccent`, so `GET /topics/word-search` folds both sides itself (`translate()` over the Vietnamese marked letters, lower case, đ → d). "moi" finds "môi" without the extension. | Fine as is? Enabling `unaccent` later would only simplify the SQL. |
+
 ## 2026-10-17 · A6 Topics filter groups (Claude Code)
 
 | # | The plan says | What the build does | Question / suggestion |

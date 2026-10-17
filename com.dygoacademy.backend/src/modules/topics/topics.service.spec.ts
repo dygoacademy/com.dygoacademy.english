@@ -2,7 +2,7 @@ import { ForbiddenException, NotFoundException } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 
 import { DatabaseService } from '../../database/database.service';
-import { TopicsService, topicFilterGroup } from './topics.service';
+import { foldForSearch, TopicsService, topicFilterGroup } from './topics.service';
 
 /** Builds a fresh TopicsService wired to stubbed DatabaseService methods. */
 async function makeService(
@@ -414,5 +414,79 @@ describe('TopicsService — clone', () => {
     await expect(service.clone('user-1', 'topic-1', 'group-2')).rejects.toBeInstanceOf(
       ForbiddenException,
     );
+  });
+});
+
+/**
+ * A6b word search (2026-10-17). Ranking and which beds count live in the
+ * SQL, so these pin the parts of it that carry them; the query was also
+ * run against the schema with seed fixtures (prefix before contains,
+ * meaning match, another learner's private bed and an unstarted library
+ * topic never returned).
+ */
+describe('TopicsService.searchWords', () => {
+  async function run(query: string) {
+    const queryAsMock = jest
+      .fn()
+      .mockResolvedValue([
+        { word: 'environmental', topic_id: 'topic-1', topic_title: 'Environment', matched: 'word' },
+      ]);
+    const service = await makeService(queryAsMock);
+    const result = await service.searchWords('user-42', query);
+    const [userId, sql, params] = queryAsMock.mock.calls[0] as [string, string, unknown[]];
+    return { result, userId, sql, params };
+  }
+
+  it('runs as the caller with the folded query', async () => {
+    const { result, userId, params } = await run('  Môi ');
+    expect(userId).toBe('user-42');
+    expect(params).toEqual(['user-42', 'moi']);
+    expect(result).toEqual([
+      { word: 'environmental', topic_id: 'topic-1', topic_title: 'Environment', matched: 'word' },
+    ]);
+  });
+
+  it('ranks word prefix before word contains before meaning, shorter word first, 3 results', async () => {
+    const { sql } = await run('envi');
+    const prefix = sql.indexOf("like $2 || '%' then 0");
+    const contains = sql.indexOf("like '%' || $2 || '%' then 1");
+    const meaning = sql.indexOf("like '%' || $2 || '%' then 2");
+    expect(prefix).toBeGreaterThan(-1);
+    expect(contains).toBeGreaterThan(prefix);
+    expect(meaning).toBeGreaterThan(contains);
+    expect(sql).toMatch(/order by rank, length\(word\)/);
+    expect(sql).toMatch(/limit 3/);
+  });
+
+  it("matches the meaning in the learner's meaning language, else the English definition", async () => {
+    const { sql } = await run('moi');
+    expect(sql).toMatch(/coalesce\(wt\.meaning, ml\.definition_en\)/);
+    expect(sql).toMatch(
+      /wt\.locale = \(select p\.meaning_locale from public\.profiles p where p\.id = \$1\)/,
+    );
+    expect(sql).toMatch(/case when rank < 2 then 'word' else 'meaning' end as matched/);
+  });
+
+  it('searches own and shared beds and started library topics only, never the whole library', async () => {
+    const { sql } = await run('envi');
+    const beds = sql.slice(sql.indexOf('with beds as'), sql.indexOf('hits as'));
+    expect(beds).toMatch(/g\.owner_id = \$1/);
+    expect(beds).toMatch(
+      /group_members me\s+where me\.group_id = t\.group_id and me\.user_id = \$1/,
+    );
+    expect(beds).toMatch(/user_word_srs su .*\s+where stw\.topic_id = t\.id and su\.user_id = \$1/);
+    // A public topic qualifies only through one of the conditions above.
+    expect(beds).not.toMatch(/or t\.is_public/);
+  });
+});
+
+describe('foldForSearch', () => {
+  it('strips Vietnamese marks and lower-cases', () => {
+    expect(foldForSearch('Môi Trường')).toBe('moi truong');
+    expect(foldForSearch('Đất')).toBe('dat');
+  });
+
+  it('escapes LIKE wildcards so they match literally', () => {
+    expect(foldForSearch('50%_x')).toBe('50\\%\\_x');
   });
 });

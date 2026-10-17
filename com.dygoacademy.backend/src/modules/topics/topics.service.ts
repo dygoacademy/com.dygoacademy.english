@@ -114,6 +114,46 @@ export interface TopicDetail extends TopicRow {
   words: TopicWordRow[];
 }
 
+/** One "Looking for a word?" result (A6b, `GET /topics/word-search`). */
+export interface WordSearchHit {
+  word: string;
+  topic_id: string;
+  topic_title: string;
+  /** What matched: the English word, or only its meaning. */
+  matched: 'word' | 'meaning';
+}
+
+/** How many words `searchWords` returns. */
+const WORD_SEARCH_LIMIT = 3;
+
+/**
+ * Vietnamese letters with marks, and what they fold to. The database has
+ * no `unaccent` extension (2026-10-17), so word search folds with
+ * `translate()` on the NFC, lower-cased text instead: "moi" finds "môi",
+ * as the frontend's `fold()` does for A7c.
+ */
+const MARKED = 'àáạảãâầấậẩẫăằắặẳẵèéẹẻẽêềếệểễìíịỉĩòóọỏõôồốộổỗơờớợởỡùúụủũưừứựửữỳýỵỷỹđ';
+const PLAIN = 'aaaaaaaaaaaaaaaaaeeeeeeeeeeeiiiiiooooooooooooooooouuuuuuuuuuuyyyyyd';
+
+/** SQL that folds `expr` the same way `foldForSearch` folds the query. */
+function sqlFold(expr: string): string {
+  return `translate(lower(normalize(${expr}, NFC)), '${MARKED}', '${PLAIN}')`;
+}
+
+/**
+ * The query folded for word search (marks stripped, đ → d, lower case) and
+ * escaped for LIKE, so a typed % or _ is matched literally.
+ */
+export function foldForSearch(query: string): string {
+  return query
+    .trim()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/đ/gi, 'd')
+    .toLowerCase()
+    .replace(/[\\%_]/g, (ch) => `\\${ch}`);
+}
+
 /** Postgres error codes this service translates into HTTP responses. */
 const PG_ROW_LEVEL_SECURITY_VIOLATION = '42501';
 
@@ -206,6 +246,66 @@ export class TopicsService {
       ...row,
       filter_group: topicFilterGroup(row.kind, library_shelf ?? null),
     }));
+  }
+
+  /**
+   * A6b "Looking for a word?" (2026-10-17): the first 3 words matching
+   * `query` across the caller's beds. Which beds: the ones `findAllVisible`
+   * calls `mine` or `group` (a group the caller owns or is in, or a private
+   * topic RLS lets them read), plus library topics they have started (any
+   * `user_word_srs` row of theirs). Not the whole library. Matches the
+   * English word and the meaning in the caller's meaning language (the
+   * translation, else `definition_en`, as A7c shows it), case- and
+   * accent-insensitive. Order: word starts with the query, word contains
+   * it, then meaning contains it; shorter word first.
+   *
+   * RLS still gates every table; the bed conditions below narrow what the
+   * caller can read to what counts as theirs.
+   */
+  async searchWords(userId: string, query: string): Promise<WordSearchHit[]> {
+    const q = foldForSearch(query);
+    const word = sqlFold('tw.source_word');
+    const meaning = sqlFold('coalesce(wt.meaning, ml.definition_en)');
+    return this.db.queryAs<WordSearchHit>(
+      userId,
+      `with beds as (
+         select t.id, t.title
+           from public.topics t
+           left join public.groups g on g.id = t.group_id
+          where g.owner_id = $1
+             or not t.is_public
+             or exists (
+                  select 1 from public.group_members me
+                   where me.group_id = t.group_id and me.user_id = $1)
+             or exists (
+                  select 1 from public.topic_words stw
+                    join public.user_word_srs su on su.topic_word_id = stw.id
+                   where stw.topic_id = t.id and su.user_id = $1)
+       ),
+       hits as (
+         select tw.source_word as word,
+                b.id as topic_id,
+                b.title as topic_title,
+                case
+                  when ${word} like $2 || '%' then 0
+                  when ${word} like '%' || $2 || '%' then 1
+                  when ${meaning} like '%' || $2 || '%' then 2
+                end as rank
+           from beds b
+           join public.topic_words tw on tw.topic_id = b.id
+           left join public.master_lexicon ml on ml.id = tw.lexicon_id
+           left join public.word_translations wt
+                  on wt.word_id = ml.id
+                 and wt.locale = (select p.meaning_locale from public.profiles p where p.id = $1)
+       )
+       select word, topic_id, topic_title,
+              case when rank < 2 then 'word' else 'meaning' end as matched
+         from hits
+        where rank is not null
+        order by rank, length(word), word, topic_title
+        limit ${WORD_SEARCH_LIMIT}`,
+      [userId, q],
+    );
   }
 
   /**

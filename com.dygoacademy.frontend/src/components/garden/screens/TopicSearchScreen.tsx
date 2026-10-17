@@ -38,7 +38,8 @@ export interface TopicSearchScreenProps {
   plantHref: (topic: SearchTopic) => string;
   /** Opening a result or planting (saves the search). */
   onOpen?: () => void;
-  wordHint: { word: string; topic: string; href: string } | null;
+  /** `highlight` false when only the word's meaning matched (the English word is still named). */
+  wordHint: { word: string; topic: string; href: string; highlight?: boolean } | null;
   recent: readonly string[];
   onRecent: (query: string) => void;
 }
@@ -161,10 +162,13 @@ export function TopicSearchScreen({
                   <SeedIcon width={26} height={26} />
                 </span>
                 <span className="flex min-w-0 flex-grow flex-col">
-                  <span className="text-[15px] font-bold text-muted-foreground">
+                  <span
+                    title={topic.title}
+                    className="line-clamp-2 min-w-0 break-words text-[15px] font-bold text-muted-foreground"
+                  >
                     <Highlighted text={topic.title} query={query} />
                   </span>
-                  <span className="text-[12px] text-muted-foreground">{meta(topic)}</span>
+                  <span className="truncate text-[12px] text-muted-foreground">{meta(topic)}</span>
                 </span>
                 <Link
                   href={plantHref(topic)}
@@ -203,7 +207,11 @@ export function TopicSearchScreen({
               topic: wordHint.topic,
               w: () => (
                 <b className="text-text">
-                  <Highlighted text={wordHint.word} query={query} lang="en" />
+                  {wordHint.highlight === false ? (
+                    <span lang="en">{wordHint.word}</span>
+                  ) : (
+                    <Highlighted text={wordHint.word} query={query} lang="en" />
+                  )}
                 </b>
               ),
               b: (chunks) => <b className="text-text">{chunks}</b>,

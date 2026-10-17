@@ -8,6 +8,7 @@ import {
   Param,
   Patch,
   Post,
+  Query,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 
@@ -16,7 +17,14 @@ import { DueCard, SrsService } from '../srs/srs.service';
 import { CloneTopicDto } from './dto/clone-topic.dto';
 import { CreateTopicDto } from './dto/create-topic.dto';
 import { UpdateTopicDto } from './dto/update-topic.dto';
-import { TopicDetail, TopicRow, TopicsService, TopicSummary } from './topics.service';
+import { WordSearchDto } from './dto/word-search.dto';
+import {
+  TopicDetail,
+  TopicRow,
+  TopicsService,
+  TopicSummary,
+  WordSearchHit,
+} from './topics.service';
 
 @ApiBearerAuth()
 @ApiTags('topics')
@@ -47,6 +55,23 @@ export class TopicsController {
   })
   async create(@CurrentUser('id') userId: string, @Body() dto: CreateTopicDto): Promise<TopicRow> {
     return this.topicsService.create(userId, dto);
+  }
+
+  // Declared before `:id` so "word-search" isn't read as a topic id.
+  @Get('word-search')
+  @ApiOperation({
+    summary: "Find a word in the caller's beds (A6b)",
+    description:
+      'Searches the words of the beds the caller owns or shares, plus library ' +
+      'topics they have started (not the whole library), on the English word ' +
+      'and the meaning in their meaning language. First 3: word starts with q, ' +
+      'then contains q, then meaning contains q; shorter word first.',
+  })
+  async wordSearch(
+    @CurrentUser('id') userId: string,
+    @Query() query: WordSearchDto,
+  ): Promise<WordSearchHit[]> {
+    return this.topicsService.searchWords(userId, query.q);
   }
 
   @Get(':id')
