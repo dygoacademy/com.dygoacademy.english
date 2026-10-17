@@ -70,7 +70,10 @@ export interface GuestWordCard {
  * planting); the card fields are then null. `meaning` is the translation
  * in the learner's meaning language, else `definition_en`, as A7c shows
  * it. `in_topic_ids`: the beds the caller can see that already hold this
- * word, so the sheet can say so before a 409.
+ * word, so the sheet can say so before a 409. `definition_en` and
+ * `example` (the lexicon's first example sentence) were added for the
+ * A7b board (2026-10-17): a translated meaning shows the English
+ * definition under it, and the example row only shows when there is one.
  */
 export interface WordLookup {
   word: string;
@@ -80,6 +83,8 @@ export interface WordLookup {
   ipa_us: string | null;
   ipa_uk: string | null;
   meaning: string | null;
+  definition_en: string | null;
+  example: string | null;
   audio_url: string | null;
   in_topic_ids: string[];
 }
@@ -313,6 +318,8 @@ export class WordsService {
               ml.ipa_us,
               ml.ipa_uk,
               coalesce(wt.meaning, ml.definition_en) as meaning,
+              ml.definition_en,
+              nullif(trim(ml.example_sentences -> 0 ->> 'sentence'), '') as example,
               ml.audio_url,
               array(
                 select distinct tw.topic_id

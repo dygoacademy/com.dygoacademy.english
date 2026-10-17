@@ -80,6 +80,10 @@ export interface WordLookup {
   ipa_us: string | null;
   ipa_uk: string | null;
   meaning: string | null;
+  /** The English definition (shown under a translated meaning). */
+  definition_en: string | null;
+  /** The lexicon's first example sentence, if any (2026-10-17). */
+  example: string | null;
   audio_url: string | null;
   in_topic_ids: string[];
 }

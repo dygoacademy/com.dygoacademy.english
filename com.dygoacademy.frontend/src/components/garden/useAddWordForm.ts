@@ -30,8 +30,10 @@ export function useAddWordForm(
     duplicateError,
     onAdded,
   }: AddWordFormMessages & { onAdded?: () => void },
+  /** The field's first value (A7b: A7c "Plant here", the reference page). */
+  initialWord = '',
 ) {
-  const [word, setWord] = useState('');
+  const [word, setWord] = useState(initialWord);
   const [error, setError] = useState<string | null>(null);
   const createWord = useCreateWord(topicId);
 

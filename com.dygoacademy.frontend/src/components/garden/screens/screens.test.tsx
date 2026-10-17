@@ -35,7 +35,7 @@ vi.mock('next/navigation', () => ({ useRouter: () => ({ push }) }));
 
 describe('reference fixtures', () => {
   it('lists the 83 canvas references (… 5 speaking, 4 speaking entry points, 15 pronunciation, 6 voice donation, 4 onboarding, 3 loading, 2 A6 filters)', () => {
-    expect(REFERENCE_NAMES).toHaveLength(83);
+    expect(REFERENCE_NAMES).toHaveLength(85);
     expect(isReferenceName('A1b-all-watered')).toBe(true);
     expect(isReferenceName('A7c-word-search')).toBe(true);
     expect(isReferenceName('A6b-search-topics')).toBe(true);

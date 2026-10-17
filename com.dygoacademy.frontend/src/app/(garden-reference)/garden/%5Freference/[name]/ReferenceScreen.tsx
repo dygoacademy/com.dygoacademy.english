@@ -52,6 +52,7 @@ import type { UseCaseBedKey } from '@/components/home/useCaseWords';
 import { GARDEN_ROUTES } from '@/constants/garden';
 import type { AppLocale } from '@/i18n/config';
 
+import { AddWordReferenceScreen } from './AddWordReferenceScreen';
 import { GroupReferenceScreen } from './GroupReferenceScreen';
 import { PronounceReferenceScreen } from './PronounceReferenceScreen';
 import { SpeakReferenceScreen } from './SpeakReferenceScreen';
@@ -244,6 +245,9 @@ function ReferenceScreenBody({ name, locale }: { name: ReferenceName; locale: Ap
         />
       );
     }
+    case 'A7b-add-word':
+    case 'A7b-add-word-planted':
+      return <AddWordReferenceScreen locale={locale} planted={name === 'A7b-add-word-planted'} />;
     case 'A7c-word-search': {
       const sample = WORD_SEARCH[locale];
       return (

@@ -150,6 +150,8 @@ describe('WordsService', () => {
         ipa_us: '/rɪˈzɪliənt/',
         ipa_uk: '/rɪˈzɪliənt/',
         meaning: 'kiên cường',
+        definition_en: 'able to recover quickly from difficult conditions',
+        example: 'Coral reefs can be surprisingly resilient to rising temperatures.',
         audio_url: null,
         in_topic_ids: ['topic-1'],
       };
@@ -160,6 +162,7 @@ describe('WordsService', () => {
       expect(userId).toBe('user-1');
       expect(sql).toMatch(/join public\.master_lexicon/i);
       expect(sql).toMatch(/word_translations/);
+      expect(sql).toMatch(/example_sentences -> 0 ->> 'sentence'/);
       expect(sql).not.toMatch(/insert/i);
       expect(params).toEqual(['user-1', 'resilient']);
       expect(queueAddMock).not.toHaveBeenCalled();

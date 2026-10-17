@@ -29,6 +29,10 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
+  // A7b (2026-10-17): Android Chrome shrinks the page for the keyboard, so
+  // a bottom sheet's field and header stay above it (iPhone: BottomSheet
+  // follows the visual viewport instead).
+  interactiveWidget: 'resizes-content',
 };
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {

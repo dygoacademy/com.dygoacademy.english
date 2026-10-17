@@ -1158,44 +1158,26 @@
   }
 }
 
-/* A7b Add word, planted state (2026-10-17): the seed drops into the soil
-   (.6s) and the soil squashes as it lands. Reduced motion: still. */
-@keyframes addword-seed {
+/* A7b Add word, planted state (board `AdultAddWord`, 2026-10-17): the
+   sprout sinks into the soil (the board's `sink`). Reduced motion: still. */
+@keyframes addword-sink {
   0% {
-    transform: translateY(-40px);
+    transform: translateY(-30px);
     opacity: 0;
   }
-  20% {
-    opacity: 1;
-  }
-  70%,
-  100% {
-    transform: none;
-    opacity: 1;
-  }
-}
-@keyframes addword-soil {
-  0%,
   60% {
-    transform: scaleX(1);
-  }
-  75% {
-    transform: scaleX(1.1);
+    transform: translateY(4px);
+    opacity: 1;
   }
   100% {
-    transform: scaleX(1);
+    transform: translateY(0);
   }
 }
-.addword-seed {
-  animation: addword-seed 0.6s ease-out both;
-}
-.addword-soil {
-  transform-origin: 50% 100%;
-  animation: addword-soil 0.6s ease-out both;
+.addword-sink {
+  animation: addword-sink 0.8s ease-out;
 }
 @media (prefers-reduced-motion: reduce) {
-  .addword-seed,
-  .addword-soil {
+  .addword-sink {
     animation: none;
   }
 }

@@ -40,6 +40,9 @@ export const REFERENCE_NAMES = [
   // 2026-10-11 Topics search: sample data in WORD_SEARCH / TOPIC_SEARCH below
   'A7c-word-search',
   'A6b-search-topics',
+  // A7b Add word (canvas 2026-10-17): the sheet over a plain bed, sample data in ADD_WORD below
+  'A7b-add-word',
+  'A7b-add-word-planted',
   'A8-me',
   'A8-me-account',
   // Voice donation (canvas 2026-10-11)
@@ -455,6 +458,37 @@ export const BED = {
     due: due === 'new' ? { tone: 'new' } : due === 0 ? { tone: 'now' } : { tone: 'later', days: due },
   })),
 };
+
+/**
+ * A7b Add word (canvas `AdultAddWord(Vi)`, 2026-10-17): "resilient" looked
+ * up and about to be planted in Environment, the first of three beds.
+ * `lookup` is what `GET /words/lookup` returns for it.
+ */
+export const ADD_WORD = {
+  'en-US': {
+    bed: 'Environment',
+    beds: ['Environment', 'Education', 'Work & careers'],
+    meaning: 'able to recover quickly from difficult conditions',
+  },
+  'vi-VN': {
+    bed: 'Môi trường',
+    beds: ['Môi trường', 'Giáo dục', 'Công việc'],
+    meaning: 'kiên cường, mau phục hồi',
+  },
+  word: 'resilient',
+  lookup: {
+    word: 'resilient',
+    found: true,
+    part_of_speech: 'adjective',
+    cefr_level: 'B2',
+    ipa_us: '/rɪˈzɪl.i.ənt/',
+    ipa_uk: '/rɪˈzɪl.i.ənt/',
+    definition_en: 'able to recover quickly from difficult conditions',
+    example: 'Coral reefs can be surprisingly resilient to rising temperatures.',
+    audio_url: '/audio/resilient.mp3',
+    in_topic_ids: [] as string[],
+  },
+} as const;
 
 /**
  * A7c Search words in a topic (2026-10-11): BED's words searched for

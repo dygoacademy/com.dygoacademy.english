@@ -9,6 +9,7 @@ import { Dialog, DialogOverlay, DialogPortal } from '@/components/ui/dialog';
 import { gcn } from './cn';
 import { CloseIcon } from './icons';
 import { IconButton } from './IconButton';
+import { useKeyboardInset } from './useKeyboardInset';
 
 /**
  * Bottom sheet (design system §11) on the app's existing Radix dialog
@@ -19,6 +20,9 @@ import { IconButton } from './IconButton';
  * - iPhone: pinned to the bottom, radius-xl top corners, a 36×5 grabber,
  *   at most 90% of the screen, padded for the home indicator. Dragging
  *   the grabber down moves the sheet; letting go past 96px closes it.
+ *   With the keyboard open (A7b, 2026-10-17) it sits on top of the
+ *   keyboard and fits the visible area, so the title and ✕ stay on
+ *   screen and the body scrolls (`useKeyboardInset`).
  * - iPad (`medium`+): a centred sheet with all corners rounded, no grabber.
  *
  * It portals into the page's `[data-ui="garden"]` root rather than
@@ -37,10 +41,23 @@ export interface BottomSheetProps {
    * close it, as the A8 Account sheet's Cancel (canvas: no ✕).
    */
   closeButton?: boolean;
+  /**
+   * A field to focus once the sheet has slid in (A7b, 2026-10-17), instead
+   * of `autoFocus`: focusing during the slide-in opens the iPhone keyboard
+   * while the field is still moving, and iOS scrolls the header away.
+   */
+  initialFocusRef?: React.RefObject<HTMLElement | null>;
   className?: string;
+  /** Header overrides for a sheet drawn bigger on its board (A7b). */
+  headerClassName?: string;
+  titleClassName?: string;
+  descriptionClassName?: string;
+  bodyClassName?: string;
 }
 
 const CLOSE_DISTANCE = 96;
+/** The slide-in (`duration-200`), plus a frame. */
+const SLIDE_IN_MS = 220;
 
 export function BottomSheet({
   open,
@@ -50,12 +67,36 @@ export function BottomSheet({
   children,
   footer,
   closeButton = true,
+  initialFocusRef,
   className,
+  headerClassName,
+  titleClassName,
+  descriptionClassName,
+  bodyClassName,
 }: BottomSheetProps) {
   const t = useTranslations('components.sheet');
   const [container, setContainer] = React.useState<HTMLElement | null>(null);
   const [dragY, setDragY] = React.useState(0);
   const dragStart = React.useRef<number | null>(null);
+  const focusTimer = React.useRef<number | undefined>(undefined);
+  const keyboard = useKeyboardInset(open);
+
+  React.useEffect(() => {
+    if (!open) window.clearTimeout(focusTimer.current);
+    return () => window.clearTimeout(focusTimer.current);
+  }, [open]);
+
+  function focusAfterSlideIn(event: Event) {
+    if (!initialFocusRef?.current) return;
+    // Keep focus in the dialog (on the sheet itself) until the field takes it.
+    event.preventDefault();
+    (event.currentTarget as HTMLElement | null)?.focus({ preventScroll: true });
+    const reduced = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+    focusTimer.current = window.setTimeout(
+      () => initialFocusRef.current?.focus({ preventScroll: true }),
+      reduced ? 0 : SLIDE_IN_MS,
+    );
+  }
 
   React.useEffect(() => {
     setContainer(document.querySelector<HTMLElement>('[data-ui="garden"]'));
@@ -78,9 +119,17 @@ export function BottomSheet({
           // Outside the garden root (shouldn't happen), carry the tokens along.
           data-ui={container ? undefined : 'garden'}
           data-dragging={dragging || undefined}
-          style={dragging ? { transform: `translateY(${dragY}px)` } : undefined}
+          style={
+            {
+              ...(dragging ? { transform: `translateY(${dragY}px)` } : null),
+              ...(keyboard
+                ? { '--sheet-bottom': `${keyboard.inset}px`, '--sheet-max-h': `${keyboard.vh - 8}px` }
+                : null),
+            } as React.CSSProperties
+          }
+          onOpenAutoFocus={focusAfterSlideIn}
           className={gcn(
-            'fixed inset-x-0 bottom-0 z-50 flex max-h-[90dvh] min-h-0 flex-col rounded-t-hero bg-surface pb-safe text-text outline-none',
+            'fixed inset-x-0 bottom-[var(--sheet-bottom,0px)] z-50 flex max-h-[min(90dvh,var(--sheet-max-h,90dvh))] min-h-0 flex-col rounded-t-hero bg-surface pb-safe text-text outline-none',
             'duration-200 data-[state=closed]:animate-out data-[state=open]:animate-in',
             'data-[state=closed]:slide-out-to-bottom data-[state=open]:slide-in-from-bottom',
             'md:inset-x-auto md:bottom-auto md:left-1/2 md:top-1/2 md:max-h-[85dvh] md:w-[calc(100%-48px)] md:max-w-[540px]',
@@ -112,13 +161,20 @@ export function BottomSheet({
             <span className="h-[5px] w-9 rounded-full bg-disabled" />
           </div>
 
-          <div className="flex shrink-0 items-start justify-between gap-3 px-5 pb-2 pt-1 md:pt-5">
+          <div
+            className={gcn(
+              'flex shrink-0 items-start justify-between gap-3 px-5 pb-2 pt-1 md:pt-5',
+              headerClassName,
+            )}
+          >
             <div className="min-w-0">
-              <DialogPrimitive.Title className="font-display text-display-s">
+              <DialogPrimitive.Title className={gcn('font-display text-display-s', titleClassName)}>
                 {title}
               </DialogPrimitive.Title>
               {description ? (
-                <DialogPrimitive.Description className="mt-1 text-body-s text-muted-foreground">
+                <DialogPrimitive.Description
+                  className={gcn('mt-1 text-body-s text-muted-foreground', descriptionClassName)}
+                >
                   {description}
                 </DialogPrimitive.Description>
               ) : null}
@@ -126,13 +182,18 @@ export function BottomSheet({
             {closeButton ? (
               <DialogPrimitive.Close asChild>
                 <IconButton aria-label={t('close')} className="-mr-1 -mt-1">
-                  <CloseIcon />
+                  <CloseIcon width={20} height={20} />
                 </IconButton>
               </DialogPrimitive.Close>
             ) : null}
           </div>
 
-          <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-5 pb-4">
+          <div
+            className={gcn(
+              'min-h-0 flex-1 overflow-y-auto overscroll-contain px-5 pb-4',
+              bodyClassName,
+            )}
+          >
             {children}
           </div>
           {footer ? (

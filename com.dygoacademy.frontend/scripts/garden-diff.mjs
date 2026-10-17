@@ -63,6 +63,9 @@ const NAMES = [
   'A7-topic-bed',
   'A7-topic-bed-filter-sprouts',
   'A7c-word-search',
+  // A7b Add word (2026-10-17): the board's bed behind the sheet is a placeholder
+  'A7b-add-word',
+  'A7b-add-word-planted',
   'A8-me',
   'A8-me-account',
   'A8e-privacy',
