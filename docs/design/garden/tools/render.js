@@ -225,6 +225,11 @@ const JOBS = [
   ['LoadingBeeNav.dc.html', 'en', 'LD3b-loading-bee-nav', { lang: 'en' }],
   ['LoadingBeeNav.dc.html', 'vi', 'LD3b-loading-bee-nav-vi', { lang: 'vi' }],
   ['LoadingBeeNav.dc.html', 'en', 'LD3b-loading-bee-nav-topics', { lang: 'en', tab: 'topics' }],
+  // A7b Add word (board added 2026-10-17, Q-19).
+  ['AdultAddWord.dc.html', 'en', 'A7b-add-word', {}],
+  ['AdultAddWord.dc.html', 'en', 'A7b-add-word-planted', { planted: true }],
+  ['AdultAddWordVi.dc.html', 'vi', 'A7b-add-word-vi', {}],
+  ['AdultAddWordVi.dc.html', 'vi', 'A7b-add-word-planted-vi', { planted: true }],
 ].filter(([, , name]) => !FILTER || name.includes(FILTER));
 
 // English pages redrawn with the app's body stack (DM Sans, then Be Vietnam
