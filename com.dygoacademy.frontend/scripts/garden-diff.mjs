@@ -56,6 +56,9 @@ const NAMES = [
   'A5-welcome-back',
   'A5b-welcome-back-start',
   'A6-topics',
+  // A6 filter states (2026-10-17): EN travel, VI shared only
+  'A6-topics-filter-travel',
+  'A6-topics-filter-shared',
   'A6b-search-topics',
   'A7-topic-bed',
   'A7-topic-bed-filter-sprouts',

@@ -11,7 +11,7 @@ import { useTopics } from '@/hooks/useTopics';
 
 import { BottomSheet } from '../BottomSheet';
 import { Button } from '../Button';
-import { TopicsScreen } from '../screens/TopicsScreen';
+import { TopicsScreen, useTopicFilterLabels } from '../screens/TopicsScreen';
 import { sortBedsByDue, toScreenTopic, topicFilters, type GardenTopicSummary } from './data';
 import { LiveError, LiveLoading } from './LiveState';
 import { TopicBedsSidebar } from './SidebarLists';
@@ -20,8 +20,9 @@ import { TopicBedsSidebar } from './SidebarLists';
  * /topics: the beds (A6) from GET /topics.
  *
  * Real: title, word count, CEFR range, fruiting / flowering / sprouting
- * shares, due badge and the filter chips (library collections, Mine)
- * from the UI-5 fields; shared beds show under All (NAV-1: no Group chip).
+ * shares, due badge and the filter chips from the UI-5 fields. The chips
+ * are the fixed groups (2026-10-17: Mine, Academic, General, Work,
+ * Travel, Shared) that have beds, from `filter_group`.
  * Beds are sorted by due words, thirstiest first (U5-2). Search opens A6b
  * (/topics/search, 2026-10-11; was a sheet finding beds by name); "Plant a new bed" opens a sheet that creates the topic
  * (POST /topics, existing) and opens it. The locked seed pack waits for
@@ -29,6 +30,7 @@ import { TopicBedsSidebar } from './SidebarLists';
  */
 export function TopicsLive() {
   const t = useTranslations('screens.topics');
+  const filterLabels = useTopicFilterLabels();
   const topics = useTopics();
   const [newBedOpen, setNewBedOpen] = React.useState(false);
 
@@ -38,7 +40,7 @@ export function TopicsLive() {
   // Beds with the most words due come first (U5-2).
   const beds = sortBedsByDue(
     (topics.data as GardenTopicSummary[]).map((topic) =>
-      toScreenTopic(topic, t('library'), t('shared')),
+      toScreenTopic(topic, t('shared')),
     ),
   );
 
@@ -46,7 +48,7 @@ export function TopicsLive() {
     <>
       <TopicsScreen
         topics={beds}
-        filters={topicFilters(beds, { mine: t('mine') })}
+        filters={topicFilters(beds, filterLabels)}
         lockedPack={null}
         searchHref={GARDEN_ROUTES.topicsSearch}
         onNewBed={() => setNewBedOpen(true)}

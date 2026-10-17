@@ -40,10 +40,10 @@ import { QuizScreen } from '@/components/garden/screens/QuizScreen';
 import { ReviewScreen } from '@/components/garden/screens/ReviewScreen';
 import { TodaysGardenScreen } from '@/components/garden/screens/TodaysGardenScreen';
 import { TopicBedScreen } from '@/components/garden/screens/TopicBedScreen';
-import { TopicsScreen } from '@/components/garden/screens/TopicsScreen';
+import { TopicsScreen, useTopicFilterLabels } from '@/components/garden/screens/TopicsScreen';
 import { TopicSearchScreen } from '@/components/garden/screens/TopicSearchScreen';
 import { TopicWordSearchScreen } from '@/components/garden/screens/TopicWordSearchScreen';
-import { searchBedWords } from '@/components/garden/live/data';
+import { searchBedWords, topicFilters } from '@/components/garden/live/data';
 import { WeeklyHarvestScreen } from '@/components/garden/screens/WeeklyHarvestScreen';
 import { WelcomeBackScreen } from '@/components/garden/screens/WelcomeBackScreen';
 import { HomeScreen } from '@/components/home/HomeScreen';
@@ -83,11 +83,11 @@ function ReferenceScreenBody({ name, locale }: { name: ReferenceName; locale: Ap
     QUIZ_TOPIC,
     REVIEW,
     TOPICS,
-    TOPICS_ACADEMIC_FILTER,
     TOPICS_LOCKED_PACK,
+    SAMPLE_TOPICS,
   } = referenceFixtures(locale);
+  const topicFilterLabels = useTopicFilterLabels();
   const review = useTranslations('screens.review');
-  const topics = useTranslations('screens.topics');
   const privacyText = useTranslations('screens.privacy');
   const home = GARDEN_ROUTES.home;
 
@@ -185,13 +185,19 @@ function ReferenceScreenBody({ name, locale }: { name: ReferenceName; locale: Ap
         />
       );
     case 'A6-topics':
+    case 'A6-topics-filter-travel':
+    case 'A6-topics-filter-shared':
       return (
         <TopicsScreen
           topics={TOPICS}
-          filters={[
-            TOPICS_ACADEMIC_FILTER,
-            { id: 'mine', label: topics('mine') },
-          ]}
+          filters={topicFilters(TOPICS, topicFilterLabels)}
+          initialFilter={
+            name === 'A6-topics-filter-travel'
+              ? 'travel'
+              : name === 'A6-topics-filter-shared'
+                ? 'shared'
+                : 'all'
+          }
           lockedPack={TOPICS_LOCKED_PACK}
           searchHref={GARDEN_ROUTES.reference('A6b-search-topics')}
           newBedHref={GARDEN_ROUTES.topics}
@@ -216,8 +222,10 @@ function ReferenceScreenBody({ name, locale }: { name: ReferenceName; locale: Ap
       );
     case 'A6b-search-topics': {
       const sample = TOPIC_SEARCH[locale];
+      // A6b's canvas still shows A6's first bed by its short name.
       const yours = TOPICS.slice(0, 1).map((topic) => ({
         ...topic,
+        title: SAMPLE_TOPICS[0],
         collection: BED.meta.collection,
         planted: true,
         href: GARDEN_ROUTES.reference('A7-topic-bed'),

@@ -106,6 +106,7 @@ export function TopicSearchScreen({
               <li key={topic.id} onClickCapture={onOpen}>
                 <TopicRow
                   href={topic.href}
+                  titleText={topic.title}
                   title={
                     <span className="text-muted-foreground">
                       <Highlighted text={topic.title} query={query} />

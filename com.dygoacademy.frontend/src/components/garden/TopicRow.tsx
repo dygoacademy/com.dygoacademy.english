@@ -7,9 +7,10 @@ import { PlantGlyph } from './PlantGlyph';
 import type { PlantStage } from './plantStage';
 
 /**
- * Topic row (canvas A6): a 76px card link. A 56px forest tile with the
- * topic's leading plant, the title (16px bold) with the due badge (or
- * "All watered"), the meta line (12px), and a 6px bar split into fruiting
+ * Topic row (canvas A6): a card link, 76px or taller. A 56px forest tile
+ * with the topic's leading plant, the title (16px bold, up to 2 lines then
+ * "…", 2026-10-17) with the due badge (or "All watered") top-right on one
+ * line, the meta line (12px, one line), and a 6px bar split into fruiting
  * / flowering / sprouting shares.
  *
  * `shares` are percentages of the topic's words (0–100). Leave `due` out
@@ -19,6 +20,8 @@ export interface TopicRowProps {
   href: string;
   /** Text, or a node (A6b highlights the matched letters). */
   title: React.ReactNode;
+  /** The full name as text, shown on hover when the title is cut (defaults to `title` when it's a string). */
+  titleText?: string;
   meta: string;
   /** Leading plant on the tile: the stage most words are in. */
   stage: PlantStage;
@@ -27,12 +30,21 @@ export interface TopicRowProps {
   className?: string;
 }
 
-export function TopicRow({ href, title, meta, stage, due, shares, className }: TopicRowProps) {
+export function TopicRow({
+  href,
+  title,
+  titleText,
+  meta,
+  stage,
+  due,
+  shares,
+  className,
+}: TopicRowProps) {
   return (
     <Link
       href={href}
       className={gcn(
-        'flex h-[76px] items-center gap-3 rounded-card border border-border bg-surface pl-2.5 pr-[14px] text-text',
+        'flex min-h-[76px] shrink-0 items-center gap-3 rounded-card border border-border bg-surface py-2.5 pl-2.5 pr-[14px] text-text',
         'transition-colors duration-quick ease-garden hover:border-muted-foreground active:bg-surface-sunken',
         className,
       )}
@@ -41,24 +53,29 @@ export function TopicRow({ href, title, meta, stage, due, shares, className }: T
         <PlantGlyph stage={stage} variant="topic" />
       </span>
       <span className="flex min-w-0 flex-grow flex-col gap-[5px]">
-        <span className="flex items-baseline justify-between gap-2">
-          <span className="text-[16px] font-bold">{title}</span>
+        <span className="flex items-start justify-between gap-2">
+          <span
+            title={titleText ?? (typeof title === 'string' ? title : undefined)}
+            className="line-clamp-2 min-w-0 break-words text-[16px] font-bold leading-[1.25]"
+          >
+            {title}
+          </span>
           {due ? (
             due.tone === 'due' ? (
-              <span className="shrink-0 rounded-[10px] bg-water-soft px-2 py-[3px] text-[12px] font-bold text-water-text">
+              <span className="mt-px shrink-0 whitespace-nowrap rounded-[10px] bg-water-soft px-2 py-[3px] text-[12px] font-bold text-water-text">
                 {due.text}
               </span>
             ) : (
-              <span className="shrink-0 text-[12px] font-semibold text-success">
+              <span className="mt-0.5 shrink-0 whitespace-nowrap text-[12px] font-semibold text-success">
                 {due.text}
               </span>
             )
           ) : null}
         </span>
-        <span className="text-[12px] text-muted-foreground">{meta}</span>
+        <span className="truncate text-[12px] text-muted-foreground">{meta}</span>
         <span
           aria-hidden="true"
-          className="flex h-1.5 overflow-hidden rounded-[3px] bg-track"
+          className="flex h-1.5 shrink-0 overflow-hidden rounded-[3px] bg-track"
         >
           {shares ? (
             <>
@@ -91,7 +108,7 @@ export function LockedTopicRow({
   return (
     <div
       className={gcn(
-        'flex h-[76px] items-center gap-3 rounded-card border border-dashed border-locked-border bg-locked-bg pl-2.5 pr-[14px]',
+        'flex h-[76px] shrink-0 items-center gap-3 rounded-card border border-dashed border-locked-border bg-locked-bg pl-2.5 pr-[14px]',
         className,
       )}
     >

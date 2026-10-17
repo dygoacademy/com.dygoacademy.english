@@ -459,22 +459,33 @@ export function formatLevel(min: string | null, max: string | null): string | nu
 }
 
 /**
- * The A6 filter chips after "All", from the beds actually present: each
- * library collection (e.g. "IELTS Academic"), then Mine, then Group, as in
- * the canvas. A kind with no beds gets no chip.
+ * A6 filter groups after "All", in the canvas order (2026-10-17): Mine,
+ * the four library shelves, Shared. Fixed, never from collection names.
+ */
+export const TOPIC_FILTER_GROUPS = [
+  'mine',
+  'academic',
+  'general',
+  'work',
+  'travel',
+  'shared',
+] as const;
+export type TopicFilterGroup = (typeof TOPIC_FILTER_GROUPS)[number];
+
+/**
+ * The A6 filter chips after "All": the fixed groups that have at least one
+ * bed, in order. A bed with no group (a library bed whose collection has
+ * no shelf) only shows under All.
  */
 export function topicFilters(
-  beds: ReadonlyArray<{ group: string }>,
-  labels: { mine: string },
-): Array<{ id: string; label: string }> {
+  beds: ReadonlyArray<{ group: string | null }>,
+  labels: Record<TopicFilterGroup, string>,
+): Array<{ id: TopicFilterGroup; label: string }> {
   const groups = new Set(beds.map((bed) => bed.group));
-  const collections = [...groups]
-    .filter((group) => group.startsWith('library:'))
-    .map((group) => ({ id: group, label: group.slice('library:'.length) }));
-  return [
-    ...collections,
-    ...(groups.has('mine') ? [{ id: 'mine', label: labels.mine }] : []),
-  ];
+  return TOPIC_FILTER_GROUPS.filter((id) => groups.has(id)).map((id) => ({
+    id,
+    label: labels[id],
+  }));
 }
 
 /**
@@ -492,6 +503,8 @@ export type GardenTopicSummary = TopicSummary &
     max_level: string | null;
     kind: 'mine' | 'group' | 'library';
     collection_title: string | null;
+    /** A6 filter group (2026-10-17); null = All only. */
+    filter_group: TopicFilterGroup | null;
     is_my_words: boolean;
   }>;
 
@@ -500,10 +513,20 @@ const num = (value: string | null | undefined) => {
   return Number.isFinite(n) ? n : 0;
 };
 
+/**
+ * The bed's A6 filter group: `filter_group` from the API, or from `kind`
+ * on an API that doesn't send it yet (a library bed then shows under All).
+ */
+function topicFilterGroupOf(topic: GardenTopicSummary): TopicFilterGroup | null {
+  if (topic.filter_group !== undefined) return topic.filter_group;
+  if (topic.kind === 'mine') return 'mine';
+  if (topic.kind === 'group') return 'shared';
+  return null;
+}
+
 /** Maps one `GET /topics` row to the screen's topic. */
 export function toScreenTopic(
   topic: GardenTopicSummary,
-  libraryLabel: string,
   sharedLabel = 'Shared',
 ): TopicsScreenTopic {
   const words = num(topic.word_count);
@@ -512,10 +535,7 @@ export function toScreenTopic(
     id: topic.id,
     href: GARDEN_ROUTES.topic(topic.id),
     title: topic.title,
-    group:
-      topic.kind === 'library'
-        ? `library:${topic.collection_title ?? libraryLabel}`
-        : (topic.kind ?? 'all'),
+    group: topicFilterGroupOf(topic),
     // A shared group bed says "Shared" where the level goes, as in the canvas.
     level:
       topic.kind === 'group'
@@ -951,7 +971,7 @@ export function toSearchTopics(
   sharedLabel: string,
 ): SearchTopic[] {
   return topics.map((summary) => {
-    const bed = toScreenTopic(summary, libraryLabel, sharedLabel);
+    const bed = toScreenTopic(summary, sharedLabel);
     const grown = bed.stages ? bed.stages.tree + bed.stages.flower + bed.stages.sprout : 0;
     return {
       ...bed,

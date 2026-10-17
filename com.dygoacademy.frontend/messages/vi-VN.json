@@ -797,9 +797,17 @@
     },
     "topics": {
       "title": "Chủ đề",
-      "all": "Tất cả",
       "summary": "{beds, plural, one {# luống} other {# luống}} · {words, plural, one {# từ} other {# từ}}",
       "filterLabel": "Lọc chủ đề",
+      "filters": {
+        "all": "Tất cả",
+        "mine": "Của tôi",
+        "academic": "Học thuật",
+        "general": "Tổng quát",
+        "work": "Công việc",
+        "travel": "Du lịch",
+        "shared": "Nhóm"
+      },
       "words": "{count, plural, one {# từ} other {# từ}}",
       "fruiting": "{count} kết trái",
       "separator": " · ",
@@ -807,7 +815,6 @@
       "allWatered": "Đã tưới hết",
       "locked": "Chưa mở 🔒",
       "newBed": "Tạo luống mới",
-      "mine": "Của tôi",
       "empty": "Chưa có luống nào. Tạo luống đầu tiên ở bên dưới nhé.",
       "library": "Thư viện",
       "newBedTitle": "Tạo luống mới",

@@ -17,7 +17,6 @@ import {
   REFERENCE_NAMES,
   REVIEW,
   TOPICS,
-  TOPICS_ACADEMIC_FILTER,
   TOPICS_LOCKED_PACK,
   isReferenceName,
 } from './fixtures';
@@ -26,6 +25,7 @@ import { MeScreen } from './MeScreen';
 import { ReviewScreen } from './ReviewScreen';
 import { TodaysGardenScreen } from './TodaysGardenScreen';
 import { TopicBedScreen } from './TopicBedScreen';
+import { topicFilters } from '../live/data';
 import { TopicsScreen } from './TopicsScreen';
 import { WeeklyHarvestScreen } from './WeeklyHarvestScreen';
 import { WelcomeBackScreen } from './WelcomeBackScreen';
@@ -34,8 +34,8 @@ const push = vi.fn();
 vi.mock('next/navigation', () => ({ useRouter: () => ({ push }) }));
 
 describe('reference fixtures', () => {
-  it('lists the 81 canvas references (… 5 speaking, 4 speaking entry points, 15 pronunciation, 6 voice donation, 4 onboarding, 3 loading)', () => {
-    expect(REFERENCE_NAMES).toHaveLength(81);
+  it('lists the 83 canvas references (… 5 speaking, 4 speaking entry points, 15 pronunciation, 6 voice donation, 4 onboarding, 3 loading, 2 A6 filters)', () => {
+    expect(REFERENCE_NAMES).toHaveLength(83);
     expect(isReferenceName('A1b-all-watered')).toBe(true);
     expect(isReferenceName('A7c-word-search')).toBe(true);
     expect(isReferenceName('A6b-search-topics')).toBe(true);
@@ -271,34 +271,131 @@ describe('WeeklyHarvestScreen', () => {
 });
 
 describe('TopicsScreen', () => {
-  function renderTopics() {
+  const FILTER_LABELS = messages.screens.topics.filters;
+
+  function renderTopics(props: Partial<React.ComponentProps<typeof TopicsScreen>> = {}) {
     return renderWithIntl(
       <TopicsScreen
         topics={TOPICS}
-        filters={[
-          TOPICS_ACADEMIC_FILTER,
-          { id: 'mine', label: 'Mine' },
-        ]}
+        filters={topicFilters(TOPICS, FILTER_LABELS)}
         lockedPack={TOPICS_LOCKED_PACK}
         searchHref="/search"
         newBedHref="/topics/new"
+        {...props}
       />,
     );
   }
 
+  const chipNames = () =>
+    within(screen.getByRole('group', { name: 'Filter topics' }))
+      .getAllByRole('button')
+      .map((chip) => chip.textContent);
+
+  it('shows the fixed filter groups in order (2026-10-17)', () => {
+    renderTopics();
+    expect(chipNames()).toEqual(['All', 'Mine', 'Academic', 'General', 'Work', 'Travel', 'Shared']);
+  });
+
+  it('hides a group with no beds, keeps All, never makes a chip from a collection name', () => {
+    renderTopics({
+      topics: TOPICS.filter((topic) => topic.group === 'mine' || topic.group === 'academic'),
+      filters: topicFilters(
+        [...TOPICS.filter((topic) => topic.group === 'mine'), { group: 'library:IELTS Academic' }],
+        FILTER_LABELS,
+      ),
+    });
+    expect(chipNames()).toEqual(['All', 'Mine']);
+  });
+
   it('filters the beds with the chips', () => {
     renderTopics();
-    expect(screen.getByText('5 beds · 196 words')).toBeTruthy();
-    expect(screen.getByText('Environment')).toBeTruthy();
+    expect(screen.getByText('6 beds · 238 words')).toBeTruthy();
+    expect(screen.getByText('Environment & climate change')).toBeTruthy();
     fireEvent.click(screen.getByRole('button', { name: 'Mine' }));
     expect(screen.getByRole('button', { name: 'Mine' }).getAttribute('aria-pressed')).toBe('true');
-    expect(screen.queryByText('Environment')).toBeNull();
-    expect(screen.getByText('Work & careers')).toBeTruthy();
-    // The locked pack only belongs to All and IELTS Academic.
+    expect(screen.queryByText('Environment & climate change')).toBeNull();
+    expect(screen.getByText('Health')).toBeTruthy();
+    // The locked pack only belongs to All and Academic.
     expect(screen.queryByText('Academic Word List')).toBeNull();
-    fireEvent.click(screen.getByRole('button', { name: 'IELTS Academic' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Academic' }));
     expect(screen.getByText('Academic Word List')).toBeTruthy();
-    expect(screen.queryByText('Work & careers')).toBeNull();
+    expect(screen.queryByText('Health')).toBeNull();
+    fireEvent.click(screen.getByRole('button', { name: 'Shared' }));
+    expect(
+      screen.getByText('IELTS Sprint · Week 3 · Speaking Part 2 practice with the group'),
+    ).toBeTruthy();
+    expect(screen.queryByText('Travel', { selector: 'a span' })).toBeNull();
+  });
+
+  it('keeps the chips on one sliding row: no wrap, chips never shrink, long labels cut', () => {
+    renderTopics();
+    const row = screen.getByRole('group', { name: 'Filter topics' });
+    expect(row.className).toMatch(/\boverflow-x-auto\b/);
+    expect(row.className).not.toMatch(/flex-wrap/);
+    const chip = within(row).getByRole('button', { name: 'Academic' });
+    expect(chip.className).toMatch(/\bshrink-0\b/);
+    expect(chip.className).toMatch(/\bwhitespace-nowrap\b/);
+    expect(chip.className).toMatch(/max-w-\[200px\]/);
+    expect(chip.getAttribute('title')).toBe('Academic');
+  });
+
+  it('scrolls a picked chip to the middle, without animation for reduced motion', () => {
+    const scrollIntoView = vi.fn();
+    const original = Element.prototype.scrollIntoView;
+    Element.prototype.scrollIntoView = scrollIntoView;
+    try {
+      renderTopics();
+      fireEvent.click(screen.getByRole('button', { name: 'Shared' }));
+      expect(scrollIntoView).toHaveBeenLastCalledWith(
+        expect.objectContaining({ inline: 'center', block: 'nearest' }),
+      );
+      expect(scrollIntoView.mock.contexts.at(-1)).toBe(
+        screen.getByRole('button', { name: 'Shared' }),
+      );
+    } finally {
+      Element.prototype.scrollIntoView = original;
+    }
+  });
+
+  it('shows the edge fades from the scroll position', () => {
+    renderTopics();
+    const row = screen.getByRole('group', { name: 'Filter topics' });
+    const container = row.parentElement!;
+    Object.defineProperty(row, 'scrollWidth', { configurable: true, value: 551 });
+    Object.defineProperty(row, 'clientWidth', { configurable: true, value: 390 });
+    row.scrollLeft = 0;
+    fireEvent.scroll(row);
+    expect(container.querySelector('[data-fade="right"]')).toBeTruthy();
+    expect(container.querySelector('[data-fade="left"]')).toBeNull();
+    row.scrollLeft = 80;
+    fireEvent.scroll(row);
+    expect(container.querySelector('[data-fade="right"]')).toBeTruthy();
+    expect(container.querySelector('[data-fade="left"]')).toBeTruthy();
+    row.scrollLeft = 161;
+    fireEvent.scroll(row);
+    expect(container.querySelector('[data-fade="right"]')).toBeNull();
+    expect(container.querySelector('[data-fade="left"]')).toBeTruthy();
+    // Everything fits: no fades.
+    Object.defineProperty(row, 'scrollWidth', { configurable: true, value: 390 });
+    row.scrollLeft = 0;
+    fireEvent.scroll(row);
+    expect(container.querySelector('[data-fade]')).toBeNull();
+  });
+
+  it('clamps a long bed name to 2 lines with the full name as its title, due badge kept', () => {
+    renderTopics();
+    const name = 'IELTS Sprint · Week 3 · Speaking Part 2 practice with the group';
+    const title = screen.getByText(name);
+    expect(title.className).toMatch(/\bline-clamp-2\b/);
+    expect(title.className).toMatch(/\bbreak-words\b/);
+    expect(title.className).toMatch(/\bmin-w-0\b/);
+    expect(title.getAttribute('title')).toBe(name);
+    const card = title.closest('a')!;
+    expect(card.className).toMatch(/min-h-\[76px\]/);
+    expect(card.className).not.toMatch(/(^|\s)h-\[76px\]/);
+    const due = within(card).getByText('5 due');
+    expect(due.className).toMatch(/\bwhitespace-nowrap\b/);
+    expect(due.className).toMatch(/\bshrink-0\b/);
   });
 
   it('links search to A6b', () => {

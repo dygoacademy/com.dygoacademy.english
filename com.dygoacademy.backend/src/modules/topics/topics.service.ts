@@ -58,7 +58,26 @@ export interface TopicSummary {
   is_my_words: boolean;
   /** For `library` topics, the owning group's name (e.g. "IELTS Academic") when visible. */
   collection_title: string | null;
+  /**
+   * The A6 filter this bed shows under besides All (2026-10-17): `mine`,
+   * `shared` (a group bed) or the library collection's shelf; null for a
+   * library bed whose collection has no shelf (All only).
+   */
+  filter_group: TopicFilterGroup | null;
   created_at: Date;
+}
+
+export type LibraryShelf = 'academic' | 'general' | 'work' | 'travel';
+export type TopicFilterGroup = 'mine' | 'shared' | LibraryShelf;
+
+/** A6 filter group from the bed's kind and, for a library bed, its collection's shelf. */
+export function topicFilterGroup(
+  kind: TopicSummary['kind'],
+  libraryShelf: LibraryShelf | null,
+): TopicFilterGroup | null {
+  if (kind === 'mine') return 'mine';
+  if (kind === 'group') return 'shared';
+  return libraryShelf ?? null;
 }
 
 export interface TopicRow {
@@ -130,7 +149,11 @@ export class TopicsService {
     // the bed's kind. Still no tenant filter: `groups` and `group_members`
     // are RLS-scoped like everything else, and the caller-specific joins
     // are join conditions on $1 (the caller), not a WHERE clause.
-    return this.db.queryAs<TopicSummary>(
+    // `library_shelf` (2026-10-17) comes back for library beds only and is
+    // folded into `filter_group` below.
+    const rows = await this.db.queryAs<
+      Omit<TopicSummary, 'filter_group'> & { library_shelf?: LibraryShelf | null }
+    >(
       userId,
       `select t.id,
               t.group_id,
@@ -164,6 +187,10 @@ export class TopicsService {
                 when g.owner_id is distinct from $1 and not bool_or(me.user_id is not null) and t.is_public
                 then g.name
               end as collection_title,
+              case
+                when g.owner_id is distinct from $1 and not bool_or(me.user_id is not null) and t.is_public
+                then g.library_shelf
+              end as library_shelf,
               t.created_at
          from public.topics t
          left join public.groups g on g.id = t.group_id
@@ -175,6 +202,10 @@ export class TopicsService {
         order by t.created_at desc`,
       [userId],
     );
+    return rows.map(({ library_shelf, ...row }) => ({
+      ...row,
+      filter_group: topicFilterGroup(row.kind, library_shelf ?? null),
+    }));
   }
 
   /**

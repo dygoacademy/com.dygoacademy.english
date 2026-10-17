@@ -2,6 +2,12 @@
 
 Things in `docs/design/garden/CHANGELOG.md` that are unclear, or that differ from what is built, written down instead of guessed (CHANGELOG "How to use this file", rule 5). Newest first. When one is answered, note the answer and date here and update the changelog.
 
+## 2026-10-17 · A6 Topics filter groups (Claude Code)
+
+| # | The plan says | What the build does | Question / suggestion |
+|---|---|---|---|
+| Q-17 | Give each public library collection a shelf (Academic, General, Work, Travel); leave unclear ones (e.g. Everyday life) empty and ask | `20261017_library_shelf.sql` sets a shelf only for collections named exactly IELTS Academic, IELTS General, Work & careers or Travel. Every other public collection stays empty, so its beds show under All only. The list of collections couldn't be read from here; check it on UAT with `select name, library_shelf from groups where is_public` after the migration. | Which shelf, if any, for Everyday life and any other collection still empty? |
+
 ## 2026-10-08 · Onboarding OB1–OB5, built ahead of the boards (Claude Code)
 
 Dylan asked (2026-10-07) for OB1–OB5 to be built while they are still *For approval*. They are on branch `feature/onboarding-ob1-ob5`, not merged; see `docs/reports/ONBOARDING-REPORT.md` there. The OB rows of the design changelog are not committed yet (only in the main working tree), so their Build status column is not filled in on the branch. Once that section is committed, set it to "built on branch feature/onboarding-ob1-ob5, not yet verified against boards".

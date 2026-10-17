@@ -801,9 +801,17 @@
     },
     "topics": {
       "title": "主题",
-      "all": "全部",
       "summary": "{beds} 个花圃 · {words} 个单词",
       "filterLabel": "筛选主题",
+      "filters": {
+        "all": "全部",
+        "mine": "我的",
+        "academic": "学术",
+        "general": "通用",
+        "work": "工作",
+        "travel": "旅行",
+        "shared": "小组"
+      },
       "words": "{count} 个单词",
       "fruiting": "{count} 个结果",
       "separator": " · ",
@@ -811,7 +819,6 @@
       "allWatered": "都浇过水了",
       "locked": "未解锁",
       "newBed": "开辟新花圃",
-      "mine": "我的",
       "empty": "还没有花圃。在下面开辟第一个吧。",
       "library": "词库",
       "newBedTitle": "开辟新花圃",

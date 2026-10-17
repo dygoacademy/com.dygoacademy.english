@@ -797,9 +797,17 @@
     },
     "topics": {
       "title": "Topics",
-      "all": "All",
       "summary": "{beds, plural, one {# bed} other {# beds}} · {words, plural, one {# word} other {# words}}",
       "filterLabel": "Filter topics",
+      "filters": {
+        "all": "All",
+        "mine": "Mine",
+        "academic": "Academic",
+        "general": "General",
+        "work": "Work",
+        "travel": "Travel",
+        "shared": "Shared"
+      },
       "words": "{count, plural, one {# word} other {# words}}",
       "fruiting": "{count} fruiting",
       "separator": " · ",
@@ -807,7 +815,6 @@
       "allWatered": "All watered!",
       "locked": "Locked 🔒",
       "newBed": "Plant a new bed",
-      "mine": "Mine",
       "empty": "No beds here yet. Plant your first one below.",
       "library": "Library",
       "newBedTitle": "Plant a new bed",

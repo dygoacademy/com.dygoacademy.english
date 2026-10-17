@@ -32,6 +32,9 @@ export const REFERENCE_NAMES = [
   'A5-welcome-back',
   'A5b-welcome-back-start',
   'A6-topics',
+  // A6 filter states (canvas 2026-10-17): the filter picked, the chip scrolled to the middle
+  'A6-topics-filter-travel',
+  'A6-topics-filter-shared',
   'A7-topic-bed',
   'A7-topic-bed-filter-sprouts',
   // 2026-10-11 Topics search: sample data in WORD_SEARCH / TOPIC_SEARCH below
@@ -360,10 +363,13 @@ export const ALL_WATERED = {
   ripens: { time: { hour: 7, minute: 30 }, count: 14 },
 };
 
-/** AdultTopics.dc.html */
+/**
+ * AdultTopics.dc.html (redrawn 2026-10-17: 6 long-named beds, one per
+ * filter group). Titles per locale in SAMPLE[locale].beds.
+ */
 export const TOPICS: TopicsScreenTopic[] = [
   {
-    title: 'Environment',
+    title: 'Environment & climate change',
     group: 'academic',
     level: 'B2–C1',
     words: 48,
@@ -371,40 +377,47 @@ export const TOPICS: TopicsScreenTopic[] = [
     due: 6,
   },
   {
-    title: 'Education',
-    group: 'academic',
+    title: 'Science and technology in everyday life',
+    group: 'general',
     level: 'B2',
     words: 40,
-    stages: { tree: 22, flower: 9, sprout: 5 },
-    due: 4,
-  },
-  {
-    title: 'Technology',
-    group: 'academic',
-    level: 'B2–C1',
-    words: 36,
     stages: { tree: 8, flower: 6, sprout: 12 },
     due: 8,
   },
   {
-    title: 'Work & careers',
-    group: 'mine',
+    title: 'Work & careers: job interviews and team meetings',
+    group: 'work',
     level: 'B1–B2',
     words: 30,
     stages: { tree: 20, flower: 6, sprout: 2 },
     due: 0,
   },
   {
-    title: 'IELTS Sprint · Week 3',
-    group: 'group',
+    title: 'Travel',
+    group: 'travel',
+    level: 'B1',
+    words: 36,
+    stages: { tree: 22, flower: 9, sprout: 5 },
+    due: 4,
+  },
+  {
+    title: 'IELTS Sprint · Week 3 · Speaking Part 2 practice with the group',
+    group: 'shared',
     level: 'Shared',
     words: 42,
     stages: { tree: 12, flower: 10, sprout: 12 },
     due: 5,
   },
+  {
+    title: 'Health',
+    group: 'mine',
+    level: 'B1–B2',
+    words: 42,
+    stages: { tree: 10, flower: 8, sprout: 14 },
+    due: 3,
+  },
 ].map((topic, index) => ({ ...topic, id: `topic-${index + 1}`, href: '#' }));
 
-export const TOPICS_ACADEMIC_FILTER = { id: 'academic', label: 'IELTS Academic' };
 export const TOPICS_LOCKED_PACK = {
   name: 'Academic Word List',
   bloomsNeeded: 1,
@@ -593,6 +606,8 @@ export const ME = {
  */
 const SAMPLE_EN = {
   topics: ['Environment', 'Education', 'Technology', 'Work & careers', 'IELTS Sprint · Week 3'],
+  /** A6's beds (TOPICS), 2026-10-17. */
+  beds: TOPICS.map((topic) => topic.title),
   shared: 'Shared',
   academic: 'IELTS Academic',
   collection: 'IELTS Academic',
@@ -606,6 +621,14 @@ const SAMPLE = {
   'en-US': SAMPLE_EN,
   'vi-VN': {
     topics: ['Môi trường', 'Giáo dục', 'Công nghệ', 'Công việc', 'IELTS Sprint · Tuần 3'],
+    beds: [
+      'Môi trường và biến đổi khí hậu',
+      'Khoa học và công nghệ trong đời sống hằng ngày',
+      'Công việc: phỏng vấn xin việc và họp nhóm',
+      'Du lịch',
+      'IELTS Sprint · Tuần 3 · Luyện Speaking Part 2 cùng nhóm',
+      'Sức khỏe',
+    ],
     shared: 'Chung',
     academic: 'IELTS',
     collection: 'IELTS Academic',
@@ -616,6 +639,14 @@ const SAMPLE = {
   },
   'zh-CN': {
     topics: ['环境', '教育', '科技', '工作与职业', 'IELTS 冲刺 · 第 3 周'],
+    beds: [
+      '环境与气候变化',
+      '日常生活中的科学与技术',
+      '工作与职业：求职面试和团队会议',
+      '旅行',
+      'IELTS 冲刺 · 第 3 周 · 小组口语 Part 2 练习',
+      '健康',
+    ],
     shared: '共享',
     academic: 'IELTS 学术',
     collection: 'IELTS 学术',
@@ -789,10 +820,9 @@ export function referenceFixtures(locale: AppLocale) {
     COMEBACK_START,
     TOPICS: TOPICS.map((topic, index) => ({
       ...topic,
-      title: sample.topics[index],
-      level: topic.group === 'group' ? sample.shared : topic.level,
+      title: sample.beds[index],
+      level: topic.group === 'shared' ? sample.shared : topic.level,
     })),
-    TOPICS_ACADEMIC_FILTER: { ...TOPICS_ACADEMIC_FILTER, label: sample.academic },
     TOPICS_LOCKED_PACK,
     BED: {
       ...BED,
@@ -809,6 +839,7 @@ export function referenceFixtures(locale: AppLocale) {
     },
     ME: { ...ME, meanings: sample.meanings },
     QUIZ_TOPIC: sample.topics[0],
+    SAMPLE_TOPICS: sample.topics,
   };
 }
 

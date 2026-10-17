@@ -2,7 +2,7 @@ import { ForbiddenException, NotFoundException } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 
 import { DatabaseService } from '../../database/database.service';
-import { TopicsService } from './topics.service';
+import { TopicsService, topicFilterGroup } from './topics.service';
 
 /** Builds a fresh TopicsService wired to stubbed DatabaseService methods. */
 async function makeService(
@@ -129,6 +129,45 @@ describe('TopicsService', () => {
     expect(params).toEqual(['user-42']);
     expect(sql).toMatch(/g\.owner_id = \$1/);
     expect(sql).toMatch(/me\.user_id = \$1/);
+  });
+
+  /**
+   * A6 fixed filter groups (2026-10-17): `filter_group` from the bed's kind
+   * and, for a library bed, its collection's `library_shelf`.
+   */
+  it.each([
+    ['mine', null, 'mine'],
+    ['mine', 'academic', 'mine'],
+    ['group', null, 'shared'],
+    ['library', 'academic', 'academic'],
+    ['library', 'general', 'general'],
+    ['library', 'work', 'work'],
+    ['library', 'travel', 'travel'],
+    ['library', null, null],
+  ] as const)('maps kind %s with shelf %s to filter group %s', (kind, shelf, expected) => {
+    expect(topicFilterGroup(kind, shelf)).toBe(expected);
+  });
+
+  it('adds filter_group from the library shelf and does not return library_shelf itself', async () => {
+    queryAsMock.mockResolvedValueOnce([
+      { id: 'lib', kind: 'library', collection_title: 'IELTS Academic', library_shelf: 'academic' },
+      { id: 'life', kind: 'library', collection_title: 'Everyday life', library_shelf: null },
+      { id: 'own', kind: 'mine', collection_title: null, library_shelf: null },
+      { id: 'grp', kind: 'group', collection_title: null, library_shelf: null },
+    ]);
+
+    const result = await service.findAllVisible('user-42');
+
+    expect(result.map((row) => [row.id, row.filter_group])).toEqual([
+      ['lib', 'academic'],
+      ['life', null],
+      ['own', 'mine'],
+      ['grp', 'shared'],
+    ]);
+    expect(result[0]).not.toHaveProperty('library_shelf');
+    expect(result[0]).toMatchObject({ kind: 'library', collection_title: 'IELTS Academic' });
+    const [, sql] = queryAsMock.mock.calls[0] as [string, string];
+    expect(sql).toMatch(/then g\.library_shelf\s+end as library_shelf/);
   });
 
   it('passes mastered_count through unchanged, alongside word_count', async () => {

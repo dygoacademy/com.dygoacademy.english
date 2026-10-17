@@ -104,19 +104,38 @@ describe('topics helpers', () => {
     expect(formatLevel(null, null)).toBeNull();
   });
 
-  it('builds chips from the kinds present, collections first, no Group chip', async () => {
+  it('builds the fixed filter chips in order, only for groups with beds', async () => {
     const { topicFilters } = await import('./data');
-    const labels = { mine: 'Mine' };
+    const labels = {
+      mine: 'Mine',
+      academic: 'Academic',
+      general: 'General',
+      work: 'Work',
+      travel: 'Travel',
+      shared: 'Shared',
+    };
     expect(
       topicFilters(
-        [{ group: 'group' }, { group: 'library:IELTS Academic' }, { group: 'mine' }],
+        [
+          { group: 'shared' },
+          { group: 'travel' },
+          { group: 'academic' },
+          { group: 'mine' },
+          { group: 'academic' },
+          { group: null },
+        ],
         labels,
       ),
     ).toEqual([
-      { id: 'library:IELTS Academic', label: 'IELTS Academic' },
       { id: 'mine', label: 'Mine' },
+      { id: 'academic', label: 'Academic' },
+      { id: 'travel', label: 'Travel' },
+      { id: 'shared', label: 'Shared' },
     ]);
     expect(topicFilters([{ group: 'mine' }], labels)).toEqual([{ id: 'mine', label: 'Mine' }]);
+    expect(topicFilters([], labels)).toEqual([]);
+    // No chip from a collection name (the old `library:<name>` groups).
+    expect(topicFilters([{ group: 'library:IELTS Academic' }, { group: null }], labels)).toEqual([]);
   });
 
   it('builds the garden from stage_counts (U4-3)', () => {

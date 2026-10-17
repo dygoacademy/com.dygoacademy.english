@@ -11,6 +11,7 @@ import { EmptyState } from '../EmptyState';
 import { PlusIcon, SearchIcon } from '../icons';
 import { IconButton } from '../IconButton';
 import type { PlantStage } from '../plantStage';
+import { TOPIC_FILTER_GROUPS, type TopicFilterGroup } from '../live/data';
 import { LockedTopicRow, TopicRow } from '../TopicRow';
 import { GardenTabBar, IPAD_NAV_COLUMN, SCREEN_CLASSES } from './GardenTabBar';
 
@@ -21,13 +22,17 @@ import { GardenTabBar, IPAD_NAV_COLUMN, SCREEN_CLASSES } from './GardenTabBar';
  * one row per topic → the locked seed pack → "Plant a new bed" → tab bar.
  * Stage counts and due counts are optional per topic: the bar and badge
  * only show when the API provides them (UI-5).
+ *
+ * 2026-10-17: the chips are fixed groups (All, Mine, Academic, General,
+ * Work, Travel, Shared) in a sideways slider that never wraps; the list
+ * scrolls under the header and the tab bar stays put.
  */
 export interface TopicsScreenTopic {
   id: string;
   href: string;
   title: string;
-  /** Filter group id (matches one of `filters`). */
-  group: string;
+  /** Filter group id (matches one of `filters`); null = All only. */
+  group: string | null;
   level: string | null;
   words: number;
   /** Words per stage; `seed` is optional (older APIs only sent the others). */
@@ -37,7 +42,7 @@ export interface TopicsScreenTopic {
 
 export interface TopicsScreenProps {
   topics: readonly TopicsScreenTopic[];
-  /** Filter chips after "All": id + label (e.g. { id: 'academic', label: 'IELTS Academic' }). */
+  /** Filter chips after "All": id + label (e.g. { id: 'academic', label: 'Academic' }). */
   filters: ReadonlyArray<{ id: string; label: string }>;
   initialFilter?: string;
   /**
@@ -79,6 +84,122 @@ export function leadingStage(stages: TopicsScreenTopic['stages'], words = 0): Pl
 
 const pct = (n: number, total: number) => (total > 0 ? Math.round((n / total) * 100) : 0);
 
+/** The fixed filter groups' labels in the page's language (`screens.topics.filters`). */
+export function useTopicFilterLabels(): Record<TopicFilterGroup, string> {
+  const t = useTranslations('screens.topics.filters');
+  return Object.fromEntries(TOPIC_FILTER_GROUPS.map((id) => [id, t(id)])) as Record<
+    TopicFilterGroup,
+    string
+  >;
+}
+
+function prefersReducedMotion() {
+  return (
+    typeof window !== 'undefined' &&
+    typeof window.matchMedia === 'function' &&
+    window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  );
+}
+
+/**
+ * A6 filter chips as a sideways slider (2026-10-17): one row that scrolls
+ * when the chips don't fit, scrollbar hidden, a cream fade on each edge
+ * that has more. Picking a chip scrolls it to the middle, and so does the
+ * first render when the initial chip is out of view.
+ */
+export function FilterChipRow({
+  chips,
+  selected,
+  onSelect,
+  label,
+}: {
+  chips: ReadonlyArray<{ id: string; label: string }>;
+  selected: string;
+  onSelect: (id: string) => void;
+  label: string;
+}) {
+  const rowRef = React.useRef<HTMLDivElement>(null);
+  const [fade, setFade] = React.useState({ left: false, right: false });
+
+  const updateFades = React.useCallback(() => {
+    const row = rowRef.current;
+    if (!row) return;
+    const max = row.scrollWidth - row.clientWidth;
+    const left = row.scrollLeft > 1;
+    const right = row.scrollLeft < max - 1;
+    setFade((prev) => (prev.left === left && prev.right === right ? prev : { left, right }));
+  }, []);
+
+  const scrollToChip = React.useCallback((id: string, smooth: boolean) => {
+    const chip = rowRef.current?.querySelector<HTMLElement>(`[data-filter="${id}"]`);
+    chip?.scrollIntoView?.({
+      inline: 'center',
+      block: 'nearest',
+      behavior: smooth && !prefersReducedMotion() ? 'smooth' : 'auto',
+    });
+  }, []);
+
+  React.useEffect(() => {
+    const row = rowRef.current;
+    const chip = row?.querySelector<HTMLElement>(`[data-filter="${selected}"]`);
+    if (row && chip) {
+      const start = chip.offsetLeft - row.offsetLeft;
+      const outOfView =
+        start < row.scrollLeft || start + chip.offsetWidth > row.scrollLeft + row.clientWidth;
+      if (outOfView) scrollToChip(selected, false);
+    }
+    updateFades();
+    window.addEventListener('resize', updateFades);
+    return () => window.removeEventListener('resize', updateFades);
+    // First render only: later picks scroll in `pick`.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  function pick(id: string) {
+    onSelect(id);
+    scrollToChip(id, true);
+  }
+
+  return (
+    <div className="relative shrink-0">
+      <div
+        ref={rowRef}
+        role="group"
+        aria-label={label}
+        onScroll={updateFades}
+        className="flex gap-2 overflow-x-auto scroll-px-4 px-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+      >
+        {chips.map((chip) => (
+          <Chip
+            key={chip.id}
+            data-filter={chip.id}
+            title={chip.label}
+            selected={selected === chip.id}
+            onClick={() => pick(chip.id)}
+            className="max-w-[200px] px-3"
+          >
+            <span className="truncate">{chip.label}</span>
+          </Chip>
+        ))}
+      </div>
+      {fade.left ? (
+        <span
+          aria-hidden="true"
+          data-fade="left"
+          className="pointer-events-none absolute inset-y-0 left-0 w-7 bg-[linear-gradient(to_left,rgba(244,241,234,0),#F4F1EA_85%)]"
+        />
+      ) : null}
+      {fade.right ? (
+        <span
+          aria-hidden="true"
+          data-fade="right"
+          className="pointer-events-none absolute inset-y-0 right-0 w-9 bg-[linear-gradient(to_right,rgba(244,241,234,0),#F4F1EA_85%)]"
+        />
+      ) : null}
+    </div>
+  );
+}
+
 export function TopicsScreen({
   topics,
   filters,
@@ -97,11 +218,11 @@ export function TopicsScreen({
 
   const shown = topics.filter((topic) => filter === 'all' || topic.group === filter);
   const totalWords = topics.reduce((sum, topic) => sum + topic.words, 0);
-  const chips = [{ id: 'all', label: t('all') }, ...filters];
+  const chips = [{ id: 'all', label: t('filters.all') }, ...filters];
 
   return (
-    <div className={gcn(SCREEN_CLASSES, IPAD_NAV_COLUMN, 'gap-[14px] pt-[22px]')}>
-      <header className="flex items-end gap-3 px-5">
+    <div className={gcn(SCREEN_CLASSES, IPAD_NAV_COLUMN, 'h-screen-dvh gap-[14px] pt-[22px]')}>
+      <header className="flex shrink-0 items-end gap-3 px-5">
         <div className="flex flex-grow flex-col">
           <span className="text-[13px] font-medium text-muted-foreground">
             {t('summary', { beds: topics.length, words: totalWords })}
@@ -121,16 +242,15 @@ export function TopicsScreen({
         ) : null}
       </header>
 
-      <div role="group" aria-label={t('filterLabel')} className="flex gap-2 px-4">
-        {chips.map((chip) => (
-          <Chip key={chip.id} selected={filter === chip.id} onClick={() => setFilter(chip.id)}>
-            {chip.label}
-          </Chip>
-        ))}
-      </div>
+      <FilterChipRow
+        chips={chips}
+        selected={filter}
+        onSelect={setFilter}
+        label={t('filterLabel')}
+      />
 
-      {/* Design system §10, A6: bed cards in 2 columns on iPad. */}
-      <div className="flex flex-col gap-2 px-4 ipad:grid ipad:grid-cols-2 ipad:content-start ipad:gap-2.5">
+      {/* Design system §10, A6: bed cards in 2 columns on iPad. The list scrolls, the tab bar stays. */}
+      <div className="flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto px-4 ipad:grid ipad:grid-cols-2 ipad:content-start ipad:gap-2.5">
         {shown.map((topic) => {
           const meta = [
             t('words', { count: topic.words }),
@@ -144,6 +264,7 @@ export function TopicsScreen({
               key={topic.id}
               href={topic.href}
               title={topic.title}
+              titleText={topic.title}
               meta={meta}
               stage={leadingStage(topic.stages, topic.words)}
               due={
@@ -178,7 +299,7 @@ export function TopicsScreen({
         <button
           type="button"
           onClick={() => (onNewBed ? onNewBed() : newBedHref && router.push(newBedHref))}
-          className="flex h-14 cursor-pointer items-center justify-center gap-2 rounded-[18px] border border-dashed border-dashed-line bg-transparent text-[15px] font-bold text-forest"
+          className="flex h-14 shrink-0 cursor-pointer items-center justify-center gap-2 rounded-[18px] border border-dashed border-dashed-line bg-transparent text-[15px] font-bold text-forest"
         >
           <PlusIcon width={20} height={20} />
           {t('newBed')}

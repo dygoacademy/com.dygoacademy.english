@@ -28,11 +28,12 @@ describe('A6 live mapping', () => {
         max_level: 'C1',
         kind: 'library',
         collection_title: 'IELTS Academic',
+        filter_group: 'academic',
       },
-      'Library',
+      'Shared',
     );
     expect(topic).toMatchObject({
-      group: 'library:IELTS Academic',
+      group: 'academic',
       level: 'B2–C1',
       words: 48,
       stages: { tree: 18, flower: 7, sprout: 11, seed: 12 },
@@ -41,10 +42,29 @@ describe('A6 live mapping', () => {
   });
 
   it('falls back honestly on an older API', () => {
-    const topic = toScreenTopic({ ...base, mastered_count: '0' }, 'Library');
-    expect(topic).toMatchObject({ group: 'all', level: null, stages: null, due: null });
+    const topic = toScreenTopic({ ...base, mastered_count: '0' });
+    expect(topic).toMatchObject({ group: null, level: null, stages: null, due: null });
     // No stage data and nothing mastered: a sprout, never a fruit tree.
     expect(leadingStage(topic.stages, topic.words)).toBe('sprout');
+  });
+});
+
+describe('A6 filter group (2026-10-17)', () => {
+  it('takes filter_group from the API, null included', () => {
+    for (const filter_group of ['mine', 'academic', 'general', 'work', 'travel', 'shared'] as const) {
+      expect(toScreenTopic({ ...base, kind: 'library', filter_group }).group).toBe(filter_group);
+    }
+    // A library collection with no shelf: All only, never its name.
+    expect(
+      toScreenTopic({ ...base, kind: 'library', collection_title: 'Everyday life', filter_group: null })
+        .group,
+    ).toBeNull();
+  });
+
+  it('falls back to the kind when the API has no filter_group', () => {
+    expect(toScreenTopic({ ...base, kind: 'mine' }).group).toBe('mine');
+    expect(toScreenTopic({ ...base, kind: 'group' }).group).toBe('shared');
+    expect(toScreenTopic({ ...base, kind: 'library', collection_title: 'IELTS Academic' }).group).toBeNull();
   });
 });
 

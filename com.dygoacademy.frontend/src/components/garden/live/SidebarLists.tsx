@@ -41,7 +41,7 @@ function TopicBedsList({ activeId }: { activeId: string | null }) {
   const topics = useTopics();
   const beds = sortBedsByDue(
     ((topics.data ?? []) as GardenTopicSummary[]).map((topic) =>
-      toScreenTopic(topic, t('library'), t('shared')),
+      toScreenTopic(topic, t('shared')),
     ),
   );
   return (
