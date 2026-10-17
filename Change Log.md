@@ -1150,3 +1150,7 @@ Engineering-facing log of shipped fixes and changes, one dated entry per change.
   3. **Chip row.** One row that slides sideways (scrollbar hidden), 12 px chip padding, max 200 px then "…", cream fades on the side that has more, and the picked chip scrolls to the middle (no animation with reduced motion).
   4. **Bed card** (A6 and A6b): grows from 76 px, name up to 2 lines then "…" with the full name on hover, due pill top-right on one line, meta one line. The A6 list scrolls under the header and the tab bar stays put.
 * **Verified**: backend `jest` 503 passed, `tsc` clean, no new lint errors (topics spec has pre-existing prettier errors). Frontend `tsc --noEmit` and eslint clean; vitest 794 passed, the same 65 failures as before, none new. `garden:diff` against `next dev` in a copy: A6-topics 0.041 %, A6-topics-filter-travel 0.325 % (pass). A6-topics-vi 1.414 % and A6-topics-filter-shared-vi 0.688 % differ only by copy the Vietnamese canvas still has from before the copy rewrite ("cần ôn", "Đã tưới xong") and, on the Shared page, the canvas demo's estimated scroll position. A6b-search-topics 1.8 % (EN and VI): the card is now 1 px taller, as on A6, and the A6b board has not been redrawn with the new card.
+
+### Docs: A6 Topics filters marked Built
+* **Files**: [`docs/design/garden/CHANGELOG.md`](docs/design/garden/CHANGELOG.md)
+* **What**: the 2026-10-17 "A6 Topics: fixed filter groups, long names" entry and the A6 row say Built `d1c8402`. Not deployed to UAT yet.
