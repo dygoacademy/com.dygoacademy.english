@@ -29,7 +29,7 @@ import type { BeeWord, BedStage, TopicBedWord } from '../screens/TopicBedScreen'
 import type { TopicsScreenTopic } from '../screens/TopicsScreen';
 import type { SearchTopic } from '../screens/TopicSearchScreen';
 import type { Greeting, MissionItem } from '../screens/TodaysGardenScreen';
-import type { WeeklyHarvestScreenProps, WeeklyMissionRow } from '../screens/WeeklyHarvestScreen';
+import type { WeeklyMissionRow } from '../screens/WeeklyHarvestScreen';
 import type { WelcomeBackScreenProps } from '../screens/WelcomeBackScreen';
 
 /** Morning until noon, afternoon until 18:00, then evening. */
@@ -703,32 +703,6 @@ export function weeklyRows(weekly: WeeklyMissions): WeeklyMissionRow[] {
     }
     return { key: m.key, goal: m.goal, count: Math.min(m.count, m.goal), done: m.done, href };
   });
-}
-
-/**
- * UI-6 (U6-6): A4's harvest from `GET /missions/week` (the trailing 7 local
- * days). `days` are the calendar week's days (format.ts `weekDays`, UTC
- * midnights); a day the API didn't return (future days) has no missions.
- * Done/total count missions (3 a day). No seed pack yet.
- */
-export function weekHarvest(
-  week: readonly MissionDay[],
-  days: readonly Date[],
-  today: Date,
-): NonNullable<WeeklyHarvestScreenProps['harvest']> {
-  const byDate = new Map(week.map((d) => [d.date, d]));
-  const todayIso = today.toISOString().slice(0, 10);
-  const rows = days.map((day) => {
-    const iso = day.toISOString().slice(0, 10);
-    const done = Math.min(Math.max(0, byDate.get(iso)?.done ?? 0), 3) as 0 | 1 | 2 | 3;
-    return { day, missions: done, ...(iso === todayIso ? { today: true } : {}) };
-  });
-  return {
-    done: rows.reduce((sum, r) => sum + r.missions, 0),
-    total: days.length * 3,
-    days: rows,
-    seedPack: null,
-  };
 }
 
 /**

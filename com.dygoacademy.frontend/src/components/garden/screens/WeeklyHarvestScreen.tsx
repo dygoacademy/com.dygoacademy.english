@@ -6,7 +6,6 @@ import { BeeShape } from '../Bee';
 import { gcn } from '../cn';
 import { useGardenFormat } from '../format';
 import { CheckIcon, MicIcon, RainBarrelIcon, SeedPackIcon, WaterIcon, WiltingPlantIcon } from '../icons';
-import { WeekHarvest, type HarvestDay } from '../WeekHarvest';
 import { GardenTabBar, IPAD_NAV_COLUMN, SCREEN_CLASSES } from './GardenTabBar';
 
 /**
@@ -15,9 +14,10 @@ import { GardenTabBar, IPAD_NAV_COLUMN, SCREEN_CLASSES } from './GardenTabBar';
  *
  * Header "Week of … · n days left" → the 3 weekly missions (Rescue wilting
  * words or Water 20 words, Use it in a sentence, Sound of the week), each
- * row a link to the screen where the practice happens, and the "+1 rain
- * barrel" line → the week's daily-mission plants with the seed pack → Road
- * to Band 7 → tab bar. Daily missions stay on A1.
+ * row a link to the screen where the practice happens, the "+1 rain barrel"
+ * line and, while one is in progress, the seed pack line → Road to Band 7 →
+ * tab bar. Daily missions stay on A1 (the week's daily-mission plants were
+ * dropped 2026-10-18: they repeated A1 and gave nothing to do).
  */
 export type WeeklyMissionKey = 'rescue' | 'water' | 'sentence' | 'sound';
 
@@ -43,13 +43,8 @@ export interface WeeklyHarvestScreenProps {
     sound: { label: string; examples: readonly string[] };
     rewardEarned: boolean;
   } | null;
-  harvest: {
-    done: number;
-    total: number;
-    /** The week's calendar days in the locale's order. */
-    days: ReadonlyArray<Omit<HarvestDay, 'plantLabel' | 'label'> & { day: Date }>;
-    seedPack: { name: string; need: number; have: number } | null;
-  } | null;
+  /** The seed pack in progress, shown inside the missions card. */
+  seedPack: { name: string; need: number; have: number } | null;
   goal: {
     /** The target band ("Road to Band 7"). */
     band: number;
@@ -100,7 +95,7 @@ export function WeeklyHarvestScreen({
   weekStart,
   daysLeft,
   weekly,
-  harvest,
+  seedPack,
   goal,
   stickyNav = true,
 }: WeeklyHarvestScreenProps) {
@@ -234,86 +229,61 @@ export function WeeklyHarvestScreen({
               {tw('rewardCount', { done: doneCount })}
             </span>
           </div>
+          {seedPack ? (
+            <div className="mt-1.5 flex items-center gap-2 rounded-[12px] bg-gold-soft px-[10px] py-2 text-[13px]">
+              <SeedPackIcon width={22} height={22} />
+              <span className="flex-grow leading-[1.35] text-soft-text">
+                {t.rich('seedPack', {
+                  need: seedPack.need,
+                  name: seedPack.name,
+                  b: (c) => <b className="text-text">{c}</b>,
+                })}
+              </span>
+              <span className="font-bold text-gold-soft-text">
+                {t('seedPackCount', { have: seedPack.have, need: seedPack.need })}
+              </span>
+            </div>
+          ) : null}
         </section>
       ) : null}
 
-      {/* iPad: the week's plants beside Road to Band 7, under the full-width missions. */}
-      <div className="contents ipad:mx-4 ipad:grid ipad:grid-cols-2 ipad:gap-3">
-        <section className="mx-4 flex flex-col gap-2 rounded-[22px] bg-forest px-[14px] py-3 text-on-forest ipad:mx-0">
-          {harvest ? (
-            <>
-              <h2 className="text-[14px] font-bold">
-                {t('missionsCount', { done: harvest.done, total: harvest.total })}
+      <section className="mx-4 flex flex-col gap-2 rounded-[22px] border border-border bg-surface px-4 py-3">
+        {goal ? (
+          <>
+            <div className="flex items-baseline justify-between">
+              <h2 className="font-display text-[17px] font-semibold">
+                {t('goalBand', { band: goal.band })}
               </h2>
-              <WeekHarvest
-                days={harvest.days.map((day) => ({
-                  ...day,
-                  label: day.today ? t('today') : f.weekdayShort(day.day),
-                  plantLabel: t('dayPlant', { count: day.missions }),
-                }))}
-              />
-              {harvest.seedPack ? (
-                <div className="flex items-center gap-2 rounded-[12px] bg-forest-deep px-[10px] py-2">
-                  <SeedPackIcon width={22} height={22} />
-                  <span className="flex-grow text-[12px] leading-[1.35] text-on-forest-muted">
-                    {t.rich('seedPack', {
-                      need: harvest.seedPack.need,
-                      name: harvest.seedPack.name,
-                      b: (c) => <b className="text-gold-light">{c}</b>,
-                    })}
-                  </span>
-                  <span className="text-[12px] font-bold text-gold-light">
-                    {t('seedPackCount', {
-                      have: harvest.seedPack.have,
-                      need: harvest.seedPack.need,
-                    })}
-                  </span>
-                </div>
-              ) : null}
-            </>
-          ) : (
-            <p className="text-[13px] text-on-forest-muted">{t('missionsComingSoon')}</p>
-          )}
-        </section>
-
-        <section className="mx-4 flex flex-col gap-2 rounded-[22px] border border-border bg-surface px-4 py-3 ipad:mx-0">
-          {goal ? (
-            <>
-              <div className="flex items-baseline justify-between">
-                <h2 className="font-display text-[17px] font-semibold">
-                  {t('goalBand', { band: goal.band })}
-                </h2>
-                <span className="text-[12px] text-muted-foreground">{t('goalHint')}</span>
-              </div>
-              <div className="flex items-baseline gap-1.5">
-                <span className="font-display text-[26px] font-semibold text-forest">
-                  {f.number(goal.mastered)}
-                </span>
-                <span className="text-[13px] text-muted-foreground">
-                  {t('goalMastered', { target: goal.target })}
-                </span>
-              </div>
-              <div
-                role="img"
-                aria-label={t('goalBar', {
-                  mastered: goal.mastered,
-                  growing: goal.growing,
-                  target: goal.target,
-                })}
-                className="flex h-2 overflow-hidden rounded-[4px] bg-track"
-              >
-                <div className="bg-success" style={{ width: `${masteredPct}%` }} />
-                <div className="bg-stage-sprout" style={{ width: `${growingPct}%` }} />
-              </div>
-            </>
-          ) : (
-            <>
-              <h2 className="font-display text-[17px] font-semibold">{t('goalTitle')}</h2>
-              <p className="text-[13px] text-muted-foreground">{t('goalComingSoon')}</p>
-            </>
-          )}
-        </section>
-      </div>
+              <span className="text-[12px] text-muted-foreground">{t('goalHint')}</span>
+            </div>
+            <div className="flex items-baseline gap-1.5">
+              <span className="font-display text-[26px] font-semibold text-forest">
+                {f.number(goal.mastered)}
+              </span>
+              <span className="text-[13px] text-muted-foreground">
+                {t('goalMastered', { target: goal.target })}
+              </span>
+            </div>
+            <div
+              role="img"
+              aria-label={t('goalBar', {
+                mastered: goal.mastered,
+                growing: goal.growing,
+                target: goal.target,
+              })}
+              className="flex h-2 overflow-hidden rounded-[4px] bg-track"
+            >
+              <div className="bg-success" style={{ width: `${masteredPct}%` }} />
+              <div className="bg-stage-sprout" style={{ width: `${growingPct}%` }} />
+            </div>
+          </>
+        ) : (
+          <>
+            <h2 className="font-display text-[17px] font-semibold">{t('goalTitle')}</h2>
+            <p className="text-[13px] text-muted-foreground">{t('goalComingSoon')}</p>
+          </>
+        )}
+      </section>
 
       <GardenTabBar active="missions" sticky={stickyNav} />
     </div>

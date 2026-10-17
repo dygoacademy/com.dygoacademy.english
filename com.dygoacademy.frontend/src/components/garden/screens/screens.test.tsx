@@ -335,10 +335,13 @@ describe('WeeklyHarvestScreen (A4 This week)', () => {
     expect(row.textContent).toContain('Water');
   });
 
-  it('keeps the week plants, the seed pack, Road to Band 7 and the tab bar; no barrel or group tiles', () => {
+  it('seed pack inside the missions card, Road to Band 7 and the tab bar; no daily plants, barrel or group tiles', () => {
     renderWithIntl(<WeeklyHarvestScreen {...withHrefs(HARVEST)} />);
-    expect(screen.getByText('11 of 21 daily missions')).toBeTruthy();
-    expect(screen.getByText('Academic Word List')).toBeTruthy();
+    const card = screen.getByRole('region', { name: W.label });
+    expect(within(card).getByText('Academic Word List').closest('div')?.textContent).toBe(
+      '3 Golden Blooms this week unlocks the Academic Word List2/3',
+    );
+    expect(screen.queryByText(/daily missions/)).toBeNull();
     expect(screen.getByText('Road to Band 7')).toBeTruthy();
     expect(screen.getByRole('link', { name: /Missions/ })).toBeTruthy();
     expect(screen.queryByText(/Rain barrel ·/)).toBeNull();
@@ -348,7 +351,7 @@ describe('WeeklyHarvestScreen (A4 This week)', () => {
   it('without weekly missions (loading or failed) shows no missions card', () => {
     renderWithIntl(<WeeklyHarvestScreen {...withHrefs(HARVEST)} weekly={null} />);
     expect(screen.queryByRole('region', { name: W.label })).toBeNull();
-    expect(screen.getByText('11 of 21 daily missions')).toBeTruthy();
+    expect(screen.getByText('Road to Band 7')).toBeTruthy();
   });
 });
 

@@ -285,16 +285,7 @@ export const HARVEST = {
     sound: { label: 'th', examples: ['think', 'three', 'growth'] },
     rewardEarned: false,
   },
-  harvest: {
-    done: 11,
-    total: 21,
-    days: weekDays(calendarDay(2026, 10, 16), 1).map((day, index) => ({
-      day,
-      missions: ([3, 2, 3, 1, 2, 0, 0] as const)[index],
-      today: index === 4,
-    })),
-    seedPack: { name: 'Academic Word List', need: 3, have: 2 },
-  },
+  seedPack: { name: 'Academic Word List', need: 3, have: 2 },
   goal: { band: 7, mastered: 412, target: 1200, growing: 104 },
 } satisfies WeeklyHarvestScreenProps;
 

@@ -39,7 +39,6 @@ import {
   showWelcomeBack,
   stageGarden,
   thirstyMission,
-  weekHarvest,
   weeklyRows,
   weekOf,
 } from './data';
@@ -459,25 +458,8 @@ describe('weeklyRows (A4 This week)', () => {
   });
 });
 
-describe('weekly harvest and freezes (U6-6)', () => {
+describe('freezes (U6-6)', () => {
   const day = (iso: string) => new Date(`${iso}T00:00:00Z`);
-
-  it('maps /missions/week onto the calendar week, future days empty', () => {
-    const days = ['2026-09-28', '2026-09-29', '2026-09-30', '2026-10-01', '2026-10-02', '2026-10-03', '2026-10-04'].map(day);
-    const week = [
-      { date: '2026-09-25', done: 3, goldenBloom: true },
-      { date: '2026-09-28', done: 3, goldenBloom: true },
-      { date: '2026-09-29', done: 1, goldenBloom: false },
-      { date: '2026-09-30', done: 0, goldenBloom: false },
-      { date: '2026-10-01', done: 2, goldenBloom: false },
-    ];
-    const h = weekHarvest(week, days, day('2026-10-01'));
-    expect(h.done).toBe(6);
-    expect(h.total).toBe(21);
-    expect(h.seedPack).toBeNull();
-    expect(h.days.map((d) => d.missions)).toEqual([3, 1, 0, 2, 0, 0, 0]);
-    expect(h.days.filter((d) => 'today' in d && d.today).map((d) => d.day)).toEqual([day('2026-10-01')]);
-  });
 
   const stats = (over: Partial<SrsStats>): SrsStats => ({
     total_words: 10,

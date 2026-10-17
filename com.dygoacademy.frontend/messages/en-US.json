@@ -744,9 +744,6 @@
       "dayLabel": "{day}{today, select, true {, today} other {}}{done, select, true {, done} other {}}"
     },
     "harvest": {
-      "missionsCount": "{done} of {total} daily missions",
-      "today": "Today",
-      "dayPlant": "{count, plural, =0 {no missions} one {# mission} other {# missions}}",
       "seedPack": "{need} Golden Blooms this week unlocks the <b>{name}</b>",
       "seedPackCount": "{have}/{need}",
       "goalHint": "vocabulary goal",
@@ -754,8 +751,7 @@
       "goalBar": "{mastered, number} mastered · {growing, number} growing · {target, number} in total",
       "goalTitle": "Vocabulary goal",
       "goalComingSoon": "Studying for an exam? Soon you’ll be able to set a word goal here.",
-      "goalBand": "Road to Band {band}",
-      "missionsComingSoon": "Daily missions are on the way. Each one you finish will grow that day’s plant here."
+      "goalBand": "Road to Band {band}"
     },
     "comeback": {
       "title": "Welcome back, {name}.<br></br>Your garden kept your spot.",

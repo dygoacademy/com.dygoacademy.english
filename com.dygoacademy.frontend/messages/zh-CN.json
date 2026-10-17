@@ -748,9 +748,6 @@
       "dayLabel": "{day}{today, select, true {，今天} other {}}{done, select, true {，已完成} other {}}"
     },
     "harvest": {
-      "missionsCount": "{done}/{total} 个每日任务",
-      "today": "今天",
-      "dayPlant": "{count, plural, =0 {没有任务} other {# 个任务}}",
       "seedPack": "本周集齐 {need} 朵金花，解锁 <b>{name}</b> 种子包",
       "seedPackCount": "{have}/{need}",
       "goalHint": "词汇目标",
@@ -758,8 +755,7 @@
       "goalBar": "共 {target, number} 个单词：已掌握 {mastered, number}，生长中 {growing, number}",
       "goalTitle": "词汇目标",
       "goalComingSoon": "在备考吗？很快就能在这里设定单词目标。",
-      "goalBand": "冲刺 {band} 分",
-      "missionsComingSoon": "每日任务即将上线。你完成的每个任务都会让当天的植物在这里长大。"
+      "goalBand": "冲刺 {band} 分"
     },
     "comeback": {
       "title": "欢迎回来，{name}。<br></br>花园一直在等你。",

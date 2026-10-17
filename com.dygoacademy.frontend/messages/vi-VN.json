@@ -744,9 +744,6 @@
       "dayLabel": "{day}{today, select, true {, hôm nay} other {}}{done, select, true {, đã xong} other {}}"
     },
     "harvest": {
-      "missionsCount": "{done}/{total} nhiệm vụ hằng ngày",
-      "today": "Hôm nay",
-      "dayPlant": "{count, plural, =0 {không có nhiệm vụ} one {# nhiệm vụ} other {# nhiệm vụ}}",
       "seedPack": "{need} Hoa Vàng trong tuần sẽ mở khóa gói hạt giống <b>{name}</b>",
       "seedPackCount": "{have}/{need}",
       "goalHint": "mục tiêu từ vựng",
@@ -754,8 +751,7 @@
       "goalBar": "Đã thuộc {mastered, number} · Đang lớn {growing, number} · Tổng {target, number}",
       "goalTitle": "Mục tiêu từ vựng",
       "goalComingSoon": "Đang ôn thi? Sắp tới bạn sẽ đặt được mục tiêu số từ ở đây.",
-      "goalBand": "Đường đến Band {band}",
-      "missionsComingSoon": "Nhiệm vụ hằng ngày sắp có. Mỗi nhiệm vụ bạn làm xong sẽ giúp cây của ngày đó lớn lên ở đây."
+      "goalBand": "Đường đến Band {band}"
     },
     "comeback": {
       "title": "Chào {name} quay lại.<br></br>Vườn vẫn chờ bạn.",
