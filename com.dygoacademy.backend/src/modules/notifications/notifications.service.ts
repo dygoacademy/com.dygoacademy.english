@@ -48,8 +48,20 @@ export class NotificationsService {
    * regardless of which account last registered it; re-subscribing (e.g.
    * after a token refresh browsers occasionally do) updates the existing
    * row's keys rather than erroring or leaving a stale duplicate.
+   * Under RLS the conflict can only be the caller's own row; another
+   * account's row for the same browser is removed first.
    */
   async subscribe(userId: string, dto: SubscribePushDto): Promise<{ id: string }> {
+    // A browser that last subscribed for another account (two accounts on
+    // one phone) leaves a row the caller can't see under RLS, so the upsert
+    // below failed with "new row violates row-level security policy" and
+    // the reminder switch could never turn on (2026-10-17). The browser now
+    // belongs to whoever subscribes it last: drop the other account's row
+    // first, as service_role (it has delete on push_subscriptions).
+    await this.db.queryAsService(
+      `delete from public.push_subscriptions where endpoint = $1 and user_id <> $2`,
+      [dto.endpoint, userId],
+    );
     const [row] = await this.db.queryAs<{ id: string }>(
       userId,
       `insert into public.push_subscriptions (user_id, endpoint, p256dh_key, auth_key, user_agent, last_used_at)

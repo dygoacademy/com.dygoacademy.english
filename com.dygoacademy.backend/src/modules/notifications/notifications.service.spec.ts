@@ -11,6 +11,7 @@ const RAIN_DAY = { id: 'rd-1', endsAt: '2026-09-27T16:59:59.999Z', wordsPerGarde
 
 async function makeService(opts: {
   queryAsMock: jest.Mock;
+  queryAsServiceMock?: jest.Mock;
   sendToUserMock?: jest.Mock;
   vapidPublicKeyMock?: jest.Mock;
   startRainDayMock?: jest.Mock;
@@ -18,7 +19,13 @@ async function makeService(opts: {
   const moduleRef = await Test.createTestingModule({
     providers: [
       NotificationsService,
-      { provide: DatabaseService, useValue: { queryAs: opts.queryAsMock } },
+      {
+        provide: DatabaseService,
+        useValue: {
+          queryAs: opts.queryAsMock,
+          queryAsService: opts.queryAsServiceMock ?? jest.fn().mockResolvedValue([]),
+        },
+      },
       {
         provide: PushDispatchService,
         useValue: {
@@ -51,6 +58,32 @@ describe('NotificationsService', () => {
 
     expect(result).toEqual({ id: 'sub-1' });
     expect(queryAsMock.mock.calls[0][1]).toMatch(/on conflict \(endpoint\)/i);
+  });
+
+  it('subscribe first takes the browser over from another account', async () => {
+    const order: string[] = [];
+    const queryAsServiceMock = jest.fn(() => {
+      order.push('release');
+      return Promise.resolve([]);
+    });
+    const queryAsMock = jest.fn(() => {
+      order.push('upsert');
+      return Promise.resolve([{ id: 'sub-1' }]);
+    });
+    const service = await makeService({ queryAsMock, queryAsServiceMock });
+
+    await service.subscribe('user-2', {
+      endpoint: 'https://push.example/1',
+      keys: { p256dh: 'p1', auth: 'a1' },
+    });
+
+    expect(order).toEqual(['release', 'upsert']);
+    expect(queryAsServiceMock.mock.calls[0]).toEqual([
+      expect.stringMatching(
+        /delete from public\.push_subscriptions where endpoint = \$1 and user_id <> \$2/,
+      ),
+      ['https://push.example/1', 'user-2'],
+    ]);
   });
 
   it('unsubscribe throws NotFoundException when no row matched', async () => {
