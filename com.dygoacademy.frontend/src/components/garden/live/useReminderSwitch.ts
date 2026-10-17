@@ -61,7 +61,10 @@ export function useReminderSwitch() {
         return;
       }
       upsert.mutate({
-        reminderTime: schedule?.reminder_time ?? DEFAULT_REMINDER_TIME,
+        // The API lists times as HH:MM:SS but only accepts HH:MM; sending
+        // the listed value back was a 400, so the switch could never change
+        // an existing reminder (2026-10-17).
+        reminderTime: (schedule?.reminder_time ?? DEFAULT_REMINDER_TIME).slice(0, 5),
         timezone: schedule?.timezone ?? localTimezone(),
         isEnabled: next,
       });

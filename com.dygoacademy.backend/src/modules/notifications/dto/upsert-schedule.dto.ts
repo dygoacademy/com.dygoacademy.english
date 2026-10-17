@@ -14,7 +14,9 @@ export class UpsertScheduleDto {
     example: '20:00',
     description: '24-hour local time, HH:MM. Interpreted in `timezone` below, not UTC.',
   })
-  @Matches(/^([01]\d|2[0-3]):[0-5]\d$/, {
+  // Seconds are accepted too: GET /notifications/schedules lists times as
+  // HH:MM:SS, and an installed app may still run a build that sends that back.
+  @Matches(/^([01]\d|2[0-3]):[0-5]\d(:[0-5]\d)?$/, {
     message: 'reminderTime must be 24-hour HH:MM, e.g. "20:00".',
   })
   reminderTime!: string;

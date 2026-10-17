@@ -52,6 +52,14 @@ describe('useReminderSwitch', () => {
     expect(mutate).toHaveBeenCalledWith({ reminderTime: '20:00', timezone: 'Asia/Ho_Chi_Minh', isEnabled: true });
   });
 
+  it('turning an existing reminder off sends its time as HH:MM', async () => {
+    schedulesState.data = [enabled];
+    pushState.state = 'subscribed';
+    const { result } = renderHook(() => useReminderSwitch());
+    await act(() => result.current.change(false));
+    expect(mutate).toHaveBeenCalledWith({ reminderTime: '07:30', timezone: 'Asia/Ho_Chi_Minh', isEnabled: false });
+  });
+
   it('a refused or failed subscribe saves nothing and restarts the switch', async () => {
     pushState.subscribe.mockResolvedValue(false);
     const { result } = renderHook(() => useReminderSwitch());
