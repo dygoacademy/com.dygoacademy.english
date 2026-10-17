@@ -9,8 +9,8 @@ import { GARDEN_ROUTES } from '@/constants/garden';
  * It opens on the garden home (signed out, middleware sends it to /login
  * and back). The scope is the whole site so sign-in, onboarding and the
  * 1-tap reminder links all stay inside the installed app. Icons are the
- * brand set (docs/design/brand/favicon); `public/sw.js` uses icon-192 for
- * notifications and serves `/offline.html` when a page can't load.
+ * brand set (docs/design/brand/favicon); `public/sw.js` uses icon-192 and
+ * badge-96 (notification-badge.svg) for notifications and serves `/offline.html` when a page can't load.
  */
 export default function manifest(): MetadataRoute.Manifest {
   return {

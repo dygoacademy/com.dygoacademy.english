@@ -184,7 +184,9 @@ self.addEventListener('push', (event) => {
       tag, // same tag replaces, rather than stacks, an unread reminder of the same kind
       data: { url },
       icon: '/icon-192.png',
-      badge: '/icon-192.png',
+      // Android draws the badge from its alpha only, so a full-colour icon
+      // shows as a plain white circle; this one is a white sprout on clear.
+      badge: '/badge-96.png',
     }),
   );
 });
