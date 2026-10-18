@@ -12,10 +12,12 @@ import { GardenTabBar, IPAD_NAV_COLUMN, SCREEN_CLASSES } from './GardenTabBar';
  * A4 · This week (canvas `reference/A4-weekly-harvest`, `-done`; redrawn
  * 2026-10-17). Props only.
  *
- * Header "Week of … · n days left" → the 3 weekly missions (Rescue wilting
+ * Header "Week of … · n days left" → forest card with the "+1 rain barrel"
+ * reward and one bar per mission (2026-10-18: every tab opens with a forest
+ * block) → the 3 weekly missions (Rescue wilting
  * words or Water 20 words, Use it in a sentence, Sound of the week), each
- * row a link to the screen where the practice happens, the "+1 rain barrel"
- * line and, while one is in progress, the seed pack line → Road to Band 7 →
+ * row a link to the screen where the practice happens, and while one is in
+ * progress the seed pack line → Road to Band 7 →
  * tab bar. Daily missions stay on A1 (the week's daily-mission plants were
  * dropped 2026-10-18: they repeated A1 and gave nothing to do).
  */
@@ -156,9 +158,33 @@ export function WeeklyHarvestScreen({
       </header>
 
       {weekly ? (
+        <section className="mx-4 flex flex-col gap-2.5 rounded-[22px] bg-forest p-4 text-on-forest">
+          <div className="flex items-center gap-2.5">
+            <RainBarrelIcon width={28} height={28} stroke="var(--color-gold-light)" />
+            <span className="flex-grow text-[15px] leading-[1.35]">
+              {tw.rich(weekly.rewardEarned ? 'rewardDone' : 'rewardTodo', {
+                b: (c) => <b className="text-gold-light">{c}</b>,
+              })}
+            </span>
+            <span className="font-display text-[22px] font-semibold text-gold-light">
+              {tw('rewardCount', { done: doneCount })}
+            </span>
+          </div>
+          <div aria-hidden="true" className="grid grid-cols-3 gap-1.5">
+            {weekly.missions.map((row) => (
+              <span
+                key={row.key}
+                className={gcn('h-2 rounded-[4px]', row.done ? 'bg-gold-light' : 'bg-on-forest-line')}
+              />
+            ))}
+          </div>
+        </section>
+      ) : null}
+
+      {weekly ? (
         <section
           aria-label={tw('label')}
-          className="mx-4 flex flex-col rounded-[22px] border border-border bg-surface px-4 pb-3 pt-1"
+          className="mx-4 flex flex-col rounded-[22px] border border-border bg-surface px-4 pb-1 pt-1"
         >
           {weekly.missions.map((row, index) => (
             <Link
@@ -213,24 +239,8 @@ export function WeeklyHarvestScreen({
               )}
             </Link>
           ))}
-          <div
-            className={gcn(
-              'mt-0.5 flex items-center gap-2 rounded-[12px] px-[10px] py-2 text-[13px] text-soft-text',
-              weekly.rewardEarned ? 'bg-water-soft' : 'bg-surface-sunken',
-            )}
-          >
-            <RainBarrelIcon width={20} height={20} stroke="var(--color-water)" />
-            <span className="flex-grow">
-              {tw.rich(weekly.rewardEarned ? 'rewardDone' : 'rewardTodo', {
-                b: (c) => <b className="text-text">{c}</b>,
-              })}
-            </span>
-            <span className="font-bold text-water-text">
-              {tw('rewardCount', { done: doneCount })}
-            </span>
-          </div>
           {seedPack ? (
-            <div className="mt-1.5 flex items-center gap-2 rounded-[12px] bg-gold-soft px-[10px] py-2 text-[13px]">
+            <div className="mb-2 mt-0.5 flex items-center gap-2 rounded-[12px] bg-gold-soft px-[10px] py-2 text-[13px]">
               <SeedPackIcon width={22} height={22} />
               <span className="flex-grow leading-[1.35] text-soft-text">
                 {t.rich('seedPack', {

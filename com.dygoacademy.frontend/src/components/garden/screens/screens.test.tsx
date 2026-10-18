@@ -298,17 +298,20 @@ describe('WeeklyHarvestScreen (A4 This week)', () => {
     expect(screen.getByText('think, three, growth…').getAttribute('lang')).toBe('en');
   });
 
-  it('reward line: to do, then done with the blue background', () => {
+  it('reward in the forest card on top: to do, then done, one bar per mission', () => {
     const { unmount } = renderWithIntl(<WeeklyHarvestScreen {...withHrefs(HARVEST)} />);
     const todo = screen.getByText('+1 rain barrel').closest('div');
     expect(todo?.textContent).toBe('Finish all 3 → +1 rain barrel0/3');
-    expect(todo?.className).toContain('bg-surface-sunken');
+    const hero = todo?.closest('section');
+    expect(hero?.className).toContain('bg-forest');
+    expect(hero?.querySelectorAll('.bg-gold-light')).toHaveLength(0);
+    expect(screen.getByRole('region', { name: W.label }).textContent).not.toContain('rain barrel');
     unmount();
 
     renderWithIntl(<WeeklyHarvestScreen {...withHrefs(HARVEST_DONE)} />);
     const done = screen.getByText('+1 rain barrel').closest('div');
     expect(done?.textContent).toBe('All 3 done · +1 rain barrel added3/3');
-    expect(done?.className).toContain('bg-water-soft');
+    expect(done?.closest('section')?.querySelectorAll('.bg-gold-light')).toHaveLength(3);
     expect(screen.getAllByText(W.done)).toHaveLength(3);
     expect(screen.queryByText('Rescue', { selector: 'span' })).toBeNull();
   });
