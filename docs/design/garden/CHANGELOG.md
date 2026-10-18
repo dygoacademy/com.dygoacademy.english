@@ -2,7 +2,7 @@
 
 Location in the repo: `docs/design/CHANGELOG.md`
 Design source of truth: the **Dygo Word Garden** design canvas (owner: Dylan).
-Last updated: **2026-10-17**
+Last updated: **2026-10-18**
 
 ---
 
@@ -75,6 +75,7 @@ Every row has an English file and a Vietnamese twin (`…Vi.dc.html`) unless not
 |---|---|---|---|---|---|---|
 | A1 | Today's Garden (Home) | `AdultHome` | Built | Greeting + streak. Garden card (every word as a plant, counts: thirsty / ripe / wilting). **3 daily missions** (review due, learn new, 1 quiz) → finishing all 3 grows the **Golden Bloom**. **2026-10-10 (Option D, Approved):** no big button under the card; the missions card opens with **Next up** (first open mission, its own button, e.g. "Water 3 thirsty words · Start watering →") and a **Then** list (other missions, each opens its activity; done rows plain, struck through). "Tomorrow 7:30 · N words ripen". **Speaking mission (2026-10-07, merged from SE1):** 3rd mission can be "Say 3 ripe words · 2 min" (clay mic row) → SP1; still counts to Golden Bloom. | A2, tabs | UI-4 `4b701fd`, `6e7eb53`; iPad home `48912ed`; Next up + Then (Option D) `b6725e6` |
 | A1b | All watered (nothing due) | `AdultAllWatered` | Built | Today's Garden when nothing is due **and** today's missions are all done: sunny full garden "All watered today · Nothing is thirsty. Your garden is resting.", Golden Bloom card "3 of 3 missions · Golden Bloom grown" + next ripening, "Want a little more?" list (Plant 5 new words from a bed · Say 3 sentences · Quiz a bed). | A1 extras, tabs | Built `e8b0d78` (EN / VI / ZH; plan: `docs/plans/A1b all watered implementation plan.md`) |
+| A1c | Missions done, words still thirsty | `AdultTodayDone` | Approved | A1 when every mission of the day is done **and** words are still due (`due_now > 0`): missions card unchanged (3 Done rows + Golden Bloom line), no "Tomorrow … ripen" line, then "Want a little more?" list: **Water N thirsty words** (Bonus · about 1 min, due-only Review), Plant 5 new words (from a bed), Say 3 sentences. No quiz row. | A2, A7, SP1, tabs | Plan: `docs/plans/A1c missions done want more implementation plan.md` |
 | A2 | Watering (Review) | `AdultReview` | Built | Flashcard: word (Fraunces), IPA, CEFR, topic, meaning (English; Vietnamese meaning first when app language is vi), example, synonyms. 4 ratings with next interval: Again / Hard / Good / Easy. Vine progress = mission progress. | A3, A1 | UI-4; keyboard shortcuts U7-3 `51b6180`. Phase 13 "Say this one?" added S11 `bc38bff`, removed 2026-10-06 `0e47e01` |
 | A3 | Mission Complete | `AdultBloom` | Built | Bloom animation, stats, streak +1, "1 mission left for Golden Bloom" with a 3-min button, reminder toggle for when words ripen. | A1, A2 | UI-4 `6e7eb53`; reminder switch UI-6 U6-7b `c96515a` |
 | A4 | This week (weekly missions) | `AdultMissions` | Built (changed 2026-10-17) | 3 weekly missions (Rescue wilting words · Use it in a sentence · Sound of the week) + "+1 rain barrel" reward, seed-pack line inside the card; Road to Band 7 below (week plants dropped 2026-10-18). | GR2, tabs | UI-6. Phase 13 Sound Garden card added S10 `1968f24`, removed 2026-10-06 `0e47e01`; This week `592d1a9` (plan: `docs/plans/A4 weekly missions implementation plan.md`) |
@@ -228,6 +229,11 @@ All iPad screens: sidebar (Garden · Missions · Topics · Groups · Me + Shared
 ## 3. Changelog
 
 Newest first. Format: `### YYYY-MM-DD — title` then lines tagged **Added / Changed / Removed / Decision**, with screen IDs and status.
+
+### 2026-10-18 — A1c Missions done, words still thirsty (Approved)
+- **Added** `source/AdultTodayDone(Vi).dc.html`, `reference/A1c-today-done(-vi)`, `tools/render.js` jobs.
+- **Decision** A learner who finished all of today's missions while words are still due (new words come back due minutes after planting) saw A1 with nothing to tap; A1b only shows when nothing is due. A1c keeps A1 and adds the "Want a little more?" list under the missions card: Water N thirsty words (new, water tone) · Plant 5 new words · Say 3 sentences. A1b keeps its three rows (with Quiz a bed). *Approved (Dylan, 2026-10-18).*
+- Build plan: `docs/plans/A1c missions done want more implementation plan.md`.
 
 ### 2026-10-17 — A4 This week: weekly missions (Built)
 - **Changed** A4 Weekly harvest → **This week**: 3 weekly missions on top — **Rescue wilting words** (3, leech drill), **Use it in a sentence** (3 accepted sentences, SP1), **Sound of the week** (5 pollinated words with the week's sound, P1–P4; v1 = a fixed rotation of sounds hard for Vietnamese learners, personal sound is v2). Finish all 3 → +1 rain barrel (max 3 held; Monday refill keeps it). Fallback when no wilting words: "Water 20 words".
