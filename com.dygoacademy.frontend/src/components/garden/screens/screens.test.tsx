@@ -51,14 +51,15 @@ describe('TodaysGardenScreen', () => {
   });
 
   it('lists the other missions under Then: open ones link, done ones are plain', () => {
-    renderWithIntl(<TodaysGardenScreen {...HOME} />);
+    const { container } = renderWithIntl(<TodaysGardenScreen {...HOME} />);
     expect(screen.getByText('Then')).toBeTruthy();
     const quiz = screen.getByRole('link', { name: /Collocation challenge/ });
     expect(quiz.getAttribute('href')).toBe('/quiz');
     expect(within(quiz).getByText('3 min')).toBeTruthy();
     // The finished plant mission shows as done and opens nothing.
     expect(screen.queryByRole('link', { name: /Plant 5 new words/ })).toBeNull();
-    expect(screen.getByText('Plant 5 new words').className).toContain('line-through');
+    // Done titles stay readable: no strike line (Dylan, 2026-10-18).
+    expect(container.querySelector('.line-through')).toBeNull();
     // Open rows come before done ones.
     const list = screen.getByText('Then').nextElementSibling as HTMLElement;
     const items = within(list).getAllByRole('listitem').map((li) => li.textContent ?? '');

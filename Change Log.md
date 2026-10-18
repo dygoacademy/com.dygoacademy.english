@@ -1187,6 +1187,10 @@ Engineering-facing log of shipped fixes and changes, one dated entry per change.
 
 ## 2026-10-18
 
+### Changed: done missions on the Garden page lose the strike line
+* **Files**: frontend `garden/screens/TodaysGardenScreen.tsx`, `garden/MissionRow.tsx`, `screens/screens.test.tsx`; design `docs/design/garden/source/AdultHome(Vi)`, `EntryHome(Vi).dc.html` and their `reference/A1-todays-garden*`, `reference/SE1-entry-home*` (re-rendered with `tools/render.js`).
+* **What**: Dylan on UAT (2026-10-18): a done mission's title was grey and struck through, which made it hard to read. The title now stays in the normal text color with no strike; the green check and the green "Done" still mark it as finished. Canvas boards A1 (EN / VI) updated the same way.
+
 ### Changed: A4 This week drops the daily-mission plants; the seed-pack line moves into the missions card
 * **Files**: frontend `garden/screens/WeeklyHarvestScreen.tsx`, `live/HarvestLive.tsx`, `live/data.ts` (`weekHarvest` removed, + test), `screens/fixtures.ts`, `screens/screens.test.tsx`, `messages/*.json`; `docs/design/garden/CHANGELOG.md`.
 * **What**: Dylan on UAT (2026-10-18): the week's daily-mission plants ("6 of 21 daily missions") repeated A1 and gave nothing to do, so he chose to drop them and keep the seed pack. A4 is now the weekly missions card (with the seed-pack line under "+1 rain barrel" while a seed pack is in progress), then the vocabulary goal full width, then the tab bar. `/missions` no longer calls `GET /missions/week` (Me still does). Strings only the plants used are gone (EN / VI / ZH). Live has no seed packs yet, so UAT shows no seed-pack line.
