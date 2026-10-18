@@ -124,6 +124,9 @@ describe('iPad layouts', () => {
     const navs = Array.from(on.container.querySelectorAll('[data-garden-nav]'));
     expect(navs.map((nav) => nav.getAttribute('data-garden-nav'))).toEqual(['rail', 'sidebar']);
     expect(screen.getAllByRole('navigation')).toHaveLength(2);
+    // Same labeled Add word button with the seed icon as on the phone.
+    const add = screen.getByRole('button', { name: 'Add word' });
+    expect(add.querySelector('svg')?.getAttribute('viewBox')).toBe('2 2 20 20');
   });
 
   it('sidebar master list: the open item is current; empty renders nothing', () => {

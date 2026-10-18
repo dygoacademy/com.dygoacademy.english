@@ -15,8 +15,8 @@ import {
   CheckIcon,
   MicIcon,
   MoreIcon,
-  PlusIcon,
   SearchIcon,
+  SeedColorIcon,
   SeedIcon,
   WaterIcon,
 } from '../icons';
@@ -232,17 +232,20 @@ export function TopicBedScreen({
         )}
         <Link
           href={quizHref}
-          className={buttonClassName('secondary', { className: 'box-content text-[15px]' })}
+          className={buttonClassName('secondary', { className: 'box-content px-3.5 text-[15px]' })}
         >
           {t('quiz')}
         </Link>
-        <IconButton
-          aria-label={t('addWord')}
+        <button
+          type="button"
           onClick={onAddWord ?? (() => router.push(addWordHref))}
-          className="h-[52px] w-[52px] rounded-control text-forest"
+          className={buttonClassName('secondary', {
+            className: 'box-content gap-1.5 whitespace-nowrap pl-3 pr-3.5 text-[15px]',
+          })}
         >
-          <PlusIcon width={20} height={20} />
-        </IconButton>
+          <SeedColorIcon width={24} height={24} />
+          {t('addWord')}
+        </button>
       </div>
 
       {water && plant ? (

@@ -328,6 +328,16 @@ export function SeedIcon(props: IconProps) {
   );
 }
 
+/** Two-colour seed (A7 "Add word" button). Canvas: 24px, viewBox 2 2 20 20, stroke 2.1. */
+export function SeedColorIcon(props: IconProps) {
+  return (
+    <StrokeIcon viewBox="2 2 20 20" strokeWidth="2.1" {...props}>
+      <ellipse cx="12" cy="15" rx="5" ry="3.5" fill="var(--stage-seed)" stroke="var(--stage-seed)" />
+      <path d="M12 11.5 C12 8 14 6 17 5" stroke="var(--color-success)" />
+    </StrokeIcon>
+  );
+}
+
 /** Rain barrel (streak freezes). */
 export function RainBarrelIcon(props: IconProps) {
   return (

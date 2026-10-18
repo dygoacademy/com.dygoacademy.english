@@ -495,6 +495,26 @@ describe('TopicBedScreen', () => {
     expect(screen.getByRole('link', { name: 'Plant 5 new' })).toBeTruthy();
   });
 
+  it('Add word is a labeled button with the seed icon; opens the sheet when given', () => {
+    const onAddWord = vi.fn();
+    renderWithIntl(<TopicBedScreen {...props} onAddWord={onAddWord} />);
+    const add = screen.getByRole('button', { name: 'Add word' });
+    expect(add.textContent).toBe('Add word');
+    expect(add.getAttribute('aria-label')).toBeNull();
+    expect(add.querySelector('svg[aria-hidden="true"]')?.getAttribute('viewBox')).toBe('2 2 20 20');
+    push.mockClear();
+    fireEvent.click(add);
+    expect(onAddWord).toHaveBeenCalledTimes(1);
+    expect(push).not.toHaveBeenCalled();
+  });
+
+  it('Add word goes to the add page without a sheet', () => {
+    renderWithIntl(<TopicBedScreen {...props} />);
+    push.mockClear();
+    fireEvent.click(screen.getByRole('button', { name: 'Add word' }));
+    expect(push).toHaveBeenCalledWith('/add');
+  });
+
   it('shows Nothing due when the bed has neither due words nor seeds', () => {
     renderWithIntl(<TopicBedScreen {...props} water={null} plant={null} />);
     expect(screen.getByText('Nothing due')).toBeTruthy();
