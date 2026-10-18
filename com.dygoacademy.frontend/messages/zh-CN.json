@@ -422,6 +422,10 @@
         }
       },
       "ripens": "明天 {time} · <b>{count} 个单词到期</b>",
+      "more": {
+        "water": "给 {count} 个缺水的单词浇水",
+        "waterMeta": "额外 · 约 1 分钟"
+      },
       "public": {
         "metaTitle": "每天5分钟，轻松背英语单词 | Dygo Academy",
         "metaDescription": "英语单词学习 App：每个单词都有中文释义、IPA 音标、发音和真实例句。间隔重复会在你快忘记前提醒复习，记得更牢。免费开始。",

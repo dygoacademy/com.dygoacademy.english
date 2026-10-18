@@ -418,6 +418,10 @@
         }
       },
       "ripens": "Ngày mai {time} · <b>{count, plural, one {# từ} other {# từ}} đến hạn tưới</b>",
+      "more": {
+        "water": "Tưới {count} từ đang khát",
+        "waterMeta": "Thêm · khoảng 1 phút"
+      },
       "public": {
         "metaTitle": "Học từ vựng tiếng Anh 5 phút mỗi ngày | Dygo Academy",
         "metaDescription": "App học từ vựng tiếng Anh với nghĩa dễ hiểu, phiên âm IPA, phát âm và ví dụ thực tế bằng tiếng Việt. Ôn tập ngắt quãng giúp bạn nhớ từ lâu hơn. Miễn phí.",

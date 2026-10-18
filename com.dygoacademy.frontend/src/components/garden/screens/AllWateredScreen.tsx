@@ -1,11 +1,11 @@
 import * as React from 'react';
-import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 
 import { gcn } from '../cn';
 import { useGardenFormat, type ClockTime } from '../format';
 import { HeroGardenCard, type HeroPlant } from '../HeroGardenCard';
-import { ChevronRightIcon, GoldenBloomIcon, MicIcon } from '../icons';
+import { GoldenBloomIcon, MicIcon } from '../icons';
+import { MoreList, SeedIcon, type MoreRow } from '../MoreList';
 import { GardenTabBar, IPAD_NAV_COLUMN, SCREEN_CLASSES } from './GardenTabBar';
 import { HomeHeader, type Greeting } from './TodaysGardenScreen';
 
@@ -56,7 +56,7 @@ export function AllWateredScreen({
   const home = useTranslations('screens.home');
   const f = useGardenFormat();
 
-  const rows = [
+  const rows: MoreRow[] = [
     ...(extras.plant
       ? [
           {
@@ -126,52 +126,10 @@ export function AllWateredScreen({
         </section>
       ) : null}
 
-      <section className="mx-5 flex flex-col gap-1.5">
-        <h2 className="font-display text-[18px] font-semibold">{t('more')}</h2>
-        <ul className="flex flex-col rounded-[20px] border border-border bg-surface px-[14px] py-0.5">
-          {rows.map((row, index) => (
-            <li key={row.key} className={gcn(index > 0 && 'border-t border-divider')}>
-              <Link href={row.href} className="flex min-h-14 items-center gap-3 text-text">
-                <span
-                  aria-hidden="true"
-                  className="flex h-[38px] w-[38px] shrink-0 items-center justify-center rounded-full bg-forest-wash text-forest"
-                >
-                  {row.icon}
-                </span>
-                <span className="flex flex-grow flex-col">
-                  <span className="text-[15px] font-bold">{row.title}</span>
-                  <span className="text-[12px] text-muted-foreground">{row.meta}</span>
-                </span>
-                <ChevronRightIcon width={16} height={16} stroke="var(--color-text-muted)" />
-              </Link>
-            </li>
-          ))}
-        </ul>
-      </section>
+      <MoreList className="mx-5" rows={rows} />
 
       <GardenTabBar active="garden" sticky={stickyNav} />
     </div>
-  );
-}
-
-/** A1b "Plant 5 new words": a seed with a curl of sprout (canvas 19px, stroke 2.1). */
-function SeedIcon() {
-  return (
-    <svg
-      aria-hidden="true"
-      width="19"
-      height="19"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2.1"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      focusable="false"
-    >
-      <ellipse cx="12" cy="15" rx="5" ry="3.5" />
-      <path d="M12 11.5 C12 8 14 6 17 5" />
-    </svg>
   );
 }
 

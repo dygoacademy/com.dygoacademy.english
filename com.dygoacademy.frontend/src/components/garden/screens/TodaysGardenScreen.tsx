@@ -17,6 +17,7 @@ import {
   WaterIcon,
 } from '../icons';
 import type { MissionStatus } from '../MissionRow';
+import { MoreList, SeedIcon, type MoreRow } from '../MoreList';
 import { StreakPill } from '../StreakPill';
 import { GardenTabBar, IPAD_NAV_COLUMN, SCREEN_CLASSES } from './GardenTabBar';
 
@@ -31,6 +32,11 @@ import { GardenTabBar, IPAD_NAV_COLUMN, SCREEN_CLASSES } from './GardenTabBar';
  * done ones are plain and struck through. With everything done there is
  * no Next up panel. Anything the backend can't provide yet is `null` and
  * shows an honest empty / coming-soon state instead of numbers.
+ *
+ * A1c (canvas `reference/A1c-today-done`): with `more` (every mission done,
+ * words still thirsty) "Want a little more?" follows the missions card in
+ * place of the ripens line: water the thirsty words, plant 5 new words,
+ * say 3 sentences (A1b's rows, without its quiz).
  */
 export type Greeting = 'morning' | 'afternoon' | 'evening';
 
@@ -71,6 +77,14 @@ export interface TodaysGardenScreenProps {
   goldenBloom?: boolean;
   /** "Tomorrow 7:30 AM · 14 words ripen"; null hides the line. */
   ripens: { time: ClockTime; count: number } | null;
+  /** A1c "Want a little more?"; null or absent hides it (and shows the ripens line). */
+  more?: {
+    /** Words still due; null (or a count of 0) hides the row. */
+    water: { count: number; href: string } | null;
+    /** The bed to plant from (A1b's rule); null hides the row. */
+    plant: { bed: string; href: string } | null;
+    speakHref: string;
+  } | null;
   stickyNav?: boolean;
 }
 
@@ -89,9 +103,11 @@ export function TodaysGardenScreen({
   missions,
   goldenBloom = false,
   ripens,
+  more = null,
   stickyNav = true,
 }: TodaysGardenScreenProps) {
   const t = useTranslations('screens.home');
+  const extra = useTranslations('screens.allWatered');
   const f = useGardenFormat();
 
   const legend: HeroLegendItem[] = [
@@ -104,8 +120,43 @@ export function TodaysGardenScreen({
 
   const doneCount = missions?.filter((m) => missionStatus(m) === 'done').length ?? 0;
 
+  const moreRows: MoreRow[] | null = more
+    ? [
+        ...(more.water && more.water.count > 0
+          ? [
+              {
+                key: 'water',
+                href: more.water.href,
+                icon: <WaterIcon width={19} height={19} />,
+                title: t('more.water', { count: more.water.count }),
+                meta: t('more.waterMeta'),
+                tone: 'water' as const,
+              },
+            ]
+          : []),
+        ...(more.plant
+          ? [
+              {
+                key: 'plant',
+                href: more.plant.href,
+                icon: <SeedIcon />,
+                title: extra('plant'),
+                meta: extra('plantFrom', { bed: more.plant.bed }),
+              },
+            ]
+          : []),
+        {
+          key: 'speak',
+          href: more.speakHref,
+          icon: <MicIcon width={19} height={19} strokeWidth="2.1" />,
+          title: extra('speak'),
+          meta: extra('speakTime'),
+        },
+      ]
+    : null;
+
   return (
-    <div className={gcn(SCREEN_CLASSES, IPAD_NAV_COLUMN, 'gap-[14px] pt-[22px]')}>
+    <div className={gcn(SCREEN_CLASSES, IPAD_NAV_COLUMN, moreRows ? 'gap-3' : 'gap-[14px]', 'pt-[22px]')}>
       <HomeHeader date={date} greeting={greeting} name={name} streakDays={streakDays} />
 
       {/*
@@ -155,7 +206,9 @@ export function TodaysGardenScreen({
             )}
           </section>
 
-          {ripens ? (
+          {moreRows ? (
+            <MoreList className="mx-4 ipad:mx-0 ipad-lg:col-span-6" rows={moreRows} />
+          ) : ripens ? (
             <div className="flex flex-col gap-2.5 px-4 ipad:px-0 ipad-lg:col-span-6">
               <p className="flex items-center gap-2 px-1 text-[13px] text-muted-foreground">
                 <BellIcon width={16} height={16} />

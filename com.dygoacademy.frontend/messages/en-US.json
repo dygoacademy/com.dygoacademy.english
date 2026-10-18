@@ -418,6 +418,10 @@
         }
       },
       "ripens": "Tomorrow {time} · <b>{count, plural, one {# word is} other {# words are}} ready to water</b>",
+      "more": {
+        "water": "Water {count, plural, one {# thirsty word} other {# thirsty words}}",
+        "waterMeta": "Bonus · about 1 min"
+      },
       "public": {
         "metaTitle": "Learn English Vocabulary in 5 Minutes a Day | Dygo Academy",
         "metaDescription": "Learn English vocabulary with clear meanings, IPA, audio and real examples in your language. Spaced repetition brings words back before you forget. Start free.",

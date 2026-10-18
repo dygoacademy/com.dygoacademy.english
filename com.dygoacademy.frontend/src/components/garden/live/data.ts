@@ -750,6 +750,17 @@ export function showAllWatered(stats: SrsStats, missions: TodayMissions | undefi
 }
 
 /**
+ * A1c: A1 with "Want a little more?" under the missions card. Every
+ * mission of the day is done (Golden Bloom grown) but words are still
+ * due (words planted today come back due minutes later). False when the
+ * missions call failed; nothing due → A1b instead (`showAllWatered`).
+ */
+export function showMoreOnHome(stats: SrsStats, missions: TodayMissions | undefined): boolean {
+  if (!missions || stats.due_now <= 0) return false;
+  return missions.goldenBloom || missions.missions.every((m) => m.done);
+}
+
+/**
  * A1b "Plant 5 new words · From {bed}": the learner's My words bed while
  * it has seeds (their own words are planted first, as in the daily Plant
  * mission), then their first bed (picked

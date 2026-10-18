@@ -32,6 +32,7 @@ import {
   nextRipening,
   ripensTomorrow,
   showAllWatered,
+  showMoreOnHome,
   showWelcomeBack,
   thirstyMission,
 } from './data';
@@ -70,6 +71,11 @@ import { usePlantPendingSeed } from './usePlantPendingSeed';
  * (from the goal) while it has seeds, else the bed with the most seeds
  * (`extraPlantBed`, hidden without seeds), The Pond, and
  * the mission quiz link.
+ *
+ * A1c: every mission done but words still due (`showMoreOnHome`) keeps A1
+ * and adds "Want a little more?" under the missions card: water the due
+ * words (Review, due only, like the Water mission), A1b's plant row and
+ * The Pond. No quiz row.
  */
 export function HomeLive() {
   const timeZone = useTimeZone();
@@ -113,9 +119,15 @@ export function HomeLive() {
 
   const tomorrow = isoDay(addDays(today, 1));
 
+  const bed = extraPlantBed(topics.data, onboarding.data?.first_topic_id);
+  const plantLeft = plantAllowance(missions.data);
+  // Daily goal missions: only while today's seeds aren't all planted.
+  const extraPlant =
+    bed && plantLeft > 0
+      ? { bed: bed.title, href: GARDEN_ROUTES.plant(Math.min(EXTRA_PLANT_COUNT, plantLeft), bed.id) }
+      : null;
+
   if (showAllWatered(s, missions.data)) {
-    const bed = extraPlantBed(topics.data, onboarding.data?.first_topic_id);
-    const plantLeft = plantAllowance(missions.data);
     return (
       <AllWateredScreen
         date={today}
@@ -133,14 +145,7 @@ export function HomeLive() {
         }
         ripens={nextRipening(upcoming.data, tomorrow, schedules.data)}
         extras={{
-          // Daily goal missions: only while today's seeds aren't all planted.
-          plant:
-            bed && plantLeft > 0
-              ? {
-                  bed: bed.title,
-                  href: GARDEN_ROUTES.plant(Math.min(EXTRA_PLANT_COUNT, plantLeft), bed.id),
-                }
-              : null,
+          plant: extraPlant,
           speakHref: GARDEN_ROUTES.sounds,
           quizHref: missionQuizHref(topics.data, missions.data?.quiz_questions),
         }}
@@ -179,6 +184,15 @@ export function HomeLive() {
       }
       goldenBloom={missions.data?.goldenBloom ?? false}
       ripens={ripensTomorrow(upcoming.data, tomorrow, schedules.data)}
+      more={
+        showMoreOnHome(s, missions.data)
+          ? {
+              water: { count: s.due_now, href: GARDEN_ROUTES.review },
+              plant: extraPlant,
+              speakHref: GARDEN_ROUTES.sounds,
+            }
+          : null
+      }
     />
   );
 }

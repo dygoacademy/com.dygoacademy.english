@@ -22,7 +22,7 @@ import {
 import { AllWateredScreen } from './AllWateredScreen';
 import { MeScreen } from './MeScreen';
 import { ReviewScreen } from './ReviewScreen';
-import { TodaysGardenScreen } from './TodaysGardenScreen';
+import { TodaysGardenScreen, type MissionItem } from './TodaysGardenScreen';
 import { TopicBedScreen } from './TopicBedScreen';
 import { topicFilters } from '../live/data';
 import { TopicsScreen } from './TopicsScreen';
@@ -709,6 +709,65 @@ describe('AllWateredScreen (A1b)', () => {
     renderWithIntl(<AllWateredScreen {...ALL_WATERED} ripens={null} extras={extras} />);
     expect(screen.queryByText(/Next ripening/)).toBeNull();
     expect(screen.getByText('3 of 3 missions · Golden Bloom grown')).toBeTruthy();
+  });
+});
+
+describe('TodaysGardenScreen with Want a little more (A1c)', () => {
+  const done = [
+    { kind: 'water', done: 18, total: 18, href: '/review' },
+    { kind: 'plant', done: 5, total: 5, href: '/review?new=1' },
+    { kind: 'challenge', minutes: null, done: true, href: '/quiz' },
+  ] satisfies MissionItem[];
+  const more = {
+    water: { count: 2, href: '/review' },
+    plant: { bed: 'Environment', href: '/review?new=5&topic=t1' },
+    speakHref: '/sounds',
+  };
+  const list = () =>
+    screen.getByRole('heading', { name: 'Want a little more?' }).closest('section') as HTMLElement;
+
+  it('lists water, plant and speak in order with their links, and no ripens line', () => {
+    renderWithIntl(<TodaysGardenScreen {...HOME} missions={done} goldenBloom more={more} />);
+    expect(screen.getByText('3 of 3 done')).toBeTruthy();
+    const links = within(list()).getAllByRole('link');
+    expect(links.map((a) => a.getAttribute('href'))).toEqual([
+      '/review',
+      '/review?new=5&topic=t1',
+      '/sounds',
+    ]);
+    expect(links[0].textContent).toBe('Water 2 thirsty wordsBonus · about 1 min');
+    expect(links[1].textContent).toBe('Plant 5 new wordsFrom Environment');
+    expect(links[2].textContent).toBe('Say 3 sentencesAbout 2 min');
+    expect(screen.queryByText('Quiz a bed')).toBeNull();
+    expect(screen.queryByText(/ripen/)).toBeNull();
+  });
+
+  it('is hidden without more', () => {
+    renderWithIntl(<TodaysGardenScreen {...HOME} missions={done} goldenBloom />);
+    expect(screen.queryByRole('heading', { name: 'Want a little more?' })).toBeNull();
+  });
+
+  it('leaves the water row out without a count, and the plant row without a bed', () => {
+    renderWithIntl(
+      <TodaysGardenScreen {...HOME} missions={done} goldenBloom more={{ ...more, water: null, plant: null }} />,
+    );
+    const links = within(list()).getAllByRole('link');
+    expect(links.map((a) => a.getAttribute('href'))).toEqual(['/sounds']);
+  });
+
+  it('leaves the water row out when nothing is due', () => {
+    renderWithIntl(
+      <TodaysGardenScreen {...HOME} missions={done} goldenBloom more={{ ...more, water: { count: 0, href: '/review' } }} />,
+    );
+    expect(within(list()).queryByText(/thirsty word/)).toBeNull();
+    expect(within(list()).getAllByRole('link')).toHaveLength(2);
+  });
+
+  it('says 1 thirsty word', () => {
+    renderWithIntl(
+      <TodaysGardenScreen {...HOME} missions={done} goldenBloom more={{ ...more, water: { count: 1, href: '/review' } }} />,
+    );
+    expect(screen.getByText('Water 1 thirsty word')).toBeTruthy();
   });
 });
 

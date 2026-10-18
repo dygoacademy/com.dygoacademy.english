@@ -36,6 +36,7 @@ import {
   ripensTomorrow,
   sampleGarden,
   showAllWatered,
+  showMoreOnHome,
   showWelcomeBack,
   stageGarden,
   thirstyMission,
@@ -360,6 +361,15 @@ describe('A1b All watered', () => {
     expect(showAllWatered(stats(3), today([true, true, true]))).toBe(false);
     expect(showAllWatered(stats(0), undefined)).toBe(true);
     expect(showAllWatered(stats(2), undefined)).toBe(false);
+  });
+
+  it('A1c: every mission done while words are still due adds Want a little more', () => {
+    expect(showMoreOnHome(stats(2), today([true, true, true]))).toBe(true);
+    // Nothing due: A1b instead.
+    expect(showMoreOnHome(stats(0), today([true, true, true]))).toBe(false);
+    expect(showAllWatered(stats(0), today([true, true, true]))).toBe(true);
+    expect(showMoreOnHome(stats(2), today([true, false, true]))).toBe(false);
+    expect(showMoreOnHome(stats(2), undefined)).toBe(false);
   });
 
   it('plants from the bed with the most seeds, the first on a tie', () => {
