@@ -5,6 +5,7 @@ import { redirect } from 'next/navigation';
 import { ForgotPasswordLive } from '@/components/garden/auth/ForgotPasswordLive';
 import { ROUTES } from '@/constants/routes';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
+import { getSessionUser } from '@/lib/supabase/session-user';
 
 import { GardenAuthRoot } from '../garden-auth';
 
@@ -19,9 +20,7 @@ export async function generateMetadata(): Promise<Metadata> {
  */
 export default async function ForgotPasswordPage() {
   const supabase = await createServerSupabaseClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getSessionUser(supabase);
   if (user) redirect(ROUTES.home);
 
   return (

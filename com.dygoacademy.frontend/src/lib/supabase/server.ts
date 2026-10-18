@@ -16,11 +16,13 @@ import { cookies } from 'next/headers';
 import { env } from '@/config/env';
 
 import { AUTH_COOKIE_OPTIONS } from '@/lib/supabase/cookie';
+import { supabaseServerUrl } from '@/lib/supabase/session-user';
 
 export async function createServerSupabaseClient() {
   const cookieStore = await cookies();
+  const url = supabaseServerUrl(env.NEXT_PUBLIC_SUPABASE_URL);
 
-  return createServerClient(env.NEXT_PUBLIC_SUPABASE_URL, env.NEXT_PUBLIC_SUPABASE_ANON_KEY, {
+  return createServerClient(url, env.NEXT_PUBLIC_SUPABASE_ANON_KEY, {
     cookieOptions: AUTH_COOKIE_OPTIONS,
     cookies: {
       getAll() {

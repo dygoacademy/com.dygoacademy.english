@@ -20,6 +20,7 @@ import {
 } from '@/i18n/config';
 
 import { AUTH_COOKIE_OPTIONS } from '@/lib/supabase/cookie';
+import { getSessionUser, supabaseServerUrl } from '@/lib/supabase/session-user';
 
 export async function updateSession(request: NextRequest) {
   // The home page's language comes from its URL (`/`, `/vi`, `/zh`): pass
@@ -32,7 +33,7 @@ export async function updateSession(request: NextRequest) {
   let response = NextResponse.next({ request });
 
   const supabase = createServerClient(
-    env.NEXT_PUBLIC_SUPABASE_URL,
+    supabaseServerUrl(env.NEXT_PUBLIC_SUPABASE_URL),
     env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
     {
       cookieOptions: AUTH_COOKIE_OPTIONS,
@@ -53,13 +54,12 @@ export async function updateSession(request: NextRequest) {
     },
   );
 
-  // getUser(), not getSession(): getSession() only decodes the local
-  // cookie, which a tampered client could forge. getUser() revalidates
-  // against the Supabase Auth server on every call — the one call in this
-  // file that's allowed to be "slow" in exchange for actually being safe.
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  // Not a bare getSession(): that only decodes the cookie, which a tampered
+  // client could forge. getSessionUser() refreshes the token when it has
+  // expired, then verifies its signature locally with the JWT secret, the
+  // way the backend does, instead of asking the auth server on every
+  // request and prefetch (2026-10-18; see lib/supabase/session-user.ts).
+  const user = await getSessionUser(supabase);
 
   // Root is a special case, not just another protected prefix. Signed
   // out, "/" is the public home page (Home page HP-1, 2026-10-02): it

@@ -14,6 +14,7 @@ import { cookies, headers } from 'next/headers';
 
 import { GARDEN_ROUTES } from '@/constants/garden';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
+import { getSessionUser } from '@/lib/supabase/session-user';
 
 import {
   DEFAULT_TIME_ZONE,
@@ -55,9 +56,7 @@ interface ProfileLocaleRow {
 export const getGardenUser = cache(async () => {
   try {
     const supabase = await createServerSupabaseClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+    const user = await getSessionUser(supabase);
     return { supabase, user };
   } catch {
     return { supabase: null, user: null };

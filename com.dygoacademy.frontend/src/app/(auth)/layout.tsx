@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation';
 
 import { ROUTES } from '@/constants/routes';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
+import { getSessionUser } from '@/lib/supabase/session-user';
 
 /**
  * Signed-out shell for /login and /register. A signed-in user who lands
@@ -12,9 +13,7 @@ import { createServerSupabaseClient } from '@/lib/supabase/server';
  */
 export default async function AuthLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createServerSupabaseClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getSessionUser(supabase);
 
   if (user) {
     redirect(ROUTES.home);
