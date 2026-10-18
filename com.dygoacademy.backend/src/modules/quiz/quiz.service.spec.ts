@@ -52,6 +52,13 @@ async function makeService(opts: {
   return moduleRef.get(QuizService);
 }
 
+const namedWord = (w: string, i: number) =>
+  wordRow({
+    topic_word_id: `tw-${i}`,
+    source_word: w,
+    example_sentences: [{ sentence: `They said ${w} twice.`, level: 'B1', translation_hint: '' }],
+  });
+
 describe('QuizService.generate', () => {
   it('returns [] with no candidate words, without querying for a distractor pool', async () => {
     const queryAsMock = jest.fn().mockResolvedValueOnce([]);
@@ -85,9 +92,42 @@ describe('QuizService.generate', () => {
     const [, sql, params] = queryAsMock.mock.calls[0];
     expect(sql).toMatch(/tw\.topic_id = \$1/);
     expect(params).toEqual(['topic-9', 40]); // limit defaults to 10, candidateLimit = 10*4
-    // the whole bed stays available, its planted words first
+    // the whole bed, seeds first (Dylan, 2026-10-18)
     expect(sql).not.toMatch(/is null or tw\.topic_id =/);
-    expect(sql).toMatch(/order by coalesce\(uws\.fsrs_state <> 'New', false\) desc/);
+    expect(sql).toMatch(/order by coalesce\(uws\.fsrs_state <> 'New', false\) asc/);
+  });
+
+  it("a bed's quiz asks one question per word before any word gets a second, mixing types", async () => {
+    const words = ['alpha', 'bravo', 'charlie'].map(namedWord);
+    const queryAsMock = jest.fn().mockResolvedValueOnce(words).mockResolvedValueOnce([]);
+    const service = await makeService({ queryAsMock });
+
+    const result = await service.generate('user-1', {
+      topicId: 'topic-1',
+      types: ['DICTATION', 'CLOZE'],
+      limit: 4,
+    });
+
+    const wordOf = (id: string) => words.find((w) => id.includes(w.topic_word_id))?.source_word;
+    expect(result.slice(0, 3).map((r) => wordOf(r.id))).toEqual(['alpha', 'bravo', 'charlie']);
+    expect(result.slice(0, 3).map((r) => r.type)).toEqual(['DICTATION', 'CLOZE', 'DICTATION']);
+    // Round two: alpha's other type.
+    expect(result).toHaveLength(4);
+    expect(wordOf(result[3].id)).toBe('alpha');
+    expect(result[3].type).toBe('CLOZE');
+  });
+
+  it('the mission quiz (no scope) keeps planted words first and every type of a word together', async () => {
+    const words = ['alpha', 'bravo'].map(namedWord);
+    const queryAsMock = jest.fn().mockResolvedValueOnce(words).mockResolvedValueOnce([]);
+    const service = await makeService({ queryAsMock });
+
+    const result = await service.generate('user-1', { types: ['DICTATION', 'CLOZE'], limit: 2 });
+
+    expect(queryAsMock.mock.calls[0][1]).toMatch(
+      /order by coalesce\(uws\.fsrs_state <> 'New', false\) desc/,
+    );
+    expect(result.map((r) => r.id.includes('tw-0'))).toEqual([true, true]);
   });
 
   it("without a scope, keeps to the caller's planted words and first bed, weak ones first", async () => {

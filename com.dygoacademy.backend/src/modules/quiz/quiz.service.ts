@@ -119,6 +119,36 @@ function mapRow(row: QuizWordRow): QuizSourceWord {
 }
 
 /**
+ * A bed's quiz: one question per word before any word gets a second, in
+ * the words' order. The first type tried rotates with the word, so the
+ * questions mix types; a type a word can't build falls through to the
+ * next one.
+ */
+function spreadItems(
+  words: QuizSourceWord[],
+  types: QuizType[],
+  pool: string[],
+  limit: number,
+): QuizItem[] {
+  const items: QuizItem[] = [];
+  const used = words.map(() => new Set<QuizType>());
+  for (let round = 0; round < types.length && items.length < limit; round++) {
+    words.forEach((word, index) => {
+      for (let step = 0; step < types.length && items.length < limit; step++) {
+        const type = types[(index + round + step) % types.length];
+        if (used[index].has(type)) continue;
+        const item = buildQuizItem(word, type, pool);
+        if (!item) continue;
+        used[index].add(type);
+        items.push(item);
+        return;
+      }
+    });
+  }
+  return items;
+}
+
+/**
  * Module 5 — Dynamic Multi-Modal Quiz Engine (Phase 3). See
  * `quiz-generator.ts` for the generation/grading math (pure, unit tested in
  * isolation) — this class owns the DB reads and the one AI call FR-5.5
@@ -146,7 +176,13 @@ export class QuizService {
    * rest, then random. Without a scope, unplanted words only come from the
    * first bed (the goal's), so a learner who has planted little still gets
    * a quiz; a learner with no first bed falls back to every readable word.
-   * In one bed, its planted words come first, then the rest of the bed.
+   *
+   * A bed's quiz (from Topics) plays the whole bed, seeds included
+   * (Dylan, 2026-10-18): seeds come first, in random order, then the
+   * wilting and due planted words, then the rest. Each word gets one
+   * question (the type rotating from word to word) before any word gets a
+   * second, so a 10-question quiz covers up to 10 words. The daily
+   * mission's quiz (no scope) keeps to planted words, as above.
    */
   async generate(userId: string, dto: GenerateQuizDto): Promise<QuizItem[]> {
     const types: QuizType[] = dto.types?.length ? dto.types : [...QUIZ_TYPES];
@@ -167,6 +203,7 @@ export class QuizService {
       ? dto.topicWordIds
       : dto.topicId;
     const params = scopeParam !== undefined ? [scopeParam, candidateLimit] : [candidateLimit];
+    const bedQuiz = !dto.topicWordIds?.length && dto.topicId !== undefined;
     const ownWordsClause =
       scopeParam === undefined
         ? `and (${PLANTED} or ${FIRST_BED_TOPIC} is null or tw.topic_id = ${FIRST_BED_TOPIC})`
@@ -181,7 +218,7 @@ export class QuizService {
         where tw.status = 'READY'
           ${scopeClause}
           ${ownWordsClause}
-        order by ${PLANTED} desc,
+        order by ${PLANTED} ${bedQuiz ? 'asc' : 'desc'},
                  coalesce(uws.is_leech or uws.next_due_at <= now(), false) desc,
                  (tw.topic_id is not distinct from ${FIRST_BED_TOPIC}) desc,
                  random()
@@ -195,6 +232,8 @@ export class QuizService {
       userId,
       words.map((w) => w.sourceWord),
     );
+
+    if (bedQuiz) return spreadItems(words, types, pool, limit);
 
     const items: QuizItem[] = [];
     for (const word of words) {
