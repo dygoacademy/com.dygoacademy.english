@@ -1541,6 +1541,7 @@
       "bigStone": "Big stone = loud part",
       "hearIt": "Hear it",
       "slowly": "Slowly",
+      "playFailed": "Couldn't play the sound. Tap to try again.",
       "hopIntro": "Hop across the stones: ",
       "hopHard": "land hard on <b>{s}</b>",
       "hopLight": "light on <b>{s}</b>",

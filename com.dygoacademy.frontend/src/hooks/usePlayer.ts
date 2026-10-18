@@ -29,6 +29,8 @@ export interface PlayerState {
   rate: PlayerRate;
   /** Set when the last play failed (file missing, blocked, can't decode). */
   error: string | null;
+  /** True from a play's start until the sound actually starts (the clip loading). */
+  loading: boolean;
 }
 
 let audio: HTMLAudioElement | null = null;
@@ -36,7 +38,9 @@ let audio: HTMLAudioElement | null = null;
 let audioMicGeneration = 0;
 /** Stops a span at its end. */
 let spanTimer: ReturnType<typeof setTimeout> | null = null;
-let state: PlayerState = { src: null, rate: 1, error: null };
+let state: PlayerState = { src: null, rate: 1, error: null, loading: false };
+/** Bumped by every play and stop, so a play that was replaced or stopped stays quiet. */
+let playId = 0;
 const listeners = new Set<() => void>();
 
 function set(next: Partial<PlayerState>) {
@@ -59,7 +63,7 @@ function element(): HTMLAudioElement {
     audio.preload = 'auto';
     // Not 'pause': playClip pauses before switching clips, and that event
     // arrives after the new src is set. stopClip clears the state itself.
-    audio.addEventListener('ended', () => set({ src: null }));
+    audio.addEventListener('ended', () => set({ src: null, loading: false }));
   }
   return audio;
 }
@@ -83,19 +87,38 @@ export async function playClip(
   // Not recording: speaker, and through the silent switch (iOS).
   prepareForPlayback();
   const el = element();
+  const id = ++playId;
   el.pause();
   clearSpan();
   if (el.src !== src) el.src = src;
-  el.currentTime = span ? span.start : 0;
-  el.playbackRate = rate;
-  (el as HTMLAudioElement & { preservesPitch?: boolean }).preservesPitch = true;
-  set({ src, rate: isPlayerRate(rate) ? rate : state.rate, error: null });
+  // Where to start and how fast. Safari can drop a seek made before the
+  // clip's metadata has loaded, and resets playbackRate to
+  // defaultPlaybackRate when the clip loads, so "Slowly" played the
+  // sentence's start, or at 1× (Dylan's iPhone, 2026-10-18). Set both
+  // now, again once the metadata is in, and the rate once more when the
+  // sound starts.
+  const place = () => {
+    el.defaultPlaybackRate = rate;
+    el.playbackRate = rate;
+    (el as HTMLAudioElement & { preservesPitch?: boolean }).preservesPitch = true;
+    el.currentTime = span ? span.start : 0;
+  };
+  place();
+  if (el.readyState < HTMLMediaElement.HAVE_METADATA) {
+    el.addEventListener('loadedmetadata', () => id === playId && place(), { once: true });
+  }
+  set({ src, rate: isPlayerRate(rate) ? rate : state.rate, error: null, loading: true });
   try {
     await el.play();
   } catch (err) {
-    set({ src: null, error: (err as Error)?.message ?? 'play failed' });
+    // A newer tap or a stop interrupted this play (AbortError): not a failure.
+    if (id !== playId) return;
+    set({ src: null, loading: false, error: (err as Error)?.message ?? 'play failed' });
     throw err;
   }
+  if (id !== playId) return;
+  if (el.playbackRate !== rate) el.playbackRate = rate;
+  set({ loading: false });
   if (span) {
     spanTimer = setTimeout(
       () => {
@@ -109,9 +132,10 @@ export async function playClip(
 
 /** Stops the clip that's playing, if any. */
 export function stopClip(): void {
+  playId++;
   clearSpan();
   if (audio && !audio.paused) audio.pause();
-  if (state.src) set({ src: null });
+  if (state.src || state.loading) set({ src: null, loading: false });
 }
 
 /** Changes the rate for the next play (and the current one). */
@@ -124,7 +148,8 @@ export function setPlayerRate(rate: PlayerRate): void {
 export function resetPlayerForTest(): void {
   clearSpan();
   audio = null;
-  state = { src: null, rate: 1, error: null };
+  playId = 0;
+  state = { src: null, rate: 1, error: null, loading: false };
   listeners.clear();
 }
 
@@ -134,7 +159,7 @@ function subscribe(listener: () => void) {
 }
 
 const getState = () => state;
-const serverState: PlayerState = { src: null, rate: 1, error: null };
+const serverState: PlayerState = { src: null, rate: 1, error: null, loading: false };
 
 export function usePlayer() {
   const current = useSyncExternalStore(subscribe, getState, () => serverState);

@@ -32,6 +32,8 @@ import { PondStones, type StoneLook } from './PondStones';
  */
 export type PronPhase = 'say' | 'recording' | 'checking' | 'result' | 'notHeard';
 export type PronNotHeardReason = 'quiet' | 'noisy' | 'other';
+/** Hear it / Slowly: which is loading or playing, or that the last play failed. */
+export type PronAudio = 'idle' | 'loadingHear' | 'loadingSlow' | 'hear' | 'slow' | 'error';
 export type { PronResultView };
 
 export interface PronounceScreenProps {
@@ -49,6 +51,8 @@ export interface PronounceScreenProps {
   closeHref: string;
   onHearIt: () => void;
   onSlowly: () => void;
+  /** P1 Hear it / Slowly state (boards P1-say-word-loading / -playing / -slowly / -sound-error). */
+  audio?: PronAudio;
   /** P1. */
   onMic?: () => void;
   /** P1: a mic notice (denied, unsupported) in place of the hint; `micAvailable` false hides the mic. */
@@ -99,6 +103,46 @@ function Speaker({ size, arcs = 2 }: { size: number; arcs?: 1 | 2 }) {
     </svg>
   );
 }
+
+/** Hear it / Slowly while the clip loads: a ring with a turning arc. */
+const Spinner = () => (
+  <svg
+    width={20}
+    height={20}
+    viewBox="0 0 24 24"
+    fill="none"
+    strokeWidth="2.6"
+    strokeLinecap="round"
+    aria-hidden="true"
+    className="motion-safe:animate-spin"
+  >
+    <circle cx="12" cy="12" r="8" stroke="var(--color-forest-wash-border)" />
+    <path d="M12 4 A8 8 0 0 1 20 12" stroke="var(--color-success)" />
+  </svg>
+);
+
+/** Hear it / Slowly while the clip plays: three bars that rise and fall. */
+const SoundBars = () => (
+  <svg width={20} height={20} viewBox="0 0 20 20" aria-hidden="true">
+    {[
+      { x: 2, y: 5, h: 10, delay: '0s' },
+      { x: 8.4, y: 2, h: 16, delay: '.2s' },
+      { x: 14.8, y: 5, h: 10, delay: '.4s' },
+    ].map((bar) => (
+      <rect
+        key={bar.x}
+        x={bar.x}
+        y={bar.y}
+        width="3.2"
+        height={bar.h}
+        rx="1.6"
+        fill="currentColor"
+        className="origin-center [transform-box:fill-box] motion-safe:animate-[sound-bar_.8s_ease-in-out_infinite]"
+        style={{ animationDelay: bar.delay }}
+      />
+    ))}
+  </svg>
+);
 
 const Play = ({ size }: { size: number }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
@@ -247,10 +291,16 @@ const LINK =
 const OUTLINE =
   'flex h-12 flex-1 items-center justify-center gap-2 rounded-2xl border border-border bg-surface text-[15px] font-bold text-forest ipad:h-[52px] ipad:rounded-[18px] ipad:text-[16px]';
 
+/** Hear it / Slowly: OUTLINE that shows a press, and its loading / playing looks. */
+const HEAR = `${OUTLINE} transition-transform active:scale-[.97]`;
+const HEAR_LOADING = 'border-forest-wash-border bg-forest-wash';
+const HEAR_PLAYING = 'border-forest bg-forest text-white';
+
 export function PronounceScreen(props: PronounceScreenProps) {
   const t = useTranslations('screens.pronounce');
   const speak = useTranslations('screens.speak');
   const { phase, syllables } = props;
+  const audio = props.audio ?? 'idle';
   const stones = phase === 'result' && props.result ? props.result.stones : syllables;
   const lit = props.lit ?? 0;
   const list = stones.map(stoneText).join(', ');
@@ -353,16 +403,56 @@ export function PronounceScreen(props: PronounceScreenProps) {
         phase === 'say' ? '' : 'hidden ipad:flex',
       )}
     >
-      <button type="button" onClick={props.onHearIt} className={OUTLINE}>
-        <Speaker size={20} />
-        {t('hearIt')}
-      </button>
-      <button type="button" onClick={props.onSlowly} className={OUTLINE}>
-        <Speaker size={20} arcs={1} />
-        {t('slowly')}
-      </button>
+      {(
+        [
+          { key: 'hear', label: t('hearIt'), arcs: 2, onClick: props.onHearIt },
+          { key: 'slow', label: t('slowly'), arcs: 1, onClick: props.onSlowly },
+        ] as const
+      ).map((b) => {
+        const loading = audio === (b.key === 'hear' ? 'loadingHear' : 'loadingSlow');
+        const playing = audio === b.key;
+        return (
+          <button
+            key={b.key}
+            type="button"
+            onClick={b.onClick}
+            aria-pressed={loading || playing}
+            aria-busy={loading || undefined}
+            className={gcn(HEAR, loading && HEAR_LOADING, playing && HEAR_PLAYING)}
+          >
+            {loading ? <Spinner /> : playing ? <SoundBars /> : <Speaker size={20} arcs={b.arcs} />}
+            {b.label}
+          </button>
+        );
+      })}
     </div>
   );
+  const playFailed =
+    audio === 'error' ? (
+      <p
+        role="status"
+        className={gcn(
+          'order-3 -mt-1.5 flex items-center justify-center gap-1.5 text-[13px] font-semibold text-primary-text',
+          phase === 'say' ? '' : 'hidden ipad:flex',
+        )}
+      >
+        <svg
+          width={16}
+          height={16}
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2.4"
+          strokeLinecap="round"
+          aria-hidden="true"
+        >
+          <circle cx="12" cy="12" r="9" />
+          <path d="M12 7.5 V13" />
+          <path d="M12 16.5 V16.6" />
+        </svg>
+        {t('playFailed')}
+      </p>
+    ) : null;
 
   const parts = hopParts(stones);
   const tip = (
@@ -816,6 +906,7 @@ export function PronounceScreen(props: PronounceScreenProps) {
     <>
       {wordBlock}
       {hearButtons}
+      {playFailed}
       {tip}
     </>
   );

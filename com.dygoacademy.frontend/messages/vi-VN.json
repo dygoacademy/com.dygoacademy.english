@@ -1541,6 +1541,7 @@
       "bigStone": "Đá to = phần đọc mạnh",
       "hearIt": "Nghe",
       "slowly": "Nghe chậm",
+      "playFailed": "Không phát được âm thanh. Chạm để thử lại.",
       "hopIntro": "Nhảy qua các hòn đá: ",
       "hopHard": "nhấn mạnh ở <b>{s}</b>",
       "hopLight": "nhẹ ở <b>{s}</b>",

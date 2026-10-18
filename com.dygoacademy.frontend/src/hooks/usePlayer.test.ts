@@ -71,6 +71,92 @@ describe('usePlayer', () => {
     }
   });
 
+  describe('Hear it / Slowly feedback (2026-10-18)', () => {
+    function deferred() {
+      let resolve!: () => void;
+      let reject!: (e: Error) => void;
+      const promise = new Promise<void>((res, rej) => {
+        resolve = res;
+        reject = rej;
+      });
+      return { promise, resolve, reject };
+    }
+    const abort = () => Object.assign(new Error('The play() request was interrupted'), { name: 'AbortError' });
+
+    it('is loading from the tap until the sound starts', async () => {
+      const first = deferred();
+      play.mockReturnValueOnce(first.promise);
+      const { result } = renderHook(() => usePlayer());
+      let started!: Promise<void>;
+      act(() => {
+        started = result.current.play('a.m4a');
+      });
+      expect(result.current.src).toBe('a.m4a');
+      expect(result.current.loading).toBe(true);
+      await act(async () => {
+        first.resolve();
+        await started;
+      });
+      expect(result.current.loading).toBe(false);
+      expect(result.current.src).toBe('a.m4a');
+    });
+
+    it('a play replaced by a newer tap, or stopped, is not an error', async () => {
+      const first = deferred();
+      play.mockReturnValueOnce(first.promise);
+      const { result } = renderHook(() => usePlayer());
+      let replaced!: Promise<void>;
+      act(() => {
+        replaced = result.current.play('a.m4a');
+      });
+      await act(() => result.current.play('a.m4a', 0.7));
+      await act(async () => {
+        first.reject(abort());
+        await replaced;
+      });
+      expect(result.current.error).toBeNull();
+      expect(result.current.src).toBe('a.m4a');
+      expect(result.current.loading).toBe(false);
+
+      const third = deferred();
+      play.mockReturnValueOnce(third.promise);
+      let stopped!: Promise<void>;
+      act(() => {
+        stopped = result.current.play('b.m4a');
+      });
+      act(() => result.current.stop());
+      await act(async () => {
+        third.reject(abort());
+        await stopped;
+      });
+      expect(result.current).toMatchObject({ src: null, loading: false, error: null });
+    });
+
+    it('sets the start and the slow rate again once the clip has loaded (Safari drops them)', async () => {
+      const first = deferred();
+      play.mockReturnValueOnce(first.promise);
+      const { result } = renderHook(() => usePlayer());
+      let started!: Promise<void>;
+      act(() => {
+        started = result.current.play('s.m4a', 0.7, { start: 1, end: 1.7 });
+      });
+      const el = play.mock.contexts[0] as HTMLAudioElement;
+      expect(el.defaultPlaybackRate).toBe(0.7);
+      // What Safari does when the clip loads.
+      el.playbackRate = 1;
+      el.currentTime = 0;
+      act(() => el.dispatchEvent(new Event('loadedmetadata')));
+      expect(el.playbackRate).toBe(0.7);
+      expect(el.currentTime).toBe(1);
+      el.playbackRate = 1;
+      await act(async () => {
+        first.resolve();
+        await started;
+      });
+      expect(el.playbackRate).toBe(0.7);
+    });
+  });
+
   describe('after a recording (iPhone, 2026-10-13)', () => {
     afterEach(() => {
       vi.unstubAllGlobals();

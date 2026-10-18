@@ -44,6 +44,7 @@ import type { SpeakingWordItem } from '@/types';
 import {
   PronounceScreen,
   type PronNotHeardReason,
+  type PronAudio,
   type PronPhase,
 } from '../pronounce/PronounceScreen';
 import { SpeakNotice, type SpeakNoticeKind } from '../speaking/SpeakNotice';
@@ -128,6 +129,8 @@ function PronounceWord({
   const wordS = nativeWordSeconds(item, accent);
 
   const [phase, setPhase] = React.useState<PronPhase>('say');
+  /** Which of Hear it / Slowly the learner tapped last (null: some other clip). */
+  const [asked, setAsked] = React.useState<'hear' | 'slow' | null>(null);
   const [notice, setNotice] = React.useState<SpeakNoticeKind | null>(() =>
     speakingSupport().recorder ? null : 'unsupported',
   );
@@ -314,12 +317,29 @@ function PronounceWord({
     finish(null);
   }
 
-  const play = (src: NativeClip | null, rate = 1) => {
+  const play = (src: NativeClip | null, rate = 1, which: 'hear' | 'slow' | null = null) => {
     if (!src) return;
+    setAsked(which);
     void player.play(src.src, nativeClipRate(src, rate), src.span).catch(() => undefined);
   };
   const hearMine = () => {
+    setAsked(null);
     if (recUrl) void player.play(recUrl, 1).catch(() => undefined);
+  };
+
+  // Hear it / Slowly show loading, playing and a failed play (P1 boards,
+  // 2026-10-18): learners couldn't tell a tap worked and tapped again.
+  const native = nativeWord(item, accent);
+  let audio: PronAudio = 'idle';
+  if (asked && native && player.src === native.src) {
+    audio = player.loading ? (asked === 'hear' ? 'loadingHear' : 'loadingSlow') : asked;
+  } else if (asked && !player.src && player.error) {
+    audio = 'error';
+  }
+  const tapNative = (which: 'hear' | 'slow') => {
+    if (audio === which) return player.stop(); // playing: a tap stops it
+    if (audio === (which === 'hear' ? 'loadingHear' : 'loadingSlow')) return; // a double tap
+    play(native, which === 'slow' ? PRON_SLOW_RATE : 1, which);
   };
 
   const meaning = item.meaning_translation ?? item.definition_en;
@@ -337,8 +357,9 @@ function PronounceWord({
       total={total}
       topic={topic}
       closeHref={closeHref}
-      onHearIt={() => play(nativeWord(item, accent))}
-      onSlowly={() => play(nativeWord(item, accent), PRON_SLOW_RATE)}
+      audio={audio}
+      onHearIt={() => tapNative('hear')}
+      onSlowly={() => tapNative('slow')}
       onMic={() => void startRecording()}
       notice={
         notice ? (

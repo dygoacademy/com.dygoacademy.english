@@ -1545,6 +1545,7 @@
       "bigStone": "大石头 = 重读部分",
       "hearIt": "听一听",
       "slowly": "慢速",
+      "playFailed": "无法播放声音。点一下再试。",
       "hopIntro": "跳过石头：",
       "hopHard": "重踩 <b>{s}</b>",
       "hopLight": "轻踩 <b>{s}</b>",

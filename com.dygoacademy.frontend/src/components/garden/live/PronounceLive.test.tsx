@@ -152,6 +152,44 @@ describe('PronounceLive (Stepping stones)', () => {
     vi.restoreAllMocks();
   });
 
+  it('Hear it shows loading then playing, ignores a double tap and stops on a tap while playing', async () => {
+    setCheck(check({}));
+    await renderLive();
+    const play = vi.mocked(HTMLMediaElement.prototype.play);
+    play.mockClear();
+    let started!: () => void;
+    play.mockReturnValueOnce(new Promise<void>((res) => (started = res)));
+    const hear = screen.getAllByRole('button', { name: 'Hear it' })[0];
+    await act(async () => fireEvent.click(hear));
+    expect(hear.getAttribute('aria-busy')).toBe('true');
+    await act(async () => fireEvent.click(hear)); // a second tap while it loads
+    expect(play).toHaveBeenCalledTimes(1);
+    await act(async () => started());
+    expect(hear.getAttribute('aria-busy')).toBeNull();
+    expect(hear.getAttribute('aria-pressed')).toBe('true');
+    expect(hear.className).toMatch(/\bbg-forest\b/);
+    const slowly = screen.getAllByRole('button', { name: 'Slowly' })[0];
+    expect(slowly.getAttribute('aria-pressed')).toBe('false');
+    await act(async () => fireEvent.click(hear));
+    expect(hear.getAttribute('aria-pressed')).toBe('false');
+    expect(play).toHaveBeenCalledTimes(1);
+  });
+
+  it('Slowly plays at the slow rate, and a failed play says so until the next tap', async () => {
+    setCheck(check({}));
+    await renderLive();
+    const play = vi.mocked(HTMLMediaElement.prototype.play);
+    play.mockClear();
+    play.mockRejectedValueOnce(new Error('NotSupportedError'));
+    const slowly = screen.getAllByRole('button', { name: 'Slowly' })[0];
+    await act(async () => fireEvent.click(slowly));
+    expect(screen.getAllByText("Couldn't play the sound. Tap to try again.").length).toBeGreaterThan(0);
+    await act(async () => fireEvent.click(slowly));
+    expect(screen.queryByText("Couldn't play the sound. Tap to try again.")).toBeNull();
+    expect(slowly.getAttribute('aria-pressed')).toBe('true');
+    expect((play.mock.instances[1] as unknown as HTMLMediaElement).playbackRate).toBeLessThan(1);
+  });
+
   it('shows one stone per syllable, the stressed one big', async () => {
     setCheck(check({}));
     await renderLive();

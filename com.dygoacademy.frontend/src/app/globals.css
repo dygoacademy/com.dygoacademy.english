@@ -880,6 +880,16 @@
     opacity: 1;
   }
 }
+/* Pronunciation Hear it / Slowly: sound bars while a clip plays. */
+@keyframes sound-bar {
+  0%,
+  100% {
+    transform: scaleY(0.3);
+  }
+  50% {
+    transform: scaleY(1);
+  }
+}
 /* NavProgress: the bar slides across while the next screen loads. */
 @keyframes nav-progress {
   from {
