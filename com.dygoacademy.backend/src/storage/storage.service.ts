@@ -39,8 +39,16 @@ export class StorageService {
     normalizedWord: string,
     languageCode: string,
     ext: 'm4a' | 'wav' = 'm4a',
+    /**
+     * What the clip was made from (voice, IPA). Part of the hash so a remade
+     * clip is a new file: the old one is cached as immutable on phones and
+     * the CDN. Omitted = the original md5(word) keys (Gemini TTS clips).
+     */
+    madeFrom?: string,
   ): string {
-    const hash = createHash('md5').update(normalizedWord).digest('hex');
+    const hash = createHash('md5')
+      .update(madeFrom ? `${madeFrom}|${normalizedWord}` : normalizedWord)
+      .digest('hex');
     return `audio/${languageCode}/us/${hash}.${ext}`;
   }
 

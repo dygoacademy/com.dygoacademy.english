@@ -3,6 +3,12 @@ import { Logger } from '@nestjs/common';
 import { Job, UnrecoverableError } from 'bullmq';
 
 import { GeminiEnrichmentService } from '../ai/gemini-enrichment.service';
+import {
+  GoogleWordTtsService,
+  WORD_SPEAKING_RATE,
+  WORD_VOICE,
+  ipaForPhoneme,
+} from '../ai/google-word-tts.service';
 import { UsageCapExceededError } from '../ai/usage-cap.service';
 import { DatabaseService } from '../database/database.service';
 import {
@@ -19,6 +25,8 @@ import { StorageService } from '../storage/storage.service';
 interface MasterLexiconRow {
   id: string;
   audio_url?: string | null;
+  ipa_us?: string | null;
+  ipa_uk?: string | null;
 }
 
 /**
@@ -36,7 +44,7 @@ export function isMissingAudio(url: string | null | undefined): boolean {
  * Gemini + TTS enrichment pipeline (Phase 1, Module 2).
  *
  * Flow: master_lexicon dedup lookup (>85% hit-rate KPI, BRD §2) -> on miss,
- * Gemini 1.5 Flash for linguistic fields -> Gemini TTS for audio -> upload
+ * Gemini 1.5 Flash for linguistic fields -> Google TTS from the IPA for audio -> upload
  * to R2/MinIO -> upsert master_lexicon -> mark the topic_word READY.
  *
  * Also handles `audio-backfill` jobs, queued by `npm run audio-backfill`
@@ -51,6 +59,7 @@ export class EnrichmentProcessor extends WorkerHost {
   constructor(
     private readonly db: DatabaseService,
     private readonly gemini: GeminiEnrichmentService,
+    private readonly wordTts: GoogleWordTtsService,
     private readonly storage: StorageService,
   ) {
     super();
@@ -63,8 +72,8 @@ export class EnrichmentProcessor extends WorkerHost {
       // Fatal on failure (rethrows), so BullMQ retries with backoff. There is
       // no topic_word to mark FAILED: the word is already READY and usable,
       // it just has no audio until a retry or the next `npm run audio-backfill` succeeds.
-      const { lexiconId, word, languageCode } = job.data as AudioBackfillJob;
-      await this.ensureAudio(lexiconId, word.trim().toLowerCase(), languageCode);
+      const { lexiconId, word, languageCode, remake } = job.data as AudioBackfillJob;
+      await this.ensureAudio(lexiconId, word.trim().toLowerCase(), languageCode, remake);
       return;
     }
     if (job.name === TRANSLATIONS_BACKFILL_JOB) {
@@ -178,7 +187,11 @@ export class EnrichmentProcessor extends WorkerHost {
 
     let audioUrl: string | null = null;
     try {
-      audioUrl = await this.resolveAudioUrl(normalizedWord, languageCode);
+      audioUrl = await this.resolveAudioUrl(
+        normalizedWord,
+        languageCode,
+        entry.ipa_us ?? entry.ipa_uk,
+      );
     } catch (err) {
       // Audio is a nice-to-have on top of the text fields, not the field
       // that gates READY (topic_words_ready_requires_lexicon only requires a
@@ -274,31 +287,77 @@ export class EnrichmentProcessor extends WorkerHost {
   }
 
   /**
-   * Audio for a word, cheapest source first: the object is keyed by
-   * md5(word), so audio generated before a database reset is still in
-   * storage and is reused for free (the .m4a, or an older .wav). Only a
-   * word that never had audio costs a TTS call. New clips are stored as
-   * AAC .m4a (~6× smaller, what the URL points at) plus the WAV at the same
-   * key (KEEP_WAV_COPY); WAV only if ffmpeg is missing. Throws on TTS/storage failure; callers decide if that's fatal.
+   * Audio for a word, cheapest source first: the object key is deterministic,
+   * so audio made before a database reset is still in storage and is reused
+   * for free (the .m4a, or an older .wav). Only a word that never had audio
+   * costs a TTS call. New clips come from Google TTS said from the IPA (the
+   * sentence voice, keyed by voice + IPA + word); Gemini TTS, keyed by
+   * md5(word), only when Google isn't configured or fails. Stored as AAC
+   * .m4a (~6× smaller, what the URL points at) plus the WAV at the same key
+   * (KEEP_WAV_COPY); WAV only if ffmpeg is missing. Throws on TTS/storage
+   * failure; callers decide if that's fatal.
    */
-  private async resolveAudioUrl(normalizedWord: string, languageCode: string): Promise<string> {
+  private async resolveAudioUrl(
+    normalizedWord: string,
+    languageCode: string,
+    ipa: string | null | undefined,
+  ): Promise<string> {
+    if (this.wordTts.isConfigured()) {
+      const madeFrom = `${WORD_VOICE}@${WORD_SPEAKING_RATE}|${ipaForPhoneme(ipa) ?? ''}`;
+      const keyFor = (ext: 'm4a' | 'wav') =>
+        StorageService.audioKeyFor(normalizedWord, languageCode, ext, madeFrom);
+      const reused = await this.existingAudio(normalizedWord, keyFor);
+      if (reused) return reused;
+      try {
+        const wav = await this.wordTts.synthesizeWord(normalizedWord, ipa);
+        return await this.storeAudio(normalizedWord, wav, keyFor);
+      } catch (err) {
+        if (err instanceof UsageCapExceededError) throw err;
+        this.logger.warn(
+          `Google TTS failed for "${normalizedWord}", using Gemini TTS: ${
+            err instanceof Error ? err.message : err
+          }`,
+        );
+      }
+    }
+    const keyFor = (ext: 'm4a' | 'wav') =>
+      StorageService.audioKeyFor(normalizedWord, languageCode, ext);
+    const reused = await this.existingAudio(normalizedWord, keyFor);
+    if (reused) return reused;
+    const { pcm, sampleRateHz } = await this.gemini.synthesizeSpeech(normalizedWord);
+    return this.storeAudio(
+      normalizedWord,
+      GeminiEnrichmentService.pcmToWav(pcm, sampleRateHz),
+      keyFor,
+    );
+  }
+
+  private async existingAudio(
+    normalizedWord: string,
+    keyFor: (ext: 'm4a' | 'wav') => string,
+  ): Promise<string | null> {
     for (const ext of ['m4a', 'wav'] as const) {
-      const existing = StorageService.audioKeyFor(normalizedWord, languageCode, ext);
+      const existing = keyFor(ext);
       if (await this.storage.hasObject(existing)) {
         this.logger.log(`reusing existing audio for "${normalizedWord}" (no TTS call)`);
         return this.storage.publicUrlFor(existing);
       }
     }
-    const { pcm, sampleRateHz } = await this.gemini.synthesizeSpeech(normalizedWord);
-    const audio = await encodeForWeb(GeminiEnrichmentService.pcmToWav(pcm, sampleRateHz));
+    return null;
+  }
+
+  private async storeAudio(
+    normalizedWord: string,
+    wav: Buffer,
+    keyFor: (ext: 'm4a' | 'wav') => string,
+  ): Promise<string> {
+    const audio = await encodeForWeb(wav);
     if (audio.fallback)
       this.logger.warn(`no AAC for "${normalizedWord}", WAV only: ${audio.fallback}`);
     // Primary first, so its URL is the one returned; the WAV copy sits at
     // the same key with .wav (KEEP_WAV_COPY).
     const urls: string[] = [];
-    for (const file of filesToStore(audio, (ext) =>
-      StorageService.audioKeyFor(normalizedWord, languageCode, ext),
-    )) {
+    for (const file of filesToStore(audio, keyFor)) {
       urls.push(await this.storage.upload(file.key, file.body, file.contentType));
     }
     return urls[0];
@@ -308,28 +367,42 @@ export class EnrichmentProcessor extends WorkerHost {
    * Gives an existing master_lexicon row real audio if it has none (or only
    * a placeholder link). Re-checks the row first, so a duplicate or stale
    * job is a cheap no-op, and only overwrites a missing/placeholder value.
+   * `remake` (audio-backfill --word) replaces the clip a word already has,
+   * e.g. one that says the word wrong.
    */
   private async ensureAudio(
     lexiconId: string,
     normalizedWord: string,
     languageCode: string,
+    remake = false,
   ): Promise<void> {
     const [row] = await this.db.queryAsService<MasterLexiconRow>(
-      `select id, audio_url from public.master_lexicon where id = $1`,
+      `select id, audio_url, ipa_us, ipa_uk from public.master_lexicon where id = $1`,
       [lexiconId],
     );
     if (!row) {
       this.logger.warn(`audio backfill: lexicon row ${lexiconId} no longer exists, skipping`);
       return;
     }
-    if (!isMissingAudio(row.audio_url)) return;
+    if (!remake && !isMissingAudio(row.audio_url)) return;
 
-    const audioUrl = await this.resolveAudioUrl(normalizedWord, languageCode);
+    const audioUrl = await this.resolveAudioUrl(
+      normalizedWord,
+      languageCode,
+      row.ipa_us ?? row.ipa_uk,
+    );
+    if (remake && audioUrl === row.audio_url) {
+      this.logger.warn(`remake of "${normalizedWord}" made the same clip; nothing changed`);
+      return;
+    }
+    // A remake replaces whatever is there; a fill-in only a missing/placeholder value.
+    const onlyIfMissing = remake
+      ? ''
+      : `and (audio_url is null or audio_url like '${PLACEHOLDER_AUDIO_PREFIX}%')`;
     await this.db.queryAsService(
       `update public.master_lexicon
           set audio_url = $2, updated_at = now()
-        where id = $1
-          and (audio_url is null or audio_url like '${PLACEHOLDER_AUDIO_PREFIX}%')`,
+        where id = $1 ${onlyIfMissing}`,
       [lexiconId, audioUrl],
     );
     this.logger.log(`audio ready for "${normalizedWord}"`);

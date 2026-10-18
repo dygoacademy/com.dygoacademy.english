@@ -6,6 +6,7 @@
  *   npm run audio-backfill:prod              # uses ../env-profiles/prod.env
  *   npm run audio-backfill -- --dry-run      # list what would be queued, queue nothing
  *   npm run audio-backfill -- --limit 50     # at most 50 words this run (default 500)
+ *   npm run audio-backfill -- --word counterfeit   # remake this word's clip (repeatable)
  *
  * Run by hand after a database reset/import, or from cron, e.g. nightly:
  *   15 2 * * *  cd /path/to/com.dygoacademy.backend && npm run audio-backfill:prod >> ~/dygo-audio-backfill.log 2>&1
@@ -13,7 +14,7 @@
  * This script only QUEUES work; the running backend's EnrichmentProcessor
  * does it, one job at a time. For each word it first reuses audio already in
  * R2 (keyed by md5(word), so audio from before a reset costs nothing) and
- * only calls Gemini TTS for words that never had audio.
+ * only calls TTS (Google, from the IPA) for words that never had audio.
  *
  * It deliberately does not run at backend startup: a big backlog would compete
  * with real work. Jobs are queued at LOW priority (BullMQ: jobs without a
@@ -52,12 +53,13 @@ function loadEnv() {
 }
 
 function parseArgs(argv) {
-  const args = { dryRun: false, limit: 500 };
+  const args = { dryRun: false, limit: 500, words: [] };
   for (let i = 0; i < argv.length; i++) {
     if (argv[i] === '--dry-run') args.dryRun = true;
     else if (argv[i] === '--limit') args.limit = parseInt(argv[++i], 10);
+    else if (argv[i] === '--word' && argv[i + 1]) args.words.push(argv[++i].trim().toLowerCase());
     else if (argv[i] === '--help' || argv[i] === '-h') {
-      console.log(fs.readFileSync(__filename, 'utf8').split('\n').slice(2, 11).join('\n'));
+      console.log(fs.readFileSync(__filename, 'utf8').split('\n').slice(2, 12).join('\n'));
       process.exit(0);
     } else {
       console.error(`unknown option: ${argv[i]} (try --help)`);
@@ -72,7 +74,10 @@ function parseArgs(argv) {
 }
 
 async function main() {
-  const { dryRun, limit } = parseArgs(process.argv.slice(2));
+  const { dryRun, limit, words } = parseArgs(process.argv.slice(2));
+  // --word: remake the named words' clips even though they have audio (one
+  // that says the word wrong). The worker makes the new clip from the IPA.
+  const remake = words.length > 0;
   const env = loadEnv();
 
   const db = new Client({ connectionString: env.DATABASE_URL });
@@ -82,20 +87,37 @@ async function main() {
     // DATABASE_URL is the bare `authenticator` role with no table grants by
     // design; the app reads master_lexicon as service_role, so do the same.
     await db.query('set role service_role');
-    ({ rows } = await db.query(
-      `select id, normalized_word, language_code
-         from public.master_lexicon
-        where audio_url is null or audio_url like $1
-        order by created_at
-        limit $2`,
-      [`${PLACEHOLDER_AUDIO_PREFIX}%`, limit],
-    ));
+    ({ rows } = remake
+      ? await db.query(
+          `select id, normalized_word, language_code
+             from public.master_lexicon
+            where normalized_word = any($1::text[])
+            order by created_at`,
+          [words],
+        )
+      : await db.query(
+          `select id, normalized_word, language_code
+             from public.master_lexicon
+            where audio_url is null or audio_url like $1
+            order by created_at
+            limit $2`,
+          [`${PLACEHOLDER_AUDIO_PREFIX}%`, limit],
+        ));
   } finally {
     await db.end();
   }
 
+  if (remake) {
+    const found = new Set(rows.map((r) => r.normalized_word));
+    const missing = words.filter((w) => !found.has(w));
+    if (missing.length) console.log(`audio-backfill: not in master_lexicon: ${missing.join(', ')}`);
+  }
   if (rows.length === 0) {
-    console.log('audio-backfill: every word has audio. Nothing to queue.');
+    console.log(remake ? 'audio-backfill: nothing to remake.' : 'audio-backfill: every word has audio. Nothing to queue.');
+    return;
+  }
+  if (dryRun && remake) {
+    console.log(`audio-backfill (dry run): would remake ${rows.map((r) => r.normalized_word).join(', ')}`);
     return;
   }
   if (dryRun) {
@@ -113,6 +135,28 @@ async function main() {
   });
   let fresh;
   try {
+    if (remake) {
+      // A learner is waiting on these, so normal priority, and a fresh job id
+      // each run (an earlier remake's id may still be kept as completed).
+      await queue.addBulk(
+        rows.map((r) => ({
+          name: AUDIO_BACKFILL_JOB,
+          data: { lexiconId: r.id, word: r.normalized_word, languageCode: r.language_code, remake: true },
+          opts: {
+            jobId: `audio-remake-${r.id}-${Date.now()}`,
+            attempts: 3,
+            backoff: { type: 'exponential', delay: 2000 },
+            removeOnComplete: { age: 3600, count: 1000 },
+            removeOnFail: { age: 86_400 },
+          },
+        })),
+      );
+      console.log(
+        `audio-backfill: queued a remake of ${rows.map((r) => r.normalized_word).join(', ')}.` +
+          '\nThe running backend makes the new clip; watch: pm2 logs dygo-backend | grep -i audio',
+      );
+      return;
+    }
     // Skip words that already have a job waiting/running (same job id), so the
     // summary reports what this run actually added.
     const existing = await Promise.all(

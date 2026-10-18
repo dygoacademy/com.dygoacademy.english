@@ -38,6 +38,9 @@ export default () => ({
   // than blocking API boot, since a missing key shouldn't 500 every request.
   ai: {
     geminiApiKey: process.env.GEMINI_API_KEY ?? '',
+    // Word audio (src/ai/google-word-tts.service.ts); the same key
+    // scripts/speaking-generate.ts uses. Unset = word audio stays on Gemini TTS.
+    googleTtsApiKey: process.env.GOOGLE_TTS_API_KEY ?? '',
   },
 
   // Phase 13 G6: the speech scorer (docker/speech, container dygo_speech) on

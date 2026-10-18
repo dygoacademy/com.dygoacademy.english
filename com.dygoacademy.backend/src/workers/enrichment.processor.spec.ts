@@ -2,6 +2,7 @@ import { Test } from '@nestjs/testing';
 import { Job, UnrecoverableError } from 'bullmq';
 
 import { GeminiEnrichmentService, LexiconEntry } from '../ai/gemini-enrichment.service';
+import { GoogleWordTtsService } from '../ai/google-word-tts.service';
 import { UsageCapExceededError } from '../ai/usage-cap.service';
 import { DatabaseService } from '../database/database.service';
 import {
@@ -33,6 +34,8 @@ describe('EnrichmentProcessor', () => {
   let enrichWordMock: jest.Mock;
   let translateMeaningMock: jest.Mock;
   let synthesizeSpeechMock: jest.Mock;
+  let synthesizeWordMock: jest.Mock;
+  let googleConfigured: boolean;
   let uploadMock: jest.Mock;
   let hasObjectMock: jest.Mock;
 
@@ -84,6 +87,9 @@ describe('EnrichmentProcessor', () => {
     synthesizeSpeechMock = jest
       .fn()
       .mockResolvedValue({ pcm: Buffer.from('x'), sampleRateHz: 24000 });
+    // Default: no Google key, so the older tests cover the Gemini TTS path.
+    googleConfigured = false;
+    synthesizeWordMock = jest.fn().mockResolvedValue(Buffer.from('RIFFwav'));
     uploadMock = jest
       .fn()
       .mockResolvedValue('http://localhost:9000/dygo-audio/audio/en/us/abc.wav');
@@ -112,6 +118,13 @@ describe('EnrichmentProcessor', () => {
             enrichWord: enrichWordMock,
             translateMeaning: translateMeaningMock,
             synthesizeSpeech: synthesizeSpeechMock,
+          },
+        },
+        {
+          provide: GoogleWordTtsService,
+          useValue: {
+            isConfigured: () => googleConfigured,
+            synthesizeWord: synthesizeWordMock,
           },
         },
         {
@@ -372,6 +385,79 @@ describe('EnrichmentProcessor', () => {
     synthesizeSpeechMock.mockRejectedValue(new Error('TTS quota exceeded'));
 
     await expect(processor.process(backfillJob())).rejects.toThrow('TTS quota exceeded');
+  });
+
+  // ---------------------------------------------------------------------------
+  // Word audio from Google TTS said from the IPA (2026-10-18: Gemini TTS said
+  // "counterfeit" ending in "sit").
+  // ---------------------------------------------------------------------------
+
+  it('cache miss with Google TTS: says the word from its IPA, keyed apart from the Gemini clip', async () => {
+    googleConfigured = true;
+    queryMock.mockResolvedValueOnce([]); // dedup lookup — miss
+    queryMock.mockResolvedValueOnce([{ id: 'lex-2' }]); // master_lexicon upsert
+    queryMock.mockResolvedValueOnce([]); // word_translations upsert
+    queryMock.mockResolvedValueOnce([]); // topic_words update
+
+    await processor.process(makeJob());
+
+    expect(synthesizeWordMock).toHaveBeenCalledWith('ephemeral', '/ɪˈfem.ər.əl/');
+    expect(synthesizeSpeechMock).not.toHaveBeenCalled();
+    const key = uploadMock.mock.calls[0][0] as string;
+    expect(key).toMatch(/^audio\/en\/us\/[0-9a-f]{32}\.m4a$/);
+    expect(key).not.toBe(StorageService.audioKeyFor('ephemeral', 'en'));
+  });
+
+  it('Google TTS failure falls back to Gemini TTS', async () => {
+    googleConfigured = true;
+    synthesizeWordMock.mockRejectedValue(new Error('Google TTS 500'));
+    queryMock.mockResolvedValueOnce([{ id: 'lex-9', audio_url: null, ipa_us: '/ˈpə.laɪt/' }]);
+    queryMock.mockResolvedValueOnce([]);
+
+    await processor.process(backfillJob());
+
+    expect(synthesizeSpeechMock).toHaveBeenCalledWith('polite');
+    expect(uploadMock.mock.calls[0][0]).toBe(StorageService.audioKeyFor('polite', 'en'));
+  });
+
+  it('over the Google TTS cap: rethrows instead of spending Gemini calls', async () => {
+    googleConfigured = true;
+    synthesizeWordMock.mockRejectedValue(new UsageCapExceededError('google_tts', 10));
+    queryMock.mockResolvedValueOnce([{ id: 'lex-9', audio_url: null, ipa_us: '/ˈpə.laɪt/' }]);
+
+    await expect(processor.process(backfillJob())).rejects.toThrow(UsageCapExceededError);
+    expect(synthesizeSpeechMock).not.toHaveBeenCalled();
+  });
+
+  it('remake: replaces a word that already has audio with a clip made from its IPA', async () => {
+    googleConfigured = true;
+    uploadMock.mockImplementation((key: string) => Promise.resolve(`https://audio.example/${key}`));
+    queryMock.mockResolvedValueOnce([
+      {
+        id: 'lex-9',
+        audio_url: 'https://audio.example/audio/en/us/old.m4a',
+        ipa_us: '/ˈkaʊn.tɚ.fɪt/',
+      },
+    ]);
+    queryMock.mockResolvedValueOnce([]);
+
+    await processor.process(backfillJob({ word: 'counterfeit', remake: true }));
+
+    expect(synthesizeWordMock).toHaveBeenCalledWith('counterfeit', '/ˈkaʊn.tɚ.fɪt/');
+    const [sql, params] = queryMock.mock.calls[1];
+    expect(sql).not.toMatch(/audio_url is null/);
+    expect(params[1]).toMatch(/^https:\/\/audio\.example\/audio\/en\/us\/[0-9a-f]{32}\.m4a$/);
+    expect(params[1]).not.toBe('https://audio.example/audio/en/us/old.m4a');
+  });
+
+  it('remake that comes out as the same clip leaves the row alone', async () => {
+    hasObjectMock.mockResolvedValue(true); // the Gemini clip is in storage
+    const same = `https://audio.example/${StorageService.audioKeyFor('polite', 'en')}`;
+    queryMock.mockResolvedValueOnce([{ id: 'lex-9', audio_url: same, ipa_us: null }]);
+
+    await processor.process(backfillJob({ remake: true }));
+
+    expect(queryMock).toHaveBeenCalledTimes(1);
   });
 
   // ---------------------------------------------------------------------------

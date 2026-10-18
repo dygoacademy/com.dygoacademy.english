@@ -35,6 +35,8 @@ export interface AudioBackfillJob {
   lexiconId: string;
   word: string;
   languageCode: string;
+  /** Replace the word's existing clip (audio-backfill --word), not only fill a missing one. */
+  remake?: boolean;
 }
 
 export interface TranslationsBackfillJob {
