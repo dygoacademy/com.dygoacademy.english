@@ -5,7 +5,7 @@ import { useQueries, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 
 import { LIVE_LEVELS_PER_SECOND, useLiveLevels } from '@/hooks/useLiveLevels';
-import { usePlayer } from '@/hooks/usePlayer';
+import { prepareSlowClip, usePlayer } from '@/hooks/usePlayer';
 import { useTopic } from '@/hooks/useTopic';
 import { apiClient } from '@/lib/api-client';
 import {
@@ -336,6 +336,20 @@ function PronounceWord({
   } else if (asked && !player.src && player.error) {
     audio = 'error';
   }
+  // Slowly plays a slowed copy (usePlayer): make it before the tap.
+  const nativeSrc = native?.src;
+  const nativeStart = native?.span?.start;
+  const nativeEnd = native?.span?.end;
+  const nativeMadeAt = native?.madeAt;
+  React.useEffect(() => {
+    if (!nativeSrc) return;
+    const clip: NativeClip = {
+      src: nativeSrc,
+      span: nativeStart !== undefined && nativeEnd !== undefined ? { start: nativeStart, end: nativeEnd } : undefined,
+      madeAt: nativeMadeAt,
+    };
+    for (const rate of [1, PRON_SLOW_RATE]) prepareSlowClip(clip.src, nativeClipRate(clip, rate), clip.span);
+  }, [nativeSrc, nativeStart, nativeEnd, nativeMadeAt]);
   const tapNative = (which: 'hear' | 'slow') => {
     if (audio === which) return player.stop(); // playing: a tap stops it
     if (audio === (which === 'hear' ? 'loadingHear' : 'loadingSlow')) return; // a double tap

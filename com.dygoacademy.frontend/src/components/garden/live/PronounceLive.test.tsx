@@ -30,6 +30,11 @@ vi.mock('@/lib/api-client', () => ({
     get: (...a: unknown[]) => apiGet(...a),
   },
 }));
+// Slowly's slowed copy (usePlayer): already made, so a tap plays it straight away.
+vi.mock('@/lib/speaking/slow-clip', () => ({
+  readySlowClip: (src: string, rate: number) => `blob:slow-${rate}-${src}`,
+  makeSlowClip: (src: string, rate: number) => Promise.resolve(`blob:slow-${rate}-${src}`),
+}));
 vi.mock('@/lib/speaking/audio', async (orig) => ({
   ...(await orig<typeof import('@/lib/speaking/audio')>()),
   speakingSupport: () => ({ mic: true, recorder: 'media-recorder' }),
@@ -187,7 +192,10 @@ describe('PronounceLive (Stepping stones)', () => {
     await act(async () => fireEvent.click(slowly));
     expect(screen.queryByText("Couldn't play the sound. Tap to try again.")).toBeNull();
     expect(slowly.getAttribute('aria-pressed')).toBe('true');
-    expect((play.mock.instances[1] as unknown as HTMLMediaElement).playbackRate).toBeLessThan(1);
+    // A slowed copy at 1× (a slow playbackRate was silent on iPhone after Hear it).
+    const el = play.mock.instances[1] as unknown as HTMLMediaElement;
+    expect(el.src).toMatch(/^blob:slow-0\.\d+-/);
+    expect(el.playbackRate).toBe(1);
   });
 
   it('shows one stone per syllable, the stressed one big', async () => {
@@ -265,7 +273,8 @@ describe('PronounceLive (Stepping stones)', () => {
     play.mockClear();
     await act(async () => fireEvent.click(screen.getAllByRole('button', { name: 'Hear “ti”' })[0]));
     const el = play.mock.instances[0] as unknown as HTMLMediaElement;
-    expect(el.playbackRate).toBe(0.7);
+    expect(el.src).toMatch(/^blob:slow-0\.7-/); // the syllable slowed to 0.7×, played at 1×
+    expect(el.playbackRate).toBe(1);
     await act(async () => fireEvent.click(screen.getByRole('button', { name: 'Next bee' })));
     expect(await screen.findByText('Bee 2 of 2')).toBeTruthy();
     expect(screen.getAllByText('deforestation').length).toBeGreaterThan(0);

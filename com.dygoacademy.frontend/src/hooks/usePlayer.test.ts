@@ -3,12 +3,15 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { releaseStream, requestMic, resetAudioContextForTest } from '@/lib/speaking/audio';
 
+import { makeSlowClip, resetSlowClipsForTest } from '@/lib/speaking/slow-clip';
+
 import { playClip, resetPlayerForTest, stopClip, usePlayer } from './usePlayer';
 
 describe('usePlayer', () => {
   let play: ReturnType<typeof vi.spyOn>;
   beforeEach(() => {
     resetPlayerForTest();
+    resetSlowClipsForTest();
     play = vi.spyOn(HTMLMediaElement.prototype, 'play').mockResolvedValue(undefined);
     vi.spyOn(HTMLMediaElement.prototype, 'pause').mockImplementation(() => undefined);
   });
@@ -192,6 +195,59 @@ describe('usePlayer', () => {
 
       await playClip('b.m4a'); // no new recording: same element
       expect(play.mock.contexts[2]).toBe(play.mock.contexts[1]);
+    });
+  });
+
+  describe('Slowly plays a slowed copy at 1× (silent slow rate on iPhone, 2026-10-18)', () => {
+    const pcm = { samples: new Float32Array(4410).fill(0.1), sampleRate: 44100 };
+
+    it('plays a copy made before the tap, at 1×, while the state shows the clip', async () => {
+      const url = await makeSlowClip('w.m4a', 0.7, undefined, () => Promise.resolve(pcm));
+      const { result } = renderHook(() => usePlayer());
+      await act(() => result.current.play('w.m4a', 0.7));
+      expect(play).toHaveBeenCalledTimes(1);
+      const el = play.mock.contexts[0] as HTMLAudioElement;
+      expect(el.src).toBe(url);
+      expect(el.playbackRate).toBe(1);
+      expect(el.muted).toBe(false);
+      expect(result.current.src).toBe('w.m4a');
+      expect(result.current.loading).toBe(false);
+      act(() => el.dispatchEvent(new Event('ended')));
+      expect(result.current.src).toBeNull();
+    });
+
+    it('starts muted inside the tap, then plays the copy once made', async () => {
+      let give!: (p: typeof pcm) => void;
+      const making = makeSlowClip('x.m4a', 0.7, undefined, () => new Promise((res) => (give = res)));
+      const { result } = renderHook(() => usePlayer());
+      let done!: Promise<void>;
+      act(() => {
+        done = playClip('x.m4a', 0.7);
+      });
+      const el = play.mock.contexts[0] as HTMLAudioElement;
+      expect(el.muted).toBe(true);
+      expect(result.current.loading).toBe(true);
+      await act(async () => {
+        give(pcm);
+        await making;
+        await done;
+      });
+      expect(play).toHaveBeenCalledTimes(2);
+      expect(el.muted).toBe(false);
+      expect(el.src).toBe(await making);
+      expect(el.playbackRate).toBe(1);
+      expect(result.current.src).toBe('x.m4a');
+    });
+
+    it('falls back to the slow playbackRate when the copy cannot be made', async () => {
+      vi.spyOn(globalThis, 'fetch').mockRejectedValue(new TypeError('offline'));
+      const { result } = renderHook(() => usePlayer());
+      await act(() => result.current.play('y.m4a', 0.7));
+      const el = play.mock.contexts[1] as HTMLAudioElement;
+      expect(el.src).toMatch(/y\.m4a$/);
+      expect(el.playbackRate).toBe(0.7);
+      expect(el.muted).toBe(false);
+      expect(result.current.error).toBeNull();
     });
   });
 });

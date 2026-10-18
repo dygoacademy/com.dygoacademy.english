@@ -3,6 +3,7 @@
 import { useCallback, useSyncExternalStore } from 'react';
 
 import { getMicGeneration, prepareForPlayback } from '@/lib/speaking/audio';
+import { makeSlowClip, readySlowClip } from '@/lib/speaking/slow-clip';
 
 /**
  * One audio player for the whole app (Phase 13 T3, handover §4): playing a
@@ -77,7 +78,9 @@ function clearSpan() {
  * Plays `src` at `rate`, stopping anything else; only `span` of it when
  * given. Resolves when playback starts. A rate other than PLAYER_RATES
  * (Pronunciation's "Slowly", 0.7×) plays once without changing the rate
- * The Pond remembers.
+ * The Pond remembers, from a slowed copy played at 1× (`slow-clip.ts`):
+ * on iPhone a slow playbackRate played silently right after Hear it
+ * (Dylan, 2026-10-18). `state.src` stays `src` while the copy plays.
  */
 export async function playClip(
   src: string,
@@ -89,8 +92,40 @@ export async function playClip(
   const el = element();
   const id = ++playId;
   el.pause();
+  el.muted = false;
   clearSpan();
+  set({ src, rate: isPlayerRate(rate) ? rate : state.rate, error: null, loading: true });
+  if (isPlayerRate(rate) || rate >= 1) return start(el, id, src, src, rate, span);
+
+  const ready = readySlowClip(src, rate, span);
+  if (ready) return start(el, id, src, ready, 1);
+  // Not made yet: start the element muted inside this tap, so iOS still
+  // lets it play once the copy is ready (after the tap has ended).
   if (el.src !== src) el.src = src;
+  el.muted = true;
+  el.play().catch(() => {});
+  let url: string | null = null;
+  try {
+    url = await makeSlowClip(src, rate, span);
+  } catch {
+    // Can't fetch or decode it here: the element's playbackRate instead.
+  }
+  if (id !== playId) return;
+  el.pause();
+  el.muted = false;
+  return url ? start(el, id, src, url, 1) : start(el, id, src, src, rate, span);
+}
+
+/** Plays `playSrc` for the play `id` of `src` (what `state.src` shows). */
+async function start(
+  el: HTMLAudioElement,
+  id: number,
+  src: string,
+  playSrc: string,
+  rate: number,
+  span?: ClipSpan,
+): Promise<void> {
+  if (el.src !== playSrc) el.src = playSrc;
   // Where to start and how fast. Safari can drop a seek made before the
   // clip's metadata has loaded, and resets playbackRate to
   // defaultPlaybackRate when the clip loads, so "Slowly" played the
@@ -107,7 +142,6 @@ export async function playClip(
   if (el.readyState < HTMLMediaElement.HAVE_METADATA) {
     el.addEventListener('loadedmetadata', () => id === playId && place(), { once: true });
   }
-  set({ src, rate: isPlayerRate(rate) ? rate : state.rate, error: null, loading: true });
   try {
     await el.play();
   } catch (err) {
@@ -128,6 +162,16 @@ export async function playClip(
       (Math.max(0, span.end - span.start) * 1000) / rate,
     );
   }
+}
+
+/**
+ * Makes the slowed copy of a clip ahead of the tap (Pronunciation opens
+ * with its native clip), so Slowly starts at once. Errors are ignored:
+ * the tap then tries again or falls back.
+ */
+export function prepareSlowClip(src: string, rate: number, span?: ClipSpan): void {
+  if (isPlayerRate(rate) || rate >= 1) return;
+  makeSlowClip(src, rate, span).catch(() => {});
 }
 
 /** Stops the clip that's playing, if any. */
