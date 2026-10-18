@@ -93,6 +93,47 @@ function ipaSyllableTexts(ipa: string): string[] {
     .filter(Boolean);
 }
 
+/** IPA vowels (a diphthong or a long vowel is one run of these). */
+const IPA_VOWELS = new Set([...'aeiouyæɑɒɔəɚɛɜɝɪʊʌɐøœɘɵɤɯ']);
+const SYLLABIC = '\u0329';
+
+/**
+ * The IPA's syllables counted by their vowels, for an IPA without syllable
+ * dots ("/kənˈdɪʃənəl/" → 4, the second stressed), where splitting at the
+ * stress marks gives too few. Null when the IPA has dots.
+ */
+function ipaNuclei(ipa: string): { stressed: boolean }[] | null {
+  const core = ipa
+    .split(/[,;]/)[0]
+    .trim()
+    .replace(/^[/[]+|[/\]]+$/g, '')
+    .replace(/[()]/g, '');
+  if (core.includes('.')) return null;
+  const out: { stressed: boolean }[] = [];
+  let stressNext = false;
+  let inVowel = false;
+  const chars = [...core];
+  chars.forEach((c, i) => {
+    if (c === 'ˈ') {
+      stressNext = true;
+      inVowel = false;
+      return;
+    }
+    if (c === 'ˌ') {
+      inVowel = false;
+      return;
+    }
+    const nucleus = IPA_VOWELS.has(c) || chars[i + 1] === SYLLABIC;
+    if (nucleus && !inVowel) {
+      out.push({ stressed: stressNext });
+      stressNext = false;
+    }
+    if (c !== 'ː' && c !== SYLLABIC) inVowel = IPA_VOWELS.has(c);
+  });
+  if (out.length === 1) out[0].stressed = true;
+  return out;
+}
+
 /**
  * The syllables to show for `word`: its spelling split when that gives as
  * many syllables as `ipa`, otherwise the IPA's own syllables. The stressed
@@ -105,6 +146,14 @@ export function wordSyllables(
   const stress = ipaSyllables(ipa);
   if (stress.length === 0 || !ipa) return [];
   const spelled = splitSpelling(word);
+  // No syllable dots: count the IPA's vowels (conditional, Dylan 2026-10-18:
+  // one stone for the whole word, as "kən" + "dɪʃənəl" never matched 4).
+  if (spelled.length !== stress.length) {
+    const nuclei = ipaNuclei(ipa);
+    if (nuclei && spelled.length > 1 && nuclei.length === spelled.length) {
+      return spelled.map((text, k) => ({ text, stressed: nuclei[k].stressed }));
+    }
+  }
   const texts = spelled.length === stress.length ? spelled : ipaSyllableTexts(ipa);
   if (texts.length !== stress.length) return [];
   return texts.map((text, k) => ({ text, stressed: stress[k].stressed }));

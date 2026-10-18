@@ -115,10 +115,27 @@ export interface Stone {
   splashRy: number;
 }
 
+/** DM Sans bold advance widths (em/100) for a–z and A–Z; other letters (IPA) count as 0.62 em. */
+const LOWER = [59, 65, 61, 65, 60, 37, 60, 62, 27, 27, 58, 27, 94, 62, 61, 65, 65, 41, 53, 43, 62, 56, 82, 57, 60, 49];
+const UPPER = [71, 64, 74, 71, 58, 56, 78, 71, 27, 54, 65, 56, 89, 73, 78, 61, 78, 63, 60, 60, 68, 71, 102, 67, 63, 58];
+
+/** About how wide `text` is in DM Sans at `fontSize` (no DOM, so the server draws the same stones). */
+export function stoneTextWidth(text: string, fontSize: number): number {
+  let em = 0;
+  for (const ch of text) {
+    const c = ch.charCodeAt(0);
+    em += c >= 97 && c <= 122 ? LOWER[c - 97] / 100 : c >= 65 && c <= 90 ? UPPER[c - 65] / 100 : 0.62;
+  }
+  return em * fontSize;
+}
+
 /**
  * Where each stone sits on water line `waterY`: the stressed one big, short
- * syllables small, the rest in between. Three stones sit where the boards
- * put them; other counts are spread evenly, shrunk to fit if they'd touch.
+ * syllables small, the rest in between. Every stone is at least wide enough
+ * for its text (A, Dylan 2026-10-18: "CONDITIONAL" ran off its stone onto
+ * the dark water). Three stones sit where the boards put them when they
+ * fit; otherwise the row is packed in the middle, and shrunk (stones and
+ * text together) when it is wider than the card.
  */
 export function layoutStones(
   syllables: readonly SpeakingSyllable[],
@@ -128,33 +145,44 @@ export function layoutStones(
   const pond = POND[size];
   const n = syllables.length;
   if (n === 0) return [];
-  const sizes = syllables.map((s) =>
-    s.stressed ? pond.big : stoneText(s).length <= 2 ? pond.small : pond.mid,
+  const texts = syllables.map(stoneText);
+  const sizes = syllables.map((s, k) =>
+    s.stressed ? pond.big : texts[k].length <= 2 ? pond.small : pond.mid,
   );
-  let centres: number[];
-  if (n === 3) centres = [...pond.three];
-  else if (n === 1) centres = [pond.width / 2];
-  else {
-    const first = pond.width * 0.19;
-    const step = (pond.width * 0.62) / (n - 1);
-    centres = syllables.map((_, k) => first + k * step);
-  }
-  // Shrink when neighbours would touch (long words: 5 stones on a phone).
+  // Room around the text: 0.6 of the font size on each side.
+  const rxs = sizes.map((z, k) => Math.max(z.rx, stoneTextWidth(texts[k], z.font) / 2 + z.font * 0.6));
   const gap = pond.width * 0.03;
+  const margin = pond.width * 0.03;
+  let centres: number[] =
+    n === 3
+      ? [...pond.three]
+      : n === 1
+        ? [pond.width / 2]
+        : syllables.map((_, k) => pond.width * 0.19 + (k * pond.width * 0.62) / (n - 1));
+  const fits = (cs: number[], scale: number) =>
+    cs[0] - rxs[0] * scale >= margin &&
+    cs[n - 1] + rxs[n - 1] * scale <= pond.width - margin &&
+    cs.every((c, k) => k === 0 || c - cs[k - 1] >= (rxs[k - 1] + rxs[k]) * scale + gap);
   let scale = 1;
-  for (let k = 1; k < n; k++) {
-    const need = sizes[k - 1].rx + sizes[k].rx + gap;
-    scale = Math.min(scale, (centres[k] - centres[k - 1]) / need);
+  if (!fits(centres, 1)) {
+    const row = rxs.reduce((a, r) => a + 2 * r, 0) + gap * (n - 1);
+    scale = Math.min(1, (pond.width - 2 * margin - gap * (n - 1)) / (row - gap * (n - 1)));
+    let x = (pond.width - (row - gap * (n - 1)) * scale - gap * (n - 1)) / 2;
+    centres = rxs.map((r) => {
+      const c = x + r * scale;
+      x += 2 * r * scale + gap;
+      return c;
+    });
   }
   return syllables.map((s, k) => {
     const z = sizes[k];
     const cy = waterY - z.rise * scale;
     return {
-      text: stoneText(s),
+      text: texts[k],
       stressed: s.stressed,
-      cx: centres[k],
+      cx: Math.round(centres[k] * 10) / 10,
       cy,
-      rx: z.rx * scale,
+      rx: Math.round(rxs[k] * scale * 10) / 10,
       ry: z.ry * scale,
       fontSize: Math.round(z.font * scale),
       textY: cy + z.baseline * scale,
@@ -340,7 +368,10 @@ export function nativeSyllable(
   index: number,
 ): NativeClip | null {
   const { url, timings } = clipFor(item, accent);
-  const s = timings?.words[item.target_index]?.syllables[index];
+  const parts = timings?.words[item.target_index]?.syllables;
+  // Timings split by the IPA's stress marks can count fewer syllables than
+  // the stones (conditional: 2 vs 4); then the whole word, not a wrong part.
+  const s = parts && parts.length === wordStones(item).length ? parts[index] : undefined;
   if (url && s && s.end > s.start) {
     return { src: url, span: { start: s.start, end: s.end }, madeAt: madeAt(timings) };
   }

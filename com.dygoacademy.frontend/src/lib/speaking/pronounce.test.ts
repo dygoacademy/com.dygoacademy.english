@@ -12,6 +12,7 @@ vi.mock('@/lib/api-client', () => ({
 import {
   hopParts,
   layoutStones,
+  stoneTextWidth,
   litStones,
   nativeClipRate,
   nativeSyllable,
@@ -56,6 +57,33 @@ describe('stones', () => {
     for (let k = 1; k < stones.length; k++) {
       expect(stones[k].cx - stones[k].rx).toBeGreaterThan(stones[k - 1].cx + stones[k - 1].rx);
     }
+  });
+
+  it('makes every stone wide enough for its text, inside the card (CONDITIONAL, 2026-10-18)', () => {
+    const one = layoutStones([{ text: 'conditional', stressed: true }], 'phone', 120);
+    expect(one[0].text).toBe('CONDITIONAL');
+    expect(one[0].rx * 2).toBeGreaterThan(stoneTextWidth('CONDITIONAL', one[0].fontSize) + one[0].fontSize);
+    expect(one[0].cx - one[0].rx).toBeGreaterThanOrEqual(10);
+    expect(one[0].cx + one[0].rx).toBeLessThanOrEqual(324);
+
+    const four = ['con', 'di', 'tio', 'nal'].map((text, k) => ({ text, stressed: k === 1 }));
+    for (const size of ['phone', 'ipad'] as const) {
+      const stones = layoutStones(four, size, 120);
+      const width = size === 'phone' ? 334 : 560;
+      stones.forEach((st, k) => {
+        expect(st.rx * 2).toBeGreaterThan(stoneTextWidth(st.text, st.fontSize));
+        expect(st.cx - st.rx).toBeGreaterThanOrEqual(width * 0.03 - 0.1);
+        expect(st.cx + st.rx).toBeLessThanOrEqual(width * 0.97 + 0.1);
+        if (k > 0) expect(st.cx - st.rx).toBeGreaterThan(stones[k - 1].cx + stones[k - 1].rx);
+      });
+    }
+    // The board's numbers (P4-result-long-word).
+    expect(layoutStones(four, 'phone', 120).map((s) => [s.text, Math.round(s.cx), s.fontSize])).toEqual([
+      ['con', 43, 16],
+      ['DI', 129, 20],
+      ['tio', 214, 16],
+      ['nal', 291, 16],
+    ]);
   });
 
   it('uses the whole word as one big stone when there are no syllables', () => {
@@ -114,6 +142,7 @@ describe('recording', () => {
 
 const ITEM = {
   word: 'mitigate',
+  syllables: MITIGATE,
   target_index: 1,
   audio_uk_url: 'uk.m4a',
   audio_us_url: 'us.m4a',
@@ -146,6 +175,9 @@ describe('native audio', () => {
   it('plays one syllable from the timings, else the whole word', () => {
     expect(nativeSyllable(ITEM, 'UK', 1)).toEqual({ src: 'uk.m4a', span: { start: 0.7, end: 0.85 }, madeAt: 1 });
     expect(nativeSyllable(ITEM, 'UK', 5)).toEqual({ src: 'uk.m4a', span: { start: 0.5, end: 1.1 }, madeAt: 1 });
+    // The timings count other syllables than the stones: the whole word.
+    const more = { ...ITEM, syllables: [...ITEM.syllables, { text: 'x', stressed: false }] };
+    expect(nativeSyllable(more, 'UK', 1)).toEqual({ src: 'uk.m4a', span: { start: 0.5, end: 1.1 }, madeAt: 1 });
   });
 });
 

@@ -24,6 +24,15 @@ describe('wordSyllables (Pronunciation stones, Bees rows)', () => {
     expect(wordSyllables('hoped', '/həʊpt/')).toEqual([{ text: 'həʊpt', stressed: true }]);
   });
 
+  it('an IPA without syllable dots: the spelling split, counted by the IPA vowels', () => {
+    expect(show('conditional', '/kənˈdɪʃənəl/')).toBe('con·DI·tio·nal');
+    expect(show('conditional', '/kənˈdɪʃ(ə)n(ə)l/')).toBe('con·DI·tio·nal');
+    expect(show('mitigate', '/ˈmɪtɪɡeɪt/')).toBe('MI·ti·gate');
+    expect(show('ecosystem', 'ˈiːkəʊˌsɪstəm')).toBe('E·co·sys·tem');
+    // Said as one syllable: still one.
+    expect(wordSyllables('hoped', '/həʊpt/')).toHaveLength(1);
+  });
+
   it('no IPA, no syllables', () => {
     expect(wordSyllables('mitigate', null)).toEqual([]);
     expect(wordSyllables('mitigate', '')).toEqual([]);

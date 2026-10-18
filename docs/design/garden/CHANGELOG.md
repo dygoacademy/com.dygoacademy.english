@@ -230,10 +230,11 @@ All iPad screens: sidebar (Garden · Missions · Topics · Groups · Me + Shared
 
 Newest first. Format: `### YYYY-MM-DD — title` then lines tagged **Added / Changed / Removed / Decision**, with screen IDs and status.
 
-### 2026-10-18 — P1–P4 Pronunciation: every stone fits its text (Approved)
+### 2026-10-18 — P1–P4 Pronunciation: every stone fits its text (Built)
 - **Changed** `source/PronStonesResult(Vi).dc.html`: `result` gets `long` (conditional, con · DI · tio · nal) and `one` (a word with no syllable split, one wide stone). **Added** `reference/P4-result-long-word(-vi)`, `reference/P4-result-one-stone(-vi)`, `tools/render.js` jobs.
 - **Decision** A stone is always at least as wide as its text plus 0.6 × the font size each side; the boards' three-stone places stay when they fit, otherwise the row is packed in the middle and shrunk (stones and text together) to the card. Applies to every pond (P1–P4, iP1–iP4). Dylan's iPhone (2026-10-18): "CONDITIONAL" ran off its stone onto the dark water. Chosen from three ideas (A stones that fit, B words above, C word is the path). *Approved (Dylan, 2026-10-18, option A).*
 - Build plan: `docs/plans/Pronunciation stones fit their text plan.md`.
+- *Built* 2026-10-18 (see `Change Log.md`): `layoutStones` sizes each stone to its text; backend splits words whose IPA has no syllable dots.
 
 ### 2026-10-18 — A1c Missions done, words still thirsty (Built)
 - **Added** `source/AdultTodayDone(Vi).dc.html`, `reference/A1c-today-done(-vi)`, `tools/render.js` jobs.
