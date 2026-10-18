@@ -1221,3 +1221,9 @@ Engineering-facing log of shipped fixes and changes, one dated entry per change.
 * **What**: On the Topic Bed (A7), the icon-only + next to Quiz became a labeled `secondary` button: a two-colour seed icon (24 px, viewBox `2 2 20 20`, seed `--stage-seed`, sprout `--color-success`) and "Add word" / "Thêm từ" / "添加单词" (existing `screens.bed.addWord`). Padding 12 px left / 14 px right as on the board; Quiz padding 16 → 14 px. Water / Plant keeps `flex-grow`. Same click as before (`onAddWord`, else `/add`); no `aria-label`, the visible text is the name. iPad uses the same button.
 * **Why**: Dylan (2026-10-18), user feedback: the icon-only + was not clear.
 * **Verified**: `tsc --noEmit` and eslint (changed files) clean; vitest same 65 failures as before the change, 2 new tests pass. Screenshot at 390 px: EN and ZH rows on one line; VI labels "Tưới 6 từ đến hạn" and "Kiểm tra nhanh" wrap to two lines (the app's VI copy is longer than the board's "Tưới 6 từ" / "Kiểm tra"). iPad 1024 / 1180: one line.
+
+### Changed: Topic Bed, Vietnamese action labels use the board text
+* **Files**: frontend `messages/vi-VN.json` (`screens.bed.water`, `screens.bed.plant`, `screens.bed.quiz`).
+* **What**: "Tưới {count} từ đến hạn" → "Tưới {count} từ", "Gieo {count} từ mới" → "Gieo {count} từ", "Kiểm tra nhanh" → "Kiểm tra", as on the A7 board. Only the Topic Bed uses these keys.
+* **Why**: Dylan (2026-10-18): with the labeled Add word button, the VI row wrapped Water and Quiz onto two lines at 390 px (it already overflowed before). With the board text it fits on one line, Water and Plant states both.
+* **Verified**: screenshot at 390 px (VI, Water and Plant): one line, nothing cut off.

@@ -847,10 +847,10 @@
         "flower": "Hoa trong luống này",
         "tree": "Cây kết trái trong luống này"
       },
-      "water": "Tưới {count} từ đến hạn",
+      "water": "Tưới {count} từ",
       "nothingDue": "Chưa có từ đến hạn",
-      "plant": "Gieo {count} từ mới",
-      "quiz": "Kiểm tra nhanh",
+      "plant": "Gieo {count} từ",
+      "quiz": "Kiểm tra",
       "addWord": "Thêm từ",
       "allWords": "Tất cả các từ",
       "sorted": "Sắp xếp theo lần ôn tiếp theo",
