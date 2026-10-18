@@ -17,7 +17,7 @@
  * tags are still understood when read (`normalizeLocale`), so existing
  * cookies keep working.
  *
- * Only the (garden) and (garden-reference) layouts use any of this;
+ * Only the (garden) layout uses any of this;
  * classic screens stay English (plan §10 rule 3).
  */
 export const LOCALES = ['en-US', 'vi-VN', 'zh-CN'] as const;

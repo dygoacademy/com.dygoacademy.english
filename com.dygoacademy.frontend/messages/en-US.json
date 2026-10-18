@@ -955,9 +955,6 @@
         "off": "Voice donation off"
       }
     },
-    "reference": {
-      "metaTitle": "Garden reference: {name}"
-    },
     "live": {
       "loading": "Loading your garden…",
       "error": "We couldn’t load your garden. Check your connection and try again.",

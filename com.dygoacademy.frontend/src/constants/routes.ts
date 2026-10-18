@@ -21,7 +21,7 @@
  */
 
 import { DEFAULT_LOCALE, LOCALES, type AppLocale } from '@/i18n/config';
-import { GARDEN_REFERENCE_PREFIX, GARDEN_ROUTES } from './garden';
+import { GARDEN_ROUTES } from './garden';
 
 /** Paths that require a signed-in session. Prefix-matched. */
 export const PROTECTED_PATH_PREFIXES = [
@@ -53,13 +53,10 @@ export const PROTECTED_PATH_PREFIXES = [
 
 /**
  * Garden dev/fixture pages that stay public even though '/garden' is
- * protected: `npm run garden:diff` and the Playwright screenshot suite load
- * them signed out. They're still gated by the garden flag (and the reference
- * pages by GARDEN_REFERENCE_PAGES) in middleware.ts, and render only canvas
- * sample data, never a user's.
+ * protected: the Playwright screenshot suite loads them signed out. They
+ * render only canvas sample data, never a user's.
  */
 export const PUBLIC_GARDEN_DEV_PREFIXES = [
-  GARDEN_REFERENCE_PREFIX,
   GARDEN_ROUTES.gallery,
   GARDEN_ROUTES.tokens,
 ] as const;
@@ -147,7 +144,7 @@ const LEGACY_CLASSIC_PATHS: Record<string, string> = {
  * and answers with a permanent (308) redirect, before the auth check, so a
  * signed-out visitor bounces through /login with the new path as `next`.
  * `/garden/<x>/rest` → `/<x>/rest` for the moved screens; the dev pages
- * (/garden/_reference, _gallery, _tokens) and `/garden` itself stay.
+ * (/garden/_gallery, _tokens) and `/garden` itself stay.
  * The signed-in `/` → `/garden` hop depends on the session, so it isn't
  * here (see middleware.ts).
  */

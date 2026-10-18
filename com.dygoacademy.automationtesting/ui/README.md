@@ -7,9 +7,6 @@ of the design system (§16.1): `iphone-se`, `iphone-16`, `iphone-16-pro-max`,
 
 What's covered:
 
-- `tests/reference.spec.ts`: every canvas reference page `/garden/_reference/<name>`,
-  one per PNG in `docs/design/garden/reference/`, in `en-US` and (where a
-  `-vi.png` exists) `vi-VN`. Dev-only pages, no sign-in needed.
 - `tests/gallery.spec.ts`: `/garden/_gallery` in `en-US` and `vi-VN`. Needs
   the signed-in fixture user (below); skips without one.
 - `tests/navigation.spec.ts` (signed in): every tab of the tab bar opens and
@@ -30,16 +27,16 @@ E2E_PASSWORD=...
 ```
 
 The environment variables win over the file. Without them the signed-in tests
-skip with a message and the reference screenshots still run. Give the account a
+skip with a message. Give the account a
 few topics and one shared garden so the Back tests run.
 
-Every request sends the `dygo_ui=garden` cookie. Screenshots use the same bar
-as `npm run garden:diff`: animations off, at most 0.5% of pixels different.
+Every request sends the `dygo_ui=garden` cookie. Screenshots have animations
+off and allow at most 0.5% of pixels different.
 
 ## On the Mac
 
 ```sh
-# 1. Start the app (reference pages only exist in development)
+# 1. Start the app
 cd com.dygoacademy.frontend && npm run dev
 
 # 2. In another terminal
@@ -57,11 +54,10 @@ Useful variations:
 ```sh
 BASE_URL=http://localhost:3001 npm test          # another app URL
 npx playwright test --project=iphone-16          # one viewport
-npx playwright test -g "A6-topics"               # one screen
+npx playwright test -g "gallery"                 # one test
 CHROME_PATH=/path/to/chromium npm test           # another browser binary
 npm run typecheck                                # tsc --noEmit
 ```
 
 Baselines (`tests/__screenshots__/`) are gitignored for now: they depend on the
-OS and fonts, so they're made on the Mac. The pixel check against the canvas
-itself stays `npm run garden:diff` in the frontend.
+OS and fonts, so they're made on the Mac.

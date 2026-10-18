@@ -2,7 +2,7 @@
   "name": "com.dygoacademy.automationtesting-ui",
   "version": "0.1.0",
   "private": true,
-  "description": "Word Garden (Phase 12) Playwright screenshot suite: /garden/_gallery and every /garden/_reference/* page at the 8 QA viewports of design system §16.1.",
+  "description": "Word Garden (Phase 12) Playwright screenshot suite: /garden/_gallery and the garden screens at the 8 QA viewports of design system §16.1.",
   "engines": {
     "node": ">=20"
   },

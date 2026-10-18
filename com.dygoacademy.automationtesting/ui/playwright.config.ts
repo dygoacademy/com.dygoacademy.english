@@ -6,7 +6,7 @@ import { QA_VIEWPORTS } from './viewports';
  * Word Garden screenshot suite (Phase 12, UI-3 U3-3).
  *
  * BASE_URL      app under test (default http://localhost:3000, i.e. `npm run dev`
- *               in com.dygoacademy.frontend; the reference pages 404 in production)
+ *               in com.dygoacademy.frontend)
  * CHROME_PATH   optional Chrome/Chromium binary; default: the installed Google Chrome
  *
  * Every request carries the `dygo_ui=garden` cookie (see tests/fixtures.ts).
@@ -27,7 +27,7 @@ export default defineConfig({
   reporter: [['list'], ['html', { open: 'never', outputFolder: 'playwright-report' }]],
   timeout: 60_000,
   expect: {
-    // Same bar as `garden:diff`: at most 0.5% of pixels may differ.
+    // At most 0.5% of pixels may differ.
     toHaveScreenshot: { maxDiffPixelRatio: 0.005, animations: 'disabled', caret: 'hide' },
   },
   use: {

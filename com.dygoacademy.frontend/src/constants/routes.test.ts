@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { GARDEN_REFERENCE_PREFIX, GARDEN_ROUTES } from './garden';
+import { GARDEN_ROUTES } from './garden';
 import { isProtectedPath, legacyRedirect, PROTECTED_PATH_PREFIXES } from './routes';
 
 describe('isProtectedPath', () => {
@@ -26,8 +26,6 @@ describe('isProtectedPath', () => {
   });
 
   it.each([
-    '/garden/_reference/A1-todays-garden',
-    GARDEN_REFERENCE_PREFIX,
     '/garden/_gallery',
     '/garden/_tokens',
     GARDEN_ROUTES.gallery,
@@ -81,7 +79,6 @@ describe('legacyRedirect (UI-8 U8-5)', () => {
     '/',
     '/garden',
     '/garden/',
-    '/garden/_reference/A1-todays-garden',
     '/garden/_gallery',
     '/garden/_tokens',
     '/garden/unknown',

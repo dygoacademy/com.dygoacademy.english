@@ -16,9 +16,7 @@ import { loadMessages } from './messages';
  * learner's time zone.
  *
  * Only the garden route groups call next-intl; classic screens keep
- * their hard-coded English strings until UI-8 deletes them. The canvas
- * reference pages pick their language from `?locale=` and pass their
- * own messages to the provider (see (garden-reference)).
+ * their hard-coded English strings until UI-8 deletes them.
  */
 export default getRequestConfig(async () => {
   const context = await getGardenLocaleContext();

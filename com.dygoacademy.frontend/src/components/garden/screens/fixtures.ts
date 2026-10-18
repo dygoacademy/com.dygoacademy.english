@@ -1,204 +1,17 @@
 /**
- * Canvas sample data for the reference pages (/garden/_reference/<name>),
- * copied from docs/design/garden/source/*.dc.html so each fixture page
- * renders exactly what the canvas renders. Content here is sample data
+ * Canvas sample data for the screen tests, copied from
+ * docs/design/garden/source/*.dc.html. Content here is sample data
  * (names, words, meanings, dates), not UI copy: UI copy comes from
  * messages/en-US.json through t().
  */
-import type { AppLocale } from '@/i18n/config';
-import type { PainKey } from '@/components/home/PainCards';
-import type { UseCaseBedKey } from '@/components/home/useCaseWords';
-
-import { calendarDay, weekDays } from '../format';
+import { calendarDay } from '../format';
 import type { CalendarLevel } from '../GardenCalendar';
 import type { HeroPlant } from '../HeroGardenCard';
 import type { KeepsakeItem } from './MeScreen';
-import type { BedStage, BeeWord, TopicBedWord } from './TopicBedScreen';
-import type { SearchTopic } from './TopicSearchScreen';
+import type { BedStage, TopicBedWord } from './TopicBedScreen';
 import type { TopicsScreenTopic } from './TopicsScreen';
-import type { QuizResultScreenProps } from './QuizResultScreen';
-import type { QuizScreenProps } from './QuizScreen';
 import type { MissionItem } from './TodaysGardenScreen';
 import type { WeeklyHarvestScreenProps } from './WeeklyHarvestScreen';
-
-export const REFERENCE_NAMES = [
-  'A1-todays-garden',
-  'A1b-all-watered',
-  'A2-review-question',
-  'A2-review-answer',
-  'A2-review-finished',
-  'A3-mission-complete',
-  'A4-weekly-harvest',
-  // A4 This week (canvas 2026-10-17): all 3 weekly missions done
-  'A4-weekly-harvest-done',
-  'A5-welcome-back',
-  'A5b-welcome-back-start',
-  'A6-topics',
-  // A6 filter states (canvas 2026-10-17): the filter picked, the chip scrolled to the middle
-  'A6-topics-filter-travel',
-  'A6-topics-filter-shared',
-  'A7-topic-bed',
-  'A7-topic-bed-filter-sprouts',
-  // 2026-10-11 Topics search: sample data in WORD_SEARCH / TOPIC_SEARCH below
-  'A7c-word-search',
-  'A6b-search-topics',
-  // A7b Add word (canvas 2026-10-17): the sheet over a plain bed, sample data in ADD_WORD below
-  'A7b-add-word',
-  'A7b-add-word-planted',
-  'A8-me',
-  'A8-me-account',
-  // Voice donation (canvas 2026-10-11)
-  'A8e-privacy',
-  'A8e-privacy-confirm',
-  'A8e-privacy-on',
-  'A8e-privacy-delete',
-  'A8e-privacy-deleted',
-  // Onboarding in 2 steps (canvas 2026-10-12): sample data in ONBOARDING below
-  'OB1-about-you',
-  'OB1-about-you-work',
-  'OB4-reminder',
-  'OB5-ready',
-  // Loading screen (canvas 2026-10-13): still frames of LD1 and LD3b (GardenLoader pinned to a phase)
-  'LD1-loading-sprout',
-  'LD3b-loading-bee-nav',
-  'LD3b-loading-bee-nav-topics',
-  // UI-G: sample data in groupFixtures.ts
-  'GR1-shared-gardens',
-  'GR2-group-garden',
-  'GR3-tricky-patches',
-  'GR4-gardeners',
-  'GR5-invite',
-  'GR6-join',
-  'GR7-create',
-  // UI-A: sample data in SIGN_IN, REGISTER and FORGOT_PASSWORD below
-  'AU1-sign-in',
-  'AU1-sign-in-error',
-  'AU2-create-account',
-  'AU2-create-account-donate',
-  'AU3-create-account-invite',
-  'AU4-reset-password',
-  'AU4-reset-password-sent',
-  // UI-5 QZ-1: sample data in QUIZ below
-  'Q1-quiz-choose',
-  'Q2-quiz-right',
-  'Q3-quiz-not-quite',
-  'Q4-quiz-cloze-hint',
-  'Q5-quiz-listen',
-  // UI-5 QZ-2: sample data in QUIZ_RESULT below
-  'Q6-quiz-result',
-  'Q7-quiz-result-perfect',
-  'Q8-quiz-drill-done',
-  // Home page HP-2: the public home page, layout in HOME_REFERENCE below
-  'H1-home-phone',
-  'H2-home-desktop',
-  // Home page HP-11: the v2 boards and their three state boards (HOME_REFERENCE below)
-  'H3-home-v2-phone',
-  'H4-home-v2-desktop',
-  'H3s-plant-bloomed',
-  'H3s-pain-flipped',
-  'H3s-uses-travel',
-  // Phase 13 speaking (handover v2): sample data in speakReference.ts
-  'SP2-speak-countdown',
-  'SP2-speak-recording',
-  'SP3-speak-checking',
-  'SP3-speak-done',
-  'SP3-speak-failed',
-  // Phase 13 speaking entry points (SE1/SE2/SE5/SE6): sample data in ENTRY below
-  'SE1-entry-home',
-  'SE2-entry-bed',
-  'SE5-entry-harvest',
-  'SE6-entry-echo',
-  // Pronunciation "Stepping stones" (2026-10-11): sample data in pronounceReference.ts
-  'P1-say-word',
-  'P2-recording-beep',
-  'P2-recording',
-  'P3-checking',
-  'P4-result-retry',
-  'P4-result-pollinated',
-  'P2b-not-heard',
-  'P2b-not-heard-noisy',
-  'P2b-not-heard-other-word',
-  'iP1-say-word',
-  'iP2-recording',
-  'iP3-checking',
-  'iP4-result-retry',
-  'iP4-result-pollinated',
-  'iP2b-not-heard',
-] as const;
-export type ReferenceName = (typeof REFERENCE_NAMES)[number];
-
-/**
- * Home page HP-2: the two home boards (canvas page "Home page"). The copy is
- * `screens.home.public.*` (from the reference `.html` / `-vi.html`); the
- * fixture forces the layout and the board width, not the window width.
- */
-export const HOME_REFERENCE = {
-  'H1-home-phone': { layout: 'phone', width: 390 },
-  'H2-home-desktop': { layout: 'desktop', width: 1280 },
-  // HP-11: v2 boards (canvas page "Landing v2"); the H3s boards are H3 in one state.
-  'H3-home-v2-phone': { layout: 'phone', width: 390 },
-  'H4-home-v2-desktop': { layout: 'desktop', width: 1280 },
-  'H3s-plant-bloomed': { layout: 'phone', width: 390, plantedWord: 'deadline' },
-  'H3s-pain-flipped': { layout: 'phone', width: 390, flippedPains: ['forget'] },
-  'H3s-uses-travel': { layout: 'phone', width: 390, useCaseBed: 'travel' },
-} as const satisfies Record<
-  string,
-  {
-    layout: 'phone' | 'desktop';
-    width: number;
-    plantedWord?: string;
-    flippedPains?: readonly PainKey[];
-    useCaseBed?: UseCaseBedKey;
-  }
->;
-export type HomeReferenceName = keyof typeof HOME_REFERENCE;
-
-export function isReferenceName(value: string): value is ReferenceName {
-  return (REFERENCE_NAMES as readonly string[]).includes(value);
-}
-
-/** AdultLogin.dc.html / AdultLoginVi.dc.html (same sample in both). */
-export const SIGN_IN = {
-  email: 'minh@example.com',
-  // Ten characters: the canvas draws ten password dots.
-  password: 'gardenpass',
-};
-
-/**
- * AdultRegister.dc.html / AdultRegisterInvite.dc.html (and the Vi pages):
- * the name is filled in, email and password show their placeholders.
- */
-export const REGISTER = {
-  name: 'Minh',
-  invite: {
-    'en-US': { inviterName: 'Minh', groupName: 'IELTS Sprint · Week 3' },
-    'vi-VN': { inviterName: 'Minh', groupName: 'IELTS Sprint · Tuần 3' },
-    'zh-CN': { inviterName: 'Minh', groupName: 'IELTS Sprint · 第 3 周' },
-  },
-} as const;
-
-/**
- * OnboardLevel / OnboardReminder / OnboardReady (and the Vi boards): B2,
- * IELTS Academic at band 7.0 (Work on the `-work` page), Morning 7:30,
- * Minh with 10 Environment seeds.
- */
-export const ONBOARDING = {
-  level: 'B2',
-  goal: 'IELTS',
-  band: 7,
-  reminder: { hour: 7, minute: 30 },
-  name: 'Minh',
-  bed: {
-    'en-US': { title: 'Environment', seeds: 10 },
-    'vi-VN': { title: 'Môi trường', seeds: 10 },
-    'zh-CN': { title: '环境', seeds: 10 },
-  },
-} as const;
-
-/** AdultForgot.dc.html / AdultForgotVi.dc.html (same address in both). */
-export const FORGOT_PASSWORD = {
-  email: 'minh@example.com',
-};
 
 /** AdultHome.dc.html */
 export const HOME = {
@@ -238,9 +51,8 @@ export const REVIEW = {
   card: {
     word: 'mitigate',
     ipa: '/ˈmɪt.ɪ.ɡeɪt/',
-    // A clip URL so the audio button shows its ready state; the reference
-    // page never plays it.
-    audioSrc: '/garden-reference/mitigate.mp3',
+    // A clip URL so the audio button shows its ready state; never played.
+    audioSrc: '/audio/mitigate.mp3',
     level: 'B2',
     topic: 'Environment',
     partOfSpeech: 'verb',
@@ -255,20 +67,6 @@ export const REVIEW = {
     good: { unit: 'days', count: 5 },
     easy: { unit: 'days', count: 12 },
   } as const,
-};
-
-/** AdultBloom.dc.html */
-export const COMPLETE = {
-  words: 18,
-  bloomed: { word: 'mitigate', more: 4 },
-  stats: { recalledPercent: 92, minutesToday: 6, streak: 24 },
-  // The canvas week, Monday 21 – Sunday 27 September; today is Friday.
-  week: weekDays(calendarDay(2026, 9, 25), 1).map((day, index) => ({
-    day,
-    state: index < 4 ? ('done' as const) : index === 4 ? ('today' as const) : ('empty' as const),
-  })),
-  missions: { done: 2, total: 3, next: { mission: 'challenge' as const, minutes: 3 } },
-  reminder: { ripening: 14, time: { hour: 7, minute: 30 }, on: true },
 };
 
 /** AdultMissions.dc.html */
@@ -345,7 +143,7 @@ export const COMEBACK_START = {
 
 /**
  * AdultAllWatered.dc.html (A1b): nothing due, 3 of 3 missions, trees and
- * swaying flowers. The bed ("Environment") comes from `SAMPLE`.
+ * swaying flowers.
  */
 export const ALL_WATERED = {
   date: calendarDay(2026, 9, 25),
@@ -369,7 +167,7 @@ export const ALL_WATERED = {
 
 /**
  * AdultTopics.dc.html (redrawn 2026-10-17: 6 long-named beds, one per
- * filter group). Titles per locale in SAMPLE[locale].beds.
+ * filter group).
  */
 export const TOPICS: TopicsScreenTopic[] = [
   {
@@ -461,97 +259,6 @@ export const BED = {
 };
 
 /**
- * A7b Add word (canvas `AdultAddWord(Vi)`, 2026-10-17): "resilient" looked
- * up and about to be planted in Environment, the first of three beds.
- * `lookup` is what `GET /words/lookup` returns for it.
- */
-export const ADD_WORD = {
-  'en-US': {
-    bed: 'Environment',
-    beds: ['Environment', 'Education', 'Work & careers'],
-    meaning: 'able to recover quickly from difficult conditions',
-  },
-  'vi-VN': {
-    bed: 'Môi trường',
-    beds: ['Môi trường', 'Giáo dục', 'Công việc'],
-    meaning: 'kiên cường, mau phục hồi',
-  },
-  word: 'resilient',
-  lookup: {
-    word: 'resilient',
-    found: true,
-    part_of_speech: 'adjective',
-    cefr_level: 'B2',
-    ipa_us: '/rɪˈzɪl.i.ənt/',
-    ipa_uk: '/rɪˈzɪl.i.ənt/',
-    definition_en: 'able to recover quickly from difficult conditions',
-    example: 'Coral reefs can be surprisingly resilient to rising temperatures.',
-    audio_url: '/audio/resilient.mp3',
-    in_topic_ids: [] as string[],
-  },
-} as const;
-
-/**
- * A7c Search words in a topic (2026-10-11): BED's words searched for
- * `query`; the word to plant and the recent searches are sample data.
- */
-export const WORD_SEARCH = {
-  'en-US': {
-    query: 'de',
-    suggestion: { word: 'desertification', line: 'noun · C1 · land slowly turning into desert' },
-  },
-  'vi-VN': {
-    query: 'giảm',
-    suggestion: { word: 'reduce', line: 'động từ · B1 · giảm bớt' },
-  },
-  'zh-CN': {
-    query: 'de',
-    suggestion: { word: 'desertification', line: '名词 · C1 · 土地慢慢变成沙漠' },
-  },
-  recent: ['drought', 'mitigate'],
-} as const;
-
-/**
- * A6b Search topics (2026-10-11): the query, the learner's topic (A6's
- * Environment, title per locale), two library topics to plant, the word
- * hint and the recent searches.
- */
-const LIBRARY_TOPIC = { group: 'library', stages: null, due: null, collection: null, planted: false };
-export const TOPIC_SEARCH = {
-  'en-US': {
-    query: 'en',
-    more: [
-      { id: 'energy', title: 'Energy & resources', collection: 'IELTS Academic', level: 'B2', words: 40 },
-      { id: 'media', title: 'Entertainment & media', collection: 'Daily life', level: 'B1–B2', words: 36 },
-    ],
-    word: { word: 'environmental', topic: 'Environment' },
-    recent: ['IELTS', 'Travel', 'Work'],
-  },
-  'vi-VN': {
-    query: 'tr',
-    more: [
-      { id: 'media', title: 'Truyền thông & giải trí', collection: 'Đời sống', level: 'B1–B2', words: 36 },
-      { id: 'travel', title: 'Du lịch & trải nghiệm', collection: 'Đời sống', level: 'B1', words: 32 },
-    ],
-    word: { word: 'trend', topic: 'Công việc' },
-    recent: ['IELTS', 'Du lịch', 'Công việc'],
-  },
-  'zh-CN': {
-    query: '环',
-    more: [
-      { id: 'energy', title: '能源与资源环境', collection: 'IELTS 学术', level: 'B2', words: 40 },
-    ],
-    word: { word: 'environmental', topic: '环境' },
-    recent: ['IELTS', '旅行', '工作'],
-  },
-} as const;
-
-/** TOPIC_SEARCH's library topics as A6b entries. */
-export function topicSearchMore(locale: keyof typeof TOPIC_SEARCH, href: string): SearchTopic[] {
-  return TOPIC_SEARCH[locale].more.map((topic) => ({ ...LIBRARY_TOPIC, ...topic, href }));
-}
-
-/**
  * EntryHome / EntryBed / EntryHarvest / EntryEcho (Phase 13 SE1 / SE2 / SE5
  * / SE6): A1, A7 and GR3 plus the speaking entry point.
  */
@@ -566,25 +273,6 @@ export const ENTRY = {
   ] as const,
   echo: { word: 'deteriorate', ipa: '/dɪˈtɪəriəreɪt/', done: 3, members: 5 },
 };
-
-/** ENTRY.bees as the A7 card; every link goes to `href`. */
-export function entryBees(href: string): {
-  waiting: number;
-  sayAllHref: string;
-  words: BeeWord[];
-} {
-  return {
-    waiting: ENTRY.bees.filter(([, pollinated]) => !pollinated).length,
-    sayAllHref: href,
-    words: ENTRY.bees.map(([word, pollinated, sound]) => ({
-      id: word,
-      word,
-      sound,
-      pollinated,
-      href,
-    })),
-  };
-}
 
 /** AdultMe.dc.html: the calendar uses the canvas's own formula. */
 function canvasCalendar(): Array<Array<CalendarLevel | null>> {
@@ -624,264 +312,3 @@ export const ME = {
   meanings: 'vi-VN' as const,
   family: { name: 'Na' },
 };
-
-/**
- * UI-L: the canvas sample data per language, for `?locale=`. English is
- * the Adult page, Vietnamese the "Adult · Tiếng Việt" page (source/*Vi.dc.html);
- * Chinese has no canvas page, so its sample data is a draft with the same
- * shape (same numbers, Chinese topic names and meanings).
- *
- * Only sample data differs here (names of topics and groups, meanings,
- * the meaning language). UI copy always comes from messages/<locale>.json.
- *
- * `meaningFirst`: the Vietnamese canvas puts the meaning-language line
- * first (A2-review-answer-vi, the UI-L decision); the English canvas,
- * drawn before that decision, shows the English definition first, and the
- * English reference page reproduces it.
- */
-const SAMPLE_EN = {
-  topics: ['Environment', 'Education', 'Technology', 'Work & careers', 'IELTS Sprint · Week 3'],
-  /** A6's beds (TOPICS), 2026-10-17. */
-  beds: TOPICS.map((topic) => topic.title),
-  shared: 'Shared',
-  academic: 'IELTS Academic',
-  collection: 'IELTS Academic',
-  group: 'IELTS Sprint group',
-  meaning: { text: 'giảm nhẹ, làm dịu bớt', lang: 'vi' },
-  meaningFirst: false,
-  meanings: 'vi-VN',
-} as const;
-
-const SAMPLE = {
-  'en-US': SAMPLE_EN,
-  'vi-VN': {
-    topics: ['Môi trường', 'Giáo dục', 'Công nghệ', 'Công việc', 'IELTS Sprint · Tuần 3'],
-    beds: [
-      'Môi trường và biến đổi khí hậu',
-      'Khoa học và công nghệ trong đời sống hằng ngày',
-      'Công việc: phỏng vấn xin việc và họp nhóm',
-      'Du lịch',
-      'IELTS Sprint · Tuần 3 · Luyện Speaking Part 2 cùng nhóm',
-      'Sức khỏe',
-    ],
-    shared: 'Chung',
-    academic: 'IELTS',
-    collection: 'IELTS Academic',
-    group: 'Nhóm IELTS Sprint',
-    meaning: { text: 'giảm nhẹ, làm dịu bớt', lang: 'vi' },
-    meaningFirst: true,
-    meanings: 'vi-VN',
-  },
-  'zh-CN': {
-    topics: ['环境', '教育', '科技', '工作与职业', 'IELTS 冲刺 · 第 3 周'],
-    beds: [
-      '环境与气候变化',
-      '日常生活中的科学与技术',
-      '工作与职业：求职面试和团队会议',
-      '旅行',
-      'IELTS 冲刺 · 第 3 周 · 小组口语 Part 2 练习',
-      '健康',
-    ],
-    shared: '共享',
-    academic: 'IELTS 学术',
-    collection: 'IELTS 学术',
-    group: 'IELTS 冲刺小组',
-    meaning: { text: '减轻，缓和', lang: 'zh-CN' },
-    meaningFirst: true,
-    meanings: 'zh-CN',
-  },
-} as const;
-
-type QuizReference =
-  | 'Q1-quiz-choose'
-  | 'Q2-quiz-right'
-  | 'Q3-quiz-not-quite'
-  | 'Q4-quiz-cloze-hint'
-  | 'Q5-quiz-listen';
-type QuizFixture = Pick<
-  QuizScreenProps,
-  'index' | 'total' | 'question' | 'feedback' | 'hint' | 'initialAnswer' | 'initialPick'
->;
-
-/**
- * Canvas "Adult · Quiz" Q1–Q5 (AdultQuiz*.dc.html): the question as the
- * API sends it (prompt with the task prefix, gap of five underscores), so
- * the fixture pages go through the same prompt parsing as a live quiz.
- * The topic name comes from `SAMPLE` (Environment).
- */
-const DROUGHT_CHOICE: QuizScreenProps['question'] = {
-  id: 'drought:CONTEXTUAL_CHOICE',
-  type: 'CONTEXTUAL_CHOICE',
-  prompt:
-    'Choose the word that completes the sentence: "Years of _____ have left the river almost dry."',
-  answerMode: 'CHOICE',
-  options: ['pollution', 'drought', 'habitat', 'emissions'],
-};
-
-export const QUIZ: Record<QuizReference, QuizFixture> = {
-  'Q1-quiz-choose': {
-    index: 2,
-    total: 10,
-    question: DROUGHT_CHOICE,
-    feedback: null,
-    hint: { status: 'idle' },
-  },
-  'Q2-quiz-right': {
-    index: 3,
-    total: 10,
-    question: {
-      id: 'mitigate:MATCHING',
-      type: 'MATCHING',
-      prompt: 'Which word is a synonym of "mitigate"?',
-      answerMode: 'CHOICE',
-      options: ['worsen', 'reduce', 'sustain', 'ignore'],
-    },
-    initialPick: 'reduce',
-    feedback: {
-      correct: true,
-      correctAnswer: 'reduce',
-      word: 'mitigate',
-      ipa: '/ˈmɪt.ɪ.ɡeɪt/',
-      example: 'Planting more trees can help mitigate the effects of climate change.',
-      note: 'mastered',
-    },
-    hint: { status: 'idle' },
-  },
-  'Q3-quiz-not-quite': {
-    index: 2,
-    total: 10,
-    question: DROUGHT_CHOICE,
-    initialPick: 'pollution',
-    feedback: {
-      correct: false,
-      correctAnswer: 'drought',
-      word: 'drought',
-      explanation: 'a long period with little or no rain',
-      note: 'comesBack',
-    },
-    hint: { status: 'idle' },
-  },
-  'Q4-quiz-cloze-hint': {
-    index: 4,
-    total: 10,
-    question: {
-      id: 'sustainable:CLOZE',
-      type: 'CLOZE',
-      prompt: 'Fill in the blank: "Cities need more _____ forms of public transport."',
-      answerMode: 'TEXT',
-    },
-    initialAnswer: 'sustainab',
-    feedback: null,
-    hint: {
-      status: 'shown',
-      ipa: '/səˈsteɪ.nə.bəl/',
-      definition: 'able to continue for a long time without harming the environment',
-    },
-  },
-  'Q5-quiz-listen': {
-    index: 9,
-    total: 10,
-    question: {
-      id: 'biodiversity:DICTATION',
-      type: 'DICTATION',
-      prompt: 'Listen to the audio, then type the word you hear.',
-      // Never loaded unless the button is pressed; it only has to be set.
-      audioUrl: '/audio/reference-sample.mp3',
-      answerMode: 'TEXT',
-    },
-    feedback: null,
-    hint: { status: 'idle' },
-  },
-};
-
-type QuizResultReference = 'Q6-quiz-result' | 'Q7-quiz-result-perfect' | 'Q8-quiz-drill-done';
-type QuizResultFixture = Pick<QuizResultScreenProps, 'correct' | 'total' | 'missed' | 'drill'>;
-
-/**
- * Canvas "Adult · Quiz" Q6–Q8 (AdultQuizResult / Perfect / Drill.dc.html): 7 of 10 with
- * three missed (Drill shown), 10 of 10 (bloom), drill 4 of 5 (no Drill).
- */
-export const QUIZ_RESULT: Record<QuizResultReference, QuizResultFixture> = {
-  'Q6-quiz-result': {
-    correct: 7,
-    total: 10,
-    missed: [
-      { id: 'drought', word: 'drought' },
-      { id: 'deteriorate', word: 'deteriorate' },
-      { id: 'biodiversity', word: 'biodiversity' },
-    ],
-  },
-  'Q7-quiz-result-perfect': { correct: 10, total: 10, missed: [] },
-  'Q8-quiz-drill-done': {
-    correct: 4,
-    total: 5,
-    missed: [{ id: 'drought', word: 'drought' }],
-    drill: true,
-  },
-};
-
-/** A7's meanings in Chinese, in the order of `BED.words`. */
-const BED_MEANINGS_ZH = [
-  '干旱',
-  '恶化，变坏',
-  '减轻，缓和',
-  '保护，保存',
-  '生物多样性',
-  '碳足迹',
-  '森林砍伐',
-  '生态系统',
-  '可再生的',
-  '可持续的',
-  '排放物',
-];
-
-export function referenceFixtures(locale: AppLocale) {
-  const sample = SAMPLE[locale];
-  return {
-    HOME,
-    ALL_WATERED: { ...ALL_WATERED, bed: sample.topics[0] },
-    REVIEW: {
-      ...REVIEW,
-      card: {
-        ...REVIEW.card,
-        topic: sample.topics[0],
-        meaningTranslation: sample.meaning,
-        meaningFirst: sample.meaningFirst,
-      },
-    },
-    COMPLETE,
-    HARVEST,
-    HARVEST_DONE,
-    COMEBACK,
-    COMEBACK_START,
-    TOPICS: TOPICS.map((topic, index) => ({
-      ...topic,
-      title: sample.beds[index],
-      level: topic.group === 'shared' ? sample.shared : topic.level,
-    })),
-    TOPICS_LOCKED_PACK,
-    BED: {
-      ...BED,
-      title: sample.topics[0],
-      meta: { ...BED.meta, collection: sample.collection },
-      words:
-        locale === 'zh-CN'
-          ? BED.words.map((word, index) => ({
-              ...word,
-              meaning: BED_MEANINGS_ZH[index],
-              meaningLang: 'zh-CN',
-            }))
-          : BED.words,
-    },
-    ME: { ...ME, meanings: sample.meanings },
-    QUIZ_TOPIC: sample.topics[0],
-    SAMPLE_TOPICS: sample.topics,
-  };
-}
-
-/** AdultPrivacy.dc.html / AdultPrivacyVi.dc.html (A8e, same sample in both). */
-export const PRIVACY = {
-  count: 38,
-  since: new Date('2026-10-12T09:00:00Z'),
-  region: 'south',
-} as const;

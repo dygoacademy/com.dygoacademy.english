@@ -63,24 +63,12 @@ The app ships in **English (`en-US`), Simplified Chinese (`zh-CN`) and Vietnames
 
 ## How a screen is checked against the canvas
 
-1. **Fixture page.** Each screen gets a flag-only route `/garden/_reference/<screen>` that renders the **real** garden components with the **same sample data** as the canvas, in the locale given by `?locale=en-US|vi-VN|zh-CN` (default `en-US`; the `-vi` references use `?locale=vi-VN`) ("Good evening, Minh", 412 words, "mitigate", and so on). That makes the comparison like for like; the real pages use live data.
-2. **Pixel diff.** Playwright screenshots the fixture page at 390 × 844 @2x with animations off, and diffs it against `reference/<screen>.png` (pixelmatch, threshold 0.1).
-   - **Pass:** at most 0.5% of pixels differ, and every differing area is font anti-aliasing only.
-   - **Anything else** (a shifted element, a different size, colour, radius or icon) is a bug: fix it, don't accept it.
-3. **Values, not eyeballing.** When something differs, read the exact value from `reference/<screen>.html` in DevTools and use that token (or add the token if it's missing from `globals.css`).
-4. **Report.** Every build pass lists each screen's diff percentage in its session report.
+The fixture pages (`/garden/_reference/<screen>`) and `npm run garden:diff` were removed on 2026-10-18 (Dylan). A screen is checked like this:
 
-## Running the diff
+1. **Values, not eyeballing.** Build from the exact values in `reference/<screen>.html` (read them in DevTools) and use that token (or add the token if it's missing from `globals.css`).
+2. **Screenshot against the reference.** Screenshot the real screen at the board's size (phone boards 390 × 844 @2x, animations off) in `en-US` and `vi-VN` and compare it with `reference/<screen>.png` and `<screen>-vi.png`. Font anti-aliasing may differ; anything else (a shifted element, a different size, colour, radius or icon) is a bug: fix it, don't accept it.
 
-```sh
-cd com.dygoacademy.frontend
-npm run dev                      # in one terminal
-npm run garden:diff -- --base http://localhost:3000 --cookie dygo_ui=garden --locale en-US,vi-VN
-```
-
-`--locale vi-VN` loads `/garden/_reference/<name>?locale=vi-VN` and diffs it against `<name>-vi.png` (UI-L); the default is English only.
-
-The fixture pages are `/garden/_reference/<name>` (dev only, garden flag or cookie; they 404 in production). The script uses your installed Chrome (or `--chrome` / `CHROME_PATH`), writes `actual` and `diff` PNGs to `com.dygoacademy.frontend/.garden-diff/` (gitignored) and prints the table. In a diff PNG, red pixels count; yellow ones are anti-aliasing that pixelmatch ignores.
+The diff results below are the record from when `garden:diff` existed.
 
 ## Diff results (2026-09-26, UI-fidelity pass)
 

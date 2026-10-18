@@ -267,7 +267,6 @@ npm run dev
 | http://localhost:3000/login | Sign in (also `/register`, `/forgot-password`, `/reset-password`) |
 | http://localhost:3000/garden | Home — Today's garden |
 | `/review` · `/topics` · `/topics/:id` · `/missions` · `/me` · `/groups/**` · `/quiz` · `/join/:token` | The garden screens (final URLs since Phase 12 UI-8) |
-| http://localhost:3000/garden/_reference/&lt;screen&gt; | Canvas fixture pages used by `npm run garden:diff` |
 | http://localhost:3000/api/health | Route Handler placeholder, returns `{ "status": "ok" }` |
 
 Phase 0 wires the scaffold end to end: App Router, Tailwind CSS + shadcn/ui

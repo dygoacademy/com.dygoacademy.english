@@ -1,5 +1,5 @@
 /**
- * Canvas sample data for the group reference pages (UI-G, GR1–GR7),
+ * Canvas sample data for the group screens (UI-G, GR1–GR7),
  * copied from docs/design/garden/source/AdultGroup*.dc.html (English) and
  * AdultGroup*Vi.dc.html (Vietnamese). Sample content (garden names,
  * people, words, counts), not UI copy: the copy comes from the message
@@ -12,19 +12,6 @@ import type { GroupRole } from '@/types';
 import { calendarDay, type ClockTime } from '../format';
 import type { GardenerTone } from '../GardenerAvatar';
 import type { GroupTilePlant } from '../groupArt';
-
-export const GROUP_REFERENCE_NAMES = [
-  'GR1-shared-gardens',
-  'GR2-group-garden',
-  'GR3-tricky-patches',
-  'GR4-gardeners',
-  'GR5-invite',
-  'GR6-join',
-  'GR7-create',
-  // Phase 13 SE6: GR3 with the Echo challenge (ENTRY.echo in fixtures.ts)
-  'SE6-entry-echo',
-] as const;
-export type GroupReferenceName = (typeof GROUP_REFERENCE_NAMES)[number];
 
 const NAMES_EN = {
   sprint: 'IELTS Sprint · Week 3',

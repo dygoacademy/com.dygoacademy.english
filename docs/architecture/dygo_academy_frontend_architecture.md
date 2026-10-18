@@ -80,7 +80,7 @@ com.dygoacademy.frontend/
 │   │   ├── onboarding/              # GuestWordTrial (the /search guest trial)
 │   │   ├── flashcard/               # Flashcard, AudioButton (guest trial)
 │   │   └── garden/                  # The design system's components (BottomTabBar, GardenRail, GardenSidebar, sheets, rows…)
-│   │       ├── screens/             #   Pure screens + canvas fixtures (also rendered by /garden/_reference/<screen>)
+│   │       ├── screens/             #   Pure screens + canvas fixtures (sample data for tests and the gallery)
 │   │       ├── live/                #   *Live wrappers: hooks → screen props
 │   │       └── auth/                #   Sign-in / register / forgot / reset screens
 │   └── app/
@@ -89,7 +89,7 @@ com.dygoacademy.frontend/
 │       ├── search/page.tsx          # Signed-out guest trial ("/" sends signed-out visitors here)
 │       ├── (auth)/login, register   # Garden-styled auth screens
 │       ├── (auth-garden)/forgot-password, reset-password
-│       ├── (garden)/                # Signed-in app: layout (session re-check + nav chrome), error/loading/not-found
+│       └── (garden)/                # Signed-in app: layout (session re-check + nav chrome), error/loading/not-found
 │       │   ├── garden/page.tsx      #   /garden — home (Today's garden)
 │       │   ├── garden/_gallery, _tokens   # dev pages (public)
 │       │   ├── review/, review/done/      # /review, /review/done
@@ -97,7 +97,6 @@ com.dygoacademy.frontend/
 │       │   ├── missions/, me/, quiz/      # /missions, /me, /quiz
 │       │   ├── groups/, groups/[id]/, groups/[id]/manage/  # /groups/**
 │       │   └── join/[token]/        #   /join/:token — redeem an invite
-│       └── (garden-reference)/garden/_reference/[name]/  # canvas fixture pages for `npm run garden:diff`
 ├── messages/                        # en-US.json, vi-VN.json, zh-CN.json
 ├── tailwind.config.ts               # Breakpoints (§16), garden tokens (no prefix since U8-4)
 ├── tsconfig.json / tsconfig.test.json
@@ -125,7 +124,7 @@ Next.js **route groups** — `(auth)`, `(auth-garden)`, `(garden)`, `(garden-ref
 | `/missions`, `/me`, `/quiz` | Missions, Me (settings + stats), quiz | signed in |
 | `/groups`, `/groups/:id`, `/groups/:id/manage` | Shared gardens | signed in |
 | `/join/:token` | Redeem an invite | signed in (bounces through `/login?next=…`) |
-| `/garden/_reference/<screen>`, `/garden/_gallery`, `/garden/_tokens` | Dev/fixture pages | public, canvas sample data only |
+| `/garden/_gallery`, `/garden/_tokens` | Dev/fixture pages | public, canvas sample data only |
 
 **Legacy redirects** (`legacyRedirect()` in `constants/routes.ts`, applied in `middleware.ts` **before** the session check, query string kept, all **308 permanent**): `/garden/<x>/**` → `/<x>/**` for review, topics, missions, me, groups, quiz, join; `/study` → `/review`; `/analytics` and `/settings` → `/me`. Old bookmarks, push-notification deep links (the backend still sends `/study`) and invite links keep working.
 

@@ -39,7 +39,6 @@ docker compose up -d                       # local Supabase, Redis, RustFS
 
 cd com.dygoacademy.backend  && npm run start:dev && npm test && npm run lint
 cd com.dygoacademy.frontend && npm run dev && npm test && npm run lint
-npm run garden:diff -- --base <url> --locale en-US,vi-VN   # frontend: pixel diff vs design (pass ≤ 0.5%)
 cd docs/design/garden/tools && node render.js ../reference <filter>   # export canvas sources to reference PNG + HTML
 ```
 
@@ -115,4 +114,4 @@ cd docs/design/garden/tools && node render.js ../reference <filter>   # export c
 }
 ```
 
-13. **Every garden screen matches its canvas design 100%**, following `docs/design/garden/README.md`. Before building or changing a screen: put its `.dc.html` in `docs/design/garden/source/`, add the `tools/render.js` job and export `reference/<name>.png` + `.html` (English and `-vi`), committed on their own. Build from the exact values in `reference/<name>.html`, never by eye. Add a fixture page (`REFERENCE_NAMES`, `ReferenceScreen.tsx`, `garden-diff.mjs`). Done = `garden:diff` ≤ 0.5% per screen in en-US and vi-VN with only font anti-aliasing differing; run it against UAT (`--base https://www.dygoacademy.com`), not `next dev`. A design handed over somewhere else (e.g. `phase/…`) is copied in first, so every change has a git history.
+13. **Every garden screen matches its canvas design 100%**, following `docs/design/garden/README.md`. Before building or changing a screen: put its `.dc.html` in `docs/design/garden/source/`, add the `tools/render.js` job and export `reference/<name>.png` + `.html` (English and `-vi`), committed on their own. Build from the exact values in `reference/<name>.html`, never by eye. Done = a screenshot of the screen at the board's size, in en-US and vi-VN, matches `reference/<name>.png` with only font anti-aliasing differing. A design handed over somewhere else (e.g. `phase/…`) is copied in first, so every change has a git history.

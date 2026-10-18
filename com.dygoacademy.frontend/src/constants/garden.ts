@@ -5,7 +5,7 @@
  * the other screens moved up from `/garden/<x>` to `/<x>`, and
  * middleware.ts redirects the old `/garden/<x>` paths permanently (see
  * LEGACY_GARDEN_SEGMENTS in constants/routes.ts). The dev pages (_tokens,
- * _gallery, _reference) stay under /garden.
+ * _gallery) stay under /garden.
  */
 export const GARDEN_ROUTES = {
   /** Today's Garden (A1), Welcome back (A5) after 2+ missed days, or All watered (A1b). */
@@ -125,16 +125,7 @@ export const GARDEN_ROUTES = {
   groupManage: (id: string, tab: 'tricky' | 'gardeners' = 'tricky') =>
     `/groups/${encodeURIComponent(id)}/manage${tab === 'gardeners' ? '?tab=gardeners' : ''}`,
   join: (token: string) => `/join/${encodeURIComponent(token)}`,
-  /**
-   * Flag-only, dev-only canvas reference pages (UI-fidelity 4): each renders
-   * one screen with the canvas sample data for the pixel diff. Folder
-   * `%5Freference`, same reason as above.
-   */
-  reference: (name: string) => `/garden/_reference/${name}`,
 } as const;
-
-/** Path prefix of the reference pages (they 404 in production). */
-export const GARDEN_REFERENCE_PREFIX = '/garden/_reference';
 
 export const GARDEN_PATH_PREFIX = '/garden';
 

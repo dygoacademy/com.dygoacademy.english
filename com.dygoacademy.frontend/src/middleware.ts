@@ -1,8 +1,6 @@
 import { NextResponse, type NextRequest } from 'next/server';
 
-import { GARDEN_REFERENCE_PREFIX } from '@/constants/garden';
 import { legacyRedirect } from '@/constants/routes';
-import { referencePagesAllowed } from '@/lib/garden-reference';
 import { updateSession } from '@/lib/supabase/middleware';
 
 /**
@@ -29,16 +27,6 @@ export async function middleware(request: NextRequest) {
     const url = request.nextUrl.clone();
     url.pathname = moved;
     return NextResponse.redirect(url, 308);
-  }
-
-  // The canvas reference pages (UI-fidelity 4) are a development tool for
-  // the pixel diff: they don't exist in production builds unless the build
-  // opted in with GARDEN_REFERENCE_PAGES=on (see lib/garden-reference.ts).
-  if (
-    !referencePagesAllowed() &&
-    (pathname === GARDEN_REFERENCE_PREFIX || pathname.startsWith(`${GARDEN_REFERENCE_PREFIX}/`))
-  ) {
-    return NextResponse.rewrite(new URL('/__garden-ui-disabled', request.url));
   }
 
   // Also answers "/": signed in → /garden, signed out → the public home

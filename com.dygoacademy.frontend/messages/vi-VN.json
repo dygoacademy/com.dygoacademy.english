@@ -955,9 +955,6 @@
         "off": "Không góp giọng"
       }
     },
-    "reference": {
-      "metaTitle": "Tài liệu vườn: {name}"
-    },
     "live": {
       "loading": "Đang tải khu vườn của bạn…",
       "error": "Chưa tải được khu vườn. Bạn kiểm tra kết nối rồi thử lại nhé.",

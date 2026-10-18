@@ -959,9 +959,6 @@
         "off": "未捐赠语音"
       }
     },
-    "reference": {
-      "metaTitle": "花园参考：{name}"
-    },
     "live": {
       "loading": "正在加载你的花园…",
       "error": "花园没能加载，请检查网络后再试。",

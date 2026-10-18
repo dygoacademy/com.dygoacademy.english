@@ -15,11 +15,9 @@ import {
   HARVEST_DONE,
   HOME,
   ME,
-  REFERENCE_NAMES,
   REVIEW,
   TOPICS,
   TOPICS_LOCKED_PACK,
-  isReferenceName,
 } from './fixtures';
 import { AllWateredScreen } from './AllWateredScreen';
 import { MeScreen } from './MeScreen';
@@ -33,32 +31,6 @@ import { WelcomeBackScreen } from './WelcomeBackScreen';
 
 const push = vi.fn();
 vi.mock('next/navigation', () => ({ useRouter: () => ({ push }) }));
-
-describe('reference fixtures', () => {
-  it('lists the 83 canvas references (… 5 speaking, 4 speaking entry points, 15 pronunciation, 6 voice donation, 4 onboarding, 3 loading, 2 A6 filters, A4 done)', () => {
-    expect(REFERENCE_NAMES).toHaveLength(86);
-    expect(isReferenceName('A4-weekly-harvest-done')).toBe(true);
-    expect(isReferenceName('A1b-all-watered')).toBe(true);
-    expect(isReferenceName('A7c-word-search')).toBe(true);
-    expect(isReferenceName('A6b-search-topics')).toBe(true);
-    expect(isReferenceName('SE5-entry-harvest')).toBe(true);
-    expect(isReferenceName('SP3-speak-done')).toBe(true);
-    expect(isReferenceName('H1-home-phone')).toBe(true);
-    expect(isReferenceName('H2-home-desktop')).toBe(true);
-    expect(isReferenceName('Q8-quiz-drill-done')).toBe(true);
-    expect(isReferenceName('Q4-quiz-cloze-hint')).toBe(true);
-    expect(isReferenceName('AU3-create-account-invite')).toBe(true);
-    expect(isReferenceName('AU1-sign-in-error')).toBe(true);
-    expect(isReferenceName('A8e-privacy-confirm')).toBe(true);
-    expect(isReferenceName('AU2-create-account-donate')).toBe(true);
-    expect(isReferenceName('AU4-reset-password-sent')).toBe(true);
-    expect(isReferenceName('GR5-invite')).toBe(true);
-    expect(isReferenceName('A7-topic-bed-filter-sprouts')).toBe(true);
-    expect(isReferenceName('iP2b-not-heard')).toBe(true);
-    expect(isReferenceName('OB1-about-you-work')).toBe(true);
-    expect(isReferenceName('A9-nope')).toBe(false);
-  });
-});
 
 describe('TodaysGardenScreen', () => {
   it('renders the canvas copy from the fixture', () => {

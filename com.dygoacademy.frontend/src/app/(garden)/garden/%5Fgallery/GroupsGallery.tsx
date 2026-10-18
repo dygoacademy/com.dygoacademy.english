@@ -51,7 +51,7 @@ export function GroupsGallery() {
         {fx.list.gardens.map((item) => (
           <GroupCard
             key={item.id}
-            href={GARDEN_ROUTES.reference('GR2-group-garden')}
+            href={GARDEN_ROUTES.gallery}
             name={item.name}
             role={item.role}
             meta={list('cardMeta', { members: item.members, beds: item.beds, words: item.words })}

@@ -1,6 +1,3 @@
-import fs from 'node:fs';
-import path from 'node:path';
-
 import { test as base, expect, type Page } from '@playwright/test';
 
 import { AUTH_FILE, SIGN_IN_SKIP_REASON, hasSignedInSession } from '../auth';
@@ -11,38 +8,16 @@ export { SIGN_IN_SKIP_REASON, hasSignedInSession };
 export const SCREENSHOT_LOCALES = ['en-US', 'vi-VN'] as const;
 export type ScreenshotLocale = (typeof SCREENSHOT_LOCALES)[number];
 
-/** Same freeze as `garden:diff`: no animations, no Next.js dev overlay. */
+/** No animations, no Next.js dev overlay. */
 const FREEZE_CSS =
   '*,*::before,*::after{animation:none!important;transition:none!important}' +
   'nextjs-portal,.tsqd-parent-container{display:none!important}';
 
 /**
- * The canvas reference PNGs (docs/design/garden/reference). Each `<name>.png`
- * has a page /garden/_reference/<name>; `<name>-vi.png` means it is also
- * drawn in Vietnamese. Read from disk so new canvas screens are picked up
- * without editing this suite. REFERENCE_DIR overrides the folder.
- */
-export function referenceScreens(): { name: string; locales: ScreenshotLocale[] }[] {
-  const dir =
-    process.env.REFERENCE_DIR ||
-    path.resolve(__dirname, '../../../docs/design/garden/reference');
-  if (!fs.existsSync(dir)) return [];
-  const files = new Set(fs.readdirSync(dir).filter((f) => f.endsWith('.png')));
-  return [...files]
-    .filter((f) => !f.endsWith('-vi.png'))
-    .map((f) => f.slice(0, -'.png'.length))
-    .sort()
-    .map((name) => ({
-      name,
-      locales: files.has(`${name}-vi.png`) ? ['en-US', 'vi-VN'] : ['en-US'],
-    }));
-}
-
-/**
  * `test` with the garden opt-in cookie on every request. `gardenLocale`
  * also sets the `dygo_locale` cookie (the gallery reads the language from
- * it; the reference pages take `?locale=` instead). When global-setup.ts
- * signed the fixture user in (U3-4), every test starts with that session.
+ * it). When global-setup.ts signed the fixture user in (U3-4), every test
+ * starts with that session.
  */
 export const test = base.extend<{ gardenLocale: ScreenshotLocale | null }>({
   gardenLocale: [null, { option: true }],
