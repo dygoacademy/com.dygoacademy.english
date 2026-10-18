@@ -33,27 +33,45 @@ a{color:#B4552E}a:hover{color:#8A3E20}
 </sc-if>
 <sc-if value="{{pass}}" hint-placeholder-val="{{false}}">
 <div class="pop" style="display: flex; flex-direction: column; align-items: center; gap: 4px; text-align: center">
-<span style="font-size: 13px; font-weight: 700; padding: 4px 12px; border-radius: 12px; background: #DDE7DA; color: #24463A">Đã thụ phấn · 3/3 hòn đá</span>
+<span style="font-size: 13px; font-weight: 700; padding: 4px 12px; border-radius: 12px; background: #DDE7DA; color: #24463A">{{passBadge}}</span>
 <span style="font-family: 'Fraunces', serif; font-weight: 600; font-size: 30px; line-height: 1.1">Qua suối gọn gàng!</span>
 </div>
 </sc-if>
 <div style="border-radius: 26px; background: #24463A; padding: 0; overflow: hidden">
 <svg width="100%" viewBox="0 0 334 170" role="img" aria-label="{{stonesLabel}}" style="display: block; height: auto">
 <path d="M0 120 Q 84 110 167 120 T 334 120 V170 H0 Z" fill="#1F3E33"></path><path d="M0 120 Q 84 110 167 120 T 334 120" fill="none" stroke="#3A5E4F" stroke-width="2"></path>
+<sc-if value="{{mitigate}}" hint-placeholder-val="{{true}}">
 <ellipse cx="62" cy="110" rx="50" ry="22" fill="#9CC39A"></ellipse>
 <text x="62" y="118" text-anchor="middle" font-family="DM Sans" font-weight="700" font-size="24" fill="#1C2B24">MI</text>
 <ellipse cx="268" cy="114" rx="40" ry="17" fill="#9CC39A"></ellipse>
 <text x="268" y="120" text-anchor="middle" font-family="DM Sans" font-weight="600" font-size="19" fill="#1C2B24">gate</text>
+</sc-if>
 <sc-if value="{{retry}}" hint-placeholder-val="{{true}}">
 <g transform="rotate(-8 168 116)"><ellipse cx="168" cy="116" rx="32" ry="14" fill="#E8A87C"></ellipse></g>
 <text x="168" y="121" text-anchor="middle" font-family="DM Sans" font-weight="700" font-size="16" fill="#1C2B24">ti</text>
 <path d="M140 132 q6 -4 12 0 M184 132 q6 -4 12 0" stroke="#E8A87C" stroke-width="2" fill="none"></path>
 <g transform="translate(62,30)"><g transform="translate(0,10) scale(1.7)"><g transform="translate(-16,-17)"><ellipse cx="12" cy="9" rx="6" ry="4.5" fill="#E8F2F8" stroke="#BFD8E8" stroke-width="1" transform="rotate(-25 12 9)"></ellipse><ellipse cx="20" cy="9" rx="6" ry="4.5" fill="#E8F2F8" stroke="#BFD8E8" stroke-width="1" transform="rotate(25 20 9)"></ellipse><ellipse cx="16" cy="19" rx="9" ry="7" fill="#F2C744"></ellipse><path d="M12 13.2 V24.8" stroke="#3B3020" stroke-width="2.4"></path><path d="M17 12.2 V25.8" stroke="#3B3020" stroke-width="2.4"></path><circle cx="23.5" cy="17.5" r="1.3" fill="#3B3020"></circle><path d="M7 19 L5 19" stroke="#3B3020" stroke-width="1.6" stroke-linecap="round"></path></g></g></g>
 </sc-if>
-<sc-if value="{{pass}}" hint-placeholder-val="{{false}}">
+<sc-if value="{{passMitigate}}" hint-placeholder-val="{{false}}">
 <ellipse cx="168" cy="116" rx="32" ry="14" fill="#9CC39A"></ellipse>
 <text x="168" y="121" text-anchor="middle" font-family="DM Sans" font-weight="700" font-size="16" fill="#1C2B24">ti</text>
 <g class="away"><g transform="translate(160,40)"><g transform="translate(0,10) scale(1.7)"><g transform="translate(-16,-17)"><ellipse cx="12" cy="9" rx="6" ry="4.5" fill="#E8F2F8" stroke="#BFD8E8" stroke-width="1" transform="rotate(-25 12 9)"></ellipse><ellipse cx="20" cy="9" rx="6" ry="4.5" fill="#E8F2F8" stroke="#BFD8E8" stroke-width="1" transform="rotate(25 20 9)"></ellipse><ellipse cx="16" cy="19" rx="9" ry="7" fill="#F2C744"></ellipse><path d="M12 13.2 V24.8" stroke="#3B3020" stroke-width="2.4"></path><path d="M17 12.2 V25.8" stroke="#3B3020" stroke-width="2.4"></path><circle cx="23.5" cy="17.5" r="1.3" fill="#3B3020"></circle><path d="M7 19 L5 19" stroke="#3B3020" stroke-width="1.6" stroke-linecap="round"></path></g></g></g></g>
+</sc-if>
+<sc-if value="{{long}}" hint-placeholder-val="{{false}}">
+<ellipse cx="43" cy="115" rx="33.5" ry="14" fill="#9CC39A"></ellipse>
+<text x="43" y="120" text-anchor="middle" font-family="DM Sans" font-weight="600" font-size="16" fill="#1C2B24">con</text>
+<ellipse cx="129" cy="111.5" rx="42" ry="18.5" fill="#9CC39A"></ellipse>
+<text x="129" y="118" text-anchor="middle" font-family="DM Sans" font-weight="700" font-size="20" fill="#1C2B24">DI</text>
+<ellipse cx="214" cy="115" rx="33.5" ry="14" fill="#9CC39A"></ellipse>
+<text x="214" y="120" text-anchor="middle" font-family="DM Sans" font-weight="600" font-size="16" fill="#1C2B24">tio</text>
+<ellipse cx="291" cy="115" rx="33.5" ry="14" fill="#9CC39A"></ellipse>
+<text x="291" y="120" text-anchor="middle" font-family="DM Sans" font-weight="600" font-size="16" fill="#1C2B24">nal</text>
+<g class="away"><g transform="translate(129,30)"><g transform="translate(0,10) scale(1.7)"><g transform="translate(-16,-17)"><ellipse cx="12" cy="9" rx="6" ry="4.5" fill="#E8F2F8" stroke="#BFD8E8" stroke-width="1" transform="rotate(-25 12 9)"></ellipse><ellipse cx="20" cy="9" rx="6" ry="4.5" fill="#E8F2F8" stroke="#BFD8E8" stroke-width="1" transform="rotate(25 20 9)"></ellipse><ellipse cx="16" cy="19" rx="9" ry="7" fill="#F2C744"></ellipse><path d="M12 13.2 V24.8" stroke="#3B3020" stroke-width="2.4"></path><path d="M17 12.2 V25.8" stroke="#3B3020" stroke-width="2.4"></path><circle cx="23.5" cy="17.5" r="1.3" fill="#3B3020"></circle><path d="M7 19 L5 19" stroke="#3B3020" stroke-width="1.6" stroke-linecap="round"></path></g></g></g></g>
+</sc-if>
+<sc-if value="{{one}}" hint-placeholder-val="{{false}}">
+<ellipse cx="167" cy="110" rx="97" ry="22" fill="#9CC39A"></ellipse>
+<text x="167" y="118" text-anchor="middle" font-family="DM Sans" font-weight="700" font-size="24" fill="#1C2B24">CONDITIONAL</text>
+<g class="away"><g transform="translate(167,30)"><g transform="translate(0,10) scale(1.7)"><g transform="translate(-16,-17)"><ellipse cx="12" cy="9" rx="6" ry="4.5" fill="#E8F2F8" stroke="#BFD8E8" stroke-width="1" transform="rotate(-25 12 9)"></ellipse><ellipse cx="20" cy="9" rx="6" ry="4.5" fill="#E8F2F8" stroke="#BFD8E8" stroke-width="1" transform="rotate(25 20 9)"></ellipse><ellipse cx="16" cy="19" rx="9" ry="7" fill="#F2C744"></ellipse><path d="M12 13.2 V24.8" stroke="#3B3020" stroke-width="2.4"></path><path d="M17 12.2 V25.8" stroke="#3B3020" stroke-width="2.4"></path><circle cx="23.5" cy="17.5" r="1.3" fill="#3B3020"></circle><path d="M7 19 L5 19" stroke="#3B3020" stroke-width="1.6" stroke-linecap="round"></path></g></g></g></g>
 </sc-if>
 </svg>
 </div>
@@ -74,7 +92,7 @@ a{color:#B4552E}a:hover{color:#8A3E20}
 <sc-if value="{{pass}}" hint-placeholder-val="{{false}}">
 <div style="background: #FFFFFF; border: 1px solid #E3DDD0; border-radius: 20px; padding: 14px 16px; display: flex; align-items: center; gap: 12px">
 <svg width="40" height="40" viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="20" r="9" fill="#E0B04A"></circle><circle cx="20" cy="8" r="6" fill="#E8A87C"></circle><circle cx="32" cy="20" r="6" fill="#E8A87C"></circle><circle cx="20" cy="32" r="6" fill="#E8A87C"></circle><circle cx="8" cy="20" r="6" fill="#E8A87C"></circle></svg>
-<span style="font-size: 15px; line-height: 1.4"><b lang="en">mitigate</b> đã được thụ phấn, đang trên đường kết trái.</span>
+<span style="font-size: 15px; line-height: 1.4"><b lang="en">{{passWord}}</b> đã được thụ phấn, đang trên đường kết trái.</span>
 </div>
 <div style="margin-top: auto; display: flex; flex-direction: column; gap: 6px">
 <a href="PronStonesVi.dc.html" style="height: 56px; border-radius: 18px; background: #B4552E; color: #FFFFFF; box-shadow: 0 4px 0 #7E3719; display: flex; align-items: center; justify-content: center; gap: 8px; font-weight: 700; font-size: 16px; text-decoration: none">Ong tiếp theo: deforestation</a>
@@ -83,12 +101,17 @@ a{color:#B4552E}a:hover{color:#8A3E20}
 </sc-if>
 </div>
 </x-dc>
-<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844},"result":{"editor":"enum","options":["retry","pass"],"default":"retry","section":"Demo"}}'>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844},"result":{"editor":"enum","options":["retry","pass","long","one"],"default":"retry","section":"Demo"}}'>
 class Component extends DCLogic {
   renderVals() {
     const r = this.props.result ?? this.state.result ?? 'retry';
-    return { retry: r === 'retry', pass: r === 'pass',
-      stonesLabel: r === 'pass' ? 'Cả ba hòn đá đều xanh' : 'MI và gate xanh, ti còn chênh vênh' };
+    // long / one: a stone is always wide enough for its text (2026-10-18).
+    const mitigate = r === 'retry' || r === 'pass';
+    return { retry: r === 'retry', pass: r !== 'retry', mitigate, passMitigate: r === 'pass',
+      long: r === 'long', one: r === 'one',
+      stonesLabel: r === 'long' ? 'Cả bốn hòn đá đều xanh' : r === 'one' ? 'Hòn đá CONDITIONAL xanh' : r === 'pass' ? 'Cả ba hòn đá đều xanh' : 'MI và gate xanh, ti còn chênh vênh',
+      passBadge: r === 'long' ? 'Đã thụ phấn · 4/4 hòn đá' : r === 'one' ? 'Đã thụ phấn · 1/1 hòn đá' : 'Đã thụ phấn · 3/3 hòn đá',
+      passWord: mitigate ? 'mitigate' : 'conditional' };
   }
 }
 </script>
