@@ -7,3 +7,4 @@ export * from './srs';
 export * from './quiz';
 export * from './notification';
 export * from './speaking';
+export * from './bed';

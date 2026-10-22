@@ -45,6 +45,10 @@ export const GARDEN_ROUTES = {
   missions: '/missions',
   /** A6 Topics and A7 Topic bed. */
   topics: '/topics',
+  /** Seeds & Harvest S2: a bed with nothing left to plant. */
+  bedHarvest: (id: string) => `/topics/${encodeURIComponent(id)}/harvest`,
+  /** Seeds & Harvest S3: pick the next bed after harvesting `id`. */
+  seedPackets: (id: string) => `/topics/${encodeURIComponent(id)}/packets`,
   /** A6b: search topics. */
   topicsSearch: '/topics/search',
   topic: (id: string) => `/topics/${encodeURIComponent(id)}`,

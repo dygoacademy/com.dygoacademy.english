@@ -19,7 +19,9 @@
       "manage": "照料花园",
       "join": "加入花园",
       "quiz": "测验",
-      "privacy": "隐私与数据"
+      "privacy": "隐私与数据",
+      "bedHarvest": "花圃收获",
+      "seedPackets": "选一包种子"
     },
     "update": {
       "available": "Dygo 有新版本了",
@@ -1693,6 +1695,49 @@
         "rewardDone": "3 个全部完成 · 已添加 <b>+1 雨水桶</b>",
         "rewardCount": "{done}/3"
       }
+    },
+    "bedHarvest": {
+      "close": "关闭",
+      "overline": "{bed} · 已全部种下",
+      "artLabel": "一个装满{bed}花圃里长成的单词的篮子",
+      "titleFirst": "你的第一次收获",
+      "title": "你的收获",
+      "subtitle": "这个花圃里的单词都种下了。",
+      "grown": "个单词长成",
+      "fruit": "结果",
+      "stillGrowing": "还在生长",
+      "basket": "你的篮子里",
+      "stays": "这个花圃会留在你的花园里。继续浇水，新结的果子还能掉下种子。",
+      "share": "分享",
+      "copied": "已复制",
+      "next": "选择下一个花圃",
+      "shareText": "我在 Dygo 的{bed}花圃里种出了 {count} 个单词。",
+      "notReady": "这个花圃还有种子没种下。",
+      "plantRest": "种下剩下的"
+    },
+    "seedPackets": {
+      "back": "返回",
+      "title": "选一包种子",
+      "intro": "为你挑了三个花圃。你选的那个会成为下一个花圃。",
+      "groupLabel": "下一个花圃",
+      "kind": {
+        "bee": "跟着蜜蜂",
+        "goal": "同一目标",
+        "new": "新鲜尝试"
+      },
+      "meta": "{collection} · {level} · {count} 个单词",
+      "metaNoLevel": "{collection} · {count} 个单词",
+      "why": {
+        "bee": "已有 {count} 个单词在生长",
+        "goalBand": "冲刺 {band} 分的下一步",
+        "goal": "你目标的下一步",
+        "new": "一个新兴趣"
+      },
+      "plant": "种下{bed}",
+      "pick": "选一包",
+      "browse": "浏览全部主题",
+      "error": "没能种下。请检查网络后重试。",
+      "empty": "现在没有新的花圃可选。浏览全部主题找一个吧。"
     }
   }
 }

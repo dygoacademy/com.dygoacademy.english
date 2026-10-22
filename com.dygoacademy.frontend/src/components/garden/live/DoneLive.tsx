@@ -4,6 +4,7 @@ import * as React from 'react';
 import { useTimeZone } from 'next-intl';
 
 import { GARDEN_ROUTES } from '@/constants/garden';
+import { useActiveBed } from '@/hooks/useBeds';
 import { useDailyActivity } from '@/hooks/useDailyActivity';
 import { useTodayMissions } from '@/hooks/useMissions';
 import { useSrsStats } from '@/hooks/useSrsStats';
@@ -14,6 +15,7 @@ import { MissionCompleteScreen } from '../screens/MissionCompleteScreen';
 import { addDays, isoDay, todayIn, useGardenFormat, weekDays } from '../format';
 import {
   doneReminder,
+  harvestHref,
   liveMissionsSummary,
   missionQuizHref,
   missionsSummary,
@@ -44,6 +46,7 @@ export function DoneLive({ result }: { result: SessionResult }) {
   const activity = useDailyActivity(7);
   const todayMissions = useTodayMissions();
   const topics = useTopics();
+  const activeBed = useActiveBed();
   const upcoming = useUpcomingActivity(2);
   const reminder = useReminderSwitch();
 
@@ -86,6 +89,7 @@ export function DoneLive({ result }: { result: SessionResult }) {
           ? liveMissionsSummary(
               todayMissions.data,
               missionQuizHref(topics.data, todayMissions.data.quiz_questions),
+              harvestHref(activeBed.data),
             )
           : stats.data && activity.data
             ? missionsSummary(

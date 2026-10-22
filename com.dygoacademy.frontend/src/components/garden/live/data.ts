@@ -3,6 +3,7 @@
  * fetching: the live components pass in what the existing hooks returned.
  */
 import type {
+  BedState,
   DueCard,
   SpeakingHarvestWord,
   SrsStageCounts,
@@ -113,15 +114,22 @@ export function missionsSummary(mission: { done: number; total: number }): {
  * order (REVIEW_DUE, LEARN_NEW, then QUIZ and/or SPEAK). Progress is capped at
  * the target so extra reviews don't overflow the bar. Every open row links
  * to its activity: water → watering, plant → a new-words session for
- * what's left (the server takes them from the learner's first bed
- * first), QUIZ → `quizHref`, SPEAK (Phase 13 SE1) → The Pond.
+ * what's left (the server takes them from the learner's active bed
+ * first), or `plantHref` (S2 Bed harvest when the active bed has nothing
+ * left to plant, `harvestHref`), QUIZ → `quizHref`, SPEAK (Phase 13 SE1)
+ * → The Pond.
  *
  * The water row follows the live due count (`GET /srs/stats` `due_now`,
  * the hero card's "thirsty" number) rather than the target frozen when
  * the day's rows were created: total = watered today + still due, and it
  * reads done once the mission is done or nothing is left to water.
  */
-export function liveMissions(today: TodayMissions, quizHref: string, dueNow: number): MissionItem[] {
+export function liveMissions(
+  today: TodayMissions,
+  quizHref: string,
+  dueNow: number,
+  plantHref?: string,
+): MissionItem[] {
   return today.missions.map((m): MissionItem => {
     if (m.type === 'QUIZ') return { kind: 'challenge', minutes: null, done: m.done, href: quizHref };
     const total = Math.max(0, m.target);
@@ -133,7 +141,7 @@ export function liveMissions(today: TodayMissions, quizHref: string, dueNow: num
     if (m.type === 'SPEAK') {
       return { kind: 'speak', done, total, minutes: null, href: GARDEN_ROUTES.sounds };
     }
-    return { kind: 'plant', done, total, href: GARDEN_ROUTES.plant(total - done) };
+    return { kind: 'plant', done, total, href: plantHref ?? GARDEN_ROUTES.plant(total - done) };
   });
 }
 
@@ -144,6 +152,7 @@ export function liveMissions(today: TodayMissions, quizHref: string, dueNow: num
 export function liveMissionsSummary(
   today: TodayMissions,
   quizHref: string,
+  plantHref?: string,
 ): {
   done: number;
   total: number;
@@ -165,7 +174,12 @@ export function liveMissionsSummary(
     total: today.missions.length,
     next:
       plantLeft > 0
-        ? { mission: 'plant', minutes: null, href: GARDEN_ROUTES.plant(plantLeft), count: plantLeft }
+        ? {
+            mission: 'plant',
+            minutes: null,
+            href: plantHref ?? GARDEN_ROUTES.plant(plantLeft),
+            count: plantLeft,
+          }
         : quiz
           ? { mission: 'challenge', minutes: null, href: quizHref }
           : speak
@@ -1050,4 +1064,13 @@ export function findWordInBeds(
     }
   }
   return best ? { word: best.word, topicId: best.topicId, topic: best.topic } : null;
+}
+
+/**
+ * Seeds & Harvest: where today's Plant mission goes while the active bed
+ * has nothing left to plant (S2 Bed harvest, then S3 for the next bed);
+ * undefined otherwise, so the mission plants new words as before.
+ */
+export function harvestHref(bed: BedState | null | undefined): string | undefined {
+  return bed?.harvest_ready ? GARDEN_ROUTES.bedHarvest(bed.topic_id) : undefined;
 }

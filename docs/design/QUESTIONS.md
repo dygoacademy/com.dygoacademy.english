@@ -2,6 +2,17 @@
 
 Things in `docs/design/garden/CHANGELOG.md` that are unclear, or that differ from what is built, written down instead of guessed (CHANGELOG "How to use this file", rule 5). Newest first. When one is answered, note the answer and date here and update the changelog.
 
+## 2026-10-23 · Seeds & Harvest Phase 1, S2 and S3 (Claude Code)
+
+| # | The plan says | What the build does | Question / suggestion |
+|---|---|---|---|
+| Q-29 | S2 title "Your first harvest". | A later harvest says "Your harvest" (no board; EN / VI / ZH written by Claude). | Draw or reword the later title if it should differ. |
+| Q-28 | S2 Share sends "a share card". | Share opens the phone's share sheet with one line ("I grew 7 words in my Environment bed on Dygo.") and the site link; with no share sheet it copies them and the button says "Copied" for 2 s. No image card. | Is a line + link enough for now, or should a share image be drawn? |
+| Q-27 | S3 Same goal: "the next bed on their goal path". | Topics have no goal path or order, so it is the biggest library bed whose title fits the goal (the same title patterns onboarding uses for the first bed), else the biggest bed on the shelf of the bed being left. The pill says "Next on your Road to Band {band}" with a band, else "Next for your goal" (no board). | Add a real goal path (an order of beds per goal) later? Is the fallback line OK? |
+| Q-26 | S3: "Always 3" packets. | Fewer when the library runs out: Follow the bee needs at least 1 word already in the garden, and a bed is never offered twice. With none, S3 says "No new beds to pick right now" and keeps Browse all topics (no board). | OK? |
+| Q-25 | S2 shows when the bed has nothing left to plant. | Today's Plant mission (A1 row, A3 "Next up") opens S2 while the active bed has nothing left to plant; ✕ goes to the garden and the mission keeps opening S2 until a packet is planted. There is no other entry point yet (no Home banner). | Should Home show the harvest by itself (e.g. after the session that plants the last word)? |
+| Q-24 | Vietnamese boards come in Phase 3. | Vietnamese copy is written by Claude (glossary terms luống, gieo, kết trái), on the English layout, and checked by screenshot like Chinese. | Review the VI / ZH strings in `screens.bedHarvest` and `screens.seedPackets`. |
+
 ## 2026-10-17 · A4 This week (Claude Code)
 
 | # | The plan says | What the build does | Question / suggestion |

@@ -144,8 +144,8 @@ Separate from Speaking (sentences). Starts from "Bees are waiting" on A7. EN + V
 | ID | Screen | File | Status | What's on it | Goes to | Build status |
 |---|---|---|---|---|---|---|
 | S1 | Fruit drops seeds | `SeedDrop` | Approved | Right after a review turns a word into fruit: the plant drops 1–2 related words (pairing, then word family, then synonym) into the same bed, each with meaning and a Hear button. "Your bed grows from 5 words to 7". | Study (Plant them now), A1 (Later) | Phase 2 |
-| S2 | Bed harvest | `BedHarvest` | Approved | The bed has nothing left to plant: basket art, "Your first harvest", tiles words grown / fruit / still growing, basket of every word coloured by stage (fruit / ripe / growing), "This bed stays in your garden". Share · Choose next bed. | S3, A1 (✕) | Phase 1 |
-| S3 | Pick a seed packet | `SeedPackets` | Approved | 3 packets: Follow the bee (most words shared with the garden), Same goal (next on the goal path), Something new (an interest not planted yet, at their level). Each: name, collection · level · word count, why line. Tap to select; "Plant <bed>" makes it the active bed. Browse all topics. | A7, A6 | Phase 1 |
+| S2 | Bed harvest | `BedHarvest` | Built | The bed has nothing left to plant: basket art, "Your first harvest", tiles words grown / fruit / still growing, basket of every word coloured by stage (fruit / ripe / growing), "This bed stays in your garden". Share · Choose next bed. | S3, A1 (✕) | Phase 1, branch `seeds-harvest/phase-1` |
+| S3 | Pick a seed packet | `SeedPackets` | Built | 3 packets: Follow the bee (most words shared with the garden), Same goal (next on the goal path), Something new (an interest not planted yet, at their level). Each: name, collection · level · word count, why line. Tap to select; "Plant <bed>" makes it the active bed. Browse all topics. | A7, A6 | Phase 1, branch `seeds-harvest/phase-1` |
 
 #### Landing page — page "Landing Page"
 | ID | Screen | File | Status | What's on it | Build status |
@@ -240,6 +240,7 @@ Newest first. Format: `### YYYY-MM-DD — title` then lines tagged **Added / Cha
 ### 2026-10-23 — S1–S3 Seeds & Harvest (Approved)
 - **Added** canvas page "Adult · Seeds & Harvest": `source/SeedDrop.dc.html` (S1), `source/BedHarvest.dc.html` (S2), `source/SeedPackets.dc.html` (S3); `reference/S1-seed-drop`, `reference/S2-bed-harvest`, `reference/S3-seed-packets`, `reference/S3-seed-packets-goal` (`pick: 'goal'`), `tools/render.js` jobs. English only: the Vietnamese and iPad boards are the plan's Phase 3.
 - **Decision** A small bed must never leave "Plant N new words" empty. Fruit drops related words into the bed (S1), and a bed with nothing left to plant ends in a harvest (S2) and a choice of 3 seed packets for the next bed (S3). *Approved (Dylan, 2026-10-23).* Product plan: doc "Dygo Word Garden: Seeds & Harvest plan". Build plan: `docs/plans/Seeds and Harvest implementation plan.md`. Phase 1 = S2 + S3, Phase 2 = S1.
+- *Built* S2 + S3 (Phase 1, branch `seeds-harvest/phase-1`, 2026-10-23): `/topics/[id]/harvest`, `/topics/[id]/packets`, new `user_beds` and `/beds` API. Screenshots at 390 × 844 match `reference/S2-bed-harvest`, `S3-seed-packets` and `S3-seed-packets-goal` with 0 differing pixels. Open: Q-24 to Q-29 in `docs/design/QUESTIONS.md`.
 
 ### 2026-10-18 — P1–P4 Pronunciation: every stone fits its text (Built)
 - **Changed** `source/PronStonesResult(Vi).dc.html`: `result` gets `long` (conditional, con · DI · tio · nal) and `one` (a word with no syllable split, one wide stone). **Added** `reference/P4-result-long-word(-vi)`, `reference/P4-result-one-stone(-vi)`, `tools/render.js` jobs.

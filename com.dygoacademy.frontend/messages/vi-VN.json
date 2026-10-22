@@ -15,7 +15,9 @@
       "manage": "Chăm vườn",
       "join": "Vào vườn",
       "quiz": "Kiểm tra nhanh",
-      "privacy": "Quyền riêng tư"
+      "privacy": "Quyền riêng tư",
+      "bedHarvest": "Thu hoạch luống",
+      "seedPackets": "Chọn gói hạt giống"
     },
     "update": {
       "available": "Dygo vừa có bản mới.",
@@ -1689,6 +1691,49 @@
         "rewardDone": "Đã xong cả 3 · thêm <b>1 thùng nước mưa</b>",
         "rewardCount": "{done}/3"
       }
+    },
+    "bedHarvest": {
+      "close": "Đóng",
+      "overline": "{bed} · đã gieo hết",
+      "artLabel": "Một giỏ đầy những từ đã lớn trong luống {bed}",
+      "titleFirst": "Lần thu hoạch đầu tiên",
+      "title": "Thu hoạch",
+      "subtitle": "Mọi từ trong luống này đã được gieo.",
+      "grown": "từ đã lớn",
+      "fruit": "kết trái",
+      "stillGrowing": "đang lớn",
+      "basket": "Trong giỏ của bạn",
+      "stays": "Luống này vẫn ở trong vườn của bạn. Cứ tưới đều, quả mới vẫn có thể rơi hạt.",
+      "share": "Chia sẻ",
+      "copied": "Đã sao chép",
+      "next": "Chọn luống tiếp theo",
+      "shareText": "Mình đã trồng được {count} từ trong luống {bed} trên Dygo.",
+      "notReady": "Luống này vẫn còn hạt giống để gieo.",
+      "plantRest": "Gieo nốt"
+    },
+    "seedPackets": {
+      "back": "Quay lại",
+      "title": "Chọn gói hạt giống",
+      "intro": "Ba luống chọn sẵn cho bạn. Luống bạn chọn sẽ là luống tiếp theo.",
+      "groupLabel": "Luống tiếp theo",
+      "kind": {
+        "bee": "Theo chú ong",
+        "goal": "Cùng mục tiêu",
+        "new": "Điều mới mẻ"
+      },
+      "meta": "{collection} · {level} · {count} từ",
+      "metaNoLevel": "{collection} · {count} từ",
+      "why": {
+        "bee": "{count} từ đã đang lớn",
+        "goalBand": "Bước tiếp trên Đường đến Band {band}",
+        "goal": "Bước tiếp cho mục tiêu của bạn",
+        "new": "Một sở thích mới"
+      },
+      "plant": "Gieo {bed}",
+      "pick": "Chọn một gói",
+      "browse": "Xem tất cả chủ đề",
+      "error": "Chưa gieo được. Bạn kiểm tra kết nối rồi thử lại nhé.",
+      "empty": "Hiện chưa có luống mới để chọn. Xem tất cả chủ đề để tìm một luống."
     }
   }
 }

@@ -1194,3 +1194,41 @@
     animation: none;
   }
 }
+
+/* Seeds & Harvest (BedHarvest / SeedPackets .dc.html): the basket's fruit
+   drop in one by one (.5s ease-in, .1s + .15s each), seed packets rise in
+   (.3s ease-out). Reduced motion: still. */
+@keyframes harvest-drop {
+  0% {
+    transform: translateY(-30px);
+    opacity: 0;
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+@keyframes packet-rise {
+  0% {
+    transform: translateY(10px);
+    opacity: 0;
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+@layer utilities {
+  .harvest-drop {
+    animation: harvest-drop 0.5s ease-in both;
+  }
+  .packet-rise {
+    animation: packet-rise 0.3s ease-out;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .harvest-drop,
+    .packet-rise {
+      animation: none;
+    }
+  }
+}

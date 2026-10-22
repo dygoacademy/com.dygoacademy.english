@@ -16,6 +16,7 @@ import {
   gardenHours,
   gardenPlants,
   greetingFor,
+  harvestHref,
   BEE_LIMIT,
   beesCard,
   findWordInBeds,
@@ -294,6 +295,24 @@ describe('live missions (U6-5)', () => {
     });
     const all = { ...today, goldenBloom: true, missions: today.missions.map((m) => ({ ...m, done: true })) };
     expect(liveMissionsSummary(all, href)).toEqual({ done: 3, total: 3, next: null });
+  });
+
+  it('Seeds & Harvest: a fully planted active bed sends the Plant mission to S2', () => {
+    const bed = { topic_id: 'b1', title: 'Environment', word_count: 5, unplanted_count: 0 };
+    const ready = harvestHref({ ...bed, harvest_ready: true });
+    expect(ready).toBe('/topics/b1/harvest');
+    expect(harvestHref({ ...bed, unplanted_count: 2, harvest_ready: false })).toBeUndefined();
+    expect(harvestHref(null)).toBeUndefined();
+    expect(liveMissions(today, href, 0, ready)[1]).toEqual({
+      kind: 'plant',
+      done: 2,
+      total: 5,
+      href: '/topics/b1/harvest',
+    });
+    expect(liveMissionsSummary(today, href, ready).next).toMatchObject({
+      mission: 'plant',
+      href: '/topics/b1/harvest',
+    });
   });
 
   it('SE1: a SPEAK mission is a speak row to The Pond, and the next mission on A3', () => {

@@ -4,6 +4,7 @@ import * as React from 'react';
 import { useTimeZone } from 'next-intl';
 
 import { GARDEN_ROUTES } from '@/constants/garden';
+import { useActiveBed } from '@/hooks/useBeds';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
 import { useDailyActivity } from '@/hooks/useDailyActivity';
 import { useTodayMissions } from '@/hooks/useMissions';
@@ -18,18 +19,19 @@ import { AllWateredScreen } from '../screens/AllWateredScreen';
 import { TodaysGardenScreen } from '../screens/TodaysGardenScreen';
 import { WelcomeBackScreen } from '../screens/WelcomeBackScreen';
 import {
-  displayName,
   comebackStart,
+  displayName,
   EXTRA_PLANT_COUNT,
-  plantAllowance,
   extraPlantBed,
   freezeStreak,
   gardenPlants,
   greetingFor,
+  harvestHref,
   liveMissions,
   missedDays,
   missionQuizHref,
   nextRipening,
+  plantAllowance,
   ripensTomorrow,
   showAllWatered,
   showMoreOnHome,
@@ -87,6 +89,7 @@ export function HomeLive() {
   const missions = useTodayMissions();
   const topics = useTopics();
   const onboarding = useOnboarding();
+  const activeBed = useActiveBed();
   usePlantPendingSeed();
 
   if (stats.isPending || activity.isPending || missions.isPending) return <LiveLoading />;
@@ -119,7 +122,7 @@ export function HomeLive() {
 
   const tomorrow = isoDay(addDays(today, 1));
 
-  const bed = extraPlantBed(topics.data, onboarding.data?.first_topic_id);
+  const bed = extraPlantBed(topics.data, activeBed.data?.topic_id ?? onboarding.data?.first_topic_id);
   const plantLeft = plantAllowance(missions.data);
   // Daily goal missions: only while today's seeds aren't all planted.
   const extraPlant =
@@ -172,6 +175,7 @@ export function HomeLive() {
               missions.data,
               missionQuizHref(topics.data, missions.data.quiz_questions),
               s.due_now,
+              harvestHref(activeBed.data),
             )
           : activity.data
             ? [

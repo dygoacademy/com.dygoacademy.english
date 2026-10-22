@@ -15,7 +15,9 @@
       "manage": "Tend the Garden",
       "join": "Join a Garden",
       "quiz": "Quiz",
-      "privacy": "Privacy & data"
+      "privacy": "Privacy & data",
+      "bedHarvest": "Bed harvest",
+      "seedPackets": "Pick a seed packet"
     },
     "update": {
       "available": "There’s a new version of Dygo.",
@@ -1689,6 +1691,49 @@
         "rewardDone": "All 3 done · <b>+1 rain barrel</b> added",
         "rewardCount": "{done}/3"
       }
+    },
+    "bedHarvest": {
+      "close": "Close",
+      "overline": "{bed} · fully planted",
+      "artLabel": "A basket filled with the words grown in the {bed} bed",
+      "titleFirst": "Your first harvest",
+      "title": "Your harvest",
+      "subtitle": "Everything in this bed is planted.",
+      "grown": "words grown",
+      "fruit": "fruit",
+      "stillGrowing": "still growing",
+      "basket": "In your basket",
+      "stays": "This bed stays in your garden. Keep watering it, and new fruit can still drop seeds.",
+      "share": "Share",
+      "copied": "Copied",
+      "next": "Choose next bed",
+      "shareText": "I grew {count, plural, one {# word} other {# words}} in my {bed} bed on Dygo.",
+      "notReady": "This bed still has seeds to plant.",
+      "plantRest": "Plant the rest"
+    },
+    "seedPackets": {
+      "back": "Back",
+      "title": "Pick a seed packet",
+      "intro": "Three beds picked for you. The one you choose becomes your next bed.",
+      "groupLabel": "Next bed",
+      "kind": {
+        "bee": "Follow the bee",
+        "goal": "Same goal",
+        "new": "Something new"
+      },
+      "meta": "{collection} · {level} · {count, plural, one {# word} other {# words}}",
+      "metaNoLevel": "{collection} · {count, plural, one {# word} other {# words}}",
+      "why": {
+        "bee": "{count, plural, one {# word already growing} other {# words already growing}}",
+        "goalBand": "Next on your Road to Band {band}",
+        "goal": "Next for your goal",
+        "new": "A new interest"
+      },
+      "plant": "Plant {bed}",
+      "pick": "Pick a packet",
+      "browse": "Browse all topics",
+      "error": "That didn’t plant. Check your connection and try again.",
+      "empty": "No new beds to pick right now. Browse all topics to find one."
     }
   }
 }

@@ -14,6 +14,7 @@ const TONE = {
   success: 'text-success',
   forest: 'text-forest',
   gold: 'text-gold-text',
+  primary: 'text-primary-text',
   muted: 'text-placeholder',
 } as const;
 
