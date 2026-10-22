@@ -167,6 +167,9 @@ run_rls_suite() {
   # A4 This week: weekly missions + up to 3 rain barrels.
   run_file "$DIR/migrations/20261017_weekly_missions.sql" "$scratch"
   run_file "$DIR/tests/rls_weekly_missions_test.sql" "$scratch"
+  # Seeds & Harvest Phase 1: the learner's beds (active / resting / harvested).
+  run_file "$DIR/migrations/20261023_user_beds.sql" "$scratch"
+  run_file "$DIR/tests/rls_user_beds_test.sql" "$scratch"
 }
 
 # -----------------------------------------------------------------------------

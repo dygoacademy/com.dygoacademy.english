@@ -124,10 +124,10 @@ describe('SrsService.findDue', () => {
     expect(firstSql).toMatch(/tw\.topic_id = \$1/);
     expect(firstParams).toEqual(['topic-9', 10]);
     const [, secondSql] = queryAsMock.mock.calls[1];
-    expect(secondSql).not.toMatch(/first_topic_id/);
+    expect(secondSql).not.toMatch(/first_topic_id|user_beds/);
   });
 
-  it("without a topic, the learner's own words come first, then their first bed", async () => {
+  it("without a topic, the learner's own words come first, then their active bed", async () => {
     const queryAsMock = jest.fn().mockResolvedValueOnce([]);
     const service = await makeService(queryAsMock);
 
@@ -135,7 +135,7 @@ describe('SrsService.findDue', () => {
 
     const [, sql] = queryAsMock.mock.calls[0];
     expect(sql).toMatch(
-      /order by \(tw\.added_by is not distinct from auth\.uid\(\)\) desc, \(tw\.topic_id is not distinct from\s+\(select p\.first_topic_id/,
+      /order by \(tw\.added_by is not distinct from auth\.uid\(\)\) desc, \(tw\.topic_id is not distinct from\s+coalesce\(\(select ub\.topic_id from public\.user_beds ub where ub\.user_id = auth\.uid\(\) and ub\.status = 'active'\), \(select p\.first_topic_id/,
     );
     expect(sql).toMatch(/\) desc, tw\.created_at asc/);
   });

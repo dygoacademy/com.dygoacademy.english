@@ -4,7 +4,7 @@ import { PoolClient } from 'pg';
 import { DatabaseService } from '../../database/database.service';
 import { recordMissionProgress } from '../missions/missions.store';
 import { settleWeek, weeklySafely } from '../missions/weekly.store';
-import { FIRST_BED_TOPIC, resolveUserTimezone } from '../srs/srs.service';
+import { ACTIVE_BED_TOPIC, resolveUserTimezone } from '../srs/srs.service';
 import { StorageService } from '../../storage/storage.service';
 import { CreateSpeakingAttemptDto } from './dto/create-attempt.dto';
 import { wordSyllables } from './speaking-syllables';
@@ -71,7 +71,7 @@ const LEARNER_WORDS = `
      where tw.status = 'READY'
        and ($1::uuid is null or tw.topic_id = $1::uuid)
        and ($1::uuid is not null or coalesce(s.fsrs_state <> 'New', false)
-            or ${FIRST_BED_TOPIC} is null or tw.topic_id = ${FIRST_BED_TOPIC})
+            or ${ACTIVE_BED_TOPIC} is null or tw.topic_id = ${ACTIVE_BED_TOPIC})
      order by tw.lexicon_id, s.next_due_at asc nulls last, tw.created_at
   ),
   w as (select words.*, (due_now or is_new) as is_due from words)

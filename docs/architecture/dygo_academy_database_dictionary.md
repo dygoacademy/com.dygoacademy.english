@@ -695,6 +695,28 @@ Append-only review history, partitioned by month.
 
 ---
 
+#### `user_beds`
+
+Seeds & Harvest Phase 1 (`20261023_user_beds.sql`): the beds a learner has planted from. The active bed is where today's planting takes new words (`ACTIVE_BED_TOPIC` in `srs.service.ts`, also used by the mission quiz and speaking); with no active row the learner's `profiles.first_topic_id` is used.
+
+**Written by** — The owning user only: SELECT, INSERT (only a bed they can read, `can_read_topic`), UPDATE. No DELETE.
+
+| Column | Type | Null | Default |
+| :--- | :--- | :---: | :--- |
+| `user_id` | `uuid` | NO | `auth.uid()` |
+| `topic_id` | `uuid` | NO | — |
+| `status` | `text` | NO | `'active'` |
+| `started_at` | `timestamp with time zone` | NO | `now()` |
+| `harvested_at` | `timestamp with time zone` | yes | — |
+| `created_at` | `timestamp with time zone` | NO | `now()` |
+| `updated_at` | `timestamp with time zone` | NO | `now()` |
+
+**Keys and checks** — PRIMARY KEY `(user_id, topic_id)`; FKs to `profiles` and `topics` (on delete cascade); `status in ('active', 'resting', 'harvested')`; `harvested_at` set exactly when `status = 'harvested'`.
+
+**Indexes** — `user_beds_one_active` unique `(user_id) WHERE status = 'active'`: one active bed per learner.
+
+---
+
 ### Notifications
 
 #### `study_schedules`

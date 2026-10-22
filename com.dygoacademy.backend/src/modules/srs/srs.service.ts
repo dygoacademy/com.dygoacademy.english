@@ -285,22 +285,25 @@ const DUE_CARD_COLUMNS = `
 // new param through both queries' positional $1/$2 lists. One indexed
 // profiles lookup by primary key, same cost class as resolveUserTimezone's.
 /**
- * The caller's first bed (picked from their goal at onboarding; null for
- * learners who never had one). By auth.uid() for the same reason as
- * MEANING_TRANSLATION_JOIN below. Also used by Quiz and Speaking to keep
- * practice on the learner's own words.
+ * The caller's active bed (Seeds & Harvest: `user_beds` status active, the
+ * bed picked from a seed packet), else their first bed (picked from their
+ * goal at onboarding); null for learners who never had one. By auth.uid()
+ * for the same reason as MEANING_TRANSLATION_JOIN below. Also used by Quiz
+ * and Speaking to keep practice on the learner's own words.
  */
-export const FIRST_BED_TOPIC = `(select p.first_topic_id from public.profiles p where p.id = auth.uid())`;
+export const ACTIVE_BED_TOPIC =
+  `coalesce((select ub.topic_id from public.user_beds ub where ub.user_id = auth.uid() and ub.status = 'active'), ` +
+  `(select p.first_topic_id from public.profiles p where p.id = auth.uid()))`;
 
-// New cards from the learner's first bed sort first (findDue without a
+// New cards from the learner's active bed sort first (findDue without a
 // topic); `is not distinct from` keeps it false, never null, when the
-// profile has no first bed.
-const FIRST_BED_FIRST = `(tw.topic_id is not distinct from ${FIRST_BED_TOPIC}) desc`;
+// learner has no bed.
+const ACTIVE_BED_FIRST = `(tw.topic_id is not distinct from ${ACTIVE_BED_TOPIC}) desc`;
 
 // Words the learner added themselves sort before everything else (findDue
 // without a topic): they chose them, and library words are always older,
 // so oldest-first alone planted them last. `is not distinct from` for the
-// same never-null reason as FIRST_BED_FIRST (added_by can be null).
+// same never-null reason as ACTIVE_BED_FIRST (added_by can be null).
 const OWN_WORDS_FIRST = `(tw.added_by is not distinct from auth.uid()) desc`;
 
 const MEANING_TRANSLATION_JOIN = `
@@ -337,10 +340,11 @@ export class SrsService {
    * words" mission starts a session of never-reviewed words only.
    *
    * Without a topic, new cards come from words the learner added
-   * themselves first, then from their first bed (the one onboarding picked
-   * from their goal, `profiles.first_topic_id`), so the daily mission
-   * plants what they chose, then keeps to their goal; once both have no
-   * seeds left, the oldest words anywhere follow.
+   * themselves first, then from their active bed (`ACTIVE_BED_TOPIC`: the
+   * seed packet they picked, else the first bed onboarding picked from
+   * their goal), so the daily mission plants what they chose, then keeps
+   * to their bed; once both have no seeds left, the oldest words anywhere
+   * follow (the garden offers S2 Bed harvest before that).
    *
    * `newCap` caps the new cards (daily goal missions: a session plants at
    * most what is left of today's Plant mission; 0 = due reviews only).
@@ -401,7 +405,7 @@ export class SrsService {
             select 1 from public.user_word_srs uws where uws.topic_word_id = tw.id
           )
           ${topicId ? 'and tw.topic_id = $1' : ''}
-        order by ${topicId ? '' : `${OWN_WORDS_FIRST}, ${FIRST_BED_FIRST}, `}tw.created_at asc
+        order by ${topicId ? '' : `${OWN_WORDS_FIRST}, ${ACTIVE_BED_FIRST}, `}tw.created_at asc
         limit ${topicId ? '$2' : '$1'}`,
       topicId ? [topicId, remaining] : [remaining],
     );

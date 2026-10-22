@@ -3,7 +3,7 @@ import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { GeminiEnrichmentService } from '../../ai/gemini-enrichment.service';
 import { nuanceLanguage, stripMarkdown } from '../../ai/nuance-text';
 import { DatabaseService } from '../../database/database.service';
-import { FIRST_BED_TOPIC, SrsService } from '../srs/srs.service';
+import { ACTIVE_BED_TOPIC, SrsService } from '../srs/srs.service';
 import { GenerateQuizDto } from './dto/generate-quiz.dto';
 import { SubmitAnswerDto } from './dto/submit-answer.dto';
 import {
@@ -206,7 +206,7 @@ export class QuizService {
     const bedQuiz = !dto.topicWordIds?.length && dto.topicId !== undefined;
     const ownWordsClause =
       scopeParam === undefined
-        ? `and (${PLANTED} or ${FIRST_BED_TOPIC} is null or tw.topic_id = ${FIRST_BED_TOPIC})`
+        ? `and (${PLANTED} or ${ACTIVE_BED_TOPIC} is null or tw.topic_id = ${ACTIVE_BED_TOPIC})`
         : '';
 
     const rows = await this.db.queryAs<QuizWordRow>(
@@ -220,7 +220,7 @@ export class QuizService {
           ${ownWordsClause}
         order by ${PLANTED} ${bedQuiz ? 'asc' : 'desc'},
                  coalesce(uws.is_leech or uws.next_due_at <= now(), false) desc,
-                 (tw.topic_id is not distinct from ${FIRST_BED_TOPIC}) desc,
+                 (tw.topic_id is not distinct from ${ACTIVE_BED_TOPIC}) desc,
                  random()
         limit ${scopeParam !== undefined ? '$2' : '$1'}`,
       params,

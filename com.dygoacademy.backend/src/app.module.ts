@@ -11,6 +11,7 @@ import { validateEnv } from './config/env.validation';
 import { DatabaseModule } from './database/database.module';
 import { HealthModule } from './health/health.module';
 import { AnalyticsModule } from './modules/analytics/analytics.module';
+import { BedsModule } from './modules/beds/beds.module';
 import { BillingModule } from './modules/billing/billing.module';
 import { GroupsModule } from './modules/groups/groups.module';
 import { MissionsModule } from './modules/missions/missions.module';
@@ -53,6 +54,7 @@ import { NotificationProcessor } from './workers/notification.processor';
     AnalyticsModule,
     ProfilesModule,
     MissionsModule,
+    BedsModule,
     SpeakingModule,
     TelemetryModule,
     VoiceDonationModule,
