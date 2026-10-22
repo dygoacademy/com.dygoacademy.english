@@ -2,7 +2,7 @@
 
 Location in the repo: `docs/design/CHANGELOG.md`
 Design source of truth: the **Dygo Word Garden** design canvas (owner: Dylan).
-Last updated: **2026-10-18**
+Last updated: **2026-10-23**
 
 ---
 
@@ -140,6 +140,13 @@ Separate from Speaking (sentences). Starts from "Bees are waiting" on A7. EN + V
 | SE5 | Entry · Harvest by voice | `EntryHarvest` | Approved | A7 with a **"Ready to harvest"** card: ripe Flower words, each with a mic; saying it well turns it into Fruit. **2026-10-07: merged into A7 on the canvas; this board was removed (see A7).** | SP1 || Board drafted by Claude Code 2026-10-06 (EN + VI, `reference/SE5-entry-harvest`), built 2026-10-06 (see `Change Log.md`, "Speaking entry points SE1 / SE2 / SE5 / SE6"); `garden:diff` after the UAT deploy. |
 | SE6 | Entry · Echo challenge | `EntryEcho` | Approved | GR3 with an **Echo challenge** card (trickiest word, each gardener's best stage, "3 of 5 done", Say it). Tricky list trimmed to 2 rows. **2026-10-07: merged into GR3 on the canvas; this board was removed (see GR3).** | SP1 || Board drafted by Claude Code 2026-10-06 (EN + VI, `reference/SE6-entry-echo`), built 2026-10-06 (see `Change Log.md`, "Speaking entry points SE1 / SE2 / SE5 / SE6"); `garden:diff` after the UAT deploy. |
 
+#### Seeds & Harvest — page "Adult · Seeds & Harvest" (English only until Phase 3)
+| ID | Screen | File | Status | What's on it | Goes to | Build status |
+|---|---|---|---|---|---|---|
+| S1 | Fruit drops seeds | `SeedDrop` | Approved | Right after a review turns a word into fruit: the plant drops 1–2 related words (pairing, then word family, then synonym) into the same bed, each with meaning and a Hear button. "Your bed grows from 5 words to 7". | Study (Plant them now), A1 (Later) | Phase 2 |
+| S2 | Bed harvest | `BedHarvest` | Approved | The bed has nothing left to plant: basket art, "Your first harvest", tiles words grown / fruit / still growing, basket of every word coloured by stage (fruit / ripe / growing), "This bed stays in your garden". Share · Choose next bed. | S3, A1 (✕) | Phase 1 |
+| S3 | Pick a seed packet | `SeedPackets` | Approved | 3 packets: Follow the bee (most words shared with the garden), Same goal (next on the goal path), Something new (an interest not planted yet, at their level). Each: name, collection · level · word count, why line. Tap to select; "Plant <bed>" makes it the active bed. Browse all topics. | A7, A6 | Phase 1 |
+
 #### Landing page — page "Landing Page"
 | ID | Screen | File | Status | What's on it | Build status |
 |---|---|---|---|---|---|
@@ -229,6 +236,10 @@ All iPad screens: sidebar (Garden · Missions · Topics · Groups · Me + Shared
 ## 3. Changelog
 
 Newest first. Format: `### YYYY-MM-DD — title` then lines tagged **Added / Changed / Removed / Decision**, with screen IDs and status.
+
+### 2026-10-23 — S1–S3 Seeds & Harvest (Approved)
+- **Added** canvas page "Adult · Seeds & Harvest": `source/SeedDrop.dc.html` (S1), `source/BedHarvest.dc.html` (S2), `source/SeedPackets.dc.html` (S3); `reference/S1-seed-drop`, `reference/S2-bed-harvest`, `reference/S3-seed-packets`, `reference/S3-seed-packets-goal` (`pick: 'goal'`), `tools/render.js` jobs. English only: the Vietnamese and iPad boards are the plan's Phase 3.
+- **Decision** A small bed must never leave "Plant N new words" empty. Fruit drops related words into the bed (S1), and a bed with nothing left to plant ends in a harvest (S2) and a choice of 3 seed packets for the next bed (S3). *Approved (Dylan, 2026-10-23).* Product plan: doc "Dygo Word Garden: Seeds & Harvest plan". Build plan: `docs/plans/Seeds and Harvest implementation plan.md`. Phase 1 = S2 + S3, Phase 2 = S1.
 
 ### 2026-10-18 — P1–P4 Pronunciation: every stone fits its text (Built)
 - **Changed** `source/PronStonesResult(Vi).dc.html`: `result` gets `long` (conditional, con · DI · tio · nal) and `one` (a word with no syllable split, one wide stone). **Added** `reference/P4-result-long-word(-vi)`, `reference/P4-result-one-stone(-vi)`, `tools/render.js` jobs.

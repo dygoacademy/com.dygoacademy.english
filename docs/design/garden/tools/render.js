@@ -246,6 +246,12 @@ const JOBS = [
   ['AdultAddWord.dc.html', 'en', 'A7b-add-word-planted', { planted: true }],
   ['AdultAddWordVi.dc.html', 'vi', 'A7b-add-word-vi', {}],
   ['AdultAddWordVi.dc.html', 'vi', 'A7b-add-word-planted-vi', { planted: true }],
+  // Seeds & Harvest (canvas page "Adult · Seeds & Harvest", approved 2026-10-23). English only:
+  // the Vietnamese boards come in the plan's Phase 3. S1 is built in Phase 2.
+  ['SeedDrop.dc.html', 'en', 'S1-seed-drop', {}],
+  ['BedHarvest.dc.html', 'en', 'S2-bed-harvest', {}],
+  ['SeedPackets.dc.html', 'en', 'S3-seed-packets', {}],
+  ['SeedPackets.dc.html', 'en', 'S3-seed-packets-goal', { pick: 'goal' }],
 ].filter(([, , name]) => !FILTER || name.includes(FILTER));
 
 // English pages redrawn with the app's body stack (DM Sans, then Be Vietnam

@@ -48,8 +48,11 @@ Exported from the canvas on 2026-09-26:
 | `SP2-speak-countdown`, `SP2-speak-recording` | SP2 · Speaking: the 3 · 2 · 1 countdown (`phase: 'count'`, n = 3) and recording (`phase: 'speaking'`) | `/sounds` | Phase 13 |
 | `SP3-speak-checking`, `SP3-speak-done`, `SP3-speak-failed` | SP3 · Compare: checking, done and failed (`phase` override) | `/sounds` | Phase 13 |
 | `SP4-speak-done` | SP4 · Done | `/sounds` (after the fifth sentence) | Phase 13 |
+| `S1-seed-drop` | S1 · Fruit drops seeds (canvas page "Adult · Seeds & Harvest", approved 2026-10-23; English only) | after a review that turns a word into fruit | Seeds & Harvest Phase 2 |
+| `S2-bed-harvest` | S2 · Bed harvest | `/topics/[id]/harvest` | Seeds & Harvest Phase 1 |
+| `S3-seed-packets`, `S3-seed-packets-goal` | S3 · Pick a seed packet (first packet selected; Same goal selected) | `/topics/[id]/packets` | Seeds & Harvest Phase 1 |
 
-Every screen above also has a **Vietnamese reference**, `<name>-vi` (for example `A1-todays-garden-vi`, `GR3-tricky-patches-vi`): 24 English and 24 Vietnamese references in all (AU added 2026-09-29).
+Every screen above also has a **Vietnamese reference**, `<name>-vi` (for example `A1-todays-garden-vi`, `GR3-tricky-patches-vi`): 24 English and 24 Vietnamese references in all (AU added 2026-09-29). Exception: S1–S3 (Seeds & Harvest) have no Vietnamese boards yet; they come in that plan's Phase 3, and until then vi-VN uses the English layout with translated copy, checked like Chinese.
 
 ## Languages
 

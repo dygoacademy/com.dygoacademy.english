@@ -1245,3 +1245,9 @@ Engineering-facing log of shipped fixes and changes, one dated entry per change.
 * **What**: Every stone is at least as wide as its text plus 0.6 × the font size each side (DM Sans widths from a table, so server and client draw the same). Three stones keep the boards' places when they fit; otherwise the row is packed in the middle and shrunk, stones and text together, to the card. Applies to every pond (P1–P4, iPad). Backend: a word whose IPA has no syllable dots (/kənˈdɪʃənəl/) now gets its spelling split when the IPA's vowel count matches it (con · DI · tio · nal), instead of one stone for the whole word. A syllable's "Hear" plays the whole word when the clip timings count a different number of syllables than the stones.
 * **Why**: Dylan (2026-10-18, iPhone): on P4, "CONDITIONAL" sat on a stone sized for a short syllable, so the dark text ran onto the dark water. Option A of three (stones that fit) chosen on the decision card.
 * **Verified**: frontend `tsc --noEmit` and eslint clean, vitest same 65 failures as before, new layout tests (text fits, inside the card, no overlap, board numbers). Backend jest all green (558), eslint and tsc clean.
+
+## 2026-10-23
+
+### Design: S1–S3 Seeds & Harvest boards and references
+* **Files**: `docs/design/garden/source/SeedDrop.dc.html`, `BedHarvest.dc.html`, `SeedPackets.dc.html`; `reference/S1-seed-drop`, `S2-bed-harvest`, `S3-seed-packets`, `S3-seed-packets-goal` (`.png` + `.html`); `tools/render.js` jobs; `docs/design/garden/CHANGELOG.md`, `README.md`; new `docs/plans/Seeds and Harvest implementation plan.md`.
+* **What**: The canvas page "Adult · Seeds & Harvest" (approved by Dylan 2026-10-23) copied into the repo before any build, with its English references exported. There are no Vietnamese boards yet (the plan's Phase 3). The plan maps the plan's assumed names to the real ones (`user_word_srs`, `topic_words.lexicon_id`, tree = fruit, `daily_goal_minutes`).

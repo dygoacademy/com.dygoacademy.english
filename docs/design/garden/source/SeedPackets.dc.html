@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Seed packets</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&amp;family=DM+Sans:wght@400;500;600;700&amp;display=swap">
+<style>
+body{margin:0;font-family:'DM Sans',sans-serif;background:#F4F1EA;color:#1C2B24}
+a{color:#B4552E}a:hover{color:#8A3E20}
+@keyframes rise{0%{transform:translateY(10px);opacity:0}100%{transform:translateY(0);opacity:1}}
+.rise{animation:rise .3s ease-out}
+@media (prefers-reduced-motion: reduce){*{animation:none !important}}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; background: #F4F1EA; display: flex; flex-direction: column; gap: 14px; padding: 20px 18px 26px; font-family: 'DM Sans', sans-serif; color: #1C2B24; overflow: hidden">
+<div style="display: flex; align-items: center; gap: 12px">
+<a href="BedHarvest.dc.html" aria-label="Back" style="width: 44px; height: 44px; border-radius: 22px; background: #FFFFFF; border: 1px solid #E3DDD0; display: flex; align-items: center; justify-content: center; color: #1C2B24; flex-shrink: 0"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5 L8 12 L15 19"></path></svg></a>
+<span style="flex-grow: 1; font-family: 'Fraunces', serif; font-weight: 600; font-size: 24px; line-height: 1.15">Pick a seed packet</span>
+</div>
+<span style="font-size: 15px; color: #5E6A62; line-height: 1.4">Three beds picked for you. The one you choose becomes your next bed.</span>
+<div role="radiogroup" aria-label="Next bed" style="display: flex; flex-direction: column; gap: 10px">
+<sc-for list="{{opts}}" as="o" hint-placeholder-count="3"><button class="rise" onClick="{{o.pick}}" role="radio" aria-checked="{{o.checked}}" style="border-radius: 22px; border: 2px solid {{o.border}}; background: {{o.bg}}; display: flex; align-items: center; gap: 14px; padding: 12px 14px 12px 12px; cursor: pointer; text-align: left; font-family: inherit; color: #1C2B24">
+<svg width="56" height="70" viewBox="0 0 56 70" aria-hidden="true" style="flex-shrink: 0"><path d="M4 10 L8 3 H48 L52 10 Z" fill="#EAE5DA"></path><path d="M4 10 H52 L50 66 H6 Z" fill="#FFFFFF" stroke="#E3DDD0" stroke-width="1.5"></path><rect x="4" y="10" width="48" height="14" fill="{{o.band}}"></rect><path d="M28 58 V40" stroke="{{o.band}}" stroke-width="2.2" stroke-linecap="round"></path><path d="M28 46 C22 46 19 42 20 37 C25 37 28 41 28 46 Z" fill="{{o.band}}"></path><path d="M28 43 C34 43 37 39 36 34 C31 34 28 38 28 43 Z" fill="{{o.band}}" opacity=".6"></path></svg>
+<span style="flex-grow: 1; display: flex; flex-direction: column; gap: 3px; min-width: 0">
+<span style="font-size: 11px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: {{o.kindColor}}">{{o.kind}}</span>
+<span style="font-family: 'Fraunces', serif; font-weight: 600; font-size: 20px; line-height: 1.15">{{o.name}}</span>
+<span style="font-size: 13px; color: #5E6A62">{{o.meta}}</span>
+<span style="align-self: flex-start; margin-top: 3px; font-size: 12px; font-weight: 700; color: #24463A; background: #F1F6EF; border-radius: 8px; padding: 3px 8px">{{o.why}}</span>
+</span>
+</button></sc-for>
+</div>
+<div style="margin-top: auto; display: flex; flex-direction: column; gap: 6px">
+<a href="AdultTopicDetail.dc.html" style="height: 56px; border-radius: 18px; background: #B4552E; color: #FFFFFF; box-shadow: 0 4px 0 #7E3719; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 16px; text-decoration: none">{{cta}}</a>
+<a href="AdultTopics.dc.html" style="align-self: center; font-size: 14px; font-weight: 600; color: #5E6A62; padding: 8px">Browse all topics</a>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { pick: 'bee' }; }
+  renderVals() {
+    const s = this.state;
+    const opts = [
+      { id: 'bee', kind: 'Follow the bee', kindColor: '#6B5215', band: '#E0B04A', name: 'Climate policy', meta: 'IELTS Academic · B2 · 32 words', why: '6 words already growing' },
+      { id: 'goal', kind: 'Same goal', kindColor: '#2F6E99', band: '#4A8FBF', name: 'Urban life', meta: 'IELTS Academic · B2 · 40 words', why: 'Next on your Road to Band 7' },
+      { id: 'new', kind: 'Something new', kindColor: '#8A3E20', band: '#B4552E', name: 'Food and cooking', meta: 'Everyday English · B1–B2 · 28 words', why: 'A new interest' }
+    ].map((o) => ({ ...o,
+      checked: s.pick === o.id ? 'true' : 'false',
+      border: s.pick === o.id ? '#24463A' : '#E3DDD0',
+      bg: s.pick === o.id ? '#F1F6EF' : '#FFFFFF',
+      pick: () => this.setState({ pick: o.id }) }));
+    const cur = opts.find((o) => o.checked === 'true');
+    return { opts, cta: 'Plant ' + cur.name };
+  }
+}
+</script>
+</body>
+</html>
