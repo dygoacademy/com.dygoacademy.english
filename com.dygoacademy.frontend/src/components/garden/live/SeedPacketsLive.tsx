@@ -48,7 +48,7 @@ export function SeedPacketsLive({ topicId }: { topicId: string }) {
       onSelect={setPicked}
       onPlant={() => void onPlant()}
       planting={plant.isPending}
-      error={plant.isError ? t('error') : views.length === 0 ? t('empty') : null}
+      error={plant.isError ? t('error') : null}
     />
   );
 }

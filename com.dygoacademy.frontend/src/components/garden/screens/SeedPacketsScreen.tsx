@@ -62,6 +62,9 @@ export function SeedPacketsScreen({
 }: SeedPacketsScreenProps) {
   const t = useTranslations('screens.seedPackets');
   const selected = packets.find((p) => p.id === selectedId) ?? null;
+  // No bed left to offer (no board): the intro says so, and Browse all
+  // topics becomes the one button.
+  const empty = packets.length === 0;
 
   return (
     <div className="mx-auto flex min-h-screen-dvh w-full max-w-[560px] flex-col gap-[14px] overflow-hidden bg-bg px-[18px] pb-[26px] pt-5 text-text">
@@ -73,7 +76,9 @@ export function SeedPacketsScreen({
         </IconButton>
         <h1 className="grow font-display text-[24px] font-semibold leading-[1.15]">{t('title')}</h1>
       </div>
-      <p className="text-[15px] leading-[1.4] text-muted-foreground">{t('intro')}</p>
+      <p className="text-[15px] leading-[1.4] text-muted-foreground">
+        {empty ? t('empty') : t('intro')}
+      </p>
 
       <div role="radiogroup" aria-label={t('groupLabel')} className="flex flex-col gap-2.5">
         {packets.map((p) => {
@@ -110,27 +115,40 @@ export function SeedPacketsScreen({
       </div>
 
       <div className="mt-auto flex flex-col gap-1.5">
-        <button
-          type="button"
-          onClick={onPlant}
-          disabled={!selected || planting}
-          className={buttonClassName('primary', {
-            className: 'h-[56px] text-[16px] md:max-w-none',
-          })}
-        >
-          {selected ? t('plant', { bed: selected.name }) : t('pick')}
-        </button>
-        {error ? (
-          <p role="alert" className="text-center text-[13px] text-primary-text">
-            {error}
-          </p>
-        ) : null}
-        <Link
-          href={browseHref}
-          className="self-center p-2 text-[14px] font-semibold text-muted-foreground underline"
-        >
-          {t('browse')}
-        </Link>
+        {empty ? (
+          <Link
+            href={browseHref}
+            className={buttonClassName('primary', {
+              className: 'h-[56px] text-[16px] md:max-w-none',
+            })}
+          >
+            {t('browse')}
+          </Link>
+        ) : (
+          <>
+            <button
+              type="button"
+              onClick={onPlant}
+              disabled={!selected || planting}
+              className={buttonClassName('primary', {
+                className: 'h-[56px] text-[16px] md:max-w-none',
+              })}
+            >
+              {selected ? t('plant', { bed: selected.name }) : t('pick')}
+            </button>
+            {error ? (
+              <p role="alert" className="text-center text-[13px] text-primary-text">
+                {error}
+              </p>
+            ) : null}
+            <Link
+              href={browseHref}
+              className="self-center p-2 text-[14px] font-semibold text-muted-foreground underline"
+            >
+              {t('browse')}
+            </Link>
+          </>
+        )}
       </div>
     </div>
   );

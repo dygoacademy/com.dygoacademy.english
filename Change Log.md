@@ -1283,3 +1283,8 @@ Engineering-facing log of shipped fixes and changes, one dated entry per change.
 * **Files**: backend `srs/srs.service.ts` (`ACTIVE_BED_TOPIC`), `beds/beds.service.ts` (`CANDIDATES`), `quiz/quiz.service.spec.ts`, `speaking/speaking.service.spec.ts`.
 * **What**: Dylan on UAT (2026-10-23): "Plant 3 new words" opened "Plant 0 new words … No new words to plant right now". His account had no first bed and no `user_beds` row, so the app had no active bed to harvest, and every library word was already planted. The active bed now falls back to the bed of the word the learner planted last, so the Plant mission opens S2 Bed harvest for it. Seed packets now leave out beds with nothing left to plant (a fully planted bed was offered as "Follow the bee").
 * **Verified**: backend jest 594 passed; on UAT data (read-only, as that learner) the active bed resolves to Food and Beverage, which is fully planted.
+
+### Changed: S3 with no beds left reads as an end, not an error
+* **Files**: frontend `garden/screens/SeedPacketsScreen.tsx`, `live/SeedPacketsLive.tsx`, `screens/seedsHarvest.test.tsx`; `docs/design/QUESTIONS.md` (Q-26).
+* **What**: Dylan on UAT (2026-10-23): with no bed left to offer, S3 still said "Three beds picked for you", showed a greyed-out "Pick a packet" and put "No new beds…" in error red. Now the intro line itself says "No new beds to pick right now. Browse all topics to find one." and Browse all topics is the one clay button. Strings unchanged.
+* **Verified**: frontend `tsc --noEmit` clean; the Seeds & Harvest screen tests pass (9).

@@ -111,7 +111,7 @@ describe('SeedPacketsScreen (S3)', () => {
     );
   });
 
-  it('with no packets the button is off and the empty line shows', () => {
+  it('with no packets it says so and Browse all topics is the one button', () => {
     renderWithIntl(
       <SeedPacketsScreen
         backHref="/b"
@@ -120,17 +120,14 @@ describe('SeedPacketsScreen (S3)', () => {
         selectedId={null}
         onSelect={() => {}}
         onPlant={() => {}}
-        error="No new beds to pick right now. Browse all topics to find one."
       />,
     );
-    expect(
-      (
-        screen.getByRole('button', {
-          name: 'Pick a packet',
-        }) as HTMLButtonElement
-      ).disabled,
-    ).toBe(true);
-    expect(screen.getByRole('alert').textContent).toMatch(/No new beds/);
+    expect(screen.getByText(/No new beds to pick right now/)).toBeTruthy();
+    expect(screen.queryByText(/Three beds picked for you/)).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Pick a packet' })).toBeNull();
+    const links = screen.getAllByRole('link', { name: 'Browse all topics' });
+    expect(links).toHaveLength(1);
+    expect(links[0].getAttribute('href')).toBe('/topics');
   });
 });
 
@@ -220,11 +217,17 @@ describe('SeedDropScreen (S1)', () => {
     expect(screen.queryByText('phrase')).toBeNull();
     expect(screen.getByText('noun')).toBeTruthy();
     expect(screen.getByText('make something bad less likely to happen')).toBeTruthy();
-    expect(screen.getByText(/Your bed grows from/).textContent).toBe('Your bed grows from 5 words to 7');
-    expect((screen.getByRole('button', { name: 'Hear mitigation' }) as HTMLButtonElement).disabled).toBe(true);
-    expect(screen.getByRole('link', { name: 'Plant them now' }).getAttribute('href')).toBe('/review?new=2&seeds=w1');
-    expect(screen.getByRole('link', { name: "Later, in tomorrow's planting" }).getAttribute('href')).toBe(
-      '/review/done?watered=3',
+    expect(screen.getByText(/Your bed grows from/).textContent).toBe(
+      'Your bed grows from 5 words to 7',
     );
+    expect(
+      (screen.getByRole('button', { name: 'Hear mitigation' }) as HTMLButtonElement).disabled,
+    ).toBe(true);
+    expect(screen.getByRole('link', { name: 'Plant them now' }).getAttribute('href')).toBe(
+      '/review?new=2&seeds=w1',
+    );
+    expect(
+      screen.getByRole('link', { name: "Later, in tomorrow's planting" }).getAttribute('href'),
+    ).toBe('/review/done?watered=3');
   });
 });
