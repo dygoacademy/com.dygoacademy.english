@@ -1,4 +1,4 @@
-import { PLANT_FLOOR, planDay, tierFor } from './missions.plan';
+import { PLANT_FLOOR, THIRSTY_PLANT, planDay, tierFor } from './missions.plan';
 
 const day = (goal: number, due: number, opts: { speakable?: number; speakDay?: boolean } = {}) =>
   planDay({
@@ -35,10 +35,18 @@ describe('daily goal missions plan', () => {
   });
 
   it('watering takes time first: plant shrinks, never below the floor', () => {
-    // 10 min, 30 due: 600 − 300 − 120 = 180 s → 4 new words
-    expect(day(10, 30).missions[1]).toEqual({ type: 'LEARN_NEW', target: 4 });
-    // 10 min, 45 due: 600 − 450 − 120 < 0 → the floor
-    expect(day(10, 45).missions[1]).toEqual({ type: 'LEARN_NEW', target: PLANT_FLOOR });
+    // 30 min, 20 due: 1800 − 200 − 180 = 1420 s → 35, capped at the tier's 15
+    expect(day(30, 20).missions[1]).toEqual({ type: 'LEARN_NEW', target: 15 });
+    // 10 min, 15 due: 600 − 150 − 120 = 330 s → 8, capped at the tier's 5
+    expect(day(10, 15).missions[1]).toEqual({ type: 'LEARN_NEW', target: 5 });
+    // 5 min, 18 due: 300 − 180 − 60 = 60 s → 1 → the floor
+    expect(day(5, 18).missions[1]).toEqual({ type: 'LEARN_NEW', target: PLANT_FLOOR });
+  });
+
+  it('Seeds & Harvest: more than 20 thirsty words plant only 2', () => {
+    expect(day(10, 21).missions[1]).toEqual({ type: 'LEARN_NEW', target: THIRSTY_PLANT });
+    expect(day(30, 40).missions[1]).toEqual({ type: 'LEARN_NEW', target: THIRSTY_PLANT });
+    expect(day(10, 20).missions[1]).toEqual({ type: 'LEARN_NEW', target: 5 });
   });
 
   it('no Plant mission when watering alone fills the goal', () => {

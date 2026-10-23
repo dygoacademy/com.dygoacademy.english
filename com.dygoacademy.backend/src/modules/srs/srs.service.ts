@@ -1,6 +1,14 @@
-import { Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { InjectQueue } from '@nestjs/bullmq';
+import { Injectable, Logger, NotFoundException, Optional } from '@nestjs/common';
+import type { Queue } from 'bullmq';
 
 import { DatabaseService } from '../../database/database.service';
+import {
+  ENRICHMENT_QUEUE,
+  ENRICH_WORD_JOB,
+  type WordEnrichmentJob,
+} from '../../queues/queue.constants';
+import { dropSeeds, type DroppedSeed } from '../beds/seed-drops';
 import {
   MissionClient,
   localDateOf,
@@ -120,6 +128,8 @@ export interface RateWordResult {
    * passes through this existing per-card round trip.
    */
   just_mastered: boolean;
+  /** Seeds & Harvest: seeds this review's new fruit dropped (S1 shows them). */
+  seeds_dropped: number;
 }
 
 export interface LeechCard {
@@ -295,16 +305,21 @@ export const ACTIVE_BED_TOPIC =
   `coalesce((select ub.topic_id from public.user_beds ub where ub.user_id = auth.uid() and ub.status = 'active'), ` +
   `(select p.first_topic_id from public.profiles p where p.id = auth.uid()))`;
 
-// New cards from the learner's active bed sort first (findDue without a
-// topic); `is not distinct from` keeps it false, never null, when the
-// learner has no bed.
-const ACTIVE_BED_FIRST = `(tw.topic_id is not distinct from ${ACTIVE_BED_TOPIC}) desc`;
-
-// Words the learner added themselves sort before everything else (findDue
-// without a topic): they chose them, and library words are always older,
-// so oldest-first alone planted them last. `is not distinct from` for the
-// same never-null reason as ACTIVE_BED_FIRST (added_by can be null).
-const OWN_WORDS_FIRST = `(tw.added_by is not distinct from auth.uid()) desc`;
+// New cards, findDue without a topic (Seeds & Harvest Phase 2, planting
+// order): words the learner added themselves (they chose them, and library
+// words are always older, so oldest-first alone planted them last), then
+// their active bed's own words, then seeds dropped into the active bed,
+// then other dropped seeds, then the oldest words anywhere. A dropped seed
+// sits in My words with added_by = the learner, so it is checked first.
+// `is not distinct from` keeps the tests false, never null, when the
+// learner has no bed (added_by can be null too).
+const PLANTING_ORDER = `case
+           when exists (select 1 from public.seed_drops sd
+                         where sd.topic_word_id = tw.id and sd.bed_topic_id = ${ACTIVE_BED_TOPIC}) then 2
+           when exists (select 1 from public.seed_drops sd where sd.topic_word_id = tw.id) then 3
+           when tw.added_by is not distinct from auth.uid() then 0
+           when tw.topic_id is not distinct from ${ACTIVE_BED_TOPIC} then 1
+           else 4 end`;
 
 const MEANING_TRANSLATION_JOIN = `
   left join public.word_translations wt
@@ -322,7 +337,13 @@ const MEANING_TRANSLATION_JOIN = `
 export class SrsService {
   private readonly logger = new Logger(SrsService.name);
 
-  constructor(protected readonly db: DatabaseService) {}
+  constructor(
+    protected readonly db: DatabaseService,
+    // Optional so unit tests and tools that build SrsService alone don't need Redis.
+    @Optional()
+    @InjectQueue(ENRICHMENT_QUEUE)
+    private readonly enrichmentQueue?: Queue<WordEnrichmentJob>,
+  ) {}
 
   /**
    * FR-3.4's due-card queue: existing `user_word_srs` rows past their
@@ -348,6 +369,9 @@ export class SrsService {
    *
    * `newCap` caps the new cards (daily goal missions: a session plants at
    * most what is left of today's Plant mission; 0 = due reviews only).
+   *
+   * `seedsOf` (Seeds & Harvest S1 "Plant them now"): only the unplanted
+   * seeds that fruit word dropped; no due reviews, no topic.
    */
   async findDue(
     userId: string,
@@ -355,7 +379,12 @@ export class SrsService {
     limit = 50,
     newOnly = false,
     newCap = Number.POSITIVE_INFINITY,
+    seedsOf?: string,
   ): Promise<DueCard[]> {
+    if (seedsOf) {
+      topicId = undefined;
+      newOnly = true;
+    }
     const dueExisting = newOnly
       ? []
       : await this.db.queryAs<DueCard>(
@@ -405,9 +434,10 @@ export class SrsService {
             select 1 from public.user_word_srs uws where uws.topic_word_id = tw.id
           )
           ${topicId ? 'and tw.topic_id = $1' : ''}
-        order by ${topicId ? '' : `${OWN_WORDS_FIRST}, ${ACTIVE_BED_FIRST}, `}tw.created_at asc
+          ${seedsOf ? 'and tw.id in (select sd.topic_word_id from public.seed_drops sd where sd.dropped_by = $2)' : ''}
+        order by ${topicId ? '' : `${PLANTING_ORDER}, `}tw.created_at asc
         limit ${topicId ? '$2' : '$1'}`,
-      topicId ? [topicId, remaining] : [remaining],
+      topicId ? [topicId, remaining] : seedsOf ? [remaining, seedsOf] : [remaining],
     );
 
     return withRetrievability([...dueExisting, ...newCards], now);
@@ -498,7 +528,8 @@ export class SrsService {
     },
     now: Date,
   ): Promise<RateWordResult> {
-    return this.db.withUser(userId, async (client) => {
+    let seeds: DroppedSeed[] = [];
+    const result = await this.db.withUser(userId, async (client) => {
       // Confirms the word exists and is readable (topic_words_select via
       // can_read_topic) before doing anything else — a bad/foreign
       // topicWordId should 404, not silently no-op through the upsert below.
@@ -637,6 +668,7 @@ export class SrsService {
           was_correct: rating !== 'AGAIN',
           next_due_at: current.dueAt,
           just_mastered: false,
+          seeds_dropped: 0,
         };
       }
 
@@ -699,6 +731,20 @@ export class SrsService {
 
       const row = upserted.rows[0];
       await recordMissions(true);
+      // Seeds & Harvest Phase 2: a word turning fruit drops its seeds into
+      // the learner's garden. In a savepoint, so a failed drop never loses
+      // the review.
+      if (masteredBefore === null && row.mastered_at !== null) {
+        await client.query('savepoint seed_drops');
+        try {
+          seeds = await dropSeeds(client, userId, input.topicWordId);
+          await client.query('release savepoint seed_drops');
+        } catch (err) {
+          await client.query('rollback to savepoint seed_drops');
+          seeds = [];
+          this.logger.warn(`seed drop: ${String(err)}`);
+        }
+      }
       return {
         topic_word_id: input.topicWordId,
         rating,
@@ -714,8 +760,29 @@ export class SrsService {
         was_correct: rating !== 'AGAIN',
         next_due_at: row.next_due_at,
         just_mastered: masteredBefore === null && row.mastered_at !== null,
+        seeds_dropped: seeds.length,
       };
     });
+    await this.enrichSeeds(userId, seeds);
+    return result;
+  }
+
+  /**
+   * Seeds & Harvest: enrich dropped seeds like any added word, after the
+   * review committed. A queue hiccup leaves them ENRICHING (MaintenanceProcessor
+   * recovers them), never fails the review.
+   */
+  private async enrichSeeds(userId: string, seeds: DroppedSeed[]): Promise<void> {
+    for (const seed of seeds) {
+      await this.enrichmentQueue
+        ?.add(ENRICH_WORD_JOB, {
+          topicWordId: seed.topic_word_id,
+          word: seed.source_word,
+          languageCode: seed.language_code,
+          triggeredByUserId: userId,
+        })
+        .catch((err: unknown) => this.logger.warn(`seed enrichment: ${String(err)}`));
+    }
   }
 
   /** FR-3.3 — the remedial queue. Reads the stored `is_leech` flag, not a live aggregate (set in `applyReview`). */
@@ -918,13 +985,20 @@ export class SrsService {
   /** FR-4.3 — see StartSessionDto's header comment for why this has no persisted "session" row. */
   async startSession(userId: string, dto: StartSessionDto): Promise<SessionResult> {
     const mode: SessionMode = dto.mode ?? 'STANDARD';
-    const newCap = dto.dueOnly ? 0 : await this.newWordAllowance(userId);
+    // S1 "Plant them now" plants the seeds the learner just saw, whatever
+    // is left of today's Plant mission.
+    const newCap = dto.seedsOf
+      ? Number.POSITIVE_INFINITY
+      : dto.dueOnly
+        ? 0
+        : await this.newWordAllowance(userId);
     const cards = await this.findDue(
       userId,
       dto.topicId,
       dto.limit ?? 20,
       dto.newOnly ?? false,
       newCap,
+      dto.seedsOf,
     );
     return { mode, cards };
   }

@@ -3,7 +3,8 @@
  * learner's `daily_goal_minutes` picks a tier, and a time budget sizes the
  * day. Watering is counted first; what's left buys new words (never below
  * PLANT_FLOOR), and a day whose watering alone fills the goal has no Plant
- * mission at all, so reviews can't snowball. Pure, so it is unit tested
+ * mission at all, so reviews can't snowball. Seeds & Harvest: with more
+ * than THIRSTY_LIMIT due words a day plants at most THIRSTY_PLANT. Pure, so it is unit tested
  * without a database.
  */
 
@@ -14,6 +15,14 @@ export const PACE = { review: 10, newWord: 40, quizQuestion: 12, speakSentence: 
 
 /** Least new words on a day that isn't a catch-up day. */
 export const PLANT_FLOOR = 3;
+
+/**
+ * Seeds & Harvest: more than this many words due at the day's first read
+ * and the day plants at most THIRSTY_PLANT, so watering never becomes a wall
+ * (plan, "Daily planting"; Phase 4 tunes both).
+ */
+export const THIRSTY_LIMIT = 20;
+export const THIRSTY_PLANT = 2;
 
 /** Fewest words with a speaking item for a SPEAK mission. */
 export const SPEAK_MIN = 3;
@@ -90,6 +99,7 @@ export function planDay({ goalMinutes, dueCount, speakable, speakDay }: DayPlanI
   if (waterSeconds < budget) {
     const left = Math.floor((budget - waterSeconds - practiceSeconds) / PACE.newWord);
     plant = Math.min(tier.plant, Math.max(PLANT_FLOOR, left));
+    if (due > THIRSTY_LIMIT) plant = Math.min(plant, THIRSTY_PLANT);
   }
 
   const missions: Array<{ type: MissionType; target: number }> = [

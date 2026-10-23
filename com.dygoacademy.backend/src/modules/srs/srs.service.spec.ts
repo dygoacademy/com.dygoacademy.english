@@ -1,7 +1,9 @@
+import { getQueueToken } from '@nestjs/bullmq';
 import { NotFoundException } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 
 import { DatabaseService } from '../../database/database.service';
+import { ENRICHMENT_QUEUE, ENRICH_WORD_JOB } from '../../queues/queue.constants';
 import {
   DEFAULT_TIMEZONE,
   SrsService,
@@ -127,17 +129,18 @@ describe('SrsService.findDue', () => {
     expect(secondSql).not.toMatch(/first_topic_id|user_beds/);
   });
 
-  it("without a topic, the learner's own words come first, then their active bed", async () => {
+  it("without a topic: own words, the active bed, its dropped seeds, other seeds, then the rest", async () => {
     const queryAsMock = jest.fn().mockResolvedValueOnce([]);
     const service = await makeService(queryAsMock);
 
     await service.findDue('user-1', undefined, 5, true);
 
     const [, sql] = queryAsMock.mock.calls[0];
-    expect(sql).toMatch(
-      /order by \(tw\.added_by is not distinct from auth\.uid\(\)\) desc, \(tw\.topic_id is not distinct from\s+coalesce\(\(select ub\.topic_id from public\.user_beds ub where ub\.user_id = auth\.uid\(\) and ub\.status = 'active'\), \(select p\.first_topic_id/,
-    );
-    expect(sql).toMatch(/\) desc, tw\.created_at asc/);
+    const order = String(sql).slice(String(sql).indexOf('order by case'));
+    expect(order).toMatch(/sd\.bed_topic_id = coalesce\(\(select ub\.topic_id from public\.user_beds ub[\s\S]+?\)\)\) then 2/);
+    expect(order).toMatch(/where sd\.topic_word_id = tw\.id\) then 3/);
+    expect(order).toMatch(/when tw\.added_by is not distinct from auth\.uid\(\) then 0/);
+    expect(order).toMatch(/when tw\.topic_id is not distinct from coalesce\([\s\S]+\) then 1\s+else 4 end, tw\.created_at asc/);
   });
 
   it('with a topic, new cards keep plain oldest-first order', async () => {
@@ -401,6 +404,59 @@ describe('SrsService.rate (Phase 10 — FSRS)', () => {
     expect(result.scheduled_days).toBeGreaterThan(1); // HARD grows, no 1-day trap
   });
 
+  it('Seeds & Harvest: a word turning fruit drops its seeds, enriched after the review commits', async () => {
+    const queryMock = txMock({ state: reviewRow() });
+    queryMock.mockImplementation((sql: string) => {
+      if (/my_words_topic_id/.test(sql)) return Promise.resolve({ rows: [{ id: 'my-words' }] });
+      if (/from public\.word_relations/.test(sql))
+        return Promise.resolve({ rows: [{ related_word: 'mitigation', kind: 'family' }] });
+      if (/insert into public\.topic_words/.test(sql))
+        return Promise.resolve({
+          rows: [{ topic_word_id: 'seed-1', source_word: 'mitigation', language_code: 'en' }],
+        });
+      return Promise.resolve({ rows: [{ n: '3' }] });
+    });
+    const add = jest.fn().mockResolvedValue(undefined);
+    const moduleRef = await Test.createTestingModule({
+      providers: [
+        SrsService,
+        { provide: DatabaseService, useValue: { queryAs: jest.fn(), withUser: withUserOf(queryMock) } },
+        { provide: getQueueToken(ENRICHMENT_QUEUE), useValue: { add } },
+      ],
+    }).compile();
+    const service = moduleRef.get(SrsService);
+
+    const result = await service.rate('user-1', { topicWordId: 'w1', rating: 'GOOD' }, NOW);
+
+    expect(result.just_mastered).toBe(true);
+    expect(result.seeds_dropped).toBe(1);
+    const sqls = queryMock.mock.calls.map((c) => String(c[0]));
+    expect(sqls).toContain('savepoint seed_drops');
+    expect(sqls).toContain('release savepoint seed_drops');
+    expect(add).toHaveBeenCalledWith(ENRICH_WORD_JOB, {
+      topicWordId: 'seed-1',
+      word: 'mitigation',
+      languageCode: 'en',
+      triggeredByUserId: 'user-1',
+    });
+  });
+
+  it('Seeds & Harvest: a failed drop rolls back to its savepoint and keeps the review', async () => {
+    const queryMock = txMock({ state: reviewRow() });
+    queryMock.mockImplementation((sql: string) =>
+      /my_words_topic_id/.test(sql)
+        ? Promise.reject(new Error('boom'))
+        : Promise.resolve({ rows: [{ n: '3' }] }),
+    );
+    const service = await makeService(jest.fn(), withUserOf(queryMock));
+
+    const result = await service.rate('user-1', { topicWordId: 'w1', rating: 'GOOD' }, NOW);
+
+    expect(result.just_mastered).toBe(true);
+    expect(result.seeds_dropped).toBe(0);
+    expect(queryMock.mock.calls.map((c) => String(c[0]))).toContain('rollback to savepoint seed_drops');
+  });
+
   it('mastery is sticky: an already-mastered word stays mastered on a success, without re-announcing it', async () => {
     const masteredAt = new Date(NOW.getTime() - 30 * DAY);
     const queryMock = txMock({ state: reviewRow({ mastered_at: masteredAt }) });
@@ -427,7 +483,10 @@ describe('SrsService.rate (Phase 10 — FSRS)', () => {
 
   describe('daily missions (UI-6 U6-2)', () => {
     const missionSql = (m: jest.Mock) =>
-      m.mock.calls.slice(6).map((c) => [String(c[0]), c[1] as unknown[]] as const);
+      m.mock.calls
+        .slice(6)
+        .filter((c) => !/seed_drops|my_words_topic_id/.test(String(c[0])))
+        .map((c) => [String(c[0]), c[1] as unknown[]] as const);
 
     it('a graded review of a due card bumps REVIEW_DUE in the same transaction', async () => {
       const queryMock = txMock({ state: reviewRow() });
@@ -1148,6 +1207,7 @@ describe('SrsService.sync', () => {
         was_correct: true,
         next_due_at: new Date(),
         just_mastered: false,
+        seeds_dropped: 0,
       });
 
     const results = await service.sync('user-1', {

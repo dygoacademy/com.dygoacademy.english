@@ -1,8 +1,17 @@
-import { Body, Controller, Get, Param, ParseUUIDPipe, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Param,
+  ParseUUIDPipe,
+  Post,
+} from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
-import { BedHarvest, BedState, BedsService, SeedPackets } from './beds.service';
+import { BedHarvest, BedState, BedsService, SeedDrop, SeedPackets } from './beds.service';
 import { PlantBedDto } from './dto/plant-bed.dto';
 
 @ApiBearerAuth()
@@ -34,6 +43,36 @@ export class BedsController {
   })
   async packets(@CurrentUser('id') userId: string): Promise<SeedPackets> {
     return this.beds.packets(userId);
+  }
+
+  @Get('seed-drops/next')
+  @ApiOperation({
+    summary: 'The oldest seed drop not shown yet (S1 Fruit drops seeds)',
+    description:
+      'A review that turns a word into fruit drops up to 2 related words (reviewed ' +
+      "`word_relations`) into the learner's garden. null when every drop was seen.",
+  })
+  async nextDrop(@CurrentUser('id') userId: string): Promise<SeedDrop | null> {
+    return this.beds.nextDrop(userId);
+  }
+
+  @Get('seed-drops/:droppedBy')
+  @ApiOperation({ summary: 'The seeds one fruit word dropped (S1)' })
+  async drop(
+    @CurrentUser('id') userId: string,
+    @Param('droppedBy', ParseUUIDPipe) droppedBy: string,
+  ): Promise<SeedDrop> {
+    return this.beds.drop(userId, droppedBy);
+  }
+
+  @Post('seed-drops/:droppedBy/seen')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiOperation({ summary: 'S1 was shown for this drop' })
+  async seen(
+    @CurrentUser('id') userId: string,
+    @Param('droppedBy', ParseUUIDPipe) droppedBy: string,
+  ): Promise<void> {
+    await this.beds.markDropSeen(userId, droppedBy);
   }
 
   @Get(':topicId/harvest')

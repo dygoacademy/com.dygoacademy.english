@@ -717,6 +717,12 @@ Seeds & Harvest Phase 1 (`20261023_user_beds.sql`): the beds a learner has plant
 
 ---
 
+#### `word_relations` and `seed_drops`
+
+Seeds & Harvest Phase 2 (`20261024_seed_drops.sql`). `word_relations (lexicon_id, related_word, kind pairing|family|synonym, rank, reviewed_at)`, unique per `(lexicon_id, related_word)`: content, written by `service_role` only (`npm run relations-import`); learners read reviewed rows only, so a draft never drops. `seed_drops (user_id, topic_word_id, bed_topic_id, dropped_by, kind, seen_at)`, primary key `(user_id, topic_word_id)`: when a review first sets `mastered_at`, up to 2 relations become topic words in the learner's My words bed (enriched like added words), tied to the fruit word's bed. Owner-only SELECT / INSERT / UPDATE, no DELETE. A bed's planting state and S2 harvest count its seeds as its words.
+
+---
+
 ### Notifications
 
 #### `study_schedules`

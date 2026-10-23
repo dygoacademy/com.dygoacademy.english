@@ -17,9 +17,9 @@ import {
 export interface BedState {
   topic_id: string;
   title: string;
-  /** READY words in the bed. */
+  /** READY words in the bed, plus the seeds the learner's fruit dropped into it. */
   word_count: number;
-  /** READY words the learner hasn't planted yet. */
+  /** Of those, the ones not planted yet (a seed still enriching counts). */
   unplanted_count: number;
   /** Every word is planted (S2 Bed harvest shows). */
   harvest_ready: boolean;
@@ -34,7 +34,7 @@ export interface BedHarvest extends BedState {
   fruit: number;
   ripe: number;
   growing: number;
-  /** Every planted word, fruit first, then ripe, then growing (oldest first within). */
+  /** Every planted word (dropped seeds too), fruit first, then ripe, then growing (oldest first within). */
   words: Array<{ topic_word_id: string; word: string; stage: HarvestStage }>;
 }
 
@@ -57,14 +57,65 @@ export interface SeedPackets {
   target_band: number | null;
 }
 
+/** S1 Fruit drops seeds: the seeds one fruit word dropped. */
+export interface SeedDrop {
+  dropped_by: { topic_word_id: string; word: string };
+  bed: { topic_id: string; title: string };
+  /** The bed's words before and after these seeds ("grows from 5 words to 7"). */
+  bed_words_before: number;
+  bed_words_after: number;
+  seeds: Array<{
+    topic_word_id: string;
+    word: string;
+    kind: 'pairing' | 'family' | 'synonym';
+    part_of_speech: string | null;
+    /** English definition; null while the seed is still enriching. */
+    meaning: string | null;
+    audio_url: string | null;
+  }>;
+}
+
+const DROP_HEAD = `
+  select sd.dropped_by as topic_word_id, coalesce(mf.normalized_word, f.source_word) as word,
+         t.id as bed_topic_id, t.title as bed_title
+    from public.seed_drops sd
+    join public.topic_words f on f.id = sd.dropped_by
+    left join public.master_lexicon mf on mf.id = f.lexicon_id
+    join public.topics t on t.id = sd.bed_topic_id`;
+
+// The seed's lexicon entry, or the one with its spelling while the
+// enrichment job hasn't linked it yet.
+const DROP_SEEDS = `
+  select sd.topic_word_id, s.source_word as word, sd.kind,
+         ml.part_of_speech, ml.definition_en as meaning, ml.audio_url
+    from public.seed_drops sd
+    join public.topic_words s on s.id = sd.topic_word_id
+    left join public.master_lexicon ml
+           on ml.id = coalesce(s.lexicon_id,
+                               (select m.id from public.master_lexicon m
+                                 where m.normalized_word = lower(trim(s.source_word))
+                                   and m.language_code = s.language_code))
+   where sd.dropped_by = $1 and s.status <> 'FAILED'
+   order by case sd.kind when 'pairing' then 0 when 'family' then 1 else 2 end, s.created_at`;
+
+// A bed's words for this learner: its READY words plus the seeds their
+// fruit dropped into it (Phase 2; seed_drops is RLS-scoped, so only theirs).
+// A seed still enriching counts as queued, so the bed isn't harvested yet.
+const BED_WORDS = `
+    select tw.id from public.topic_words tw where tw.topic_id = t.id and tw.status = 'READY'
+    union
+    select sd.topic_word_id from public.seed_drops sd
+      join public.topic_words s on s.id = sd.topic_word_id
+     where sd.bed_topic_id = t.id and s.status <> 'FAILED'`;
+
 // uws is RLS-scoped to the caller, so `uws.id is null` = not planted by them.
 const BED_STATE = `
   select t.id as topic_id, t.title,
-         count(tw.id)::int as word_count,
-         count(tw.id) filter (where uws.id is null)::int as unplanted_count
+         count(w.id)::int as word_count,
+         count(w.id) filter (where uws.id is null)::int as unplanted_count
     from public.topics t
-    left join public.topic_words tw on tw.topic_id = t.id and tw.status = 'READY'
-    left join public.user_word_srs uws on uws.topic_word_id = tw.id
+    left join lateral (${BED_WORDS}) w on true
+    left join public.user_word_srs uws on uws.topic_word_id = w.id
    where t.id = $1
    group by t.id`;
 
@@ -125,10 +176,12 @@ export class BedsService {
                   case when uws.mastered_at is not null then 'fruit'
                        when uws.fsrs_state = 'Review' and not uws.is_leech then 'ripe'
                        else 'growing' end as stage
-             from public.topic_words tw
+             from public.topics t
+             cross join lateral (${BED_WORDS}) w
+             join public.topic_words tw on tw.id = w.id
              join public.user_word_srs uws on uws.topic_word_id = tw.id
              left join public.master_lexicon ml on ml.id = tw.lexicon_id
-            where tw.topic_id = $1 and tw.status = 'READY'
+            where t.id = $1
             order by case when uws.mastered_at is not null then 0
                           when uws.fsrs_state = 'Review' and not uws.is_leech then 1
                           else 2 end,
@@ -151,6 +204,34 @@ export class BedsService {
         words,
       };
     });
+  }
+
+  /** S1: the oldest seed drop the learner hasn't seen yet, or null. */
+  async nextDrop(userId: string): Promise<SeedDrop | null> {
+    return this.db.withUser(userId, async (client) => {
+      const head = await client.query<{ topic_word_id: string }>(
+        `${DROP_HEAD} where sd.seen_at is null order by sd.created_at, sd.dropped_by limit 1`,
+      );
+      return head.rows[0] ? seedDrop(client, head.rows[0].topic_word_id) : null;
+    });
+  }
+
+  /** S1: the seeds `droppedBy` (a fruit topic word) dropped. */
+  async drop(userId: string, droppedBy: string): Promise<SeedDrop> {
+    return this.db.withUser(userId, async (client) => {
+      const drop = await seedDrop(client, droppedBy);
+      if (!drop) throw new NotFoundException('Seed drop not found.');
+      return drop;
+    });
+  }
+
+  /** S1 was shown: the drop no longer comes back from nextDrop. */
+  async markDropSeen(userId: string, droppedBy: string): Promise<void> {
+    await this.db.queryAs(
+      userId,
+      `update public.seed_drops set seen_at = now() where dropped_by = $1 and seen_at is null`,
+      [droppedBy],
+    );
   }
 
   /** S3: the 3 seed packets for the next bed (beds.plan.ts pickPackets). */
@@ -252,4 +333,26 @@ async function activeTopicId(client: PoolClient): Promise<string | null> {
 async function bedState(client: PoolClient, topicId: string): Promise<BedState | null> {
   const res = await client.query<BedState>(BED_STATE, [topicId]);
   return res.rows[0] ? toState(res.rows[0]) : null;
+}
+
+async function seedDrop(client: PoolClient, droppedBy: string): Promise<SeedDrop | null> {
+  const head = (
+    await client.query<{
+      topic_word_id: string;
+      word: string;
+      bed_topic_id: string;
+      bed_title: string;
+    }>(`${DROP_HEAD} where sd.dropped_by = $1 limit 1`, [droppedBy])
+  ).rows[0];
+  if (!head) return null;
+  const seeds = (await client.query<SeedDrop['seeds'][number]>(DROP_SEEDS, [droppedBy])).rows;
+  const bed = await bedState(client, head.bed_topic_id);
+  const after = bed?.word_count ?? seeds.length;
+  return {
+    dropped_by: { topic_word_id: head.topic_word_id, word: head.word },
+    bed: { topic_id: head.bed_topic_id, title: head.bed_title },
+    bed_words_before: Math.max(0, after - seeds.length),
+    bed_words_after: after,
+    seeds,
+  };
 }

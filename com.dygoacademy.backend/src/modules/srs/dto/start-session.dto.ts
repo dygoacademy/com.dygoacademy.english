@@ -52,4 +52,13 @@ export class StartSessionDto {
   @IsOptional()
   @IsBoolean()
   dueOnly?: boolean;
+
+  @ApiPropertyOptional({
+    description:
+      'Seeds & Harvest S1 "Plant them now": only the unplanted seeds this fruit word ' +
+      "(topic word id) dropped; ignores topicId, due reviews and today's Plant mission cap.",
+  })
+  @IsOptional()
+  @IsUUID('loose')
+  seedsOf?: string;
 }
