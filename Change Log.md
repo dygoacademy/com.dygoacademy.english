@@ -1278,3 +1278,8 @@ Engineering-facing log of shipped fixes and changes, one dated entry per change.
 * **Files**: new `database/content/word_relations_draft.csv`.
 * **What**: A first draft of pairings, word family and synonyms (3 per word, 81 rows) for the 27 words in the 5 library beds that have words on UAT, for an editor to check. Every row has `reviewed` blank, so importing it (`npm run relations-import -- ../database/content/word_relations_draft.csv`) drops nothing until rows are marked `yes` and imported again.
 * **Verified**: imported into a throwaway database built from the fixtures (6 rows for the 2 fixture words, the rest reported as not in that lexicon), then dropped.
+
+### Fixed: Plant mission led to an empty session for a learner with no bed
+* **Files**: backend `srs/srs.service.ts` (`ACTIVE_BED_TOPIC`), `beds/beds.service.ts` (`CANDIDATES`), `quiz/quiz.service.spec.ts`, `speaking/speaking.service.spec.ts`.
+* **What**: Dylan on UAT (2026-10-23): "Plant 3 new words" opened "Plant 0 new words … No new words to plant right now". His account had no first bed and no `user_beds` row, so the app had no active bed to harvest, and every library word was already planted. The active bed now falls back to the bed of the word the learner planted last, so the Plant mission opens S2 Bed harvest for it. Seed packets now leave out beds with nothing left to plant (a fully planted bed was offered as "Follow the bee").
+* **Verified**: backend jest 594 passed; on UAT data (read-only, as that learner) the active bed resolves to Food and Beverage, which is fully planted.

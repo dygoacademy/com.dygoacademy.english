@@ -119,8 +119,8 @@ const BED_STATE = `
    where t.id = $1
    group by t.id`;
 
-// Public beds the learner never planted from, with how many of their words
-// are already in the learner's garden. $1 = goal title pattern (or null).
+// Public beds the learner never planted from and with words left to plant,
+// with how many of their words are already in the learner's garden. $1 = goal title pattern (or null).
 const CANDIDATES = `
   with mine as (
     select distinct tw.lexicon_id
@@ -146,7 +146,9 @@ const CANDIDATES = `
     left join public.master_lexicon ml on ml.id = tw.lexicon_id
    where t.is_public and not t.is_my_words
      and t.id not in (select topic_id from used)
-   group by t.id, g.name, g.library_shelf`;
+   group by t.id, g.name, g.library_shelf
+  having count(tw.id) filter (where not exists (
+           select 1 from public.user_word_srs uws where uws.topic_word_id = tw.id)) > 0`;
 
 function toState(row: BedState): BedState {
   return { ...row, harvest_ready: row.word_count > 0 && row.unplanted_count === 0 };

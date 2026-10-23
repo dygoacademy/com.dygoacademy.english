@@ -297,13 +297,17 @@ const DUE_CARD_COLUMNS = `
 /**
  * The caller's active bed (Seeds & Harvest: `user_beds` status active, the
  * bed picked from a seed packet), else their first bed (picked from their
- * goal at onboarding); null for learners who never had one. By auth.uid()
+ * goal at onboarding), else the bed of the word they planted last (a
+ * learner who never had either, e.g. signed up before onboarding); null
+ * for learners who never planted a library word. By auth.uid()
  * for the same reason as MEANING_TRANSLATION_JOIN below. Also used by Quiz
  * and Speaking to keep practice on the learner's own words.
  */
 export const ACTIVE_BED_TOPIC =
   `coalesce((select ub.topic_id from public.user_beds ub where ub.user_id = auth.uid() and ub.status = 'active'), ` +
-  `(select p.first_topic_id from public.profiles p where p.id = auth.uid()))`;
+  `(select p.first_topic_id from public.profiles p where p.id = auth.uid()), ` +
+  `(select lb.topic_id from public.user_word_srs lu join public.topic_words lb on lb.id = lu.topic_word_id ` +
+  `join public.topics lt on lt.id = lb.topic_id where not lt.is_my_words order by lu.created_at desc limit 1))`;
 
 // New cards, findDue without a topic (Seeds & Harvest Phase 2, planting
 // order): words the learner added themselves (they chose them, and library

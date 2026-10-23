@@ -91,7 +91,7 @@ describe('SpeakingService.session (The Pond)', () => {
     expect(calls[1].text).toMatch(/order by w\.due_now desc, w\.planted_at desc nulls last/);
     // Without a topic: planted words, or the first bed's (all words if none).
     expect(calls[1].text).toMatch(
-      /\$1::uuid is not null or coalesce\(s\.fsrs_state <> 'New', false\)\s+or coalesce\(\(select ub\.topic_id from public\.user_beds ub where ub\.user_id = auth\.uid\(\) and ub\.status = 'active'\), \(select p\.first_topic_id from public\.profiles p where p\.id = auth\.uid\(\)\)\) is null or tw\.topic_id = coalesce/,
+      /\$1::uuid is not null or coalesce\(s\.fsrs_state <> 'New', false\)\s+or coalesce\(\(select ub\.topic_id from public\.user_beds ub where ub\.user_id = auth\.uid\(\) and ub\.status = 'active'\), \(select p\.first_topic_id from public\.profiles p where p\.id = auth\.uid\(\)\), \(select lb\.topic_id [^)]*\)\) is null or tw\.topic_id = coalesce/,
     );
     expect(calls[0].text).toMatch(/\$1::uuid is not null or coalesce/);
     // One row per word, joined by lexicon_id (items belong to the word).

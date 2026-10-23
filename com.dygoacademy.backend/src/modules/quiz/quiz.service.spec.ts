@@ -139,10 +139,10 @@ describe('QuizService.generate', () => {
     const [, sql, params] = queryAsMock.mock.calls[0];
     expect(sql).toMatch(/left join public\.user_word_srs uws on uws\.topic_word_id = tw\.id/);
     expect(sql).toMatch(
-      /and \(coalesce\(uws\.fsrs_state <> 'New', false\) or coalesce\(\(select ub\.topic_id from public\.user_beds ub where ub\.user_id = auth\.uid\(\) and ub\.status = 'active'\), \(select p\.first_topic_id from public\.profiles p where p\.id = auth\.uid\(\)\)\) is null or tw\.topic_id = coalesce/,
+      /and \(coalesce\(uws\.fsrs_state <> 'New', false\) or coalesce\(\(select ub\.topic_id from public\.user_beds ub where ub\.user_id = auth\.uid\(\) and ub\.status = 'active'\), \(select p\.first_topic_id from public\.profiles p where p\.id = auth\.uid\(\)\), \(select lb\.topic_id [^)]*\)\) is null or tw\.topic_id = coalesce/,
     );
     expect(sql).toMatch(
-      /order by coalesce\(uws\.fsrs_state <> 'New', false\) desc,\s+coalesce\(uws\.is_leech or uws\.next_due_at <= now\(\), false\) desc,\s+\(tw\.topic_id is not distinct from coalesce\([^\n]+auth\.uid\(\)\)\)\) desc,\s+random\(\)/,
+      /order by coalesce\(uws\.fsrs_state <> 'New', false\) desc,\s+coalesce\(uws\.is_leech or uws\.next_due_at <= now\(\), false\) desc,\s+\(tw\.topic_id is not distinct from coalesce\([^\n]+limit 1\)\)\) desc,\s+random\(\)/,
     );
     expect(params).toEqual([40]);
   });
