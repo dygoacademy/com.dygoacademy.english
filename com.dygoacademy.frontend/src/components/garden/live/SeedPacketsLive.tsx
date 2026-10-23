@@ -1,15 +1,15 @@
-"use client";
+'use client';
 
-import * as React from "react";
-import { useRouter } from "next/navigation";
-import { useTranslations } from "next-intl";
+import * as React from 'react';
+import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 
-import { GARDEN_ROUTES } from "@/constants/garden";
-import { usePlantBed, useSeedPackets } from "@/hooks/useBeds";
+import { GARDEN_ROUTES } from '@/constants/garden';
+import { usePlantBed, useSeedPackets } from '@/hooks/useBeds';
 
-import { SeedPacketsScreen } from "../screens/SeedPacketsScreen";
-import { packetView } from "./beds";
-import { LiveError, LiveLoading } from "./LiveState";
+import { SeedPacketsScreen } from '../screens/SeedPacketsScreen';
+import { packetView } from './beds';
+import { LiveError, LiveLoading } from './LiveState';
 
 /**
  * /topics/[id]/packets: S3 from GET /beds/packets; the first packet starts
@@ -17,15 +17,14 @@ import { LiveError, LiveLoading } from "./LiveState";
  * new bed (A7). Back returns to the harvest of bed `topicId`.
  */
 export function SeedPacketsLive({ topicId }: { topicId: string }) {
-  const t = useTranslations("screens.seedPackets");
+  const t = useTranslations('screens.seedPackets');
   const router = useRouter();
   const packets = useSeedPackets();
   const plant = usePlantBed();
   const [picked, setPicked] = React.useState<string | null>(null);
 
   if (packets.isPending) return <LiveLoading />;
-  if (packets.isError || !packets.data)
-    return <LiveError onRetry={() => void packets.refetch()} />;
+  if (packets.isError || !packets.data) return <LiveError onRetry={() => void packets.refetch()} />;
 
   const views = packets.data.packets.map((p) => packetView(p, packets.data, t));
   const selectedId = picked ?? views[0]?.id ?? null;
@@ -49,9 +48,7 @@ export function SeedPacketsLive({ topicId }: { topicId: string }) {
       onSelect={setPicked}
       onPlant={() => void onPlant()}
       planting={plant.isPending}
-      error={
-        plant.isError ? t("error") : views.length === 0 ? t("empty") : null
-      }
+      error={plant.isError ? t('error') : views.length === 0 ? t('empty') : null}
     />
   );
 }

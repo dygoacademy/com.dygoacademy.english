@@ -2,6 +2,18 @@
 
 Things in `docs/design/garden/CHANGELOG.md` that are unclear, or that differ from what is built, written down instead of guessed (CHANGELOG "How to use this file", rule 5). Newest first. When one is answered, note the answer and date here and update the changelog.
 
+## 2026-10-24 · Seeds & Harvest Phase 2, S1 seed drops (Claude Code)
+
+| # | The plan says | What the build does | Question / suggestion |
+|---|---|---|---|
+| Q-36 | Plan question: should finished beds keep dropping seeds? | They do: fruit from a harvested bed still drops into that bed, as S2's note promises ("new fruit can still drop seeds"). Its seeds are planted after the active bed's. | OK? |
+| Q-35 | Plan question: should a dropped seed already in another bed move, or just be linked? | Neither: a word already in the learner's garden (planted anywhere), already in the fruit's bed, or already in their My words is never dropped. | OK? |
+| Q-34 | More than 20 thirsty → plant only 2. | Read as a cap: with more than 20 due at the day's first read, the Plant mission is at most 2. A day whose watering alone fills the goal still has no Plant mission (the daily goal rule). | Or should such a day always plant 2? |
+| Q-33 | S1 shows right after a review turns a word into fruit. | It shows when the watering session ends (before Mission complete), not in the middle of the cards; a word that turns fruit in a quiz drops its seeds, and S1 shows after the next watering session. Later and ✕ go on to Mission complete. | Show it mid-session, or after a quiz too? |
+| Q-32 | Seeds land in the same bed, tagged "dropped by mitigate". | Library beds are shared, so each seed is a word in the learner's own My words bed, linked to the fruit's bed: the bed's harvest and planting count it, but A7 (the bed page) doesn't list it or show the tag (no board). | Draw the tag and seed rows on A7? |
+| Q-31 | S1 kind tags: Pairing, Word family. | Synonym has no board; it uses the forest tag (`forest-wash` / `forest`). | Pick its colours. |
+| Q-30 | A1 Plant mission: "incl. 2 dropped seeds" note. | Not built: there is no board for it. | Draw it on A1 if wanted. |
+
 ## 2026-10-23 · Seeds & Harvest Phase 1, S2 and S3 (Claude Code)
 
 | # | The plan says | What the build does | Question / suggestion |

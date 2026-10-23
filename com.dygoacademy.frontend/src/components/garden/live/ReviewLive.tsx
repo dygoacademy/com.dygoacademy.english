@@ -4,6 +4,7 @@ import * as React from 'react';
 import { useTranslations } from 'next-intl';
 
 import { GARDEN_ROUTES } from '@/constants/garden';
+import { useNextSeedDrop } from '@/hooks/useBeds';
 import { type TodayMissions, useTodayMissions } from '@/hooks/useMissions';
 import { useRateWord } from '@/hooks/useRateWord';
 import { useStudySession } from '@/hooks/useStudySession';
@@ -28,7 +29,10 @@ import { LiveError, LiveLoading } from './LiveState';
  * (`word_translations`, joined server-side by `profiles.meaning_locale`);
  * it's simply absent for a word Gemini hasn't translated yet. Synonyms
  * come from the card's `synonyms`. At the end, "See your garden bloom"
- * carries this session's results to /review/done in the URL.
+ * carries this session's results to /review/done in the URL, through S1
+ * Fruit drops seeds first when a word turned fruit and dropped seeds
+ * (GET /beds/seed-drops/next). `seedsOf` (`/review?new=…&seeds=<word>`,
+ * S1 "Plant them now") plants only that fruit word's seeds.
  * (Phase 13's "Say this one?" offer was removed on 2026-10-06 for the
  * speaking entry-point redesign; The Pond is still at /sounds.)
  * With `newWords` (the "Plant new words" mission, `/review?new=<n>`) the
@@ -47,11 +51,14 @@ export function ReviewLive({
   newWords,
   limit,
   dueOnly = false,
+  seedsOf,
 }: {
   topicId?: string;
   newWords?: number;
   limit?: number;
   dueOnly?: boolean;
+  /** S1 "Plant them now": plant only the seeds this fruit topic word dropped. */
+  seedsOf?: string;
 }) {
   const t = useTranslations('screens.review');
   const live = useTranslations('screens.live');
@@ -62,10 +69,13 @@ export function ReviewLive({
     newWords ?? limit ?? 20,
     planting,
     !planting && dueOnly,
+    seedsOf,
   );
   const missions = useTodayMissions();
   const topics = useTopics();
   const rate = useRateWord();
+  const [sessionOver, setSessionOver] = React.useState(false);
+  const nextDrop = useNextSeedDrop(sessionOver);
   const { meaningLocale } = useGardenPreferences();
 
   const [cards, setCards] = React.useState<DueCard[] | null>(null);
@@ -96,8 +106,14 @@ export function ReviewLive({
 
   const total = cards.length;
   const finished = total > 0 && index >= total;
+  if (finished && !sessionOver) setSessionOver(true);
   const card = cards[Math.min(index, total - 1)];
   const topicTitle = card ? topics.data?.find((topic) => topic.id === card.topic_id)?.title : null;
+
+  // Seeds & Harvest S1: a word that turned fruit this session dropped seeds;
+  // show them before Mission complete. Ratings invalidate ['srs'], so the
+  // last card's drop is picked up once its rating lands.
+  const drop = nextDrop.data;
 
   const recalled = ratings.filter((r) => r.rating === 'good' || r.rating === 'easy');
   const minutes = Math.max(1, Math.round((Date.now() - startedAt.current) / 60_000));
@@ -110,6 +126,8 @@ export function ReviewLive({
     params.set('word', recalled[0].word);
     params.set('more', String(recalled.length - 1));
   }
+
+  const doneHref = `${GARDEN_ROUTES.reviewDone}?${params.toString()}`;
 
   return (
     <>
@@ -163,7 +181,11 @@ export function ReviewLive({
           setRevealed(false);
           setIndex((i) => i + 1);
         }}
-        bloomHref={`${GARDEN_ROUTES.reviewDone}?${params.toString()}`}
+        bloomHref={
+          drop
+            ? GARDEN_ROUTES.seedDrop(drop.bed.topic_id, drop.dropped_by.topic_word_id, doneHref)
+            : doneHref
+        }
         secondaryAction={{ label: t('backToGarden'), href: GARDEN_ROUTES.home }}
         emptyText={total === 0 ? t(planting ? emptyPlantKey(missions.data) : 'empty') : undefined}
       />

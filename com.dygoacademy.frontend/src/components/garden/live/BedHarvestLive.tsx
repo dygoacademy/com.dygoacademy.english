@@ -1,14 +1,14 @@
-"use client";
+'use client';
 
-import * as React from "react";
-import { useRouter } from "next/navigation";
-import { useTranslations } from "next-intl";
+import * as React from 'react';
+import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 
-import { GARDEN_ROUTES } from "@/constants/garden";
-import { useBedHarvest } from "@/hooks/useBeds";
+import { GARDEN_ROUTES } from '@/constants/garden';
+import { useBedHarvest } from '@/hooks/useBeds';
 
-import { BedHarvestScreen } from "../screens/BedHarvestScreen";
-import { LiveError, LiveLoading } from "./LiveState";
+import { BedHarvestScreen } from '../screens/BedHarvestScreen';
+import { LiveError, LiveLoading } from './LiveState';
 
 /**
  * /topics/[id]/harvest: S2 Bed harvest from GET /beds/:id/harvest. A bed
@@ -16,7 +16,7 @@ import { LiveError, LiveLoading } from "./LiveState";
  * uses the Web Share API with a line about the bed, else copies it.
  */
 export function BedHarvestLive({ topicId }: { topicId: string }) {
-  const t = useTranslations("screens.bedHarvest");
+  const t = useTranslations('screens.bedHarvest');
   const router = useRouter();
   const harvest = useBedHarvest(topicId);
   const [copied, setCopied] = React.useState(false);
@@ -27,14 +27,13 @@ export function BedHarvestLive({ topicId }: { topicId: string }) {
   }, [notReady, router, topicId]);
 
   if (harvest.isPending || notReady) return <LiveLoading />;
-  if (harvest.isError || !harvest.data)
-    return <LiveError onRetry={() => void harvest.refetch()} />;
+  if (harvest.isError || !harvest.data) return <LiveError onRetry={() => void harvest.refetch()} />;
   const h = harvest.data;
 
   async function share() {
-    const text = t("shareText", { count: h.words.length, bed: h.title });
+    const text = t('shareText', { count: h.words.length, bed: h.title });
     const url = window.location.origin;
-    if (typeof navigator.share === "function") {
+    if (typeof navigator.share === 'function') {
       try {
         await navigator.share({ text, url });
         return;

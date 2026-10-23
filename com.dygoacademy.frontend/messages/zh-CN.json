@@ -21,7 +21,8 @@
       "quiz": "测验",
       "privacy": "隐私与数据",
       "bedHarvest": "花圃收获",
-      "seedPackets": "选一包种子"
+      "seedPackets": "选一包种子",
+      "seedDrop": "果实掉下种子"
     },
     "update": {
       "available": "Dygo 有新版本了",
@@ -1738,6 +1739,23 @@
       "browse": "浏览全部主题",
       "error": "没能种下。请检查网络后重试。",
       "empty": "现在没有新的花圃可选。浏览全部主题找一个吧。"
+    },
+    "seedDrop": {
+      "close": "关闭",
+      "overline": "{bed}花圃",
+      "fruit": "结果",
+      "artLabel": "{word}结果了，掉下 {count} 颗种子落进土里",
+      "title": "<word></word> 掉下了 {count} 颗种子",
+      "subtitle": "从它长出来的单词。它们会种进你的{bed}花圃。",
+      "kind": {
+        "pairing": "搭配",
+        "family": "词族",
+        "synonym": "近义词"
+      },
+      "hear": "听 {word}",
+      "grows": "你的花圃从 <b>{before} 个单词长到 {after} 个</b>",
+      "plantNow": "现在就种",
+      "later": "以后，明天再种"
     }
   }
 }

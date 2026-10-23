@@ -500,6 +500,7 @@
     --stage-tree: #3e7f5a;
     --stage-tree-canopy: #7fa487;
     --stage-tree-fruit: #e0b04a;
+    --stage-dropped-seed: #c9a27a; /* S1 Fruit drops seeds: a falling seed */
     --stage-wilt: #a89f6b;
     --stage-wilt-light: #c2b47e; /* A4 wilting plant, right leaf */
     --stage-wilt-soil: #c9b98f; /* A4 wilting plant, soil */
@@ -1228,6 +1229,52 @@
   @media (prefers-reduced-motion: reduce) {
     .harvest-drop,
     .packet-rise {
+      animation: none;
+    }
+  }
+}
+
+/* Seeds & Harvest S1 (SeedDrop.dc.html): the fruit plant sways 3s (±2deg),
+   seeds fall 1.2s ease-in (the second .35s later), the seed cards rise in
+   after .9s. Reduced motion: still. */
+@keyframes seed-sway {
+  0%,
+  100% {
+    transform: rotate(-2deg);
+  }
+  50% {
+    transform: rotate(2deg);
+  }
+}
+@keyframes seed-fall {
+  0% {
+    transform: translateY(-40px);
+    opacity: 0;
+  }
+  60% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+@layer utilities {
+  .seed-sway {
+    transform-box: fill-box;
+    transform-origin: bottom center;
+    animation: seed-sway 3s ease-in-out infinite;
+  }
+  .seed-fall {
+    animation: seed-fall 1.2s ease-in both;
+  }
+  .seed-cards-rise {
+    animation: packet-rise 0.3s ease-out 0.9s both;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .seed-sway,
+    .seed-fall,
+    .seed-cards-rise {
       animation: none;
     }
   }

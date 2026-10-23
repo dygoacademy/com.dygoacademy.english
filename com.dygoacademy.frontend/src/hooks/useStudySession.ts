@@ -20,9 +20,11 @@ export function useStudySession(
   limit = 20,
   newOnly = false,
   dueOnly = false,
+  /** Seeds & Harvest S1 "Plant them now": the seeds this fruit topic word dropped. */
+  seedsOf?: string,
 ) {
   return useQuery({
-    queryKey: ['srs', 'sessions', topicId ?? 'all', mode, limit, newOnly, dueOnly],
+    queryKey: ['srs', 'sessions', topicId ?? 'all', mode, limit, newOnly, dueOnly, seedsOf ?? ''],
     // `newOnly` / `dueOnly` are only sent when set, so older backends still accept the body.
     queryFn: () =>
       apiClient.post<SrsSession>('/srs/sessions', {
@@ -31,6 +33,7 @@ export function useStudySession(
         limit,
         ...(newOnly ? { newOnly } : {}),
         ...(dueOnly ? { dueOnly } : {}),
+        ...(seedsOf ? { seedsOf } : {}),
       }),
   });
 }

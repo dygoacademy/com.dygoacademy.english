@@ -53,6 +53,20 @@ when `mastered_at` is first set, planting order bed words then dropped seeds, th
 seeds" note on A1, and the "more than 20 thirsty → plant 2" rule. Content: pairings and word family
 for the 20 most-used beds. Gate: relations reviewed by an editor; dropped seeds have native audio.
 
+### Phase 2 as built (2026-10-24)
+
+- `word_relations (lexicon_id, related_word, kind, rank, reviewed_at)`; learners only read reviewed rows.
+  Load with `npm run relations-import -- file.csv` (columns `word, related, kind, rank, reviewed`).
+- A review that first sets `mastered_at` drops up to 2 relations (pairing, family, synonym) not already
+  in the garden. Each seed is a topic word in the learner's My words bed with a `seed_drops` row
+  (fruit word, its bed), enriched like an added word. In a savepoint: a failed drop never loses the review.
+- Planting order: own added words, active bed, its seeds, other seeds, the rest. A bed with seeds queued
+  isn't ready to harvest.
+- S1 at `/topics/[id]/seeds?word=<fruit>` when a watering session ends; Plant them now plants just
+  those seeds (`/review?new=N&seeds=<fruit>`).
+- More than 20 due → the Plant mission is at most 2.
+- Not built (no board): the A1 "incl. 2 dropped seeds" note, the "dropped by" tag on A7.
+
 ## Phase 3 and 4
 
 Phase 3: relations for all words, synonyms, Vietnamese and iPad boards for S1–S3. Phase 4: tune the

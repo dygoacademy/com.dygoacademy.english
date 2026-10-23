@@ -9,6 +9,8 @@ import { ReviewLive } from '@/components/garden/live/ReviewLive';
  * waters only the n most overdue words (A5b "Quick start"). Without
  * `new`, a session waters due words only, no seeds (daily goal missions,
  * 2026-10-15: watering never plants); `?due=1` is kept for old links.
+ * `?seeds=<topic word>` (with `new`) plants the seeds that fruit word
+ * dropped (Seeds & Harvest S1).
  */
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations('garden.pages');
@@ -20,7 +22,9 @@ export default async function GardenReviewPage({
 }: {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
-  const { topic, new: plant, limit: first } = await searchParams;
+  const { topic, new: plant, limit: first, seeds } = await searchParams;
+  // S1 "Plant them now": one fruit word's dropped seeds.
+  const seedsOf = typeof seeds === 'string' && seeds ? seeds : undefined;
   const topicId = typeof topic === 'string' && topic ? topic : undefined;
   const plantCount = typeof plant === 'string' ? Number.parseInt(plant, 10) : NaN;
   const newWords = Number.isFinite(plantCount) ? Math.min(Math.max(plantCount, 1), 20) : undefined;
@@ -34,11 +38,12 @@ export default async function GardenReviewPage({
   // Keyed so switching beds (or watering ↔ planting, or the batch size) starts a fresh session.
   return (
     <ReviewLive
-      key={`${topicId ?? 'all'}:${newWords ?? 'due'}:${limit ?? 20}:${dueOnly ? 'd' : ''}`}
+      key={`${topicId ?? 'all'}:${newWords ?? 'due'}:${limit ?? 20}:${dueOnly ? 'd' : ''}:${seedsOf ?? ''}`}
       topicId={topicId}
       newWords={newWords}
       limit={limit}
       dueOnly={dueOnly}
+      seedsOf={seedsOf}
     />
   );
 }

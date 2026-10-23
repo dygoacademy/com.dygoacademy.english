@@ -15,7 +15,7 @@ export interface BedState {
   harvest_ready: boolean;
 }
 
-export type HarvestStage = "fruit" | "ripe" | "growing";
+export type HarvestStage = 'fruit' | 'ripe' | 'growing';
 
 /** `GET /beds/:topicId/harvest` (S2). */
 export interface BedHarvest extends BedState {
@@ -27,7 +27,7 @@ export interface BedHarvest extends BedState {
   words: Array<{ topic_word_id: string; word: string; stage: HarvestStage }>;
 }
 
-export type SeedPacketKind = "bee" | "goal" | "new";
+export type SeedPacketKind = 'bee' | 'goal' | 'new';
 
 export interface SeedPacket {
   kind: SeedPacketKind;
@@ -47,4 +47,23 @@ export interface SeedPackets {
   packets: SeedPacket[];
   study_goal: string | null;
   target_band: number | null;
+}
+
+export type SeedKind = 'pairing' | 'family' | 'synonym';
+
+/** `GET /beds/seed-drops/next`, `GET /beds/seed-drops/:droppedBy` (S1). */
+export interface SeedDrop {
+  dropped_by: { topic_word_id: string; word: string };
+  bed: { topic_id: string; title: string };
+  bed_words_before: number;
+  bed_words_after: number;
+  seeds: Array<{
+    topic_word_id: string;
+    word: string;
+    kind: SeedKind;
+    part_of_speech: string | null;
+    /** English definition; null while the seed is still enriching. */
+    meaning: string | null;
+    audio_url: string | null;
+  }>;
 }

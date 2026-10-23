@@ -17,7 +17,8 @@
       "quiz": "Quiz",
       "privacy": "Privacy & data",
       "bedHarvest": "Bed harvest",
-      "seedPackets": "Pick a seed packet"
+      "seedPackets": "Pick a seed packet",
+      "seedDrop": "Fruit drops seeds"
     },
     "update": {
       "available": "There’s a new version of Dygo.",
@@ -1734,6 +1735,23 @@
       "browse": "Browse all topics",
       "error": "That didn’t plant. Check your connection and try again.",
       "empty": "No new beds to pick right now. Browse all topics to find one."
+    },
+    "seedDrop": {
+      "close": "Close",
+      "overline": "{bed} bed",
+      "fruit": "FRUIT",
+      "artLabel": "The {word} plant bears fruit and drops {count, plural, one {a seed} other {# seeds}} into the soil",
+      "title": "<word></word> dropped {count, plural, one {a seed} other {# seeds}}",
+      "subtitle": "Words that grow from it. They'll be planted in your {bed} bed.",
+      "kind": {
+        "pairing": "Pairing",
+        "family": "Word family",
+        "synonym": "Synonym"
+      },
+      "hear": "Hear {word}",
+      "grows": "Your bed grows from <b>{before, plural, one {# word} other {# words}} to {after}</b>",
+      "plantNow": "Plant them now",
+      "later": "Later, in tomorrow's planting"
     }
   }
 }

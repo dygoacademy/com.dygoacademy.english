@@ -49,6 +49,15 @@ export const GARDEN_ROUTES = {
   bedHarvest: (id: string) => `/topics/${encodeURIComponent(id)}/harvest`,
   /** Seeds & Harvest S3: pick the next bed after harvesting `id`. */
   seedPackets: (id: string) => `/topics/${encodeURIComponent(id)}/packets`,
+  /**
+   * Seeds & Harvest S1: the seeds fruit word `droppedBy` dropped into bed
+   * `id`; Later and ✕ go to `next` (the session's Mission complete), else home.
+   */
+  seedDrop: (id: string, droppedBy: string, next?: string) =>
+    `/topics/${encodeURIComponent(id)}/seeds?word=${encodeURIComponent(droppedBy)}${next ? `&next=${encodeURIComponent(next)}` : ''}`,
+  /** A2 for S1 "Plant them now": only the seeds `droppedBy` dropped. */
+  plantSeeds: (droppedBy: string, count: number) =>
+    `/review?new=${Math.max(1, Math.round(count))}&seeds=${encodeURIComponent(droppedBy)}`,
   /** A6b: search topics. */
   topicsSearch: '/topics/search',
   topic: (id: string) => `/topics/${encodeURIComponent(id)}`,

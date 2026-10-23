@@ -17,7 +17,8 @@
       "quiz": "Kiểm tra nhanh",
       "privacy": "Quyền riêng tư",
       "bedHarvest": "Thu hoạch luống",
-      "seedPackets": "Chọn gói hạt giống"
+      "seedPackets": "Chọn gói hạt giống",
+      "seedDrop": "Quả rơi hạt"
     },
     "update": {
       "available": "Dygo vừa có bản mới.",
@@ -1734,6 +1735,23 @@
       "browse": "Xem tất cả chủ đề",
       "error": "Chưa gieo được. Bạn kiểm tra kết nối rồi thử lại nhé.",
       "empty": "Hiện chưa có luống mới để chọn. Xem tất cả chủ đề để tìm một luống."
+    },
+    "seedDrop": {
+      "close": "Đóng",
+      "overline": "Luống {bed}",
+      "fruit": "KẾT TRÁI",
+      "artLabel": "Cây {word} kết trái và rơi {count} hạt xuống đất",
+      "title": "<word></word> rơi {count} hạt giống",
+      "subtitle": "Những từ mọc ra từ nó. Chúng sẽ được gieo vào luống {bed} của bạn.",
+      "kind": {
+        "pairing": "Cụm từ",
+        "family": "Họ từ",
+        "synonym": "Từ đồng nghĩa"
+      },
+      "hear": "Nghe {word}",
+      "grows": "Luống của bạn lớn từ <b>{before} từ lên {after}</b>",
+      "plantNow": "Gieo ngay",
+      "later": "Để sau, gieo vào ngày mai"
     }
   }
 }
