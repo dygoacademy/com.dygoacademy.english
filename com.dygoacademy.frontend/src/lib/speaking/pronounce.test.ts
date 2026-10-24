@@ -19,7 +19,9 @@ import {
   nativeWord,
   pronVoiceEnded,
   resultView,
+  stoneShares,
   unusableTake,
+  voicedBars,
   voiceIn,
   wordCheck,
   wordStones,
@@ -178,6 +180,22 @@ describe('native audio', () => {
     // The timings count other syllables than the stones: the whole word.
     const more = { ...ITEM, syllables: [...ITEM.syllables, { text: 'x', stressed: false }] };
     expect(nativeSyllable(more, 'UK', 1)).toEqual({ src: 'uk.m4a', span: { start: 0.5, end: 1.1 }, madeAt: 1 });
+  });
+});
+
+describe('compare your voice', () => {
+  it('keeps the voiced bars: the tap click, quiet ends and the trailing silence go', () => {
+    const take = [...run(100, 0.5), ...run(200, 0.0001), ...run(500, 0.2), ...run(1000, 0.0001)];
+    expect(voicedBars(take, BPS, 150)).toEqual(run(500, 0.2));
+    expect(voicedBars(run(500, 0.00001), BPS)).toEqual([]);
+  });
+
+  it('splits the word by the native syllable timings, else by letters', () => {
+    const byTime = stoneShares(MITIGATE, ITEM, 'UK');
+    expect(byTime.map((v) => +v.toFixed(3))).toEqual([0.333, 0.25, 0.417]);
+    expect(stoneShares(MITIGATE, ITEM, 'US').map((v) => +v.toFixed(3))).toEqual([0.333, 0.25, 0.417]);
+    const noTimings = { ...ITEM, timings_uk: null } as SpeakingSessionItem;
+    expect(stoneShares(MITIGATE, noTimings, 'UK')).toEqual([0.25, 0.25, 0.5]);
   });
 });
 

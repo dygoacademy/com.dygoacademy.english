@@ -532,6 +532,7 @@
     --pron-card-sunken: #fbf9f4;
     --pron-card-line: #efeae0;
     --pron-stress: #9a6e14;
+    --pron-mine: #fbf1ec; /* P4 compare: the learner's row */
 
     /* §5.2 Rating buttons (bg / text) */
     --rating-again: #f6e3dc;

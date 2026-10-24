@@ -378,6 +378,45 @@ export function nativeSyllable(
   return nativeWord(item, accent);
 }
 
+// ── Compare your voice (P4) ────────────────────────────────────────────────
+
+/**
+ * The voice in `levels` (RMS bars, `barsPerSecond` a second), first to last
+ * bar within SPEECH_PEAK_RANGE_DB of the loudest, for the P4 compare
+ * waveforms: the take's trailing silence (auto-stop waits PRON_SILENCE_MS)
+ * and a clip's quiet ends don't count. `skipMs` drops the tap click of a
+ * take. Empty when there's no voice.
+ */
+export function voicedBars(levels: readonly number[], barsPerSecond: number, skipMs = 0): number[] {
+  const body = levels.slice(skipMs > 0 ? bars(skipMs, barsPerSecond) : 0);
+  const peak = body.reduce((m, v) => Math.max(m, v), 0);
+  const gate = Math.max(SILENCE_GATE_RMS, peak * 10 ** (-SPEECH_PEAK_RANGE_DB / 20));
+  const first = body.findIndex((v) => v >= gate);
+  if (peak < SILENCE_GATE_RMS || first < 0) return [];
+  let last = body.length - 1;
+  while (last > first && body[last] < gate) last -= 1;
+  return body.slice(first, last + 1);
+}
+
+/**
+ * Each stone's share of the word (sums to 1), for the compare card's
+ * syllable row and the wobbly band on "You": the native syllable timings
+ * when they split the word into the same stones, else by letters.
+ */
+export function stoneShares(
+  stones: readonly SpeakingSyllable[],
+  item: SpeakingSessionItem,
+  accent: SpeakingAccent,
+): number[] {
+  const parts = clipFor(item, accent).timings?.words[item.target_index]?.syllables;
+  const lengths =
+    parts && parts.length === stones.length && parts.every((s) => s.end > s.start)
+      ? parts.map((s) => s.end - s.start)
+      : stones.map((s) => Math.max(1, stoneText(s).length));
+  const total = lengths.reduce((a, b) => a + b, 0);
+  return lengths.map((l) => l / total);
+}
+
 // ── Result (P4) ────────────────────────────────────────────────────────────
 
 /** What P4 shows for a check. */

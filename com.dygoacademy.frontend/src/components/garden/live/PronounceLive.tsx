@@ -5,6 +5,8 @@ import { useQueries, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 
 import { LIVE_LEVELS_PER_SECOND, useLiveLevels } from '@/hooks/useLiveLevels';
+import { ENVELOPE_FPS } from '@/lib/speaking/audio';
+import { useNativeEnvelope } from '@/hooks/useNativeEnvelope';
 import { prepareSlowClip, usePlayer } from '@/hooks/usePlayer';
 import { useTopic } from '@/hooks/useTopic';
 import { apiClient } from '@/lib/api-client';
@@ -20,7 +22,7 @@ import {
   type Recording,
 } from '@/lib/speaking/audio';
 import { beepAndVibrate } from '@/lib/speaking/beep';
-import { BEEP_GUARD_MS } from '@/lib/speaking/constants';
+import { BEEP_GUARD_MS, SPEECH_SKIP_MS } from '@/lib/speaking/constants';
 import {
   litStones,
   nativeClipRate,
@@ -33,8 +35,10 @@ import {
   PRON_SLOW_RATE,
   pronVoiceEnded,
   resultView,
+  stoneShares,
   unusableTake,
   voiceIn,
+  voicedBars,
   wordCheck,
   wordStones,
   type PronResultView,
@@ -43,6 +47,7 @@ import type { SpeakingWordItem } from '@/types';
 
 import {
   PronounceScreen,
+  type PronCompare,
   type PronNotHeardReason,
   type PronAudio,
   type PronPhase,
@@ -145,6 +150,8 @@ function PronounceWord({
   const [result, setResult] = React.useState<PronResultView | null>(null);
   const [reason, setReason] = React.useState<PronNotHeardReason>('quiet');
   const [heard, setHeard] = React.useState('');
+  /** The take's mic bars, kept for P4's "Compare your voice". */
+  const [takeLevels, setTakeLevels] = React.useState<number[]>([]);
 
   const recorder = React.useRef<Recorder | null>(null);
   const timers = React.useRef<ReturnType<typeof setTimeout>[]>([]);
@@ -250,6 +257,7 @@ function PronounceWord({
         setPhase('say');
         return;
       }
+      setTakeLevels(takeBars);
       const unusable = unusableTake(takeBars, room, LIVE_LEVELS_PER_SECOND);
       if (unusable) {
         setReason(unusable);
@@ -356,6 +364,30 @@ function PronounceWord({
     play(native, which === 'slow' ? PRON_SLOW_RATE : 1, which);
   };
 
+  // P4 "Compare your voice": the voiced part of the native clip and of the take.
+  const envelope = useNativeEnvelope(phase === 'result' ? nativeSrc : null).clip?.envelope;
+  const compare = React.useMemo<PronCompare | null>(() => {
+    if (!result) return null;
+    const span = native?.span;
+    const clipBars = envelope
+      ? voicedBars(
+          span
+            ? envelope.slice(Math.floor(span.start * ENVELOPE_FPS), Math.ceil(span.end * ENVELOPE_FPS))
+            : envelope,
+          ENVELOPE_FPS,
+        )
+      : null;
+    const mine = voicedBars(takeLevels, LIVE_LEVELS_PER_SECOND, SPEECH_SKIP_MS);
+    return {
+      native: clipBars,
+      nativeS: clipBars?.length && native ? clipBars.length / ENVELOPE_FPS / nativeClipRate(native) : null,
+      mine,
+      mineS: mine.length ? mine.length / LIVE_LEVELS_PER_SECOND : null,
+      shares: stoneShares(result.stones, item, accent),
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [result, envelope, takeLevels]);
+
   const meaning = item.meaning_translation ?? item.definition_en;
   const ipa = accent === 'UK' ? (item.ipa_uk ?? item.ipa_us) : (item.ipa_us ?? item.ipa_uk);
 
@@ -399,6 +431,7 @@ function PronounceWord({
       }}
       onRecordAgain={() => void startRecording()}
       result={result}
+      compare={compare}
       // One syllable cut from the sentence is too quick to follow at 1×.
       onHearSyllable={() =>
         result?.first

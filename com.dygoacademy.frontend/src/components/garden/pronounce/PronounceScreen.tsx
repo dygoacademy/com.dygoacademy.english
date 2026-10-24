@@ -17,6 +17,7 @@ import type { SpeakingSyllable } from '@/types';
 import { gcn } from '../cn';
 import { CloseIcon } from '../icons';
 import { IconButton } from '../IconButton';
+import { toBars } from '../speaking/waveformBars';
 import { PondStones, type StoneLook } from './PondStones';
 
 /**
@@ -35,6 +36,15 @@ export type PronNotHeardReason = 'quiet' | 'noisy' | 'other';
 /** Hear it / Slowly: which is loading or playing, or that the last play failed. */
 export type PronAudio = 'idle' | 'loadingHear' | 'loadingSlow' | 'hear' | 'slow' | 'error';
 export type { PronResultView };
+/** P4 "Compare your voice": the voiced bars and their lengths, and each stone's share of the word. */
+export interface PronCompare {
+  /** Null while the native clip loads (or if it can't be decoded). */
+  native: readonly number[] | null;
+  nativeS: number | null;
+  mine: readonly number[];
+  mineS: number | null;
+  shares: readonly number[];
+}
 
 export interface PronounceScreenProps {
   phase: PronPhase;
@@ -72,6 +82,7 @@ export interface PronounceScreenProps {
   onRecordAgain?: () => void;
   /** P4. */
   result?: PronResultView | null;
+  compare?: PronCompare | null;
   onHearSyllable?: () => void;
   onTryAgain?: () => void;
   /** The next word, or null on the last one ("Back to the bed"). */
@@ -176,6 +187,49 @@ const Flower = ({ className }: { className?: string }) => (
     <circle cx="32" cy="20" r="6" fill="var(--stone-wobbly)" />
     <circle cx="20" cy="32" r="6" fill="var(--stone-wobbly)" />
     <circle cx="8" cy="20" r="6" fill="var(--stone-wobbly)" />
+  </svg>
+);
+
+/** A compare waveform (PronStonesResult "Compare your voice"): 32 bars in 160×28, `band` the wobbly parts (0..1). */
+function CompareWave({
+  levels,
+  color,
+  bands = [],
+}: {
+  levels: readonly number[] | null;
+  color: string;
+  bands?: readonly { start: number; end: number }[];
+}) {
+  const heights = levels && levels.length > 0 ? toBars(levels, 32).map((v) => 4 + v * 20) : [];
+  return (
+    <svg
+      viewBox="0 0 160 28"
+      preserveAspectRatio="none"
+      aria-hidden="true"
+      className="block h-7 w-full ipad:h-[34px]"
+    >
+      {bands.map((b, k) => (
+        <rect
+          key={`b${k}`}
+          x={b.start * 160}
+          y={0}
+          width={(b.end - b.start) * 160}
+          height={28}
+          rx={4}
+          fill="var(--color-gold-light)"
+          opacity={0.55}
+        />
+      ))}
+      {heights.map((h, i) => (
+        <rect key={i} x={i * 5} y={(28 - h) / 2} width={3} height={h} rx={1.5} fill={color} />
+      ))}
+    </svg>
+  );
+}
+
+const ComparePlay = () => (
+  <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" className="h-4 w-4 ipad:h-[18px] ipad:w-[18px]">
+    <path d="M8 5 L19 12 L8 19 Z" />
   </svg>
 );
 
@@ -565,6 +619,7 @@ export function PronounceScreen(props: PronounceScreenProps) {
   // ── Controls (right column on iPad) ──
   let controls: React.ReactNode = null;
   let leftExtra: React.ReactNode = null;
+  let compareCard: React.ReactNode = null;
   if (phase === 'say') {
     controls = (
       <div className="order-5 mt-auto flex flex-col items-center gap-2.5 ipad:mt-0 ipad:flex-grow ipad:justify-center ipad:gap-3">
@@ -731,6 +786,68 @@ export function PronounceScreen(props: PronounceScreenProps) {
   } else if (phase === 'result' && props.result) {
     const r = props.result;
     const last = props.nextWord == null;
+    const cmp = props.compare;
+    const shares = cmp?.shares.length === r.stones.length ? cmp.shares : r.stones.map(() => 1 / r.stones.length);
+    const starts = shares.map((_, k) => shares.slice(0, k).reduce((a, b) => a + b, 0));
+    const bands = r.passed ? [] : r.wobbly.flatMap((w, k) => (w ? [{ start: starts[k], end: starts[k] + shares[k] }] : []));
+    const secs = (v: number | null | undefined) => (v ? t('seconds', { s: v.toFixed(1) }) : '');
+    const ROW =
+      'grid grid-cols-[34px_54px_minmax(0,1fr)_34px] items-center gap-2 pl-2 pr-2.5 ipad:grid-cols-[40px_64px_minmax(0,1fr)_40px] ipad:gap-3 ipad:pl-2.5 ipad:pr-3.5';
+    const PLAY_ROW = `${ROW} h-[52px] rounded-[16px] border text-left text-[14px] font-bold ipad:h-[60px] ipad:rounded-[18px] ipad:text-[16px]`;
+    const DOT = 'flex h-[34px] w-[34px] items-center justify-center rounded-full text-white ipad:h-10 ipad:w-10';
+    const DUR = 'text-right text-[12px] font-semibold text-muted-foreground ipad:text-[13px]';
+    // Compare your voice (PronStonesResult / iPadPronResult, 2026-10-19): under the pond.
+    compareCard = (
+      <div className="order-3 flex flex-col gap-1.5 rounded-[20px] border border-border bg-surface p-3 ipad:gap-2 ipad:rounded-[24px] ipad:p-4">
+        <span className="px-1 text-[12px] font-bold uppercase tracking-[.08em] text-muted-foreground ipad:text-[13px]">
+          {t('compareTitle')}
+        </span>
+        <button
+          type="button"
+          onClick={props.onHearNative}
+          aria-label={t('playNative')}
+          className={gcn(PLAY_ROW, 'border-sprout-border bg-forest-wash text-forest')}
+        >
+          <span className={gcn(DOT, 'bg-success')}>
+            <ComparePlay />
+          </span>
+          <span>{t('native')}</span>
+          <CompareWave levels={cmp?.native ?? null} color="var(--color-success)" />
+          <span className={DUR}>{secs(cmp?.nativeS)}</span>
+        </button>
+        <button
+          type="button"
+          onClick={props.onHearMine}
+          aria-label={t('playMine')}
+          className={gcn(PLAY_ROW, 'border-primary-border bg-[var(--pron-mine)] text-primary-text')}
+        >
+          <span className={gcn(DOT, 'bg-primary')}>
+            <ComparePlay />
+          </span>
+          <span>{t('you')}</span>
+          <CompareWave levels={cmp?.mine ?? null} color="var(--color-primary)" bands={bands} />
+          <span className={DUR}>{secs(cmp?.mineS)}</span>
+        </button>
+        <div
+          aria-hidden="true"
+          className={gcn(ROW, 'text-[12px] font-bold text-muted-foreground ipad:text-[14px]')}
+        >
+          <span />
+          <span />
+          <div
+            className="grid text-center"
+            style={{ gridTemplateColumns: shares.map((f) => `${f}fr`).join(' ') }}
+          >
+            {r.stones.map((stone, k) => (
+              <span key={k} lang="en" className={gcn(bands.length > 0 && r.wobbly[k] && 'text-primary-text')}>
+                {stoneText(stone)}
+              </span>
+            ))}
+          </div>
+          <span />
+        </div>
+      </div>
+    );
     leftExtra = (
       <>
         <div
@@ -763,35 +880,14 @@ export function PronounceScreen(props: PronounceScreenProps) {
           </span>
         </div>
         {r.passed ? (
-          <>
-            {/* Compare first, then the explanation (Dylan, 2026-10-24). */}
-            <div className="order-3 flex gap-2 ipad:mt-3 ipad:gap-2.5">
-              <button
-                type="button"
-                onClick={props.onHearMine}
-                className="flex h-[52px] flex-1 items-center justify-center gap-2 rounded-[16px] border border-border bg-surface text-[15px] font-bold text-forest ipad:rounded-[18px] ipad:text-[16px]"
-              >
-                <Play size={18} />
-                {t('playMine')}
-              </button>
-              <button
-                type="button"
-                onClick={props.onHearNative}
-                className="flex h-[52px] flex-1 items-center justify-center gap-2 rounded-[16px] bg-[var(--pron-pass)] text-[15px] font-bold text-forest ipad:rounded-[18px] ipad:text-[16px]"
-              >
-                <Speaker size={18} />
-                {t('native')}
-              </button>
-            </div>
-            <div className="order-3 flex items-center gap-3 rounded-[20px] border border-border bg-surface px-4 py-3.5 ipad:gap-4 ipad:rounded-[22px] ipad:border-[var(--pron-card-line)] ipad:bg-[var(--pron-card-sunken)] ipad:p-5">
-              <Flower className="h-10 w-10 ipad:h-12 ipad:w-12" />
-              <span className="text-[15px] leading-[1.4] ipad:text-[17px] ipad:leading-[1.45]">
-                {t.rich('pollinatedBody', { word: props.word, b: boldWord })}
-              </span>
-            </div>
-          </>
+          <div className="order-4 flex items-center gap-3 rounded-[20px] border border-border bg-surface px-4 py-3.5 ipad:mt-3 ipad:gap-4 ipad:rounded-[22px] ipad:border-[var(--pron-card-line)] ipad:bg-[var(--pron-card-sunken)] ipad:p-5">
+            <Flower className="h-10 w-10 ipad:h-12 ipad:w-12" />
+            <span className="text-[15px] leading-[1.4] ipad:text-[17px] ipad:leading-[1.45]">
+              {t.rich('pollinatedBody', { word: props.word, b: boldWord })}
+            </span>
+          </div>
         ) : r.first ? (
-          <div className="order-3 flex flex-col gap-2.5 rounded-[20px] border border-border bg-surface px-4 py-3.5 ipad:mt-3 ipad:gap-3 ipad:rounded-[22px] ipad:border-[var(--pron-card-line)] ipad:bg-[var(--pron-card-sunken)] ipad:p-5">
+          <div className="order-4 flex flex-col gap-2.5 rounded-[20px] border border-border bg-surface px-4 py-3.5 ipad:mt-3 ipad:gap-3 ipad:rounded-[22px] ipad:border-[var(--pron-card-line)] ipad:bg-[var(--pron-card-sunken)] ipad:p-5">
             <div className="flex items-baseline gap-2.5 ipad:gap-3">
               <span lang="en" className="font-display text-[24px] font-semibold ipad:text-[32px]">
                 {r.first.text}
@@ -948,6 +1044,7 @@ export function PronounceScreen(props: PronounceScreenProps) {
         </div>
         <div className="contents ipad:flex ipad:min-h-0 ipad:flex-col ipad:gap-[18px]">
           {pondPart}
+          {compareCard}
           {controls}
         </div>
       </div>
