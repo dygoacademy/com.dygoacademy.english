@@ -15,7 +15,16 @@ export function LiveLoading({ onRetry }: { onRetry?: () => void } = {}) {
   return <GardenLoader onRetry={onRetry} />;
 }
 
-export function LiveError({ onRetry, message }: { onRetry?: () => void; message?: string }) {
+export function LiveError({
+  onRetry,
+  message,
+  retryLabel,
+}: {
+  onRetry?: () => void;
+  message?: string;
+  /** The button's label (default: Try again), e.g. a way back when there is nothing to retry. */
+  retryLabel?: string;
+}) {
   const t = useTranslations('screens.live');
   return (
     <div
@@ -25,7 +34,7 @@ export function LiveError({ onRetry, message }: { onRetry?: () => void; message?
       <p className="text-[15px] text-muted-foreground">{message ?? t('error')}</p>
       {onRetry ? (
         <Button variant="forest" className="w-full max-w-[320px]" onClick={onRetry}>
-          {t('retry')}
+          {retryLabel ?? t('retry')}
         </Button>
       ) : null}
     </div>

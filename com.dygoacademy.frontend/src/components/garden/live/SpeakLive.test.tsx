@@ -26,6 +26,8 @@ const env = {
   /** The check rejects (SP3 → "Couldn't check this one"). */
   checkFails: false,
   levels: [0.1, 0.2] as number[],
+  /** The session has no sentences (none of the learner's words is voiced yet). */
+  emptySession: false,
 };
 
 vi.mock('next/navigation', () => ({ useRouter: () => ({ push }) }));
@@ -36,7 +38,7 @@ vi.mock('@/hooks/useSrsStats', () => ({ useSrsStats: () => ({ data: undefined })
 vi.mock('@/hooks/useVoiceDonation', () => ({ useVoiceDonation: () => ({ data: undefined }) }));
 vi.mock('@/hooks/useSpeakingSession', () => ({
   useSpeakingSession: () => ({
-    data: SPEAK_FIXTURE_SESSION,
+    data: env.emptySession ? { ...SPEAK_FIXTURE_SESSION, item_count: 0, items: [] } : SPEAK_FIXTURE_SESSION,
     isFetchedAfterMount: true,
     isError: false,
     refetch: vi.fn(),
@@ -147,6 +149,7 @@ describe('SpeakLive (The Pond)', () => {
       nativeError: false,
       checkFails: false,
       levels: [0.1, 0.2],
+      emptySession: false,
     });
     vi.useFakeTimers({ shouldAdvanceTime: true, toFake: ['setTimeout', 'clearTimeout'] });
     recorderStart.mockReset();
@@ -458,6 +461,15 @@ describe('SpeakLive (The Pond)', () => {
     expect(screen.getByText(/Website Settings/)).toBeTruthy();
     expect(screen.queryByRole('button', { name: 'Start recording' })).toBeNull();
     fireEvent.click(screen.getByRole('button', { name: 'Skip speaking' }));
+    expect(push).toHaveBeenCalledWith('/missions');
+  });
+
+  it('no sentences yet: says so (not "couldn\'t load"), Back to garden closes', () => {
+    env.emptySession = true;
+    renderWithIntl(<SpeakLive />);
+    expect(screen.getByText(/Your words don’t have sentences to say yet/)).toBeTruthy();
+    expect(screen.queryByText(/couldn’t load your garden/)).toBeNull();
+    fireEvent.click(screen.getByRole('button', { name: 'Back to garden' }));
     expect(push).toHaveBeenCalledWith('/missions');
   });
 

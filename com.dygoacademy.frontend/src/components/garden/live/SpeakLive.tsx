@@ -679,6 +679,7 @@ function SpeakPondLive({
   closeHref: string;
   forceNotice?: SpeakNoticeKind;
 }) {
+  const t = useTranslations('screens.speak');
   const router = useRouter();
   const session = useSpeakingSession(topicId);
   const [taken, setTaken] = React.useState<{
@@ -697,7 +698,17 @@ function SpeakPondLive({
     if (session.isError) return <LiveError onRetry={() => void session.refetch()} />;
     return <LiveLoading />;
   }
-  if (taken.items.length === 0) return <LiveError />;
+  // None of the learner's words has a speaking item yet (e.g. a bed added
+  // before its sentences were voiced): say so, not "couldn't load".
+  if (taken.items.length === 0) {
+    return (
+      <LiveError
+        message={t('soundGarden.pondEmpty')}
+        retryLabel={t('backToGarden')}
+        onRetry={() => router.push(closeHref)}
+      />
+    );
+  }
   return (
     <SpeakFlow
       items={taken.items}

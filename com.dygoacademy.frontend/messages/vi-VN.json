@@ -1423,6 +1423,7 @@
         "body": "Nói to các từ của bạn và xem giọng mình cạnh giọng người bản xứ.",
         "pond": "Ao sen",
         "pondBody": "{n, plural, other {# câu đã sẵn sàng}}",
+        "pondEmpty": "Từ của bạn chưa có câu để nói. Hãy gieo thêm vài từ rồi quay lại nhé.",
         "open": "Bắt đầu nói"
       },
       "sayThis": {

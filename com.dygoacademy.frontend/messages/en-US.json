@@ -1423,6 +1423,7 @@
         "body": "Say your words out loud and see your voice next to a native speaker.",
         "pond": "The Pond",
         "pondBody": "{n, plural, one {# sentence ready} other {# sentences ready}}",
+        "pondEmpty": "Your words don’t have sentences to say yet. Plant a few more and come back.",
         "open": "Start speaking"
       },
       "sayThis": {
