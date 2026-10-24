@@ -17,6 +17,8 @@ import {
   gardenPlants,
   greetingFor,
   harvestHref,
+  harvestRow,
+  seedsInPlanting,
   BEE_LIMIT,
   beesCard,
   findWordInBeds,
@@ -867,5 +869,52 @@ describe('A6b topic search', () => {
     expect(findWordInBeds(beds, 'en')).toEqual({ word: 'environmental', topicId: 't2', topic: 'Environment' });
     expect(findWordInBeds(beds, 'e')).toBeNull();
     expect(findWordInBeds(beds, 'zz')).toBeNull();
+  });
+});
+
+describe('Seeds & Harvest on Home (S4, S5, S6)', () => {
+  const today = {
+    date: '2026-10-24',
+    goldenBloom: false,
+    missions: [
+      { type: 'REVIEW_DUE' as const, target: 4, progress: 4, done: true },
+      { type: 'LEARN_NEW' as const, target: 5, progress: 1, done: false },
+    ],
+  };
+  const bed = {
+    topic_id: 'b1',
+    title: 'Environment',
+    word_count: 7,
+    unplanted_count: 0,
+    harvest_ready: true,
+    unplanted_ahead: 0,
+    unplanted_seeds: 0,
+  };
+
+  it('S4: a fully planted bed turns the open Plant mission into the seed packet card', () => {
+    expect(liveMissions(today, '/quiz', 0, undefined, bed)[1]).toEqual({
+      kind: 'packet',
+      bed: 'Environment',
+      href: '/topics/b1/packets',
+    });
+  });
+
+  it('S5: counts the dropped seeds in what is left to plant, after the words ahead of them', () => {
+    const growing = { ...bed, harvest_ready: false, unplanted_count: 3, unplanted_ahead: 2, unplanted_seeds: 3 };
+    expect(liveMissions(today, '/quiz', 0, undefined, growing)[1]).toEqual({
+      kind: 'plant',
+      done: 1,
+      total: 5,
+      href: '/review?new=4',
+      seeds: 2,
+    });
+    expect(seedsInPlanting(4, { unplanted_ahead: 5, unplanted_seeds: 2 })).toBe(0);
+    expect(seedsInPlanting(4, { unplanted_ahead: 0, unplanted_seeds: 1 })).toBe(1);
+  });
+
+  it('S6: the harvest row only while the bed has nothing left to plant', () => {
+    expect(harvestRow(bed)).toEqual({ bed: 'Environment', href: '/topics/b1/harvest' });
+    expect(harvestRow({ ...bed, harvest_ready: false })).toBeNull();
+    expect(harvestRow(null)).toBeNull();
   });
 });

@@ -18,13 +18,14 @@ export interface MoreRow {
   icon: React.ReactNode;
   title: string;
   meta: string;
-  /** Icon well colour: forest (default) or water (A1c "Water N thirsty words"). */
-  tone?: 'forest' | 'water';
+  /** Icon well colour: forest (default), water (A1c "Water N thirsty words") or primary (S6 harvest). */
+  tone?: 'forest' | 'water' | 'primary';
 }
 
 const WELL: Record<NonNullable<MoreRow['tone']>, string> = {
   forest: 'bg-forest-wash text-forest',
   water: 'bg-water-soft',
+  primary: 'bg-primary-soft',
 };
 
 export function MoreList({ rows, className }: { rows: readonly MoreRow[]; className?: string }) {
@@ -75,6 +76,28 @@ export function SeedIcon() {
     >
       <ellipse cx="12" cy="15" rx="5" ry="3.5" />
       <path d="M12 11.5 C12 8 14 6 17 5" />
+    </svg>
+  );
+}
+
+/** S6 "See your harvest": a basket (canvas 20px, clay, stroke 2.1). */
+export function BasketIcon() {
+  return (
+    <svg
+      aria-hidden="true"
+      width="20"
+      height="20"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="var(--color-primary)"
+      strokeWidth="2.1"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      focusable="false"
+    >
+      <path d="M4 10 H20 L18 20 H6 Z" />
+      <path d="M8 10 C8 5 16 5 16 10" />
+      <path d="M7 14 H17" />
     </svg>
   );
 }

@@ -5,7 +5,7 @@ import { gcn } from '../cn';
 import { useGardenFormat, type ClockTime } from '../format';
 import { HeroGardenCard, type HeroPlant } from '../HeroGardenCard';
 import { GoldenBloomIcon, MicIcon } from '../icons';
-import { MoreList, SeedIcon, type MoreRow } from '../MoreList';
+import { BasketIcon, MoreList, SeedIcon, type MoreRow } from '../MoreList';
 import { GardenTabBar, IPAD_NAV_COLUMN, SCREEN_CLASSES } from './GardenTabBar';
 import { HomeHeader, type Greeting } from './TodaysGardenScreen';
 
@@ -35,6 +35,8 @@ export interface AllWateredScreenProps {
   extras: {
     /** The bed with the most seeds; null hides the row. */
     plant: { bed: string; href: string } | null;
+    /** S6: the active bed is fully planted; its harvest row takes the plant row's place. */
+    harvest?: { bed: string; href: string } | null;
     speakHref: string;
     quizHref: string;
   };
@@ -57,7 +59,18 @@ export function AllWateredScreen({
   const f = useGardenFormat();
 
   const rows: MoreRow[] = [
-    ...(extras.plant
+    ...(extras.harvest
+      ? [
+          {
+            key: 'harvest',
+            href: extras.harvest.href,
+            icon: <BasketIcon />,
+            title: t('harvest'),
+            meta: t('harvestFrom', { bed: extras.harvest.bed }),
+            tone: 'primary' as const,
+          },
+        ]
+      : extras.plant
       ? [
           {
             key: 'plant',

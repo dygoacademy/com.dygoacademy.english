@@ -231,3 +231,59 @@ describe('SeedDropScreen (S1)', () => {
     ).toBe('/review/done?watered=3');
   });
 });
+
+describe('Seeds & Harvest on Home (S4, S5, S6)', () => {
+  const water = { kind: 'water', done: 18, total: 18, href: '/review' } as const;
+  const speak = { kind: 'speak', done: 0, total: 3, minutes: 2, href: '/sounds' } as const;
+
+  it('S4: Next up is the seed packet card, linking to the packets', async () => {
+    const { TodaysGardenScreen } = await import('./TodaysGardenScreen');
+    const { HOME } = await import('./fixtures');
+    renderWithIntl(
+      <TodaysGardenScreen
+        {...HOME}
+        missions={[water, { kind: 'packet', bed: 'Environment', href: '/topics/b1/packets' }, speak]}
+      />,
+    );
+    expect(screen.getByText('Pick your next seed packet')).toBeTruthy();
+    expect(screen.getByText('Environment is fully planted · 3 beds picked for you')).toBeTruthy();
+    expect(screen.getByRole('link', { name: 'See seed packets' }).getAttribute('href')).toBe(
+      '/topics/b1/packets',
+    );
+    expect(screen.queryByText(/Plant \d new words/)).toBeNull();
+  });
+
+  it('S5: the Plant mission says how many dropped seeds it includes', async () => {
+    const { TodaysGardenScreen } = await import('./TodaysGardenScreen');
+    const { HOME } = await import('./fixtures');
+    renderWithIntl(
+      <TodaysGardenScreen
+        {...HOME}
+        missions={[water, { kind: 'plant', done: 0, total: 5, href: '/review?new=5', seeds: 2 }, speak]}
+      />,
+    );
+    expect(screen.getByText('incl. 2 dropped seeds')).toBeTruthy();
+  });
+
+  it('S6: Want a little more? shows the harvest row instead of the plant row', async () => {
+    const { TodaysGardenScreen } = await import('./TodaysGardenScreen');
+    const { HOME } = await import('./fixtures');
+    renderWithIntl(
+      <TodaysGardenScreen
+        {...HOME}
+        missions={[water, { kind: 'plant', done: 5, total: 5 }]}
+        goldenBloom
+        more={{
+          water: { count: 2, href: '/review' },
+          plant: { bed: 'Other', href: '/review?new=5&topic=t2' },
+          harvest: { bed: 'Environment', href: '/topics/b1/harvest' },
+          speakHref: '/sounds',
+        }}
+      />,
+    );
+    const harvest = screen.getByRole('link', { name: /See your harvest/ });
+    expect(harvest.getAttribute('href')).toBe('/topics/b1/harvest');
+    expect(harvest.textContent).toBe('See your harvestEnvironment is fully planted');
+    expect(screen.queryByText('From Other')).toBeNull();
+  });
+});

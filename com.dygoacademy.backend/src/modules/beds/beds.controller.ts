@@ -11,7 +11,14 @@ import {
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
-import { BedHarvest, BedState, BedsService, SeedDrop, SeedPackets } from './beds.service';
+import {
+  ActiveBed,
+  BedHarvest,
+  BedState,
+  BedsService,
+  SeedDrop,
+  SeedPackets,
+} from './beds.service';
 import { PlantBedDto } from './dto/plant-bed.dto';
 
 @ApiBearerAuth()
@@ -28,7 +35,7 @@ export class BedsController {
       'active), else the first bed from onboarding; null when there is none. ' +
       '`harvest_ready` = every READY word is planted (S2 Bed harvest shows).',
   })
-  async active(@CurrentUser('id') userId: string): Promise<BedState | null> {
+  async active(@CurrentUser('id') userId: string): Promise<ActiveBed | null> {
     return this.beds.active(userId);
   }
 

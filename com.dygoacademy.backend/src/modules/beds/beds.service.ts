@@ -27,12 +27,22 @@ export interface BedState {
   harvest_ready: boolean;
 }
 
+/** GET /beds/active: the bed, plus what today's planting takes before and after its seeds. */
+export interface ActiveBed extends BedState {
+  /** Unplanted words that plant before any dropped seed (own added words, then the bed's own). */
+  unplanted_ahead: number;
+  /** Unplanted dropped seeds (S5 "incl. 2 dropped seeds"). */
+  unplanted_seeds: number;
+}
+
 export type HarvestStage = 'fruit' | 'ripe' | 'growing';
 
 /** S2 Bed harvest. */
 export interface BedHarvest extends BedState {
   /** No other bed was harvested before ("Your first harvest"). */
   first_harvest: boolean;
+  /** Days since the learner started the bed (S7 share card); null when unknown. */
+  days_active: number | null;
   fruit: number;
   ripe: number;
   growing: number;
@@ -165,10 +175,27 @@ export class BedsService {
   ) {}
 
   /** The bed today's planting takes words from, or null when the learner has none. */
-  async active(userId: string): Promise<BedState | null> {
+  async active(userId: string): Promise<ActiveBed | null> {
     return this.db.withUser(userId, async (client) => {
       const topicId = await activeTopicId(client);
-      return topicId ? bedState(client, topicId) : null;
+      const state = topicId ? await bedState(client, topicId) : null;
+      if (!state) return null;
+      // The planting order (srs.service PLANTING_ORDER): own added words and
+      // the bed's own words before any dropped seed.
+      const counts = (
+        await client.query<{ ahead: number; seeds: number }>(
+          `select count(*) filter (where sd.topic_word_id is null)::int as ahead,
+                  count(*) filter (where sd.topic_word_id is not null)::int as seeds
+             from public.topic_words tw
+             left join public.seed_drops sd on sd.topic_word_id = tw.id
+            where tw.status = 'READY'
+              and not exists (select 1 from public.user_word_srs uws where uws.topic_word_id = tw.id)
+              and (sd.topic_word_id is not null or tw.topic_id = $1
+                   or tw.added_by is not distinct from auth.uid())`,
+          [topicId],
+        )
+      ).rows[0];
+      return { ...state, unplanted_ahead: counts?.ahead ?? 0, unplanted_seeds: counts?.seeds ?? 0 };
     });
   }
 
@@ -201,10 +228,23 @@ export class BedsService {
           where user_id = auth.uid() and status = 'harvested' and topic_id <> $1`,
         [topicId],
       );
+      const days = (
+        await client.query<{ days: number | null }>(
+          `select coalesce(
+                    (select extract(day from now() - ub.started_at)::int from public.user_beds ub
+                      where ub.user_id = auth.uid() and ub.topic_id = $1),
+                    (select extract(day from now() - min(uws.created_at))::int
+                       from public.user_word_srs uws
+                       join public.topic_words tw on tw.id = uws.topic_word_id
+                      where tw.topic_id = $1)) as days`,
+          [topicId],
+        )
+      ).rows[0];
       const count = (stage: HarvestStage) => words.filter((w) => w.stage === stage).length;
       return {
         ...state,
         first_harvest: (before.rows[0]?.n ?? 0) === 0,
+        days_active: days?.days ?? null,
         fruit: count('fruit'),
         ripe: count('ripe'),
         growing: count('growing'),

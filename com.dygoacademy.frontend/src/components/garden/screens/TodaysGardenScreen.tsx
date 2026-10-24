@@ -14,10 +14,11 @@ import {
   MicIcon,
   MoonIcon,
   PlantIcon,
+  SproutIcon,
   WaterIcon,
 } from '../icons';
 import type { MissionStatus } from '../MissionRow';
-import { MoreList, SeedIcon, type MoreRow } from '../MoreList';
+import { BasketIcon, MoreList, SeedIcon, type MoreRow } from '../MoreList';
 import { StreakPill } from '../StreakPill';
 import { GardenTabBar, IPAD_NAV_COLUMN, SCREEN_CLASSES } from './GardenTabBar';
 
@@ -46,7 +47,13 @@ export type MissionItem =
   | { kind: 'water'; done: number; total: number; href?: string }
   /** Missions v0 (U4-4): "Water today's thirsty words", done = reviewed today. */
   | { kind: 'thirsty'; done: number; total: number; href?: string }
-  | { kind: 'plant'; done: number; total: number; href?: string }
+  /** `seeds`: dropped seeds in what's left to plant (S5 "incl. 2 dropped seeds"). */
+  | { kind: 'plant'; done: number; total: number; href?: string; seeds?: number }
+  /**
+   * Seeds & Harvest S4 (`reference/S4-home-next-packet`): the active bed is
+   * fully planted, so the Plant mission becomes "Pick your next seed packet".
+   */
+  | { kind: 'packet'; bed: string; href: string }
   /** `minutes` null: no time estimate (live data). */
   | { kind: 'challenge'; minutes: number | null; done: boolean; href?: string }
   /**
@@ -83,12 +90,15 @@ export interface TodaysGardenScreenProps {
     water: { count: number; href: string } | null;
     /** The bed to plant from (A1b's rule); null hides the row. */
     plant: { bed: string; href: string } | null;
+    /** S6: the active bed is fully planted; its harvest row takes the plant row's place. */
+    harvest?: { bed: string; href: string } | null;
     speakHref: string;
   } | null;
   stickyNav?: boolean;
 }
 
 function missionStatus(item: MissionItem): MissionStatus {
+  if (item.kind === 'packet') return 'todo';
   if (item.kind === 'challenge') return item.done ? 'done' : 'todo';
   if (item.done >= item.total) return 'done';
   return item.done > 0 ? 'inProgress' : 'todo';
@@ -134,7 +144,18 @@ export function TodaysGardenScreen({
               },
             ]
           : []),
-        ...(more.plant
+        ...(more.harvest
+          ? [
+              {
+                key: 'harvest',
+                href: more.harvest.href,
+                icon: <BasketIcon />,
+                title: extra('harvest'),
+                meta: extra('harvestFrom', { bed: more.harvest.bed }),
+                tone: 'primary' as const,
+              },
+            ]
+          : more.plant
           ? [
               {
                 key: 'plant',
@@ -260,12 +281,15 @@ export function HomeHeader({
 
 type Kind = 'water' | 'plant' | 'challenge' | 'speak';
 
-function kindOf(item: MissionItem): Kind {
+/** A mission that counts (every kind but the S4 seed-packet card). */
+type CountedItem = Exclude<MissionItem, { kind: 'packet' }>;
+
+function kindOf(item: CountedItem): Kind {
   return item.kind === 'thirsty' ? 'water' : item.kind;
 }
 
 /** Done / total for every kind (the challenge counts as 0 or 1 of 1). */
-function counts(item: MissionItem): { done: number; total: number } {
+function counts(item: CountedItem): { done: number; total: number } {
   if (item.kind === 'challenge') return { done: item.done ? 1 : 0, total: 1 };
   return { done: item.done, total: item.total };
 }
@@ -308,7 +332,7 @@ function MissionList({ missions }: { missions: readonly MissionItem[] }) {
 
 function useMissionTitle() {
   const t = useTranslations('screens.home.missions');
-  return (item: MissionItem, next: boolean): string => {
+  return (item: CountedItem, next: boolean): string => {
     const { done, total } = counts(item);
     switch (kindOf(item)) {
       case 'water':
@@ -324,12 +348,52 @@ function useMissionTitle() {
   };
 }
 
-function minutesOf(item: MissionItem): number | null {
+function minutesOf(item: CountedItem): number | null {
   return item.kind === 'challenge' || item.kind === 'speak' ? item.minutes : null;
 }
 
 /** Canvas A1 "Next up": light blue panel, 44px icon, title, bar, progress line, Start button. */
 function NextUp({ item }: { item: MissionItem }) {
+  if (item.kind === 'packet') return <PacketNextUp item={item} />;
+  return <CountedNextUp item={item} />;
+}
+
+/**
+ * S4 (`reference/S4-home-next-packet`): Next up when the active bed is
+ * fully planted: the seed packet, "<bed> is fully planted · 3 beds picked
+ * for you", See seed packets → S3.
+ */
+function PacketNextUp({ item }: { item: Extract<MissionItem, { kind: 'packet' }> }) {
+  const t = useTranslations('screens.home.missions');
+  return (
+    <div className="flex flex-col gap-2.5 rounded-[18px] bg-water-panel p-[14px]">
+      <h3 className="text-[11px] font-extrabold uppercase tracking-[.08em] text-water-deep">
+        {t('nextUp')}
+      </h3>
+      <div className="flex items-center gap-3">
+        <span
+          aria-hidden="true"
+          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-surface"
+        >
+          <PacketIcon size={24} />
+        </span>
+        <div className="flex flex-grow flex-col gap-1">
+          <span className="text-[17px] font-bold">{t('packet')}</span>
+          <span className="text-[12px] text-soft-text">{t('packetLine', { bed: item.bed })}</span>
+        </div>
+      </div>
+      <Link
+        href={item.href}
+        className="flex h-[46px] items-center justify-center gap-2 rounded-[14px] bg-water text-[16px] font-bold text-white shadow-[0_3px_0_var(--color-water-deep)] active:translate-y-px active:shadow-[0_2px_0_var(--color-water-deep)]"
+      >
+        {t('start.packet')}
+        <ArrowRightIcon width={18} height={18} strokeWidth="2.6" stroke="var(--color-surface)" />
+      </Link>
+    </div>
+  );
+}
+
+function CountedNextUp({ item }: { item: CountedItem }) {
   const t = useTranslations('screens.home.missions');
   const title = useMissionTitle()(item, true);
   const kind = kindOf(item);
@@ -370,7 +434,17 @@ function NextUp({ item }: { item: MissionItem }) {
               />
             ) : null}
           </div>
-          <span className="text-[12px] text-soft-text">{progressLine}</span>
+          {item.kind === 'plant' && item.seeds ? (
+            <span className="flex items-center gap-1.5 text-[12px] text-soft-text">
+              {progressLine}
+              <span className="inline-flex items-center gap-1 rounded-lg bg-forest-wash px-[7px] py-0.5 font-bold text-forest">
+                <SproutIcon width={14} height={14} stroke="var(--color-success)" strokeWidth="2.2" />
+                {t('plantSeeds', { count: item.seeds })}
+              </span>
+            </span>
+          ) : (
+            <span className="text-[12px] text-soft-text">{progressLine}</span>
+          )}
         </div>
       </div>
       {item.href ? (
@@ -395,6 +469,30 @@ const THEN_WELL: Record<Kind, string> = {
 
 /** Canvas A1 "Then" row: 32px icon well, 15px title, value on the right. */
 function ThenRow({ item }: { item: MissionItem }) {
+  if (item.kind === 'packet') return <PacketThenRow item={item} />;
+  return <CountedThenRow item={item} />;
+}
+
+/** S4 when another mission is Next up: the packet as a Then row (A1's row, no board of its own). */
+function PacketThenRow({ item }: { item: Extract<MissionItem, { kind: 'packet' }> }) {
+  const t = useTranslations('screens.home.missions');
+  return (
+    <Link
+      href={item.href}
+      className="-mx-1.5 -my-1 flex items-center gap-2.5 rounded-control px-1.5 py-1 text-text transition-colors duration-quick ease-garden hover:bg-surface-sunken active:bg-surface-sunken"
+    >
+      <span
+        aria-hidden="true"
+        className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary-soft"
+      >
+        <PacketIcon size={16} />
+      </span>
+      <span className="flex-grow text-[15px] font-bold">{t('packet')}</span>
+    </Link>
+  );
+}
+
+function CountedThenRow({ item }: { item: CountedItem }) {
   const t = useTranslations('screens.home.missions');
   const title = useMissionTitle()(item, false);
   const kind = kindOf(item);
@@ -472,4 +570,18 @@ function MissionIcon({ kind, size }: { kind: Kind; size: number }) {
     case 'speak':
       return <MicIcon width={size} height={size} stroke="var(--color-primary)" />;
   }
+}
+
+/** S4's seed packet (S3's packet art in clay, 56 × 70 drawn at `size` wide). */
+function PacketIcon({ size }: { size: number }) {
+  return (
+    <svg width={size} height={(size * 70) / 56} viewBox="0 0 56 70" aria-hidden="true">
+      <path d="M4 10 L8 3 H48 L52 10 Z" fill="var(--color-track)" />
+      <path d="M4 10 H52 L50 66 H6 Z" fill="var(--color-surface)" stroke="var(--color-border)" strokeWidth="2" />
+      <rect x="4" y="10" width="48" height="14" fill="var(--color-primary)" />
+      <path d="M28 58 V40" stroke="var(--color-primary)" strokeWidth="3" strokeLinecap="round" />
+      <path d="M28 46 C22 46 19 42 20 37 C25 37 28 41 28 46 Z" fill="var(--color-primary)" />
+      <path d="M28 43 C34 43 37 39 36 34 C31 34 28 38 28 43 Z" fill="var(--color-primary)" opacity=".6" />
+    </svg>
+  );
 }

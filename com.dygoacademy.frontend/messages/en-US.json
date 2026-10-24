@@ -417,8 +417,12 @@
           "water": "Start watering",
           "plant": "Start planting",
           "challenge": "Start challenge",
-          "speak": "Start speaking"
-        }
+          "speak": "Start speaking",
+          "packet": "See seed packets"
+        },
+        "packet": "Pick your next seed packet",
+        "packetLine": "{bed} is fully planted · 3 beds picked for you",
+        "plantSeeds": "incl. {count, plural, one {# dropped seed} other {# dropped seeds}}"
       },
       "ripens": "Tomorrow {time} · <b>{count, plural, one {# word is} other {# words are}} ready to water</b>",
       "more": {
@@ -711,7 +715,9 @@
       "speak": "Say 3 sentences",
       "speakTime": "About 2 min",
       "quiz": "Quiz a bed",
-      "quizMeta": "10 quick questions"
+      "quizMeta": "10 quick questions",
+      "harvest": "See your harvest",
+      "harvestFrom": "{bed} is fully planted"
     },
     "review": {
       "close": "Close",
@@ -1717,7 +1723,17 @@
       "next": "Choose next bed",
       "shareText": "I grew {count, plural, one {# word} other {# words}} in my {bed} bed on Dygo.",
       "notReady": "This bed still has seeds to plant.",
-      "plantRest": "Plant the rest"
+      "plantRest": "Plant the rest",
+      "card": {
+        "brand": "Word Garden",
+        "overline": "{bed} · harvested",
+        "title": "I grew {count, plural, one {# English word} other {# English words}}",
+        "grown": "words grown",
+        "fruit": "fruit",
+        "days": "days",
+        "site": "dygoacademy.com",
+        "file": "dygo-harvest.png"
+      }
     },
     "seedPackets": {
       "back": "Back",

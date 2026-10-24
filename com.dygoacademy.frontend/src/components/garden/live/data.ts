@@ -3,6 +3,7 @@
  * fetching: the live components pass in what the existing hooks returned.
  */
 import type {
+  ActiveBed,
   BedState,
   DueCard,
   SpeakingHarvestWord,
@@ -129,6 +130,7 @@ export function liveMissions(
   quizHref: string,
   dueNow: number,
   plantHref?: string,
+  bed?: ActiveBed | null,
 ): MissionItem[] {
   return today.missions.map((m): MissionItem => {
     if (m.type === 'QUIZ') return { kind: 'challenge', minutes: null, done: m.done, href: quizHref };
@@ -141,7 +143,19 @@ export function liveMissions(
     if (m.type === 'SPEAK') {
       return { kind: 'speak', done, total, minutes: null, href: GARDEN_ROUTES.sounds };
     }
-    return { kind: 'plant', done, total, href: plantHref ?? GARDEN_ROUTES.plant(total - done) };
+    // S4: the active bed is fully planted, so an open Plant mission becomes
+    // "Pick your next seed packet" (Home never shows "Plant 0 new words").
+    if (bed?.harvest_ready && done < total) {
+      return { kind: 'packet', bed: bed.title, href: GARDEN_ROUTES.seedPackets(bed.topic_id) };
+    }
+    const seeds = bed ? seedsInPlanting(total - done, bed) : 0;
+    return {
+      kind: 'plant',
+      done,
+      total,
+      href: plantHref ?? GARDEN_ROUTES.plant(total - done),
+      ...(seeds > 0 ? { seeds } : {}),
+    };
   });
 }
 
@@ -1074,3 +1088,18 @@ export function findWordInBeds(
 export function harvestHref(bed: BedState | null | undefined): string | undefined {
   return bed?.harvest_ready ? GARDEN_ROUTES.bedHarvest(bed.topic_id) : undefined;
 }
+
+/**
+ * S5 "incl. 2 dropped seeds": of the `left` words today still plants, how
+ * many are dropped seeds. Seeds plant after the learner's own words and the
+ * active bed's own words (backend PLANTING_ORDER).
+ */
+export function seedsInPlanting(left: number, bed: Pick<ActiveBed, 'unplanted_ahead' | 'unplanted_seeds'>): number {
+  return Math.max(0, Math.min(bed.unplanted_seeds, left - bed.unplanted_ahead));
+}
+
+/** S6: the active bed's "See your harvest" row while it has nothing left to plant. */
+export function harvestRow(bed: BedState | null | undefined): { bed: string; href: string } | null {
+  return bed?.harvest_ready ? { bed: bed.title, href: GARDEN_ROUTES.bedHarvest(bed.topic_id) } : null;
+}
+

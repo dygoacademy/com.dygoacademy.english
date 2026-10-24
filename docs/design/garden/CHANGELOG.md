@@ -146,10 +146,10 @@ Separate from Speaking (sentences). Starts from "Bees are waiting" on A7. EN + V
 | S1 | Fruit drops seeds | `SeedDrop` | Built | Right after a review turns a word into fruit: the plant drops 1–2 related words (pairing, then word family, then synonym) into the same bed, each with meaning and a Hear button. "Your bed grows from 5 words to 7". | Study (Plant them now), A3 / A1 (Later) | Phase 2, branch `seeds-harvest/phase-2` |
 | S2 | Bed harvest | `BedHarvest` | Built | The bed has nothing left to plant: basket art, "Your first harvest", tiles words grown / fruit / still growing, basket of every word coloured by stage (fruit / ripe / growing), "This bed stays in your garden". Share · Choose next bed. | S3, A1 (✕) | Phase 1, branch `seeds-harvest/phase-1` |
 | S3 | Pick a seed packet | `SeedPackets` | Built | 3 packets: Follow the bee (most words shared with the garden), Same goal (next on the goal path), Something new (an interest not planted yet, at their level). Each: name, collection · level · word count, why line. Tap to select; "Plant <bed>" makes it the active bed. Browse all topics. | A7, A6 | Phase 1, branch `seeds-harvest/phase-1` |
-| S4 | Home · Pick your next seed packet | `HomeNextPacket` | For approval | A1 when the active bed is fully planted and no packet was picked: Next up = "Pick your next seed packet" (packet icon, "Environment is fully planted · 3 beds picked for you", See seed packets). Replaces the Plant mission, so Home never shows "Plant 0". | S3 | — |
-| S5 | Home · Plant with dropped seeds | `HomeDroppedSeeds` | For approval | A1 Next up "Plant 5 new words" with an "incl. 2 dropped seeds" pill when today's planting includes seeds. | A2 | — |
-| S6 | Want a little more? · harvest | `TodayDoneHarvest` | For approval | A1c when all missions are done and the bed has nothing left to plant: the Plant row becomes "See your harvest · Environment is fully planted". | S2 | — |
-| S7 | Harvest share card | `HarvestShareCard` (360 × 450, exported 1080 × 1350) | For approval | The image S2's Share sends: dygo, basket, "<bed> · harvested", "I grew 7 English words", words grown / fruit / days, the first words, dygoacademy.com. | — | — |
+| S4 | Home · Pick your next seed packet | `HomeNextPacket` | Built | A1 when the active bed is fully planted and no packet was picked: Next up = "Pick your next seed packet" (packet icon, "Environment is fully planted · 3 beds picked for you", See seed packets). Replaces the Plant mission, so Home never shows "Plant 0". | S3 | — |
+| S5 | Home · Plant with dropped seeds | `HomeDroppedSeeds` | Built | A1 Next up "Plant 5 new words" with an "incl. 2 dropped seeds" pill when today's planting includes seeds. | A2 | — |
+| S6 | Want a little more? · harvest | `TodayDoneHarvest` | Built | A1c when all missions are done and the bed has nothing left to plant: the Plant row becomes "See your harvest · Environment is fully planted". | S2 | — |
+| S7 | Harvest share card | `HarvestShareCard` (360 × 450, exported 1080 × 1350) | Built | The image S2's Share sends: dygo, basket, "<bed> · harvested", "I grew 7 English words", words grown / fruit / days, the first words, dygoacademy.com. | — | — |
 
 #### Landing page — page "Landing Page"
 | ID | Screen | File | Status | What's on it | Build status |
@@ -241,9 +241,11 @@ All iPad screens: sidebar (Garden · Missions · Topics · Groups · Me + Shared
 
 Newest first. Format: `### YYYY-MM-DD — title` then lines tagged **Added / Changed / Removed / Decision**, with screen IDs and status.
 
-### 2026-10-24 — S4–S7 Seeds & Harvest follow-ups (For approval)
+### 2026-10-24 — S4–S7 Seeds & Harvest follow-ups (Built)
 - **Added** on the canvas page "Adult · Seeds & Harvest", second row: S4 `HomeNextPacket`, S5 `HomeDroppedSeeds`, S6 `TodayDoneHarvest`, S7 `HarvestShareCard`; `source/*.dc.html`, `reference/S4-home-next-packet`, `S5-home-dropped-seeds`, `S6-today-done-harvest`, `S7-harvest-share-card`, `tools/render.js` jobs. English only.
-- **Decision** Dylan (2026-10-24) asked for the Home "Pick your next seed packet" card, the "incl. 2 dropped seeds" note, the "Want a little more?" harvest row and a share card to be drawn. Drawn by Claude from A1 / A1c's own parts; *for approval* before they are built.
+- **Decision** Dylan (2026-10-24) asked for the Home "Pick your next seed packet" card, the "incl. 2 dropped seeds" note, the "Want a little more?" harvest row and a share card to be drawn. Drawn by Claude from A1 / A1c's own parts; *Approved (Dylan, 2026-10-24).*
+- **Changed** S5's icon to the Plant mission's sprout (the app's A1 icon), canvas version 19.
+- *Built* (branch `seeds-harvest/phase-2`): S4 replaces an open Plant mission while the active bed is fully planted; S5's pill counts the dropped seeds in what's left to plant (after own and bed words); S6 replaces the plant row in A1c and A1b; S7 is drawn on a canvas at 1080 × 1350 and shared as a PNG (text and link when the browser can't share files). Screenshots at the board's size: the S4 and S5 Next up panels match within 0.34 %; S6's list and S7 match apart from text anti-aliasing (S7 is canvas text); the rest of A1 differs from the boards as before (A1c notes: taller hero, en-US date).
 
 ### 2026-10-24 — S1–S3 Seeds & Harvest: full task, gaps closed (Built)
 - **Changed** S3: always 3 packets while beds remain (an empty slot takes the next bed of the other rules); Plant <bed> opens the new bed's first planting instead of the bed page; with no bed left, the intro says so and Browse all topics is the button (no board).

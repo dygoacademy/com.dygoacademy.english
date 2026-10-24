@@ -26,7 +26,7 @@ import {
   freezeStreak,
   gardenPlants,
   greetingFor,
-  harvestHref,
+  harvestRow,
   liveMissions,
   missedDays,
   missionQuizHref,
@@ -125,8 +125,10 @@ export function HomeLive() {
   const bed = extraPlantBed(topics.data, activeBed.data?.topic_id ?? onboarding.data?.first_topic_id);
   const plantLeft = plantAllowance(missions.data);
   // Daily goal missions: only while today's seeds aren't all planted.
+  // S6: a fully planted active bed shows its harvest instead of a plant row.
+  const harvest = harvestRow(activeBed.data);
   const extraPlant =
-    bed && plantLeft > 0
+    !harvest && bed && plantLeft > 0
       ? { bed: bed.title, href: GARDEN_ROUTES.plant(Math.min(EXTRA_PLANT_COUNT, plantLeft), bed.id) }
       : null;
 
@@ -149,6 +151,7 @@ export function HomeLive() {
         ripens={nextRipening(upcoming.data, tomorrow, schedules.data)}
         extras={{
           plant: extraPlant,
+          harvest,
           speakHref: GARDEN_ROUTES.sounds,
           quizHref: missionQuizHref(topics.data, missions.data?.quiz_questions),
         }}
@@ -175,7 +178,8 @@ export function HomeLive() {
               missions.data,
               missionQuizHref(topics.data, missions.data.quiz_questions),
               s.due_now,
-              harvestHref(activeBed.data),
+              undefined,
+              activeBed.data,
             )
           : activity.data
             ? [
@@ -193,6 +197,7 @@ export function HomeLive() {
           ? {
               water: { count: s.due_now, href: GARDEN_ROUTES.review },
               plant: extraPlant,
+              harvest,
               speakHref: GARDEN_ROUTES.sounds,
             }
           : null

@@ -3,7 +3,14 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { apiClient } from '@/lib/api-client';
-import type { BedHarvest, BedState, SeedDrop, SeedPacketKind, SeedPackets } from '@/types';
+import type {
+  ActiveBed,
+  BedHarvest,
+  BedState,
+  SeedDrop,
+  SeedPacketKind,
+  SeedPackets,
+} from '@/types';
 
 /*
  * Seeds & Harvest Phase 1. The keys sit under ['srs', ...] like the
@@ -15,7 +22,7 @@ import type { BedHarvest, BedState, SeedDrop, SeedPacketKind, SeedPackets } from
 export function useActiveBed() {
   return useQuery({
     queryKey: ['srs', 'beds', 'active'],
-    queryFn: () => apiClient.get<BedState | null>('/beds/active'),
+    queryFn: () => apiClient.get<ActiveBed | null>('/beds/active'),
   });
 }
 

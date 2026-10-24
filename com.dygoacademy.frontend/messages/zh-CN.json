@@ -421,8 +421,12 @@
           "water": "开始浇水",
           "plant": "开始种植",
           "challenge": "开始挑战",
-          "speak": "开始说"
-        }
+          "speak": "开始说",
+          "packet": "看看种子包"
+        },
+        "packet": "选下一包种子",
+        "packetLine": "{bed}已全部种下 · 为你挑了 3 个花圃",
+        "plantSeeds": "含 {count} 颗掉落的种子"
       },
       "ripens": "明天 {time} · <b>{count} 个单词到期</b>",
       "more": {
@@ -715,7 +719,9 @@
       "speak": "说 3 个句子",
       "speakTime": "约 2 分钟",
       "quiz": "测验一个花圃",
-      "quizMeta": "10 道快速题"
+      "quizMeta": "10 道快速题",
+      "harvest": "看看你的收获",
+      "harvestFrom": "{bed}已全部种下"
     },
     "review": {
       "close": "关闭",
@@ -1721,7 +1727,17 @@
       "next": "选择下一个花圃",
       "shareText": "我在 Dygo 的{bed}花圃里种出了 {count} 个单词。",
       "notReady": "这个花圃还有种子没种下。",
-      "plantRest": "种下剩下的"
+      "plantRest": "种下剩下的",
+      "card": {
+        "brand": "Word Garden",
+        "overline": "{bed} · 已收获",
+        "title": "我种出了 {count} 个英语单词",
+        "grown": "个单词长成",
+        "fruit": "结果",
+        "days": "天",
+        "site": "dygoacademy.com",
+        "file": "dygo-harvest.png"
+      }
     },
     "seedPackets": {
       "back": "返回",

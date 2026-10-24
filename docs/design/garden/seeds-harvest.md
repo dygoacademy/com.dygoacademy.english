@@ -62,3 +62,17 @@ phone boards only: Vietnamese and iPad boards don't exist yet (plan Phase 3).
   name Fraunces 20; meta 13 px muted "<collection> · <level> · N words"; why pill 12 px bold
   forest on `forest-wash`, radius 8.
 - Plant <bed> → POST /beds, then the new bed's first planting. Browse all topics → `/topics`.
+
+## S4–S7 (Home and sharing)
+
+- **S4** `HomeNextPacket`: A1's Next up panel (`water-panel`, radius 18, 14 padding) with the S3 packet
+  art (24 px wide), "Pick your next seed packet" 17 px bold, "<bed> is fully planted · 3 beds picked
+  for you" 12 px `soft-text`, the 46 px water button "See seed packets" → S3. Shows while the active
+  bed is fully planted and today's Plant mission is open; in Then it is a plain row with a packet icon.
+- **S5** `HomeDroppedSeeds`: the Plant Next up keeps its bar; after "Not started" a pill
+  (`forest-wash`, radius 8, 2 / 7 padding, bold forest, 14 px sprout) "incl. N dropped seeds".
+- **S6** `TodayDoneHarvest`: A1c's list; the plant row becomes "See your harvest · <bed> is fully
+  planted", basket icon (clay, 20 px) on a `primary-soft` well → S2. Same in A1b.
+- **S7** `HarvestShareCard`: 360 × 450 forest card drawn on a canvas at 3× (`lib/harvest-card.ts`),
+  positions measured from `reference/S7-harvest-share-card.html` with the fonts loaded.
+

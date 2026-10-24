@@ -17,9 +17,19 @@ export interface BedState {
 
 export type HarvestStage = 'fruit' | 'ripe' | 'growing';
 
+/** `GET /beds/active`: the bed, plus what today's planting takes before and after its seeds. */
+export interface ActiveBed extends BedState {
+  /** Unplanted words planted before any dropped seed (own added words, then the bed's own). */
+  unplanted_ahead: number;
+  /** Unplanted dropped seeds (S5 "incl. 2 dropped seeds"). */
+  unplanted_seeds: number;
+}
+
 /** `GET /beds/:topicId/harvest` (S2). */
 export interface BedHarvest extends BedState {
   first_harvest: boolean;
+  /** Days since the learner started the bed (S7 share card); null when unknown. */
+  days_active: number | null;
   fruit: number;
   ripe: number;
   growing: number;

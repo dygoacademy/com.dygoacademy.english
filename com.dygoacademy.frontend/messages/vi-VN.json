@@ -417,8 +417,12 @@
           "water": "Bắt đầu tưới",
           "plant": "Bắt đầu gieo",
           "challenge": "Bắt đầu thử thách",
-          "speak": "Bắt đầu nói"
-        }
+          "speak": "Bắt đầu nói",
+          "packet": "Xem các gói hạt giống"
+        },
+        "packet": "Chọn gói hạt giống tiếp theo",
+        "packetLine": "Luống {bed} đã gieo hết · 3 luống chọn sẵn cho bạn",
+        "plantSeeds": "gồm {count} hạt rơi"
       },
       "ripens": "Ngày mai {time} · <b>{count, plural, one {# từ} other {# từ}} đến hạn tưới</b>",
       "more": {
@@ -711,7 +715,9 @@
       "speak": "Nói 3 câu",
       "speakTime": "Khoảng 2 phút",
       "quiz": "Kiểm tra một luống",
-      "quizMeta": "10 câu hỏi nhanh"
+      "quizMeta": "10 câu hỏi nhanh",
+      "harvest": "Xem mùa thu hoạch",
+      "harvestFrom": "Luống {bed} đã gieo hết"
     },
     "review": {
       "close": "Đóng",
@@ -1717,7 +1723,17 @@
       "next": "Chọn luống tiếp theo",
       "shareText": "Mình đã trồng được {count} từ trong luống {bed} trên Dygo.",
       "notReady": "Luống này vẫn còn hạt giống để gieo.",
-      "plantRest": "Gieo nốt"
+      "plantRest": "Gieo nốt",
+      "card": {
+        "brand": "Word Garden",
+        "overline": "{bed} · đã thu hoạch",
+        "title": "Mình đã trồng {count} từ tiếng Anh",
+        "grown": "từ đã lớn",
+        "fruit": "kết trái",
+        "days": "ngày",
+        "site": "dygoacademy.com",
+        "file": "dygo-thu-hoach.png"
+      }
     },
     "seedPackets": {
       "back": "Quay lại",

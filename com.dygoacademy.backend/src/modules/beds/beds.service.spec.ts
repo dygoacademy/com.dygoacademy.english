@@ -34,11 +34,13 @@ const state = (topic_id: string, word_count: number, unplanted_count: number) =>
 
 describe('BedsService.active', () => {
   it('reads the active bed and whether it is ready to harvest', async () => {
-    const db = fakeDb([[{ topic_id: OLD }], [state(OLD, 5, 0)]]);
+    const db = fakeDb([[{ topic_id: OLD }], [state(OLD, 5, 0)], [{ ahead: 0, seeds: 2 }]]);
     const service = await makeService(db);
     await expect(service.active('user-1')).resolves.toEqual({
       ...state(OLD, 5, 0),
       harvest_ready: true,
+      unplanted_ahead: 0,
+      unplanted_seeds: 2,
     });
     expect(db.query.mock.calls[0][0]).toMatch(
       /from public\.user_beds ub where ub\.user_id = auth\.uid\(\) and ub\.status = 'active'/,
@@ -48,7 +50,9 @@ describe('BedsService.active', () => {
   it('is null without a bed, and an empty bed is not ready', async () => {
     const service = await makeService(fakeDb([[{ topic_id: null }]]));
     await expect(service.active('user-1')).resolves.toBeNull();
-    const empty = await makeService(fakeDb([[{ topic_id: OLD }], [state(OLD, 0, 0)]]));
+    const empty = await makeService(
+      fakeDb([[{ topic_id: OLD }], [state(OLD, 0, 0)], [{ ahead: 0, seeds: 0 }]]),
+    );
     await expect(empty.active('user-1')).resolves.toMatchObject({ harvest_ready: false });
   });
 });
@@ -99,11 +103,12 @@ describe('BedsService.harvest (S2)', () => {
       { topic_word_id: 'w3', word: 'drought', stage: 'growing' },
       { topic_word_id: 'w4', word: 'habitat', stage: 'growing' },
     ];
-    const db = fakeDb([[state(OLD, 4, 0)], words, [{ n: 0 }]]);
+    const db = fakeDb([[state(OLD, 4, 0)], words, [{ n: 0 }], [{ days: 6 }]]);
     const harvest = await (await makeService(db)).harvest('user-1', OLD);
     expect(harvest).toMatchObject({
       harvest_ready: true,
       first_harvest: true,
+      days_active: 6,
       fruit: 1,
       ripe: 1,
       growing: 2,
