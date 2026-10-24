@@ -54,6 +54,8 @@ Exported from the canvas on 2026-09-26:
 
 Every screen above also has a **Vietnamese reference**, `<name>-vi` (for example `A1-todays-garden-vi`, `GR3-tricky-patches-vi`): 24 English and 24 Vietnamese references in all (AU added 2026-09-29). Exception: S1–S3 (Seeds & Harvest) have no Vietnamese boards yet; they come in that plan's Phase 3, and until then vi-VN uses the English layout with translated copy, checked like Chinese.
 
+Seeds & Harvest (S1–S3): the build guide with every value per screen is `seeds-harvest.md` in this folder.
+
 ## Languages
 
 The app ships in **English (`en-US`), Simplified Chinese (`zh-CN`) and Vietnamese (`vi-VN`)** (full locale codes since 2026-09-26; the old `en` / `vi` still work in `?locale=` and `--locale`); see `docs/plans/phase 12 implementation plan.md`, step UI-L.

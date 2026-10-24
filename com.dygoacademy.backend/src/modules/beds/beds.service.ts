@@ -1,4 +1,5 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, Optional } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import type { PoolClient } from 'pg';
 
 import { DatabaseService } from '../../database/database.service';
@@ -157,7 +158,10 @@ function toState(row: BedState): BedState {
 /** Seeds & Harvest Phase 1: the learner's beds, S2 Bed harvest and S3 seed packets. */
 @Injectable()
 export class BedsService {
-  constructor(private readonly db: DatabaseService) {}
+  constructor(
+    private readonly db: DatabaseService,
+    @Optional() private readonly config?: ConfigService,
+  ) {}
 
   /** The bed today's planting takes words from, or null when the learner has none. */
   async active(userId: string): Promise<BedState | null> {
@@ -210,6 +214,8 @@ export class BedsService {
 
   /** S1: the oldest seed drop the learner hasn't seen yet, or null. */
   async nextDrop(userId: string): Promise<SeedDrop | null> {
+    // Flag `seed_drops` off: S1 never shows, even for drops made while it was on.
+    if (!(this.config?.get<boolean>('seedDrops.enabled', false) ?? false)) return null;
     return this.db.withUser(userId, async (client) => {
       const head = await client.query<{ topic_word_id: string }>(
         `${DROP_HEAD} where sd.seen_at is null order by sd.created_at, sd.dropped_by limit 1`,

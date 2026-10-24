@@ -17,8 +17,9 @@
  *             value never clears an earlier review.
  *
  * A row whose `word` isn't in master_lexicon is reported and skipped. The
- * related word doesn't need to exist yet: when a seed drops, it is added to
- * the learner's My words and enriched like any word they add.
+ * related word drops only once it has its own master_lexicon entry with
+ * native audio (and, for a phrase, is_phrase); the import lists the
+ * related words still missing one.
  */
 const fs = require('fs');
 const path = require('path');
@@ -142,6 +143,22 @@ async function main() {
         [lexicon.rows[0].id, r.related, r.kind, r.rank, r.reviewed],
       );
       written++;
+    }
+    // A relation only drops when its word has a lexicon entry with audio
+    // (modules/beds/seed-drops.ts): list the ones still missing.
+    const missingAudio = await db.query(
+      `select distinct r.related_word
+         from public.word_relations r
+         left join public.master_lexicon ml
+                on ml.normalized_word = lower(trim(r.related_word)) and ml.language_code = 'en'
+        where ml.id is null or ml.audio_url is null or ml.audio_url = ''
+        order by r.related_word`,
+    );
+    if (missingAudio.rows.length) {
+      console.warn(
+        `${missingAudio.rows.length} related words have no lexicon entry with audio yet, ` +
+          `so they won't drop: ${missingAudio.rows.map((r) => r.related_word).join(', ')}`,
+      );
     }
     await db.query(dryRun ? 'rollback' : 'commit');
   } catch (err) {

@@ -72,6 +72,13 @@ export default () => ({
     busyEtaSeconds: parseInt(process.env.SPEECH_BUSY_ETA_SECONDS || '15', 10),
   },
 
+  // Seeds & Harvest Phase 2: fruit drops seeds (feature flag `seed_drops`). Off
+  // unless SEED_DROPS_ENABLED=true; with it off no review drops seeds and S1
+  // never shows. The numbers live in modules/beds/seeds-harvest.config.ts.
+  seedDrops: {
+    enabled: process.env.SEED_DROPS_ENABLED === 'true',
+  },
+
   // Voice donation (`docs/plans/Voice donation consent plan.md`, 2026-10-11). Off unless
   // VOICE_DONATION_ENABLED=true (UAT only until the legal text is approved).
   // VOICE_DONATION_KEY = 32 random bytes, base64 (`openssl rand -base64 32`):

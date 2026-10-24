@@ -237,6 +237,12 @@ All iPad screens: sidebar (Garden · Missions · Topics · Groups · Me + Shared
 
 Newest first. Format: `### YYYY-MM-DD — title` then lines tagged **Added / Changed / Removed / Decision**, with screen IDs and status.
 
+### 2026-10-24 — S1–S3 Seeds & Harvest: full task, gaps closed (Built)
+- **Changed** S3: always 3 packets while beds remain (an empty slot takes the next bed of the other rules); Plant <bed> opens the new bed's first planting instead of the bed page; with no bed left, the intro says so and Browse all topics is the button (no board).
+- **Changed** S1 sits behind the `seed_drops` flag (`SEED_DROPS_ENABLED`, off by default) and only drops related words that have a lexicon entry with native audio; a fruit word drops once, ever.
+- **Added** `seeds-harvest.md`, the build guide (every value per screen); README points to it.
+- **Decision** Not built, no boards: the Home "Pick your next seed packet" card, the "incl. 2 dropped seeds" note, the "Want a little more?" harvest row and a share card image (questions for Dylan in `docs/plans/Seeds and Harvest gap map.md`). Phase 3 stopped: no Vietnamese or iPad boards for S1–S3 on the canvas.
+
 ### 2026-10-23 — S1–S3 Seeds & Harvest (Approved)
 - **Added** canvas page "Adult · Seeds & Harvest": `source/SeedDrop.dc.html` (S1), `source/BedHarvest.dc.html` (S2), `source/SeedPackets.dc.html` (S3); `reference/S1-seed-drop`, `reference/S2-bed-harvest`, `reference/S3-seed-packets`, `reference/S3-seed-packets-goal` (`pick: 'goal'`), `tools/render.js` jobs. English only: the Vietnamese and iPad boards are the plan's Phase 3.
 - **Decision** A small bed must never leave "Plant N new words" empty. Fruit drops related words into the bed (S1), and a bed with nothing left to plant ends in a harvest (S2) and a choice of 3 seed packets for the next bed (S3). *Approved (Dylan, 2026-10-23).* Product plan: doc "Dygo Word Garden: Seeds & Harvest plan". Build plan: `docs/plans/Seeds and Harvest implementation plan.md`. Phase 1 = S2 + S3, Phase 2 = S1.

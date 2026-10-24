@@ -83,7 +83,34 @@ describe('pickPackets (S3 seed packets)', () => {
       ...CTX,
       current_shelf: null,
     });
-    expect(packets).toEqual([expect.objectContaining({ kind: 'new', topic_id: 'b' })]);
+    expect(packets.map((p) => [p.kind, p.topic_id])).toEqual([
+      ['new', 'b'],
+      ['new', 'a'],
+    ]);
+  });
+
+  it('always offers 3 while beds remain: an empty slot is filled from the other rules', () => {
+    const packets = pickPackets(
+      [bed('a', { word_count: 40 }), bed('b', { word_count: 30 }), bed('c', { word_count: 20 })],
+      { ...CTX, current_shelf: null },
+    );
+    // No bee (nothing known) and no goal bed: Something new fills all 3.
+    expect(packets.map((p) => [p.kind, p.topic_id])).toEqual([
+      ['new', 'a'],
+      ['new', 'b'],
+      ['new', 'c'],
+    ]);
+    const mixed = pickPackets(
+      [
+        bed('k', { known_count: 2 }),
+        bed('g', { fits_goal: true }),
+        bed('x', { word_count: 5 }),
+        bed('y'),
+      ],
+      CTX,
+    );
+    expect(mixed).toHaveLength(3);
+    expect(new Set(mixed.map((p) => p.topic_id)).size).toBe(3);
   });
 
   it('uses B1 when the learner level is unknown, and skips empty beds', () => {
@@ -95,7 +122,10 @@ describe('pickPackets (S3 seed packets)', () => {
       ],
       { level: null, planted_shelves: [], current_shelf: null },
     );
-    expect(packets).toEqual([expect.objectContaining({ kind: 'new', topic_id: 'b1' })]);
+    expect(packets.map((p) => [p.kind, p.topic_id])).toEqual([
+      ['new', 'b1'],
+      ['new', 'c1'],
+    ]);
   });
 });
 

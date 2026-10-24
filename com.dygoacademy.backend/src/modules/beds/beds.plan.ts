@@ -4,7 +4,9 @@
  * unit tested without a database; beds.service.ts reads the candidates.
  */
 
-export type PacketKind = 'bee' | 'goal' | 'new';
+import { SEEDS_HARVEST } from './seeds-harvest.config';
+
+export type PacketKind = (typeof SEEDS_HARVEST.packetKinds)[number];
 
 /** A public bed the learner has never planted from (beds.service CANDIDATES). */
 export interface PacketCandidate {
@@ -78,7 +80,8 @@ const bySize = (a: PacketCandidate, b: PacketCandidate) =>
  * at least 1), Same goal (a bed whose title fits the goal, else one on the
  * shelf of the bed being left), Something new (a shelf with no planted bed,
  * at the learner's level; else any shelf with no planted bed; else any bed).
- * One bed per packet; a packet with no bed left is dropped.
+ * One bed per packet, always 3 while the library has beds: an empty slot
+ * is filled from the other rules.
  */
 export function pickPackets(
   candidates: ReadonlyArray<PacketCandidate>,
@@ -95,27 +98,40 @@ export function pickPackets(
     return true;
   };
 
-  take(
-    'bee',
-    pool
-      .filter((c) => c.known_count > 0)
-      .sort((a, b) => b.known_count - a.known_count || bySize(a, b)),
-  );
+  const bee = pool
+    .filter((c) => c.known_count > 0)
+    .sort((a, b) => b.known_count - a.known_count || bySize(a, b));
 
   const goal = pool.filter((c) => c.fits_goal).sort(bySize);
   const sameShelf = ctx.current_shelf
     ? pool.filter((c) => c.shelf === ctx.current_shelf).sort(bySize)
     : [];
-  take('goal', [...goal, ...sameShelf]);
+  const goalList = [...goal, ...sameShelf];
 
   const level = ctx.level ?? 'B1';
   const planted = new Set(ctx.planted_shelves.filter((s): s is string => !!s));
   const freshShelf = pool.filter((c) => c.shelf && !planted.has(c.shelf)).sort(bySize);
-  take('new', [
+  const newList = [
     ...freshShelf.filter((c) => atLevel(c, level)),
     ...freshShelf,
     ...[...pool].sort(bySize),
-  ]);
+  ];
 
-  return out;
+  const lists: Array<[PacketKind, PacketCandidate[]]> = [
+    ['bee', bee],
+    ['goal', goalList],
+    ['new', newList],
+  ];
+  for (const [kind, list] of lists) take(kind, list);
+  // Always 3 (plan): a slot its own rule couldn't fill takes the next best
+  // bed of the other rules, labelled by the rule that picked it.
+  for (const [kind, list] of lists) {
+    while (out.length < SEEDS_HARVEST.packetKinds.length && take(kind, list));
+  }
+
+  const order: readonly PacketKind[] = SEEDS_HARVEST.packetKinds;
+  return out
+    .map((p, i) => ({ p, i }))
+    .sort((a, b) => order.indexOf(a.p.kind) - order.indexOf(b.p.kind) || a.i - b.i)
+    .map(({ p }) => p);
 }

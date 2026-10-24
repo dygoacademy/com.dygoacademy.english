@@ -1,3 +1,5 @@
+import { RELATION_ORDER_SQL, SEEDS_HARVEST } from './seeds-harvest.config';
+
 /**
  * Seeds & Harvest Phase 2: fruit drops seeds (design S1). Runs inside the
  * review's own transaction (SrsService.applyReview), under the learner's
@@ -8,12 +10,12 @@
  * learner's garden, already in the fruit's bed, or already in their My
  * words. Each seed becomes a topic word in the learner's My words bed
  * (private, so the library bed itself never changes) with a `seed_drops`
- * row tying it to the fruit word and its bed. The caller enqueues their
- * enrichment after the transaction commits.
+ * row tying it to the fruit word and its bed. Only words with a lexicon
+ * entry and native audio drop, so a seed is READY at once (no enrichment).
  */
 
-/** 1–2 seeds per fruit (plan, "How many"; Phase 4 tunes it). */
-export const SEEDS_PER_FRUIT = 2;
+/** 1–2 seeds per fruit (seeds-harvest.config.ts). */
+export const SEEDS_PER_FRUIT = SEEDS_HARVEST.seedsPerFruit;
 
 interface Queryable {
   query<T>(text: string, params?: unknown[]): Promise<{ rows: T[] }>;
@@ -25,26 +27,33 @@ export interface DroppedSeed {
   language_code: string;
 }
 
+// A relation drops only when its word already has a lexicon entry with
+// native audio (plan section 2), and a fruit word drops once, ever: a
+// retried review, or a word that loses and regains fruit, never drops twice.
 const RELATIONS = `
   with fruit as (
     select tw.id, tw.topic_id, tw.lexicon_id
       from public.topic_words tw
      where tw.id = $1 and tw.lexicon_id is not null
+       and not exists (select 1 from public.seed_drops sd where sd.dropped_by = tw.id)
   )
-  select r.related_word, r.kind
+  select r.kind, ml.id as lexicon_id, ml.normalized_word as word
     from public.word_relations r
     join fruit f on f.lexicon_id = r.lexicon_id
-   where not exists (
+    join public.master_lexicon ml
+      on ml.normalized_word = lower(trim(r.related_word)) and ml.language_code = 'en'
+   where ml.audio_url is not null and ml.audio_url <> ''
+     and not exists (
            select 1
              from public.user_word_srs uws
              join public.topic_words t2 on t2.id = uws.topic_word_id
-             left join public.master_lexicon m2 on m2.id = t2.lexicon_id
-            where coalesce(m2.normalized_word, lower(trim(t2.source_word))) = lower(trim(r.related_word)))
+            where t2.lexicon_id = ml.id
+               or lower(trim(t2.source_word)) = ml.normalized_word)
      and not exists (
            select 1 from public.topic_words t3
             where t3.topic_id in (f.topic_id, $2)
-              and lower(trim(t3.source_word)) = lower(trim(r.related_word)))
-   order by case r.kind when 'pairing' then 0 when 'family' then 1 else 2 end, r.rank, r.related_word
+              and (t3.lexicon_id = ml.id or lower(trim(t3.source_word)) = ml.normalized_word))
+   order by ${RELATION_ORDER_SQL('r.kind')}, r.rank, ml.normalized_word
    limit ${SEEDS_PER_FRUIT}`;
 
 /** Drops the fruit word's seeds; [] when it has no reviewed relations left to give. */
@@ -58,7 +67,7 @@ export async function dropSeeds(
   ).rows[0]?.id;
   if (!myWords) return [];
   const relations = (
-    await client.query<{ related_word: string; kind: string }>(RELATIONS, [
+    await client.query<{ kind: string; lexicon_id: string; word: string }>(RELATIONS, [
       fruitTopicWordId,
       myWords,
     ])
@@ -67,11 +76,11 @@ export async function dropSeeds(
   for (const r of relations) {
     const inserted = (
       await client.query<DroppedSeed>(
-        `insert into public.topic_words (topic_id, source_word, language_code, added_by)
-         values ($1, $2, 'en', $3)
+        `insert into public.topic_words (topic_id, lexicon_id, source_word, language_code, status, added_by)
+         values ($1, $2, $3, 'en', 'READY', $4)
          on conflict (topic_id, source_word, language_code) do nothing
          returning id as topic_word_id, source_word, language_code`,
-        [myWords, r.related_word.trim(), userId],
+        [myWords, r.lexicon_id, r.word, userId],
       )
     ).rows[0];
     if (!inserted) continue;

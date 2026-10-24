@@ -151,3 +151,12 @@ describe('BedsService.packets (S3)', () => {
     });
   });
 });
+
+describe('BedsService.nextDrop (flag seed_drops)', () => {
+  it('is null with the flag off, and never reads the database', async () => {
+    const db = fakeDb([]);
+    const service = await makeService(db);
+    await expect(service.nextDrop('user-1')).resolves.toBeNull();
+    expect(db.withUser).not.toHaveBeenCalled();
+  });
+});

@@ -8,6 +8,7 @@
  * without a database.
  */
 
+import { SEEDS_HARVEST } from '../beds/seeds-harvest.config';
 import type { MissionType } from './missions.store';
 
 /** Pace guesses in seconds, to tune from real session times. */
@@ -16,13 +17,9 @@ export const PACE = { review: 10, newWord: 40, quizQuestion: 12, speakSentence: 
 /** Least new words on a day that isn't a catch-up day. */
 export const PLANT_FLOOR = 3;
 
-/**
- * Seeds & Harvest: more than this many words due at the day's first read
- * and the day plants at most THIRSTY_PLANT, so watering never becomes a wall
- * (plan, "Daily planting"; Phase 4 tunes both).
- */
-export const THIRSTY_LIMIT = 20;
-export const THIRSTY_PLANT = 2;
+/** Seeds & Harvest: the thirsty limit (seeds-harvest.config.ts). */
+export const THIRSTY_LIMIT = SEEDS_HARVEST.thirstyLimit;
+export const THIRSTY_PLANT = SEEDS_HARVEST.thirstyPlant;
 
 /** Fewest words with a speaking item for a SPEAK mission. */
 export const SPEAK_MIN = 3;
@@ -37,9 +34,27 @@ export interface GoalTier {
 }
 
 export const GOAL_TIERS: readonly GoalTier[] = [
-  { minutes: 5, plant: 3, quizQuestions: 5, speak: 3, practice: 'quiz' },
-  { minutes: 10, plant: 5, quizQuestions: 10, speak: 3, practice: 'alternate' },
-  { minutes: 15, plant: 8, quizQuestions: 10, speak: 5, practice: 'alternate' },
+  {
+    minutes: 5,
+    plant: SEEDS_HARVEST.newWordsPerDay.light,
+    quizQuestions: 5,
+    speak: 3,
+    practice: 'quiz',
+  },
+  {
+    minutes: 10,
+    plant: SEEDS_HARVEST.newWordsPerDay.steady,
+    quizQuestions: 10,
+    speak: 3,
+    practice: 'alternate',
+  },
+  {
+    minutes: 15,
+    plant: SEEDS_HARVEST.newWordsPerDay.intense,
+    quizQuestions: 10,
+    speak: 5,
+    practice: 'alternate',
+  },
   { minutes: 20, plant: 10, quizQuestions: 10, speak: 5, practice: 'both' },
   { minutes: 30, plant: 15, quizQuestions: 15, speak: 5, practice: 'both' },
 ];

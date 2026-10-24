@@ -1,13 +1,7 @@
-import { InjectQueue } from '@nestjs/bullmq';
 import { Injectable, Logger, NotFoundException, Optional } from '@nestjs/common';
-import type { Queue } from 'bullmq';
+import { ConfigService } from '@nestjs/config';
 
 import { DatabaseService } from '../../database/database.service';
-import {
-  ENRICHMENT_QUEUE,
-  ENRICH_WORD_JOB,
-  type WordEnrichmentJob,
-} from '../../queues/queue.constants';
 import { dropSeeds, type DroppedSeed } from '../beds/seed-drops';
 import {
   MissionClient,
@@ -343,10 +337,8 @@ export class SrsService {
 
   constructor(
     protected readonly db: DatabaseService,
-    // Optional so unit tests and tools that build SrsService alone don't need Redis.
-    @Optional()
-    @InjectQueue(ENRICHMENT_QUEUE)
-    private readonly enrichmentQueue?: Queue<WordEnrichmentJob>,
+    // Optional so unit tests and tools that build SrsService alone need no config.
+    @Optional() private readonly config?: ConfigService,
   ) {}
 
   /**
@@ -735,10 +727,10 @@ export class SrsService {
 
       const row = upserted.rows[0];
       await recordMissions(true);
-      // Seeds & Harvest Phase 2: a word turning fruit drops its seeds into
-      // the learner's garden. In a savepoint, so a failed drop never loses
-      // the review.
-      if (masteredBefore === null && row.mastered_at !== null) {
+      // Seeds & Harvest Phase 2 (flag `seed_drops`, SEED_DROPS_ENABLED): a
+      // word turning fruit drops its seeds into the learner's garden. In a
+      // savepoint, so a failed drop never loses the review.
+      if (this.seedDropsOn() && masteredBefore === null && row.mastered_at !== null) {
         await client.query('savepoint seed_drops');
         try {
           seeds = await dropSeeds(client, userId, input.topicWordId);
@@ -767,26 +759,12 @@ export class SrsService {
         seeds_dropped: seeds.length,
       };
     });
-    await this.enrichSeeds(userId, seeds);
     return result;
   }
 
-  /**
-   * Seeds & Harvest: enrich dropped seeds like any added word, after the
-   * review committed. A queue hiccup leaves them ENRICHING (MaintenanceProcessor
-   * recovers them), never fails the review.
-   */
-  private async enrichSeeds(userId: string, seeds: DroppedSeed[]): Promise<void> {
-    for (const seed of seeds) {
-      await this.enrichmentQueue
-        ?.add(ENRICH_WORD_JOB, {
-          topicWordId: seed.topic_word_id,
-          word: seed.source_word,
-          languageCode: seed.language_code,
-          triggeredByUserId: userId,
-        })
-        .catch((err: unknown) => this.logger.warn(`seed enrichment: ${String(err)}`));
-    }
+  /** Seeds & Harvest: the `seed_drops` flag (off unless SEED_DROPS_ENABLED=true). */
+  private seedDropsOn(): boolean {
+    return this.config?.get<boolean>('seedDrops.enabled', false) ?? false;
   }
 
   /** FR-3.3 — the remedial queue. Reads the stored `is_leech` flag, not a live aggregate (set in `applyReview`). */

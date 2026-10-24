@@ -1,9 +1,8 @@
-import { getQueueToken } from '@nestjs/bullmq';
 import { NotFoundException } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { Test } from '@nestjs/testing';
 
 import { DatabaseService } from '../../database/database.service';
-import { ENRICHMENT_QUEUE, ENRICH_WORD_JOB } from '../../queues/queue.constants';
 import {
   DEFAULT_TIMEZONE,
   SrsService,
@@ -129,7 +128,7 @@ describe('SrsService.findDue', () => {
     expect(secondSql).not.toMatch(/first_topic_id|user_beds/);
   });
 
-  it("without a topic: own words, the active bed, its dropped seeds, other seeds, then the rest", async () => {
+  it('without a topic: own words, the active bed, its dropped seeds, other seeds, then the rest', async () => {
     const queryAsMock = jest.fn().mockResolvedValueOnce([]);
     const service = await makeService(queryAsMock);
 
@@ -137,10 +136,14 @@ describe('SrsService.findDue', () => {
 
     const [, sql] = queryAsMock.mock.calls[0];
     const order = String(sql).slice(String(sql).indexOf('order by case'));
-    expect(order).toMatch(/sd\.bed_topic_id = coalesce\(\(select ub\.topic_id from public\.user_beds ub[\s\S]+?\)\)\) then 2/);
+    expect(order).toMatch(
+      /sd\.bed_topic_id = coalesce\(\(select ub\.topic_id from public\.user_beds ub[\s\S]+?\)\)\) then 2/,
+    );
     expect(order).toMatch(/where sd\.topic_word_id = tw\.id\) then 3/);
     expect(order).toMatch(/when tw\.added_by is not distinct from auth\.uid\(\) then 0/);
-    expect(order).toMatch(/when tw\.topic_id is not distinct from coalesce\([\s\S]+\) then 1\s+else 4 end, tw\.created_at asc/);
+    expect(order).toMatch(
+      /when tw\.topic_id is not distinct from coalesce\([\s\S]+\) then 1\s+else 4 end, tw\.created_at asc/,
+    );
   });
 
   it('with a topic, new cards keep plain oldest-first order', async () => {
@@ -404,27 +407,36 @@ describe('SrsService.rate (Phase 10 — FSRS)', () => {
     expect(result.scheduled_days).toBeGreaterThan(1); // HARD grows, no 1-day trap
   });
 
-  it('Seeds & Harvest: a word turning fruit drops its seeds, enriched after the review commits', async () => {
+  /** SrsService with the `seed_drops` flag on. */
+  async function withSeedDrops(queryMock: jest.Mock): Promise<SrsService> {
+    const moduleRef = await Test.createTestingModule({
+      providers: [
+        SrsService,
+        {
+          provide: DatabaseService,
+          useValue: { queryAs: jest.fn(), withUser: withUserOf(queryMock) },
+        },
+        { provide: ConfigService, useValue: { get: (key: string) => key === 'seedDrops.enabled' } },
+      ],
+    }).compile();
+    return moduleRef.get(SrsService);
+  }
+
+  it('Seeds & Harvest: with the flag on, a word turning fruit drops its seeds', async () => {
     const queryMock = txMock({ state: reviewRow() });
     queryMock.mockImplementation((sql: string) => {
       if (/my_words_topic_id/.test(sql)) return Promise.resolve({ rows: [{ id: 'my-words' }] });
       if (/from public\.word_relations/.test(sql))
-        return Promise.resolve({ rows: [{ related_word: 'mitigation', kind: 'family' }] });
+        return Promise.resolve({
+          rows: [{ kind: 'family', lexicon_id: 'lex-1', word: 'mitigation' }],
+        });
       if (/insert into public\.topic_words/.test(sql))
         return Promise.resolve({
           rows: [{ topic_word_id: 'seed-1', source_word: 'mitigation', language_code: 'en' }],
         });
       return Promise.resolve({ rows: [{ n: '3' }] });
     });
-    const add = jest.fn().mockResolvedValue(undefined);
-    const moduleRef = await Test.createTestingModule({
-      providers: [
-        SrsService,
-        { provide: DatabaseService, useValue: { queryAs: jest.fn(), withUser: withUserOf(queryMock) } },
-        { provide: getQueueToken(ENRICHMENT_QUEUE), useValue: { add } },
-      ],
-    }).compile();
-    const service = moduleRef.get(SrsService);
+    const service = await withSeedDrops(queryMock);
 
     const result = await service.rate('user-1', { topicWordId: 'w1', rating: 'GOOD' }, NOW);
 
@@ -433,12 +445,18 @@ describe('SrsService.rate (Phase 10 — FSRS)', () => {
     const sqls = queryMock.mock.calls.map((c) => String(c[0]));
     expect(sqls).toContain('savepoint seed_drops');
     expect(sqls).toContain('release savepoint seed_drops');
-    expect(add).toHaveBeenCalledWith(ENRICH_WORD_JOB, {
-      topicWordId: 'seed-1',
-      word: 'mitigation',
-      languageCode: 'en',
-      triggeredByUserId: 'user-1',
-    });
+  });
+
+  it('Seeds & Harvest: with the flag off (the default), fruit drops nothing', async () => {
+    const queryMock = txMock({ state: reviewRow() });
+    queryMock.mockResolvedValue({ rows: [{ n: '3' }] });
+    const service = await makeService(jest.fn(), withUserOf(queryMock));
+
+    const result = await service.rate('user-1', { topicWordId: 'w1', rating: 'GOOD' }, NOW);
+
+    expect(result.just_mastered).toBe(true);
+    expect(result.seeds_dropped).toBe(0);
+    expect(queryMock.mock.calls.map((c) => String(c[0]))).not.toContain('savepoint seed_drops');
   });
 
   it('Seeds & Harvest: a failed drop rolls back to its savepoint and keeps the review', async () => {
@@ -448,13 +466,15 @@ describe('SrsService.rate (Phase 10 — FSRS)', () => {
         ? Promise.reject(new Error('boom'))
         : Promise.resolve({ rows: [{ n: '3' }] }),
     );
-    const service = await makeService(jest.fn(), withUserOf(queryMock));
+    const service = await withSeedDrops(queryMock);
 
     const result = await service.rate('user-1', { topicWordId: 'w1', rating: 'GOOD' }, NOW);
 
     expect(result.just_mastered).toBe(true);
     expect(result.seeds_dropped).toBe(0);
-    expect(queryMock.mock.calls.map((c) => String(c[0]))).toContain('rollback to savepoint seed_drops');
+    expect(queryMock.mock.calls.map((c) => String(c[0]))).toContain(
+      'rollback to savepoint seed_drops',
+    );
   });
 
   it('mastery is sticky: an already-mastered word stays mastered on a success, without re-announcing it', async () => {
@@ -1065,7 +1085,9 @@ describe('computeSrsSummary streak freezes (UI-6 U6-3)', () => {
     try {
       const queryFn = jest
         .fn()
-        .mockResolvedValueOnce([{ total_words: '1', mastered_words: '0', due_now: '0', leech_count: '0' }])
+        .mockResolvedValueOnce([
+          { total_words: '1', mastered_words: '0', due_now: '0', leech_count: '0' },
+        ])
         .mockResolvedValueOnce(reviews.map((review_date) => ({ review_date })))
         .mockResolvedValueOnce([{ display_name: null, ...profile }])
         .mockResolvedValueOnce(frozen.map((local_date) => ({ local_date })))
@@ -1080,7 +1102,11 @@ describe('computeSrsSummary streak freezes (UI-6 U6-3)', () => {
 
   it('uses a freeze for a missed day and keeps the streak', async () => {
     // Thu 2026-09-03; studied Mon+Tue, missed Wed.
-    const { summary, queryFn } = await at('2026-09-03T15:00:00.000Z', ['2026-09-01', '2026-08-31'], fresh);
+    const { summary, queryFn } = await at(
+      '2026-09-03T15:00:00.000Z',
+      ['2026-09-01', '2026-08-31'],
+      fresh,
+    );
     expect(summary.current_streak_days).toBe(2);
     expect(summary.freezes).toEqual({ available: 1, used_this_week: 1, refills_on: '2026-09-07' });
     expect(queryFn).toHaveBeenCalledTimes(5);
@@ -1089,10 +1115,14 @@ describe('computeSrsSummary streak freezes (UI-6 U6-3)', () => {
   });
 
   it('breaks the streak when no freeze is left, and writes nothing', async () => {
-    const { summary, queryFn } = await at('2026-09-03T15:00:00.000Z', ['2026-09-01', '2026-08-31'], {
-      streak_freezes_available: 0,
-      freezes_refilled_on: '2026-08-31',
-    });
+    const { summary, queryFn } = await at(
+      '2026-09-03T15:00:00.000Z',
+      ['2026-09-01', '2026-08-31'],
+      {
+        streak_freezes_available: 0,
+        freezes_refilled_on: '2026-08-31',
+      },
+    );
     expect(summary.current_streak_days).toBe(0);
     expect(summary.freezes.available).toBe(0);
     expect(queryFn).toHaveBeenCalledTimes(4);
@@ -1118,7 +1148,13 @@ describe('computeSrsSummary streak freezes (UI-6 U6-3)', () => {
 
   it("uses the learner's local day (time zone)", async () => {
     // 18:00Z on 09-02 is already 09-03 in Ho Chi Minh: 09-02 counts as missed there.
-    const local = await at('2026-09-02T18:00:00.000Z', ['2026-09-01'], fresh, [], 'Asia/Ho_Chi_Minh');
+    const local = await at(
+      '2026-09-02T18:00:00.000Z',
+      ['2026-09-01'],
+      fresh,
+      [],
+      'Asia/Ho_Chi_Minh',
+    );
     expect(local.summary.freezes.used_this_week).toBe(1);
     expect(local.summary.current_streak_days).toBe(1);
     const utc = await at('2026-09-02T18:00:00.000Z', ['2026-09-01'], fresh, [], 'UTC');
@@ -1127,7 +1163,14 @@ describe('computeSrsSummary streak freezes (UI-6 U6-3)', () => {
   });
 
   it('lets a stored frozen day bridge the chain and reports the best streak', async () => {
-    const old = ['2026-08-25', '2026-08-24', '2026-08-23', '2026-08-22', '2026-08-21', '2026-08-20'];
+    const old = [
+      '2026-08-25',
+      '2026-08-24',
+      '2026-08-23',
+      '2026-08-22',
+      '2026-08-21',
+      '2026-08-20',
+    ];
     const { summary } = await at(
       '2026-09-03T15:00:00.000Z',
       ['2026-09-03', '2026-09-01', ...old],

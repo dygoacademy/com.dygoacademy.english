@@ -9,12 +9,13 @@ import { usePlantBed, useSeedPackets } from '@/hooks/useBeds';
 
 import { SeedPacketsScreen } from '../screens/SeedPacketsScreen';
 import { packetView } from './beds';
+import { EXTRA_PLANT_COUNT } from './data';
 import { LiveError, LiveLoading } from './LiveState';
 
 /**
  * /topics/[id]/packets: S3 from GET /beds/packets; the first packet starts
  * selected, as on the board. "Plant <bed>" calls POST /beds and opens the
- * new bed (A7). Back returns to the harvest of bed `topicId`.
+ * new bed's first planting (A2, up to EXTRA_PLANT_COUNT new words). Back returns to the harvest of bed `topicId`.
  */
 export function SeedPacketsLive({ topicId }: { topicId: string }) {
   const t = useTranslations('screens.seedPackets');
@@ -33,7 +34,8 @@ export function SeedPacketsLive({ topicId }: { topicId: string }) {
     if (!selectedId) return;
     try {
       await plant.mutateAsync(selectedId);
-      router.push(GARDEN_ROUTES.topic(selectedId));
+      // The plan: planting a packet opens its first planting.
+      router.push(GARDEN_ROUTES.plant(EXTRA_PLANT_COUNT, selectedId));
     } catch {
       // The error line shows under the button.
     }
