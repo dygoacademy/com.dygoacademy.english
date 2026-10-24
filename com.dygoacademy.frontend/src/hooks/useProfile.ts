@@ -49,14 +49,22 @@ export function useMyKeepsakes(timezone: string = getResolvedTimezone()) {
   });
 }
 
-/** Saves `english_variety` / `daily_goal_minutes`; the profile query takes the reply. */
+/**
+ * Saves `english_variety` / `daily_goal_minutes`; the profile query takes the
+ * reply. A new daily goal also changes today's Plant mission (the server
+ * raises it), so the missions (['srs', ...]) are read again at once instead
+ * of when their cache goes stale.
+ */
 export function useUpdateProfilePrefs() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (change: ProfilePrefsChange) =>
       apiClient.patch<MyProfile>('/profiles/me', change),
-    onSuccess: (profile) => {
+    onSuccess: (profile, change) => {
       queryClient.setQueryData(['profile', 'me'], profile);
+      if (change.dailyGoalMinutes !== undefined) {
+        void queryClient.invalidateQueries({ queryKey: ['srs'] });
+      }
     },
   });
 }

@@ -1358,3 +1358,8 @@ Engineering-facing log of shipped fixes and changes, one dated entry per change.
 * **Files**: backend `profiles/profiles.service.ts` (`raiseTodaysPlanting`) + spec.
 * **What**: Dylan on UAT (2026-10-24): after today's planting was used up, A2 said "raise your daily goal in Profile to plant more". He raised it to 30 min and nothing changed, because today's missions are fixed when the day's first read creates them. Changing the daily goal now raises today's Plant mission to the new goal's count (never lowers it; a day without a Plant mission stays without one).
 * **Verified**: backend `tsc` clean, eslint clean on the module; profiles tests 47 passed (1 new).
+
+### Fixed: a new daily goal shows on the Garden at once
+* **Files**: frontend `hooks/useProfile.ts` (`useUpdateProfilePrefs`).
+* **What**: Dylan on UAT (2026-10-24): after changing the daily goal from 5 to 30 min, the Garden took a minute or so to show the extra words to plant, because today's missions stayed cached until they went stale (60 s). Saving a daily goal now refreshes the missions (the `['srs']` queries) straight away.
+* **Verified**: frontend `tsc` clean.
