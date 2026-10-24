@@ -70,15 +70,22 @@ const ONBOARDING_COLUMNS =
  * The first bed for each goal (OB3 is gone, 2026-10-11): a library topic
  * whose title starts a word with this (Postgres `~*`, `\m` = word start).
  * Topics have no slugs, so titles are matched; with no match, the biggest
- * library topic is used (as OB3's seed packets were ranked).
+ * library topic is used (as OB3's seed packets were ranked). Each pattern
+ * names the beds of the goal's collection in the beta library
+ * (database/content/library_beta.csv, 2026-10-24), so S3's Same goal
+ * packet finds them too. All its beds have 12 words, so the oldest wins:
+ * the file's first bed. IELTS leaves out the tier ladder's Core and Band
+ * beds, which share Foundation's created_at.
  */
 export const FIRST_BED_TITLES: Record<StudyGoal, string> = {
-  IELTS: '\\menvironment',
-  IELTS_GENERAL: '\\menvironment',
-  PTE: '\\menvironment',
-  WORK: '\\m(work|career)',
-  TRAVEL: '\\mtravel',
-  LIFE: '\\m(everyday|daily life)',
+  IELTS: '\\m(foundation vocabulary|academic word list|describing data)',
+  IELTS_GENERAL:
+    '\\m(housing and neighbourhood|shopping and money|letters and emails|health and wellbeing|education and training|community and local services)',
+  PTE: '\\m(foundation vocabulary|academic word list|describing data)',
+  WORK: '\\m(job hunting|emails at work|customer service|meetings and discussions|projects and deadlines|leadership and teamwork)',
+  TRAVEL:
+    '\\m(at the airport|getting around town|hotels and bookings|food and restaurants|sightseeing and culture|problems on the road)',
+  LIFE: '\\m(home and family|food and cooking|hobbies and free time|feelings and moods|friends and social life|news and opinions)',
 };
 
 /**

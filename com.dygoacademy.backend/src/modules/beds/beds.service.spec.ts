@@ -3,6 +3,7 @@ import { Test } from '@nestjs/testing';
 
 import { DatabaseService } from '../../database/database.service';
 import { BedsService } from './beds.service';
+import { FIRST_BED_TITLES } from '../profiles/profiles.service';
 
 const NEXT = 'cccccccc-0000-0000-0000-000000000002';
 const OLD = 'cccccccc-0000-0000-0000-000000000009';
@@ -132,7 +133,7 @@ describe('BedsService.packets (S3)', () => {
       [{ shelf: 'academic', active: true }],
     ]);
     const result = await (await makeService(db)).packets('user-1');
-    expect(db.query.mock.calls[1][1]).toEqual(['\\menvironment']);
+    expect(db.query.mock.calls[1][1]).toEqual([FIRST_BED_TITLES.IELTS]);
     expect(result).toEqual({
       packets: [
         {

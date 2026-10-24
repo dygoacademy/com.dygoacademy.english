@@ -122,11 +122,11 @@ describe('ProfilesService.updateOnboarding (OB1–OB5)', () => {
   });
 
   it.each([
-    ['IELTS', 'environment'],
-    ['IELTS_GENERAL', 'environment'],
-    ['WORK', 'work'],
-    ['TRAVEL', 'travel'],
-    ['LIFE', 'everyday'],
+    ['IELTS', 'foundation vocabulary'],
+    ['IELTS_GENERAL', 'housing and neighbourhood'],
+    ['WORK', 'job hunting'],
+    ['TRAVEL', 'at the airport'],
+    ['LIFE', 'home and family'],
   ] as const)('the first bed for %s is a %s topic', (goal, word) => {
     expect(FIRST_BED_TITLES[goal]).toContain(word);
   });

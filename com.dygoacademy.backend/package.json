@@ -29,6 +29,8 @@
     "translations-backfill:prod": "sh -c 'set -a; . ../env-profiles/prod.env; set +a; node scripts/translations-backfill.js \"$@\"' --",
     "relations-import": "node scripts/relations-import.js",
     "relations-import:prod": "sh -c 'set -a; . ../env-profiles/prod.env; set +a; node scripts/relations-import.js \"$@\"' --",
+    "library-import": "node scripts/library-import.js",
+    "library-import:prod": "sh -c 'set -a; . ../env-profiles/prod.env; set +a; node scripts/library-import.js \"$@\"' --",
     "start:dev:local": "sh -c 'set -a; . ../env-profiles/local.env; set +a; nest start --watch'",
     "start:dev:stg": "sh -c 'set -a; . ../env-profiles/stg.env; set +a; nest start --watch'",
     "start:prod:domain": "sh -c 'set -a; . ../env-profiles/prod.env; set +a; node dist/main'"
