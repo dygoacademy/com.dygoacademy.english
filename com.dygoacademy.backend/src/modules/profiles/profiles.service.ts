@@ -1,7 +1,9 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 
 import { DatabaseService } from '../../database/database.service';
-import { SrsService } from '../srs/srs.service';
+import { tierFor } from '../missions/missions.plan';
+import { localDateOf } from '../missions/missions.store';
+import { resolveUserTimezone, SrsService } from '../srs/srs.service';
 import { hasBand, StudyGoal, TARGET_BANDS, UpdateOnboardingDto } from './dto/update-onboarding.dto';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 
@@ -176,7 +178,33 @@ export class ProfilesService {
     if (rows.length === 0) {
       throw new NotFoundException('Profile not found.');
     }
+    if (dto.dailyGoalMinutes !== undefined)
+      await this.raiseTodaysPlanting(userId, dto.dailyGoalMinutes);
     return rows[0];
+  }
+
+  /**
+   * A bigger daily goal plants more today too (A2's "raise your daily goal
+   * in Profile to plant more"): today's Plant mission, once created, rises
+   * to the new goal's count. Never lowered, so words already planted stay
+   * counted. A day with no Plant mission (watering filled it) is left alone.
+   */
+  private async raiseTodaysPlanting(userId: string, goalMinutes: number): Promise<void> {
+    const plant = tierFor(goalMinutes).plant;
+    await this.db.withUser(userId, async (client) => {
+      const timezone = await resolveUserTimezone(
+        async <T extends Record<string, unknown>>(text: string, params: unknown[]) =>
+          (await client.query<T>(text, params)).rows,
+        userId,
+      );
+      await client.query(
+        `update public.daily_missions
+            set target = $3,
+                completed_at = case when progress >= $3 then completed_at end
+          where user_id = $1 and local_date = $2 and type = 'LEARN_NEW' and target < $3`,
+        [userId, localDateOf(new Date(), timezone), plant],
+      );
+    });
   }
 
   /** `GET /profiles/me/onboarding`: the caller's OB1–OB4 choices and whether OB5 is done. */

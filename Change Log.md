@@ -1353,3 +1353,8 @@ Engineering-facing log of shipped fixes and changes, one dated entry per change.
 * **Files**: frontend `live/SeedPacketsLive.tsx`.
 * **What**: Dylan's UAT test (2026-10-24): he picked "Community and Local Services" after the harvest and got an empty screen, because today's Plant mission was already full, so its first planting had nothing to plant. Plant <bed> now opens a planting of at most what's left of today's mission, and the new bed (A7) when nothing is left.
 * **Verified**: frontend `tsc` clean. The harvest itself worked on UAT: `bed_harvested` (Foundation Vocabulary, 12 words, 4 fruit) and `packet_chosen` (slot new) are in `product_events`.
+
+### Fixed: raising the daily goal now plants more today, as the empty planting screen promises
+* **Files**: backend `profiles/profiles.service.ts` (`raiseTodaysPlanting`) + spec.
+* **What**: Dylan on UAT (2026-10-24): after today's planting was used up, A2 said "raise your daily goal in Profile to plant more". He raised it to 30 min and nothing changed, because today's missions are fixed when the day's first read creates them. Changing the daily goal now raises today's Plant mission to the new goal's count (never lowers it; a day without a Plant mission stays without one).
+* **Verified**: backend `tsc` clean, eslint clean on the module; profiles tests 47 passed (1 new).

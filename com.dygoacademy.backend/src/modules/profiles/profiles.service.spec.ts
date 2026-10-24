@@ -11,11 +11,12 @@ import { ProfilesService } from './profiles.service';
 async function makeService(
   queryAsMock: jest.Mock,
   statsMock: jest.Mock = jest.fn(),
+  withUserMock: jest.Mock = jest.fn(),
 ): Promise<ProfilesService> {
   const moduleRef = await Test.createTestingModule({
     providers: [
       ProfilesService,
-      { provide: DatabaseService, useValue: { queryAs: queryAsMock } },
+      { provide: DatabaseService, useValue: { queryAs: queryAsMock, withUser: withUserMock } },
       { provide: SrsService, useValue: { stats: statsMock } },
     ],
   }).compile();
@@ -96,13 +97,38 @@ describe('ProfilesService.updateMine prefs (UI-6)', () => {
     const queryAs = jest
       .fn()
       .mockResolvedValue([{ ...ROW, english_variety: 'en-GB', daily_goal_minutes: 20 }]);
-    const service = await makeService(queryAs);
+    const query = jest.fn((sql: string) =>
+      Promise.resolve({ rows: sql.includes('timezone') ? [{ timezone: 'Asia/Ho_Chi_Minh' }] : [] }),
+    );
+    const withUser = jest.fn((_u: string, work: (c: unknown) => Promise<unknown>) =>
+      work({ query }),
+    );
+    const service = await makeService(queryAs, jest.fn(), withUser);
     await service.updateMine('user-42', { englishVariety: 'en-GB', dailyGoalMinutes: 20 });
     const [, sql, params] = queryAs.mock.calls[0];
     expect(sql).toMatch(/english_variety = \$2, daily_goal_minutes = \$3/);
     expect(sql).not.toMatch(/ui_locale =/);
-    expect(sql).toMatch(/returning id, ui_locale, meaning_locale, english_variety, daily_goal_minutes/);
+    expect(sql).toMatch(
+      /returning id, ui_locale, meaning_locale, english_variety, daily_goal_minutes/,
+    );
     expect(params).toEqual(['user-42', 'en-GB', 20]);
+  });
+
+  it("a bigger daily goal raises today's Plant mission, never lowers it", async () => {
+    const queryAs = jest.fn().mockResolvedValue([{ ...ROW, daily_goal_minutes: 30 }]);
+    const query = jest.fn((sql: string) =>
+      Promise.resolve({ rows: sql.includes('timezone') ? [{ timezone: 'UTC' }] : [] }),
+    );
+    const withUser = jest.fn((_u: string, work: (c: unknown) => Promise<unknown>) =>
+      work({ query }),
+    );
+    const service = await makeService(queryAs, jest.fn(), withUser);
+    await service.updateMine('user-42', { dailyGoalMinutes: 30 });
+    const update = query.mock.calls.find(([sql]) =>
+      String(sql).includes('update public.daily_missions'),
+    );
+    expect(update?.[0]).toMatch(/type = 'LEARN_NEW' and target < \$3/);
+    expect((update as unknown as [string, unknown[]])[1][2]).toBe(15);
   });
 });
 
