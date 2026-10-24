@@ -217,6 +217,12 @@ describe('PronounceLive (Stepping stones)', () => {
     expect(upload).toHaveBeenCalledWith('/speaking/check-pronunciation', expect.any(FormData));
     expect(screen.getByText('Clean crossing!')).toBeTruthy();
     expect(screen.getByRole('link', { name: 'Back to the bed' }).getAttribute('href')).toBe('/topics/t1');
+    const play = vi.mocked(HTMLMediaElement.prototype.play);
+    play.mockClear();
+    await act(async () => fireEvent.click(screen.getByRole('button', { name: 'Play mine' })));
+    expect((play.mock.instances[0] as unknown as HTMLMediaElement).src).toBe('blob:me');
+    await act(async () => fireEvent.click(screen.getByRole('button', { name: 'Native' })));
+    expect((play.mock.instances[1] as unknown as HTMLMediaElement).src).not.toBe('blob:me');
   });
 
   it("says it couldn't hear a quiet take, without calling the server", async () => {

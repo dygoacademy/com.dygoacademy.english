@@ -1571,6 +1571,8 @@
       "checkingLabel": "Đang kiểm tra, thường mất 1–2 giây",
       "hearMine": "Giọng của tôi",
       "hearNative": "Giọng bản xứ",
+      "playMine": "Phát giọng tôi",
+      "native": "Bản xứ",
       "almost": "Gần được · {ok}/{n} hòn đá",
       "wobbly": "{count, plural, =1 {Một hòn đá còn chênh vênh} other {# hòn đá còn chênh vênh}}",
       "soundedLike": "nghe giống /{ipa}/",

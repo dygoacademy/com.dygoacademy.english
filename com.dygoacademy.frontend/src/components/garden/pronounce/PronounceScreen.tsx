@@ -763,11 +763,32 @@ export function PronounceScreen(props: PronounceScreenProps) {
           </span>
         </div>
         {r.passed ? (
-          <div className="order-3 flex items-center gap-3 rounded-[20px] border border-border bg-surface px-4 py-3.5 ipad:mt-3 ipad:gap-4 ipad:rounded-[22px] ipad:border-[var(--pron-card-line)] ipad:bg-[var(--pron-card-sunken)] ipad:p-5">
-            <Flower className="h-10 w-10 ipad:h-12 ipad:w-12" />
-            <span className="text-[15px] leading-[1.4] ipad:text-[17px] ipad:leading-[1.45]">
-              {t.rich('pollinatedBody', { word: props.word, b: boldWord })}
-            </span>
+          <div className="order-3 flex flex-col gap-2.5 rounded-[20px] border border-border bg-surface px-4 py-3.5 ipad:mt-3 ipad:gap-3 ipad:rounded-[22px] ipad:border-[var(--pron-card-line)] ipad:bg-[var(--pron-card-sunken)] ipad:p-5">
+            <div className="flex items-center gap-3 ipad:gap-4">
+              <Flower className="h-10 w-10 ipad:h-12 ipad:w-12" />
+              <span className="text-[15px] leading-[1.4] ipad:text-[17px] ipad:leading-[1.45]">
+                {t.rich('pollinatedBody', { word: props.word, b: boldWord })}
+              </span>
+            </div>
+            {/* Compare after a pass too (Dylan, 2026-10-24); styled like the retry card's pair. */}
+            <div className="flex gap-2 ipad:gap-2.5">
+              <button
+                type="button"
+                onClick={props.onHearMine}
+                className="flex h-11 flex-1 items-center justify-center gap-2 rounded-[14px] border border-border bg-bg text-[14px] font-bold text-forest ipad:h-[52px] ipad:rounded-[18px] ipad:bg-surface ipad:text-[16px]"
+              >
+                <Play size={18} />
+                {t('playMine')}
+              </button>
+              <button
+                type="button"
+                onClick={props.onHearNative}
+                className="flex h-11 flex-1 items-center justify-center gap-2 rounded-[14px] bg-[var(--pron-pass)] text-[14px] font-bold text-forest ipad:h-[52px] ipad:rounded-[18px] ipad:text-[16px]"
+              >
+                <Speaker size={18} />
+                {t('native')}
+              </button>
+            </div>
           </div>
         ) : r.first ? (
           <div className="order-3 flex flex-col gap-2.5 rounded-[20px] border border-border bg-surface px-4 py-3.5 ipad:mt-3 ipad:gap-3 ipad:rounded-[22px] ipad:border-[var(--pron-card-line)] ipad:bg-[var(--pron-card-sunken)] ipad:p-5">

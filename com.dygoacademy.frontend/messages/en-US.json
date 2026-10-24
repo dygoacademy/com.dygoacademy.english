@@ -1571,6 +1571,8 @@
       "checkingLabel": "Checking, usually 1 to 2 seconds",
       "hearMine": "Hear mine",
       "hearNative": "Hear native",
+      "playMine": "Play mine",
+      "native": "Native",
       "almost": "Almost · {ok} of {n} stones",
       "wobbly": "{count, plural, =1 {One wobbly stone} other {# wobbly stones}}",
       "soundedLike": "sounded like /{ipa}/",
