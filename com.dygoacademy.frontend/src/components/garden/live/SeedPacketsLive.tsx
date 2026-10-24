@@ -6,22 +6,26 @@ import { useTranslations } from 'next-intl';
 
 import { GARDEN_ROUTES } from '@/constants/garden';
 import { usePlantBed, useSeedPackets } from '@/hooks/useBeds';
+import { useTodayMissions } from '@/hooks/useMissions';
 
 import { SeedPacketsScreen } from '../screens/SeedPacketsScreen';
 import { packetView } from './beds';
-import { EXTRA_PLANT_COUNT } from './data';
+import { EXTRA_PLANT_COUNT, plantAllowance } from './data';
 import { LiveError, LiveLoading } from './LiveState';
 
 /**
  * /topics/[id]/packets: S3 from GET /beds/packets; the first packet starts
  * selected, as on the board. "Plant <bed>" calls POST /beds and opens the
- * new bed's first planting (A2, up to EXTRA_PLANT_COUNT new words). Back returns to the harvest of bed `topicId`.
+ * new bed's first planting (A2, up to EXTRA_PLANT_COUNT new words, at
+ * most what's left of today's Plant mission; none left → the bed, A7).
+ * Back returns to the harvest of bed `topicId`.
  */
 export function SeedPacketsLive({ topicId }: { topicId: string }) {
   const t = useTranslations('screens.seedPackets');
   const router = useRouter();
   const packets = useSeedPackets();
   const plant = usePlantBed();
+  const missions = useTodayMissions();
   const [picked, setPicked] = React.useState<string | null>(null);
 
   if (packets.isPending) return <LiveLoading />;
@@ -37,8 +41,15 @@ export function SeedPacketsLive({ topicId }: { topicId: string }) {
         topicId: selectedId,
         slot: views.find((v) => v.id === selectedId)?.kind,
       });
-      // The plan: planting a packet opens its first planting.
-      router.push(GARDEN_ROUTES.plant(EXTRA_PLANT_COUNT, selectedId));
+      // The plan: planting a packet opens its first planting. With today's
+      // planting already used up, that session would be empty, so the new
+      // bed itself opens instead (its seeds plant tomorrow).
+      const left = plantAllowance(missions.data);
+      router.push(
+        left > 0
+          ? GARDEN_ROUTES.plant(Math.min(EXTRA_PLANT_COUNT, left), selectedId)
+          : GARDEN_ROUTES.topic(selectedId),
+      );
     } catch {
       // The error line shows under the button.
     }

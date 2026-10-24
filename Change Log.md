@@ -1348,3 +1348,8 @@ Engineering-facing log of shipped fixes and changes, one dated entry per change.
 * **Files**: frontend `live/DoneLive.tsx`, `live/ReviewLive.tsx` (`planted=1` on /review/done), `live/data.ts` (`SessionResult.planted`).
 * **What**: Dylan's UAT test (2026-10-24): he planted Foundation Vocabulary's last 2 words but didn't get Bed harvest. /review decides where its last button goes before the last card's rating reaches the server, so the bed still looked unfinished. Mission complete (A3) now checks again after a planting session and opens S2 when the active bed is fully planted.
 * **Verified**: frontend `tsc` clean; the garden live tests show the same failures as before (missing env, SpeakLive), none new.
+
+### Fixed: planting a seed packet after today's planting was used up opened an empty session
+* **Files**: frontend `live/SeedPacketsLive.tsx`.
+* **What**: Dylan's UAT test (2026-10-24): he picked "Community and Local Services" after the harvest and got an empty screen, because today's Plant mission was already full, so its first planting had nothing to plant. Plant <bed> now opens a planting of at most what's left of today's mission, and the new bed (A7) when nothing is left.
+* **Verified**: frontend `tsc` clean. The harvest itself worked on UAT: `bed_harvested` (Foundation Vocabulary, 12 words, 4 fruit) and `packet_chosen` (slot new) are in `product_events`.
