@@ -1,6 +1,7 @@
 'use client';
 
 import * as React from 'react';
+import { useRouter } from 'next/navigation';
 import { useTimeZone } from 'next-intl';
 
 import { GARDEN_ROUTES } from '@/constants/garden';
@@ -47,6 +48,14 @@ export function DoneLive({ result }: { result: SessionResult }) {
   const todayMissions = useTodayMissions();
   const topics = useTopics();
   const activeBed = useActiveBed();
+  const router = useRouter();
+  // S2: a planting session that left the active bed fully planted shows its
+  // harvest. Checked here too, on a fresh read, because the last card's
+  // rating may land after /review decided where its button goes.
+  const harvestTopic = result.planted && activeBed.data?.harvest_ready ? activeBed.data.topic_id : null;
+  React.useEffect(() => {
+    if (harvestTopic) router.replace(GARDEN_ROUTES.bedHarvest(harvestTopic));
+  }, [harvestTopic, router]);
   const upcoming = useUpcomingActivity(2);
   const reminder = useReminderSwitch();
 

@@ -1343,3 +1343,8 @@ Engineering-facing log of shipped fixes and changes, one dated entry per change.
 * **Files**: frontend `live/ReviewLive.tsx`, `hooks/useBeds.ts` (`useActiveBed(enabled)`).
 * **What**: Found while setting up Dylan's UAT test (2026-10-24): when the last word of the active bed was planted and the Plant mission was then done, nothing led to the harvest (S4 only replaces an open Plant mission, S6 only shows once every mission is done). The plan says the harvest shows when the bed becomes ready, so a planting session that leaves the active bed fully planted now ends in S2 instead of Mission complete (a seed drop, S1, still comes first).
 * **Verified**: frontend `tsc` clean.
+
+### Fixed: the harvest could be missed when the last planting's rating landed late
+* **Files**: frontend `live/DoneLive.tsx`, `live/ReviewLive.tsx` (`planted=1` on /review/done), `live/data.ts` (`SessionResult.planted`).
+* **What**: Dylan's UAT test (2026-10-24): he planted Foundation Vocabulary's last 2 words but didn't get Bed harvest. /review decides where its last button goes before the last card's rating reaches the server, so the bed still looked unfinished. Mission complete (A3) now checks again after a planting session and opens S2 when the active bed is fully planted.
+* **Verified**: frontend `tsc` clean; the garden live tests show the same failures as before (missing env, SpeakLive), none new.

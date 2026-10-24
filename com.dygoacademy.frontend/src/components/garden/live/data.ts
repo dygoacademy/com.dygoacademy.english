@@ -456,6 +456,8 @@ export interface SessionResult {
   minutes: number | null;
   word: string | null;
   more: number;
+  /** The session planted new words (Seeds & Harvest: A3 checks for a harvest). */
+  planted: boolean;
 }
 
 /** Reads the session result from /review/done's search params. */
@@ -476,6 +478,7 @@ export function parseSessionResult(
     minutes: int('minutes'),
     word: one('word')?.slice(0, 80) ?? null,
     more: int('more') ?? 0,
+    planted: one('planted') === '1',
   };
 }
 

@@ -129,6 +129,7 @@ export function ReviewLive({
     params.set('more', String(recalled.length - 1));
   }
 
+  if (planting) params.set('planted', '1');
   const doneHref = `${GARDEN_ROUTES.reviewDone}?${params.toString()}`;
 
   return (
