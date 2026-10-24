@@ -33,7 +33,10 @@ export function SeedPacketsLive({ topicId }: { topicId: string }) {
   async function onPlant() {
     if (!selectedId) return;
     try {
-      await plant.mutateAsync(selectedId);
+      await plant.mutateAsync({
+        topicId: selectedId,
+        slot: views.find((v) => v.id === selectedId)?.kind,
+      });
       // The plan: planting a packet opens its first planting.
       router.push(GARDEN_ROUTES.plant(EXTRA_PLANT_COUNT, selectedId));
     } catch {

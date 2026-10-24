@@ -96,6 +96,6 @@ export class BedsController {
       'The bed being left becomes harvested when it had nothing left to plant, else resting.',
   })
   async plant(@CurrentUser('id') userId: string, @Body() dto: PlantBedDto): Promise<BedState> {
-    return this.beds.plant(userId, dto.topic_id);
+    return this.beds.plant(userId, dto.topic_id, dto.slot);
   }
 }

@@ -2,6 +2,7 @@ import { Injectable, Logger, NotFoundException, Optional } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config';
 
 import { DatabaseService } from '../../database/database.service';
+import { recordEvent } from '../beds/product-events';
 import { dropSeeds, type DroppedSeed } from '../beds/seed-drops';
 import {
   MissionClient,
@@ -730,6 +731,23 @@ export class SrsService {
       // Seeds & Harvest Phase 2 (flag `seed_drops`, SEED_DROPS_ENABLED): a
       // word turning fruit drops its seeds into the learner's garden. In a
       // savepoint, so a failed drop never loses the review.
+      // Analytics: the first review of a dropped seed plants it ("now" when
+      // it comes within the hour after S1 showed it, else the daily planting).
+      if (this.seedDropsOn() && isNewCard) {
+        const seed = (
+          await client.query<{ seen_at: Date | null }>(
+            `select seen_at from public.seed_drops where topic_word_id = $1`,
+            [input.topicWordId],
+          )
+        ).rows[0];
+        if (seed) {
+          const soon = seed.seen_at && now.getTime() - new Date(seed.seen_at).getTime() < 3_600_000;
+          await recordEvent(client, 'seed_planted', {
+            seed_word_id: input.topicWordId,
+            planted_from: soon ? 'now' : 'daily',
+          });
+        }
+      }
       if (this.seedDropsOn() && masteredBefore === null && row.mastered_at !== null) {
         await client.query('savepoint seed_drops');
         try {
@@ -982,6 +1000,15 @@ export class SrsService {
       newCap,
       dto.seedsOf,
     );
+    // Analytics (plan section 5): a planting session with nothing to plant
+    // while today's Plant mission still wants words. Should stay at 0.
+    if (dto.newOnly && !dto.seedsOf && newCap > 0 && !cards.some((c) => c.is_new)) {
+      const date = new Date().toISOString().slice(0, 10);
+      this.logger.error(`ALERT planting_empty: user ${userId} had nothing to plant (${date})`);
+      await this.db.withUser(userId, (client) =>
+        recordEvent(client, 'planting_empty', { user_id: userId, date }),
+      );
+    }
     return { mode, cards };
   }
 
@@ -1412,11 +1439,7 @@ export async function computeSrsSummary(
       [userId, freeze.newFrozen, freeze.available, freeze.refilledOn],
     );
   }
-  const streak = computeStreakWithFreezes(
-    studyDates,
-    [...frozenDates, ...freeze.newFrozen],
-    today,
-  );
+  const streak = computeStreakWithFreezes(studyDates, [...frozenDates, ...freeze.newFrozen], today);
 
   const t = totals[0];
   return {

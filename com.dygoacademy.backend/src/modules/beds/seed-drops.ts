@@ -1,3 +1,4 @@
+import { recordEvent } from './product-events';
 import { RELATION_ORDER_SQL, SEEDS_HARVEST } from './seeds-harvest.config';
 
 /**
@@ -84,11 +85,20 @@ export async function dropSeeds(
       )
     ).rows[0];
     if (!inserted) continue;
-    await client.query(
-      `insert into public.seed_drops (topic_word_id, bed_topic_id, dropped_by, kind)
-       select $1, tw.topic_id, tw.id, $3 from public.topic_words tw where tw.id = $2`,
-      [inserted.topic_word_id, fruitTopicWordId, r.kind],
-    );
+    const bed = (
+      await client.query<{ bed_topic_id: string }>(
+        `insert into public.seed_drops (topic_word_id, bed_topic_id, dropped_by, kind)
+         select $1, tw.topic_id, tw.id, $3 from public.topic_words tw where tw.id = $2
+         returning bed_topic_id`,
+        [inserted.topic_word_id, fruitTopicWordId, r.kind],
+      )
+    ).rows[0];
+    await recordEvent(client, 'seed_dropped', {
+      word_id: fruitTopicWordId,
+      seed_word_id: inserted.topic_word_id,
+      kind: r.kind,
+      bed_topic_id: bed?.bed_topic_id ?? null,
+    });
     seeds.push(inserted);
   }
   return seeds;

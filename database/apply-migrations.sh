@@ -173,6 +173,9 @@ run_rls_suite() {
   # Seeds & Harvest Phase 2: related words (content) and the learner's seed drops.
   run_file "$DIR/migrations/20261024_seed_drops.sql" "$scratch"
   run_file "$DIR/tests/rls_seed_drops_test.sql" "$scratch"
+  # Seeds & Harvest analytics: product_events (insert own, read service_role).
+  run_file "$DIR/migrations/20261025_product_events.sql" "$scratch"
+  run_file "$DIR/tests/rls_product_events_test.sql" "$scratch"
 }
 
 # -----------------------------------------------------------------------------

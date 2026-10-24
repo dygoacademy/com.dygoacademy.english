@@ -55,21 +55,25 @@ describe('BedsService.active', () => {
 
 describe('BedsService.plant (S3 Plant <bed>)', () => {
   it('harvests a fully planted bed and makes the packet the active bed', async () => {
-    const db = fakeDb([[state(NEXT, 30, 30)], [{ topic_id: OLD }], [state(OLD, 5, 0)], [], []]);
+    const db = fakeDb([[state(NEXT, 30, 30)], [{ topic_id: OLD }], [state(OLD, 5, 0)]]);
+    db.query.mockResolvedValue({ rows: [], rowCount: 0 });
     const service = await makeService(db);
-    await expect(service.plant('user-1', NEXT)).resolves.toMatchObject({ topic_id: NEXT });
-    const [leaveSql, leaveParams] = db.query.mock.calls[3];
-    expect(leaveSql).toMatch(/insert into public\.user_beds/);
-    expect(leaveParams).toEqual([OLD, 'harvested']);
-    const [plantSql, plantParams] = db.query.mock.calls[4];
-    expect(plantSql).toMatch(/set status = 'active', harvested_at = null/);
-    expect(plantParams).toEqual([NEXT]);
+    await expect(service.plant('user-1', NEXT, 'bee')).resolves.toMatchObject({ topic_id: NEXT });
+    const calls = db.query.mock.calls as Array<[string, unknown[]]>;
+    const beds = calls.filter(([sql]) => /insert into public\.user_beds/.test(sql));
+    expect(beds.map(([, p]) => p)).toEqual([[OLD, 'harvested'], [NEXT]]);
+    expect(beds[1][0]).toMatch(/set status = 'active', harvested_at = null/);
+    const events = calls
+      .filter(([sql]) => /insert into public\.product_events/.test(sql))
+      .map(([, p]) => p[0]);
+    expect(events).toEqual(['bed_harvested', 'packet_chosen']);
   });
 
   it('rests a bed that still has seeds', async () => {
     const db = fakeDb([[state(NEXT, 30, 30)], [{ topic_id: OLD }], [state(OLD, 5, 2)], [], []]);
     await (await makeService(db)).plant('user-1', NEXT);
     expect(db.query.mock.calls[3][1]).toEqual([OLD, 'resting']);
+    expect(db.query.mock.calls.some(([sql]) => /product_events/.test(String(sql)))).toBe(false);
   });
 
   it('only plants when there was no bed, and does nothing for the active bed', async () => {

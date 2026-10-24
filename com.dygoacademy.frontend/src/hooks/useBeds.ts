@@ -3,7 +3,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { apiClient } from '@/lib/api-client';
-import type { BedHarvest, BedState, SeedDrop, SeedPackets } from '@/types';
+import type { BedHarvest, BedState, SeedDrop, SeedPacketKind, SeedPackets } from '@/types';
 
 /*
  * Seeds & Harvest Phase 1. The keys sit under ['srs', ...] like the
@@ -39,7 +39,9 @@ export function useSeedPackets() {
 export function usePlantBed() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (topicId: string) => apiClient.post<BedState>('/beds', { topic_id: topicId }),
+    // `slot` = the packet kind picked (analytics `packet_chosen`).
+    mutationFn: ({ topicId, slot }: { topicId: string; slot?: SeedPacketKind }) =>
+      apiClient.post<BedState>('/beds', { topic_id: topicId, ...(slot ? { slot } : {}) }),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['srs'] }),
   });
 }

@@ -6,6 +6,7 @@ import { DatabaseService } from '../../database/database.service';
 import type { StudyGoal } from '../profiles/dto/update-onboarding.dto';
 import { FIRST_BED_TITLES } from '../profiles/profiles.service';
 import { ACTIVE_BED_TOPIC } from '../srs/srs.service';
+import { recordEvent } from './product-events';
 import {
   levelLabel,
   middleHalf,
@@ -279,6 +280,9 @@ export class BedsService {
         planted_shelves: shelves.map((s) => s.shelf),
         current_shelf: shelves.find((s) => s.active)?.shelf ?? null,
       });
+      for (const p of packets) {
+        await recordEvent(client, 'packet_shown', { slot: p.kind, topic_id: p.topic_id });
+      }
       return {
         packets: packets.map((p) => ({
           kind: p.kind,
@@ -299,7 +303,7 @@ export class BedsService {
    * S3 "Plant <bed>": `topicId` becomes the active bed. The bed being left
    * becomes harvested when it had nothing left to plant, else resting.
    */
-  async plant(userId: string, topicId: string): Promise<BedState> {
+  async plant(userId: string, topicId: string, slot?: PacketKind): Promise<BedState> {
     return this.db.withUser(userId, async (client) => {
       const next = await bedState(client, topicId);
       if (!next) throw new NotFoundException('Topic not found.');
@@ -308,6 +312,7 @@ export class BedsService {
       if (current) {
         const left = await bedState(client, current);
         const harvested = !!left?.harvest_ready;
+        if (harvested) await recordHarvest(client, current, topicId, slot);
         await client.query(
           `insert into public.user_beds (topic_id, status, harvested_at)
            values ($1, $2, case when $2 = 'harvested' then now() end)
@@ -363,4 +368,48 @@ async function seedDrop(client: PoolClient, droppedBy: string): Promise<SeedDrop
     bed_words_after: after,
     seeds,
   };
+}
+
+/**
+ * Analytics: `bed_harvested` for the bed being left and `packet_chosen` for
+ * the packet that replaces it. minutes_since_harvest = since the bed's last
+ * word was planted (when it became ready to harvest).
+ */
+async function recordHarvest(
+  client: PoolClient,
+  bedTopicId: string,
+  chosenTopicId: string,
+  slot: PacketKind | undefined,
+): Promise<void> {
+  const stats = (
+    await client.query<{
+      words_total: number;
+      fruit_count: number;
+      days_active: number | null;
+      minutes: number | null;
+    }>(
+      `select count(*)::int as words_total,
+              count(*) filter (where uws.mastered_at is not null)::int as fruit_count,
+              (select extract(day from now() - ub.started_at)::int from public.user_beds ub
+                where ub.user_id = auth.uid() and ub.topic_id = t.id) as days_active,
+              (extract(epoch from now() - max(uws.created_at)) / 60)::int as minutes
+         from public.topics t
+         cross join lateral (${BED_WORDS}) w
+         join public.user_word_srs uws on uws.topic_word_id = w.id
+        where t.id = $1
+        group by t.id`,
+      [bedTopicId],
+    )
+  ).rows[0];
+  await recordEvent(client, 'bed_harvested', {
+    topic_id: bedTopicId,
+    words_total: stats?.words_total ?? 0,
+    fruit_count: stats?.fruit_count ?? 0,
+    days_active: stats?.days_active ?? null,
+  });
+  await recordEvent(client, 'packet_chosen', {
+    slot: slot ?? null,
+    topic_id: chosenTopicId,
+    minutes_since_harvest: stats?.minutes ?? null,
+  });
 }

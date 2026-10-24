@@ -725,6 +725,12 @@ Since `20261025_word_phrases.sql`: `master_lexicon.is_phrase` (boolean, default 
 
 ---
 
+#### `product_events`
+
+Seeds & Harvest analytics (`20261025_product_events.sql`), the app's first product event log: `(id, user_id, name, props jsonb, created_at)`. `name` is one of `seed_dropped`, `seed_planted`, `bed_harvested`, `packet_shown`, `packet_chosen`, `planting_empty` (plan section 5). Written by the API inside the request's transaction (`modules/beds/product-events.ts`, in a savepoint so a failed write never fails the request). Learners may only INSERT their own rows and never read them; `service_role` reads. View `product_events_daily` = events and learners per name and UTC day. `planting_empty` should stay at 0; the API also logs `ALERT planting_empty` when it happens.
+
+---
+
 ### Notifications
 
 #### `study_schedules`

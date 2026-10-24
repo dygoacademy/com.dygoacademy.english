@@ -18,15 +18,26 @@ describe('dropSeeds (S1 Fruit drops seeds)', () => {
         { kind: 'pairing', lexicon_id: 'lex-risk', word: 'mitigate the risk' },
         { kind: 'family', lexicon_id: 'lex-mitigation', word: 'mitigation' },
       ],
-      [{ topic_word_id: 's1', source_word: 'mitigate the risk', language_code: 'en' }],
-      [],
-      [{ topic_word_id: 's2', source_word: 'mitigation', language_code: 'en' }],
-      [],
     ]);
+    c.query.mockImplementation((sql: string) => {
+      if (/insert into public\.topic_words/.test(sql)) {
+        const n = c.query.mock.calls.filter(([q]) =>
+          /insert into public\.topic_words/.test(String(q)),
+        ).length;
+        const word = n === 1 ? 'mitigate the risk' : 'mitigation';
+        return Promise.resolve({
+          rows: [{ topic_word_id: `s${n}`, source_word: word, language_code: 'en' }],
+        });
+      }
+      if (/insert into public\.seed_drops/.test(sql))
+        return Promise.resolve({ rows: [{ bed_topic_id: 'bed-1' }] });
+      return Promise.resolve({ rows: [] });
+    });
     const seeds = await dropSeeds(c, 'user-1', FRUIT);
     expect(seeds.map((s) => s.topic_word_id)).toEqual(['s1', 's2']);
 
-    const [relSql, relParams] = c.query.mock.calls[1];
+    const calls = c.query.mock.calls as Array<[string, unknown[]]>;
+    const [relSql, relParams] = calls[1];
     expect(relParams).toEqual([FRUIT, MY_WORDS]);
     expect(relSql).toMatch(
       /order by case when r\.kind = 'pairing' then 0 when r\.kind = 'family' then 1 when r\.kind = 'synonym' then 2 else 3 end/,
@@ -40,10 +51,20 @@ describe('dropSeeds (S1 Fruit drops seeds)', () => {
       /not exists \(select 1 from public\.seed_drops sd where sd\.dropped_by = tw\.id\)/,
     );
 
-    expect(c.query.mock.calls[2][1]).toEqual([MY_WORDS, 'lex-risk', 'mitigate the risk', 'user-1']);
-    expect(c.query.mock.calls[2][0]).toMatch(/'READY'/);
-    expect(c.query.mock.calls[3][0]).toMatch(/insert into public\.seed_drops/);
-    expect(c.query.mock.calls[3][1]).toEqual(['s1', FRUIT, 'pairing']);
+    const words = calls.filter(([sql]) => /insert into public\.topic_words/.test(sql));
+    expect(words[0][1]).toEqual([MY_WORDS, 'lex-risk', 'mitigate the risk', 'user-1']);
+    expect(words[0][0]).toMatch(/'READY'/);
+    const drops = calls.filter(([sql]) => /insert into public\.seed_drops/.test(sql));
+    expect(drops[0][1]).toEqual(['s1', FRUIT, 'pairing']);
+    const events = calls.filter(([sql]) => /insert into public\.product_events/.test(sql));
+    expect(events).toHaveLength(2);
+    expect(events[0][1][0]).toBe('seed_dropped');
+    expect(JSON.parse(events[0][1][1] as string)).toEqual({
+      word_id: FRUIT,
+      seed_word_id: 's1',
+      kind: 'pairing',
+      bed_topic_id: 'bed-1',
+    });
   });
 
   it('skips a word already in My words, and drops nothing without relations', async () => {

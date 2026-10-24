@@ -176,10 +176,13 @@ describe('SrsService.findDue', () => {
 describe('SrsService.startSession (daily goal missions)', () => {
   /** A withUser client for newWordAllowance: tz, today's rows exist, then the LEARN_NEW row. */
   const allowanceClient = (learnNew: { target: number; progress: number } | null) =>
-    jest.fn((sql: string) => {
+    jest.fn((sql: string, ...rest: unknown[]) => {
+      void rest;
       if (sql.includes('timezone')) return { rows: [{ timezone: 'UTC' }] };
       if (sql.includes('count(*) as n from public.daily_missions')) return { rows: [{ n: '3' }] };
       if (sql.includes("type = 'LEARN_NEW'")) return { rows: learnNew ? [learnNew] : [] };
+      if (/savepoint product_event|insert into public\.product_events/.test(sql))
+        return { rows: [] };
       throw new Error(`unexpected SQL: ${sql}`);
     });
 
@@ -208,6 +211,17 @@ describe('SrsService.startSession (daily goal missions)', () => {
     const [, sql, params] = queryAsMock.mock.calls[0];
     expect(sql).toMatch(/not exists/);
     expect(params).toEqual([2]);
+  });
+
+  it('a planting session with nothing to plant records planting_empty (should stay 0)', async () => {
+    const client = allowanceClient({ target: 5, progress: 3 });
+    const service = await makeService(jest.fn().mockResolvedValueOnce([]), withUserOf(client));
+
+    await service.startSession('user-1', { limit: 5, newOnly: true });
+
+    const calls = client.mock.calls as unknown as Array<[string, unknown[]]>;
+    const insert = calls.find(([sql]) => /insert into public\.product_events/.test(sql));
+    expect(insert?.[1][0]).toBe('planting_empty');
   });
 
   it('a catch-up day (no Plant mission) plants nothing', async () => {
