@@ -4,7 +4,7 @@ import * as React from 'react';
 import { useTranslations } from 'next-intl';
 
 import { GARDEN_ROUTES } from '@/constants/garden';
-import { useNextSeedDrop } from '@/hooks/useBeds';
+import { useActiveBed, useNextSeedDrop } from '@/hooks/useBeds';
 import { type TodayMissions, useTodayMissions } from '@/hooks/useMissions';
 import { useRateWord } from '@/hooks/useRateWord';
 import { useStudySession } from '@/hooks/useStudySession';
@@ -76,6 +76,8 @@ export function ReviewLive({
   const rate = useRateWord();
   const [sessionOver, setSessionOver] = React.useState(false);
   const nextDrop = useNextSeedDrop(sessionOver);
+  // S2: a planting session that planted the active bed's last word ends in its harvest.
+  const activeBed = useActiveBed(sessionOver && planting);
   const { meaningLocale } = useGardenPreferences();
 
   const [cards, setCards] = React.useState<DueCard[] | null>(null);
@@ -184,7 +186,9 @@ export function ReviewLive({
         bloomHref={
           drop
             ? GARDEN_ROUTES.seedDrop(drop.bed.topic_id, drop.dropped_by.topic_word_id, doneHref)
-            : doneHref
+            : planting && activeBed.data?.harvest_ready
+              ? GARDEN_ROUTES.bedHarvest(activeBed.data.topic_id)
+              : doneHref
         }
         secondaryAction={{ label: t('backToGarden'), href: GARDEN_ROUTES.home }}
         emptyText={total === 0 ? t(planting ? emptyPlantKey(missions.data) : 'empty') : undefined}

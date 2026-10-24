@@ -19,10 +19,11 @@ import type {
  */
 
 /** `GET /api/v1/beds/active`: the bed today's planting takes words from (null = none). */
-export function useActiveBed() {
+export function useActiveBed(enabled = true) {
   return useQuery({
     queryKey: ['srs', 'beds', 'active'],
     queryFn: () => apiClient.get<ActiveBed | null>('/beds/active'),
+    enabled,
   });
 }
 
