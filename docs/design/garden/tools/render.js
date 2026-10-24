@@ -252,6 +252,12 @@ const JOBS = [
   ['BedHarvest.dc.html', 'en', 'S2-bed-harvest', {}],
   ['SeedPackets.dc.html', 'en', 'S3-seed-packets', {}],
   ['SeedPackets.dc.html', 'en', 'S3-seed-packets-goal', { pick: 'goal' }],
+  // Seeds & Harvest follow-ups (drawn 2026-10-24, for approval): Home Next up = next seed packet (S4),
+  // Plant mission with dropped seeds (S5), A1c with the harvest row (S6), harvest share card (S7).
+  ['HomeNextPacket.dc.html', 'en', 'S4-home-next-packet', {}],
+  ['HomeDroppedSeeds.dc.html', 'en', 'S5-home-dropped-seeds', {}],
+  ['TodayDoneHarvest.dc.html', 'en', 'S6-today-done-harvest', {}],
+  ['HarvestShareCard.dc.html', 'en', 'S7-harvest-share-card', { $size: [360, 450] }],
 ].filter(([, , name]) => !FILTER || name.includes(FILTER));
 
 // English pages redrawn with the app's body stack (DM Sans, then Be Vietnam
