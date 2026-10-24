@@ -1309,3 +1309,8 @@ Engineering-facing log of shipped fixes and changes, one dated entry per change.
 ### Changed: Pronunciation pass canvas shows Play mine and Native
 * **Files**: `docs/design/garden/source/PronStonesResult(Vi).dc.html`, `iPadPronResult(Vi).dc.html`; re-exported `reference/P4-result-{pollinated,long-word,one-stone}(-vi)` and `iP4-result-pollinated(-vi)` (`.png` + `.html`). The retry exports only gained blank lines in `.html`; their PNGs are unchanged.
 * **What**: Dylan (2026-10-24): "Please update ui/ux design". The pollinated card is now a column with a row of two buttons under its sentence. Phone: 44 px, radius 14, gap 8. Play mine is #F4F1EA with a #E3DDD0 border, Native is #DDE7DA, both #24463A text with an 18 px play or speaker icon. iPad: 52 px, radius 18, 16 px text, gap 10, and Play mine is white. These are the values the shipped screen already uses.
+
+### Changed: Pronunciation pass: Play mine and Native come before the explanation
+* **Files**: frontend `components/garden/pronounce/PronounceScreen.tsx`; `docs/design/garden/source/PronStonesResult(Vi).dc.html`, `iPadPronResult(Vi).dc.html` and the re-exported P4 / iP4 pass references (committed separately before this).
+* **What**: Dylan (2026-10-24): "the button replay and the explan should be separate. Button frist then the explan." The two buttons are now their own row above the "is pollinated" card instead of inside it. Phone: 52 px, radius 16, 15 px text, gap 8. Play mine is white with a #E3DDD0 border, Native is #DDE7DA. iPad: radius 18, 16 px text, gap 10, 12 px above the row. The card is back to its original single row.
+* **Verified**: PronounceLive tests pass; frontend `tsc --noEmit` and lint clean. I didn't take screenshots: `next dev` can't run in this folder while UAT is up.
