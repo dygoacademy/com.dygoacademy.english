@@ -5,6 +5,8 @@ import * as React from 'react';
 import { PronounceScreen, type PronPhase } from '@/components/garden/pronounce/PronounceScreen';
 import { PronResult } from '@/components/garden/pronounce/PronResult';
 import { SpeakMicScreen } from '@/components/garden/pronounce/SpeakMicScreen';
+
+import { CombPreview } from './CombPreview';
 import { resultView } from '@/lib/speaking/pronounce';
 import type { SpeakingSyllable } from '@/types';
 
@@ -66,6 +68,7 @@ export function PronGallery({
   word: keyof typeof WORDS;
   vi: boolean;
 }) {
+  if (screen === 'comb') return <CombPreview />;
   if (screen === 'SP0-ask' || screen === 'SP0-denied') {
     return (
       <SpeakMicScreen

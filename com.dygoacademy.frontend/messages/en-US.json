@@ -1675,6 +1675,122 @@
         "step3": "Turn on <b>Microphone</b>",
         "openSettings": "Open Settings",
         "listenInstead": "Practise listening instead"
+      },
+      "comb": {
+        "passLine": "Pass line {mark}%",
+        "title": {
+          "empty": "Big letters = loud part",
+          "liveWait": "Waiting for your voice",
+          "live": "Filling as you speak",
+          "checking": "Measuring the honey",
+          "dim": "No honey yet",
+          "result": "Fill each cell"
+        },
+        "label": {
+          "empty": "{n} empty honeycomb cells for {syls}. {loud} is the loud part. Each cell needs to fill past the {mark}% line.",
+          "liveWait": "Empty cells waiting for your voice",
+          "live": "Cells fill as Dygo hears each part: {parts}. This is your live voice, not your score",
+          "checking": "Honey rises and falls in each cell while Dygo checks",
+          "dim": "Empty cells for {syls}: the bee heard nothing yet"
+        }
+      },
+      "listen": {
+        "loading": "Loading…",
+        "playingStop": "Playing, tap to stop",
+        "error": "Couldn't play the sound. Tap to try again."
+      },
+      "p1": {
+        "tip": "Fill every cell past the line: say <b>{loud}</b> loud, <b>{light}</b> light, then <b>{rest}</b>.",
+        "tipTwo": "Fill every cell past the line: say <b>{loud}</b> loud, then <b>{light}</b> light.",
+        "tipLate": "Fill every cell past the line: say <b>{light}</b> light, <b>{loud}</b> loud, then <b>{rest}</b>.",
+        "tipLateEnd": "Fill every cell past the line: say <b>{light}</b> light, then <b>{loud}</b> loud.",
+        "tipOne": "Fill the cell past the line: say <b>{loud}</b> clearly.",
+        "listenEyebrow": "Listen first",
+        "listenTitle": "Hear how it sounds",
+        "normal": "Normal",
+        "normalSub": "Real speed",
+        "normalAria": "Play {word} at normal speed",
+        "slow": "Slowly",
+        "slowSub": "Each part clear",
+        "slowAria": "Play {word} slowly",
+        "ctaHint": "Tap, then say just the word",
+        "ctaMic": "First time: your phone asks for the microphone",
+        "ctaMicIpad": "First time: your iPad asks for the microphone"
+      },
+      "p2": {
+        "promptBeep": "Beep! Say it now",
+        "promptGoing": "Keep going…",
+        "voiceLabel": "Your voice",
+        "voiceStarting": "Starting…",
+        "voiceRec": "Recording",
+        "stopHint": "Stops by itself when you finish · or tap to stop"
+      },
+      "p3": {
+        "sub": "Got it. Checking each cell…",
+        "listenEyebrow": "While Dygo checks",
+        "listenTitle": "Have a listen",
+        "wait": "Usually 1–2 seconds"
+      },
+      "btn": {
+        "native": "Native",
+        "nativeSub": "1. Listen",
+        "nativeAria": "Play the native speaker saying {word}",
+        "you": "Your try",
+        "youSub": "2. Compare",
+        "youAria": "Play your recording of {word}"
+      },
+      "p2b": {
+        "noCount": "This try doesn't count. Nothing is lost.",
+        "otherTip2": "Start with the loud cell: {stressed}"
+      },
+      "p4": {
+        "badge": {
+          "full": "Hive full · {n} of {n} cells",
+          "almost": "Almost · {k} of {n} cells"
+        },
+        "head": {
+          "pass": "Sweet as honey!",
+          "almost": "Nearly perfect!",
+          "retry": "One cell needs honey"
+        },
+        "sub": {
+          "pass": "{word} is pollinated.",
+          "almost": "It counts! {word} is pollinated.",
+          "retry": "Say it once more to pollinate {word}."
+        },
+        "tag": {
+          "pass": "Pass",
+          "close": "Close",
+          "fail": "Not yet",
+          "all": "All pass"
+        },
+        "detail": {
+          "all": "Every cell filled past the {mark}% line. Tap one to see its score.",
+          "ok": "{syl}: {pct}% match with native.",
+          "close": "{syl}: {pct}% match. Just past the line, aim for {ipa}.",
+          "fail": "{syl}: {pct}% match. Sounded like {heard}, aim for {ipa}.",
+          "cut": "{syl}: {pct}% match. Cut short, aim for {ipa}."
+        },
+        "cellAria": {
+          "pass": "{syl}: {pct}% match with native, pass. Show details.",
+          "close": "{syl}: {pct}% match with native, just over the pass line. Show details.",
+          "fail": "{syl}: {pct}% match with native, below the pass line. Show details."
+        },
+        "boardPass": "All {n} cells filled past the pass line",
+        "boardRetry": "{syls} below the pass line, the other cells are full",
+        "wave": {
+          "match": "Your sound shape mirrors the native one",
+          "weak": "Your sound shape matches the native one except around {syl}"
+        },
+        "ring": "Whole word: {pct}% match with native",
+        "cta": {
+          "tryAgain": "Try again",
+          "skip": "Skip to next bee",
+          "nextBee": "Next bee: {next}",
+          "backToBed": "Back to the bed",
+          "sayAgain": "Say it again",
+          "polish": "Polish {syl}: say it again"
+        }
       }
     },
     "privacy": {

@@ -1675,6 +1675,122 @@
         "step3": "Bật <b>Micrô</b>",
         "openSettings": "Mở Cài đặt",
         "listenInstead": "Luyện nghe thay vì nói"
+      },
+      "comb": {
+        "passLine": "Vạch đạt {mark}%",
+        "title": {
+          "empty": "Chữ to = phần đọc mạnh",
+          "liveWait": "Đang chờ giọng bạn",
+          "live": "Đang lấp đầy khi bạn nói",
+          "checking": "Đang đo mật",
+          "dim": "Chưa có mật",
+          "result": "Lấp đầy từng ô"
+        },
+        "label": {
+          "empty": "{n} ô tổ ong trống cho {syls}. {loud} là phần đọc mạnh. Mỗi ô cần lấp qua vạch {mark}%.",
+          "liveWait": "Các ô trống đang chờ giọng bạn",
+          "live": "Các ô được lấp khi Dygo nghe từng phần: {parts}. Đây là giọng bạn lúc này, không phải điểm",
+          "checking": "Mật dâng lên hạ xuống trong từng ô khi Dygo kiểm tra",
+          "dim": "Các ô trống cho {syls}: ong chưa nghe thấy gì"
+        }
+      },
+      "listen": {
+        "loading": "Đang tải…",
+        "playingStop": "Chạm để dừng",
+        "error": "Không phát được âm thanh. Chạm để thử lại."
+      },
+      "p1": {
+        "tip": "Lấp mọi ô qua vạch: đọc <b>{loud}</b> mạnh, <b>{light}</b> nhẹ, rồi <b>{rest}</b>.",
+        "tipTwo": "Lấp mọi ô qua vạch: đọc <b>{loud}</b> mạnh, rồi <b>{light}</b> nhẹ.",
+        "tipLate": "Lấp mọi ô qua vạch: đọc <b>{light}</b> nhẹ, <b>{loud}</b> mạnh, rồi <b>{rest}</b>.",
+        "tipLateEnd": "Lấp mọi ô qua vạch: đọc <b>{light}</b> nhẹ, rồi <b>{loud}</b> mạnh.",
+        "tipOne": "Lấp ô qua vạch: đọc <b>{loud}</b> thật rõ.",
+        "listenEyebrow": "Nghe trước",
+        "listenTitle": "Nghe cách đọc",
+        "normal": "Thường",
+        "normalSub": "Tốc độ thật",
+        "normalAria": "Nghe {word} ở tốc độ thường",
+        "slow": "Chậm",
+        "slowSub": "Rõ từng phần",
+        "slowAria": "Nghe {word} chậm",
+        "ctaHint": "Chạm, rồi chỉ đọc từ này",
+        "ctaMic": "Lần đầu: điện thoại sẽ hỏi quyền dùng micro",
+        "ctaMicIpad": "Lần đầu: iPad sẽ hỏi quyền dùng micro"
+      },
+      "p2": {
+        "promptBeep": "Bíp! Đọc ngay",
+        "promptGoing": "Tiếp tục…",
+        "voiceLabel": "Giọng của bạn",
+        "voiceStarting": "Đang bắt đầu…",
+        "voiceRec": "Đang ghi âm",
+        "stopHint": "Tự dừng khi bạn đọc xong · hoặc chạm để dừng"
+      },
+      "p3": {
+        "sub": "Đã nhận. Đang kiểm tra từng ô…",
+        "listenEyebrow": "Trong lúc Dygo kiểm tra",
+        "listenTitle": "Nghe thử nhé",
+        "wait": "Thường mất 1–2 giây"
+      },
+      "btn": {
+        "native": "Bản xứ",
+        "nativeSub": "1. Nghe",
+        "nativeAria": "Nghe người bản xứ đọc {word}",
+        "you": "Bạn đọc",
+        "youSub": "2. So sánh",
+        "youAria": "Nghe bản ghi {word} của bạn"
+      },
+      "p2b": {
+        "noCount": "Lần này không tính. Bạn không mất gì.",
+        "otherTip2": "Bắt đầu từ ô đọc mạnh: {stressed}"
+      },
+      "p4": {
+        "badge": {
+          "full": "Tổ đầy · {n}/{n} ô",
+          "almost": "Gần xong · {k}/{n} ô"
+        },
+        "head": {
+          "pass": "Ngọt như mật!",
+          "almost": "Gần như hoàn hảo!",
+          "retry": "Còn một ô thiếu mật"
+        },
+        "sub": {
+          "pass": "{word} đã được thụ phấn.",
+          "almost": "Được tính rồi! {word} đã được thụ phấn.",
+          "retry": "Đọc thêm một lần để thụ phấn {word}."
+        },
+        "tag": {
+          "pass": "Đạt",
+          "close": "Gần đạt",
+          "fail": "Chưa đạt",
+          "all": "Đạt hết"
+        },
+        "detail": {
+          "all": "Mọi ô đều vượt vạch {mark}%. Chạm một ô để xem điểm.",
+          "ok": "{syl}: khớp {pct}% với người bản xứ.",
+          "close": "{syl}: khớp {pct}%. Vừa qua vạch, hãy nhắm tới {ipa}.",
+          "fail": "{syl}: khớp {pct}%. Nghe như {heard}, hãy nhắm tới {ipa}.",
+          "cut": "{syl}: khớp {pct}%. Bị ngắt sớm, hãy nhắm tới {ipa}."
+        },
+        "cellAria": {
+          "pass": "{syl}: khớp {pct}% với người bản xứ, đạt. Xem chi tiết.",
+          "close": "{syl}: khớp {pct}% với người bản xứ, vừa qua vạch đạt. Xem chi tiết.",
+          "fail": "{syl}: khớp {pct}% với người bản xứ, dưới vạch đạt. Xem chi tiết."
+        },
+        "boardPass": "Cả {n} ô đều vượt vạch đạt",
+        "boardRetry": "{syls} dưới vạch đạt, các ô khác đã đầy",
+        "wave": {
+          "match": "Hình âm thanh của bạn giống với bản xứ",
+          "weak": "Hình âm thanh của bạn giống bản xứ, trừ chỗ {syl}"
+        },
+        "ring": "Cả từ: khớp {pct}% với người bản xứ",
+        "cta": {
+          "tryAgain": "Thử lại",
+          "skip": "Bỏ qua, sang ong tiếp theo",
+          "nextBee": "Ong tiếp theo: {next}",
+          "backToBed": "Về luống",
+          "sayAgain": "Đọc lại",
+          "polish": "Luyện thêm {syl}: đọc lại"
+        }
       }
     },
     "privacy": {

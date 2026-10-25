@@ -12,7 +12,8 @@ import { PronGallery } from './PronGallery';
  * sample data, for the screenshot check against
  * docs/design/garden/reference (CLAUDE.md rule 13). Development only: a
  * production build answers 404. `?s=` names the board state (P1, P2,
- * P2-beep, P3, P2b-quiet, P2b-noisy, P2b-other, P4, SP0-ask, SP0-denied),
+ * P2-beep, P3, P2b-quiet, P2b-noisy, P2b-other, P4, SP0-ask, SP0-denied;
+ * `comb`: the honeycomb's building blocks, every mode × 2 / 3 / 4 syllables),
  * P4 also takes `result` (pass / almost / retry), `round` (next / last)
  * and `word` (mitigate / compensation / sunny); `locale` en-US or vi-VN.
  */
