@@ -238,7 +238,8 @@ erDiagram
         string language_code
         string ipa_us
         string ipa_uk
-        string audio_url
+        string audio_url_us
+        string audio_url_uk
         jsonb synonyms
         jsonb antonyms
         jsonb example_sentences

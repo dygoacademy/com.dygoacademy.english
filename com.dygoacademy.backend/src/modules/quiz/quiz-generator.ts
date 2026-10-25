@@ -60,8 +60,8 @@ export interface QuizSourceWord {
   topicWordId: string;
   topicId: string;
   sourceWord: string;
-  audioUrl: string | null;
-  /** The UK clip; null until made, then play audioUrl. */
+  audioUrlUs: string | null;
+  /** The UK clip; null until made, then play audioUrlUs. */
   audioUrlUk: string | null;
   ipaUs: string | null;
   ipaUk: string | null;
@@ -78,7 +78,7 @@ export interface QuizItem {
   topicWordId: string;
   topicId: string;
   prompt: string;
-  audioUrl?: string | null;
+  audioUrlUs?: string | null;
   /** DICTATION's UK clip (null until made); the app plays the profile accent's. */
   audioUrlUk?: string | null;
   /** Only present for CHOICE-mode items (MATCHING, CONTEXTUAL_CHOICE). */
@@ -108,7 +108,7 @@ export function deriveCorrectAnswer(
 ): { answer: string; maskedSentence?: string } | null {
   switch (type) {
     case 'DICTATION':
-      return word.audioUrl ? { answer: word.sourceWord } : null;
+      return word.audioUrlUs ? { answer: word.sourceWord } : null;
 
     case 'CLOZE':
     case 'CONTEXTUAL_CHOICE': {
@@ -241,7 +241,12 @@ export function buildQuizItem(
   };
 
   if (type === 'DICTATION') {
-    return { ...base, audioUrl: word.audioUrl, audioUrlUk: word.audioUrlUk, answerMode: 'TEXT' };
+    return {
+      ...base,
+      audioUrlUs: word.audioUrlUs,
+      audioUrlUk: word.audioUrlUk,
+      answerMode: 'TEXT',
+    };
   }
   if (type === 'CLOZE') {
     return { ...base, answerMode: 'TEXT' };

@@ -99,7 +99,7 @@ export class StorageService {
 
   /**
    * Uploads `body` to `key` and returns the permanent public CDN URL,
-   * matching the `master_lexicon.audio_url` contract (tech spec §4.2 —
+   * matching the `master_lexicon.audio_url_us` contract (tech spec §4.2 —
    * `/audio/[lang]/[accent]/[normalized_word_md5].ext`, caller builds `key`).
    */
   async upload(key: string, body: Buffer, contentType: string): Promise<string> {

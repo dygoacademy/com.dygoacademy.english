@@ -121,7 +121,7 @@ run('Seeds & Harvest acceptance (seeded database)', () => {
     // The library adds a word to the bed (as service_role), so the bed
     // has one of its own words left to plant next to the two seeds.
     await client.query('set local role service_role');
-    await client.query(`insert into public.master_lexicon (id, normalized_word, definition_en, audio_url)
+    await client.query(`insert into public.master_lexicon (id, normalized_word, definition_en, audio_url_us)
                         values ('dddddddd-5eed-0000-0000-000000000099', 'carbon', 'a chemical element',
                                 'https://media.dygo.test/audio/carbon.mp3')`);
     await client.query(

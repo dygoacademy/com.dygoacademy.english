@@ -57,13 +57,13 @@ insert into public.topics (id, group_id, title, description, is_public) values
 on conflict (id) do update set title = excluded.title, description = excluded.description, is_public = excluded.is_public;
 
 -- Master lexicon — 24 real entries, 6 per tier ---------------------------------
--- audio_url is null on purpose: `npm run audio-backfill` (backend) queues
+-- audio_url_us is null on purpose: `npm run audio-backfill` (backend) queues
 -- every word without audio, reusing existing R2 audio or generating it with
 -- Gemini TTS. (These seeds used to ship placeholder
 -- links on cdn.dygo.academy, a domain that never existed.)
 insert into public.master_lexicon
   (id, normalized_word, language_code, part_of_speech, ipa_us, ipa_uk, cefr_level,
-   definition_en, audio_url, synonyms, antonyms, example_sentences, enriched_at) values
+   definition_en, audio_url_us, synonyms, antonyms, example_sentences, enriched_at) values
 
   -- Tier 1: Foundation Vocabulary (A2) -----------------------------------------
   ('d9d9d9d9-0000-0000-0000-000000000001', 'polite', 'en', 'adjective', '/pəˈlaɪt/', '/pəˈlaɪt/', 'A2',

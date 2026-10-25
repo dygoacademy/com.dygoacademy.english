@@ -182,13 +182,13 @@ insert into public.topics (id, group_id, title, description, is_public) values
 
 -- Master lexicon — one fully enriched entry matching the tech spec §4.2 shape,
 -- plus two lighter rows.
--- audio_url is null on purpose: `npm run audio-backfill` (backend) queues
+-- audio_url_us is null on purpose: `npm run audio-backfill` (backend) queues
 -- every word without audio, reusing existing R2 audio or generating it with
 -- Gemini TTS. (These seeds used to ship placeholder
 -- links on cdn.dygo.academy, a domain that never existed.)
 insert into public.master_lexicon
   (id, normalized_word, language_code, part_of_speech, ipa_us, ipa_uk, cefr_level,
-   definition_en, audio_url, synonyms, antonyms, example_sentences, enriched_at) values
+   definition_en, audio_url_us, synonyms, antonyms, example_sentences, enriched_at) values
   ('dddddddd-0000-0000-0000-000000000001', 'ephemeral', 'en', 'adjective',
    '/ɪˈfem.ər.əl/', '/ɪˈfem.ər.əl/', 'C1',
    'Lasting for a very short time; transitory.',

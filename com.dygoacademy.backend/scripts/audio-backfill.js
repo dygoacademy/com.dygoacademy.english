@@ -10,7 +10,7 @@
  *   npm run audio-backfill -- --library      # remake US + UK clips of every library word
  *   npm run audio-backfill -- --all          # remake US + UK clips of every word
  *
- * Each word has two clips (20261025_word_audio_uk.sql): master_lexicon.audio_url
+ * Each word has two clips (20261025_word_audio_uk.sql): master_lexicon.audio_url_us
  * (US, en-US-Neural2-F from ipa_us) and audio_url_uk (UK, en-GB-Neural2-C from
  * ipa_uk). The UK clip needs GOOGLE_TTS_API_KEY; without it only missing US
  * clips are queued. --library is every word in a public group's beds;
@@ -136,7 +136,7 @@ async function main() {
       ({ rows } = await db.query(
         `select id, normalized_word, language_code
            from public.master_lexicon
-          where audio_url is null or audio_url like $1
+          where audio_url_us is null or audio_url_us like $1
              or ($3 and audio_url_uk is null)
           order by created_at
           limit $2`,

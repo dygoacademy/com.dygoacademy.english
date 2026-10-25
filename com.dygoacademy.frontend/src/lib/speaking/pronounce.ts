@@ -342,8 +342,8 @@ export function nativeClipRate(clip: NativeClip, rate = 1): number {
 export function nativeWord(item: SpeakingSessionItem, accent: SpeakingAccent): NativeClip | null {
   const word =
     accent === 'UK'
-      ? (item.word_audio_url_uk ?? item.word_audio_url)
-      : (item.word_audio_url ?? item.word_audio_url_uk);
+      ? (item.word_audio_url_uk ?? item.word_audio_url_us)
+      : (item.word_audio_url_us ?? item.word_audio_url_uk);
   if (word) return { src: word };
   const { url, timings } = clipFor(item, accent);
   const w = timings?.words[item.target_index];

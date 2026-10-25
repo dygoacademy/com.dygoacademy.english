@@ -25,7 +25,7 @@ interface QuizWordRow {
   topic_word_id: string;
   topic_id: string;
   source_word: string;
-  audio_url: string | null;
+  audio_url_us: string | null;
   audio_url_uk: string | null;
   ipa_us: string | null;
   ipa_uk: string | null;
@@ -99,7 +99,7 @@ const WORD_COLUMNS = `
   tw.id as topic_word_id,
   tw.topic_id,
   tw.source_word,
-  ml.audio_url,
+  ml.audio_url_us,
   ml.audio_url_uk,
   ml.ipa_us,
   ml.ipa_uk,
@@ -114,7 +114,7 @@ function mapRow(row: QuizWordRow): QuizSourceWord {
     topicWordId: row.topic_word_id,
     topicId: row.topic_id,
     sourceWord: row.source_word,
-    audioUrl: row.audio_url,
+    audioUrlUs: row.audio_url_us,
     audioUrlUk: row.audio_url_uk,
     ipaUs: row.ipa_us,
     ipaUk: row.ipa_uk,

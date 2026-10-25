@@ -15,7 +15,7 @@ export interface QuizItem {
   topicWordId: string;
   topicId: string;
   prompt: string;
-  audioUrl?: string | null;
+  audioUrlUs?: string | null;
   /** DICTATION's UK clip (null until made); play the profile accent's. */
   audioUrlUk?: string | null;
   /** Only present for CHOICE-mode items (MATCHING, CONTEXTUAL_CHOICE). */

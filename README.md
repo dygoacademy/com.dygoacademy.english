@@ -664,7 +664,7 @@ app plays) plus a `.wav` copy at the same key. Encoding needs **ffmpeg**
 
 | Audio | Made by | When |
 | :--- | :--- | :--- |
-| Word pronunciation (`master_lexicon.audio_url`) | Gemini TTS, in the enrichment worker | Automatically when a word is added |
+| Word pronunciation (`master_lexicon.audio_url_us`, `audio_url_uk`) | Google TTS from the IPA (Gemini TTS fallback for US), in the enrichment worker | Automatically when a word is added |
 | Speaking sentences (`speaking_items`, Phase 13) | Google Cloud TTS (Neural2, UK + US, with word timings) | **By hand**, with `speaking-generate` below |
 
 Run these from `com.dygoacademy.backend/`. They read the root `.env`.

@@ -38,8 +38,8 @@ export interface WordCard {
   ipa_us: string | null;
   ipa_uk: string | null;
   definition_en: string | null;
-  audio_url: string | null;
-  /** The UK clip (20261025_word_audio_uk.sql); null until made, then play audio_url. */
+  audio_url_us: string | null;
+  /** The UK clip (20261025_word_audio_uk.sql); null until made, then play audio_url_us. */
   audio_url_uk: string | null;
   synonyms: unknown;
   antonyms: unknown;
@@ -59,8 +59,8 @@ export interface GuestWordCard {
   ipa_us: string | null;
   ipa_uk: string | null;
   definition_en: string | null;
-  audio_url: string | null;
-  /** The UK clip (20261025_word_audio_uk.sql); null until made, then play audio_url. */
+  audio_url_us: string | null;
+  /** The UK clip (20261025_word_audio_uk.sql); null until made, then play audio_url_us. */
   audio_url_uk: string | null;
   synonyms: unknown;
   antonyms: unknown;
@@ -89,8 +89,8 @@ export interface WordLookup {
   meaning: string | null;
   definition_en: string | null;
   example: string | null;
-  audio_url: string | null;
-  /** The UK clip (20261025_word_audio_uk.sql); null until made, then play audio_url. */
+  audio_url_us: string | null;
+  /** The UK clip (20261025_word_audio_uk.sql); null until made, then play audio_url_us. */
   audio_url_uk: string | null;
   in_topic_ids: string[];
 }
@@ -222,7 +222,7 @@ export class WordsService {
               ml.ipa_us,
               ml.ipa_uk,
               ml.definition_en,
-              ml.audio_url,
+              ml.audio_url_us,
               ml.audio_url_uk,
               ml.synonyms,
               ml.antonyms,
@@ -292,7 +292,7 @@ export class WordsService {
               ipa_us,
               ipa_uk,
               definition_en,
-              audio_url,
+              audio_url_us,
               audio_url_uk,
               synonyms,
               antonyms,
@@ -328,7 +328,7 @@ export class WordsService {
               coalesce(wt.meaning, ml.definition_en) as meaning,
               ml.definition_en,
               nullif(trim(ml.example_sentences -> 0 ->> 'sentence'), '') as example,
-              ml.audio_url,
+              ml.audio_url_us,
               ml.audio_url_uk,
               array(
                 select distinct tw.topic_id

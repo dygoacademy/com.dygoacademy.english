@@ -26,7 +26,7 @@ import { StorageService } from '../storage/storage.service';
 
 interface MasterLexiconRow {
   id: string;
-  audio_url?: string | null;
+  audio_url_us?: string | null;
   audio_url_uk?: string | null;
   ipa_us?: string | null;
   ipa_uk?: string | null;
@@ -34,7 +34,7 @@ interface MasterLexiconRow {
 
 /**
  * Seed data once shipped placeholder links on this domain, which never
- * existed. Treated exactly like a missing audio_url so those rows get real
+ * existed. Treated exactly like a missing audio_url_us so those rows get real
  * audio instead of a broken play button.
  */
 export const PLACEHOLDER_AUDIO_PREFIX = 'https://cdn.dygo.academy/';
@@ -44,8 +44,8 @@ export function isMissingAudio(url: string | null | undefined): boolean {
 }
 
 /** The master_lexicon column holding each accent's clip (20261025_word_audio_uk.sql). */
-const AUDIO_COLUMN: Record<WordAccent, 'audio_url' | 'audio_url_uk'> = {
-  US: 'audio_url',
+const AUDIO_COLUMN: Record<WordAccent, 'audio_url_us' | 'audio_url_uk'> = {
+  US: 'audio_url_us',
   UK: 'audio_url_uk',
 };
 
@@ -123,7 +123,7 @@ export class EnrichmentProcessor extends WorkerHost {
       // Step 1 — global lexical deduplication (FR-2.2). Checked BEFORE any
       // paid API call; this is what cuts AI cost by ~90%.
       const [cached] = await this.db.queryAsService<MasterLexiconRow>(
-        `select id, audio_url, audio_url_uk from public.master_lexicon
+        `select id, audio_url_us, audio_url_uk from public.master_lexicon
           where normalized_word = $1 and language_code = $2`,
         [normalizedWord, languageCode],
       );
@@ -224,15 +224,15 @@ export class EnrichmentProcessor extends WorkerHost {
     const [row] = await this.db.queryAsService<MasterLexiconRow>(
       `insert into public.master_lexicon
          (normalized_word, language_code, part_of_speech, ipa_us, ipa_uk,
-          cefr_level, definition_en, audio_url, synonyms, antonyms,
+          cefr_level, definition_en, audio_url_us, synonyms, antonyms,
           example_sentences, enriched_at, audio_url_uk)
        values ($1, $2, $3, $4, $5, $6, $7, $8, $9::jsonb, $10::jsonb, $11::jsonb, now(), $12)
        on conflict (normalized_word, language_code) do update
-         set audio_url = case
-               when public.master_lexicon.audio_url is null
-                 or public.master_lexicon.audio_url like '${PLACEHOLDER_AUDIO_PREFIX}%'
-               then excluded.audio_url
-               else public.master_lexicon.audio_url
+         set audio_url_us = case
+               when public.master_lexicon.audio_url_us is null
+                 or public.master_lexicon.audio_url_us like '${PLACEHOLDER_AUDIO_PREFIX}%'
+               then excluded.audio_url_us
+               else public.master_lexicon.audio_url_us
              end,
              audio_url_uk = coalesce(public.master_lexicon.audio_url_uk, excluded.audio_url_uk),
              updated_at = now()
@@ -395,7 +395,7 @@ export class EnrichmentProcessor extends WorkerHost {
 
   /**
    * Gives an existing master_lexicon row real audio in each accent it has
-   * none in (or only a placeholder link): `audio_url` (US), then
+   * none in (or only a placeholder link): `audio_url_us`, then
    * `audio_url_uk` (UK). Re-checks the row first, so a duplicate or stale
    * job is a cheap no-op, and only overwrites a missing/placeholder value.
    * `remake` (audio-backfill --word / --all / --library) replaces both
@@ -410,7 +410,7 @@ export class EnrichmentProcessor extends WorkerHost {
     remake = false,
   ): Promise<void> {
     const [row] = await this.db.queryAsService<MasterLexiconRow>(
-      `select id, audio_url, audio_url_uk, ipa_us, ipa_uk from public.master_lexicon where id = $1`,
+      `select id, audio_url_us, audio_url_uk, ipa_us, ipa_uk from public.master_lexicon where id = $1`,
       [lexiconId],
     );
     if (!row) {

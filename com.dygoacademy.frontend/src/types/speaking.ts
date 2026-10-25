@@ -70,8 +70,8 @@ export interface SpeakingSessionItem {
   timings_us: SpeakingTimings | null;
   is_due: boolean;
   /** The word said on its own, for Pronunciation's "Hear it"; null if none (optional for older APIs). */
-  word_audio_url?: string | null;
-  /** The same in British English; null until made (play `word_audio_url`). Optional for older APIs. */
+  word_audio_url_us?: string | null;
+  /** The same in British English; null until made (play `word_audio_url_us`). Optional for older APIs. */
   word_audio_url_uk?: string | null;
   /** The word's syllables for the stones, from the default accent's IPA; [] without one (optional for older APIs). */
   syllables?: SpeakingSyllable[];

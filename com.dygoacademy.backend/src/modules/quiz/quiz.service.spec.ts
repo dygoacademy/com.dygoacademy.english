@@ -11,7 +11,7 @@ function wordRow(overrides: Record<string, unknown> = {}) {
     topic_word_id: 'tw-1',
     topic_id: 'topic-1',
     source_word: 'resilient',
-    audio_url: 'https://cdn.example/resilient.wav',
+    audio_url_us: 'https://cdn.example/resilient.wav',
     audio_url_uk: 'https://cdn.example/resilient-uk.m4a',
     ipa_us: '/rɪˈzɪljənt/',
     ipa_uk: '/rɪˈzɪliənt/',

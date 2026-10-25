@@ -526,7 +526,7 @@ Global, deduplicated linguistic cache. Not tenant-scoped.
 | `ipa_uk` | `text` | yes | — |
 | `cefr_level` | `cefr_level` | yes | — |
 | `definition_en` | `text` | yes | — |
-| `audio_url` | `text` | yes | — |
+| `audio_url_us` | `text` | yes | — |
 | `synonyms` | `jsonb` | NO | `'[]'::jsonb` |
 | `antonyms` | `jsonb` | NO | `'[]'::jsonb` |
 | `example_sentences` | `jsonb` | NO | `'[]'::jsonb` |
@@ -722,9 +722,9 @@ Seeds & Harvest Phase 1 (`20261023_user_beds.sql`): the beds a learner has plant
 
 Seeds & Harvest Phase 2 (`20261024_seed_drops.sql`). `word_relations (lexicon_id, related_word, kind pairing|family|synonym, rank, reviewed_at)`, unique per `(lexicon_id, related_word)`: content, written by `service_role` only (`npm run relations-import`); learners read reviewed rows only, so a draft never drops. `seed_drops (user_id, topic_word_id, bed_topic_id, dropped_by, kind, seen_at)`, primary key `(user_id, topic_word_id)`: when a review first sets `mastered_at`, up to 2 relations become topic words in the learner's My words bed (enriched like added words), tied to the fruit word's bed. Owner-only SELECT / INSERT / UPDATE, no DELETE. A bed's planting state and S2 harvest count its seeds as its words.
 
-Since `20261025_word_audio_uk.sql`: every word has two clips. `master_lexicon.audio_url` is the US clip (Google `en-US-Neural2-F`, said from `ipa_us`) and `audio_url_uk` the UK clip (`en-GB-Neural2-C`, said from `ipa_uk`); each is made from the other accent's IPA when its own is missing. `audio_url_uk` is null until enrichment or `npm run audio-backfill` makes it (it needs `GOOGLE_TTS_API_KEY`), and the app then plays `audio_url`. The app shows and plays the accent of `profiles.english_variety` (`en-GB` → UK, anything else → US). Storage keys: `audio/<lang>/us/…` and `audio/<lang>/uk/…`.
+Since `20261025_word_audio_uk.sql`: every word has two clips. `master_lexicon.audio_url_us` (named `audio_url` until `20261025_word_audio_us.sql`) is the US clip (Google `en-US-Neural2-F`, said from `ipa_us`) and `audio_url_uk` the UK clip (`en-GB-Neural2-C`, said from `ipa_uk`); each is made from the other accent's IPA when its own is missing. `audio_url_uk` is null until enrichment or `npm run audio-backfill` makes it (it needs `GOOGLE_TTS_API_KEY`), and the app then plays `audio_url_us`. The app shows and plays the accent of `profiles.english_variety` (`en-GB` → UK, anything else → US). Storage keys: `audio/<lang>/us/…` and `audio/<lang>/uk/…`.
 
-Since `20261025_word_phrases.sql`: `master_lexicon.is_phrase` (boolean, default false; backfilled true for any spelling with a space) marks pairings such as "mitigate the risk". A relation drops only when its related word has a `master_lexicon` entry with `audio_url`; the seed is then a READY topic word linked to that entry. A fruit word drops at most once (`seed_drops.dropped_by`). The whole drop is behind `SEED_DROPS_ENABLED` (off by default).
+Since `20261025_word_phrases.sql`: `master_lexicon.is_phrase` (boolean, default false; backfilled true for any spelling with a space) marks pairings such as "mitigate the risk". A relation drops only when its related word has a `master_lexicon` entry with `audio_url_us`; the seed is then a READY topic word linked to that entry. A fruit word drops at most once (`seed_drops.dropped_by`). The whole drop is behind `SEED_DROPS_ENABLED` (off by default).
 
 ---
 
@@ -869,7 +869,7 @@ One sentence per word (`master_lexicon`), with the native-speaker clips and thei
 
 **Operational notes**
 
-- `audio_*_path` are R2 object **keys**, not URLs. The API builds the public URL from `R2_PUBLIC_URL`, so the audio host can change without rewriting rows (unlike `master_lexicon.audio_url`).
+- `audio_*_path` are R2 object **keys**, not URLs. The API builds the public URL from `R2_PUBLIC_URL`, so the audio host can change without rewriting rows (unlike `master_lexicon.audio_url_us`).
 - `timings_*` shape: `{ "duration": 3.31, "words": [ { "text": "Planting", "start": 0.05, "end": 0.39, "syllables": [ { "start": 0.05, "end": 0.22, "stressed": true } ] } ] }`. Syllables only for the target word. The DB checks only the outer shape; the content script validates the rest (zod).
 - One item per word. The API joins items to the learner's words through `topic_words.lexicon_id`, so a word in two beds has one item. The per-word migration merged any duplicates into the oldest item and moved their attempts onto it.
 

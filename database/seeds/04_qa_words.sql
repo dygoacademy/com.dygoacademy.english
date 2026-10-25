@@ -35,13 +35,13 @@ insert into public.topics (id, group_id, title, description, is_public) values
 on conflict (id) do update set title = excluded.title, description = excluded.description;
 
 -- Master lexicon — 100 real entries -------------------------------------------
--- audio_url is null on purpose: `npm run audio-backfill` (backend) queues
+-- audio_url_us is null on purpose: `npm run audio-backfill` (backend) queues
 -- every word without audio, reusing existing R2 audio or generating it with
 -- Gemini TTS. (These seeds used to ship placeholder
 -- links on cdn.dygo.academy, a domain that never existed.)
 insert into public.master_lexicon
   (id, normalized_word, language_code, part_of_speech, ipa_us, ipa_uk, cefr_level,
-   definition_en, audio_url, synonyms, antonyms, example_sentences, enriched_at) values
+   definition_en, audio_url_us, synonyms, antonyms, example_sentences, enriched_at) values
   ('d0d0d0d0-0000-0000-0000-000000000001', 'reliable', 'en', 'adjective', '/rɪˈlaɪ.ə.bəl/', '/rɪˈlaɪ.ə.bəl/', 'A2',
    'Able to be trusted to do what is expected; dependable.', null,
    '[{"word": "dependable", "level": "B1"}, {"word": "trustworthy", "level": "B2"}]'::jsonb, '[{"word": "unreliable", "level": "B1"}]'::jsonb, '[{"sentence": "You can always count on Maria; she''s the most reliable person on the team.", "level": "A2", "translation_hint": null}]'::jsonb, now()),

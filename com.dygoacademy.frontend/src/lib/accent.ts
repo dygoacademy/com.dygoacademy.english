@@ -22,7 +22,7 @@ export interface AccentWord {
   ipa_us?: string | null;
   ipa_uk?: string | null;
   /** The US clip. */
-  audio_url?: string | null;
+  audio_url_us?: string | null;
   /** The UK clip (20261025_word_audio_uk.sql); null until it is made. */
   audio_url_uk?: string | null;
 }
@@ -36,6 +36,6 @@ export function forAccent(
   return {
     ipa: (uk ? (word.ipa_uk ?? word.ipa_us) : (word.ipa_us ?? word.ipa_uk)) ?? null,
     audioSrc:
-      (uk ? (word.audio_url_uk ?? word.audio_url) : (word.audio_url ?? word.audio_url_uk)) ?? null,
+      (uk ? (word.audio_url_uk ?? word.audio_url_us) : (word.audio_url_us ?? word.audio_url_uk)) ?? null,
   };
 }

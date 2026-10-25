@@ -6,13 +6,13 @@
  *   npm run media-migrate -- --dry-run      # what would be copied / rewritten
  *   npm run media-migrate                   # copy, then rewrite the URLs
  *   npm run media-migrate -- --copy-only    # copy files, leave the database alone
- *   npm run media-migrate -- --revert       # point master_lexicon.audio_url back at R2
+ *   npm run media-migrate -- --revert       # point master_lexicon.audio_url_us back at R2
  *
  * 1. Copy: every object under `audio/` and `speaking/` in R2 goes to the
  *    RustFS bucket at the same key. A `.wav` is also encoded to AAC `.m4a`
  *    (same key, ffmpeg), so RustFS ends up with both, like new uploads.
  *    Objects already in RustFS are skipped (--force re-copies).
- * 2. Rewrite: `master_lexicon.audio_url` values on the R2 host become
+ * 2. Rewrite: `master_lexicon.audio_url_us` values on the R2 host become
  *    `https://media.dygoacademy.com/<key>.m4a` (or `.wav` if there's no
  *    m4a), but only when that file is really in RustFS. Runs as
  *    service_role in one transaction. Safe to re-run; --revert undoes it.
@@ -185,14 +185,14 @@ async function rewriteUrls(
   rf: S3Client | null,
   args: Args,
 ): Promise<{ rows: number; rewritten: number; missing: number }> {
-  const rows = await db.query<{ id: string; audio_url: string }>(
-    `select id, audio_url from public.master_lexicon
-      where audio_url like $1 || '/%'`,
+  const rows = await db.query<{ id: string; audio_url_us: string }>(
+    `select id, audio_url_us from public.master_lexicon
+      where audio_url_us like $1 || '/%'`,
     [from.publicUrl.replace(/\/+$/, '')],
   );
   const stats = { rows: rows.rows.length, rewritten: 0, missing: 0 };
   for (const row of rows.rows) {
-    const stem = keyStemFromUrl(row.audio_url, from.publicUrl);
+    const stem = keyStemFromUrl(row.audio_url_us, from.publicUrl);
     if (!stem) continue;
     let target: string | null = null;
     if (rf) {
@@ -208,12 +208,12 @@ async function rewriteUrls(
     }
     if (!target) {
       stats.missing++;
-      console.log(`  ! ${row.audio_url}: not in RustFS, left as is`);
+      console.log(`  ! ${row.audio_url_us}: not in RustFS, left as is`);
       continue;
     }
     const url = `${to.publicUrl.replace(/\/+$/, '')}/${target}`;
     if (!args.dryRun) {
-      await db.query('update public.master_lexicon set audio_url = $2 where id = $1', [
+      await db.query('update public.master_lexicon set audio_url_us = $2 where id = $1', [
         row.id,
         url,
       ]);

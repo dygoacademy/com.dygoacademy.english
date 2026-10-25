@@ -15,7 +15,7 @@ on conflict (id) do nothing;
 
 insert into public.master_lexicon
   (id, normalized_word, language_code, part_of_speech, ipa_us, ipa_uk, cefr_level,
-   definition_en, audio_url, is_phrase, enriched_at) values
+   definition_en, audio_url_us, is_phrase, enriched_at) values
   ('dddddddd-5eed-0000-0000-000000000001', 'mitigate', 'en', 'verb', '/ˈmɪt.ɪ.ɡeɪt/', '/ˈmɪt.ɪ.ɡeɪt/', 'B2',
    'make something bad less severe', 'https://media.dygo.test/audio/mitigate.mp3', false, now()),
   ('dddddddd-5eed-0000-0000-000000000002', 'habitat', 'en', 'noun', '/ˈhæb.ɪ.tæt/', '/ˈhæb.ɪ.tæt/', 'B2',

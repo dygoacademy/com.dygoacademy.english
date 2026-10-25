@@ -35,7 +35,7 @@ interface ItemRow extends Omit<SpeakingSessionItem, 'audio_uk_url' | 'audio_us_u
 const ITEM_COLUMNS = `
   si.id, si.lexicon_id, w.topic_word_id, ml.normalized_word as word, ml.part_of_speech,
   ml.cefr_level::text as cefr_level, ml.ipa_uk, ml.ipa_us, ml.definition_en,
-  ml.audio_url as word_audio_url, ml.audio_url_uk as word_audio_url_uk,
+  ml.audio_url_us as word_audio_url_us, ml.audio_url_uk as word_audio_url_uk,
   wt.locale as meaning_locale, wt.meaning as meaning_translation,
   si.sentence, si.target_index,
   si.audio_uk_path, si.audio_us_path, si.timings_uk, si.timings_us,

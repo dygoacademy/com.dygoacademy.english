@@ -14,7 +14,7 @@ function makeWord(overrides: Partial<QuizSourceWord> = {}): QuizSourceWord {
     topicWordId: 'tw-1',
     topicId: 'topic-1',
     sourceWord: 'resilient',
-    audioUrl: 'https://cdn.example/resilient.wav',
+    audioUrlUs: 'https://cdn.example/resilient.wav',
     audioUrlUk: null,
     ipaUs: '/rɪˈzɪljənt/',
     ipaUk: '/rɪˈzɪliənt/',
@@ -31,7 +31,7 @@ function makeWord(overrides: Partial<QuizSourceWord> = {}): QuizSourceWord {
 describe('deriveCorrectAnswer', () => {
   it('DICTATION uses the source word, and requires audio', () => {
     expect(deriveCorrectAnswer(makeWord(), 'DICTATION')).toEqual({ answer: 'resilient' });
-    expect(deriveCorrectAnswer(makeWord({ audioUrl: null }), 'DICTATION')).toBeNull();
+    expect(deriveCorrectAnswer(makeWord({ audioUrlUs: null }), 'DICTATION')).toBeNull();
   });
 
   it('CLOZE masks the word in the first example sentence, case-insensitively', () => {
@@ -93,7 +93,7 @@ describe('buildQuizItem', () => {
     expect(item).toMatchObject({
       id: 'tw-1:DICTATION',
       answerMode: 'TEXT',
-      audioUrl: makeWord().audioUrl,
+      audioUrlUs: makeWord().audioUrlUs,
     });
   });
 
@@ -104,7 +104,7 @@ describe('buildQuizItem', () => {
       pool,
     );
     expect(item).toMatchObject({
-      audioUrl: 'https://cdn.example/resilient.wav',
+      audioUrlUs: 'https://cdn.example/resilient.wav',
       audioUrlUk: 'https://cdn.example/resilient-uk.m4a',
     });
   });
@@ -128,7 +128,12 @@ describe('buildQuizItem', () => {
   });
 
   it('returns null when the underlying data is missing (no audio, no examples, no synonyms/antonyms)', () => {
-    const bareWord = makeWord({ audioUrl: null, exampleSentences: [], synonyms: [], antonyms: [] });
+    const bareWord = makeWord({
+      audioUrlUs: null,
+      exampleSentences: [],
+      synonyms: [],
+      antonyms: [],
+    });
     expect(buildQuizItem(bareWord, 'DICTATION', pool)).toBeNull();
     expect(buildQuizItem(bareWord, 'CLOZE', pool)).toBeNull();
     expect(buildQuizItem(bareWord, 'MATCHING', pool)).toBeNull();

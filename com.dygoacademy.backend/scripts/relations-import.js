@@ -151,7 +151,7 @@ async function main() {
          from public.word_relations r
          left join public.master_lexicon ml
                 on ml.normalized_word = lower(trim(r.related_word)) and ml.language_code = 'en'
-        where ml.id is null or ml.audio_url is null or ml.audio_url = ''
+        where ml.id is null or ml.audio_url_us is null or ml.audio_url_us = ''
         order by r.related_word`,
     );
     if (missingAudio.rows.length) {

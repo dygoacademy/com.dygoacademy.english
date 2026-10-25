@@ -165,21 +165,21 @@ const ITEM = {
     ],
   },
   timings_us: null,
-  word_audio_url: null,
+  word_audio_url_us: null,
 } as unknown as SpeakingSessionItem;
 
 describe('native audio', () => {
   it('plays the word on its own when there is one, else its part of the sentence', () => {
-    expect(nativeWord({ ...ITEM, word_audio_url: 'w.mp3' }, 'UK')).toEqual({ src: 'w.mp3' });
+    expect(nativeWord({ ...ITEM, word_audio_url_us: 'w.mp3' }, 'UK')).toEqual({ src: 'w.mp3' });
     expect(nativeWord(ITEM, 'UK')).toEqual({ src: 'uk.m4a', span: { start: 0.5, end: 1.1 }, madeAt: 1 });
   });
 
   it("plays the accent's own word clip, else the other accent's", () => {
-    const both = { ...ITEM, word_audio_url: 'us.mp3', word_audio_url_uk: 'uk.mp3' };
+    const both = { ...ITEM, word_audio_url_us: 'us.mp3', word_audio_url_uk: 'uk.mp3' };
     expect(nativeWord(both, 'UK')).toEqual({ src: 'uk.mp3' });
     expect(nativeWord(both, 'US')).toEqual({ src: 'us.mp3' });
     expect(nativeWord({ ...both, word_audio_url_uk: null }, 'UK')).toEqual({ src: 'us.mp3' });
-    expect(nativeWord({ ...both, word_audio_url: null }, 'US')).toEqual({ src: 'uk.mp3' });
+    expect(nativeWord({ ...both, word_audio_url_us: null }, 'US')).toEqual({ src: 'uk.mp3' });
   });
 
   it('plays one syllable from the timings, else the whole word', () => {

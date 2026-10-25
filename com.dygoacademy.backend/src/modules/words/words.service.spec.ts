@@ -152,7 +152,7 @@ describe('WordsService', () => {
         meaning: 'kiên cường',
         definition_en: 'able to recover quickly from difficult conditions',
         example: 'Coral reefs can be surprisingly resilient to rising temperatures.',
-        audio_url: null,
+        audio_url_us: null,
         in_topic_ids: ['topic-1'],
       };
       queryAsMock.mockResolvedValue([preview]);

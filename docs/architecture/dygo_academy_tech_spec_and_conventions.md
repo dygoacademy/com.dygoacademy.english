@@ -306,4 +306,4 @@ The AI enrichment worker outputs strict, deterministic JSON:
 #### Audio & Storage Pipeline:
 1. Generate `.mp3` via Neural TTS engine (default: US female, crisp lexical cadence).
 2. Save file to Cloudflare R2 path: `/audio/en/us/[normalized_word_md5].mp3`.
-3. Store permanent public CDN URL in `master_lexicon.audio_url`.
+3. Store permanent public CDN URL in `master_lexicon.audio_url_us` (UK clip: `audio_url_uk`).

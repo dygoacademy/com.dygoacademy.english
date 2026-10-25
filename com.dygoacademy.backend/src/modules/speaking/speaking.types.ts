@@ -45,9 +45,9 @@ export interface SpeakingSessionItem {
   timings_us: SpeakingTimings | null;
   /** Due now or never reviewed; these lead the session. */
   is_due: boolean;
-  /** The word said on its own (master_lexicon.audio_url, US), for Pronunciation's "Hear it"; null if none. */
-  word_audio_url: string | null;
-  /** The same in British English (master_lexicon.audio_url_uk); null until made, then play word_audio_url. */
+  /** The word said on its own (master_lexicon.audio_url_us), for Pronunciation's "Hear it"; null if none. */
+  word_audio_url_us: string | null;
+  /** The same in British English (master_lexicon.audio_url_uk); null until made, then play word_audio_url_us. */
   word_audio_url_uk: string | null;
   /** The word's syllables for the stones (MI · ti · gate), from the default accent's IPA; [] without one. */
   syllables: SpeakingSyllable[];

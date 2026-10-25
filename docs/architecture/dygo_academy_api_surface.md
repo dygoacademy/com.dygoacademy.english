@@ -265,6 +265,11 @@ Conflating them is how a roadmap quietly turns into a status report.
 > add `ipa_us`, and their `syllables` follow the profile accent. The app
 > picks by `profiles.english_variety` (`en-GB` → UK, else US), falling back
 > to the other accent (`lib/accent.ts`).
+>
+> **Renamed the same day (`20261025_word_audio_us.sql`):** the US clip field is
+> `audio_url_us` everywhere (was `audio_url`), `word_audio_url_us` in the Pond
+> (was `word_audio_url`), and `audioUrlUs` in quiz DICTATION items (was
+> `audioUrl`). The notes below that say `audio_url` mean `audio_url_us` now.
 
 > **2026-10-02 note (Phase 12 UI-8) — no API route changes; the frontend
 > callers moved.** The classic UI is deleted, so every route below is called
@@ -344,7 +349,7 @@ it answers `404`, not `401`.
 | `GET` | `/api/v1/beds/packets` | bearer | **New (Seeds & Harvest, S3).** Up to 3 seed packets, from public beds the caller never planted from: `{ packets: [{ kind: bee\|goal\|new, topic_id, title, collection, level ("B2" / "B1–B2" / null), word_count, known_count }], study_goal, target_band }`. Ranking in `beds.plan.ts`. |
 | `GET` | `/api/v1/beds/:topicId/harvest` | bearer | **New (Seeds & Harvest, S2).** `{ …bed state, first_harvest, fruit, ripe, growing, words: [{ topic_word_id, word, stage: fruit\|ripe\|growing }] }`: planted words only; fruit = mastered, ripe = Review (not a leech), growing = the rest. `404` when RLS hides the bed. |
 | `POST` | `/api/v1/beds` | bearer | **New (Seeds & Harvest, S3).** Body `{ topic_id, slot? }` (`slot` = bee\|goal\|new, for analytics): makes it the active bed; the bed being left becomes `harvested` (nothing left to plant) or `resting`. Returns the new bed's state. `404` when RLS hides the bed. |
-| `GET` | `/api/v1/beds/seed-drops/next` | bearer | **New (Seeds & Harvest Phase 2, S1).** The oldest seed drop not shown yet, or `null`: `{ dropped_by: { topic_word_id, word }, bed: { topic_id, title }, bed_words_before, bed_words_after, seeds: [{ topic_word_id, word, kind: pairing\|family\|synonym, part_of_speech, meaning, audio_url }] }` (`meaning` null while a seed enriches). Needs `20261024_seed_drops.sql`. |
+| `GET` | `/api/v1/beds/seed-drops/next` | bearer | **New (Seeds & Harvest Phase 2, S1).** The oldest seed drop not shown yet, or `null`: `{ dropped_by: { topic_word_id, word }, bed: { topic_id, title }, bed_words_before, bed_words_after, seeds: [{ topic_word_id, word, kind: pairing\|family\|synonym, part_of_speech, meaning, audio_url_us, audio_url_uk }] }` (`meaning` null while a seed enriches). Needs `20261024_seed_drops.sql`. |
 | `GET` | `/api/v1/beds/seed-drops/:droppedBy` | bearer | **New (S1).** The same shape for one fruit word; `404` when it dropped nothing for the caller. |
 | `POST` | `/api/v1/beds/seed-drops/:droppedBy/seen` | bearer | **New (S1).** `204`; S1 was shown, so `next` skips it. |
 | `GET` | `/api/v1/speaking/session` | bearer | **New (Phase 13, 2026-10-04).** The Pond (`/sounds`; its Missions-tab card was removed 2026-10-06 for a redesign): `{ item_count, default_accent: UK\|US, items }`. Up to 5 of the learner's words that have a speaking item (same scope as Review's new cards: every READY word they can read; a word in several beds counts once): due first, then new (no SRS row or `New`), then by next due date. Each item `{ id, lexicon_id, topic_word_id, word, part_of_speech, cefr_level, ipa_uk, ipa_us, definition_en, meaning_locale, meaning_translation, sentence, target_index, audio_uk_url, audio_us_url, timings_uk, timings_us, is_due }` (URLs built from the stored R2 keys; an accent not generated yet is null). `item_count` = how many of their words have an item. Optional `?topic_id=` narrows to one bed (404 if not a UUID). `default_accent` from `profiles.english_variety`. |

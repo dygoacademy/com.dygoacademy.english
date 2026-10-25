@@ -20,7 +20,7 @@
 -- silence or noise. Saved to the frontend's public/ folder (Next.js serves
 -- it as a static file) rather than uploaded through StorageService, which
 -- needs a running MinIO/R2 endpoint this fixture deliberately skips —
--- audio_url below is only valid while the frontend dev server is running
+-- audio_url_us below is only valid while the frontend dev server is running
 -- on localhost:3000.
 --
 -- Filed into the QA fixture's existing "Everyday Conversation" topic
@@ -31,7 +31,7 @@
 -- LOADING: depends on 03_qa_tenant / 04_qa_words (foreign keys).
 --   ./database/apply-migrations.sh --seed 05_hello_world_word
 --
--- UPDATE 2026-09-25: audio_url is now null. The localhost link only ever
+-- UPDATE 2026-09-25: audio_url_us is now null. The localhost link only ever
 -- worked on a dev machine; `npm run audio-backfill` generates real audio for
 -- it like every other seed word.
 -- Safe to re-run: both inserts are upserts.
@@ -39,7 +39,7 @@
 
 insert into public.master_lexicon
   (id, normalized_word, language_code, part_of_speech, ipa_us, ipa_uk, cefr_level,
-   definition_en, audio_url, synonyms, antonyms, example_sentences, enriched_at)
+   definition_en, audio_url_us, synonyms, antonyms, example_sentences, enriched_at)
 values
   ('f0f0f0f0-0000-0000-0000-000000000001', 'hello world', 'en', 'phrase',
    'həˈloʊ wɜːrld', 'həˈləʊ wɜːld', 'A1',

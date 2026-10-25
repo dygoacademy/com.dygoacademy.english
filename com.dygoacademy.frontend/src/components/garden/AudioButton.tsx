@@ -12,7 +12,7 @@ import { SpeakerIcon, SpeakerOffIcon } from './icons';
 /**
  * Garden audio button (canvas A2: a 52px forest circle with the 24px
  * speaker, design system §14.6). Plays a word's
- * pronunciation clip (`master_lexicon.audio_url`).
+ * pronunciation clip (`master_lexicon.audio_url_us`).
  *
  * Playback is the classic `flashcard/AudioButton.tsx` logic, which is left
  * unchanged: one `Audio` element per `src`, replaced (not reused) when the

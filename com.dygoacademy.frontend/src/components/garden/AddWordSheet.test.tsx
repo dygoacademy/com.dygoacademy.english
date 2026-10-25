@@ -58,7 +58,7 @@ const RESILIENT: WordLookup = {
   meaning: 'Able to recover quickly from difficulties.',
   definition_en: 'Able to recover quickly from difficulties.',
   example: null,
-  audio_url: null,
+  audio_url_us: null,
   audio_url_uk: null,
   in_topic_ids: [],
 };
@@ -189,7 +189,7 @@ describe('AddWordSheet', () => {
     lookup = {
       data: {
         ...RESILIENT,
-        audio_url: 'https://media.example/us.m4a',
+        audio_url_us: 'https://media.example/us.m4a',
         audio_url_uk: 'https://media.example/uk.m4a',
       },
       settled: true,
@@ -245,7 +245,7 @@ describe('AddWordSheet', () => {
       data: {
         ...RESILIENT,
         example: 'Coral reefs can be surprisingly resilient.',
-        audio_url: 'https://cdn/resilient.mp3',
+        audio_url_us: 'https://cdn/resilient.mp3',
       },
       settled: true,
       isError: false,

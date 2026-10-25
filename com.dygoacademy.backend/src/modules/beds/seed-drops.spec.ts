@@ -46,7 +46,7 @@ describe('dropSeeds (S1 Fruit drops seeds)', () => {
     // Only reviewed rows reach learners (RLS), nothing already in the garden,
     // only words with native audio, and a fruit word drops once.
     expect(relSql).toMatch(/from public\.user_word_srs uws/);
-    expect(relSql).toMatch(/ml\.audio_url is not null and ml\.audio_url <> ''/);
+    expect(relSql).toMatch(/ml\.audio_url_us is not null and ml\.audio_url_us <> ''/);
     expect(relSql).toMatch(
       /not exists \(select 1 from public\.seed_drops sd where sd\.dropped_by = tw\.id\)/,
     );

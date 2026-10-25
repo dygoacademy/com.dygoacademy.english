@@ -43,7 +43,7 @@ const RELATIONS = `
     join fruit f on f.lexicon_id = r.lexicon_id
     join public.master_lexicon ml
       on ml.normalized_word = lower(trim(r.related_word)) and ml.language_code = 'en'
-   where ml.audio_url is not null and ml.audio_url <> ''
+   where ml.audio_url_us is not null and ml.audio_url_us <> ''
      and not exists (
            select 1
              from public.user_word_srs uws

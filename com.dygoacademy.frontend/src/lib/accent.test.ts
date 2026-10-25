@@ -15,7 +15,7 @@ describe('forAccent', () => {
   const both = {
     ipa_us: '/ˈwɔː.t̬ɚ/',
     ipa_uk: '/ˈwɔː.tə/',
-    audio_url: 'https://media.example/us.m4a',
+    audio_url_us: 'https://media.example/us.m4a',
     audio_url_uk: 'https://media.example/uk.m4a',
   };
 
@@ -29,7 +29,7 @@ describe('forAccent', () => {
       ipa: '/ˈwɔː.t̬ɚ/',
       audioSrc: 'https://media.example/us.m4a',
     });
-    expect(forAccent({ ...both, ipa_us: null, audio_url: null }, 'US')).toEqual({
+    expect(forAccent({ ...both, ipa_us: null, audio_url_us: null }, 'US')).toEqual({
       ipa: '/ˈwɔː.tə/',
       audioSrc: 'https://media.example/uk.m4a',
     });

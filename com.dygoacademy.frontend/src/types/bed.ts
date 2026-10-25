@@ -74,8 +74,8 @@ export interface SeedDrop {
     part_of_speech: string | null;
     /** English definition; null while the seed is still enriching. */
     meaning: string | null;
-    audio_url: string | null;
-    /** The UK clip; null until made (play `audio_url`). */
+    audio_url_us: string | null;
+    /** The UK clip; null until made (play `audio_url_us`). */
     audio_url_uk: string | null;
   }>;
 }

@@ -158,7 +158,7 @@ export function QuizLive({
       question={{
         ...item,
         // DICTATION plays the profile accent's clip.
-        audioUrl: forAccent({ audio_url: item.audioUrl, audio_url_uk: item.audioUrlUk }, accent)
+        audioUrl: forAccent({ audio_url_us: item.audioUrlUs, audio_url_uk: item.audioUrlUk }, accent)
           .audioSrc,
       }}
       feedback={result ? toFeedback(result, accent) : null}

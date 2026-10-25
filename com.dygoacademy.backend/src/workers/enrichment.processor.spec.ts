@@ -142,7 +142,7 @@ describe('EnrichmentProcessor', () => {
   });
 
   it('cache hit: resolves lexicon_id from master_lexicon and never calls Gemini', async () => {
-    queryMock.mockResolvedValueOnce([{ id: 'lex-1', audio_url: 'https://audio.example/x.wav' }]); // dedup lookup
+    queryMock.mockResolvedValueOnce([{ id: 'lex-1', audio_url_us: 'https://audio.example/x.wav' }]); // dedup lookup
     queryMock.mockResolvedValueOnce([]); // topic_words update
 
     await processor.process(makeJob());
@@ -192,7 +192,7 @@ describe('EnrichmentProcessor', () => {
     expect(updateCall[1]).toEqual(['lex-2', 'tw-1']);
   });
 
-  it('cache miss with TTS failure: still upserts master_lexicon with a null audio_url', async () => {
+  it('cache miss with TTS failure: still upserts master_lexicon with a null audio_url_us', async () => {
     queryMock.mockResolvedValueOnce([]); // dedup lookup — miss
     synthesizeSpeechMock.mockRejectedValue(new Error('TTS quota exceeded'));
     queryMock.mockResolvedValueOnce([{ id: 'lex-3' }]); // master_lexicon upsert
@@ -203,7 +203,7 @@ describe('EnrichmentProcessor', () => {
 
     expect(uploadMock).not.toHaveBeenCalled();
     const upsertParams = queryMock.mock.calls[1][1];
-    expect(upsertParams[7]).toBeNull(); // audio_url param
+    expect(upsertParams[7]).toBeNull(); // audio_url_us param
   });
 
   it('non-final attempt failure: rethrows without marking FAILED', async () => {
@@ -254,16 +254,16 @@ describe('EnrichmentProcessor', () => {
   }
 
   it('cache hit on a word with NO audio fills it in (still no text AI call), then marks READY', async () => {
-    queryMock.mockResolvedValueOnce([{ id: 'lex-1', audio_url: null }]); // dedup lookup
-    queryMock.mockResolvedValueOnce([{ id: 'lex-1', audio_url: null }]); // ensureAudio re-check
-    queryMock.mockResolvedValueOnce([]); // audio_url update
+    queryMock.mockResolvedValueOnce([{ id: 'lex-1', audio_url_us: null }]); // dedup lookup
+    queryMock.mockResolvedValueOnce([{ id: 'lex-1', audio_url_us: null }]); // ensureAudio re-check
+    queryMock.mockResolvedValueOnce([]); // audio_url_us update
     queryMock.mockResolvedValueOnce([]); // topic_words update
 
     await processor.process(makeJob());
 
     expect(enrichWordMock).not.toHaveBeenCalled();
     expect(synthesizeSpeechMock).toHaveBeenCalledWith('ephemeral');
-    expect(queryMock.mock.calls[2][0]).toMatch(/update public\.master_lexicon\s+set audio_url/i);
+    expect(queryMock.mock.calls[2][0]).toMatch(/update public\.master_lexicon\s+set audio_url_us/i);
     expect(queryMock.mock.calls[2][1]).toEqual([
       'lex-1',
       'http://localhost:9000/dygo-audio/audio/en/us/abc.wav',
@@ -272,8 +272,8 @@ describe('EnrichmentProcessor', () => {
   });
 
   it('cache hit: a TTS failure while filling audio does not stop the word becoming READY', async () => {
-    queryMock.mockResolvedValueOnce([{ id: 'lex-1', audio_url: null }]);
-    queryMock.mockResolvedValueOnce([{ id: 'lex-1', audio_url: null }]);
+    queryMock.mockResolvedValueOnce([{ id: 'lex-1', audio_url_us: null }]);
+    queryMock.mockResolvedValueOnce([{ id: 'lex-1', audio_url_us: null }]);
     synthesizeSpeechMock.mockRejectedValue(new Error('TTS quota exceeded'));
     queryMock.mockResolvedValueOnce([]); // topic_words update
 
@@ -286,7 +286,7 @@ describe('EnrichmentProcessor', () => {
 
   it('audio-backfill job: reuses audio already in storage (from before a reset) without calling TTS', async () => {
     hasObjectMock.mockResolvedValue(true);
-    queryMock.mockResolvedValueOnce([{ id: 'lex-9', audio_url: null }]); // re-check
+    queryMock.mockResolvedValueOnce([{ id: 'lex-9', audio_url_us: null }]); // re-check
     queryMock.mockResolvedValueOnce([]); // update
 
     await processor.process(backfillJob());
@@ -300,7 +300,7 @@ describe('EnrichmentProcessor', () => {
 
   it('audio-backfill job: reuses an older .wav when there is no .m4a', async () => {
     hasObjectMock.mockImplementation((key: string) => Promise.resolve(key.endsWith('.wav')));
-    queryMock.mockResolvedValueOnce([{ id: 'lex-9', audio_url: null }]);
+    queryMock.mockResolvedValueOnce([{ id: 'lex-9', audio_url_us: null }]);
     queryMock.mockResolvedValueOnce([]);
 
     await processor.process(backfillJob());
@@ -316,7 +316,7 @@ describe('EnrichmentProcessor', () => {
       wav: Buffer.from('wav'),
       fallback: 'ffmpeg not found',
     });
-    queryMock.mockResolvedValueOnce([{ id: 'lex-9', audio_url: null }]);
+    queryMock.mockResolvedValueOnce([{ id: 'lex-9', audio_url_us: null }]);
     queryMock.mockResolvedValueOnce([]);
 
     await processor.process(backfillJob());
@@ -330,7 +330,7 @@ describe('EnrichmentProcessor', () => {
 
   it('audio-backfill job: stores both .m4a and the .wav copy, and links the .m4a', async () => {
     uploadMock.mockImplementation((key: string) => Promise.resolve(`https://audio.example/${key}`));
-    queryMock.mockResolvedValueOnce([{ id: 'lex-9', audio_url: null }]);
+    queryMock.mockResolvedValueOnce([{ id: 'lex-9', audio_url_us: null }]);
     queryMock.mockResolvedValueOnce([]);
 
     await processor.process(backfillJob());
@@ -345,7 +345,7 @@ describe('EnrichmentProcessor', () => {
   });
 
   it('audio-backfill job: generates AAC audio with TTS when storage has none', async () => {
-    queryMock.mockResolvedValueOnce([{ id: 'lex-9', audio_url: null }]);
+    queryMock.mockResolvedValueOnce([{ id: 'lex-9', audio_url_us: null }]);
     queryMock.mockResolvedValueOnce([]);
 
     await processor.process(backfillJob());
@@ -360,7 +360,7 @@ describe('EnrichmentProcessor', () => {
 
   it('audio-backfill job: an old placeholder cdn.dygo.academy link counts as missing', async () => {
     queryMock.mockResolvedValueOnce([
-      { id: 'lex-9', audio_url: 'https://cdn.dygo.academy/audio/en/us/polite.mp3' },
+      { id: 'lex-9', audio_url_us: 'https://cdn.dygo.academy/audio/en/us/polite.mp3' },
     ]);
     queryMock.mockResolvedValueOnce([]);
 
@@ -371,7 +371,9 @@ describe('EnrichmentProcessor', () => {
   });
 
   it('audio-backfill job: a word that already has real audio is a no-op', async () => {
-    queryMock.mockResolvedValueOnce([{ id: 'lex-9', audio_url: 'https://audio.example/real.wav' }]);
+    queryMock.mockResolvedValueOnce([
+      { id: 'lex-9', audio_url_us: 'https://audio.example/real.wav' },
+    ]);
 
     await processor.process(backfillJob());
 
@@ -381,7 +383,7 @@ describe('EnrichmentProcessor', () => {
   });
 
   it('audio-backfill job: a TTS failure rethrows so BullMQ retries it', async () => {
-    queryMock.mockResolvedValueOnce([{ id: 'lex-9', audio_url: null }]);
+    queryMock.mockResolvedValueOnce([{ id: 'lex-9', audio_url_us: null }]);
     synthesizeSpeechMock.mockRejectedValue(new Error('TTS quota exceeded'));
 
     await expect(processor.process(backfillJob())).rejects.toThrow('TTS quota exceeded');
@@ -450,9 +452,9 @@ describe('EnrichmentProcessor', () => {
   it('cache hit missing only the UK clip fills in audio_url_uk alone', async () => {
     googleConfigured = true;
     const us = 'https://audio.example/audio/en/us/x.m4a';
-    queryMock.mockResolvedValueOnce([{ id: 'lex-1', audio_url: us, audio_url_uk: null }]);
+    queryMock.mockResolvedValueOnce([{ id: 'lex-1', audio_url_us: us, audio_url_uk: null }]);
     queryMock.mockResolvedValueOnce([
-      { id: 'lex-1', audio_url: us, audio_url_uk: null, ipa_us: '/ɪˈfem.ɚ.əl/', ipa_uk: null },
+      { id: 'lex-1', audio_url_us: us, audio_url_uk: null, ipa_us: '/ɪˈfem.ɚ.əl/', ipa_uk: null },
     ]);
     queryMock.mockResolvedValueOnce([]); // audio_url_uk update
     queryMock.mockResolvedValueOnce([]); // topic_words update
@@ -469,7 +471,7 @@ describe('EnrichmentProcessor', () => {
 
   it('without a Google key the UK clip is not attempted', async () => {
     const us = 'https://audio.example/audio/en/us/x.m4a';
-    queryMock.mockResolvedValueOnce([{ id: 'lex-9', audio_url: us, audio_url_uk: null }]);
+    queryMock.mockResolvedValueOnce([{ id: 'lex-9', audio_url_us: us, audio_url_uk: null }]);
 
     await processor.process(backfillJob());
 
@@ -487,7 +489,7 @@ describe('EnrichmentProcessor', () => {
     queryMock.mockResolvedValueOnce([
       {
         id: 'lex-9',
-        audio_url: null,
+        audio_url_us: null,
         audio_url_uk: 'https://audio.example/uk.m4a',
         ipa_us: '/ˈpə.laɪt/',
       },
@@ -507,18 +509,18 @@ describe('EnrichmentProcessor', () => {
         ? Promise.reject(new Error('Google TTS 500'))
         : Promise.resolve(Buffer.from('w')),
     );
-    queryMock.mockResolvedValueOnce([{ id: 'lex-9', audio_url: null, audio_url_uk: null }]);
-    queryMock.mockResolvedValueOnce([]); // audio_url update
+    queryMock.mockResolvedValueOnce([{ id: 'lex-9', audio_url_us: null, audio_url_uk: null }]);
+    queryMock.mockResolvedValueOnce([]); // audio_url_us update
 
     await expect(processor.process(backfillJob())).rejects.toThrow('Google TTS 500');
     expect(synthesizeSpeechMock).not.toHaveBeenCalled();
-    expect(queryMock.mock.calls[1][0]).toMatch(/set audio_url = \$2/);
+    expect(queryMock.mock.calls[1][0]).toMatch(/set audio_url_us = \$2/);
   });
 
   it('over the Google TTS cap: rethrows instead of spending Gemini calls', async () => {
     googleConfigured = true;
     synthesizeWordMock.mockRejectedValue(new UsageCapExceededError('google_tts', 10));
-    queryMock.mockResolvedValueOnce([{ id: 'lex-9', audio_url: null, ipa_us: '/ˈpə.laɪt/' }]);
+    queryMock.mockResolvedValueOnce([{ id: 'lex-9', audio_url_us: null, ipa_us: '/ˈpə.laɪt/' }]);
 
     await expect(processor.process(backfillJob())).rejects.toThrow(UsageCapExceededError);
     expect(synthesizeSpeechMock).not.toHaveBeenCalled();
@@ -530,7 +532,7 @@ describe('EnrichmentProcessor', () => {
     queryMock.mockResolvedValueOnce([
       {
         id: 'lex-9',
-        audio_url: 'https://audio.example/audio/en/us/old.m4a',
+        audio_url_us: 'https://audio.example/audio/en/us/old.m4a',
         ipa_us: '/ˈkaʊn.tɚ.fɪt/',
       },
     ]);
@@ -544,7 +546,7 @@ describe('EnrichmentProcessor', () => {
     // No ipa_uk on the row: the UK clip is made from the US IPA.
     expect(synthesizeWordMock).toHaveBeenCalledWith('counterfeit', '/ˈkaʊn.tɚ.fɪt/', 'UK');
     const [sql, params] = queryMock.mock.calls[1];
-    expect(sql).not.toMatch(/audio_url is null/);
+    expect(sql).not.toMatch(/audio_url_us is null/);
     expect(params[1]).toMatch(/^https:\/\/audio\.example\/audio\/en\/us\/[0-9a-f]{32}\.m4a$/);
     expect(params[1]).not.toBe('https://audio.example/audio/en/us/old.m4a');
     const [ukSql, ukParams] = queryMock.mock.calls[2];
@@ -555,7 +557,7 @@ describe('EnrichmentProcessor', () => {
   it('remake that comes out as the same clip leaves the row alone', async () => {
     hasObjectMock.mockResolvedValue(true); // the Gemini clip is in storage
     const same = `https://audio.example/${StorageService.audioKeyFor('polite', 'en')}`;
-    queryMock.mockResolvedValueOnce([{ id: 'lex-9', audio_url: same, ipa_us: null }]);
+    queryMock.mockResolvedValueOnce([{ id: 'lex-9', audio_url_us: same, ipa_us: null }]);
 
     await processor.process(backfillJob({ remake: true }));
 
