@@ -1455,3 +1455,8 @@ Engineering-facing log of shipped fixes and changes, one dated entry per change.
 * **Files**: new `database/migrations/20261025_word_pron_no_tip.sql` (drops the column); backend `ai/pron-data.service.ts` (+ spec), `modules/speaking/pron-syllables.ts` (+ spec), `speaking.service.ts` (+ spec), `speaking.types.ts`, `workers/enrichment.processor.ts` (+ spec), `scripts/pron-backfill.ts`; frontend `types/speaking.ts`, `garden/live/PronounceLive.tsx`, `garden/pronounce/PronounceScreen.tsx`; docs database dictionary.
 * **What**: Dylan (2026-10-25): the honeycomb redesign builds the P1 tip from the syllables in the app, so the stored tip goes. Enrichment and `pron-backfill` no longer write it (and a word is no longer "missing data" without it), the Pond item no longer sends it, and P1 always builds the tip from the stones with the `screens.pronounce.hop*` strings, which it already did when the tip was null (same wording, so P1 looks the same).
 * **Apply order**: deploy this code first, then apply the migration.
+
+### Removed: master_lexicon.is_phrase
+* **Files**: new `database/migrations/20261025_word_no_phrase.sql` (drops the column); `database/seeds/07_seeds_harvest_fixture.sql` (no longer inserts it), `com.dygoacademy.backend/scripts/relations-import.js` (comment); docs database dictionary.
+* **What**: Dylan (2026-10-25): `is_phrase` (added the same day by `20261025_word_phrases.sql`) was never read by any code, SQL function, view, index or policy, so it goes. No app code changes.
+* **Apply**: `./database/apply-migrations.sh --migrations`; order with a deploy doesn't matter.
