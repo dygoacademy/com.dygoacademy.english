@@ -397,22 +397,38 @@ describe('TopicsScreen', () => {
     expect(chip.getAttribute('title')).toBe('Academic');
   });
 
-  it('scrolls a picked chip to the middle, without animation for reduced motion', () => {
+  it('scrolls a picked chip to the middle of the row, never the page around it', () => {
+    const scrollTo = vi.fn();
     const scrollIntoView = vi.fn();
-    const original = Element.prototype.scrollIntoView;
+    const originalScrollTo = Element.prototype.scrollTo;
+    const originalScrollIntoView = Element.prototype.scrollIntoView;
+    Element.prototype.scrollTo = scrollTo;
     Element.prototype.scrollIntoView = scrollIntoView;
     try {
       renderTopics();
       fireEvent.click(screen.getByRole('button', { name: 'Shared' }));
-      expect(scrollIntoView).toHaveBeenLastCalledWith(
-        expect.objectContaining({ inline: 'center', block: 'nearest' }),
+      expect(scrollTo).toHaveBeenLastCalledWith(
+        expect.objectContaining({ left: expect.any(Number) }),
       );
-      expect(scrollIntoView.mock.contexts.at(-1)).toBe(
-        screen.getByRole('button', { name: 'Shared' }),
+      expect(scrollTo.mock.contexts.at(-1)).toBe(
+        screen.getByRole('group', { name: 'Filter topics' }),
       );
+      expect(scrollIntoView).not.toHaveBeenCalled();
     } finally {
-      Element.prototype.scrollIntoView = original;
+      Element.prototype.scrollTo = originalScrollTo;
+      Element.prototype.scrollIntoView = originalScrollIntoView;
     }
+  });
+
+  it('pans the chip row sideways only and the bed list up and down only', () => {
+    renderTopics();
+    const row = screen.getByRole('group', { name: 'Filter topics' });
+    expect(row.className).toMatch(/\btouch-pan-x\b/);
+    expect(row.className).toMatch(/\boverflow-y-hidden\b/);
+    expect(row.className).toMatch(/\boverscroll-contain\b/);
+    const list = screen.getByRole('button', { name: /Plant a new bed/ }).parentElement!;
+    expect(list.className).toMatch(/\btouch-pan-y\b/);
+    expect(list.className).toMatch(/\boverflow-x-hidden\b/);
   });
 
   it('shows the edge fades from the scroll position', () => {

@@ -1363,3 +1363,10 @@ Engineering-facing log of shipped fixes and changes, one dated entry per change.
 * **Files**: frontend `hooks/useProfile.ts` (`useUpdateProfilePrefs`).
 * **What**: Dylan on UAT (2026-10-24): after changing the daily goal from 5 to 30 min, the Garden took a minute or so to show the extra words to plant, because today's missions stayed cached until they went stale (60 s). Saving a daily goal now refreshes the missions (the `['srs']` queries) straight away.
 * **Verified**: frontend `tsc` clean.
+
+## 2026-10-25
+
+### Fixed: Topics filter chips only slide sideways, the bed list only scrolls up and down
+* **Files**: frontend `components/garden/screens/TopicsScreen.tsx` (`FilterChipRow`, `TopicsScreen`), `screens/screens.test.tsx`.
+* **What**: Dylan on a phone (2026-10-25): dragging on the A6 chip row wobbled the page up and down, and the row could end up shifted so "All" was cut off. The chip row is now `touch-pan-x touch-pinch-zoom overflow-y-hidden overscroll-contain`; the bed list is `touch-pan-y touch-pinch-zoom overflow-x-hidden overscroll-contain`; the screen column is `overflow-x-clip`. Picking a chip now scrolls the row itself (`row.scrollTo`) instead of `scrollIntoView`, which also scrolled every scrollable ancestor (the page included). Pinch zoom still works. `FilterChipRow` is only used on Topics.
+* **Verified**: frontend `tsc` and `npm run lint` clean; the Topics tests pass, including a new one for the scroll axes. The garden suite has 41 failures that also fail on the base commit without this change.
