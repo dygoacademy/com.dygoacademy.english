@@ -1,5 +1,5 @@
 import type { PronBlockedReason } from './pron-config';
-import type { PronTip, StoredSyllable } from './pron-syllables';
+import type { StoredSyllable } from './pron-syllables';
 import type { SpeakingSyllable } from './speaking-syllables';
 import type { SpeakingAccent, SpeakingTimings } from './speaking-timings';
 
@@ -59,8 +59,6 @@ export interface SpeakingSessionItem {
   syllables: StoredSyllable[];
   /** The word clip the syllable spans belong to (that accent's word_audio_url); null without one. */
   syllables_clip_url: string | null;
-  /** The P1 tip by app locale, syllables in <b>; null until made. */
-  pron_tip: PronTip | null;
 }
 
 /** The Pond (Sound Garden on the Missions tab). */

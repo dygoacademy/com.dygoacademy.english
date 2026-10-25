@@ -2,7 +2,6 @@
 
 import * as React from 'react';
 import { useQueries, useQueryClient } from '@tanstack/react-query';
-import { useLocale } from 'next-intl';
 import { useRouter } from 'next/navigation';
 
 import { LIVE_LEVELS_PER_SECOND, useLiveLevels } from '@/hooks/useLiveLevels';
@@ -49,7 +48,7 @@ import {
   wordStones,
   type PronResultView,
 } from '@/lib/speaking/pronounce';
-import type { PronTip, SpeakingWordCheckResult, SpeakingWordItem } from '@/types';
+import type { SpeakingWordCheckResult, SpeakingWordItem } from '@/types';
 import type { P4Action } from '@/lib/speaking/pron-result';
 
 import {
@@ -149,7 +148,6 @@ function PronounceWord({
   onNext: () => void;
 }) {
   const router = useRouter();
-  const locale = useLocale() as keyof PronTip;
   const queryClient = useQueryClient();
   const player = usePlayer();
   const { item, default_accent: accent } = data;
@@ -579,7 +577,6 @@ function PronounceWord({
       onPlayed={(voice, screen) =>
         track({ name: 'pron_word_played', props: { word_id: item.topic_word_id, voice, screen } })
       }
-      tip={item.pron_tip?.[locale] ?? null}
       onMic={tapMic}
       notice={
         notice ? (

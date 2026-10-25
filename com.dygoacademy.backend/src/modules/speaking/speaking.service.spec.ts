@@ -39,11 +39,6 @@ function itemRow(overrides: Record<string, unknown> = {}) {
     word_audio_url_uk: 'https://cdn.test/audio/en/uk/w.m4a',
     syllables_us: STORED_US,
     syllables_uk: STORED_UK,
-    pron_tip: {
-      'en-US': 'Hop across the stones: land hard on <b>MI</b>.',
-      'vi-VN': 'v',
-      'zh-CN': 'z',
-    },
     ...overrides,
   };
 }
@@ -152,7 +147,7 @@ describe('SpeakingService.forWord ("Say this one?")', () => {
     expect(result.item.syllables).toEqual(STORED_UK);
     expect(result.item.syllables_clip_url).toBe('https://cdn.test/audio/en/uk/w.m4a');
     expect(result.item).not.toHaveProperty('word_audio_slow_url_us');
-    expect(result.item.pron_tip?.['en-US']).toContain('<b>MI</b>');
+    expect(result.item).not.toHaveProperty('pron_tip');
     expect(result.item).not.toHaveProperty('syllables_us');
     // No UK stones yet: the US ones, with the US clip.
     const { withUser: w2 } = withUserReturning(

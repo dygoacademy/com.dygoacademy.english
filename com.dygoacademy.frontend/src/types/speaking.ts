@@ -53,9 +53,6 @@ export interface StoredSyllable extends SpeakingSyllable {
   end_ms: number | null;
 }
 
-/** The P1 tip by app locale, syllables in `<b>` (master_lexicon.pron_tip). */
-export type PronTip = Record<'en-US' | 'vi-VN' | 'zh-CN', string>;
-
 /** Why a word isn't offered in Pronunciation. */
 export type PronBlockedReason = 'no_syllables';
 
@@ -92,8 +89,6 @@ export interface SpeakingSessionItem {
   syllables?: StoredSyllable[];
   /** The word clip the syllable spans belong to; null without one. Optional for older APIs. */
   syllables_clip_url?: string | null;
-  /** The P1 tip by app locale; null until made. Optional for older APIs. */
-  pron_tip?: PronTip | null;
 }
 
 /** The Pond (Sound Garden on the Missions tab): `GET /api/v1/speaking/session[?topic_id=]`. */

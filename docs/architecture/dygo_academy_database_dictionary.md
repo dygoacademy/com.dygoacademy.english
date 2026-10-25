@@ -726,6 +726,8 @@ Since `20261025_word_audio_uk.sql`: every word has two clips. `master_lexicon.au
 
 `20261025_word_pron_data.sql` also added `audio_slow_url_us` / `audio_slow_url_uk` (the word said slowly by Google TTS); `20261025_word_pron_no_slow.sql` drops them again the same day: Pronunciation's Slowly plays `audio_url_us` / `audio_url_uk` slowed to 0.7× in the browser.
 
+It also added `pron_tip` (the P1 tip per locale, built from the stones); `20261025_word_pron_no_tip.sql` drops it the same day: the app builds the tip from the word's syllables with its own i18n strings.
+
 Since `20261025_word_phrases.sql`: `master_lexicon.is_phrase` (boolean, default false; backfilled true for any spelling with a space) marks pairings such as "mitigate the risk". A relation drops only when its related word has a `master_lexicon` entry with `audio_url_us`; the seed is then a READY topic word linked to that entry. A fruit word drops at most once (`seed_drops.dropped_by`). The whole drop is behind `SEED_DROPS_ENABLED` (off by default).
 
 ---

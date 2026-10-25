@@ -32,7 +32,6 @@ const encodeForWebMock = encodeForWeb as jest.MockedFunction<typeof encodeForWeb
 const PRON_DATA: PronData = {
   syllables_us: [{ text: 'e', stressed: false, start_ms: 0, end_ms: 100 }],
   syllables_uk: null,
-  pron_tip: { 'en-US': 'tip', 'vi-VN': 'tip', 'zh-CN': 'tip' },
 };
 
 describe('EnrichmentProcessor', () => {

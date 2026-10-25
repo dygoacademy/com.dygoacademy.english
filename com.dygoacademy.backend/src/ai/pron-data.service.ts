@@ -3,9 +3,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import {
   buildSyllables,
   ipaPerStone,
-  pronTip,
   syllableSpans,
-  type PronTip,
   type StoredSyllable,
 } from '../modules/speaking/pron-syllables';
 import { StorageService } from '../storage/storage.service';
@@ -31,7 +29,6 @@ export interface PronDataRow {
 export interface PronData {
   syllables_us: StoredSyllable[] | null;
   syllables_uk: StoredSyllable[] | null;
-  pron_tip: PronTip | null;
 }
 
 const CLIP_COLUMN: Record<WordAccent, 'audio_url_us' | 'audio_url_uk'> = {
@@ -77,7 +74,6 @@ export class PronDataService {
     const out: PronData = {
       syllables_us: null,
       syllables_uk: null,
-      pron_tip: null,
     };
     for (const accent of this.accents()) {
       const ipa = ipaForAccent(row, accent);
@@ -89,8 +85,6 @@ export class PronDataService {
           : stones;
       }
     }
-    const tipStones = out.syllables_us ?? out.syllables_uk;
-    out.pron_tip = tipStones ? pronTip(tipStones) : null;
     return out;
   }
 
@@ -146,14 +140,13 @@ export class PronDataService {
 export function pronDataUpdate(id: string, data: PronData): { text: string; params: unknown[] } {
   return {
     text: `update public.master_lexicon
-              set syllables_us = $2::jsonb, syllables_uk = $3::jsonb, pron_tip = $4::jsonb,
+              set syllables_us = $2::jsonb, syllables_uk = $3::jsonb,
                   updated_at = now()
             where id = $1`,
     params: [
       id,
       data.syllables_us ? JSON.stringify(data.syllables_us) : null,
       data.syllables_uk ? JSON.stringify(data.syllables_uk) : null,
-      data.pron_tip ? JSON.stringify(data.pron_tip) : null,
     ],
   };
 }

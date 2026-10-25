@@ -2,7 +2,7 @@
 /**
  * pron-backfill — pronunciation v2 data for words that don't have it yet:
  * the stones (master_lexicon.syllables_us / _uk, with each syllable's place
- * in the word clip) and the P1 tip (pron_tip). See src/ai/pron-data.service.ts.
+ * in the word clip). See src/ai/pron-data.service.ts.
  *
  *   npm run pron-backfill -- --dry-run         # what would be made, and which words get no stones
  *   npm run pron-backfill                      # words missing any of it (at most 500)
@@ -142,7 +142,7 @@ async function main() {
       const made = tts.isConfigured();
       ({ rows } = await db.query(
         `select ${cols} from public.master_lexicon ml
-          where ml.syllables_us is null or ml.pron_tip is null
+          where ml.syllables_us is null
              or ($2 and ml.syllables_uk is null)
           order by ml.created_at
           limit $1`,

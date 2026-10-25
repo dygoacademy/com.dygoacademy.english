@@ -96,7 +96,6 @@ describe('PronDataService', () => {
     expect(d.syllables_us?.[2].end_ms).toBe(800);
     expect(d.syllables_uk).toHaveLength(3);
     expect(d).not.toHaveProperty('audio_slow_url_us');
-    expect(d.pron_tip?.['en-US']).toContain('<b>MI</b>');
   });
 
   it('no stones: syllables null (the word is blocked)', async () => {
@@ -109,7 +108,6 @@ describe('PronDataService', () => {
     });
     expect(d.syllables_us).toBeNull();
     expect(d.syllables_uk).toBeNull();
-    expect(d.pron_tip).toBeNull();
   });
 
   it('without Google TTS: US stones without spans, no UK', async () => {
@@ -120,9 +118,9 @@ describe('PronDataService', () => {
     expect(tts.synthesizeMarked).not.toHaveBeenCalled();
   });
 
-  it('writes the stones and tip, nothing about slow clips', () => {
-    const u = pronDataUpdate('lex-1', { syllables_us: null, syllables_uk: null, pron_tip: null });
-    expect(u.text).not.toMatch(/audio_slow_url/);
-    expect(u.params).toEqual(['lex-1', null, null, null]);
+  it('writes the stones, nothing about slow clips or a tip', () => {
+    const u = pronDataUpdate('lex-1', { syllables_us: null, syllables_uk: null });
+    expect(u.text).not.toMatch(/audio_slow_url|pron_tip/);
+    expect(u.params).toEqual(['lex-1', null, null]);
   });
 });

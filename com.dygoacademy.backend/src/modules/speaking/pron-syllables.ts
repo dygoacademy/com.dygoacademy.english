@@ -6,8 +6,8 @@ import type { SpeakingAccent } from './speaking-timings';
  * Pronunciation v2 (plan of 2026-10-25): the stones are stored per word and
  * accent (master_lexicon.syllables_us / _uk, 20261025_word_pron_data.sql)
  * instead of worked out on each request. This builds them (enrichment and
- * `npm run pron-backfill`), reads them back for an accent, and writes the P1
- * tip in the app's three locales. No I/O, so it's unit-tested.
+ * `npm run pron-backfill`) and reads them back for an accent. No I/O, so it's
+ * unit-tested.
  */
 
 /** One stored syllable: the stone's text, the big stone, and where it is in the accent's word clip. */
@@ -15,9 +15,6 @@ export interface StoredSyllable extends SpeakingSyllable {
   start_ms: number | null;
   end_ms: number | null;
 }
-
-/** The P1 tip by app locale (master_lexicon.pron_tip). */
-export type PronTip = Record<'en-US' | 'vi-VN' | 'zh-CN', string>;
 
 const VOWELS = new Set([...'aeiouyæɑɒɔəɚɛɜɝɪʊʌɐøœɘɵɤɯ']);
 const DIPHTHONGS = ['eɪ', 'aɪ', 'ɔɪ', 'oʊ', 'əʊ', 'aʊ', 'ɪə', 'eə', 'ɛə', 'ʊə'];
@@ -207,57 +204,6 @@ export function syllableSpans(
   const edges = [clipVoiced.start, ...cuts, clipVoiced.end].map((s) => Math.round(s * 1000));
   for (let k = 1; k < edges.length; k++) edges[k] = Math.max(edges[k], edges[k - 1]);
   return stones.map((_, k) => ({ start_ms: edges[k], end_ms: edges[k + 1] }));
-}
-
-const TIP: Record<
-  keyof PronTip,
-  { intro: string; sep: string; hard: string; light: string; then: string; end: string }
-> = {
-  // Today's hopParts tip (messages screens.pronounce.hop*), same wording.
-  'en-US': {
-    intro: 'Hop across the stones: ',
-    sep: ', ',
-    hard: 'land hard on ',
-    light: 'light on ',
-    then: 'then ',
-    end: '.',
-  },
-  'vi-VN': {
-    intro: 'Nhảy qua các hòn đá: ',
-    sep: ', ',
-    hard: 'nhấn mạnh ở ',
-    light: 'nhẹ ở ',
-    then: 'rồi đến ',
-    end: '.',
-  },
-  'zh-CN': {
-    intro: '跳过石头：',
-    sep: '，',
-    hard: '重踩 ',
-    light: '轻踩 ',
-    then: '然后 ',
-    end: '。',
-  },
-};
-
-/**
- * The P1 tip in each locale: land hard on the stressed stone, light on the
- * one after it (and on any before it), then the rest; syllables in `<b>`
- * ("Hop across the stones: land hard on <b>MI</b>, light on <b>ti</b>, then <b>gate</b>.").
- */
-export function pronTip(stones: readonly SpeakingSyllable[]): PronTip {
-  const escape = (s: string) =>
-    s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-  const tip = {} as PronTip;
-  for (const locale of Object.keys(TIP) as (keyof PronTip)[]) {
-    const w = TIP[locale];
-    const parts = stones.map((s, k) => {
-      const kind = s.stressed ? w.hard : k === 0 || stones[k - 1].stressed ? w.light : w.then;
-      return `${kind}<b>${escape(stoneText(s))}</b>`;
-    });
-    tip[locale] = `${w.intro}${parts.join(w.sep)}${w.end}`;
-  }
-  return tip;
 }
 
 /** A stone's text as shown: the stressed one in capitals when it is plain letters (MI), as the app's stoneText. */

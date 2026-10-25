@@ -3,7 +3,6 @@ import {
   fitSpelling,
   ipaUnits,
   ipaPerStone,
-  pronTip,
   storedStones,
   syllableSpans,
 } from './pron-syllables';
@@ -116,17 +115,6 @@ describe('syllableSpans', () => {
       },
     );
     expect(odd.every((s) => s.end_ms >= s.start_ms)).toBe(true);
-  });
-});
-
-describe('pronTip', () => {
-  it("today's hop wording in each locale, syllables in <b>, the stressed one in capitals", () => {
-    expect(pronTip(STONES)).toEqual({
-      'en-US':
-        'Hop across the stones: land hard on <b>MI</b>, light on <b>ti</b>, then <b>gate</b>.',
-      'vi-VN': 'Nhảy qua các hòn đá: nhấn mạnh ở <b>MI</b>, nhẹ ở <b>ti</b>, rồi đến <b>gate</b>.',
-      'zh-CN': '跳过石头：重踩 <b>MI</b>，轻踩 <b>ti</b>，然后 <b>gate</b>。',
-    });
   });
 });
 

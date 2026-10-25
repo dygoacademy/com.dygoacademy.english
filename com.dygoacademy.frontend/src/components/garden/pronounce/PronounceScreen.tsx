@@ -80,8 +80,6 @@ export interface PronounceScreenProps {
   nativeClip?: PronClip;
   /** A sound button started playing (analytics: pron_word_played). */
   onPlayed?: (voice: 'native' | 'you', screen: 'P1' | 'P3') => void;
-  /** The P1 tip in the app's locale (stored, syllables in <b>); else it is built from the stones. */
-  tip?: string | null;
   /** P1. */
   onMic?: () => void;
   /** P1: a mic notice (denied, unsupported) in place of the hint; `micAvailable` false hides the mic. */
@@ -296,24 +294,6 @@ const PRIMARY =
 const LINK =
   'self-center p-2 text-[14px] font-semibold text-muted-foreground underline ipad:text-[15px]';
 
-/** The stored tip: plain text with the syllables in <b> (the only tag), escaped by the server. */
-function TipText({ tip }: { tip: string }) {
-  const unescape = (x: string) => x.replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&');
-  return (
-    <>
-      {tip.split(/(<b>[^<]*<\/b>)/).map((part, k) =>
-        part.startsWith('<b>') ? (
-          <b key={k} lang="en">
-            {unescape(part.slice(3, -4))}
-          </b>
-        ) : (
-          <React.Fragment key={k}>{unescape(part)}</React.Fragment>
-        ),
-      )}
-    </>
-  );
-}
-
 export function PronounceScreen(props: PronounceScreenProps) {
   const t = useTranslations('screens.pronounce');
   const speak = useTranslations('screens.speak');
@@ -459,23 +439,17 @@ export function PronounceScreen(props: PronounceScreenProps) {
         phase === 'say' ? '' : 'hidden ipad:block',
       )}
     >
-      {props.tip ? (
-        <TipText tip={props.tip} />
-      ) : (
-        <>
-          {t('hopIntro')}
-          {parts.map((p, k) => (
-            <React.Fragment key={k}>
-              {k > 0 ? t('hopSep') : null}
-              {t.rich(p.kind === 'hard' ? 'hopHard' : p.kind === 'light' ? 'hopLight' : 'hopThen', {
-                s: p.text,
-                b: (chunks) => <b lang="en">{chunks}</b>,
-              })}
-            </React.Fragment>
-          ))}
-          {t('hopEnd')}
-        </>
-      )}
+      {t('hopIntro')}
+      {parts.map((p, k) => (
+        <React.Fragment key={k}>
+          {k > 0 ? t('hopSep') : null}
+          {t.rich(p.kind === 'hard' ? 'hopHard' : p.kind === 'light' ? 'hopLight' : 'hopThen', {
+            s: p.text,
+            b: (chunks) => <b lang="en">{chunks}</b>,
+          })}
+        </React.Fragment>
+      ))}
+      {t('hopEnd')}
     </div>
   );
 

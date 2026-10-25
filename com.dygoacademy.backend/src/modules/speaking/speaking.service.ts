@@ -7,7 +7,7 @@ import { settleWeek, weeklySafely } from '../missions/weekly.store';
 import { ACTIVE_BED_TOPIC, resolveUserTimezone } from '../srs/srs.service';
 import { StorageService } from '../../storage/storage.service';
 import { CreateSpeakingAttemptDto } from './dto/create-attempt.dto';
-import { storedStones, type PronTip, type StoredSyllable } from './pron-syllables';
+import { storedStones, type StoredSyllable } from './pron-syllables';
 import {
   SPEAKING_LOOKUP_MAX,
   SPEAKING_SESSION_SIZE,
@@ -26,11 +26,10 @@ const UUID_SHAPE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12
 
 interface ItemRow extends Omit<
   SpeakingSessionItem,
-  'audio_uk_url' | 'audio_us_url' | 'syllables' | 'syllables_clip_url' | 'pron_tip'
+  'audio_uk_url' | 'audio_us_url' | 'syllables' | 'syllables_clip_url'
 > {
   syllables_us: StoredSyllable[] | null;
   syllables_uk: StoredSyllable[] | null;
-  pron_tip: PronTip | null;
   audio_uk_path: string | null;
   audio_us_path: string | null;
   timings_uk: SpeakingTimings | null;
@@ -42,7 +41,7 @@ const ITEM_COLUMNS = `
   si.id, si.lexicon_id, w.topic_word_id, ml.normalized_word as word, ml.part_of_speech,
   ml.cefr_level::text as cefr_level, ml.ipa_uk, ml.ipa_us, ml.definition_en,
   ml.audio_url_us as word_audio_url_us, ml.audio_url_uk as word_audio_url_uk,
-  ml.syllables_us, ml.syllables_uk, ml.pron_tip,
+  ml.syllables_us, ml.syllables_uk,
   wt.locale as meaning_locale, wt.meaning as meaning_translation,
   si.sentence, si.target_index,
   si.audio_uk_path, si.audio_us_path, si.timings_uk, si.timings_us,
@@ -332,7 +331,7 @@ export class SpeakingService {
 
   /** R2 keys → public URLs; the keys never leave the API. */
   private toItem(
-    { audio_uk_path, audio_us_path, syllables_us, syllables_uk, pron_tip, ...item }: ItemRow,
+    { audio_uk_path, audio_us_path, syllables_us, syllables_uk, ...item }: ItemRow,
     accent: SpeakingAccent,
   ): SpeakingSessionItem {
     const stones = storedStones({ syllables_us, syllables_uk }, accent);
@@ -345,7 +344,6 @@ export class SpeakingService {
           : stones.accent === 'UK'
             ? item.word_audio_url_uk
             : item.word_audio_url_us,
-      pron_tip,
       audio_uk_url: audio_uk_path ? this.storage.publicUrlFor(audio_uk_path) : null,
       audio_us_url: audio_us_path ? this.storage.publicUrlFor(audio_us_path) : null,
     };
