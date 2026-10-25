@@ -32,8 +32,6 @@ import { LEARNER_PACE, meterDead } from './session';
  * screens draw, PronounceLive holds the mic.
  */
 
-/** At most this many words a visit ("Bee 1 of 3"). */
-export const PRON_MAX_WORDS = 3;
 /** The recording stops by itself after this long (the ring round the mic). */
 export const PRON_MAX_MS = PRON.maxMs;
 /** …or this long after the voice ends. */

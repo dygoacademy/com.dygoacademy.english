@@ -8,7 +8,7 @@ import { useRouter } from 'next/navigation';
 import { LIVE_LEVELS_PER_SECOND, useLiveLevels } from '@/hooks/useLiveLevels';
 import { ENVELOPE_FPS } from '@/lib/speaking/audio';
 import { useNativeEnvelope } from '@/hooks/useNativeEnvelope';
-import { prepareSlowClip, usePlayer } from '@/hooks/usePlayer';
+import { getPlayerTag, prepareSlowClip, usePlayer } from '@/hooks/usePlayer';
 import { useTake } from '@/hooks/useTake';
 import { useTopic } from '@/hooks/useTopic';
 import { apiClient } from '@/lib/api-client';
@@ -39,7 +39,9 @@ import {
   pronVoiceEnded,
   resultView,
   slowWord,
+  stoneText,
   stoneShares,
+  takeSyllable,
   unusableTake,
   voiceIn,
   voicedBars,
@@ -47,7 +49,8 @@ import {
   wordStones,
   type PronResultView,
 } from '@/lib/speaking/pronounce';
-import type { PronTip, SpeakingWordItem } from '@/types';
+import type { PronTip, SpeakingWordCheckResult, SpeakingWordItem } from '@/types';
+import type { P4Action } from '@/lib/speaking/pron-result';
 
 import {
   PronounceScreen,
@@ -55,12 +58,14 @@ import {
   type PronNotHeardReason,
   type PronPhase,
 } from '../pronounce/PronounceScreen';
+import { PronResult } from '../pronounce/PronResult';
+import { SpeakMicScreen } from '../pronounce/SpeakMicScreen';
 import { SpeakNotice, type SpeakNoticeKind } from '../speaking/SpeakNotice';
 import { LiveError, LiveLoading } from './LiveState';
 
 /**
- * /sounds/word: Pronunciation "Stepping stones" (plan Part 2). Up to three
- * words in a row ("Bee 1 of 3"), each from `GET /speaking/words/:id`.
+ * /sounds/word: Pronunciation "Stepping stones" (plan Part 2). The words
+ * in a row ("Bee 1 of 3"), each from `GET /speaking/words/:id`.
  * P1 → tap the mic: the mic listens to the room for PRON_ROOM_MS, then a
  * beep and the take (P2: stones light as the voice goes on; stops 1 s
  * after the voice, at 4 s, or on Stop) → too quiet / too noisy: P2b, no
@@ -151,7 +156,16 @@ function PronounceWord({
   const stones = React.useMemo(() => wordStones(item), [item]);
   const wordS = nativeWordSeconds(item, accent);
 
-  const [phase, setPhase] = React.useState<PronPhase>('say');
+  const [phase, setPhase] = React.useState<PronPhase | 'mic'>('say');
+  /** SP0: ask before the first recording, or how to turn the mic back on. */
+  const [micState, setMicState] = React.useState<'ask' | 'denied'>('ask');
+  /** The mic permission as the browser reports it, read ahead so a tap stays a tap (iOS). */
+  const micPermission = useMicPermission();
+  /** The check behind P4 (each stone's heard IPA and its time in the take). */
+  const [check, setCheck] = React.useState<SpeakingWordCheckResult | null>(null);
+  /** P4: the chip selected (the weak one at first on almost and retry). */
+  const [chip, setChip] = React.useState(-1);
+  const chipTimer = React.useRef<ReturnType<typeof setTimeout> | null>(null);
   const [notice, setNotice] = React.useState<SpeakNoticeKind | null>(() =>
     speakingSupport().recorder ? null : 'unsupported',
   );
@@ -250,6 +264,8 @@ function PronounceWord({
           return;
         }
         setResult(view);
+        setCheck(r);
+        setChip(view.selected);
         setPhase('result');
         attempts.current += 1;
         track({
@@ -339,8 +355,27 @@ function PronounceWord({
       );
     } catch (err) {
       const kind = (err as { kind?: MicErrorKind }).kind ?? 'failed';
-      setNotice(kind === 'unsupported' ? 'unsupported' : 'denied');
-      setPhase('say');
+      if (kind === 'unsupported') {
+        setNotice('unsupported');
+        setPhase('say');
+      } else {
+        // SP0 denied: how to turn the mic back on.
+        setMicState('denied');
+        setPhase('mic');
+      }
+    }
+  }
+
+  /** The mic on P1: SP0 the first time (or while it's off), else straight to P2. */
+  function tapMic() {
+    if (micPermission === 'denied') {
+      setMicState('denied');
+      setPhase('mic');
+    } else if (micPermission !== 'granted' && !micAsked()) {
+      setMicState('ask');
+      setPhase('mic');
+    } else {
+      void startRecording();
     }
   }
 
@@ -395,9 +430,52 @@ function PronounceWord({
 
   /** Leaving P4 (next bee, back to the bed, close): the take is cleared first. */
   const leave = (then: () => void) => {
+    if (chipTimer.current) clearTimeout(chipTimer.current);
     player.stop();
     take.clear();
     then();
+  };
+
+  /**
+   * A chip: that syllable said by the native speaker, then by the learner
+   * (its time in the take; the whole take when the scorer gave none).
+   */
+  const playChip = (k: number) => {
+    if (!result) return;
+    setChip(k);
+    if (chipTimer.current) clearTimeout(chipTimer.current);
+    track({
+      name: 'pron_chip_played',
+      props: { word_id: item.topic_word_id, syllable: stoneText(result.stones[k]), state: result.states[k] },
+    });
+    const clip = nativeSyllable(item, accent, k);
+    if (!clip) return;
+    const rate = nativeClipRate(clip, PRON_SLOW_RATE);
+    const tag = `p4-chip-${k}`;
+    void player.play(clip.src, rate, clip.span, tag).catch(() => undefined);
+    const span = check ? takeSyllable(check, k) : null;
+    const ms = clip.span ? ((clip.span.end - clip.span.start) * 1000) / rate : 900;
+    chipTimer.current = setTimeout(() => {
+      chipTimer.current = null;
+      // Only if nothing else was played meanwhile.
+      if (take.url && getPlayerTag() === tag) {
+        void player.play(take.url, 1, span ?? undefined, `${tag}-you`).catch(() => undefined);
+      }
+    }, ms + 250);
+  };
+
+  const p4Action = (action: P4Action) => {
+    if (action === 'nextBee') return leave(onNext);
+    if (action === 'skip') {
+      // Skip doesn't count as a try (default).
+      track({ name: 'pron_skipped', props: { word_id: item.topic_word_id } });
+      return leave(onNext);
+    }
+    if (action === 'tryAgain' || action === 'sayAgain' || action === 'polish') {
+      track({ name: 'pron_say_again', props: { word_id: item.topic_word_id, from_result: true } });
+      if (chipTimer.current) clearTimeout(chipTimer.current);
+      void startRecording();
+    }
   };
 
   // P4 "Compare your voice": the voiced part of the native clip and of the take.
@@ -427,7 +505,50 @@ function PronounceWord({
   const meaning = item.meaning_translation ?? item.definition_en;
   const ipa = accent === 'UK' ? (item.ipa_uk ?? item.ipa_us) : (item.ipa_us ?? item.ipa_uk);
 
-  return (
+  if (phase === 'mic') {
+    return (
+      <SpeakMicScreen
+        state={micState}
+        closeHref={closeHref}
+        onAllow={() => {
+          markMicAsked();
+          void startRecording();
+        }}
+        onOpenSettings={() => void startRecording()}
+        onListen={() => setPhase('say')}
+      />
+    );
+  }
+
+  const nativeClipProp = native
+    ? { src: native.src, span: native.span, rate: nativeClipRate(native, 1) }
+    : { src: null };
+  const p4 =
+    phase === 'result' && result && check ? (
+      <div className="ipad:hidden" data-screen="p4">
+        <PronResult
+          word={item.word}
+          index={index}
+          total={total}
+          view={result}
+          syllables={check.syllables}
+          nextWord={nextWord}
+          closeHref={closeHref}
+          nativeClip={nativeClipProp}
+          mineClip={{ src: take.url }}
+          nativeS={compare?.nativeS ?? null}
+          mineS={compare?.mineS ?? null}
+          selected={chip}
+          onChip={playChip}
+          onAction={p4Action}
+          onPlayed={(voice) =>
+            track({ name: 'pron_word_played', props: { word_id: item.topic_word_id, voice, screen: 'P4' } })
+          }
+        />
+      </div>
+    ) : null;
+
+  const screen = (
     <PronounceScreen
       phase={phase}
       word={item.word}
@@ -459,7 +580,7 @@ function PronounceWord({
         track({ name: 'pron_word_played', props: { word_id: item.topic_word_id, voice, screen } })
       }
       tip={item.pron_tip?.[locale] ?? null}
-      onMic={() => void startRecording()}
+      onMic={tapMic}
       notice={
         notice ? (
           <SpeakNotice
@@ -518,4 +639,53 @@ function PronounceWord({
       onHearFirst={() => setPhase('say')}
     />
   );
+  // P4: the v2 board on a phone; the iPad keeps its own result layout (iP4).
+  return p4 ? (
+    <>
+      {p4}
+      <div className="hidden ipad:block">{screen}</div>
+    </>
+  ) : (
+    screen
+  );
+}
+
+const MIC_ASKED_KEY = 'dygo:mic-asked';
+/** True once SP0 was shown on this device (where the browser can't say whether it may use the mic). */
+function micAsked(): boolean {
+  try {
+    return window.localStorage.getItem(MIC_ASKED_KEY) === '1';
+  } catch {
+    return false;
+  }
+}
+function markMicAsked(): void {
+  try {
+    window.localStorage.setItem(MIC_ASKED_KEY, '1');
+  } catch {
+    // Private mode: SP0 may show again; harmless.
+  }
+}
+
+/** The browser's microphone permission, kept current; `unknown` where it can't be read (older Safari). */
+function useMicPermission(): 'granted' | 'denied' | 'prompt' | 'unknown' {
+  const [state, setState] = React.useState<'granted' | 'denied' | 'prompt' | 'unknown'>('unknown');
+  React.useEffect(() => {
+    let status: PermissionStatus | null = null;
+    let alive = true;
+    const read = () => status && alive && setState(status.state as 'granted' | 'denied' | 'prompt');
+    navigator.permissions
+      ?.query({ name: 'microphone' as PermissionName })
+      .then((s) => {
+        status = s;
+        read();
+        s.addEventListener('change', read);
+      })
+      .catch(() => undefined);
+    return () => {
+      alive = false;
+      status?.removeEventListener('change', read);
+    };
+  }, []);
+  return state;
 }

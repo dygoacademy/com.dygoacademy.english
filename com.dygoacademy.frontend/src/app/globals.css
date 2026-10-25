@@ -530,6 +530,11 @@
     --stone-selected: #f2d28b;
     --pron-chip: #2e5446;
     --pron-chip-line: #3a5e4f;
+    /* SP0 microphone off (SpeakMic denied) */
+    --mic-off: #eae5da;
+    --mic-off-body: #cfc8b8;
+    --mic-off-line: #b9ae96;
+    --mic-settings-shadow: #142a21;
     --pron-tip: #fbf4e4;
     --pron-tip-text: #4a3a10;
     --pron-almost-text: #6b5215;
@@ -1178,7 +1183,42 @@
 .pron-selected {
   animation: pron-selected 1.2s ease-in-out infinite alternate;
 }
+/* SP0: the two rings round the mic (board `.ripple`). */
+@keyframes mic-ripple {
+  0% {
+    transform: scale(0.8);
+    opacity: 0.5;
+  }
+  100% {
+    transform: scale(1.5);
+    opacity: 0;
+  }
+}
+.mic-ripple {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: mic-ripple 2s ease-out infinite;
+}
+/* P4 v2: the head block pops in on a pass (board `.pop`). */
+@keyframes pron-pop {
+  0% {
+    transform: scale(0.7);
+    opacity: 0;
+  }
+  60% {
+    transform: scale(1.05);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+.pron-pop {
+  animation: pron-pop 0.6s ease-out;
+}
 @media (prefers-reduced-motion: reduce) {
+  .mic-ripple,
+  .pron-pop,
   .pron-selected,
   .pron-hover,
   .pron-hop,

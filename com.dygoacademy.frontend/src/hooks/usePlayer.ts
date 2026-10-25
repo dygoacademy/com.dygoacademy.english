@@ -201,6 +201,11 @@ export function setPlayerRate(rate: PlayerRate): void {
   set({ rate });
 }
 
+/** Who started the play now loading or playing (its `tag`), else null. */
+export function getPlayerTag(): string | null {
+  return state.src || state.loading ? state.tag : null;
+}
+
 /** Test hook. */
 export function resetPlayerForTest(): void {
   clearSpan();

@@ -120,8 +120,8 @@ export const GARDEN_ROUTES = {
     return query ? `/sounds?${query}` : '/sounds';
   },
   /**
-   * Pronunciation "Stepping stones" (P1–P4): say up to three words, one at
-   * a time ("Bee 1 of 3"), from "Bees are waiting" on a bed. `topic` names
+   * Pronunciation "Stepping stones" (P1–P4): say the words one at a time
+   * ("Bee 1 of 3"), from "Bees are waiting" on a bed (Say all: every bee). `topic` names
    * the bed in the iPad header; `back` is where Close and the last
    * "Back to the bed" go.
    */

@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { act, fireEvent, screen } from '@testing-library/react';
+import { act, fireEvent, screen, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { renderWithIntl } from '@/test/render';
@@ -11,6 +11,7 @@ const push = vi.fn();
 const replace = vi.fn();
 const apiPost = vi.fn();
 const recorderStart = vi.fn();
+const requestMic = vi.fn();
 const upload = vi.fn();
 const apiGet = vi.fn();
 /** The live mic bars the screen sees (room first, then the take). */
@@ -43,7 +44,7 @@ vi.mock('@/lib/speaking/audio', async (orig) => ({
   speakingSupport: () => ({ mic: true, recorder: 'media-recorder' }),
   resumeAudioContext: () => Promise.resolve({}),
   getAudioContext: () => null,
-  requestMic: () => Promise.resolve({ getTracks: () => [] }),
+  requestMic: () => requestMic(),
   releaseStream: vi.fn(),
   createRecorder: () => ({
     kind: 'media-recorder',
@@ -97,6 +98,9 @@ const check = (over: Partial<SpeakingWordCheckResult>): SpeakingWordCheckResult 
   check_ms: 300,
   ...over,
 });
+
+/** The phone P4 (v2); the iPad's own result layout renders beside it in jsdom. */
+const p4 = () => within(document.querySelector('[data-screen="p4"]') as HTMLElement);
 
 const bars = (n: number, level: number) => Array.from({ length: n }, () => level);
 const ROOM = bars(6, 0.001);
@@ -167,10 +171,14 @@ describe('PronounceLive (Stepping stones)', () => {
     apiGet.mockReset();
     apiPost.mockReset();
     recorderStart.mockReset();
+    requestMic.mockReset();
+    requestMic.mockResolvedValue({ getTracks: () => [] });
     push.mockReset();
     replace.mockReset();
     vi.spyOn(HTMLMediaElement.prototype, 'play').mockResolvedValue(undefined);
     vi.spyOn(HTMLMediaElement.prototype, 'pause').mockImplementation(() => undefined);
+    // SP0 was shown before on this device: the mic goes straight to P2.
+    window.localStorage.setItem('dygo:mic-asked', '1');
     URL.createObjectURL = vi.fn(() => 'blob:me');
     URL.revokeObjectURL = vi.fn();
   });
@@ -237,15 +245,20 @@ describe('PronounceLive (Stepping stones)', () => {
     await speak(10);
     await wait(900);
     expect(upload).toHaveBeenCalledWith('/speaking/check-pronunciation', expect.any(FormData));
-    expect(screen.getByText('Clean crossing!')).toBeTruthy();
-    expect(screen.getByRole('link', { name: 'Back to the bed' }).getAttribute('href')).toBe('/topics/t1');
-    expect(screen.getByText('Compare your voice')).toBeTruthy();
+    expect(p4().getByText('Clean crossing!')).toBeTruthy();
+    expect(p4().getByText('Pollinated · 3 of 3 stones')).toBeTruthy();
+    expect(p4().getByRole('link', { name: 'Back to the bed' }).getAttribute('href')).toBe('/topics/t1');
+    expect(p4().getByRole('button', { name: 'Say it again' })).toBeTruthy(); // last bee, pass
     const play = vi.mocked(HTMLMediaElement.prototype.play);
     play.mockClear();
-    await act(async () => fireEvent.click(screen.getByRole('button', { name: 'Play your recording' })));
+    await act(async () => fireEvent.click(p4().getByRole('button', { name: 'Play your recording' })));
     expect((play.mock.instances[0] as unknown as HTMLMediaElement).src).toBe('blob:me');
-    await act(async () => fireEvent.click(screen.getByRole('button', { name: 'Play the native speaker' })));
+    await act(async () => fireEvent.click(p4().getByRole('button', { name: 'Play the native speaker' })));
     expect((play.mock.instances[1] as unknown as HTMLMediaElement).src).not.toBe('blob:me');
+    expect(events()).toContainEqual({
+      name: 'pron_word_played',
+      props: { word_id: 'tw1', voice: 'you', screen: 'P4' },
+    });
   });
 
   it("says it couldn't hear a quiet take, without calling the server", async () => {
@@ -295,23 +308,33 @@ describe('PronounceLive (Stepping stones)', () => {
     await startTake();
     await speak(10);
     await wait(900);
-    expect(screen.getByText('One wobbly stone')).toBeTruthy();
-    expect(screen.getByText('Almost · 2 of 3 stones')).toBeTruthy();
-    expect(screen.getByText('sounded like /taɪ/')).toBeTruthy();
+    expect(p4().getByText('One wobbly stone')).toBeTruthy();
+    expect(p4().getByText('Almost · 2 of 3 stones')).toBeTruthy();
+    expect(p4().getByText('ti sounded like /taɪ/. Aim for /tɪ/. Tap ti to compare.')).toBeTruthy();
+    // The weak chip starts selected: "Native → you".
+    const ti = p4().getByRole('button', { name: 'Hear ti: native speaker, then you' });
+    expect(ti.getAttribute('aria-pressed')).toBe('true');
+    expect(p4().getByText('Native → you')).toBeTruthy();
     const play = vi.mocked(HTMLMediaElement.prototype.play);
     play.mockClear();
-    await act(async () => fireEvent.click(screen.getAllByRole('button', { name: 'Hear “ti”' })[0]));
+    await act(async () => fireEvent.click(p4().getByRole('button', { name: 'Hear MI: native speaker, then you' })));
+    expect(p4().getByRole('button', { name: 'Hear MI: native speaker, then you' }).getAttribute('aria-pressed')).toBe('true');
     const el = play.mock.instances[0] as unknown as HTMLMediaElement;
     expect(el.src).toMatch(/^blob:slow-0\.7-/); // the syllable slowed to 0.7×, played at 1×
-    expect(el.playbackRate).toBe(1);
+    expect(events()).toContainEqual({
+      name: 'pron_chip_played',
+      props: { word_id: 'tw1', syllable: 'MI', state: 'clean' },
+    });
     expect(events()).toContainEqual({
       name: 'pron_scored',
       props: { word_id: 'tw1', overall: 62, result: 'retry', weak_syllable: 'ti', attempt_no: 1 },
     });
-    await act(async () => fireEvent.click(screen.getByRole('button', { name: 'Next bee' })));
+    // Retry on a middle bee: Try again + Skip to next bee.
+    expect(p4().getByRole('button', { name: 'Try again' })).toBeTruthy();
+    await act(async () => fireEvent.click(p4().getByRole('button', { name: 'Skip to next bee' })));
     expect(await screen.findByText('Bee 2 of 2')).toBeTruthy();
     expect(screen.getAllByText('deforestation').length).toBeGreaterThan(0);
-    // Next bee from a retry is a skip; the take was cleared on leaving P4.
+    // Skip doesn't count as a try; the take was cleared on leaving P4.
     expect(events()).toContainEqual({ name: 'pron_skipped', props: { word_id: 'tw1' } });
     expect(URL.revokeObjectURL).toHaveBeenCalledWith('blob:me');
   });
@@ -323,7 +346,7 @@ describe('PronounceLive (Stepping stones)', () => {
     await speak(10);
     await wait(900);
     vi.mocked(URL.revokeObjectURL).mockClear();
-    await act(async () => fireEvent.click(screen.getByRole('button', { name: 'Try again' })));
+    await act(async () => fireEvent.click(p4().getByRole('button', { name: 'Try again' })));
     expect(URL.revokeObjectURL).toHaveBeenCalledWith('blob:me');
     expect(events()).toContainEqual({ name: 'pron_say_again', props: { word_id: 'tw1', from_result: true } });
   });
@@ -366,7 +389,7 @@ describe('PronounceLive (Stepping stones)', () => {
     await startTake();
     await speak(10);
     await wait(900);
-    await act(async () => fireEvent.click(screen.getByRole('button', { name: /Next bee/ })));
+    await act(async () => fireEvent.click(p4().getByRole('button', { name: 'Next bee: deforestation' })));
     await act(async () => undefined);
     expect(events()).toContainEqual({
       name: 'pron_word_blocked',
@@ -383,5 +406,105 @@ describe('PronounceLive (Stepping stones)', () => {
       name: 'pron_word_played',
       props: { word_id: 'tw1', voice: 'native', screen: 'P1' },
     });
+  });
+
+  it('SP0 the first time: Allow microphone records; not shown again', async () => {
+    window.localStorage.removeItem('dygo:mic-asked');
+    setCheck(check({}));
+    await renderLive();
+    await act(async () => fireEvent.click(screen.getByRole('button', { name: 'Start speaking' })));
+    expect(screen.getByText('Let your garden hear you')).toBeTruthy();
+    expect(screen.getByText('Your recording is checked, then deleted')).toBeTruthy();
+    expect(recorderStart).not.toHaveBeenCalled();
+    env.levels = ROOM;
+    await act(async () => fireEvent.click(screen.getByRole('button', { name: 'Allow microphone' })));
+    await wait(300 + 150);
+    expect(recorderStart).toHaveBeenCalled();
+    expect(window.localStorage.getItem('dygo:mic-asked')).toBe('1');
+  });
+
+  it('SP0 denied: how to turn the mic on; Practise listening goes back to P1', async () => {
+    requestMic.mockRejectedValue(Object.assign(new Error('denied'), { kind: 'denied' }));
+    setCheck(check({}));
+    await renderLive();
+    await act(async () => fireEvent.click(screen.getByRole('button', { name: 'Start speaking' })));
+    expect(screen.getByText('Your microphone is off')).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Open Settings' })).toBeTruthy();
+    await act(async () => fireEvent.click(screen.getByRole('button', { name: 'Practise listening instead' })));
+    expect(screen.getByRole('button', { name: 'Start speaking' })).toBeTruthy();
+    expect(recorderStart).not.toHaveBeenCalled();
+  });
+
+  it('almost perfect on the last bee: Back to the bed + Polish {syl}, the close chip selected', async () => {
+    setCheck(
+      check({
+        total: 84,
+        syllables: [
+          { ipa: 'mɪt', text: 'mi', score: 92, wobbly: false, heard_ipa: null },
+          { ipa: 'tɪ', text: 'ti', score: 72, wobbly: false, heard_ipa: null },
+          { ipa: 'ɡeɪt', text: 'gate', score: 90, wobbly: false, heard_ipa: null },
+        ],
+      }),
+    );
+    await renderLive();
+    await startTake();
+    await speak(10);
+    await wait(900);
+    expect(p4().getByText('Good crossing!')).toBeTruthy();
+    expect(p4().getByText('It counts. ti was close: aim for /tɪ/. Tap ti to compare.')).toBeTruthy();
+    expect(p4().getByRole('link', { name: 'Back to the bed' })).toBeTruthy();
+    expect(p4().getByRole('button', { name: 'Polish ti: say it again' })).toBeTruthy();
+    const ti = p4().getByRole('button', { name: 'Hear ti: native speaker, then you' });
+    expect(ti.getAttribute('aria-pressed')).toBe('true');
+    expect(p4().getAllByText('Clean')).toHaveLength(2);
+  });
+
+  it('a chip plays the native syllable, then the learner', async () => {
+    setCheck(
+      check({
+        passed: false,
+        total: 62,
+        syllables: [
+          { ipa: 'mɪt', text: 'mi', score: 90, wobbly: false, heard_ipa: null, start_ms: 100, end_ms: 300 },
+          { ipa: 'tɪ', text: 'ti', score: 30, wobbly: true, heard_ipa: null, start_ms: 300, end_ms: 500 },
+          { ipa: 'ɡeɪt', text: 'gate', score: 90, wobbly: false, heard_ipa: null, start_ms: 500, end_ms: 800 },
+        ],
+      }),
+    );
+    await renderLive();
+    await startTake();
+    await speak(10);
+    await wait(900);
+    // No heard sound: "{syl} was cut short."
+    expect(p4().getByText('ti was cut short. Aim for /tɪ/. Tap ti to compare.')).toBeTruthy();
+    const srcs: string[] = [];
+    vi.mocked(HTMLMediaElement.prototype.play).mockImplementation(function (this: HTMLMediaElement) {
+      srcs.push(this.src);
+      return Promise.resolve();
+    });
+    await act(async () => fireEvent.click(p4().getByRole('button', { name: 'Hear ti: native speaker, then you' })));
+    await wait(3000);
+    expect(srcs[0]).toMatch(/^blob:slow-0\.7-/);
+    expect(srcs[srcs.length - 1]).toBe('blob:me');
+  });
+
+  it('a noisy room is P2b noisy, without calling the server, and logged', async () => {
+    setCheck(check({}));
+    await renderLive();
+    env.levels = bars(6, 0.05); // a loud room before the beep
+    await act(async () => fireEvent.click(screen.getByRole('button', { name: 'Start speaking' })));
+    await wait(300 + 150);
+    env.levels = [...bars(6, 0.05), ...bars(20, 0.06)];
+    await tick(150);
+    await act(async () => fireEvent.click(screen.getAllByRole('button', { name: 'Stop recording' })[0]));
+    expect(screen.getByText('Too noisy to hear')).toBeTruthy();
+    expect(upload).not.toHaveBeenCalled();
+    expect(events()).toContainEqual({ name: 'pron_not_heard', props: { word_id: 'tw1', reason: 'noisy' } });
+  });
+
+  it('Say all runs every bee asked for (no cap of three)', async () => {
+    setCheck(check({}));
+    await renderLive(['tw1', 'tw2', 'tw3', 'tw4']);
+    expect(screen.getAllByText('Bee 1 of 4').length).toBeGreaterThan(0);
   });
 });
