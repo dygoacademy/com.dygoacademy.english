@@ -12,8 +12,8 @@ unchanged and not covered here.
 | P2 Recording | `PronStonesRecord` | `P2-recording(-beep)` | same (`recording`) |
 | P2b Couldn't hear you | `PronStonesNotHeard` | `P2b-not-heard(-noisy, -other-word)` | same (`notHeard`) |
 | P3 Checking | `PronStonesChecking` | `P3-checking` | same (`checking`) |
-| P4 Result v2 | `PronStonesResult` | `P4-result-pass(-last)`, `-almost(-last)`, `-retry(-last)`, `-sunny-pass-last`, `-compensation` | `pronounce/ResultStones.tsx` + the screen (Step B) |
-| SP0 Microphone | `SpeakMic` | `SP0-mic`, `SP0-mic-denied` | Step B |
+| P4 Result v2 | `PronStonesResult` | `P4-result-pass(-last)`, `-almost(-last)`, `-retry(-last)`, `-sunny-pass-last`, `-compensation` | `pronounce/PronResult.tsx` (phone; the iPad keeps iP4) + `ResultStones.tsx` |
+| SP0 Microphone | `SpeakMic` | `SP0-mic`, `SP0-mic-denied` | `pronounce/SpeakMicScreen.tsx` |
 
 Every reference has a `-vi` twin. The numbers behind the rules are in one file each side:
 `com.dygoacademy.frontend/src/lib/speaking/pron-config.ts` and
@@ -51,7 +51,7 @@ Every reference has a `-vi` twin. The numbers behind the rules are in one file e
 - **Selected**: ring rx + 7, ry + 6, `stone-selected` #F2D28B, 3, breathing 0.9 → 0.2 over 1.2 s
   (`.pron-selected`; still under reduced motion).
 - Bee: scale 1.6, at (first stone's cx, 22) on a retry; at (167, 22) flying off on a pass (`pron-away`).
-- Chips (Step B): a grid of n equal columns, 6 px gap, padding 0 10 12; each 52 px, radius 16, 2 px
+- Chips: a grid of n equal columns, 6 px gap, padding 0 10 12; each 52 px, radius 16, 2 px
   border, 15 px bold syllable with an 11 px play icon, 11 px semibold label. Clean `pron-chip` #2E5446 /
   #DDE7DA / `pron-chip-line` #3A5E4F "Clean"; close #FBF4E4 / #6B5215 / dashed #E0B04A "Close"; wobbly
   #FBEFE9 / #8A3E20 / #E8A87C "Wobbly"; selected `bg` #F4F1EA / `text` / #F2D28B "Native → you".
@@ -97,3 +97,23 @@ label. Link under it: min 44 px, 15 px semibold muted, 16 px icon before.
   "Your microphone is off", three numbered steps (28 px forest circles), 56 px forest "Open Settings"
   (shadow #142A21), "Practise listening instead".
 - Nothing about voice donation on these screens (Dylan, 2026-10-25): "Your recording is checked, then deleted".
+
+## Flow (Step B)
+
+- P1 mic → SP0 the first time on a device (or while the browser says the mic is off) → Allow → P2. The
+  permission is read when the word opens, so the tap itself starts the mic (iPhone).
+- P2 Cancel → P1, nothing sent. Too quiet / too noisy → P2b, nothing sent. Another word → P2b (other).
+- P3 failure, including a scorer split unlike the stones → Check again / Record again.
+- P4 chip: that syllable from the word clip (its stored span, at 0.7×), then the learner's (its time in
+  the take). Pills: the whole word. Leaving P4 (next bee, skip, back to the bed, close, try again)
+  deletes the take.
+- Say all: every bee the bed passes, one after another; Skip to next bee isn't a try.
+- Events: `pron_scored`, `pron_not_heard`, `pron_chip_played`, `pron_word_played`, `pron_say_again`,
+  `pron_skipped`, `pron_word_blocked` (POST /events).
+
+## Checking a screen
+
+`/dev/pron?s=<state>&locale=en-US|vi-VN` (development only; `next dev` in a copy of the frontend, never
+the UAT folder) draws each board state from the boards' sample data: `P1`, `P2`, `P2-beep`, `P3`,
+`P2b-quiet`, `P2b-noisy`, `P2b-other`, `P4` (`result`, `round`, `word`), `SP0-ask`, `SP0-denied`.
+Screenshot at 390 × 844 @2x with reduced motion and compare with `reference/<name>.png`.
