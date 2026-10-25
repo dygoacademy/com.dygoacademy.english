@@ -40,3 +40,12 @@ def test_timing_gives_ms_from_frames():
     t = bare().timing(lp, [3, 4, 5], 20.0)
     assert t == {"start_ms": 60, "end_ms": 120, "heard": "ɪ"}
     assert bare().timing(lp, [], 20.0) == {"start_ms": None, "end_ms": None, "heard": None}
+
+
+def test_evidence_says_how_far_the_target_is_from_the_best_token():
+    g = bare()
+    lp = frames([0.05, 0.05, 0.85, 0.05], [0.05, 0.05, 0.85, 0.05])  # aɪ heard, ɪ (3) expected
+    e = g.evidence(lp, [0, 1], target=3)
+    assert e["top"] == "aɪ" and e["top_p"] > 0.5 and e["gop"] < -2
+    assert g.evidence(lp, [0, 1], target=2)["gop"] == 0.0
+    assert g.evidence(lp, [], target=2) == {"gop": None, "top": None, "top_p": None}

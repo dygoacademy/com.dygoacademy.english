@@ -69,6 +69,11 @@ class Gopt:
         self.model.eval()
 
     # ── features ──────────────────────────────────────────────────────────
+    def target_ids(self, phones: list[str]) -> list[int]:
+        """The model token each phone (ARPAbet with stress digits) is aligned to."""
+        pure = [p.rstrip("012") for p in phones]
+        return [self.ah0 if p == "AH0" else self.er0 if p == "ER0" else self.prim_id[q] for p, q in zip(phones, pure)]
+
     def features(self, lp: torch.Tensor, phones: list[str]) -> tuple[np.ndarray, bool, list[list[int]]]:
         """(n, 84) float32 for the phones (ARPAbet with stress digits) force-aligned
         to `lp` (log-softmax frames × vocab); False when the audio is too short to align;
@@ -79,6 +84,7 @@ class Gopt:
         out = np.zeros((n, 84), np.float32)
         t = lp.shape[0]
         if n == 0 or t < 2 * n:
+            self.last_spans = [[] for _ in phones]
             return out, False, [[] for _ in phones]
         ali, _ = AF.forced_align(lp.unsqueeze(0), torch.tensor([ids]), blank=self.blank)
         spans: list[list[int]] = [[] for _ in ids]
@@ -117,6 +123,7 @@ class Gopt:
             out[j, 81] = float(pmax[fr].mean())
             out[j, 82] = len(fr)
             out[j, 83] = float(int(lpp.argmax()) == own)
+        self.last_spans = spans  # the frames aligned to each phone (tuning evidence)
         return out, ok, extents
 
     def heard(self, lp: torch.Tensor, frames: list[int]) -> str | None:
@@ -166,6 +173,8 @@ class Gopt:
         (`heard`, IPA or null). Only fields were added, so older backends keep working."""
         flat = [p for w in words for p in w]
         feats, aligned, frames = self.features(lp, flat)
+        spans = self.last_spans
+        targets = self.target_ids(flat)
         out_words: list[dict | None] = [None] * len(words)
         acc = tot = weight = 0.0
         if aligned:
@@ -187,6 +196,7 @@ class Gopt:
                                 "phone": p.rstrip("012"),
                                 "score": pct(s),
                                 **self.timing(lp, frames[base + q], frame_ms),
+                                **self.evidence(lp, spans[base + q], targets[base + q]),
                             }
                             for q, (p, s) in enumerate(zip(words[i], res["phone"][k : k + m]))
                         ],
@@ -211,3 +221,21 @@ class Gopt:
             "end_ms": int(round((frames[-1] + 1) * frame_ms)),
             "heard": self.heard(lp, frames),
         }
+
+    def evidence(self, lp: torch.Tensor, frames: list[int], target: int) -> dict:
+        """For tuning (pronunciation v2), over the frames aligned to the phone, blank left out:
+        `gop`, the mean log-probability of the target token minus the best one (0 = the target
+        was the best); `top` / `top_p`, the token most often best there and its mean probability
+        (no HEARD_MIN_PROB). Additive fields only."""
+        if not frames:
+            return {"gop": None, "top": None, "top_p": None}
+        probs = lp[frames].exp()
+        q = probs / (1 - probs[:, self.blank : self.blank + 1]).clamp_min(1e-4)  # without blank
+        q[:, self.blank] = 0
+        logq = q.clamp_min(1e-9).log()
+        best = logq.max(-1)
+        gop = float((logq[:, target] - best.values).mean())
+        ids, counts = torch.unique(best.indices, return_counts=True)
+        top = int(ids[counts.argmax()])
+        top_p = float(q[:, top].mean())
+        return {"gop": round(gop, 3), "top": self.token.get(top), "top_p": round(top_p, 3)}
