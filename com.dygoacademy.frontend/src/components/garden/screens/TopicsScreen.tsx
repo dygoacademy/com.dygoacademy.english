@@ -106,6 +106,9 @@ function prefersReducedMotion() {
  * when the chips don't fit, scrollbar hidden, a cream fade on each edge
  * that has more. Picking a chip scrolls it to the middle, and so does the
  * first render when the initial chip is out of view.
+ *
+ * 2026-10-25: the row only pans sideways (a drag on it never moves the
+ * page up or down) and its overscroll stays inside the row.
  */
 export function FilterChipRow({
   chips,
@@ -130,11 +133,15 @@ export function FilterChipRow({
     setFade((prev) => (prev.left === left && prev.right === right ? prev : { left, right }));
   }, []);
 
+  // Scrolls the row only: scrollIntoView also scrolls every scrollable
+  // ancestor, which nudged the whole page up or sideways on phones.
   const scrollToChip = React.useCallback((id: string, smooth: boolean) => {
-    const chip = rowRef.current?.querySelector<HTMLElement>(`[data-filter="${id}"]`);
-    chip?.scrollIntoView?.({
-      inline: 'center',
-      block: 'nearest',
+    const row = rowRef.current;
+    const chip = row?.querySelector<HTMLElement>(`[data-filter="${id}"]`);
+    if (!row || !chip) return;
+    const start = chip.offsetLeft - row.offsetLeft;
+    row.scrollTo?.({
+      left: start + chip.offsetWidth / 2 - row.clientWidth / 2,
       behavior: smooth && !prefersReducedMotion() ? 'smooth' : 'auto',
     });
   }, []);
@@ -167,7 +174,7 @@ export function FilterChipRow({
         role="group"
         aria-label={label}
         onScroll={updateFades}
-        className="flex gap-2 overflow-x-auto scroll-px-4 px-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+        className="flex touch-pan-x touch-pinch-zoom gap-2 overflow-x-auto overflow-y-hidden overscroll-contain scroll-px-4 px-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
       >
         {chips.map((chip) => (
           <Chip
@@ -221,7 +228,7 @@ export function TopicsScreen({
   const chips = [{ id: 'all', label: t('filters.all') }, ...filters];
 
   return (
-    <div className={gcn(SCREEN_CLASSES, IPAD_NAV_COLUMN, 'h-screen-dvh gap-[14px] pt-[22px]')}>
+    <div className={gcn(SCREEN_CLASSES, IPAD_NAV_COLUMN, 'h-screen-dvh gap-[14px] overflow-x-clip pt-[22px]')}>
       <header className="flex shrink-0 items-end gap-3 px-5">
         <div className="flex flex-grow flex-col">
           <span className="text-[13px] font-medium text-muted-foreground">
@@ -249,8 +256,8 @@ export function TopicsScreen({
         label={t('filterLabel')}
       />
 
-      {/* Design system §10, A6: bed cards in 2 columns on iPad. The list scrolls, the tab bar stays. */}
-      <div className="flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto px-4 ipad:grid ipad:grid-cols-2 ipad:content-start ipad:gap-2.5">
+      {/* Design system §10, A6: bed cards in 2 columns on iPad. The list scrolls (up and down only), the tab bar stays. */}
+      <div className="flex min-h-0 flex-1 touch-pan-y touch-pinch-zoom flex-col gap-2 overflow-y-auto overflow-x-hidden overscroll-contain px-4 ipad:grid ipad:grid-cols-2 ipad:content-start ipad:gap-2.5">
         {shown.map((topic) => {
           const meta = [
             t('words', { count: topic.words }),
