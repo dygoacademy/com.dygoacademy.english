@@ -51,7 +51,6 @@ comparison doc "Adult Pronunciation rebuild: step 1 comparison".
 - **P4 v2 stones on long words**: the board puts each stone in a fixed slot (334 / n). When the text is wider than its stone (5+ syllables), the text shrinks to fit (the 2026-10-18 rule grew the stone instead, which the slots can't).
 - **SoundButton on P3** gets loading / playing looks the P3 board doesn't draw (same behaviour everywhere).
 - **Phrases are blocked**: the scorer scores a take as one word, so "flat tyre" etc. get no stones.
-- **speech-2 not restarted**: see UAT below.
 
 ## Library words with no syllable data (blocked)
 
@@ -88,16 +87,10 @@ All on this Mac, 2026-10-25 (times local):
    - A dry run after it lists 21 words: the 20 without stones, and one with UK stones only (the app uses the other accent's).
 4. **Speech server**: image built from this branch's `docker/speech` and tagged as both compose images (old ones kept as `:pre-pron-v2`).
    - `docker compose up -d --no-build --no-deps speech` → `dygo_speech` recreated, healthy. A check on it returns the same top-level and word fields as before, plus `start_ms`, `end_ms` and `heard` on each phone (backward compatible).
-   - `speech-2`: the same command was refused by my session's permission check, so `dygo_speech_2` still runs the old image. That's harmless: the backend handles both replies, and a syllable scored there just has no times or heard IPA. Command for Dylan below.
+   - `speech-2`: first refused by my session's permission check; run at Dylan's request (08:28Z): `docker compose up -d --no-build --no-deps speech-2` → `dygo_speech_2` recreated on the same image as `dygo_speech`, healthy, `/health` ok, a check returns `start_ms`, `end_ms`, `heard` on each phone.
 5. Not done (as agreed): `deploy/request.md`, the app deploy, the UAT folder's branch.
 
 ## Still for Dylan
 
 - Review and merge `pron-v2/step-a`; then deploy (the backend reads the new columns; they're already on UAT).
-- Restart the second scorer on the new image (it was refused by my permission check):
-
-  ```bash
-  cd /Users/dylan/dygo/com.dygoacademy.english && docker compose up -d --no-build --no-deps speech-2
-  ```
-
 - Rollback if needed: `pg_restore` the backup below; speech images tagged `comdygoacademyenglish-speech:pre-pron-v2` and `comdygoacademyenglish-speech-2:pre-pron-v2`.

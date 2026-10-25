@@ -1409,3 +1409,8 @@ Engineering-facing log of shipped fixes and changes, one dated entry per change.
 * **Files**: new `docs/design/garden/pronunciation.md` (every P4 v2 and SP0 value, the sound buttons, the button table), `docs/design/garden/CHANGELOG.md` (2026-10-25 entry; P4 v2 and SP0 rows), `docs/design/garden/README.md` (P1–P4, P2b, SP0 rows), new `docs/reports/pron-v2 step A PR.md` (summary, tests, flagged defaults, blocked words, what was run on UAT).
 * **What**: The docs for Step A. UAT, 2026-10-25: database backed up, `20261025_pron_events` and `20261025_word_pron_data` applied, `pron-backfill` filled all 531 words (20 have no stones: 9 library phrases, colleague, milestone, recipe and 8 non-library words), the `speech` scorer runs the new image (`speech-2` still the old one). The app is not deployed.
 * **Verified**: the numbers in the PR file come from the commands' output and a count on the UAT database.
+
+### Ops: second speech scorer on the pronunciation v2 image
+* **Files**: `docs/reports/pron-v2 step A PR.md`.
+* **What**: Dylan (2026-10-25, "Please help me continue do build docker"): `dygo_speech_2` recreated with `docker compose up -d --no-build --no-deps speech-2`, so both scorers run the pronunciation v2 image (old images kept as `:pre-pron-v2`).
+* **Verified**: both containers healthy on the same image id; `/health` ok on speech-2; a check on it returns `start_ms`, `end_ms` and `heard` on each phone.
