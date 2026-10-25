@@ -64,6 +64,9 @@ export interface GuestWordCard {
   audio_url_us: string | null;
   /** The UK clip; null until made (play `audio_url_us`). Pick with lib/accent.ts `forAccent`. */
   audio_url_uk: string | null;
+  /** The word said slowly (TTS speakingRate 0.7), per accent; null until made. */
+  audio_slow_url_us?: string | null;
+  audio_slow_url_uk?: string | null;
   synonyms: LexiconRelatedWord[];
   antonyms: LexiconRelatedWord[];
   example_sentences: LexiconExampleSentence[];

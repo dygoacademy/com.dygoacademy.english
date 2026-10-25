@@ -140,6 +140,31 @@ describe('WordsService', () => {
       expect(queueAddMock).not.toHaveBeenCalled();
     });
   });
+  describe('lookupGuestWord', () => {
+    it('reads both accents’ normal and slow clips as anon', async () => {
+      const queryAsAnon = jest.fn().mockResolvedValue([{ source_word: 'inevitable' }]);
+      const moduleRef = await Test.createTestingModule({
+        providers: [
+          WordsService,
+          { provide: DatabaseService, useValue: { queryAsAnon } },
+          { provide: getQueueToken(ENRICHMENT_QUEUE), useValue: { add: queueAddMock } },
+        ],
+      }).compile();
+
+      await moduleRef.get(WordsService).lookupGuestWord('Inevitable');
+      const [sql, params] = queryAsAnon.mock.calls[0];
+      for (const column of [
+        'audio_url_us',
+        'audio_url_uk',
+        'audio_slow_url_us',
+        'audio_slow_url_uk',
+      ]) {
+        expect(sql).toContain(column);
+      }
+      expect(params).toEqual(['Inevitable', 'en']);
+    });
+  });
+
   describe('lookup (A7b Add word)', () => {
     it('reads the preview as the caller, with the trimmed word, and never enqueues', async () => {
       const preview = {

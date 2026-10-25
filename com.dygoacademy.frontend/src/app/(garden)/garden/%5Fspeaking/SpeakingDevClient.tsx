@@ -26,6 +26,7 @@ import {
 import type { SpeakingSession } from '@/types';
 
 import { FLOW_COPY, FlowCheck } from './FlowCheck';
+import { SLOW_COPY, SlowCompare } from './SlowCompare';
 
 /**
  * Dev tool: English labels on purpose, kept here rather than in the
@@ -332,6 +333,10 @@ export function SpeakingDevClient() {
 
       <Section title={FLOW_COPY.title}>
         <FlowCheck />
+      </Section>
+
+      <Section title={SLOW_COPY.title}>
+        <SlowCompare />
       </Section>
     </>
   );

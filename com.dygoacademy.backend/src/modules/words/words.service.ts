@@ -62,6 +62,9 @@ export interface GuestWordCard {
   audio_url_us: string | null;
   /** The UK clip (20261025_word_audio_uk.sql); null until made, then play audio_url_us. */
   audio_url_uk: string | null;
+  /** The word said slowly (speakingRate 0.7), per accent; null until made. For the /garden/_speaking dev page. */
+  audio_slow_url_us: string | null;
+  audio_slow_url_uk: string | null;
   synonyms: unknown;
   antonyms: unknown;
   example_sentences: unknown;
@@ -294,6 +297,8 @@ export class WordsService {
               definition_en,
               audio_url_us,
               audio_url_uk,
+              audio_slow_url_us,
+              audio_slow_url_uk,
               synonyms,
               antonyms,
               example_sentences
