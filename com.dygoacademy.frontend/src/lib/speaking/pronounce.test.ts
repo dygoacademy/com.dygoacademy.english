@@ -11,8 +11,11 @@ vi.mock('@/lib/api-client', () => ({
 
 import {
   hopParts,
+  layoutResultStones,
   layoutStones,
+  slowWord,
   stoneTextWidth,
+  takeSyllable,
   litStones,
   nativeClipRate,
   nativeSyllable,
@@ -88,8 +91,36 @@ describe('stones', () => {
     ]);
   });
 
-  it('uses the whole word as one big stone when there are no syllables', () => {
-    expect(wordStones({ word: 'tree', syllables: [] })).toEqual([{ text: 'tree', stressed: true }]);
+  it('never makes one stone for the whole word: no stored syllables, no stones (the word is blocked)', () => {
+    expect(wordStones({ syllables: [] })).toEqual([]);
+    expect(wordStones({ syllables: undefined })).toEqual([]);
+    expect(
+      wordStones({ syllables: [{ text: 'cloud', stressed: true, start_ms: null, end_ms: null }] }),
+    ).toHaveLength(1);
+  });
+
+  it('P4 v2: one slot of 334/n per stone, the board sizes (big 52 x 22, small 36 x 15)', () => {
+    const s = layoutResultStones(MITIGATE);
+    expect(s.map((x) => [x.text, x.cx, x.cy, x.rx, x.ry, x.fontPx])).toEqual([
+      ['MI', 55.7, 100, 51.7, 22, 23],
+      ['ti', 167, 104, 36, 15, 17],
+      ['gate', 278.3, 104, 36, 15, 17],
+    ]);
+    expect(s[0]).toMatchObject({ ringRx: 58.7, ringRy: 28, left: '16.68%', top: '66.67%' });
+    // compensation (board): com · pen · SA · tion
+    const c = layoutResultStones([
+      { text: 'com', stressed: false },
+      { text: 'pen', stressed: false },
+      { text: 'sa', stressed: true },
+      { text: 'tion', stressed: false },
+    ]);
+    expect(c.map((x) => x.rx)).toEqual([27.8, 27.8, 37.8, 27.8]);
+    expect(c.every((x) => x.fontPx === (x.stressed ? 23 : 17))).toBe(true);
+    // Six stones: the text shrinks to fit its stone, never past it.
+    const six = layoutResultStones(
+      ['in', 'ter', 'na', 'tio', 'nal', 'ly'].map((text, k) => ({ text, stressed: k === 2 })),
+    );
+    six.forEach((x) => expect(stoneTextWidth(x.text, x.fontPx)).toBeLessThanOrEqual(2 * x.rx - 8));
   });
 
   it('builds the hop tip: hard on the big stone, light after it, then the rest', () => {
@@ -215,9 +246,9 @@ const CHECK: SpeakingWordCheckResult = {
   total: 72,
   heard_text: 'mitigate',
   syllables: [
-    { ipa: 'mɪt', score: 90, wobbly: false, heard_ipa: null },
-    { ipa: 'ɪ', score: 40, wobbly: true, heard_ipa: 'aɪ' },
-    { ipa: 'ɡeɪt', score: 85, wobbly: false, heard_ipa: null },
+    { ipa: 'mɪt', text: 'mi', score: 90, wobbly: false, heard_ipa: null, start_ms: 80, end_ms: 220 },
+    { ipa: 'ɪ', text: 'ti', score: 40, wobbly: true, heard_ipa: 'aɪ', start_ms: 220, end_ms: 400 },
+    { ipa: 'ɡeɪt', text: 'gate', score: 85, wobbly: false, heard_ipa: null, start_ms: null, end_ms: null },
   ],
   spelling: MITIGATE,
   user_duration_ms: 900,
@@ -225,29 +256,35 @@ const CHECK: SpeakingWordCheckResult = {
 };
 
 describe('result', () => {
-  it('shows the first wobbly stone with what it sounded like', () => {
+  it('a retry: the wobbly stone is selected, with what it sounded like', () => {
     expect(resultView(MITIGATE, CHECK)).toEqual({
       passed: false,
+      outcome: 'retry',
       stones: MITIGATE,
+      states: ['clean', 'wobbly', 'clean'],
       wobbly: [false, true, false],
+      selected: 1,
+      clean: 2,
       first: { index: 1, text: 'ti', heardIpa: 'aɪ', ipa: 'ɪ' },
     });
   });
 
-  it('turns every stone green on a pass', () => {
-    const r = resultView(MITIGATE, { ...CHECK, passed: true });
-    expect(r.wobbly).toEqual([false, false, false]);
-    expect(r.first).toBeNull();
+  it('a pass at 80+ with every syllable 85+ is clean, nothing selected', () => {
+    const syllables = CHECK.syllables.map((x) => ({ ...x, score: 90 }));
+    const r = resultView(MITIGATE, { total: 88, syllables });
+    expect(r?.outcome).toBe('pass');
+    expect(r?.states).toEqual(['clean', 'clean', 'clean']);
+    expect(r?.first).toBeNull();
   });
 
-  it('marks the lowest stone when a miss has no wobbly one', () => {
-    const syllables = CHECK.syllables.map((s, k) => ({ ...s, wobbly: false, score: [70, 65, 75][k] }));
-    expect(resultView(MITIGATE, { ...CHECK, syllables }).wobbly).toEqual([false, true, false]);
+  it('marks the lowest stone when a miss has no syllable under 60', () => {
+    const syllables = CHECK.syllables.map((x, k) => ({ ...x, wobbly: false, score: [70, 65, 75][k] }));
+    expect(resultView(MITIGATE, { total: 70, syllables })?.states).toEqual(['clean', 'wobbly', 'clean']);
   });
 
-  it("falls back to the check's own stones when the counts differ", () => {
-    const r = resultView([{ text: 'mitigate', stressed: true }], CHECK);
-    expect(r.stones).toEqual(MITIGATE);
+  it('a scorer split unlike the stones is no result (P3 treats it as a scoring error)', () => {
+    expect(resultView([{ text: 'mitigate', stressed: true }], CHECK)).toBeNull();
+    expect(resultView([], CHECK)).toBeNull();
   });
 });
 
@@ -281,6 +318,37 @@ describe('wordCheck', () => {
     await expect(
       wordCheck({ recording: new Blob(['x']), topicWordId: 'tw1', accent: 'US' }, { pollMs: 1 }),
     ).rejects.toThrow('bad_audio');
+  });
+});
+
+describe('stored syllable clips (pronunciation v2)', () => {
+  it("Hear a stone: its stored span inside the accent's word clip", () => {
+    const item = {
+      syllables_clip_url: 'https://m/word-uk.m4a',
+      syllables: [
+        { text: 'mi', stressed: true, start_ms: 30, end_ms: 210 },
+        { text: 'ti', stressed: false, start_ms: 210, end_ms: 436 },
+      ],
+    } as SpeakingSessionItem;
+    expect(nativeSyllable(item, 'UK', 1)).toEqual({
+      src: 'https://m/word-uk.m4a',
+      span: { start: 0.21, end: 0.436 },
+    });
+  });
+
+  it('"You" on a stone: its time in the take, null when the scorer gave none', () => {
+    expect(takeSyllable(CHECK, 1)).toEqual({ start: 0.22, end: 0.4 });
+    expect(takeSyllable(CHECK, 2)).toBeNull();
+  });
+
+  it('Slowly: the slow clip at 1x, else the word clip at 0.7', () => {
+    const slow = {
+      word_audio_slow_url_us: 'https://m/slow-us.m4a',
+      word_audio_url_us: 'https://m/us.m4a',
+    } as SpeakingSessionItem;
+    expect(slowWord(slow, 'UK')).toEqual({ clip: { src: 'https://m/slow-us.m4a' }, rate: 1 });
+    const none = { word_audio_url_us: 'https://m/us.m4a' } as SpeakingSessionItem;
+    expect(slowWord(none, 'US')).toEqual({ clip: { src: 'https://m/us.m4a' }, rate: 0.7 });
   });
 });
 

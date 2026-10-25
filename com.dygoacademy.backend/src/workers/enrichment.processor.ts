@@ -11,6 +11,7 @@ import {
   ipaForAccent,
   ipaForPhoneme,
 } from '../ai/google-word-tts.service';
+import { PronDataService, pronDataUpdate, type PronDataRow } from '../ai/pron-data.service';
 import { UsageCapExceededError } from '../ai/usage-cap.service';
 import { DatabaseService } from '../database/database.service';
 import {
@@ -70,6 +71,7 @@ export class EnrichmentProcessor extends WorkerHost {
     private readonly gemini: GeminiEnrichmentService,
     private readonly wordTts: GoogleWordTtsService,
     private readonly storage: StorageService,
+    private readonly pronData: PronDataService,
   ) {
     super();
   }
@@ -82,7 +84,14 @@ export class EnrichmentProcessor extends WorkerHost {
       // no topic_word to mark FAILED: the word is already READY and usable,
       // it just has no audio until a retry or the next `npm run audio-backfill` succeeds.
       const { lexiconId, word, languageCode, remake } = job.data as AudioBackfillJob;
-      await this.ensureAudio(lexiconId, word.trim().toLowerCase(), languageCode, remake);
+      const changed = await this.ensureAudio(
+        lexiconId,
+        word.trim().toLowerCase(),
+        languageCode,
+        remake,
+      );
+      // A remade clip moves the syllables inside it: time them again.
+      if (remake && changed) await this.fillPronData(lexiconId, true);
       return;
     }
     if (job.name === TRANSLATIONS_BACKFILL_JOB) {
@@ -153,6 +162,8 @@ export class EnrichmentProcessor extends WorkerHost {
           where id = $2`,
         [lexiconId, topicWordId],
       );
+      // After READY, so the learner never waits for it.
+      await this.fillPronData(lexiconId);
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
       // Over today's Gemini cap (S13): retrying won't help until tomorrow (UTC),
@@ -301,6 +312,33 @@ export class EnrichmentProcessor extends WorkerHost {
   }
 
   /**
+   * Pronunciation v2 (20261025_word_pron_data.sql): the word's stones (with
+   * their place in each accent's clip), the slow clip and the P1 tip. Only
+   * when missing, unless `remake`. Never fails the word: a word without
+   * stones is just not offered in Pronunciation until `npm run pron-backfill`.
+   */
+  private async fillPronData(lexiconId: string, remake = false): Promise<void> {
+    try {
+      const [row] = await this.db.queryAsService<PronDataRow & { has_data: boolean }>(
+        `select id, normalized_word, language_code, ipa_us, ipa_uk, audio_url_us, audio_url_uk,
+                (syllables_us is not null and pron_tip is not null
+                  and (audio_slow_url_us is not null or $2::boolean = false)) as has_data
+           from public.master_lexicon where id = $1`,
+        [lexiconId, this.wordTts.isConfigured()],
+      );
+      if (!row || (row.has_data && !remake)) return;
+      const update = pronDataUpdate(row.id, await this.pronData.make(row));
+      await this.db.queryAsService(update.text, update.params);
+    } catch (err) {
+      this.logger.warn(
+        `pron data failed for ${lexiconId}, run npm run pron-backfill: ${
+          err instanceof Error ? err.message : err
+        }`,
+      );
+    }
+  }
+
+  /**
    * The accents a clip is made in. The UK clip needs Google TTS (Gemini's
    * voice has no accent to choose), so without a key only the US one.
    */
@@ -402,21 +440,23 @@ export class EnrichmentProcessor extends WorkerHost {
    * accents' clips, e.g. one that says the word wrong; one that comes out the
    * same is left alone. Throws on the first failure, after writing the
    * accents done so far, so a BullMQ retry only redoes what is missing.
+   * True when a clip was written.
    */
   private async ensureAudio(
     lexiconId: string,
     normalizedWord: string,
     languageCode: string,
     remake = false,
-  ): Promise<void> {
+  ): Promise<boolean> {
     const [row] = await this.db.queryAsService<MasterLexiconRow>(
       `select id, audio_url_us, audio_url_uk, ipa_us, ipa_uk from public.master_lexicon where id = $1`,
       [lexiconId],
     );
     if (!row) {
       this.logger.warn(`audio backfill: lexicon row ${lexiconId} no longer exists, skipping`);
-      return;
+      return false;
     }
+    let changed = false;
     const accents = remake ? this.accentsMade() : this.accentsMissing(row);
 
     for (const accent of accents) {
@@ -443,7 +483,9 @@ export class EnrichmentProcessor extends WorkerHost {
           where id = $1 ${onlyIfMissing}`,
         [lexiconId, audioUrl],
       );
+      changed = true;
       this.logger.log(`${accent} audio ready for "${normalizedWord}"`);
     }
+    return changed;
   }
 }

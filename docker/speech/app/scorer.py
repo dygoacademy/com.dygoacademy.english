@@ -234,7 +234,10 @@ class Scorer:
         pairs = sentence_phones(sentence, self.espeak_phones)
         words = [w for w, _ in pairs]
         heard_f = self.pool.submit(self.heard_words, audio)
-        res = self.gopt.score(self.logprobs(audio), [p for _, p in pairs])
+        lp = self.logprobs(audio)
+        # One frame of the phoneme model in ms (wav2vec2: about 20).
+        frame_ms = len(audio) / RATE * 1000 / max(1, lp.shape[0])
+        res = self.gopt.score(lp, [p for _, p in pairs], frame_ms)
         heard = heard_f.result()
         matches = match_words(words, heard)
         out_words, scores, statuses = [], [], []

@@ -4,6 +4,7 @@ import { InjectQueue } from '@nestjs/bullmq';
 import {
   BadRequestException,
   Injectable,
+  Logger,
   NotFoundException,
   PayloadTooLargeException,
   ServiceUnavailableException,
@@ -14,6 +15,7 @@ import { Queue } from 'bullmq';
 
 import { DatabaseService } from '../../database/database.service';
 import { SPEECH_CHECK_JOB, SPEECH_CHECK_QUEUE, SpeechCheckJob } from '../../queues/queue.constants';
+import { storedStones, type StoredSyllable } from './pron-syllables';
 import { SpeechCheckStore } from './speech-check.store';
 import type { SpeechAudio } from './speech-checker';
 import type { VoiceDonationDevice } from '../voice-donation/voice-donation.types';
@@ -49,6 +51,8 @@ const AUDIO_TYPES = /^audio\/(mp4|x-m4a|aac|webm|ogg|wav|x-wav|wave)\b/;
  */
 @Injectable()
 export class SpeechCheckService {
+  private readonly logger = new Logger(SpeechCheckService.name);
+
   constructor(
     private readonly db: DatabaseService,
     private readonly store: SpeechCheckStore,
@@ -97,9 +101,12 @@ export class SpeechCheckService {
       word: string;
       ipa_uk: string | null;
       ipa_us: string | null;
+      syllables_us: StoredSyllable[] | null;
+      syllables_uk: StoredSyllable[] | null;
     }>(
       userId,
-      `select ml.id as lexicon_id, ml.normalized_word as word, ml.ipa_uk, ml.ipa_us
+      `select ml.id as lexicon_id, ml.normalized_word as word, ml.ipa_uk, ml.ipa_us,
+              ml.syllables_us, ml.syllables_uk
          from public.topic_words tw
          join public.master_lexicon ml on ml.id = tw.lexicon_id
         where tw.id = $1`,
@@ -108,12 +115,19 @@ export class SpeechCheckService {
     const word = rows[0];
     if (!word?.word) throw new NotFoundException('Word not found');
     const ipa = accent === 'UK' ? (word.ipa_uk ?? word.ipa_us) : (word.ipa_us ?? word.ipa_uk);
+    const stones = storedStones(word, accent).syllables;
+    if (stones.length === 0) {
+      // Not offered in Pronunciation (pronunciation v2): no stones to score against.
+      this.logger.warn(`word check blocked: no_syllables for "${word.word}" (${word.lexicon_id})`);
+      throw new UnprocessableEntityException('no_syllables');
+    }
     return this.queueCheck(userId, recording, (checkId) => ({
       kind: 'word',
       checkId,
       userId,
       word: word.word,
       ipa,
+      stones: stones.map(({ text, stressed }) => ({ text, stressed })),
       lexiconId: word.lexicon_id,
       accent,
       ...context,

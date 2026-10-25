@@ -4,6 +4,7 @@ import * as React from 'react';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 
+import type { ClipSpan } from '@/hooks/usePlayer';
 import { ipaSegments } from '@/lib/speaking/ipa';
 import {
   bigStone,
@@ -17,6 +18,7 @@ import type { SpeakingSyllable } from '@/types';
 import { gcn } from '../cn';
 import { CloseIcon } from '../icons';
 import { IconButton } from '../IconButton';
+import { PlayGlyph as Play, SoundButton, SoundError, SpeakerGlyph as Speaker } from '../SoundButton';
 import { toBars } from '../speaking/waveformBars';
 import { PondStones, type StoneLook } from './PondStones';
 
@@ -33,8 +35,19 @@ import { PondStones, type StoneLook } from './PondStones';
  */
 export type PronPhase = 'say' | 'recording' | 'checking' | 'result' | 'notHeard';
 export type PronNotHeardReason = 'quiet' | 'noisy' | 'other';
-/** Hear it / Slowly: which is loading or playing, or that the last play failed. */
-export type PronAudio = 'idle' | 'loadingHear' | 'loadingSlow' | 'hear' | 'slow' | 'error';
+/** A clip a SoundButton plays: null when there's none (the button says it couldn't play). */
+export interface PronClip {
+  src: string | null;
+  span?: ClipSpan;
+  rate?: number;
+}
+/** SoundButton tags on these screens (one shared player: one sound at a time). */
+export const PRON_SOUND = {
+  hear: 'p1-hear',
+  slow: 'p1-slow',
+  mine: 'p3-mine',
+  native: 'p3-native',
+} as const;
 export type { PronResultView };
 /** P4 "Compare your voice": the voiced bars and their lengths, and each stone's share of the word. */
 export interface PronCompare {
@@ -59,10 +72,16 @@ export interface PronounceScreenProps {
   /** The bed's name, for the iPad header ("Pronunciation · Environment"). */
   topic?: string | null;
   closeHref: string;
-  onHearIt: () => void;
-  onSlowly: () => void;
-  /** P1 Hear it / Slowly state (boards P1-say-word-loading / -playing / -slowly / -sound-error). */
-  audio?: PronAudio;
+  /** P1 Hear it / Slowly (SoundButton `hear`; boards P1-say-word-loading / -playing / -slowly / -sound-error). */
+  hearClip: PronClip;
+  slowClip: PronClip;
+  /** P1 and P3 sound buttons: the take ("You") and the native word. */
+  mineClip?: PronClip;
+  nativeClip?: PronClip;
+  /** A sound button started playing (analytics: pron_word_played). */
+  onPlayed?: (voice: 'native' | 'you', screen: 'P1' | 'P3') => void;
+  /** The P1 tip in the app's locale (stored, syllables in <b>); else it is built from the stones. */
+  tip?: string | null;
   /** P1. */
   onMic?: () => void;
   /** P1: a mic notice (denied, unsupported) in place of the hint; `micAvailable` false hides the mic. */
@@ -74,7 +93,7 @@ export interface PronounceScreenProps {
   elapsedMs?: number;
   onStop?: () => void;
   onCancel?: () => void;
-  /** P3. */
+  /** P3 (and P4 until Step B). */
   onHearMine?: () => void;
   onHearNative?: () => void;
   failed?: boolean;
@@ -94,73 +113,7 @@ export interface PronounceScreenProps {
   onHearFirst?: () => void;
 }
 
-// Board icons (PronStones*.dc.html): speaker with one or two sound arcs, play, mic, stop.
-function Speaker({ size, arcs = 2 }: { size: number; arcs?: 1 | 2 }) {
-  return (
-    <svg
-      width={size}
-      height={size}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2.2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-    >
-      <path d="M4 9 H8 L13 5 V19 L8 15 H4 Z" />
-      <path d="M16 9 A4 4 0 0 1 16 15" />
-      {arcs === 2 ? <path d="M18.5 6.5 A8 8 0 0 1 18.5 17.5" /> : null}
-    </svg>
-  );
-}
-
-/** Hear it / Slowly while the clip loads: a ring with a turning arc. */
-const Spinner = () => (
-  <svg
-    width={20}
-    height={20}
-    viewBox="0 0 24 24"
-    fill="none"
-    strokeWidth="2.6"
-    strokeLinecap="round"
-    aria-hidden="true"
-    className="motion-safe:animate-spin"
-  >
-    <circle cx="12" cy="12" r="8" stroke="var(--color-forest-wash-border)" />
-    <path d="M12 4 A8 8 0 0 1 20 12" stroke="var(--color-success)" />
-  </svg>
-);
-
-/** Hear it / Slowly while the clip plays: three bars that rise and fall. */
-const SoundBars = () => (
-  <svg width={20} height={20} viewBox="0 0 20 20" aria-hidden="true">
-    {[
-      { x: 2, y: 5, h: 10, delay: '0s' },
-      { x: 8.4, y: 2, h: 16, delay: '.2s' },
-      { x: 14.8, y: 5, h: 10, delay: '.4s' },
-    ].map((bar) => (
-      <rect
-        key={bar.x}
-        x={bar.x}
-        y={bar.y}
-        width="3.2"
-        height={bar.h}
-        rx="1.6"
-        fill="currentColor"
-        className="origin-center [transform-box:fill-box] motion-safe:animate-[sound-bar_.8s_ease-in-out_infinite]"
-        style={{ animationDelay: bar.delay }}
-      />
-    ))}
-  </svg>
-);
-
-const Play = ({ size }: { size: number }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-    <path d="M7 5 L19 12 L7 19 Z" />
-  </svg>
-);
-
+// Board icons (PronStones*.dc.html): mic, flower (speaker, play: SoundButton).
 const Mic = ({ size, className }: { size: number; className?: string }) => (
   <svg
     width={size}
@@ -342,19 +295,29 @@ const PRIMARY =
   'flex h-14 items-center justify-center gap-2 rounded-[18px] bg-primary text-[16px] font-bold text-white no-underline shadow-[0_4px_0_var(--color-primary-shadow)] ipad:h-[52px]';
 const LINK =
   'self-center p-2 text-[14px] font-semibold text-muted-foreground underline ipad:text-[15px]';
-const OUTLINE =
-  'flex h-12 flex-1 items-center justify-center gap-2 rounded-[16px] border border-border bg-surface text-[15px] font-bold text-forest ipad:h-[52px] ipad:rounded-[18px] ipad:text-[16px]';
 
-/** Hear it / Slowly: OUTLINE that shows a press, and its loading / playing looks. */
-const HEAR = `${OUTLINE} transition-transform active:scale-[.97]`;
-const HEAR_LOADING = 'border-forest-wash-border bg-forest-wash';
-const HEAR_PLAYING = 'border-forest bg-forest text-white';
+/** The stored tip: plain text with the syllables in <b> (the only tag), escaped by the server. */
+function TipText({ tip }: { tip: string }) {
+  const unescape = (x: string) => x.replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&');
+  return (
+    <>
+      {tip.split(/(<b>[^<]*<\/b>)/).map((part, k) =>
+        part.startsWith('<b>') ? (
+          <b key={k} lang="en">
+            {unescape(part.slice(3, -4))}
+          </b>
+        ) : (
+          <React.Fragment key={k}>{unescape(part)}</React.Fragment>
+        ),
+      )}
+    </>
+  );
+}
 
 export function PronounceScreen(props: PronounceScreenProps) {
   const t = useTranslations('screens.pronounce');
   const speak = useTranslations('screens.speak');
   const { phase, syllables } = props;
-  const audio = props.audio ?? 'idle';
   const stones = phase === 'result' && props.result ? props.result.stones : syllables;
   const lit = props.lit ?? 0;
   const list = stones.map(stoneText).join(', ');
@@ -457,56 +420,36 @@ export function PronounceScreen(props: PronounceScreenProps) {
         phase === 'say' ? '' : 'hidden ipad:flex',
       )}
     >
-      {(
-        [
-          { key: 'hear', label: t('hearIt'), arcs: 2, onClick: props.onHearIt },
-          { key: 'slow', label: t('slowly'), arcs: 1, onClick: props.onSlowly },
-        ] as const
-      ).map((b) => {
-        const loading = audio === (b.key === 'hear' ? 'loadingHear' : 'loadingSlow');
-        const playing = audio === b.key;
-        return (
-          <button
-            key={b.key}
-            type="button"
-            onClick={b.onClick}
-            aria-pressed={loading || playing}
-            aria-busy={loading || undefined}
-            className={gcn(HEAR, loading && HEAR_LOADING, playing && HEAR_PLAYING)}
-          >
-            {loading ? <Spinner /> : playing ? <SoundBars /> : <Speaker size={20} arcs={b.arcs} />}
-            {b.label}
-          </button>
-        );
-      })}
+      <SoundButton
+        tag={PRON_SOUND.hear}
+        voice="native"
+        variant="hear"
+        icon="speaker"
+        label={t('hearIt')}
+        src={props.hearClip.src}
+        span={props.hearClip.span}
+        rate={props.hearClip.rate}
+        onPlay={() => props.onPlayed?.('native', 'P1')}
+      />
+      <SoundButton
+        tag={PRON_SOUND.slow}
+        voice="native"
+        variant="hear"
+        icon="speakerSlow"
+        label={t('slowly')}
+        src={props.slowClip.src}
+        span={props.slowClip.span}
+        rate={props.slowClip.rate}
+        onPlay={() => props.onPlayed?.('native', 'P1')}
+      />
     </div>
   );
-  const playFailed =
-    audio === 'error' ? (
-      <p
-        role="status"
-        className={gcn(
-          'order-3 -mt-1.5 flex items-center justify-center gap-1.5 text-[13px] font-semibold text-primary-text',
-          phase === 'say' ? '' : 'hidden ipad:flex',
-        )}
-      >
-        <svg
-          width={16}
-          height={16}
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2.4"
-          strokeLinecap="round"
-          aria-hidden="true"
-        >
-          <circle cx="12" cy="12" r="9" />
-          <path d="M12 7.5 V13" />
-          <path d="M12 16.5 V16.6" />
-        </svg>
-        {t('playFailed')}
-      </p>
-    ) : null;
+  const playFailed = (
+    <SoundError
+      tags={[PRON_SOUND.hear, PRON_SOUND.slow]}
+      className={gcn('order-3 -mt-1.5', phase === 'say' ? '' : 'hidden ipad:flex')}
+    />
+  );
 
   const parts = hopParts(stones);
   const tip = (
@@ -516,17 +459,23 @@ export function PronounceScreen(props: PronounceScreenProps) {
         phase === 'say' ? '' : 'hidden ipad:block',
       )}
     >
-      {t('hopIntro')}
-      {parts.map((p, k) => (
-        <React.Fragment key={k}>
-          {k > 0 ? t('hopSep') : null}
-          {t.rich(p.kind === 'hard' ? 'hopHard' : p.kind === 'light' ? 'hopLight' : 'hopThen', {
-            s: p.text,
-            b: (chunks) => <b lang="en">{chunks}</b>,
-          })}
-        </React.Fragment>
-      ))}
-      {t('hopEnd')}
+      {props.tip ? (
+        <TipText tip={props.tip} />
+      ) : (
+        <>
+          {t('hopIntro')}
+          {parts.map((p, k) => (
+            <React.Fragment key={k}>
+              {k > 0 ? t('hopSep') : null}
+              {t.rich(p.kind === 'hard' ? 'hopHard' : p.kind === 'light' ? 'hopLight' : 'hopThen', {
+                s: p.text,
+                b: (chunks) => <b lang="en">{chunks}</b>,
+              })}
+            </React.Fragment>
+          ))}
+          {t('hopEnd')}
+        </>
+      )}
     </div>
   );
 
@@ -715,14 +664,26 @@ export function PronounceScreen(props: PronounceScreenProps) {
   } else if (phase === 'checking') {
     const listen = (
       <>
-        <button type="button" onClick={props.onHearMine} className={OUTLINE}>
-          <Play size={18} />
-          {t('hearMine')}
-        </button>
-        <button type="button" onClick={props.onHearNative} className={OUTLINE}>
-          <Speaker size={18} />
-          {t('hearNative')}
-        </button>
+        <SoundButton
+          tag={PRON_SOUND.mine}
+          voice="you"
+          variant="outline"
+          icon="play"
+          label={t('hearMine')}
+          src={props.mineClip?.src ?? null}
+          onPlay={() => props.onPlayed?.('you', 'P3')}
+        />
+        <SoundButton
+          tag={PRON_SOUND.native}
+          voice="native"
+          variant="outline"
+          icon="speaker"
+          label={t('hearNative')}
+          src={props.nativeClip?.src ?? null}
+          span={props.nativeClip?.span}
+          rate={props.nativeClip?.rate}
+          onPlay={() => props.onPlayed?.('native', 'P3')}
+        />
       </>
     );
     leftExtra = <div className="order-3 flex gap-2.5 ipad:hidden">{listen}</div>;

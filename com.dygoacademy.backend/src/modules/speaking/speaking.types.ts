@@ -1,3 +1,5 @@
+import type { PronBlockedReason } from './pron-config';
+import type { PronTip, StoredSyllable } from './pron-syllables';
 import type { SpeakingSyllable } from './speaking-syllables';
 import type { SpeakingAccent, SpeakingTimings } from './speaking-timings';
 
@@ -49,8 +51,19 @@ export interface SpeakingSessionItem {
   word_audio_url_us: string | null;
   /** The same in British English (master_lexicon.audio_url_uk); null until made, then play word_audio_url_us. */
   word_audio_url_uk: string | null;
-  /** The word's syllables for the stones (MI · ti · gate), from the default accent's IPA; [] without one. */
-  syllables: SpeakingSyllable[];
+  /** The word said slowly (master_lexicon.audio_slow_url_us / _uk) for "Slowly"; null until made. */
+  word_audio_slow_url_us: string | null;
+  word_audio_slow_url_uk: string | null;
+  /**
+   * The stones (MI · ti · gate), stored per accent (master_lexicon.syllables_us / _uk): the
+   * profile accent's, else the other accent's; [] when the word has none (not offered in
+   * Pronunciation). `start_ms` / `end_ms` are inside `syllables_clip_url`.
+   */
+  syllables: StoredSyllable[];
+  /** The word clip the syllable spans belong to (that accent's word_audio_url); null without one. */
+  syllables_clip_url: string | null;
+  /** The P1 tip by app locale, syllables in <b>; null until made. */
+  pron_tip: PronTip | null;
 }
 
 /** The Pond (Sound Garden on the Missions tab). */
@@ -62,10 +75,12 @@ export interface SpeakingSession {
   items: SpeakingSessionItem[];
 }
 
-/** "Say this one?" on a flashcard. */
+/** "Say this one?" on a flashcard, and one Pronunciation word. */
 export interface SpeakingWordItem {
   default_accent: SpeakingAccent;
   item: SpeakingSessionItem;
+  /** Set when the word isn't offered in Pronunciation (pronunciation v2): `no_syllables`. Null otherwise. */
+  blocked: PronBlockedReason | null;
 }
 
 /** `POST /speaking/attempts` response. */
@@ -93,8 +108,8 @@ export interface SpeakingHarvestWord {
   /** Both IPAs for the "Bees are waiting" row; the app shows the profile accent's (2026-10-25). */
   ipa_uk: string | null;
   ipa_us: string | null;
-  /** The word's syllables for the bee row (MI · ti · gate), from the profile accent's IPA (else the other); [] without one. */
-  syllables: SpeakingSyllable[];
+  /** The word's stored syllables for the bee row (MI · ti · gate), profile accent's (else the other's). Never empty: words without are left out. */
+  syllables: StoredSyllable[];
 }
 
 /**
@@ -154,14 +169,20 @@ export interface SpeakingCheckQueued {
   eta_s: number;
 }
 
-/** One syllable in a word check: the scorer's IPA syllable and how it went. */
+/** One syllable in a word check: one stored stone and how it went. */
 export interface SpeakingWordCheckSyllable {
+  /** The syllable's IPA ("tɪ"), else the stone's text. */
   ipa: string;
+  /** The stone's text (MI, ti, gate). */
+  text: string;
   score: number;
-  /** Under 60: the stone wobbles on P4. */
+  /** Under 60 (PRON.wobblyBelow): the stone wobbles on P4. */
   wobbly: boolean;
-  /** What a wobbly syllable sounded like ("taɪ"), when the scorer is sure; else null. */
+  /** What the syllable sounded like ("taɪ"), when the scorer is sure; else null. */
   heard_ipa: string | null;
+  /** Where the syllable is in the learner's take (ms), for "You" on its chip; null when unknown. */
+  start_ms: number | null;
+  end_ms: number | null;
 }
 
 /**
@@ -177,9 +198,9 @@ export interface SpeakingWordCheckResult {
   pollinated: boolean;
   total: number;
   heard_text: string;
-  /** The scorer's IPA syllables, one stone each. */
+  /** One per stored stone, in order (pronunciation v2: always as many as the word's syllables). */
   syllables: SpeakingWordCheckSyllable[];
-  /** The same syllables spelled for the screen (MI · ti · gate); [] if they don't line up. */
+  /** The stones (MI · ti · gate): the word's stored syllables for the accent. */
   spelling: SpeakingSyllable[];
   user_duration_ms: number;
   check_ms: number;

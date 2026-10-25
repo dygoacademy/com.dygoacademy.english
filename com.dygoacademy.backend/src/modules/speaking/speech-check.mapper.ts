@@ -1,4 +1,4 @@
-import { wordSyllables } from './speaking-syllables';
+import type { SpeakingSyllable } from './speaking-syllables';
 import type { ScorerResult, ScorerWordResult } from './speech-checker';
 import {
   POLLINATE_MIN_SCORE,
@@ -44,17 +44,16 @@ export function toCheckResult(raw: ScorerResult, wordCount: number): SpeakingChe
 }
 
 /**
- * The scorer's word reply → what P4 shows: the IPA syllables (one stone
- * each), the same syllables spelled (MI · ti · gate) when they line up, and
- * `passed` = heard as the word at POLLINATE_MIN_SCORE or more.
+ * The scorer's word reply → what P4 shows: one syllable per stored stone
+ * (`stones`), and `passed` = heard as the word at POLLINATE_MIN_SCORE or
+ * more. The app works out pass / almost perfect / retry and each stone's
+ * look from the scores (its pron-config.ts).
  */
 export function toWordCheckResult(
   raw: ScorerWordResult,
-  word: string,
-  ipa: string | null,
+  stones: readonly SpeakingSyllable[],
 ): Omit<SpeakingWordCheckResult, 'pollinated'> {
   const total = Math.max(0, Math.min(100, Math.round(raw.total)));
-  const spelled = wordSyllables(word, ipa);
   return {
     kind: 'word',
     status: raw.status,
@@ -62,7 +61,7 @@ export function toWordCheckResult(
     total,
     heard_text: raw.heard_text,
     syllables: raw.syllables,
-    spelling: spelled.length === raw.syllables.length ? spelled : [],
+    spelling: raw.syllables.length === stones.length ? stones.map((x) => ({ ...x })) : [],
     user_duration_ms: raw.duration_ms,
     check_ms: raw.latency_ms,
   };

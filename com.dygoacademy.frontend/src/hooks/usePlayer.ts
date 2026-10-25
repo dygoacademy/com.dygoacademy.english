@@ -32,6 +32,12 @@ export interface PlayerState {
   error: string | null;
   /** True from a play's start until the sound actually starts (the clip loading). */
   loading: boolean;
+  /**
+   * Who started the last play (a SoundButton's `tag`), kept after it ends or
+   * fails, so each button knows its own loading / playing / couldn't play
+   * while one player keeps one sound at a time. Null when untagged.
+   */
+  tag: string | null;
 }
 
 let audio: HTMLAudioElement | null = null;
@@ -39,7 +45,7 @@ let audio: HTMLAudioElement | null = null;
 let audioMicGeneration = 0;
 /** Stops a span at its end. */
 let spanTimer: ReturnType<typeof setTimeout> | null = null;
-let state: PlayerState = { src: null, rate: 1, error: null, loading: false };
+let state: PlayerState = { src: null, rate: 1, error: null, loading: false, tag: null };
 /** Bumped by every play and stop, so a play that was replaced or stopped stays quiet. */
 let playId = 0;
 const listeners = new Set<() => void>();
@@ -86,6 +92,7 @@ export async function playClip(
   src: string,
   rate: number = state.rate,
   span?: ClipSpan,
+  tag: string | null = null,
 ): Promise<void> {
   // Not recording: speaker, and through the silent switch (iOS).
   prepareForPlayback();
@@ -94,7 +101,7 @@ export async function playClip(
   el.pause();
   el.muted = false;
   clearSpan();
-  set({ src, rate: isPlayerRate(rate) ? rate : state.rate, error: null, loading: true });
+  set({ src, rate: isPlayerRate(rate) ? rate : state.rate, error: null, loading: true, tag });
   if (isPlayerRate(rate) || rate >= 1) return start(el, id, src, src, rate, span);
 
   const ready = readySlowClip(src, rate, span);
@@ -182,6 +189,12 @@ export function stopClip(): void {
   if (state.src || state.loading) set({ src: null, loading: false });
 }
 
+/** Marks `tag`'s play as failed without playing (a button with no clip), stopping anything else. */
+export function failClip(tag: string, reason = 'no clip'): void {
+  stopClip();
+  set({ src: null, loading: false, error: reason, tag });
+}
+
 /** Changes the rate for the next play (and the current one). */
 export function setPlayerRate(rate: PlayerRate): void {
   if (audio) audio.playbackRate = rate;
@@ -193,7 +206,7 @@ export function resetPlayerForTest(): void {
   clearSpan();
   audio = null;
   playId = 0;
-  state = { src: null, rate: 1, error: null, loading: false };
+  state = { src: null, rate: 1, error: null, loading: false, tag: null };
   listeners.clear();
 }
 
@@ -203,18 +216,20 @@ function subscribe(listener: () => void) {
 }
 
 const getState = () => state;
-const serverState: PlayerState = { src: null, rate: 1, error: null, loading: false };
+const serverState: PlayerState = { src: null, rate: 1, error: null, loading: false, tag: null };
 
 export function usePlayer() {
   const current = useSyncExternalStore(subscribe, getState, () => serverState);
   const play = useCallback(
-    (src: string, rate?: number, span?: ClipSpan) => playClip(src, rate, span),
+    (src: string, rate?: number, span?: ClipSpan, tag?: string | null) =>
+      playClip(src, rate, span, tag ?? null),
     [],
   );
   return {
     ...current,
     play,
     stop: stopClip,
+    fail: failClip,
     setRate: setPlayerRate,
     isPlaying: (src: string) => current.src === src,
   };
