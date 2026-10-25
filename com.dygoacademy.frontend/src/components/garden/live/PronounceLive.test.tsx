@@ -123,12 +123,17 @@ function setCheck(result: SpeakingWordCheckResult, opts: { nextBlocked?: boolean
 
 async function renderLive(wordIds = ['tw1']) {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
-  renderWithIntl(
+  return renderWithIntl(
     <QueryClientProvider client={client}>
       <PronounceLive wordIds={wordIds} topicId="t1" closeHref="/topics/t1" />
     </QueryClientProvider>,
   );
+}
+
+async function renderLiveReady(wordIds = ['tw1']) {
+  const r = await renderLive(wordIds);
   await screen.findByRole('button', { name: 'Start speaking' });
+  return r;
 }
 
 async function wait(ms: number) {
@@ -189,7 +194,7 @@ describe('PronounceLive (Stepping stones)', () => {
 
   it('Hear it shows loading then playing, ignores a double tap and stops on a tap while playing', async () => {
     setCheck(check({}));
-    await renderLive();
+    await renderLiveReady();
     const play = vi.mocked(HTMLMediaElement.prototype.play);
     play.mockClear();
     let started!: () => void;
@@ -212,7 +217,7 @@ describe('PronounceLive (Stepping stones)', () => {
 
   it('Slowly plays at the slow rate, and a failed play says so until the next tap', async () => {
     setCheck(check({}));
-    await renderLive();
+    await renderLiveReady();
     const play = vi.mocked(HTMLMediaElement.prototype.play);
     play.mockClear();
     play.mockRejectedValueOnce(new Error('NotSupportedError'));
@@ -230,7 +235,7 @@ describe('PronounceLive (Stepping stones)', () => {
 
   it('shows one stone per syllable, the stressed one big', async () => {
     setCheck(check({}));
-    await renderLive();
+    await renderLiveReady();
     expect(screen.getByText('Bee 1 of 1')).toBeTruthy();
     const pond = screen.getAllByRole('img', { name: /Stepping stones for the syllables MI, ti, gate/ });
     expect(pond.length).toBeGreaterThan(0);
@@ -239,7 +244,7 @@ describe('PronounceLive (Stepping stones)', () => {
 
   it('records, stops by itself after the voice, checks and pollinates (last word: back to the bed)', async () => {
     setCheck(check({}));
-    await renderLive();
+    await renderLiveReady();
     await startTake();
     expect(screen.getByText('Recording')).toBeTruthy();
     await speak(10);
@@ -263,7 +268,7 @@ describe('PronounceLive (Stepping stones)', () => {
 
   it("says it couldn't hear a quiet take, without calling the server", async () => {
     setCheck(check({}));
-    await renderLive();
+    await renderLiveReady();
     await startTake();
     env.levels = [...ROOM, ...bars(20, 0.001)];
     await tick(150);
@@ -278,7 +283,7 @@ describe('PronounceLive (Stepping stones)', () => {
 
   it('shows another word as P2b, and Try again records straight away', async () => {
     setCheck(check({ status: 'other_word', passed: false, pollinated: false, heard_text: 'medicate' }));
-    await renderLive();
+    await renderLiveReady();
     await startTake();
     await speak(10);
     await wait(900);
@@ -304,7 +309,7 @@ describe('PronounceLive (Stepping stones)', () => {
         ],
       }),
     );
-    await renderLive(['tw1', 'tw2']);
+    await renderLiveReady(['tw1', 'tw2']);
     await startTake();
     await speak(10);
     await wait(900);
@@ -341,7 +346,7 @@ describe('PronounceLive (Stepping stones)', () => {
 
   it('clears the take on Try again from P4 and logs it as say again', async () => {
     setCheck(check({ passed: false, pollinated: false, total: 62 }));
-    await renderLive();
+    await renderLiveReady();
     await startTake();
     await speak(10);
     await wait(900);
@@ -362,7 +367,7 @@ describe('PronounceLive (Stepping stones)', () => {
         ],
       }),
     );
-    await renderLive();
+    await renderLiveReady();
     await startTake();
     await speak(10);
     await wait(900);
@@ -374,7 +379,7 @@ describe('PronounceLive (Stepping stones)', () => {
 
   it('a scorer split unlike the stones is a scoring error: Check again / Record again', async () => {
     setCheck(check({ syllables: [{ ipa: 'mitigate', text: 'mitigate', score: 88, wobbly: false, heard_ipa: null }] }));
-    await renderLive();
+    await renderLiveReady();
     await startTake();
     await speak(10);
     await wait(900);
@@ -385,7 +390,7 @@ describe('PronounceLive (Stepping stones)', () => {
 
   it('skips a word without stored stones (logged), back to the bed when it was the last', async () => {
     setCheck(check({}), { nextBlocked: true });
-    await renderLive(['tw1', 'tw2']);
+    await renderLiveReady(['tw1', 'tw2']);
     await startTake();
     await speak(10);
     await wait(900);
@@ -400,7 +405,7 @@ describe('PronounceLive (Stepping stones)', () => {
 
   it('Hear it logs the native word played on P1', async () => {
     setCheck(check({}));
-    await renderLive();
+    await renderLiveReady();
     await act(async () => fireEvent.click(screen.getAllByRole('button', { name: 'Hear it' })[0]));
     expect(events()).toContainEqual({
       name: 'pron_word_played',
@@ -411,7 +416,7 @@ describe('PronounceLive (Stepping stones)', () => {
   it('SP0 the first time: Allow microphone records; not shown again', async () => {
     window.localStorage.removeItem('dygo:mic-asked');
     setCheck(check({}));
-    await renderLive();
+    await renderLiveReady();
     await act(async () => fireEvent.click(screen.getByRole('button', { name: 'Start speaking' })));
     expect(screen.getByText('Let your garden hear you')).toBeTruthy();
     expect(screen.getByText('Your recording is checked, then deleted')).toBeTruthy();
@@ -426,7 +431,7 @@ describe('PronounceLive (Stepping stones)', () => {
   it('SP0 denied: how to turn the mic on; Practise listening goes back to P1', async () => {
     requestMic.mockRejectedValue(Object.assign(new Error('denied'), { kind: 'denied' }));
     setCheck(check({}));
-    await renderLive();
+    await renderLiveReady();
     await act(async () => fireEvent.click(screen.getByRole('button', { name: 'Start speaking' })));
     expect(screen.getByText('Your microphone is off')).toBeTruthy();
     expect(screen.getByRole('button', { name: 'Open Settings' })).toBeTruthy();
@@ -446,7 +451,7 @@ describe('PronounceLive (Stepping stones)', () => {
         ],
       }),
     );
-    await renderLive();
+    await renderLiveReady();
     await startTake();
     await speak(10);
     await wait(900);
@@ -471,7 +476,7 @@ describe('PronounceLive (Stepping stones)', () => {
         ],
       }),
     );
-    await renderLive();
+    await renderLiveReady();
     await startTake();
     await speak(10);
     await wait(900);
@@ -490,7 +495,7 @@ describe('PronounceLive (Stepping stones)', () => {
 
   it('a noisy room is P2b noisy, without calling the server, and logged', async () => {
     setCheck(check({}));
-    await renderLive();
+    await renderLiveReady();
     env.levels = bars(6, 0.05); // a loud room before the beep
     await act(async () => fireEvent.click(screen.getByRole('button', { name: 'Start speaking' })));
     await wait(300 + 150);
@@ -504,7 +509,19 @@ describe('PronounceLive (Stepping stones)', () => {
 
   it('Say all runs every bee asked for (no cap of three)', async () => {
     setCheck(check({}));
-    await renderLive(['tw1', 'tw2', 'tw3', 'tw4']);
+    await renderLiveReady(['tw1', 'tw2', 'tw3', 'tw4']);
     expect(screen.getAllByText('Bee 1 of 4').length).toBeGreaterThan(0);
+  });
+
+  it('leaving P4 by its link (the page unmounts) deletes the take', async () => {
+    setCheck(check({}));
+    const { unmount } = await renderLiveReady();
+    await startTake();
+    await speak(10);
+    await wait(900);
+    expect(p4().getByText('Clean crossing!')).toBeTruthy();
+    vi.mocked(URL.revokeObjectURL).mockClear();
+    unmount();
+    expect(URL.revokeObjectURL).toHaveBeenCalledWith('blob:me');
   });
 });

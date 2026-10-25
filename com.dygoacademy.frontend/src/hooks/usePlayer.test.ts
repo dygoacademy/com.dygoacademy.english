@@ -5,7 +5,7 @@ import { releaseStream, requestMic, resetAudioContextForTest } from '@/lib/speak
 
 import { makeSlowClip, resetSlowClipsForTest } from '@/lib/speaking/slow-clip';
 
-import { playClip, resetPlayerForTest, stopClip, usePlayer } from './usePlayer';
+import { forgetClip, playClip, resetPlayerForTest, stopClip, usePlayer } from './usePlayer';
 
 describe('usePlayer', () => {
   let play: ReturnType<typeof vi.spyOn>;
@@ -30,6 +30,19 @@ describe('usePlayer', () => {
     expect(play.mock.contexts[0]).toBe(el); // the same element both times
     expect(el.playbackRate).toBe(0.75);
     expect(HTMLMediaElement.prototype.pause).toHaveBeenCalled();
+  });
+
+  it('forgets a take: stops it and empties the element, leaving other clips alone', async () => {
+    vi.spyOn(HTMLMediaElement.prototype, 'load').mockImplementation(() => undefined);
+    const { result } = renderHook(() => usePlayer());
+    await act(() => result.current.play('blob:me'));
+    const el = play.mock.contexts[0] as HTMLAudioElement;
+    act(() => forgetClip('blob:other'));
+    expect(el.getAttribute('src')).toBe('blob:me');
+    act(() => forgetClip('blob:me'));
+    expect(result.current.src).toBeNull();
+    expect(el.getAttribute('src')).toBeNull();
+    expect(HTMLMediaElement.prototype.load).toHaveBeenCalled();
   });
 
   it('clears the state when the clip ends or is stopped', async () => {

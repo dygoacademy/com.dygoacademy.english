@@ -201,6 +201,20 @@ export function setPlayerRate(rate: PlayerRate): void {
   set({ rate });
 }
 
+/**
+ * Lets go of `src` if the player holds it (pronunciation v2: the learner's
+ * take on leaving P4). Revoking a blob URL isn't enough while an audio
+ * element still has it as its source: the recording stays readable. Stops
+ * it if it plays and empties the element.
+ */
+export function forgetClip(src: string): void {
+  if (!audio || audio.src !== src) return;
+  if (state.src === src) stopClip();
+  audio.pause();
+  audio.removeAttribute('src');
+  audio.load();
+}
+
 /** Who started the play now loading or playing (its `tag`), else null. */
 export function getPlayerTag(): string | null {
   return state.src || state.loading ? state.tag : null;

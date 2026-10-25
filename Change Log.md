@@ -1429,3 +1429,8 @@ Engineering-facing log of shipped fixes and changes, one dated entry per change.
 * **Files**: `com.dygoacademy.automationtesting/ui/global-setup.ts`.
 * **What**: Dylan's run for the pronunciation Step C checks (2026-10-25) timed out at `getByLabel('Email', { exact: true })`: the garden sign-in page (AU1) labels the field "Email address". The setup now matches either label.
 * **Verified**: the login page on localhost:3000 has inputs labelled "Email address" and "Password" and a "Sign in" button (checked headless, no credentials typed).
+
+### Fixed: the learner's take is really gone after leaving P4
+* **Files**: frontend `hooks/usePlayer.ts` (`forgetClip`, + test), `hooks/useTake.ts`, `live/PronounceLive.test.tsx`; UAT checks `com.dygoacademy.automationtesting/ui/pron-v2-uat.mjs` (new) and the test takes in `docs/reports/pron-v2 step C/audio/`.
+* **What**: Pronunciation v2 Step C (UAT, 2026-10-25): after "Back to the bed" the take's blob URL was revoked but still readable, because the shared audio element kept it as its source. Clearing a take (leaving P4, try again) now also stops it and empties the player when it holds it. Added the phone-size UAT run (390 × 844, iPhone user agent, a recorded take as the fake microphone) for checks 1, 2, 5, 6 and 7, and a unit test for leaving P4 by its link.
+* **Verified**: frontend `tsc` and lint clean; usePlayer + PronounceLive tests 31 passed. On UAT before the fix: 8 of 9 checks passed, the take check failed; rerun after the deploy in the Step C report.
