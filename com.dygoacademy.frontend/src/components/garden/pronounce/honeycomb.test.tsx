@@ -1,13 +1,17 @@
-import { fireEvent, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
+import { NextIntlClientProvider } from 'next-intl';
 import * as React from 'react';
 import { describe, expect, it, vi } from 'vitest';
 
 import { PASS_LINE_Y } from '@/lib/pronunciation/comb';
 import { renderWithIntl } from '@/test/render';
 
+import viMessages from '../../../../messages/vi-VN.json';
+
 import { VoiceMeterComb } from './CombMeters';
 import { HoneycombBoard } from './HoneycombBoard';
 import { ListenCard } from './ListenCard';
+import { PronounceScreen } from './PronounceScreen';
 
 const MITIGATE = [
   { text: 'mi', stressed: true },
@@ -127,5 +131,81 @@ describe('VoiceMeterComb', () => {
     rerender(<VoiceMeterComb level={0.5} recording label="Your voice" status="Recording" />);
     expect(container.querySelector('[data-lit]')?.getAttribute('data-lit')).toBe('11');
     expect(container.textContent).not.toMatch(/good|clear|great/i);
+  });
+});
+
+describe('PronounceScreen (honeycomb screens)', () => {
+  const clips = { normal: { src: null }, slow: { src: null }, native: { src: null }, you: { src: null } };
+  const base = {
+    word: 'mitigate',
+    ipa: '/ˈmɪt.ɪ.ɡeɪt/',
+    meaning: 'to make something less harmful',
+    syllables: MITIGATE,
+    index: 0,
+    total: 3,
+    closeHref: '/topics/t1',
+    clips,
+  };
+  const result = (scores: number[], heard: (string | null)[] = [null, null, null]) => ({
+    word: 'mitigate',
+    syllables: MITIGATE.map((s, k) => ({ ...s, score: scores[k], targetIpa: ['ˈmɪ', 'tɪ', 'ɡeɪt'][k], heardIpa: heard[k] })),
+    nativeAudioUrl: '',
+    learnerAudioUrl: '',
+    round: { index: 0, total: 3, nextWord: 'deforestation' },
+  });
+
+  it('P2b: each reason has its title, body and two tips; Try again and Hear the word first', () => {
+    const onTryAgain = vi.fn();
+    const cases = [
+      ['quiet', "We couldn't hear you", 'The bee heard almost nothing.', 'Speak a little louder than normal'],
+      ['noisy', 'Too noisy to hear', 'There was a lot of sound around you.', 'Move somewhere a bit quieter'],
+      ['other', 'That sounded like another word', 'We heard “medicate”. Say just “mitigate”.', 'Start with the loud cell: MI'],
+    ] as const;
+    for (const [reason, title, body, tip] of cases) {
+      const { unmount } = renderWithIntl(
+        <PronounceScreen {...base} phase="notHeard" reason={reason} heard="medicate" onTryAgain={onTryAgain} />,
+      );
+      expect(screen.getByText(title)).toBeTruthy();
+      expect(screen.getByText(body)).toBeTruthy();
+      expect(screen.getAllByText(tip).length).toBeGreaterThan(0);
+      expect(screen.getByRole('img', { name: 'Empty cells for MI, ti, gate: the bee heard nothing yet' })).toBeTruthy();
+      fireEvent.click(screen.getByRole('button', { name: 'Try again' }));
+      unmount();
+    }
+    expect(onTryAgain).toHaveBeenCalledTimes(3);
+  });
+
+  it('P4: keyboard order is cells, then the play buttons, then the buttons; the sub line never repeats a score', () => {
+    renderWithIntl(<PronounceScreen {...base} phase="result" result={result([95, 56, 94], [null, 'taɪ', null])} />);
+    const order = [...document.querySelectorAll('[data-screen="P4"] button, [data-screen="P4"] a')].map(
+      (el) => el.getAttribute('aria-label') ?? el.textContent,
+    );
+    const at = (re: RegExp) => order.findIndex((x) => x && re.test(x));
+    expect(at(/^gate: 94%/)).toBeLessThan(at(/^Play the native speaker/));
+    expect(at(/^Play your recording/)).toBeLessThan(at(/^Try again/));
+    expect(at(/^Try again/)).toBeLessThan(at(/^Skip to next bee/));
+    expect(screen.getByText('Say it once more to pollinate mitigate.').textContent).not.toMatch(/\d/);
+    // The listen card has only the two labels: no durations, no Both.
+    expect(screen.queryByText(/Both|\d\.\ds/)).toBeNull();
+  });
+
+  it('P4: selecting a cell changes the detail strip; a new result resets the selection', () => {
+    const { rerender } = renderWithIntl(<PronounceScreen {...base} phase="result" result={result([95, 82, 94])} />);
+    expect(screen.getByText('ti: 82% match. Just past the line, aim for /tɪ/.')).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: 'gate: 94% match with native, pass. Show details.' }));
+    expect(screen.getByText('gate: 94% match with native.')).toBeTruthy();
+    rerender(<PronounceScreen {...base} phase="result" result={result([95, 91, 94])} />);
+    expect(screen.getByText('Every cell filled past the 80% line. Tap one to see its score.')).toBeTruthy();
+    expect(screen.getByText('Sweet as honey!')).toBeTruthy();
+  });
+
+  it('speaks Vietnamese from vi-VN.json', () => {
+    render(
+      <NextIntlClientProvider locale="vi-VN" messages={viMessages}>
+        <PronounceScreen {...base} phase="result" result={result([95, 56, 94], [null, 'taɪ', null])} />
+      </NextIntlClientProvider>,
+    );
+    expect(screen.getByText('Còn một ô thiếu mật')).toBeTruthy();
+    expect(screen.getByText('Chưa đạt')).toBeTruthy();
   });
 });
