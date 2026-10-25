@@ -65,6 +65,23 @@ const TEXT_MODEL = 'gemini-3.5-flash-lite';
 const TTS_MODEL = 'gemini-2.5-flash-preview-tts';
 const TTS_VOICE = 'Kore'; // Gemini prebuilt voice — closest to "crisp US female" (tech spec §4.2 audio pipeline note).
 
+/**
+ * The prompt's IPA rule. It used to say only "ipa_us for General American,
+ * ipa_uk for Received Pronunciation", and Gemini often copied the British
+ * IPA into ipa_us (193 of 424 library words, 2026-10-25), so the US clip
+ * was said from British sounds. Cambridge Dictionary conventions, with the
+ * US features spelled out and an example.
+ */
+export const IPA_INSTRUCTION = [
+  `Dual-accent IPA in the Cambridge Dictionary style, between slashes, with ˈ and ˌ stress marks and syllable dots:`,
+  `ipa_uk is Received Pronunciation; ipa_us is real General American, not a copy of ipa_uk.`,
+  `In ipa_us use the American sounds: rhotic r after vowels, ɚ (unstressed) and ɝ (stressed) for r-coloured vowels,`,
+  `the flapped t written t̬ between vowels (e.g. "water" /ˈwɑː.t̬ɚ/), ɑː where British has ɒ, oʊ where British has əʊ,`,
+  `æ in bath words, and ə for unstressed vowels.`,
+  `Example: inevitable → ipa_uk /ɪˈnev.ɪ.tə.bəl/, ipa_us /ˌɪnˈev.ə.t̬ə.bəl/.`,
+  `Give the same IPA in both only when the word really sounds the same in both accents (e.g. "fish" /fɪʃ/).`,
+].join('\n');
+
 /** One meaning-language entry, shared by both keys of `translations` below. */
 const TRANSLATION_ENTRY_SCHEMA = {
   type: Type.OBJECT,
@@ -187,7 +204,7 @@ export class GeminiEnrichmentService {
         ? `Bias example sentences toward CEFR level ${targetCEFR} where natural.`
         : `Choose the example sentences' CEFR levels to fit the word's own difficulty.`,
       `Provide exactly 5 synonyms and exactly 5 antonyms (fewer only if the word truly has none — do not pad with unrelated words), and 2 example sentences at different CEFR levels.`,
-      `Dual-accent IPA: ipa_us for General American, ipa_uk for Received Pronunciation.`,
+      IPA_INSTRUCTION,
       `If the word has no clean antonym (e.g. most nouns), return an empty array rather than forcing unrelated words.`,
       `Also provide "translations", an object with exactly two keys, "vi-VN" and "zh-CN" — both are required, ` +
         `neither may be omitted. Each key's "meaning" is a natural, idiomatic translation of definition_en into ` +

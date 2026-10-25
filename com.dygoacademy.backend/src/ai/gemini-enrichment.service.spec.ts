@@ -1,4 +1,13 @@
-import { GeminiEnrichmentService } from './gemini-enrichment.service';
+import { GeminiEnrichmentService, IPA_INSTRUCTION } from './gemini-enrichment.service';
+
+describe('IPA_INSTRUCTION', () => {
+  it('asks for real General American IPA, not a copy of the British one', () => {
+    expect(IPA_INSTRUCTION).toMatch(/ipa_us is real General American, not a copy of ipa_uk/);
+    expect(IPA_INSTRUCTION).toContain('t̬');
+    expect(IPA_INSTRUCTION).toContain('ɚ');
+    expect(IPA_INSTRUCTION).toContain('ipa_us /ˌɪnˈev.ə.t̬ə.bəl/');
+  });
+});
 
 /**
  * pcmToWav is the one pure, dependency-free piece of this service — the
