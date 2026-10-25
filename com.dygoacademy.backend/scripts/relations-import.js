@@ -18,7 +18,7 @@
  *
  * A row whose `word` isn't in master_lexicon is reported and skipped. The
  * related word drops only once it has its own master_lexicon entry with
- * native audio (and, for a phrase, is_phrase); the import lists the
+ * native audio; the import lists the
  * related words still missing one.
  */
 const fs = require('fs');
