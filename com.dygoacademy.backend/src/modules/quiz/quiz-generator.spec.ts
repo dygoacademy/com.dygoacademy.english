@@ -15,7 +15,9 @@ function makeWord(overrides: Partial<QuizSourceWord> = {}): QuizSourceWord {
     topicId: 'topic-1',
     sourceWord: 'resilient',
     audioUrl: 'https://cdn.example/resilient.wav',
+    audioUrlUk: null,
     ipaUs: '/rɪˈzɪljənt/',
+    ipaUk: '/rɪˈzɪliənt/',
     definition: 'able to recover quickly from difficulties.',
     synonyms: [{ word: 'tough', level: 'B1' }],
     antonyms: [{ word: 'fragile', level: 'B1' }],
@@ -92,6 +94,18 @@ describe('buildQuizItem', () => {
       id: 'tw-1:DICTATION',
       answerMode: 'TEXT',
       audioUrl: makeWord().audioUrl,
+    });
+  });
+
+  it('gives DICTATION both clips, so the app can play the profile accent', () => {
+    const item = buildQuizItem(
+      makeWord({ audioUrlUk: 'https://cdn.example/resilient-uk.m4a' }),
+      'DICTATION',
+      pool,
+    );
+    expect(item).toMatchObject({
+      audioUrl: 'https://cdn.example/resilient.wav',
+      audioUrlUk: 'https://cdn.example/resilient-uk.m4a',
     });
   });
 

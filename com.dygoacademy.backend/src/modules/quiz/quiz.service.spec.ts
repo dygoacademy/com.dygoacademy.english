@@ -12,7 +12,9 @@ function wordRow(overrides: Record<string, unknown> = {}) {
     topic_id: 'topic-1',
     source_word: 'resilient',
     audio_url: 'https://cdn.example/resilient.wav',
+    audio_url_uk: 'https://cdn.example/resilient-uk.m4a',
     ipa_us: '/rɪˈzɪljənt/',
+    ipa_uk: '/rɪˈzɪliənt/',
     definition_en: 'able to recover quickly from difficulties.',
     synonyms: [{ word: 'tough', level: 'B1' }],
     antonyms: [{ word: 'fragile', level: 'B1' }],
@@ -214,6 +216,7 @@ describe('QuizService.answer', () => {
       correctAnswer: 'resilient',
       word: 'resilient',
       ipaUs: '/rɪˈzɪljənt/',
+      ipaUk: '/rɪˈzɪliənt/',
       exampleSentence: 'She remained resilient after the setback.',
       hintUsed: false,
       srs: { graded: true, justMastered: false, nextDueAt: SRS_NEXT_DUE.toISOString() },
@@ -395,6 +398,7 @@ describe('QuizService.hint', () => {
 
     expect(result).toEqual({
       ipaUs: '/rɪˈzɪljənt/',
+      ipaUk: '/rɪˈzɪliənt/',
       definition: 'able to recover quickly from difficulties.',
     });
   });

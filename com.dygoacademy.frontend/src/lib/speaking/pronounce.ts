@@ -335,12 +335,16 @@ export function nativeClipRate(clip: NativeClip, rate = 1): number {
 }
 
 /**
- * "Hear it": the word said on its own when there is a recording of it,
- * else the word's part of the sentence clip (its timings). Null when
- * neither exists.
+ * "Hear it": the word said on its own in the accent when there is a
+ * recording of it (else the other accent's), else the word's part of the
+ * sentence clip (its timings). Null when neither exists.
  */
 export function nativeWord(item: SpeakingSessionItem, accent: SpeakingAccent): NativeClip | null {
-  if (item.word_audio_url) return { src: item.word_audio_url };
+  const word =
+    accent === 'UK'
+      ? (item.word_audio_url_uk ?? item.word_audio_url)
+      : (item.word_audio_url ?? item.word_audio_url_uk);
+  if (word) return { src: word };
   const { url, timings } = clipFor(item, accent);
   const w = timings?.words[item.target_index];
   if (!url || !w) return null;

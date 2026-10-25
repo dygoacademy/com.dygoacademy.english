@@ -39,6 +39,8 @@ export interface WordCard {
   ipa_uk: string | null;
   definition_en: string | null;
   audio_url: string | null;
+  /** The UK clip (20261025_word_audio_uk.sql); null until made, then play audio_url. */
+  audio_url_uk: string | null;
   synonyms: unknown;
   antonyms: unknown;
   example_sentences: unknown;
@@ -58,6 +60,8 @@ export interface GuestWordCard {
   ipa_uk: string | null;
   definition_en: string | null;
   audio_url: string | null;
+  /** The UK clip (20261025_word_audio_uk.sql); null until made, then play audio_url. */
+  audio_url_uk: string | null;
   synonyms: unknown;
   antonyms: unknown;
   example_sentences: unknown;
@@ -86,6 +90,8 @@ export interface WordLookup {
   definition_en: string | null;
   example: string | null;
   audio_url: string | null;
+  /** The UK clip (20261025_word_audio_uk.sql); null until made, then play audio_url. */
+  audio_url_uk: string | null;
   in_topic_ids: string[];
 }
 
@@ -217,6 +223,7 @@ export class WordsService {
               ml.ipa_uk,
               ml.definition_en,
               ml.audio_url,
+              ml.audio_url_uk,
               ml.synonyms,
               ml.antonyms,
               ml.example_sentences
@@ -286,6 +293,7 @@ export class WordsService {
               ipa_uk,
               definition_en,
               audio_url,
+              audio_url_uk,
               synonyms,
               antonyms,
               example_sentences
@@ -321,6 +329,7 @@ export class WordsService {
               ml.definition_en,
               nullif(trim(ml.example_sentences -> 0 ->> 'sentence'), '') as example,
               ml.audio_url,
+              ml.audio_url_uk,
               array(
                 select distinct tw.topic_id
                   from public.topic_words tw

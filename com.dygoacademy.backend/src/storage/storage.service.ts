@@ -45,11 +45,13 @@ export class StorageService {
      * the CDN. Omitted = the original md5(word) keys (Gemini TTS clips).
      */
     madeFrom?: string,
+    /** The UK clip sits under `uk/`; US (and the older Gemini clips) under `us/`. */
+    accent: 'UK' | 'US' = 'US',
   ): string {
     const hash = createHash('md5')
       .update(madeFrom ? `${madeFrom}|${normalizedWord}` : normalizedWord)
       .digest('hex');
-    return `audio/${languageCode}/us/${hash}.${ext}`;
+    return `audio/${languageCode}/${accent.toLowerCase()}/${hash}.${ext}`;
   }
 
   /**

@@ -42,6 +42,12 @@ vi.mock('@/hooks/useWordLookup', () => ({
   },
 }));
 
+// The profile's English (lib/accent.ts useAccent) picks the IPA and clip.
+let englishVariety: 'en-US' | 'en-GB' = 'en-US';
+vi.mock('@/hooks/useProfile', () => ({
+  useMyProfile: () => ({ data: { english_variety: englishVariety } }),
+}));
+
 const RESILIENT: WordLookup = {
   word: 'resilient',
   found: true,
@@ -53,6 +59,7 @@ const RESILIENT: WordLookup = {
   definition_en: 'Able to recover quickly from difficulties.',
   example: null,
   audio_url: null,
+  audio_url_uk: null,
   in_topic_ids: [],
 };
 
@@ -175,6 +182,44 @@ describe('AddWordSheet', () => {
     expect(screen.getByText('/rɪˈzɪl.jənt/ · adjective')).toBeTruthy();
     expect(screen.getByText('B2')).toBeTruthy();
     expect(screen.getByText('Able to recover quickly from difficulties.')).toBeTruthy();
+  });
+
+  it('shows the UK IPA for an en-GB profile, and plays the UK clip', () => {
+    englishVariety = 'en-GB';
+    lookup = {
+      data: {
+        ...RESILIENT,
+        audio_url: 'https://media.example/us.m4a',
+        audio_url_uk: 'https://media.example/uk.m4a',
+      },
+      settled: true,
+      isError: false,
+    };
+    const play = vi.spyOn(window.HTMLMediaElement.prototype, 'play').mockResolvedValue();
+    const pause = vi.spyOn(window.HTMLMediaElement.prototype, 'pause').mockReturnValue();
+    const made: string[] = [];
+    const RealAudio = window.Audio;
+    vi.stubGlobal(
+      'Audio',
+      class extends RealAudio {
+        constructor(src?: string) {
+          super(src);
+          if (src) made.push(src);
+        }
+      },
+    );
+    try {
+      renderSheet();
+      fireEvent.change(screen.getByLabelText('Word'), { target: { value: 'resilient' } });
+      expect(screen.getByText('/rɪˈzɪl.i.ənt/ · adjective')).toBeTruthy();
+      fireEvent.click(screen.getByRole('button', { name: 'Play pronunciation' }));
+      expect(made).toEqual(['https://media.example/uk.m4a']);
+    } finally {
+      englishVariety = 'en-US';
+      vi.unstubAllGlobals();
+      play.mockRestore();
+      pause.mockRestore();
+    }
   });
 
   it('shows a translated meaning with the English definition under it', () => {

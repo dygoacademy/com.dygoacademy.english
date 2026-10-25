@@ -4,6 +4,7 @@ import * as React from 'react';
 
 import { GARDEN_ROUTES } from '@/constants/garden';
 import { useMarkSeedDropSeen, useSeedDrop } from '@/hooks/useBeds';
+import { forAccent, useAccent } from '@/lib/accent';
 
 import { SeedDropScreen } from '../screens/SeedDropScreen';
 import { LiveError, LiveLoading } from './LiveState';
@@ -18,6 +19,7 @@ import { LiveError, LiveLoading } from './LiveState';
 export function SeedDropLive({ droppedBy, next }: { droppedBy: string; next?: string }) {
   const drop = useSeedDrop(droppedBy);
   const seen = useMarkSeedDropSeen();
+  const accent = useAccent();
   const marked = React.useRef(false);
   const shown = Boolean(drop.data);
 
@@ -47,7 +49,7 @@ export function SeedDropLive({ droppedBy, next }: { droppedBy: string; next?: st
         kind: s.kind,
         partOfSpeech: s.part_of_speech,
         meaning: s.meaning,
-        audioSrc: s.audio_url,
+        audioSrc: forAccent(s, accent).audioSrc,
       }))}
     />
   );

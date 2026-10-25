@@ -12,6 +12,7 @@ import { useGroupMembers, useRemoveMember, useUpdateMemberRole } from '@/hooks/u
 import { useDeleteGroup, useGroups, useUpdateGroup } from '@/hooks/useGroups';
 import { useInvites, useRevokeInvite } from '@/hooks/useInvites';
 import { useTriggerSprint } from '@/hooks/useTriggerSprint';
+import { forAccent, useAccent } from '@/lib/accent';
 import { ApiError } from '@/lib/api-client';
 import type { GroupInviteSummary, GroupRole } from '@/types';
 
@@ -54,6 +55,7 @@ export function TendGardenLive({ groupId, tab }: { groupId: string; tab: 'tricky
   const tricky = useTrickyPatches(groupId, admin && tab === 'tricky');
   // Phase 13 SE6: the Echo challenge (GET /groups/:id/echo, totals only).
   const echo = useEchoChallenge(groupId, admin && tab === 'tricky');
+  const accent = useAccent();
   const sprint = useTriggerSprint(groupId);
   const rain = useGroupRainDay(groupId, admin && tab === 'tricky');
   const updateRole = useUpdateMemberRole(groupId);
@@ -141,7 +143,7 @@ export function TendGardenLive({ groupId, tab }: { groupId: string; tab: 'tricky
         echo: echo.data?.echo
           ? {
               word: echo.data.echo.word,
-              ipa: echo.data.echo.ipa_us ?? echo.data.echo.ipa_uk,
+              ipa: forAccent(echo.data.echo, accent).ipa,
               done: echo.data.echo.done_count,
               members: echo.data.echo.member_count,
               href: GARDEN_ROUTES.speak({

@@ -8,6 +8,7 @@ import { useSpeakingHarvest } from '@/hooks/useSpeakingHarvest';
 import { useSpeakingSession } from '@/hooks/useSpeakingSession';
 import { useStudySession } from '@/hooks/useStudySession';
 import { useTopic } from '@/hooks/useTopic';
+import { useAccent } from '@/lib/accent';
 import { POND_SESSION_SIZE } from '@/lib/speaking/constants';
 import { toLocalDateString } from '@/lib/timezone';
 
@@ -65,6 +66,7 @@ export function TopicBedLive({ topicId }: { topicId: string }) {
   const [adding, setAdding] = useState(false);
   const speaking = useSpeakingSession(topicId);
   const harvests = useSpeakingHarvest(topicId);
+  const accent = useAccent();
   const saveToMyWords = useSaveToMyWords(topicId);
   const bedTitle = useBedTitle(topicId, topic.data?.title ?? '');
   const addWordBeds = useAddWordBeds(topicId, bedTitle, t('addSheet.myWords'));
@@ -93,6 +95,7 @@ export function TopicBedLive({ topicId }: { topicId: string }) {
     toLocalDateString(new Date()),
     (id) => GARDEN_ROUTES.pronounce({ words: [id], topic: topicId, back: bedHref }),
     (ids) => GARDEN_ROUTES.pronounce({ words: ids, topic: topicId, back: bedHref }),
+    accent,
   );
 
   return (

@@ -6,7 +6,9 @@ import { GeminiEnrichmentService } from '../ai/gemini-enrichment.service';
 import {
   GoogleWordTtsService,
   WORD_SPEAKING_RATE,
-  WORD_VOICE,
+  WORD_VOICES,
+  WordAccent,
+  ipaForAccent,
   ipaForPhoneme,
 } from '../ai/google-word-tts.service';
 import { UsageCapExceededError } from '../ai/usage-cap.service';
@@ -25,6 +27,7 @@ import { StorageService } from '../storage/storage.service';
 interface MasterLexiconRow {
   id: string;
   audio_url?: string | null;
+  audio_url_uk?: string | null;
   ipa_us?: string | null;
   ipa_uk?: string | null;
 }
@@ -39,6 +42,12 @@ export const PLACEHOLDER_AUDIO_PREFIX = 'https://cdn.dygo.academy/';
 export function isMissingAudio(url: string | null | undefined): boolean {
   return !url || url.startsWith(PLACEHOLDER_AUDIO_PREFIX);
 }
+
+/** The master_lexicon column holding each accent's clip (20261025_word_audio_uk.sql). */
+const AUDIO_COLUMN: Record<WordAccent, 'audio_url' | 'audio_url_uk'> = {
+  US: 'audio_url',
+  UK: 'audio_url_uk',
+};
 
 /**
  * Gemini + TTS enrichment pipeline (Phase 1, Module 2).
@@ -114,7 +123,7 @@ export class EnrichmentProcessor extends WorkerHost {
       // Step 1 — global lexical deduplication (FR-2.2). Checked BEFORE any
       // paid API call; this is what cuts AI cost by ~90%.
       const [cached] = await this.db.queryAsService<MasterLexiconRow>(
-        `select id, audio_url from public.master_lexicon
+        `select id, audio_url, audio_url_uk from public.master_lexicon
           where normalized_word = $1 and language_code = $2`,
         [normalizedWord, languageCode],
       );
@@ -125,8 +134,8 @@ export class EnrichmentProcessor extends WorkerHost {
 
       if (cached) {
         this.logger.log(`cache hit for "${word}" — no text AI call made`);
-        if (isMissingAudio(cached.audio_url)) {
-          // A cached word with no (or placeholder) audio: fill it in now.
+        if (this.accentsMissing(cached).length > 0) {
+          // A cached word with no (or placeholder) audio in an accent: fill it in now.
           // Non-fatal here — the text fields are what make the word READY.
           await this.ensureAudio(cached.id, normalizedWord, languageCode).catch((err) =>
             this.logger.warn(
@@ -185,24 +194,27 @@ export class EnrichmentProcessor extends WorkerHost {
   ): Promise<string> {
     const entry = await this.gemini.enrichWord(normalizedWord, languageCode, targetCEFR);
 
-    let audioUrl: string | null = null;
-    try {
-      audioUrl = await this.resolveAudioUrl(
-        normalizedWord,
-        languageCode,
-        entry.ipa_us ?? entry.ipa_uk,
-      );
-    } catch (err) {
-      // Audio is a nice-to-have on top of the text fields, not the field
-      // that gates READY (topic_words_ready_requires_lexicon only requires a
-      // lexicon_id). A TTS/storage hiccup shouldn't fail the whole word when
-      // Gemini's text extraction already succeeded — the row can be
-      // re-synthesised later without redoing the text call.
-      this.logger.warn(
-        `TTS/upload failed for "${normalizedWord}", continuing without audio: ${
-          err instanceof Error ? err.message : err
-        }`,
-      );
+    // Audio is a nice-to-have on top of the text fields, not the field
+    // that gates READY (topic_words_ready_requires_lexicon only requires a
+    // lexicon_id). A TTS/storage hiccup shouldn't fail the whole word when
+    // Gemini's text extraction already succeeded — the row can be
+    // re-synthesised later without redoing the text call.
+    const audio: Record<WordAccent, string | null> = { US: null, UK: null };
+    for (const accent of this.accentsMade()) {
+      try {
+        audio[accent] = await this.resolveAudioUrl(
+          normalizedWord,
+          languageCode,
+          ipaForAccent(entry, accent),
+          accent,
+        );
+      } catch (err) {
+        this.logger.warn(
+          `${accent} TTS/upload failed for "${normalizedWord}", continuing without it: ${
+            err instanceof Error ? err.message : err
+          }`,
+        );
+      }
     }
 
     // ON CONFLICT: two topic_words for the same word/language can race into
@@ -213,8 +225,8 @@ export class EnrichmentProcessor extends WorkerHost {
       `insert into public.master_lexicon
          (normalized_word, language_code, part_of_speech, ipa_us, ipa_uk,
           cefr_level, definition_en, audio_url, synonyms, antonyms,
-          example_sentences, enriched_at)
-       values ($1, $2, $3, $4, $5, $6, $7, $8, $9::jsonb, $10::jsonb, $11::jsonb, now())
+          example_sentences, enriched_at, audio_url_uk)
+       values ($1, $2, $3, $4, $5, $6, $7, $8, $9::jsonb, $10::jsonb, $11::jsonb, now(), $12)
        on conflict (normalized_word, language_code) do update
          set audio_url = case
                when public.master_lexicon.audio_url is null
@@ -222,6 +234,7 @@ export class EnrichmentProcessor extends WorkerHost {
                then excluded.audio_url
                else public.master_lexicon.audio_url
              end,
+             audio_url_uk = coalesce(public.master_lexicon.audio_url_uk, excluded.audio_url_uk),
              updated_at = now()
        returning id`,
       [
@@ -232,10 +245,11 @@ export class EnrichmentProcessor extends WorkerHost {
         entry.ipa_uk,
         entry.cefr_level,
         entry.definition_en,
-        audioUrl,
+        audio.US,
         JSON.stringify(entry.synonyms ?? []),
         JSON.stringify(entry.antonyms ?? []),
         JSON.stringify(entry.example_sentences ?? []),
+        audio.UK,
       ],
     );
 
@@ -287,32 +301,47 @@ export class EnrichmentProcessor extends WorkerHost {
   }
 
   /**
-   * Audio for a word, cheapest source first: the object key is deterministic,
-   * so audio made before a database reset is still in storage and is reused
-   * for free (the .m4a, or an older .wav). Only a word that never had audio
-   * costs a TTS call. New clips come from Google TTS said from the IPA (the
-   * sentence voice, keyed by voice + IPA + word); Gemini TTS, keyed by
-   * md5(word), only when Google isn't configured or fails. Stored as AAC
-   * .m4a (~6× smaller, what the URL points at) plus the WAV at the same key
-   * (KEEP_WAV_COPY); WAV only if ffmpeg is missing. Throws on TTS/storage
-   * failure; callers decide if that's fatal.
+   * The accents a clip is made in. The UK clip needs Google TTS (Gemini's
+   * voice has no accent to choose), so without a key only the US one.
+   */
+  private accentsMade(): WordAccent[] {
+    return this.wordTts.isConfigured() ? ['US', 'UK'] : ['US'];
+  }
+
+  private accentsMissing(row: MasterLexiconRow): WordAccent[] {
+    return this.accentsMade().filter((accent) => isMissingAudio(row[AUDIO_COLUMN[accent]]));
+  }
+
+  /**
+   * Audio for a word in an accent, cheapest source first: the object key is
+   * deterministic, so audio made before a database reset is still in storage
+   * and is reused for free (the .m4a, or an older .wav). Only a word that
+   * never had audio costs a TTS call. New clips come from Google TTS said
+   * from the IPA in the accent's sentence voice (keyed by accent + voice +
+   * IPA + word); for US only, Gemini TTS, keyed by md5(word), when Google
+   * isn't configured or fails. Stored as AAC .m4a (~6× smaller, what the URL
+   * points at) plus the WAV at the same key (KEEP_WAV_COPY); WAV only if
+   * ffmpeg is missing. Throws on TTS/storage failure; callers decide if
+   * that's fatal.
    */
   private async resolveAudioUrl(
     normalizedWord: string,
     languageCode: string,
     ipa: string | null | undefined,
+    accent: WordAccent = 'US',
   ): Promise<string> {
     if (this.wordTts.isConfigured()) {
-      const madeFrom = `${WORD_VOICE}@${WORD_SPEAKING_RATE}|${ipaForPhoneme(ipa) ?? ''}`;
+      const madeFrom = `${WORD_VOICES[accent]}@${WORD_SPEAKING_RATE}|${ipaForPhoneme(ipa, accent) ?? ''}`;
       const keyFor = (ext: 'm4a' | 'wav') =>
-        StorageService.audioKeyFor(normalizedWord, languageCode, ext, madeFrom);
+        StorageService.audioKeyFor(normalizedWord, languageCode, ext, madeFrom, accent);
       const reused = await this.existingAudio(normalizedWord, keyFor);
       if (reused) return reused;
       try {
-        const wav = await this.wordTts.synthesizeWord(normalizedWord, ipa);
+        const wav = await this.wordTts.synthesizeWord(normalizedWord, ipa, accent);
         return await this.storeAudio(normalizedWord, wav, keyFor);
       } catch (err) {
-        if (err instanceof UsageCapExceededError) throw err;
+        // Gemini's voice is American: a UK clip from it would be the wrong accent.
+        if (err instanceof UsageCapExceededError || accent === 'UK') throw err;
         this.logger.warn(
           `Google TTS failed for "${normalizedWord}", using Gemini TTS: ${
             err instanceof Error ? err.message : err
@@ -320,6 +349,7 @@ export class EnrichmentProcessor extends WorkerHost {
         );
       }
     }
+    if (accent === 'UK') throw new Error('UK word audio needs GOOGLE_TTS_API_KEY.');
     const keyFor = (ext: 'm4a' | 'wav') =>
       StorageService.audioKeyFor(normalizedWord, languageCode, ext);
     const reused = await this.existingAudio(normalizedWord, keyFor);
@@ -364,11 +394,14 @@ export class EnrichmentProcessor extends WorkerHost {
   }
 
   /**
-   * Gives an existing master_lexicon row real audio if it has none (or only
-   * a placeholder link). Re-checks the row first, so a duplicate or stale
+   * Gives an existing master_lexicon row real audio in each accent it has
+   * none in (or only a placeholder link): `audio_url` (US), then
+   * `audio_url_uk` (UK). Re-checks the row first, so a duplicate or stale
    * job is a cheap no-op, and only overwrites a missing/placeholder value.
-   * `remake` (audio-backfill --word) replaces the clip a word already has,
-   * e.g. one that says the word wrong.
+   * `remake` (audio-backfill --word / --all / --library) replaces both
+   * accents' clips, e.g. one that says the word wrong; one that comes out the
+   * same is left alone. Throws on the first failure, after writing the
+   * accents done so far, so a BullMQ retry only redoes what is missing.
    */
   private async ensureAudio(
     lexiconId: string,
@@ -377,34 +410,40 @@ export class EnrichmentProcessor extends WorkerHost {
     remake = false,
   ): Promise<void> {
     const [row] = await this.db.queryAsService<MasterLexiconRow>(
-      `select id, audio_url, ipa_us, ipa_uk from public.master_lexicon where id = $1`,
+      `select id, audio_url, audio_url_uk, ipa_us, ipa_uk from public.master_lexicon where id = $1`,
       [lexiconId],
     );
     if (!row) {
       this.logger.warn(`audio backfill: lexicon row ${lexiconId} no longer exists, skipping`);
       return;
     }
-    if (!remake && !isMissingAudio(row.audio_url)) return;
+    const accents = remake ? this.accentsMade() : this.accentsMissing(row);
 
-    const audioUrl = await this.resolveAudioUrl(
-      normalizedWord,
-      languageCode,
-      row.ipa_us ?? row.ipa_uk,
-    );
-    if (remake && audioUrl === row.audio_url) {
-      this.logger.warn(`remake of "${normalizedWord}" made the same clip; nothing changed`);
-      return;
+    for (const accent of accents) {
+      const column = AUDIO_COLUMN[accent];
+      const audioUrl = await this.resolveAudioUrl(
+        normalizedWord,
+        languageCode,
+        ipaForAccent(row, accent),
+        accent,
+      );
+      if (remake && audioUrl === row[column]) {
+        this.logger.warn(
+          `remake of "${normalizedWord}" (${accent}) made the same clip; nothing changed`,
+        );
+        continue;
+      }
+      // A remake replaces whatever is there; a fill-in only a missing/placeholder value.
+      const onlyIfMissing = remake
+        ? ''
+        : `and (${column} is null or ${column} like '${PLACEHOLDER_AUDIO_PREFIX}%')`;
+      await this.db.queryAsService(
+        `update public.master_lexicon
+            set ${column} = $2, updated_at = now()
+          where id = $1 ${onlyIfMissing}`,
+        [lexiconId, audioUrl],
+      );
+      this.logger.log(`${accent} audio ready for "${normalizedWord}"`);
     }
-    // A remake replaces whatever is there; a fill-in only a missing/placeholder value.
-    const onlyIfMissing = remake
-      ? ''
-      : `and (audio_url is null or audio_url like '${PLACEHOLDER_AUDIO_PREFIX}%')`;
-    await this.db.queryAsService(
-      `update public.master_lexicon
-          set audio_url = $2, updated_at = now()
-        where id = $1 ${onlyIfMissing}`,
-      [lexiconId, audioUrl],
-    );
-    this.logger.log(`audio ready for "${normalizedWord}"`);
   }
 }

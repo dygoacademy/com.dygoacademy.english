@@ -4,6 +4,7 @@ import * as React from 'react';
 import { useTranslations } from 'next-intl';
 
 import { useWordLookup } from '@/hooks/useWordLookup';
+import { forAccent, useAccent } from '@/lib/accent';
 
 import { AudioButton } from './AudioButton';
 import { BottomSheet } from './BottomSheet';
@@ -114,6 +115,7 @@ export function AddWordSheet({
     open ? initialWord : undefined,
   );
   const lookup = useWordLookup(planted ? '' : form.word);
+  const accent = useAccent();
 
   const { setWord } = form;
   React.useEffect(() => {
@@ -138,7 +140,8 @@ export function AddWordSheet({
   const typed = form.word.trim();
   const preview = typed && lookup.settled ? lookup.data : undefined;
   const alreadyHere = Boolean(bed.id && preview?.in_topic_ids.includes(bed.id));
-  const ipa = preview?.found ? (preview.ipa_us ?? preview.ipa_uk) : null;
+  const said = preview?.found ? forAccent(preview, accent) : null;
+  const ipa = said?.ipa ?? null;
   const partOfSpeech = preview?.part_of_speech ? partOfSpeechLabel(preview.part_of_speech, pos) : null;
   // A translated meaning shows the English definition under it (VI board).
   const translated = Boolean(
@@ -243,8 +246,8 @@ export function AddWordSheet({
                     {preview.cefr_level}
                   </span>
                 ) : null}
-                {preview?.audio_url ? (
-                  <AudioButton src={preview.audio_url} playClassName="h-11 w-11 [&_svg]:h-5 [&_svg]:w-5" />
+                {said?.audioSrc ? (
+                  <AudioButton src={said.audioSrc} playClassName="h-11 w-11 [&_svg]:h-5 [&_svg]:w-5" />
                 ) : null}
               </div>
               {!preview ? (

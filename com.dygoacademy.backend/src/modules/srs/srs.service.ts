@@ -46,6 +46,8 @@ export interface DueCard {
   ipa_uk: string | null;
   definition_en: string | null;
   audio_url: string | null;
+  /** The UK clip; null until made, then play audio_url. */
+  audio_url_uk: string | null;
   synonyms: unknown;
   antonyms: unknown;
   example_sentences: unknown;
@@ -276,6 +278,7 @@ const DUE_CARD_COLUMNS = `
   ml.ipa_uk,
   ml.definition_en,
   ml.audio_url,
+  ml.audio_url_uk,
   ml.synonyms,
   ml.antonyms,
   ml.example_sentences,

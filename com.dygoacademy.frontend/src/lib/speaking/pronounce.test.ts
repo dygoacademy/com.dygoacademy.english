@@ -174,6 +174,14 @@ describe('native audio', () => {
     expect(nativeWord(ITEM, 'UK')).toEqual({ src: 'uk.m4a', span: { start: 0.5, end: 1.1 }, madeAt: 1 });
   });
 
+  it("plays the accent's own word clip, else the other accent's", () => {
+    const both = { ...ITEM, word_audio_url: 'us.mp3', word_audio_url_uk: 'uk.mp3' };
+    expect(nativeWord(both, 'UK')).toEqual({ src: 'uk.mp3' });
+    expect(nativeWord(both, 'US')).toEqual({ src: 'us.mp3' });
+    expect(nativeWord({ ...both, word_audio_url_uk: null }, 'UK')).toEqual({ src: 'us.mp3' });
+    expect(nativeWord({ ...both, word_audio_url: null }, 'US')).toEqual({ src: 'uk.mp3' });
+  });
+
   it('plays one syllable from the timings, else the whole word', () => {
     expect(nativeSyllable(ITEM, 'UK', 1)).toEqual({ src: 'uk.m4a', span: { start: 0.7, end: 0.85 }, madeAt: 1 });
     expect(nativeSyllable(ITEM, 'UK', 5)).toEqual({ src: 'uk.m4a', span: { start: 0.5, end: 1.1 }, madeAt: 1 });

@@ -16,6 +16,8 @@ export interface QuizItem {
   topicId: string;
   prompt: string;
   audioUrl?: string | null;
+  /** DICTATION's UK clip (null until made); play the profile accent's. */
+  audioUrlUk?: string | null;
   /** Only present for CHOICE-mode items (MATCHING, CONTEXTUAL_CHOICE). */
   options?: string[];
   answerMode: 'TEXT' | 'CHOICE';
@@ -35,6 +37,8 @@ export interface QuizAnswerResult {
    */
   word: string;
   ipaUs: string | null;
+  /** Since 2026-10-25; show the profile accent's (lib/accent.ts). */
+  ipaUk: string | null;
   /**
    * The word's first example sentence, unmasked -- live-requested
    * 2026-09-18 ("Any information we can give to the student in correct
@@ -65,5 +69,6 @@ export interface QuizAnswerResult {
 /** `GET /api/v1/quizzes/:id/hint` response — QuizService.hint. */
 export interface QuizHint {
   ipaUs: string | null;
+  ipaUk: string | null;
   definition: string | null;
 }

@@ -42,6 +42,8 @@ export interface WordCard {
   ipa_uk: string | null;
   definition_en: string | null;
   audio_url: string | null;
+  /** The UK clip; null until made (play `audio_url`). Pick with lib/accent.ts `forAccent`. */
+  audio_url_uk: string | null;
   synonyms: LexiconRelatedWord[];
   antonyms: LexiconRelatedWord[];
   example_sentences: LexiconExampleSentence[];
@@ -60,6 +62,8 @@ export interface GuestWordCard {
   ipa_uk: string | null;
   definition_en: string | null;
   audio_url: string | null;
+  /** The UK clip; null until made (play `audio_url`). Pick with lib/accent.ts `forAccent`. */
+  audio_url_uk: string | null;
   synonyms: LexiconRelatedWord[];
   antonyms: LexiconRelatedWord[];
   example_sentences: LexiconExampleSentence[];
@@ -85,5 +89,7 @@ export interface WordLookup {
   /** The lexicon's first example sentence, if any (2026-10-17). */
   example: string | null;
   audio_url: string | null;
+  /** The UK clip; null until made (play `audio_url`). Pick with lib/accent.ts `forAccent`. */
+  audio_url_uk: string | null;
   in_topic_ids: string[];
 }

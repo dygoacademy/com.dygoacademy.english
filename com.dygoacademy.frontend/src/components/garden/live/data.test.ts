@@ -708,6 +708,12 @@ describe('beesCard (A7 Bees are waiting)', () => {
     expect(card.sayAllHref).toBe('/sounds/word?words=mitigate%2Cb&topic=t1&back=%2Ftopics%2Ft1');
   });
 
+  it("shows the profile accent's IPA when there are no syllables", () => {
+    const both = { ...waiting('a'), ipa_us: '/us/', syllables: [] };
+    expect(beesCard([word('a', 'flower')], [both], today, href, sayAll, 'US')!.words[0].sound).toBe('/us/');
+    expect(beesCard([word('a', 'flower')], [both], today, href, sayAll, 'UK')!.words[0].sound).toBe('/a/');
+  });
+
   it('is null with no data or nothing to show', () => {
     expect(beesCard([word('a', 'flower')], undefined, today, href, sayAll)).toBeNull();
     expect(beesCard([word('c', 'sprout')], [waiting('c')], today, href, sayAll)).toBeNull();

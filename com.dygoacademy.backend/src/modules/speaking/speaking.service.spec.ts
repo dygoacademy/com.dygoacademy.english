@@ -302,6 +302,7 @@ describe('SpeakingService.harvest (SE5)', () => {
         ipa_uk: '/ˈmɪt.ɪ.ɡeɪt/',
         ipa_us: null,
         word: 'mitigate',
+        english_variety: 'en-GB',
       },
     ]);
     const service = await makeService({ queryAs });
@@ -315,6 +316,7 @@ describe('SpeakingService.harvest (SE5)', () => {
         harvested_score: 94,
         harvested_at: 'now',
         ipa_uk: '/ˈmɪt.ɪ.ɡeɪt/',
+        ipa_us: null,
         syllables: [
           { text: 'mi', stressed: true },
           { text: 'ti', stressed: false },

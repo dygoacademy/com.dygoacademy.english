@@ -6,6 +6,7 @@ import type {
   ActiveBed,
   BedState,
   DueCard,
+  SpeakingAccent,
   SpeakingHarvestWord,
   SrsStageCounts,
   SrsStats,
@@ -16,6 +17,7 @@ import type {
 } from '@/types';
 import { GARDEN_ROUTES } from '@/constants/garden';
 import { languageOf } from '@/i18n/config';
+import { forAccent } from '@/lib/accent';
 import { findMatch } from '@/lib/search/fold';
 import { stoneText } from '@/lib/speaking/ipa';
 import type { MissionDay, TodayMissions, WeeklyMissions } from '@/hooks/useMissions';
@@ -944,8 +946,9 @@ export const BEE_LIMIT = 3;
  * first. Pollinated = harvested today (local date), shown until tomorrow;
  * older harvests drop off. Rows keep the API's order so a word doesn't
  * jump when it's pollinated. `sound` is the word's syllables with the
- * stressed one in capitals (MI · ti · gate), else its UK IPA. Null when
- * there's nothing to show.
+ * stressed one in capitals (MI · ti · gate; the server splits them in the
+ * profile accent), else the IPA in `accent`. Null when there's nothing to
+ * show.
  *
  * The garden-wide cap (3 bees across all beds, 1–2 new a day, a bee
  * leaves after 3 days) needs backend state: v2.
@@ -956,6 +959,7 @@ export function beesCard(
   today: string,
   hrefFor: (topicWordId: string) => string,
   sayAllHrefFor: (topicWordIds: string[]) => string,
+  accent: SpeakingAccent = 'US',
 ): { waiting: number; sayAllHref: string | null; words: BeeWord[] } | null {
   if (!harvests) return null;
   const byId = new Map(words.map((w) => [w.id, w]));
@@ -969,7 +973,7 @@ export function beesCard(
       word: word.word,
       sound: h.syllables?.length
         ? h.syllables.map(stoneText).join(' · ')
-        : (h.ipa_uk ?? null),
+        : forAccent(h, accent).ipa,
       href: hrefFor(word.id),
     };
     if (h.harvested_score === null) {

@@ -10,6 +10,7 @@ import { useRateWord } from '@/hooks/useRateWord';
 import { useStudySession } from '@/hooks/useStudySession';
 import { useTopics } from '@/hooks/useTopics';
 import { languageOf } from '@/i18n/config';
+import { forAccent, useAccent } from '@/lib/accent';
 import { prefetchMedia } from '@/lib/media-cache';
 import type { DueCard, RatingInterval, SrsRating } from '@/types';
 
@@ -85,6 +86,8 @@ export function ReviewLive({
   const [revealed, setRevealed] = React.useState(false);
   const [ratings, setRatings] = React.useState<Array<{ word: string; rating: Rating }>>([]);
   const startedAt = React.useRef<number>(0);
+  // The profile's English (Me → English) picks each card's IPA and clip.
+  const accent = useAccent();
 
   if (cards === null && session.data) {
     // A planting session shows new words only, whatever the server sends;
@@ -98,8 +101,8 @@ export function ReviewLive({
   // Warm the phone's media cache with the next few cards' audio, so the
   // speaker button plays at once on slow networks (option 2, lib/media-cache).
   React.useEffect(() => {
-    if (cards) void prefetchMedia(cards.slice(index, index + 3).map((c) => c.audio_url));
-  }, [cards, index]);
+    if (cards) void prefetchMedia(cards.slice(index, index + 3).map((c) => forAccent(c, accent).audioSrc));
+  }, [cards, index, accent]);
 
   if (cards === null) {
     if (session.isError) return <LiveError onRetry={() => void session.refetch()} />;
@@ -144,8 +147,7 @@ export function ReviewLive({
           card
             ? {
                 word: card.source_word,
-                ipa: card.ipa_us ?? card.ipa_uk,
-                audioSrc: card.audio_url,
+                ...forAccent(card, accent),
                 level: null,
                 topic: topicTitle ?? null,
                 partOfSpeech: card.part_of_speech,

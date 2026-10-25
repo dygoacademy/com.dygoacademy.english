@@ -26,7 +26,9 @@ interface QuizWordRow {
   topic_id: string;
   source_word: string;
   audio_url: string | null;
+  audio_url_uk: string | null;
   ipa_us: string | null;
+  ipa_uk: string | null;
   definition_en: string | null;
   synonyms: Array<{ word: string; level: string }> | null;
   antonyms: Array<{ word: string; level: string }> | null;
@@ -48,11 +50,12 @@ export interface AnswerResult {
    * answer -- only a wrong one got that context, via nuanceExplanation.
    * `word`/`ipaUs` come straight from the same `WORD_COLUMNS` row this
    * method already queries below to grade the answer, so this is free --
-   * no extra query. `ipaUs` (not `ipaUk` too) mirrors `QuizHint`'s own
-   * existing choice just below.
+   * no extra query. `ipaUk` too since 2026-10-25, like `QuizHint`: the
+   * app shows the profile accent's.
    */
   word: string;
   ipaUs: string | null;
+  ipaUk: string | null;
   /**
    * The word's first example sentence, unmasked (CLOZE/CONTEXTUAL_CHOICE
    * show this same sentence as the *prompt*, word blanked out -- this is
@@ -97,7 +100,9 @@ const WORD_COLUMNS = `
   tw.topic_id,
   tw.source_word,
   ml.audio_url,
+  ml.audio_url_uk,
   ml.ipa_us,
+  ml.ipa_uk,
   ml.definition_en,
   ml.synonyms,
   ml.antonyms,
@@ -110,7 +115,9 @@ function mapRow(row: QuizWordRow): QuizSourceWord {
     topicId: row.topic_id,
     sourceWord: row.source_word,
     audioUrl: row.audio_url,
+    audioUrlUk: row.audio_url_uk,
     ipaUs: row.ipa_us,
+    ipaUk: row.ipa_uk,
     definition: row.definition_en,
     synonyms: row.synonyms ?? [],
     antonyms: row.antonyms ?? [],
@@ -288,6 +295,7 @@ export class QuizService {
       correctAnswer: derived.answer,
       word: word.sourceWord,
       ipaUs: word.ipaUs,
+      ipaUk: word.ipaUk,
       exampleSentence: word.exampleSentences[0]?.sentence,
       hintUsed: dto.hintUsed ?? false,
     };

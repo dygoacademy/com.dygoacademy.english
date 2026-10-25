@@ -255,6 +255,17 @@ Conflating them is how a roadmap quietly turns into a status report.
 
 ## 2. Live today
 
+> **2026-10-25 note — word audio in the profile accent.** Every response that
+> carries a word's `audio_url` (the US clip) now also carries `audio_url_uk`
+> (the UK clip, null until made): `GET /words/:id`, `/words/guest-lookup`,
+> `/words/lookup`, the SRS study/due cards, `GET /beds/seed-drops/*` seeds.
+> The Pond items add `word_audio_url_uk` next to `word_audio_url`. Quizzes
+> keep their camelCase: DICTATION items add `audioUrlUk`, and the answer
+> result and hint add `ipaUk` next to `ipaUs`. `GET /speaking/harvest` rows
+> add `ipa_us`, and their `syllables` follow the profile accent. The app
+> picks by `profiles.english_variety` (`en-GB` → UK, else US), falling back
+> to the other accent (`lib/accent.ts`).
+
 > **2026-10-02 note (Phase 12 UI-8) — no API route changes; the frontend
 > callers moved.** The classic UI is deleted, so every route below is called
 > from the garden screens at their final URLs: groups from `/groups/**`,

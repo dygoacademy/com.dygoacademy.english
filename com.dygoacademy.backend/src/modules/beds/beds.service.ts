@@ -84,6 +84,8 @@ export interface SeedDrop {
     /** English definition; null while the seed is still enriching. */
     meaning: string | null;
     audio_url: string | null;
+    /** The UK clip; null until made, then play audio_url. */
+    audio_url_uk: string | null;
   }>;
 }
 
@@ -99,7 +101,8 @@ const DROP_HEAD = `
 // enrichment job hasn't linked it yet.
 const DROP_SEEDS = `
   select sd.topic_word_id, s.source_word as word, sd.kind,
-         ml.part_of_speech, ml.definition_en as meaning, ml.audio_url
+         ml.part_of_speech, ml.definition_en as meaning, ml.audio_url,
+         ml.audio_url_uk
     from public.seed_drops sd
     join public.topic_words s on s.id = sd.topic_word_id
     left join public.master_lexicon ml

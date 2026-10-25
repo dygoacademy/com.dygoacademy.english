@@ -14,10 +14,10 @@ import { useLeechDrillQuiz } from '@/hooks/useLeechDrillQuiz';
 import { useQuizHint } from '@/hooks/useQuizHint';
 import { useSubmitQuizAnswer } from '@/hooks/useSubmitQuizAnswer';
 import { useTopics } from '@/hooks/useTopics';
-import { formatIpa } from '@/lib/utils';
+import { forAccent, useAccent } from '@/lib/accent';
 import type { QuizAnswerResult, QuizItem } from '@/types';
 
-import { toFeedback } from './feedback';
+import { quizIpa, toFeedback } from './feedback';
 import { addMissed, type MissedWord } from './results';
 
 /**
@@ -59,6 +59,7 @@ export function QuizLive({
   const topics = useTopics();
   const submit = useSubmitQuizAnswer();
   const hint = useQuizHint();
+  const accent = useAccent();
 
   const [items, setItems] = React.useState<QuizItem[] | null>(null);
   const [index, setIndex] = React.useState(0);
@@ -114,7 +115,7 @@ export function QuizLive({
   const hintState = hint.data
     ? {
         status: 'shown' as const,
-        ipa: formatIpa(hint.data.ipaUs) || null,
+        ipa: quizIpa(hint.data, accent) || null,
         definition: hint.data.definition,
       }
     : { status: hint.isPending ? ('loading' as const) : ('idle' as const) };
@@ -154,8 +155,13 @@ export function QuizLive({
       index={index}
       total={items.length}
       closeHref={closeHref}
-      question={item}
-      feedback={result ? toFeedback(result) : null}
+      question={{
+        ...item,
+        // DICTATION plays the profile accent's clip.
+        audioUrl: forAccent({ audio_url: item.audioUrl, audio_url_uk: item.audioUrlUk }, accent)
+          .audioSrc,
+      }}
+      feedback={result ? toFeedback(result, accent) : null}
       hint={hintState}
       onHint={() => hint.mutate(item.id)}
       onSubmit={handleSubmit}

@@ -35,7 +35,7 @@ interface ItemRow extends Omit<SpeakingSessionItem, 'audio_uk_url' | 'audio_us_u
 const ITEM_COLUMNS = `
   si.id, si.lexicon_id, w.topic_word_id, ml.normalized_word as word, ml.part_of_speech,
   ml.cefr_level::text as cefr_level, ml.ipa_uk, ml.ipa_us, ml.definition_en,
-  ml.audio_url as word_audio_url,
+  ml.audio_url as word_audio_url, ml.audio_url_uk as word_audio_url_uk,
   wt.locale as meaning_locale, wt.meaning as meaning_translation,
   si.sentence, si.target_index,
   si.audio_uk_path, si.audio_us_path, si.timings_uk, si.timings_us,
@@ -262,20 +262,22 @@ export class SpeakingService {
   /**
    * SE5 "Ready to harvest" (A7 "Bees are waiting" since 2026-10-11): the
    * bed's words that have a speaking item, oldest planted first, with
-   * whether (and how well) the learner harvested each and the UK IPA for
-   * the bee row. The app picks the ripe (Flower) ones from the bed's own
+   * whether (and how well) the learner harvested each, both IPAs and the
+   * syllables in the profile accent for the bee row. The app picks the ripe (Flower) ones from the bed's own
    * stages. RLS scopes topic_words
    * and speaking_harvests to the learner.
    */
   async harvest(userId: string, topicId: string): Promise<SpeakingHarvestWord[]> {
     if (!UUID_SHAPE.test(topicId)) throw new NotFoundException('Topic not found');
     const rows = await this.db.queryAs<
-      Omit<SpeakingHarvestWord, 'syllables'> & { word: string; ipa_us: string | null }
+      Omit<SpeakingHarvestWord, 'syllables'> & { word: string; english_variety: string | null }
     >(
       userId,
       `select tw.id as topic_word_id, si.id as item_id,
               h.score as harvested_score, h.created_at as harvested_at, ml.ipa_uk,
-              ml.normalized_word as word, ml.ipa_us
+              ml.normalized_word as word, ml.ipa_us,
+              (select p.english_variety from public.profiles p where p.id = auth.uid())
+                as english_variety
          from public.topic_words tw
          join public.speaking_items si on si.lexicon_id = tw.lexicon_id
          join public.master_lexicon ml on ml.id = tw.lexicon_id
@@ -285,9 +287,12 @@ export class SpeakingService {
         order by tw.created_at, tw.id`,
       [topicId],
     );
-    return rows.map(({ word, ipa_us, ...row }) => ({
+    return rows.map(({ word, english_variety, ...row }) => ({
       ...row,
-      syllables: wordSyllables(word, row.ipa_uk ?? ipa_us),
+      syllables: wordSyllables(
+        word,
+        english_variety === 'en-GB' ? (row.ipa_uk ?? row.ipa_us) : (row.ipa_us ?? row.ipa_uk),
+      ),
     }));
   }
 

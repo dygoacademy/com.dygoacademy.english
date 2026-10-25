@@ -401,23 +401,118 @@ describe('EnrichmentProcessor', () => {
 
     await processor.process(makeJob());
 
-    expect(synthesizeWordMock).toHaveBeenCalledWith('ephemeral', '/ɪˈfem.ər.əl/');
+    expect(synthesizeWordMock).toHaveBeenCalledWith('ephemeral', '/ɪˈfem.ər.əl/', 'US');
     expect(synthesizeSpeechMock).not.toHaveBeenCalled();
     const key = uploadMock.mock.calls[0][0] as string;
     expect(key).toMatch(/^audio\/en\/us\/[0-9a-f]{32}\.m4a$/);
     expect(key).not.toBe(StorageService.audioKeyFor('ephemeral', 'en'));
   });
 
-  it('Google TTS failure falls back to Gemini TTS', async () => {
+  it('cache miss with Google TTS: also makes the UK clip from ipa_uk, stored under uk/', async () => {
     googleConfigured = true;
-    synthesizeWordMock.mockRejectedValue(new Error('Google TTS 500'));
-    queryMock.mockResolvedValueOnce([{ id: 'lex-9', audio_url: null, ipa_us: '/ˈpə.laɪt/' }]);
+    enrichWordMock.mockResolvedValue({ ...entry, ipa_us: '/ˈwɔː.t̬ɚ/', ipa_uk: '/ˈwɔː.tə/' });
+    uploadMock.mockImplementation((key: string) => Promise.resolve(`https://audio.example/${key}`));
+    queryMock.mockResolvedValueOnce([]); // dedup lookup — miss
+    queryMock.mockResolvedValueOnce([{ id: 'lex-2' }]); // master_lexicon upsert
+    queryMock.mockResolvedValueOnce([]); // word_translations upsert
+    queryMock.mockResolvedValueOnce([]); // topic_words update
+
+    await processor.process(makeJob({ word: 'water' }));
+
+    expect(synthesizeWordMock).toHaveBeenCalledWith('water', '/ˈwɔː.t̬ɚ/', 'US');
+    expect(synthesizeWordMock).toHaveBeenCalledWith('water', '/ˈwɔː.tə/', 'UK');
+    const [sql, params] = queryMock.mock.calls[1];
+    expect(sql).toMatch(/audio_url_uk/);
+    expect(params[7]).toMatch(/^https:\/\/audio\.example\/audio\/en\/us\/[0-9a-f]{32}\.m4a$/);
+    expect(params[11]).toMatch(/^https:\/\/audio\.example\/audio\/en\/uk\/[0-9a-f]{32}\.m4a$/);
+  });
+
+  it('cache miss with Google TTS: a UK failure keeps the US clip and leaves audio_url_uk null', async () => {
+    googleConfigured = true;
+    synthesizeWordMock.mockImplementation((_w: string, _ipa: string, accent: string) =>
+      accent === 'UK'
+        ? Promise.reject(new Error('Google TTS 500'))
+        : Promise.resolve(Buffer.from('w')),
+    );
+    queryMock.mockResolvedValueOnce([]);
+    queryMock.mockResolvedValueOnce([{ id: 'lex-2' }]);
+    queryMock.mockResolvedValueOnce([]);
+    queryMock.mockResolvedValueOnce([]);
+
+    await processor.process(makeJob());
+
+    const params = queryMock.mock.calls[1][1];
+    expect(params[7]).not.toBeNull();
+    expect(params[11]).toBeNull();
+    expect(synthesizeSpeechMock).not.toHaveBeenCalled(); // no Gemini (American) stand-in for UK
+  });
+
+  it('cache hit missing only the UK clip fills in audio_url_uk alone', async () => {
+    googleConfigured = true;
+    const us = 'https://audio.example/audio/en/us/x.m4a';
+    queryMock.mockResolvedValueOnce([{ id: 'lex-1', audio_url: us, audio_url_uk: null }]);
+    queryMock.mockResolvedValueOnce([
+      { id: 'lex-1', audio_url: us, audio_url_uk: null, ipa_us: '/ɪˈfem.ɚ.əl/', ipa_uk: null },
+    ]);
+    queryMock.mockResolvedValueOnce([]); // audio_url_uk update
+    queryMock.mockResolvedValueOnce([]); // topic_words update
+
+    await processor.process(makeJob());
+
+    expect(synthesizeWordMock).toHaveBeenCalledTimes(1);
+    // No ipa_uk: falls back to the US IPA (ipaForPhoneme maps ɚ for the UK voice).
+    expect(synthesizeWordMock).toHaveBeenCalledWith('ephemeral', '/ɪˈfem.ɚ.əl/', 'UK');
+    expect(queryMock.mock.calls[2][0]).toMatch(/set audio_url_uk = \$2/);
+    expect(queryMock.mock.calls[2][0]).toMatch(/audio_url_uk is null/);
+    expect(queryMock.mock.calls[3][0]).toMatch(/update public\.topic_words/i);
+  });
+
+  it('without a Google key the UK clip is not attempted', async () => {
+    const us = 'https://audio.example/audio/en/us/x.m4a';
+    queryMock.mockResolvedValueOnce([{ id: 'lex-9', audio_url: us, audio_url_uk: null }]);
+
+    await processor.process(backfillJob());
+
+    expect(synthesizeSpeechMock).not.toHaveBeenCalled();
+    expect(queryMock).toHaveBeenCalledTimes(1);
+  });
+
+  it('Google TTS failure falls back to Gemini TTS for the US clip', async () => {
+    googleConfigured = true;
+    synthesizeWordMock.mockImplementation((_w: string, _ipa: string, accent: string) =>
+      accent === 'US'
+        ? Promise.reject(new Error('Google TTS 500'))
+        : Promise.resolve(Buffer.from('w')),
+    );
+    queryMock.mockResolvedValueOnce([
+      {
+        id: 'lex-9',
+        audio_url: null,
+        audio_url_uk: 'https://audio.example/uk.m4a',
+        ipa_us: '/ˈpə.laɪt/',
+      },
+    ]);
     queryMock.mockResolvedValueOnce([]);
 
     await processor.process(backfillJob());
 
     expect(synthesizeSpeechMock).toHaveBeenCalledWith('polite');
     expect(uploadMock.mock.calls[0][0]).toBe(StorageService.audioKeyFor('polite', 'en'));
+  });
+
+  it('a UK Google TTS failure rethrows (no Gemini stand-in) after the US clip is written', async () => {
+    googleConfigured = true;
+    synthesizeWordMock.mockImplementation((_w: string, _ipa: string, accent: string) =>
+      accent === 'UK'
+        ? Promise.reject(new Error('Google TTS 500'))
+        : Promise.resolve(Buffer.from('w')),
+    );
+    queryMock.mockResolvedValueOnce([{ id: 'lex-9', audio_url: null, audio_url_uk: null }]);
+    queryMock.mockResolvedValueOnce([]); // audio_url update
+
+    await expect(processor.process(backfillJob())).rejects.toThrow('Google TTS 500');
+    expect(synthesizeSpeechMock).not.toHaveBeenCalled();
+    expect(queryMock.mock.calls[1][0]).toMatch(/set audio_url = \$2/);
   });
 
   it('over the Google TTS cap: rethrows instead of spending Gemini calls', async () => {
@@ -441,13 +536,20 @@ describe('EnrichmentProcessor', () => {
     ]);
     queryMock.mockResolvedValueOnce([]);
 
+    queryMock.mockResolvedValueOnce([]);
+
     await processor.process(backfillJob({ word: 'counterfeit', remake: true }));
 
-    expect(synthesizeWordMock).toHaveBeenCalledWith('counterfeit', '/ˈkaʊn.tɚ.fɪt/');
+    expect(synthesizeWordMock).toHaveBeenCalledWith('counterfeit', '/ˈkaʊn.tɚ.fɪt/', 'US');
+    // No ipa_uk on the row: the UK clip is made from the US IPA.
+    expect(synthesizeWordMock).toHaveBeenCalledWith('counterfeit', '/ˈkaʊn.tɚ.fɪt/', 'UK');
     const [sql, params] = queryMock.mock.calls[1];
     expect(sql).not.toMatch(/audio_url is null/);
     expect(params[1]).toMatch(/^https:\/\/audio\.example\/audio\/en\/us\/[0-9a-f]{32}\.m4a$/);
     expect(params[1]).not.toBe('https://audio.example/audio/en/us/old.m4a');
+    const [ukSql, ukParams] = queryMock.mock.calls[2];
+    expect(ukSql).toMatch(/set audio_url_uk = \$2/);
+    expect(ukParams[1]).toMatch(/^https:\/\/audio\.example\/audio\/en\/uk\/[0-9a-f]{32}\.m4a$/);
   });
 
   it('remake that comes out as the same clip leaves the row alone', async () => {

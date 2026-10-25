@@ -7,7 +7,7 @@ export const SPEECH_CHECK_QUEUE = 'speech-check-queue';
 
 /** Job names. */
 export const ENRICH_WORD_JOB = 'enrich-word';
-/** Fill in master_lexicon.audio_url for a word that already has its text fields. */
+/** Fill in master_lexicon.audio_url (US) and audio_url_uk for a word that already has its text fields. */
 export const AUDIO_BACKFILL_JOB = 'audio-backfill';
 /** Fill in word_translations for a master_lexicon word missing a meaning-locale row (scripts/translations-backfill.js). */
 export const TRANSLATIONS_BACKFILL_JOB = 'translations-backfill';
@@ -35,7 +35,7 @@ export interface AudioBackfillJob {
   lexiconId: string;
   word: string;
   languageCode: string;
-  /** Replace the word's existing clip (audio-backfill --word), not only fill a missing one. */
+  /** Replace the word's existing US and UK clips (audio-backfill --word/--all/--library), not only fill missing ones. */
   remake?: boolean;
 }
 

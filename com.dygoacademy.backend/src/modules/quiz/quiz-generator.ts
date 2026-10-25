@@ -61,7 +61,10 @@ export interface QuizSourceWord {
   topicId: string;
   sourceWord: string;
   audioUrl: string | null;
+  /** The UK clip; null until made, then play audioUrl. */
+  audioUrlUk: string | null;
   ipaUs: string | null;
+  ipaUk: string | null;
   definition: string | null;
   synonyms: Array<{ word: string; level: string }>;
   antonyms: Array<{ word: string; level: string }>;
@@ -76,6 +79,8 @@ export interface QuizItem {
   topicId: string;
   prompt: string;
   audioUrl?: string | null;
+  /** DICTATION's UK clip (null until made); the app plays the profile accent's. */
+  audioUrlUk?: string | null;
   /** Only present for CHOICE-mode items (MATCHING, CONTEXTUAL_CHOICE). */
   options?: string[];
   answerMode: 'TEXT' | 'CHOICE';
@@ -147,11 +152,13 @@ export function isChoiceType(type: QuizType): boolean {
  */
 export interface QuizHint {
   ipaUs: string | null;
+  /** Both IPAs since 2026-10-25: the app shows the profile accent's. */
+  ipaUk: string | null;
   definition: string | null;
 }
 
 export function deriveHint(word: QuizSourceWord): QuizHint {
-  return { ipaUs: word.ipaUs, definition: word.definition };
+  return { ipaUs: word.ipaUs, ipaUk: word.ipaUk, definition: word.definition };
 }
 
 /**
@@ -234,7 +241,7 @@ export function buildQuizItem(
   };
 
   if (type === 'DICTATION') {
-    return { ...base, audioUrl: word.audioUrl, answerMode: 'TEXT' };
+    return { ...base, audioUrl: word.audioUrl, audioUrlUk: word.audioUrlUk, answerMode: 'TEXT' };
   }
   if (type === 'CLOZE') {
     return { ...base, answerMode: 'TEXT' };

@@ -71,6 +71,8 @@ export interface SpeakingSessionItem {
   is_due: boolean;
   /** The word said on its own, for Pronunciation's "Hear it"; null if none (optional for older APIs). */
   word_audio_url?: string | null;
+  /** The same in British English; null until made (play `word_audio_url`). Optional for older APIs. */
+  word_audio_url_uk?: string | null;
   /** The word's syllables for the stones, from the default accent's IPA; [] without one (optional for older APIs). */
   syllables?: SpeakingSyllable[];
 }
@@ -120,9 +122,10 @@ export interface SpeakingHarvestWord {
   /** Score it was harvested with; null = not harvested. */
   harvested_score: number | null;
   harvested_at: string | null;
-  /** The word's UK IPA ("Bees are waiting" sound line, 2026-10-11); optional for older APIs. */
+  /** The word's IPAs ("Bees are waiting" sound line); the row shows the profile accent's. Optional for older APIs. */
   ipa_uk?: string | null;
-  /** The word's syllables (MI · ti · gate), shown on the bee row instead of the IPA; optional for older APIs. */
+  ipa_us?: string | null;
+  /** The word's syllables (MI · ti · gate) in the profile accent, shown on the bee row instead of the IPA; optional for older APIs. */
   syllables?: SpeakingSyllable[];
 }
 
