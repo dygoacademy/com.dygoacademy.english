@@ -1457,6 +1457,6 @@ Engineering-facing log of shipped fixes and changes, one dated entry per change.
 * **Apply order**: deploy this code first, then apply the migration.
 
 ### Removed: master_lexicon.is_phrase
-* **Files**: new `database/migrations/20261025_word_no_phrase.sql` (drops the column); `database/seeds/07_seeds_harvest_fixture.sql` (no longer inserts it), `com.dygoacademy.backend/scripts/relations-import.js` (comment); docs database dictionary.
+* **Files**: new `database/migrations/20261025_word_phrases_drop.sql` (drops the column); `database/seeds/07_seeds_harvest_fixture.sql` (no longer inserts it), `com.dygoacademy.backend/scripts/relations-import.js` (comment); docs database dictionary.
 * **What**: Dylan (2026-10-25): `is_phrase` (added the same day by `20261025_word_phrases.sql`) was never read by any code, SQL function, view, index or policy, so it goes. No app code changes.
 * **Apply**: `./database/apply-migrations.sh --migrations`; order with a deploy doesn't matter.
