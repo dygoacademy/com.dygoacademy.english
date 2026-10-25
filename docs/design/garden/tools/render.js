@@ -174,10 +174,6 @@ const JOBS = [
   ['PronStonesRecord.dc.html', 'en', 'P2-recording-beep', { moment: 'beep' }],
   ['PronStonesRecord.dc.html', 'en', 'P2-recording', { moment: 'MI' }],
   ['PronStonesChecking.dc.html', 'en', 'P3-checking', {}],
-  ['PronStonesResult.dc.html', 'en', 'P4-result-retry', { result: 'retry' }],
-  ['PronStonesResult.dc.html', 'en', 'P4-result-pollinated', { result: 'pass' }],
-  ['PronStonesResult.dc.html', 'en', 'P4-result-long-word', { result: 'long' }],
-  ['PronStonesResult.dc.html', 'en', 'P4-result-one-stone', { result: 'one' }],
   ['PronStonesNotHeard.dc.html', 'en', 'P2b-not-heard', { reason: 'quiet' }],
   ['PronStonesNotHeard.dc.html', 'en', 'P2b-not-heard-noisy', { reason: 'noisy' }],
   ['PronStonesNotHeard.dc.html', 'en', 'P2b-not-heard-other-word', { reason: 'otherWord' }],
@@ -189,14 +185,32 @@ const JOBS = [
   ['PronStonesRecordVi.dc.html', 'vi', 'P2-recording-beep-vi', { moment: 'beep' }],
   ['PronStonesRecordVi.dc.html', 'vi', 'P2-recording-vi', { moment: 'MI' }],
   ['PronStonesCheckingVi.dc.html', 'vi', 'P3-checking-vi', {}],
-  ['PronStonesResultVi.dc.html', 'vi', 'P4-result-retry-vi', { result: 'retry' }],
-  ['PronStonesResultVi.dc.html', 'vi', 'P4-result-pollinated-vi', { result: 'pass' }],
-  ['PronStonesResultVi.dc.html', 'vi', 'P4-result-long-word-vi', { result: 'long' }],
-  ['PronStonesResultVi.dc.html', 'vi', 'P4-result-one-stone-vi', { result: 'one' }],
   ['PronStonesNotHeardVi.dc.html', 'vi', 'P2b-not-heard-vi', { reason: 'quiet' }],
   ['PronStonesNotHeardVi.dc.html', 'vi', 'P2b-not-heard-noisy-vi', { reason: 'noisy' }],
   ['PronStonesNotHeardVi.dc.html', 'vi', 'P2b-not-heard-other-word-vi', { reason: 'otherWord' }],
   // iPad (1194 x 834): iP1–iP3 one board with a `state` tweak.
+  // Pronunciation v2 (2026-10-25): P4 result v2 (syllable chips, Native / You pills, one big button + link)
+  // and SP0 microphone first time / denied. These boards read the Demo enums from props.
+  ['PronStonesResult.dc.html', 'en', 'P4-result-pass', { result: 'pass', round: 'next' }],
+  ['PronStonesResult.dc.html', 'en', 'P4-result-pass-last', { result: 'pass', round: 'last' }],
+  ['PronStonesResult.dc.html', 'en', 'P4-result-almost', { result: 'almostPerfect', round: 'next' }],
+  ['PronStonesResult.dc.html', 'en', 'P4-result-almost-last', { result: 'almostPerfect', round: 'last' }],
+  ['PronStonesResult.dc.html', 'en', 'P4-result-retry', { result: 'retry', round: 'next' }],
+  ['PronStonesResult.dc.html', 'en', 'P4-result-retry-last', { result: 'retry', round: 'last' }],
+  ['PronStonesResult.dc.html', 'en', 'P4-result-sunny-pass-last', { result: 'pass', word: 'sunny', round: 'last' }],
+  ['PronStonesResult.dc.html', 'en', 'P4-result-compensation', { result: 'retry', word: 'compensation' }],
+  ['PronStonesResultVi.dc.html', 'vi', 'P4-result-pass-vi', { result: 'pass', round: 'next' }],
+  ['PronStonesResultVi.dc.html', 'vi', 'P4-result-pass-last-vi', { result: 'pass', round: 'last' }],
+  ['PronStonesResultVi.dc.html', 'vi', 'P4-result-almost-vi', { result: 'almostPerfect', round: 'next' }],
+  ['PronStonesResultVi.dc.html', 'vi', 'P4-result-almost-last-vi', { result: 'almostPerfect', round: 'last' }],
+  ['PronStonesResultVi.dc.html', 'vi', 'P4-result-retry-vi', { result: 'retry', round: 'next' }],
+  ['PronStonesResultVi.dc.html', 'vi', 'P4-result-retry-last-vi', { result: 'retry', round: 'last' }],
+  ['PronStonesResultVi.dc.html', 'vi', 'P4-result-sunny-pass-last-vi', { result: 'pass', word: 'sunny', round: 'last' }],
+  ['PronStonesResultVi.dc.html', 'vi', 'P4-result-compensation-vi', { result: 'retry', word: 'compensation' }],
+  ['SpeakMic.dc.html', 'en', 'SP0-mic', { state: 'ask' }],
+  ['SpeakMic.dc.html', 'en', 'SP0-mic-denied', { state: 'denied' }],
+  ['SpeakMicVi.dc.html', 'vi', 'SP0-mic-vi', { state: 'ask' }],
+  ['SpeakMicVi.dc.html', 'vi', 'SP0-mic-denied-vi', { state: 'denied' }],
   ['iPadPron.dc.html', 'en', 'iP1-say-word', { state: 'say', $size: [1194, 834] }],
   ['iPadPron.dc.html', 'en', 'iP2-recording', { state: 'recording', $size: [1194, 834] }],
   ['iPadPron.dc.html', 'en', 'iP3-checking', { state: 'checking', $size: [1194, 834] }],
@@ -283,7 +297,7 @@ const RUNTIME = String.raw`
   class DCLogic { constructor(p){ this.props = p || {}; this.state = {}; } setState(p){ Object.assign(this.state, p); } forceUpdate(){} }
   const code = document.querySelector('script[data-dc-script]').textContent;
   const Component = new Function('DCLogic', code + '\nreturn Component;')(DCLogic);
-  const inst = new Component({});
+  const inst = new Component(Object.assign({}, overrides));
   inst.state = Object.assign({}, inst.state, overrides);
   const vals = inst.renderVals();
   const HOLE = /\{\{\s*([^}]+?)\s*\}\}/g;

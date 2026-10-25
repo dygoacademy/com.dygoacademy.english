@@ -12,10 +12,13 @@
 <style>
 body{margin:0;font-family:'DM Sans',sans-serif;background:#F4F1EA;color:#1C2B24}
 a{color:#B4552E}a:hover{color:#8A3E20}
-@keyframes away{0%{transform:translate(0,0)}100%{transform:translate(150px,-60px)}}
+@keyframes away{0%{transform:translate(0,0)}100%{transform:translate(150px,-50px)}}
 .away{animation:away 2.4s ease-in infinite}
-@keyframes pop{0%{transform:scale(.6);opacity:0}60%{transform:scale(1.08);opacity:1}100%{transform:scale(1)}}
-.pop{animation:pop .7s ease-out}
+@keyframes pop{0%{transform:scale(.7);opacity:0}60%{transform:scale(1.05);opacity:1}100%{transform:scale(1)}}
+.pop{animation:pop .6s ease-out}
+@keyframes ring{0%{opacity:.9}100%{opacity:.2}}
+.ring{animation:ring 1.2s ease-in-out infinite alternate}
+.chip:focus-visible,.pill:focus-visible,.cta:focus-visible{outline:3px solid #E0B04A;outline-offset:2px}
 @media (prefers-reduced-motion: reduce){*{animation:none !important}}
 </style>
 </helmet>
@@ -23,117 +26,89 @@ a{color:#B4552E}a:hover{color:#8A3E20}
 <div style="display: flex; align-items: center; gap: 12px">
 <a href="AdultTopicDetail.dc.html" aria-label="Close" style="width: 44px; height: 44px; border-radius: 22px; background: #FFFFFF; border: 1px solid #E3DDD0; display: flex; align-items: center; justify-content: center; color: #1C2B24; flex-shrink: 0"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M6 6 L18 18"></path><path d="M18 6 L6 18"></path></svg></a>
 <span style="flex-grow: 1; font-size: 12px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: #3E7F5A">Pronunciation</span>
-<span style="font-size: 13px; font-weight: 700; color: #5E6A62">Bee 1 of 3</span>
+<span style="font-size: 13px; font-weight: 700; color: #5E6A62">{{beeCount}}</span>
 </div>
-<sc-if value="{{retry}}" hint-placeholder-val="{{true}}">
-<div style="display: flex; flex-direction: column; align-items: center; gap: 4px; text-align: center">
-<span style="font-size: 13px; font-weight: 700; padding: 4px 12px; border-radius: 12px; background: #FBF4E4; color: #6B5215">Almost · 2 of 3 stones</span>
-<span style="font-family: 'Fraunces', serif; font-weight: 600; font-size: 30px; line-height: 1.1">One wobbly stone</span>
+<div class="{{popClass}}" style="display: flex; flex-direction: column; gap: 6px; padding: 0 4px">
+<span style="align-self: flex-start; font-size: 12px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; padding: 4px 10px; border-radius: 10px; background: {{badgeBg}}; color: {{badgeFg}}">{{badge}}</span>
+<span style="font-family: 'Fraunces', serif; font-weight: 600; font-size: 32px; line-height: 1.1">{{headline}}</span>
+<span style="font-size: 16px; line-height: 1.45; color: #44524A">{{sub}}</span>
 </div>
-</sc-if>
-<sc-if value="{{pass}}" hint-placeholder-val="{{false}}">
-<div class="pop" style="display: flex; flex-direction: column; align-items: center; gap: 4px; text-align: center">
-<span style="font-size: 13px; font-weight: 700; padding: 4px 12px; border-radius: 12px; background: #DDE7DA; color: #24463A">{{passBadge}}</span>
-<span style="font-family: 'Fraunces', serif; font-weight: 600; font-size: 30px; line-height: 1.1">Clean crossing!</span>
-</div>
-</sc-if>
-<div style="border-radius: 26px; background: #24463A; padding: 0; overflow: hidden">
-<svg width="100%" viewBox="0 0 334 170" role="img" aria-label="{{stonesLabel}}" style="display: block; height: auto">
-<path d="M0 120 Q 84 110 167 120 T 334 120 V170 H0 Z" fill="#1F3E33"></path><path d="M0 120 Q 84 110 167 120 T 334 120" fill="none" stroke="#3A5E4F" stroke-width="2"></path>
-<sc-if value="{{mitigate}}" hint-placeholder-val="{{true}}">
-<ellipse cx="62" cy="110" rx="50" ry="22" fill="#9CC39A"></ellipse>
-<text x="62" y="118" text-anchor="middle" font-family="DM Sans" font-weight="700" font-size="24" fill="#1C2B24">MI</text>
-<ellipse cx="268" cy="114" rx="40" ry="17" fill="#9CC39A"></ellipse>
-<text x="268" y="120" text-anchor="middle" font-family="DM Sans" font-weight="600" font-size="19" fill="#1C2B24">gate</text>
-</sc-if>
-<sc-if value="{{retry}}" hint-placeholder-val="{{true}}">
-<g transform="rotate(-8 168 116)"><ellipse cx="168" cy="116" rx="32" ry="14" fill="#E8A87C"></ellipse></g>
-<text x="168" y="121" text-anchor="middle" font-family="DM Sans" font-weight="700" font-size="16" fill="#1C2B24">ti</text>
-<path d="M140 132 q6 -4 12 0 M184 132 q6 -4 12 0" stroke="#E8A87C" stroke-width="2" fill="none"></path>
-<g transform="translate(62,30)"><g transform="translate(0,10) scale(1.7)"><g transform="translate(-16,-17)"><ellipse cx="12" cy="9" rx="6" ry="4.5" fill="#E8F2F8" stroke="#BFD8E8" stroke-width="1" transform="rotate(-25 12 9)"></ellipse><ellipse cx="20" cy="9" rx="6" ry="4.5" fill="#E8F2F8" stroke="#BFD8E8" stroke-width="1" transform="rotate(25 20 9)"></ellipse><ellipse cx="16" cy="19" rx="9" ry="7" fill="#F2C744"></ellipse><path d="M12 13.2 V24.8" stroke="#3B3020" stroke-width="2.4"></path><path d="M17 12.2 V25.8" stroke="#3B3020" stroke-width="2.4"></path><circle cx="23.5" cy="17.5" r="1.3" fill="#3B3020"></circle><path d="M7 19 L5 19" stroke="#3B3020" stroke-width="1.6" stroke-linecap="round"></path></g></g></g>
-</sc-if>
-<sc-if value="{{passMitigate}}" hint-placeholder-val="{{false}}">
-<ellipse cx="168" cy="116" rx="32" ry="14" fill="#9CC39A"></ellipse>
-<text x="168" y="121" text-anchor="middle" font-family="DM Sans" font-weight="700" font-size="16" fill="#1C2B24">ti</text>
-<g class="away"><g transform="translate(160,40)"><g transform="translate(0,10) scale(1.7)"><g transform="translate(-16,-17)"><ellipse cx="12" cy="9" rx="6" ry="4.5" fill="#E8F2F8" stroke="#BFD8E8" stroke-width="1" transform="rotate(-25 12 9)"></ellipse><ellipse cx="20" cy="9" rx="6" ry="4.5" fill="#E8F2F8" stroke="#BFD8E8" stroke-width="1" transform="rotate(25 20 9)"></ellipse><ellipse cx="16" cy="19" rx="9" ry="7" fill="#F2C744"></ellipse><path d="M12 13.2 V24.8" stroke="#3B3020" stroke-width="2.4"></path><path d="M17 12.2 V25.8" stroke="#3B3020" stroke-width="2.4"></path><circle cx="23.5" cy="17.5" r="1.3" fill="#3B3020"></circle><path d="M7 19 L5 19" stroke="#3B3020" stroke-width="1.6" stroke-linecap="round"></path></g></g></g></g>
-</sc-if>
-<sc-if value="{{long}}" hint-placeholder-val="{{false}}">
-<ellipse cx="43" cy="115" rx="33.5" ry="14" fill="#9CC39A"></ellipse>
-<text x="43" y="120" text-anchor="middle" font-family="DM Sans" font-weight="600" font-size="16" fill="#1C2B24">con</text>
-<ellipse cx="129" cy="111.5" rx="42" ry="18.5" fill="#9CC39A"></ellipse>
-<text x="129" y="118" text-anchor="middle" font-family="DM Sans" font-weight="700" font-size="20" fill="#1C2B24">DI</text>
-<ellipse cx="214" cy="115" rx="33.5" ry="14" fill="#9CC39A"></ellipse>
-<text x="214" y="120" text-anchor="middle" font-family="DM Sans" font-weight="600" font-size="16" fill="#1C2B24">tio</text>
-<ellipse cx="291" cy="115" rx="33.5" ry="14" fill="#9CC39A"></ellipse>
-<text x="291" y="120" text-anchor="middle" font-family="DM Sans" font-weight="600" font-size="16" fill="#1C2B24">nal</text>
-<g class="away"><g transform="translate(129,30)"><g transform="translate(0,10) scale(1.7)"><g transform="translate(-16,-17)"><ellipse cx="12" cy="9" rx="6" ry="4.5" fill="#E8F2F8" stroke="#BFD8E8" stroke-width="1" transform="rotate(-25 12 9)"></ellipse><ellipse cx="20" cy="9" rx="6" ry="4.5" fill="#E8F2F8" stroke="#BFD8E8" stroke-width="1" transform="rotate(25 20 9)"></ellipse><ellipse cx="16" cy="19" rx="9" ry="7" fill="#F2C744"></ellipse><path d="M12 13.2 V24.8" stroke="#3B3020" stroke-width="2.4"></path><path d="M17 12.2 V25.8" stroke="#3B3020" stroke-width="2.4"></path><circle cx="23.5" cy="17.5" r="1.3" fill="#3B3020"></circle><path d="M7 19 L5 19" stroke="#3B3020" stroke-width="1.6" stroke-linecap="round"></path></g></g></g></g>
-</sc-if>
-<sc-if value="{{one}}" hint-placeholder-val="{{false}}">
-<ellipse cx="167" cy="110" rx="97" ry="22" fill="#9CC39A"></ellipse>
-<text x="167" y="118" text-anchor="middle" font-family="DM Sans" font-weight="700" font-size="24" fill="#1C2B24">CONDITIONAL</text>
-<g class="away"><g transform="translate(167,30)"><g transform="translate(0,10) scale(1.7)"><g transform="translate(-16,-17)"><ellipse cx="12" cy="9" rx="6" ry="4.5" fill="#E8F2F8" stroke="#BFD8E8" stroke-width="1" transform="rotate(-25 12 9)"></ellipse><ellipse cx="20" cy="9" rx="6" ry="4.5" fill="#E8F2F8" stroke="#BFD8E8" stroke-width="1" transform="rotate(25 20 9)"></ellipse><ellipse cx="16" cy="19" rx="9" ry="7" fill="#F2C744"></ellipse><path d="M12 13.2 V24.8" stroke="#3B3020" stroke-width="2.4"></path><path d="M17 12.2 V25.8" stroke="#3B3020" stroke-width="2.4"></path><circle cx="23.5" cy="17.5" r="1.3" fill="#3B3020"></circle><path d="M7 19 L5 19" stroke="#3B3020" stroke-width="1.6" stroke-linecap="round"></path></g></g></g></g>
-</sc-if>
+<div style="border-radius: 26px; background: #24463A; overflow: hidden; display: flex; flex-direction: column">
+<div style="position: relative">
+<svg width="100%" viewBox="0 0 334 150" role="img" aria-label="{{stonesLabel}}" style="display: block; height: auto">
+<path d="M0 110 Q 84 100 167 110 T 334 110 V150 H0 Z" fill="#1F3E33"></path><path d="M0 110 Q 84 100 167 110 T 334 110" fill="none" stroke="#3A5E4F" stroke-width="2"></path>
+<sc-for list="{{stones}}" as="s" hint-placeholder-count="3"><sc-if value="{{s.sel}}" hint-placeholder-val="{{false}}"><ellipse class="ring" cx="{{s.cx}}" cy="{{s.cy}}" rx="{{s.ringRx}}" ry="{{s.ringRy}}" fill="none" stroke="#F2D28B" stroke-width="3"></ellipse></sc-if><g transform="{{s.tf}}"><ellipse cx="{{s.cx}}" cy="{{s.cy}}" rx="{{s.rx}}" ry="{{s.ry}}" fill="{{s.fill}}" stroke="{{s.stroke}}" stroke-width="2.5" stroke-dasharray="{{s.dash}}"></ellipse></g></sc-for>
+<sc-if value="{{retry}}" hint-placeholder-val="{{true}}"><g transform="{{beeT}}"><g transform="translate(0,10) scale(1.6)"><g transform="translate(-16,-17)"><ellipse cx="12" cy="9" rx="6" ry="4.5" fill="#E8F2F8" stroke="#BFD8E8" stroke-width="1" transform="rotate(-25 12 9)"></ellipse><ellipse cx="20" cy="9" rx="6" ry="4.5" fill="#E8F2F8" stroke="#BFD8E8" stroke-width="1" transform="rotate(25 20 9)"></ellipse><ellipse cx="16" cy="19" rx="9" ry="7" fill="#F2C744"></ellipse><path d="M12 13.2 V24.8" stroke="#3B3020" stroke-width="2.4"></path><path d="M17 12.2 V25.8" stroke="#3B3020" stroke-width="2.4"></path><circle cx="23.5" cy="17.5" r="1.3" fill="#3B3020"></circle><path d="M7 19 L5 19" stroke="#3B3020" stroke-width="1.6" stroke-linecap="round"></path></g></g></g></sc-if>
+<sc-if value="{{pass}}" hint-placeholder-val="{{false}}"><g class="away"><g transform="{{beeT}}"><g transform="translate(0,10) scale(1.6)"><g transform="translate(-16,-17)"><ellipse cx="12" cy="9" rx="6" ry="4.5" fill="#E8F2F8" stroke="#BFD8E8" stroke-width="1" transform="rotate(-25 12 9)"></ellipse><ellipse cx="20" cy="9" rx="6" ry="4.5" fill="#E8F2F8" stroke="#BFD8E8" stroke-width="1" transform="rotate(25 20 9)"></ellipse><ellipse cx="16" cy="19" rx="9" ry="7" fill="#F2C744"></ellipse><path d="M12 13.2 V24.8" stroke="#3B3020" stroke-width="2.4"></path><path d="M17 12.2 V25.8" stroke="#3B3020" stroke-width="2.4"></path><circle cx="23.5" cy="17.5" r="1.3" fill="#3B3020"></circle><path d="M7 19 L5 19" stroke="#3B3020" stroke-width="1.6" stroke-linecap="round"></path></g></g></g></g></sc-if>
 </svg>
+<div aria-hidden="true" style="position: absolute; inset: 0; pointer-events: none"><sc-for list="{{stones}}" as="s" hint-placeholder-count="3"><span lang="en" style="position: absolute; left: {{s.left}}; top: {{s.top}}; transform: {{s.lift}}; font-family: 'DM Sans', sans-serif; font-weight: 700; font-size: {{s.px}}; line-height: 1; color: #1C2B24; white-space: nowrap">{{s.text}}</span></sc-for></div>
 </div>
-<div style="background: #FFFFFF; border: 1px solid #E3DDD0; border-radius: 20px; padding: 12px; display: flex; flex-direction: column; gap: 6px">
-<span style="font-size: 12px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: #5E6A62; padding: 0 4px">Compare your voice</span>
-<button aria-label="Play the native speaker" style="display: grid; grid-template-columns: 34px 54px minmax(0, 1fr) 34px; align-items: center; gap: 8px; height: 52px; padding: 0 10px 0 8px; border-radius: 16px; border: 1px solid #C9D8C4; background: #F1F6EF; color: #24463A; font-family: 'DM Sans', sans-serif; font-weight: 700; font-size: 14px; cursor: pointer; text-align: left"><span style="width: 34px; height: 34px; border-radius: 17px; background: #3E7F5A; color: #FFFFFF; display: flex; align-items: center; justify-content: center"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5 L19 12 L8 19 Z"></path></svg></span><span>Native</span><svg width="100%" height="28" viewBox="0 0 160 28" preserveAspectRatio="none" aria-hidden="true" style="display: block"><sc-for list="{{natBars}}" as="b" hint-placeholder-count="32"><rect x="{{b.x}}" y="{{b.y}}" width="3" height="{{b.h}}" rx="1.5" fill="#3E7F5A"></rect></sc-for></svg><span style="font-size: 12px; font-weight: 600; color: #5E6A62; text-align: right">{{natDur}}</span></button>
-<button aria-label="Play your recording" style="display: grid; grid-template-columns: 34px 54px minmax(0, 1fr) 34px; align-items: center; gap: 8px; height: 52px; padding: 0 10px 0 8px; border-radius: 16px; border: 1px solid #EBC7B6; background: #FBF1EC; color: #8A3E20; font-family: 'DM Sans', sans-serif; font-weight: 700; font-size: 14px; cursor: pointer; text-align: left"><span style="width: 34px; height: 34px; border-radius: 17px; background: #B4552E; color: #FFFFFF; display: flex; align-items: center; justify-content: center"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5 L19 12 L8 19 Z"></path></svg></span><span>You</span><svg width="100%" height="28" viewBox="0 0 160 28" preserveAspectRatio="none" aria-hidden="true" style="display: block"><sc-if value="{{retry}}" hint-placeholder-val="{{true}}"><rect x="59" y="0" width="31" height="28" rx="4" fill="#F2D28B" opacity=".55"></rect></sc-if><sc-for list="{{mineBars}}" as="b" hint-placeholder-count="32"><rect x="{{b.x}}" y="{{b.y}}" width="3" height="{{b.h}}" rx="1.5" fill="#B4552E"></rect></sc-for></svg><span style="font-size: 12px; font-weight: 600; color: #5E6A62; text-align: right">{{mineDur}}</span></button>
-<div style="display: grid; grid-template-columns: 34px 54px minmax(0, 1fr) 34px; align-items: center; gap: 8px; padding: 0 10px 0 8px; font-size: 12px; font-weight: 700; color: #5E6A62"><span></span><span></span><div style="display: grid; grid-template-columns: {{sylCols}}; text-align: center"><sc-for list="{{syls}}" as="s" hint-placeholder-count="3"><span style="color: {{s.color}}">{{s.text}}</span></sc-for></div><span></span></div>
-</div>
-<sc-if value="{{retry}}" hint-placeholder-val="{{true}}">
-<div style="background: #FFFFFF; border: 1px solid #E3DDD0; border-radius: 20px; padding: 14px 16px; display: flex; flex-direction: column; gap: 10px">
-<div style="display: flex; align-items: baseline; gap: 10px"><span style="font-family: 'Fraunces', serif; font-weight: 600; font-size: 24px">ti</span><span style="font-size: 14px; color: #5E6A62">sounded like /taɪ/</span></div>
-<span style="font-size: 15px; line-height: 1.45">Try it like the native: <b>/tɪ/</b></span>
-<div style="display: flex; gap: 8px">
-<button style="flex: 1; height: 44px; border-radius: 14px; background: #DDE7DA; border: none; font-family: 'DM Sans', sans-serif; font-weight: 700; font-size: 14px; color: #24463A; cursor: pointer">Hear “ti”</button>
-<button style="flex: 1; height: 44px; border-radius: 14px; background: #F4F1EA; border: 1px solid #E3DDD0; font-family: 'DM Sans', sans-serif; font-weight: 700; font-size: 14px; color: #5E6A62; cursor: pointer">Hear mine</button>
+<div style="display: grid; grid-template-columns: {{chipCols}}; gap: 6px; padding: 0 10px 12px">
+<sc-for list="{{stones}}" as="s" hint-placeholder-count="3"><button class="chip" onClick="{{s.pick}}" aria-label="{{s.aria}}" aria-pressed="{{s.pressed}}" style="height: 52px; border-radius: 16px; border: 2px {{s.chipBorderStyle}} {{s.chipBorder}}; background: {{s.chipBg}}; color: {{s.chipFg}}; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; cursor: pointer; font-family: 'DM Sans', sans-serif; padding: 0 4px; min-width: 0"><span lang="en" style="display: flex; align-items: center; gap: 5px; font-weight: 700; font-size: 15px"><svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M6 4 L20 12 L6 20 Z"></path></svg>{{s.text}}</span><span style="font-size: 11px; font-weight: 600; opacity: .85; white-space: nowrap">{{s.chipSub}}</span></button></sc-for>
 </div>
 </div>
-<div style="margin-top: auto; display: flex; flex-direction: column; gap: 6px">
-<a href="PronStonesRecord.dc.html" style="height: 56px; border-radius: 18px; background: #B4552E; color: #FFFFFF; box-shadow: 0 4px 0 #7E3719; display: flex; align-items: center; justify-content: center; gap: 8px; font-weight: 700; font-size: 16px; text-decoration: none">Try again</a>
-<a href="PronStones.dc.html" style="align-self: center; font-size: 14px; font-weight: 600; color: #5E6A62; padding: 8px">Next bee</a>
+<div style="display: flex; align-items: center; gap: 8px">
+<span style="font-size: 13px; font-weight: 700; color: #5E6A62; flex-shrink: 0; padding-left: 4px">Whole word</span>
+<button class="pill" aria-label="Play the native speaker" style="flex: 1; height: 44px; border-radius: 22px; border: 1px solid #C9D8C4; background: #F1F6EF; color: #24463A; display: flex; align-items: center; justify-content: center; gap: 8px; font-family: 'DM Sans', sans-serif; font-weight: 700; font-size: 14px; cursor: pointer"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M6 4 L20 12 L6 20 Z"></path></svg>Native <span style="font-weight: 600; color: #5E6A62">{{natDur}}</span></button>
+<button class="pill" aria-label="Play your recording" style="flex: 1; height: 44px; border-radius: 22px; border: 1px solid #EBC7B6; background: #FBF1EC; color: #8A3E20; display: flex; align-items: center; justify-content: center; gap: 8px; font-family: 'DM Sans', sans-serif; font-weight: 700; font-size: 14px; cursor: pointer"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M6 4 L20 12 L6 20 Z"></path></svg>You <span style="font-weight: 600; color: #5E6A62">{{mineDur}}</span></button>
 </div>
-</sc-if>
-<sc-if value="{{pass}}" hint-placeholder-val="{{false}}">
-<div style="background: #FFFFFF; border: 1px solid #E3DDD0; border-radius: 20px; padding: 14px 16px; display: flex; align-items: center; gap: 12px">
-<svg width="40" height="40" viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="20" r="9" fill="#E0B04A"></circle><circle cx="20" cy="8" r="6" fill="#E8A87C"></circle><circle cx="32" cy="20" r="6" fill="#E8A87C"></circle><circle cx="20" cy="32" r="6" fill="#E8A87C"></circle><circle cx="8" cy="20" r="6" fill="#E8A87C"></circle></svg>
-<span style="font-size: 15px; line-height: 1.4"><b lang="en">{{passWord}}</b> is pollinated. It's on its way to fruit.</span>
+<div style="margin-top: auto; display: flex; flex-direction: column; align-items: stretch; gap: 4px">
+<a class="cta" href="{{mainHref}}" style="height: 60px; border-radius: 20px; background: #B4552E; color: #FFFFFF; box-shadow: 0 4px 0 #7E3719; display: flex; align-items: center; justify-content: center; gap: 10px; font-weight: 700; font-size: 17px; text-decoration: none; padding: 0 16px">{{mainLabel}}<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{mainIcon}}"></path></svg></a>
+<a href="{{secHref}}" style="align-self: center; display: flex; align-items: center; gap: 6px; min-height: 44px; padding: 0 12px; font-size: 15px; font-weight: 600; color: #5E6A62; text-decoration: none"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{secIcon}}"></path></svg>{{secLabel}}</a>
 </div>
-<div style="margin-top: auto; display: flex; flex-direction: column; gap: 6px">
-<a href="PronStones.dc.html" style="height: 56px; border-radius: 18px; background: #B4552E; color: #FFFFFF; box-shadow: 0 4px 0 #7E3719; display: flex; align-items: center; justify-content: center; gap: 8px; font-weight: 700; font-size: 16px; text-decoration: none">Next bee: deforestation</a>
-<a href="AdultTopicDetail.dc.html" style="align-self: center; font-size: 14px; font-weight: 600; color: #5E6A62; padding: 8px">Back to the bed</a>
-</div>
-</sc-if>
 </div>
 </x-dc>
-<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844},"result":{"editor":"enum","options":["retry","pass","long","one"],"default":"retry","section":"Demo"}}'>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844},"result":{"editor":"enum","options":["pass","almostPerfect","retry"],"default":"pass","section":"Demo"},"word":{"editor":"enum","options":["mitigate","compensation","cloudy","sunny"],"default":"mitigate","section":"Demo"},"round":{"editor":"enum","options":["next","last"],"default":"next","section":"Demo"}}'>
 class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { sel: null }; }
   renderVals() {
-    const r = this.props.result ?? this.state.result ?? 'retry';
-    const env = i => i < 12 ? 1 : i < 18 ? .55 : .8;
-    const natBars = [], mineBars = [];
-    for (let i = 0; i < 32; i++) {
-      const base = .25 + .75 * Math.abs(Math.sin(i * 1.3) + Math.sin(i * .55)) / 2;
-      const hn = Math.max(4, 24 * base * env(i));
-      let hm = Math.max(4, hn * (.85 + .2 * Math.abs(Math.sin(i * 2.1))));
-      if (r === 'retry' && i >= 12 && i < 18) hm = Math.min(26, hn * 1.7 + 5);
-      const bar = h => ({ x: i * 5, y: +((28 - h) / 2).toFixed(1), h: +h.toFixed(1) });
-      natBars.push(bar(hn)); mineBars.push(bar(Math.min(26, hm)));
-    }
-    // Compare card syllables, spaced by their share of the word (2026-10-24).
-    const grey = '#5E6A62';
-    const syls = r === 'long' ? [['con', 25], ['DI', 30], ['tio', 20], ['nal', 25]] : r === 'one' ? [['CONDITIONAL', 1]] : [['MI', 60], ['ti', 30], ['gate', 70]];
-    // long / one: a stone is always wide enough for its text (2026-10-18).
-    const mitigate = r === 'retry' || r === 'pass';
-    return { retry: r === 'retry', pass: r !== 'retry', mitigate, passMitigate: r === 'pass', natBars, mineBars,
-      natDur: '0.8s', mineDur: r === 'retry' ? '1.0s' : '0.8s',
-      syls: syls.map(([text], k) => ({ text, color: r === 'retry' && k === 1 ? '#8A3E20' : grey })),
-      sylCols: syls.map(([, fr]) => fr + 'fr').join(' '),
-      long: r === 'long', one: r === 'one',
-      stonesLabel: r === 'long' ? 'All four stones green' : r === 'one' ? 'The CONDITIONAL stone green' : r === 'pass' ? 'All three stones green' : 'MI and gate green, ti wobbly',
-      passBadge: r === 'long' ? 'Pollinated · 4 of 4 stones' : r === 'one' ? 'Pollinated · 1 of 1 stones' : 'Pollinated · 3 of 3 stones',
-      passWord: mitigate ? 'mitigate' : 'conditional' };
+    const r = this.props.result ?? 'pass', w = this.props.word ?? 'mitigate', round = this.props.round ?? 'next';
+    const WORDS = {
+      mitigate: { syl: [['MI', 1], ['ti', 0], ['gate', 0]], wob: 1, heard: '/taɪ/', target: '/tɪ/', nat: '0.8s', mine: '1.0s' },
+      compensation: { syl: [['com', 0], ['pen', 0], ['SA', 1], ['tion', 0]], wob: 2, heard: '/sæ/', target: '/seɪ/', nat: '1.1s', mine: '1.3s' },
+      cloudy: { syl: [['CLOU', 1], ['dy', 0]], wob: 1, heard: null, target: '/di/', nat: '0.6s', mine: '0.4s' },
+      sunny: { syl: [['SUN', 1], ['ny', 0]], wob: 1, heard: '/naɪ/', target: '/ni/', nat: '0.6s', mine: '0.8s' }
+    };
+    const d = WORDS[w], n = d.syl.length;
+    const retry = r === 'retry', close = r === 'almostPerfect', pass = !retry, last = round === 'last';
+    const weak = d.syl[d.wob][0];
+    const sel = this.state.sel ?? (pass && !close ? -1 : d.wob);
+    const slot = 334 / n;
+    const stones = d.syl.map((s, i) => {
+      const big = s[1] === 1, bad = retry && i === d.wob, near = close && i === d.wob, cx = +(slot * (i + .5)).toFixed(1);
+      const rx = +Math.min(big ? 52 : 36, slot / 2 - (big ? 4 : 14)).toFixed(1), ry = big ? 22 : 15, cy = big ? 100 : 104;
+      const on = sel === i;
+      return { text: s[0], cx, cy, rx, ry, ty: cy + (big ? 8 : 6), fs: big ? 22 : 16,
+        ringRx: rx + 7, ringRy: ry + 6, sel: on,
+        left: (cx / 334 * 100).toFixed(2) + '%', top: (cy / 150 * 100).toFixed(2) + '%', px: (big ? 23 : 17) + 'px', lift: bad ? 'translate(-50%, -50%) rotate(-8deg)' : 'translate(-50%, -50%)',
+        fill: bad ? '#E8A87C' : near ? '#C8DDB8' : '#9CC39A', stroke: near ? '#E0B04A' : 'none', dash: near ? '5 4' : 'none',
+        tf: bad ? 'rotate(-8 ' + cx + ' ' + cy + ')' : 'rotate(0)',
+        pressed: on ? 'true' : 'false',
+        aria: 'Hear ' + s[0] + ': native speaker, then you',
+        chipBg: on ? '#F4F1EA' : bad ? '#FBEFE9' : near ? '#FBF4E4' : '#2E5446',
+        chipFg: on ? '#1C2B24' : bad ? '#8A3E20' : near ? '#6B5215' : '#DDE7DA',
+        chipBorder: on ? '#F2D28B' : bad ? '#E8A87C' : near ? '#E0B04A' : '#3A5E4F',
+        chipBorderStyle: near && !on ? 'dashed' : 'solid',
+        chipSub: on ? 'Native → you' : bad ? 'Wobbly' : near ? 'Close' : 'Clean',
+        pick: () => this.setState({ sel: i }) };
+    });
+    const heardLine = d.heard ? weak + ' sounded like ' + d.heard + '.' : weak + ' was cut short.';
+    const v = {
+      pass: { badge: 'Pollinated · ' + n + ' of ' + n + ' stones', headline: 'Clean crossing!', sub: w + ' is pollinated. Tap any stone to hear it back.', badgeBg: '#DDE7DA', badgeFg: '#24463A' },
+      almostPerfect: { badge: 'Pollinated · ' + n + ' of ' + n + ' stones', headline: 'Good crossing!', sub: 'It counts. ' + weak + ' was close: aim for ' + d.target + '. Tap ' + weak + ' to compare.', badgeBg: '#DDE7DA', badgeFg: '#24463A' },
+      retry: { badge: 'Almost · ' + (n - 1) + ' of ' + n + ' stones', headline: 'One wobbly stone', sub: heardLine + ' Aim for ' + d.target + '. Tap ' + weak + ' to compare.', badgeBg: '#FBF4E4', badgeFg: '#6B5215' }
+    }[r];
+    const ARROW = 'M5 12 H19 M13 6 L19 12 L13 18', MIC = 'M12 3 a3 3 0 0 1 3 3 v5 a3 3 0 0 1 -6 0 v-5 a3 3 0 0 1 3 -3 M6 11 a6 6 0 0 0 12 0 M12 17 V21', BED = 'M4 20 V9 L12 4 L20 9 V20', SKIP = 'M5 6 L13 12 L5 18 Z M15 6 V18';
+    let main, sec;
+    if (retry) { main = ['Try again', 'PronStonesRecord.dc.html', MIC]; sec = last ? ['Back to the bed', 'AdultTopicDetail.dc.html', BED] : ['Skip to next bee', 'PronStones.dc.html', SKIP]; }
+    else if (last) { main = ['Back to the bed', 'AdultTopicDetail.dc.html', ARROW]; sec = [close ? 'Polish ' + weak + ': say it again' : 'Say it again', 'PronStonesRecord.dc.html', MIC]; }
+    else { main = ['Next bee: deforestation', 'PronStones.dc.html', ARROW]; sec = [close ? 'Polish ' + weak + ': say it again' : 'Say it again', 'PronStonesRecord.dc.html', MIC]; }
+    return { ...v, retry, pass, stones, chipCols: 'repeat(' + n + ', minmax(0, 1fr))',
+      beeCount: 'Bee 1 of ' + (last ? 1 : 3), popClass: pass ? 'pop' : '',
+      beeT: 'translate(' + (pass ? 167 : stones[0].cx) + ',22)',
+      stonesLabel: retry ? weak + ' wobbly, the rest green' : close ? 'All stones green, ' + weak + ' close' : 'All ' + n + ' stones green',
+      natDur: d.nat, mineDur: pass && !close ? d.nat : d.mine,
+      mainLabel: main[0], mainHref: main[1], mainIcon: main[2], secLabel: sec[0], secHref: sec[1], secIcon: sec[2] };
   }
 }
 </script>
