@@ -1,5 +1,7 @@
 import {
-  OTHER_WORD_SCORE,
+  HEARD_TRUST_SCORE,
+  heardOtherWord,
+  spelledSyllables,
   syllabify,
   toScorerWordResult,
   WOBBLY_SCORE,
@@ -128,21 +130,70 @@ describe('toScorerWordResult', () => {
     expect(toScorerWordResult(spoken, 'mitigate', MITIGATE).status).toBe('ok');
   });
 
-  it('other_word when Whisper heard another word and the sounds are poor', () => {
+  it('other_word when Whisper heard a shorter word, however well the sounds scored', () => {
+    // migrate for mitigate: a syllable left out (the scorer trusts sounds of 90+, so heard is null)
+    const migrate = reply({ score: 95, heard: null }, { heard_text: 'Migrate.' });
+    expect(toScorerWordResult(migrate, 'mitigate', MITIGATE).status).toBe('other_word');
+    // cloud for cloudy (Dylan, 2026-10-25: it passed)
+    const cloud = reply(
+      {
+        text: 'cloudy',
+        score: 93,
+        heard: null,
+        phones: phones([
+          ['K', 95],
+          ['L', 94],
+          ['AW', 96],
+          ['D', 92],
+          ['IY', 88],
+        ]),
+      },
+      { heard_text: 'Cloud.' },
+    );
+    expect(toScorerWordResult(cloud, 'cloudy', '/ˈklaʊ.di/').status).toBe('other_word');
+  });
+
+  it('other_word when Whisper heard another word and the sounds are not clearly right', () => {
+    const unclear = reply(
+      { heard: 'migrant', score: 85, status: 'unclear' },
+      { heard_text: 'migrant' },
+    );
+    expect(toScorerWordResult(unclear, 'mitigate', MITIGATE).status).toBe('other_word');
+    const wobbly = reply(
+      {
+        score: 92,
+        phones: phones([
+          ['M', 95],
+          ['IH', 90],
+          ['T', 92],
+          ['AH', 30],
+          ['G', 91],
+          ['EY', 93],
+          ['T', 92],
+        ]),
+      },
+      { heard_text: 'mitigant' },
+    );
+    expect(toScorerWordResult(wobbly, 'mitigate', MITIGATE).status).toBe('other_word');
+  });
+
+  it('ok when Whisper misheard a word whose sounds are all right (same length, 90+, no wobble)', () => {
     const r = toScorerWordResult(
-      reply({ heard: 'migrate', score: OTHER_WORD_SCORE - 10, status: 'unclear' }),
+      reply({ score: HEARD_TRUST_SCORE + 2 }, { heard_text: 'Mitty gate' }),
       'mitigate',
       MITIGATE,
     );
-    expect(r.status).toBe('other_word');
-    // heard another word but the sounds are fine: Whisper misheard
-    expect(
-      toScorerWordResult(
-        reply({ heard: 'migrate', score: 88, status: 'unclear' }),
-        'mitigate',
-        MITIGATE,
-      ).status,
-    ).toBe('ok');
+    expect(r.status).toBe('ok');
+  });
+
+  it('ok when Whisper heard the word, with punctuation, capitals, extra words or UK spelling', () => {
+    for (const heard_text of ['Mitigate.', 'mitigate, mitigate', 'I mitigate']) {
+      expect(toScorerWordResult(reply({}, { heard_text }), 'mitigate', MITIGATE).status).toBe('ok');
+    }
+    expect(heardOtherWord('Colour', 'color')).toBeNull();
+    expect(heardOtherWord('criticise', 'criticize')).toBeNull();
+    expect(heardOtherWord('look up', 'look up')).toBeNull();
+    expect(heardOtherWord('lookup', 'look up')).toBeNull();
   });
 
   it('falls back to one stone when the IPA syllables do not match the phones', () => {
@@ -156,5 +207,24 @@ describe('toScorerWordResult', () => {
     const r = toScorerWordResult(reply({ score: null, phones: [] }, { total: 77 }), 'zzqxv', '');
     expect(r.total).toBe(77);
     expect(r.syllables).toHaveLength(1);
+  });
+});
+
+describe('heardOtherWord', () => {
+  it('says a heard word is shorter when it drops a syllable or the start or end', () => {
+    expect(heardOtherWord('Cloud.', 'cloudy')).toEqual({ heard: 'cloud', shorter: true });
+    expect(heardOtherWord('car', 'cart')).toEqual({ heard: 'car', shorter: true });
+    expect(heardOtherWord('ticket', 'pocket')).toEqual({ heard: 'ticket', shorter: false });
+  });
+});
+
+describe('spelledSyllables', () => {
+  it('counts vowel groups, y as a vowel, without a silent e', () => {
+    expect(spelledSyllables('cloud')).toBe(1);
+    expect(spelledSyllables('cloudy')).toBe(2);
+    expect(spelledSyllables('mitigate')).toBe(3);
+    expect(spelledSyllables('migrate')).toBe(2);
+    expect(spelledSyllables('table')).toBe(2);
+    expect(spelledSyllables('the')).toBe(1);
   });
 });

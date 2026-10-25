@@ -39,8 +39,12 @@ export const WOBBLY_SCORE = 70;
 export const WRONG_PHONE_SCORE = 45;
 /** Less voice than this (ms) is nothing heard, whatever Whisper made of the noise. */
 export const MIN_VOICED_MS = 300;
-/** Whisper heard one other word and the GOPT word score is under this: "We heard '…'". Provisional. */
-export const OTHER_WORD_SCORE = 70;
+/**
+ * Whisper heard another word: the take still counts only when the GOPT word score is at least this,
+ * no syllable wobbles and the heard word is not shorter (see `heardOtherWord`), i.e. Whisper
+ * misheard good speech. The speech server's own trust level (GOPT_HEARD_TRUST_SCORE).
+ */
+export const HEARD_TRUST_SCORE = 90;
 
 const VOWELS = new Set([
   'AA',
@@ -123,8 +127,6 @@ export function toScorerWordResult(
     return { ...base, status: 'not_heard', total: 0, syllables: [] };
   }
   const total = clamp(w.score ?? raw.total);
-  const status: ScorerWordResult['status'] =
-    w.heard !== null && total < OTHER_WORD_SCORE ? 'other_word' : 'ok';
 
   const phones = w.phones ?? [];
   const groups = syllabify(phones.map((p) => p.phone));
@@ -143,5 +145,66 @@ export function toScorerWordResult(
           };
         })
       : [{ ipa: word, score: total, wobbly: total < WOBBLY_SCORE, heard_ipa: null }];
+  const other = heardOtherWord(raw.heard_text, word);
+  const status: ScorerWordResult['status'] =
+    other !== null &&
+    (other.shorter || total < HEARD_TRUST_SCORE || syllables.some((s) => s.wobbly))
+      ? 'other_word'
+      : 'ok';
   return { ...base, status, total, syllables };
+}
+
+/** Lower case letters, digits and inner apostrophes, UK and US spellings as one (the speech server's `canon`). */
+function canon(word: string): string {
+  let w = word
+    .toLowerCase()
+    .replace(/’/g, "'")
+    .replace(/[^a-z0-9']+/g, '')
+    .replace(/^'+|'+$/g, '');
+  w = w.replace(/is(e|ed|es|ing|ation|ations)$/, 'iz$1');
+  if (w.length > 4) w = w.replace(/our(s|ed|ing)?$/, 'or$1').replace(/tre(s)?$/, 'ter$1');
+  return w;
+}
+
+/** About how many syllables a spelling has: vowel groups (y counts), a final silent e dropped. */
+export function spelledSyllables(word: string): number {
+  const w = word.toLowerCase().replace(/[^a-z]/g, '');
+  let n = (w.match(/[aeiouy]+/g) ?? []).length;
+  if (n > 1 && /[^aeiouy]e$/.test(w) && !/[^aeiouy]le$/.test(w)) n -= 1;
+  return Math.max(1, n);
+}
+
+/**
+ * What Whisper heard (`heardText`) when it isn't the target word: null when
+ * the word is in it (as spoken, or spelled the other accent's way).
+ * `shorter`: the heard word has fewer syllables than the target, or is the
+ * target with its start or end cut off ("cloud" for "cloudy", "migrate" for
+ * "mitigate"): a part of the word was left out, whatever the sounds scored,
+ * since GOPT only scores the target's own phones against the audio and can
+ * stretch them over a shorter word.
+ */
+export function heardOtherWord(
+  heardText: string,
+  word: string,
+): { heard: string; shorter: boolean } | null {
+  const target = word
+    .split(/[\s-]+/)
+    .map(canon)
+    .filter(Boolean);
+  const heard = heardText
+    .split(/[\s-]+/)
+    .map(canon)
+    .filter(Boolean);
+  if (target.length === 0 || heard.length === 0) return null;
+  const has = heard.some((_, i) => target.every((t, k) => heard[i + k] === t));
+  if (has || heard.join('') === target.join('')) return null;
+  const h = heard.join('');
+  const t = target.join('');
+  const syllables = (xs: string[]) => xs.reduce((n, x) => n + spelledSyllables(x), 0);
+  return {
+    heard: heard.join(' '),
+    shorter:
+      syllables(heard) < syllables(target) ||
+      (h.length < t.length && (t.startsWith(h) || t.endsWith(h))),
+  };
 }
