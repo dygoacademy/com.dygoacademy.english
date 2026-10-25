@@ -10,8 +10,6 @@ export const PRON = {
   maxMs: 4000,
   /** Less voice than this: P2b "We couldn't hear you", nothing is sent. */
   minVoiceMs: 300,
-  /** A syllable scoring under this is wobbly (the only wobbly rule; the old 70 and "a phone under 45" were dropped). */
-  wobblyBelow: 60,
   /**
    * The honeycomb's pass line (2026-10-25): a syllable passes at this or
    * more, and the word passes only when every syllable does (the server
@@ -21,19 +19,11 @@ export const PRON = {
   passAtLeast: 80,
   /** Syllables from the pass line up to this many points over it are "close" (80–84: passes, with a polish hint). */
   closeBand: 5,
-  /** passAtLeast + closeBand: a syllable at this or more is a clean pass. */
-  cleanAtLeast: 85,
   /** Whisper heard another word: it passes only at this or more with no wobbly syllable, never when shorter (server). */
   otherWordTrust: 90,
-  /** "Slowly" falls back to playing the word clip at this rate when the word has no slow clip. */
-  slowRate: 0.7,
+  /** "Slowly": the word clip at this rate, from a copy slowed in the browser (pitch kept; honeycomb plan §2.3). */
+  slowRate: 0.75,
 } as const;
-
-/** How a scored syllable looks on its stone (P4 v2). */
-export type StoneState = 'clean' | 'close' | 'wobbly';
-
-/** The P4 outcome. */
-export type PronOutcome = 'pass' | 'almost' | 'retry';
 
 /** A honeycomb cell's verdict on P4: under the pass line, just over it, or clean. */
 export type SyllableStatus = 'pass' | 'close' | 'fail';

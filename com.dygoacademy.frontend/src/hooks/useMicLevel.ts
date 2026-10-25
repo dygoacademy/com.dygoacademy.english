@@ -34,12 +34,13 @@ export function useMicLevel(stream: MediaStream | null, active = true): number {
       setLevel(0);
       return;
     }
-    let ctx: AudioContext;
+    let ctx: AudioContext | null;
     try {
       ctx = getAudioContext();
     } catch {
       return;
     }
+    if (!ctx) return; // no Web Audio: the meter stays empty
     const source = ctx.createMediaStreamSource(stream);
     const analyser = ctx.createAnalyser();
     analyser.fftSize = 1024;

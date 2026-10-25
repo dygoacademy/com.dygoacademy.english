@@ -64,14 +64,17 @@ export function SlowCompare() {
   // Slowly plays a copy slowed in the browser: make it before the tap, as Pronunciation does.
   const slowSrc = clips?.slow.src;
   useEffect(() => {
-    if (slowSrc) prepareSlowClip(slowSrc, PRON_SLOW_RATE);
+    if (slowSrc) prepareSlowClip(slowSrc, PRON_SLOW_RATE, undefined, true);
   }, [slowSrc]);
 
   const button = (label: string, clip: Clip) => (
     <Button
       variant="secondary"
       disabled={!clip.src}
-      onClick={() => clip.src && void player.play(clip.src, clip.rate).catch(() => undefined)}
+      onClick={() =>
+        clip.src &&
+        void player.play(clip.src, clip.rate, undefined, null, { stretch: clip.rate < 1 }).catch(() => undefined)
+      }
     >
       {clip.src ? label : SLOW_COPY.none(label)}
     </Button>

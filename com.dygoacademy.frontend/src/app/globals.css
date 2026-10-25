@@ -512,24 +512,12 @@
     --bee-body: #f2c744;
     --bee-stripe: #3b3020;
 
-    /* Pronunciation "Stepping stones" (P1–P4, 2026-10-11) */
-    --pond-water: #1f3e33;
+    /* Pronunciation: the old pond colours SP0 and Seed drop still use */
     --pond-wave: #3a5e4f;
     --pond-ripple: #7fa487;
     --pond-path: #b7d6ae;
-    --pond-splash: #f2d28b;
-    --stone: #5e7f70;
-    --stone-lit: #e8c66a;
-    --stone-checking: #b7d6ae;
     --stone-ok: #9cc39a;
     --stone-wobbly: #e8a87c;
-    --stone-text-light: #f4f1ea;
-    /* Pronunciation v2 (P4 v2, 2026-10-25): a close stone (pale, amber dashed edge), the selected ring, the chips. */
-    --stone-close: #c8ddb8;
-    --stone-close-edge: #e0b04a;
-    --stone-selected: #f2d28b;
-    --pron-chip: #2e5446;
-    --pron-chip-line: #3a5e4f;
     /* SP0 microphone off (SpeakMic denied) */
     --mic-off: #eae5da;
     --mic-off-body: #cfc8b8;
@@ -540,10 +528,9 @@
     --pron-almost-text: #6b5215;
     --pron-pass: #dde7da;
     --pron-ring: #e8a87c;
-    --pron-card-sunken: #fbf9f4;
     --pron-card-line: #efeae0;
     --pron-stress: #9a6e14;
-    --pron-mine: #fbf1ec; /* P4 compare: the learner's row */
+    --pron-mine: #fbf1ec; /* SoundButton: the learner's take */
     /* Pronunciation honeycomb (2026-10-25, docs/specs/Pronunciation-honeycomb-implementation-plan.md §6) */
     --comb-board: #24463a;
     --comb-deep: #1f3e33;
@@ -1092,58 +1079,9 @@
   }
 }
 
-/* Pronunciation "Stepping stones" (PronStones*.dc.html, 2026-10-11): the bee
-   hovers (1.8s) or hops (.6s), a lit stone splashes (1.2s), the big stone
-   ripples (2.4s), checking stones shimmer (1.2s) and dots blink (1.4s), the
-   mic rings (1.4s) and its 4 s ring runs down, a pollinated bee flies off
-   (2.4s). Reduced motion: all still. */
-@keyframes pron-hover {
-  0%,
-  100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-5px);
-  }
-}
-@keyframes pron-hop {
-  0%,
-  100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-10px);
-  }
-}
-@keyframes pron-splash {
-  0% {
-    transform: scale(0.6);
-    opacity: 0.8;
-  }
-  100% {
-    transform: scale(1.6);
-    opacity: 0;
-  }
-}
-@keyframes pron-ripple {
-  0% {
-    transform: scale(0.7);
-    opacity: 0.6;
-  }
-  100% {
-    transform: scale(1.5);
-    opacity: 0;
-  }
-}
-@keyframes pron-shimmer {
-  0%,
-  100% {
-    opacity: 0.45;
-  }
-  50% {
-    opacity: 1;
-  }
-}
+/* Pronunciation (PronStones*.dc.html): P3's dots blink (1.4s), P2's stop
+   button rings (1.4s) and its 4 s ring runs down; the honeycomb's own
+   motion is `.comb-*`. Reduced motion: all still. */
 @keyframes pron-dots {
   0%,
   80%,
@@ -1164,55 +1102,11 @@
     opacity: 0;
   }
 }
-@keyframes pron-away {
-  0% {
-    transform: translate(0, 0);
-  }
-  100% {
-    transform: translate(150px, -60px);
-    opacity: 0;
-  }
-}
-.pron-hover {
-  animation: pron-hover 1.8s ease-in-out infinite;
-}
-.pron-hop {
-  animation: pron-hop 0.6s ease-in-out infinite;
-}
-.pron-splash,
-.pron-ripple {
-  transform-box: fill-box;
-  transform-origin: center;
-}
-.pron-splash {
-  animation: pron-splash 1.2s ease-out infinite;
-}
-.pron-ripple {
-  animation: pron-ripple 2.4s ease-out infinite;
-}
-.pron-shimmer {
-  animation: pron-shimmer 1.2s ease-in-out infinite;
-}
 .pron-dot {
   animation: pron-dots 1.4s ease-in-out infinite;
 }
 .pron-ring {
   animation: pron-ring 1.4s ease-out infinite;
-}
-.pron-away {
-  animation: pron-away 2.4s ease-in forwards;
-}
-/* P4 v2: the selected stone's amber ring breathes (board `.ring`). */
-@keyframes pron-selected {
-  0% {
-    opacity: 0.9;
-  }
-  100% {
-    opacity: 0.2;
-  }
-}
-.pron-selected {
-  animation: pron-selected 1.2s ease-in-out infinite alternate;
 }
 /* SP0: the two rings round the mic (board `.ripple`). */
 @keyframes mic-ripple {
@@ -1230,7 +1124,7 @@
   transform-origin: center;
   animation: mic-ripple 2s ease-out infinite;
 }
-/* P4 v2: the head block pops in on a pass (board `.pop`). */
+/* P4: the headline block pops in on a pass (board `.pop`). */
 @keyframes pron-pop {
   0% {
     transform: scale(0.7);
@@ -1250,15 +1144,8 @@
 @media (prefers-reduced-motion: reduce) {
   .mic-ripple,
   .pron-pop,
-  .pron-selected,
-  .pron-hover,
-  .pron-hop,
-  .pron-splash,
-  .pron-ripple,
-  .pron-shimmer,
   .pron-dot,
-  .pron-ring,
-  .pron-away {
+  .pron-ring {
     animation: none;
   }
 }

@@ -28,15 +28,15 @@ const WORD: GuestWordCard = {
 };
 
 describe('slowCompareClips', () => {
-  it("gives the accent's clip at 1× and at 0.7×", () => {
+  it("gives the accent's clip at 1× and at 0.75×", () => {
     expect(slowCompareClips(WORD, 'US')).toEqual({
       normal: { src: 'us.m4a', rate: 1 },
-      slow: { src: 'us.m4a', rate: 0.7 },
+      slow: { src: 'us.m4a', rate: 0.75 },
     });
   });
 
   it("never falls back to the other accent's clip", () => {
-    expect(slowCompareClips(WORD, 'UK').slow).toEqual({ src: null, rate: 0.7 });
+    expect(slowCompareClips(WORD, 'UK').slow).toEqual({ src: null, rate: 0.75 });
   });
 });
 
@@ -53,13 +53,14 @@ describe('SlowCompare', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Look up' }));
 
     fireEvent.click(await screen.findByRole('button', { name: 'Normal 1×' }));
-    expect(play).toHaveBeenLastCalledWith('us.m4a', 1);
-    fireEvent.click(screen.getByRole('button', { name: 'Slowly 0.7×' }));
-    expect(play).toHaveBeenLastCalledWith('us.m4a', 0.7);
-    expect(prepare).toHaveBeenCalledWith('us.m4a', 0.7);
+    expect(play).toHaveBeenLastCalledWith('us.m4a', 1, undefined, null, { stretch: false });
+    fireEvent.click(screen.getByRole('button', { name: 'Slowly 0.75×' }));
+    // 0.75 is a player rate too: the slowed copy is asked for (`stretch`), as on Pronunciation's Slowly.
+    expect(play).toHaveBeenLastCalledWith('us.m4a', 0.75, undefined, null, { stretch: true });
+    expect(prepare).toHaveBeenCalledWith('us.m4a', 0.75, undefined, true);
     expect(get).toHaveBeenCalledWith('/words/guest-lookup?word=inevitable');
 
     fireEvent.click(screen.getByRole('button', { name: 'UK' }));
-    expect(screen.getByRole('button', { name: 'Slowly 0.7× (none)' })).toHaveProperty('disabled', true);
+    expect(screen.getByRole('button', { name: 'Slowly 0.75× (none)' })).toHaveProperty('disabled', true);
   });
 });
