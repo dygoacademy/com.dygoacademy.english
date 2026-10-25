@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 
 import { toScorerWordResult, type PronunciationReply } from './pronunciation-word';
+import type { SpeakingSyllable } from './speaking-syllables';
 
 /**
  * Phase 13 S17 / G6: checks a learner's recording against a sentence.
@@ -42,7 +43,17 @@ export interface ScorerWordResult {
   heard_text: string;
   duration_ms: number;
   latency_ms: number;
-  syllables: { ipa: string; score: number; wobbly: boolean; heard_ipa: string | null }[];
+  syllables: {
+    ipa: string;
+    /** The stone's text (stored syllable). */
+    text: string;
+    score: number;
+    wobbly: boolean;
+    heard_ipa: string | null;
+    /** Where the syllable is in the take (ms); null when the scorer gave no times. */
+    start_ms: number | null;
+    end_ms: number | null;
+  }[];
 }
 
 export interface SpeechAudio {
@@ -60,11 +71,16 @@ export interface SpeechChecker {
     /** Which scorer: the queue worker picks a free one from SPEECH_SCORER_URLS. */
     scorerUrl: string,
   ): Promise<ScorerResult>;
-  /** One word (Pronunciation): `ipa` for the practised accent, '' when the word has none. */
+  /**
+   * One word (Pronunciation): `ipa` for the practised accent ('' when the word has none),
+   * `stones` its stored syllables. Throws SyllableMismatchError when the scorer splits it
+   * into a different number of syllables.
+   */
   checkWord(
     audio: SpeechAudio,
     word: string,
     ipa: string,
+    stones: readonly SpeakingSyllable[],
     scorerUrl: string,
   ): Promise<ScorerWordResult>;
 }
@@ -108,12 +124,13 @@ export class MacSpeechChecker implements SpeechChecker {
     audio: SpeechAudio,
     word: string,
     ipa: string,
+    stones: readonly SpeakingSyllable[],
     scorerUrl: string,
   ): Promise<ScorerWordResult> {
     const raw = await this.post<PronunciationReply>(`${scorerUrl}/check-pronunciation`, audio, {
       sentence: word,
     });
-    return toScorerWordResult(raw, word, ipa);
+    return toScorerWordResult(raw, word, ipa, stones);
   }
 
   private async post<T>(

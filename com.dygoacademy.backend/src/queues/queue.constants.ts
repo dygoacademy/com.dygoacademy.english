@@ -81,6 +81,8 @@ export type SpeechCheckJob =
       word: string;
       /** The word's IPA for the practised accent (null when the word has none). */
       ipa: string | null;
+      /** The word's stored syllables for that accent (master_lexicon.syllables_us / _uk): one stone each. */
+      stones: { text: string; stressed: boolean }[];
       lexiconId: string;
       accent?: 'UK' | 'US';
       device?: 'phone' | 'tablet' | 'desktop';

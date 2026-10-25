@@ -8,6 +8,12 @@ import { SpeakingService } from './speaking.service';
 const TOPIC_ID = 'c0c0c0c0-0000-0000-0000-000000000005';
 const TOPIC_WORD_ID = 'e0e0e0e0-0000-0000-0000-000000000100';
 const TIMINGS = { duration: 3.3, words: [] };
+const STORED_US = [
+  { text: 'mi', stressed: true, start_ms: 30, end_ms: 210 },
+  { text: 'ti', stressed: false, start_ms: 210, end_ms: 430 },
+  { text: 'gate', stressed: false, start_ms: 430, end_ms: 800 },
+];
+const STORED_UK = STORED_US.map((x) => ({ ...x, start_ms: x.start_ms + 5 }));
 
 function itemRow(overrides: Record<string, unknown> = {}) {
   return {
@@ -29,6 +35,17 @@ function itemRow(overrides: Record<string, unknown> = {}) {
     timings_uk: TIMINGS,
     timings_us: null,
     is_due: true,
+    word_audio_url_us: 'https://cdn.test/audio/en/us/w.m4a',
+    word_audio_url_uk: 'https://cdn.test/audio/en/uk/w.m4a',
+    word_audio_slow_url_us: 'https://cdn.test/audio/en/us/slow.m4a',
+    word_audio_slow_url_uk: null,
+    syllables_us: STORED_US,
+    syllables_uk: STORED_UK,
+    pron_tip: {
+      'en-US': 'Hop across the stones: land hard on <b>MI</b>.',
+      'vi-VN': 'v',
+      'zh-CN': 'z',
+    },
     ...overrides,
   };
 }
@@ -127,6 +144,43 @@ describe('SpeakingService.forWord ("Say this one?")', () => {
     expect(calls[0].params).toEqual([TOPIC_WORD_ID]);
     expect(result.default_accent).toBe('US');
     expect(result.item).toMatchObject({ id: 'item-1', word: 'mitigate' });
+  });
+
+  it('returns the stored stones in the profile accent with their clip, the slow clip and the tip', async () => {
+    const { withUser } = withUserReturning([itemRow()], [{ english_variety: 'en-GB' }]);
+    const service = await makeService({ withUser });
+    const result = await service.forWord('user-1', TOPIC_WORD_ID);
+    expect(result.blocked).toBeNull();
+    expect(result.item.syllables).toEqual(STORED_UK);
+    expect(result.item.syllables_clip_url).toBe('https://cdn.test/audio/en/uk/w.m4a');
+    expect(result.item.word_audio_slow_url_us).toBe('https://cdn.test/audio/en/us/slow.m4a');
+    expect(result.item.pron_tip?.['en-US']).toContain('<b>MI</b>');
+    expect(result.item).not.toHaveProperty('syllables_us');
+    // No UK stones yet: the US ones, with the US clip.
+    const { withUser: w2 } = withUserReturning(
+      [itemRow({ syllables_uk: null })],
+      [{ english_variety: 'en-GB' }],
+    );
+    const r2 = await (await makeService({ withUser: w2 })).forWord('user-1', TOPIC_WORD_ID);
+    expect(r2.item.syllables).toEqual(STORED_US);
+    expect(r2.item.syllables_clip_url).toBe('https://cdn.test/audio/en/us/w.m4a');
+  });
+
+  it('a word with no stored stones is blocked (no_syllables), never one stone for the whole word', async () => {
+    const { withUser } = withUserReturning(
+      [itemRow({ syllables_us: null, syllables_uk: null })],
+      [{ english_variety: null }],
+    );
+    const service = await makeService({ withUser });
+    const warn = jest.spyOn(
+      (service as unknown as { logger: { warn: () => void } }).logger,
+      'warn',
+    );
+    const result = await service.forWord('user-1', TOPIC_WORD_ID);
+    expect(result.blocked).toBe('no_syllables');
+    expect(result.item.syllables).toEqual([]);
+    expect(result.item.syllables_clip_url).toBeNull();
+    expect(warn).toHaveBeenCalledWith(expect.stringContaining('no_syllables'));
   });
 
   it('404s when the word is unreadable or has no item', async () => {
@@ -302,7 +356,23 @@ describe('SpeakingService.harvest (SE5)', () => {
         ipa_uk: '/ˈmɪt.ɪ.ɡeɪt/',
         ipa_us: null,
         word: 'mitigate',
+        lexicon_id: 'lex-1',
         english_variety: 'en-GB',
+        syllables_us: STORED_US,
+        syllables_uk: STORED_UK,
+      },
+      {
+        topic_word_id: 'tw-2',
+        item_id: 'item-2',
+        harvested_score: null,
+        harvested_at: null,
+        ipa_uk: null,
+        ipa_us: null,
+        word: 'flat tyre',
+        lexicon_id: 'lex-2',
+        english_variety: 'en-GB',
+        syllables_us: null,
+        syllables_uk: null,
       },
     ]);
     const service = await makeService({ queryAs });
@@ -317,15 +387,13 @@ describe('SpeakingService.harvest (SE5)', () => {
         harvested_at: 'now',
         ipa_uk: '/ˈmɪt.ɪ.ɡeɪt/',
         ipa_us: null,
-        syllables: [
-          { text: 'mi', stressed: true },
-          { text: 'ti', stressed: false },
-          { text: 'gate', stressed: false },
-        ],
+        syllables: STORED_UK,
       },
-    ]);
+    ]); // flat tyre has no stones: left out of the Bees
+
     expect(queryAs.mock.calls[0][1]).toContain('speaking_harvests');
     expect(queryAs.mock.calls[0][1]).toContain('ml.ipa_uk');
+    expect(queryAs.mock.calls[0][1]).toContain('ml.syllables_uk');
     expect(queryAs.mock.calls[0][2]).toEqual([TOPIC_ID]);
   });
 

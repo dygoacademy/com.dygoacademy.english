@@ -1,3 +1,5 @@
+import { PRON } from './pron-config';
+import type { SpeakingSyllable } from './speaking-syllables';
 import { ipaSyllableTexts } from './speaking-timings';
 import type { ScorerWordResult } from './speech-checker';
 
@@ -5,8 +7,9 @@ import type { ScorerWordResult } from './speech-checker';
  * One word through the sentence scorer. The speech server's old `/check-word`
  * is gone: a word is sent to `POST /check-pronunciation` as a one-word
  * sentence, and this turns the reply into what the Pronunciation stones show
- * (`ScorerWordResult`): the phone scores grouped into syllables, one stone
- * each, labelled with the word's IPA syllables.
+ * (`ScorerWordResult`): the phone scores grouped into syllables, one per
+ * stored stone (master_lexicon.syllables_us / _uk), with each syllable's
+ * time in the take and what it sounded like.
  */
 
 /** A word in the scorer's `/check-pronunciation` reply. */
@@ -17,7 +20,18 @@ export interface PronunciationWord {
   score: number | null;
   status: 'ok' | 'unclear' | 'missing';
   heard: string | null;
-  phones?: { phone: string; score: number }[];
+  /**
+   * `start_ms` / `end_ms` (where the forced alignment put the phone in the take) and `heard`
+   * (what it sounded like, IPA; null when the model isn't sure) since the pronunciation v2
+   * speech server; absent from older ones.
+   */
+  phones?: {
+    phone: string;
+    score: number;
+    start_ms?: number | null;
+    end_ms?: number | null;
+    heard?: string | null;
+  }[];
 }
 
 export interface PronunciationReply {
@@ -31,20 +45,18 @@ export interface PronunciationReply {
 }
 
 /**
- * A syllable under this (0–100, mean of its phone scores) wobbles, or when one phone is under
- * WRONG_PHONE_SCORE. GOPT phone scores: 70 was the best-F1 cut for "wrong or heavily accented"
- * on speechocean762 (2026-10-11); 45 for "wrong".
+ * A syllable under this (0–100, mean of its phone scores) wobbles. Pronunciation v2
+ * (plan of 2026-10-25): one rule, 60. The old 70 line and "a phone under 45" were dropped.
  */
-export const WOBBLY_SCORE = 70;
-export const WRONG_PHONE_SCORE = 45;
+export const WOBBLY_SCORE = PRON.wobblyBelow;
 /** Less voice than this (ms) is nothing heard, whatever Whisper made of the noise. */
-export const MIN_VOICED_MS = 300;
+export const MIN_VOICED_MS = PRON.minVoiceMs;
 /**
  * Whisper heard another word: the take still counts only when the GOPT word score is at least this,
  * no syllable wobbles and the heard word is not shorter (see `heardOtherWord`), i.e. Whisper
  * misheard good speech. The speech server's own trust level (GOPT_HEARD_TRUST_SCORE).
  */
-export const HEARD_TRUST_SCORE = 90;
+export const HEARD_TRUST_SCORE = PRON.otherWordTrust;
 
 const VOWELS = new Set([
   'AA',
@@ -101,15 +113,36 @@ function mean(xs: number[]): number {
 }
 
 /**
- * The scorer's reply for a one-word sentence → the stones' result.
- * `ipa` gives the stone labels; when its syllable count differs from the
- * scorer's phones (another pronunciation), one stone for the whole word, as
- * when a word has no IPA.
+ * The scorer split the word into a different number of syllables than the
+ * stored stones (another pronunciation, or phones it couldn't place): the
+ * take can't be shown stone by stone, so it is a scoring error (P3 "Check
+ * again / Record again"), never one stone for the whole word (plan of
+ * 2026-10-25, flagged default).
+ */
+export class SyllableMismatchError extends Error {
+  constructor(
+    readonly stones: number,
+    readonly scored: number,
+  ) {
+    super(`scorer found ${scored} syllable(s), the word has ${stones} stone(s)`);
+    this.name = 'SyllableMismatchError';
+  }
+}
+
+/**
+ * The scorer's reply for a one-word sentence → the stones' result. `stones`
+ * are the word's stored syllables for the accent (one stone each); `ipa`
+ * labels them with the IPA syllables when it splits the same way. A
+ * syllable's time is from its first phone's start to its last phone's end,
+ * and `heard_ipa` joins what its phones sounded like (null when any is
+ * unsure). Throws SyllableMismatchError when the phones don't make as many
+ * syllables as there are stones.
  */
 export function toScorerWordResult(
   raw: PronunciationReply,
   word: string,
   ipa: string,
+  stones: readonly SpeakingSyllable[],
 ): ScorerWordResult {
   const w = raw.words[0];
   const base = {
@@ -129,22 +162,49 @@ export function toScorerWordResult(
   const total = clamp(w.score ?? raw.total);
 
   const phones = w.phones ?? [];
-  const groups = syllabify(phones.map((p) => p.phone));
+  const groups =
+    phones.length === 0
+      ? []
+      : stones.length === 1
+        ? [phones.map((p) => p.phone)]
+        : syllabify(phones.map((p) => p.phone));
   const labels = ipaSyllableTexts(ipa);
-  const syllables =
-    phones.length > 0 && groups.length === labels.length
-      ? groups.map((g, i) => {
-          const start = groups.slice(0, i).reduce((n, x) => n + x.length, 0);
-          const scores = phones.slice(start, start + g.length).map((p) => p.score);
-          const score = clamp(mean(scores));
-          return {
-            ipa: labels[i],
-            score,
-            wobbly: score < WOBBLY_SCORE || Math.min(...scores) < WRONG_PHONE_SCORE,
-            heard_ipa: null,
-          };
-        })
-      : [{ ipa: word, score: total, wobbly: total < WOBBLY_SCORE, heard_ipa: null }];
+  let syllables: ScorerWordResult['syllables'];
+  if (phones.length === 0 && stones.length === 1) {
+    // Nothing to place (no known phones): the one stone takes the word's score.
+    syllables = [
+      {
+        ipa: labels[0] ?? word,
+        text: stones[0].text,
+        score: total,
+        wobbly: total < WOBBLY_SCORE,
+        heard_ipa: null,
+        start_ms: null,
+        end_ms: null,
+      },
+    ];
+  } else if (groups.length !== stones.length) {
+    throw new SyllableMismatchError(stones.length, groups.length);
+  } else {
+    let at = 0;
+    syllables = groups.map((g, i) => {
+      const own = phones.slice(at, at + g.length);
+      at += g.length;
+      const score = clamp(mean(own.map((p) => p.score)));
+      const heard = own.map((p) => p.heard ?? null);
+      const starts = own.map((p) => p.start_ms).filter((v): v is number => typeof v === 'number');
+      const ends = own.map((p) => p.end_ms).filter((v): v is number => typeof v === 'number');
+      return {
+        ipa: labels.length === stones.length ? labels[i] : stones[i].text,
+        text: stones[i].text,
+        score,
+        wobbly: score < WOBBLY_SCORE,
+        heard_ipa: heard.every((h) => h) ? heard.join('') : null,
+        start_ms: starts.length === own.length ? Math.min(...starts) : null,
+        end_ms: ends.length === own.length ? Math.max(...ends) : null,
+      };
+    });
+  }
   const other = heardOtherWord(raw.heard_text, word);
   const status: ScorerWordResult['status'] =
     other !== null &&

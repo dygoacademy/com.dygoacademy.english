@@ -3,6 +3,7 @@ import {
   heardOtherWord,
   spelledSyllables,
   syllabify,
+  SyllableMismatchError,
   toScorerWordResult,
   WOBBLY_SCORE,
   type PronunciationReply,
@@ -61,13 +62,19 @@ const reply = (
   ...top,
 });
 const MITIGATE = '/ˈmɪt.ɪ.ɡeɪt/';
+const STONES = [
+  { text: 'mi', stressed: true },
+  { text: 'ti', stressed: false },
+  { text: 'gate', stressed: false },
+];
 
 describe('toScorerWordResult', () => {
-  it('one stone per IPA syllable, scored by the mean of its phones', () => {
-    const r = toScorerWordResult(reply(), 'mitigate', MITIGATE);
+  it('one syllable per stored stone, scored by the mean of its phones', () => {
+    const r = toScorerWordResult(reply(), 'mitigate', MITIGATE, STONES);
     expect(r.status).toBe('ok');
     expect(r.total).toBe(92);
     expect(r.syllables.map((s) => s.ipa)).toEqual(['ˈmɪt', 'ɪ', 'ɡeɪt']);
+    expect(r.syllables.map((s) => s.text)).toEqual(['mi', 'ti', 'gate']);
     expect(r.syllables.map((s) => s.score)).toEqual([93, 93, 92]);
     expect(r.syllables.every((s) => !s.wobbly && s.heard_ipa === null)).toBe(true);
     expect(r.duration_ms).toBe(900);
@@ -80,42 +87,81 @@ describe('toScorerWordResult', () => {
         ['M', 95],
         ['IH', 90],
         ['T', 92],
-        ['AH', 30],
+        ['AH', 20],
         ['G', 91],
         ['EY', 93],
         ['T', 92],
       ]),
     });
-    const r = toScorerWordResult(bad, 'mitigate', MITIGATE);
+    const r = toScorerWordResult(bad, 'mitigate', MITIGATE, STONES);
     expect(r.syllables.map((s) => s.wobbly)).toEqual([false, true, false]);
     expect(r.syllables[1].score).toBeLessThan(WOBBLY_SCORE);
   });
 
-  it('wobbles a syllable with one clearly wrong phone even when the mean is fine', () => {
-    const one = reply({
-      phones: phones([
-        ['M', 99],
-        ['IH', 99],
-        ['T', 99],
-        ['AH', 99],
-        ['G', 99],
-        ['EY', 99],
-        ['T', 40],
-      ]),
+  it('wobbly is one rule: a syllable under 60 (no 70 line, no single-phone rule)', () => {
+    expect(WOBBLY_SCORE).toBe(60);
+    const at = (score: number, last = 99) =>
+      toScorerWordResult(
+        reply({
+          phones: phones([
+            ['M', 99],
+            ['IH', 99],
+            ['T', score],
+            ['AH', score],
+            ['G', 99],
+            ['EY', 99],
+            ['T', last],
+          ]),
+        }),
+        'mitigate',
+        MITIGATE,
+        STONES,
+      ).syllables;
+    expect(at(65)[1].wobbly).toBe(false); // 65 wobbled under the old 70 line
+    expect(at(59)[1].wobbly).toBe(true);
+    expect(at(99, 40)[2].wobbly).toBe(false); // one phone at 40: the mean is 79
+  });
+
+  it('gives each syllable its time in the take and what it sounded like', () => {
+    const timed = reply({
+      phones: [
+        { phone: 'M', score: 95, start_ms: 100, end_ms: 160, heard: 'm' },
+        { phone: 'IH', score: 90, start_ms: 160, end_ms: 240, heard: 'ɪ' },
+        { phone: 'T', score: 50, start_ms: 240, end_ms: 300, heard: 't' },
+        { phone: 'AH', score: 40, start_ms: 300, end_ms: 380, heard: 'aɪ' },
+        { phone: 'G', score: 91, start_ms: 380, end_ms: 430, heard: 'ɡ' },
+        { phone: 'EY', score: 93, start_ms: 430, end_ms: 560, heard: null },
+        { phone: 'T', score: 92, start_ms: 560, end_ms: 600, heard: 't' },
+      ],
     });
-    expect(toScorerWordResult(one, 'mitigate', MITIGATE).syllables[2].wobbly).toBe(true);
+    const r = toScorerWordResult(timed, 'mitigate', MITIGATE, STONES).syllables;
+    expect(r.map((s) => [s.start_ms, s.end_ms])).toEqual([
+      [100, 240],
+      [240, 380],
+      [380, 600],
+    ]);
+    expect(r.map((s) => s.heard_ipa)).toEqual(['mɪ', 'taɪ', null]); // gate: one phone unsure
+    // An older scorer gives no times: null, not a guess.
+    expect(toScorerWordResult(reply(), 'mitigate', MITIGATE, STONES).syllables[0]).toMatchObject({
+      start_ms: null,
+      end_ms: null,
+      heard_ipa: null,
+    });
   });
 
   it('not_heard when nothing was heard or the word is missing', () => {
-    expect(toScorerWordResult(reply({}, { heard_text: ' ' }), 'mitigate', MITIGATE)).toMatchObject({
+    expect(
+      toScorerWordResult(reply({}, { heard_text: ' ' }), 'mitigate', MITIGATE, STONES),
+    ).toMatchObject({
       status: 'not_heard',
       total: 0,
       syllables: [],
     });
     expect(
-      toScorerWordResult(reply({ status: 'missing', score: 20 }), 'mitigate', MITIGATE).status,
+      toScorerWordResult(reply({ status: 'missing', score: 20 }), 'mitigate', MITIGATE, STONES)
+        .status,
     ).toBe('not_heard');
-    expect(toScorerWordResult({ ...reply(), words: [] }, 'mitigate', MITIGATE).status).toBe(
+    expect(toScorerWordResult({ ...reply(), words: [] }, 'mitigate', MITIGATE, STONES).status).toBe(
       'not_heard',
     );
   });
@@ -125,15 +171,15 @@ describe('toScorerWordResult', () => {
       { heard: 'you', score: 27, status: 'unclear' },
       { heard_text: 'You', voiced_ms: 0 },
     );
-    expect(toScorerWordResult(silent, 'mitigate', MITIGATE).status).toBe('not_heard');
+    expect(toScorerWordResult(silent, 'mitigate', MITIGATE, STONES).status).toBe('not_heard');
     const spoken = reply({}, { voiced_ms: 640 });
-    expect(toScorerWordResult(spoken, 'mitigate', MITIGATE).status).toBe('ok');
+    expect(toScorerWordResult(spoken, 'mitigate', MITIGATE, STONES).status).toBe('ok');
   });
 
   it('other_word when Whisper heard a shorter word, however well the sounds scored', () => {
     // migrate for mitigate: a syllable left out (the scorer trusts sounds of 90+, so heard is null)
     const migrate = reply({ score: 95, heard: null }, { heard_text: 'Migrate.' });
-    expect(toScorerWordResult(migrate, 'mitigate', MITIGATE).status).toBe('other_word');
+    expect(toScorerWordResult(migrate, 'mitigate', MITIGATE, STONES).status).toBe('other_word');
     // cloud for cloudy (Dylan, 2026-10-25: it passed)
     const cloud = reply(
       {
@@ -150,7 +196,12 @@ describe('toScorerWordResult', () => {
       },
       { heard_text: 'Cloud.' },
     );
-    expect(toScorerWordResult(cloud, 'cloudy', '/ˈklaʊ.di/').status).toBe('other_word');
+    expect(
+      toScorerWordResult(cloud, 'cloudy', '/ˈklaʊ.di/', [
+        { text: 'clou', stressed: true },
+        { text: 'dy', stressed: false },
+      ]).status,
+    ).toBe('other_word');
   });
 
   it('other_word when Whisper heard another word and the sounds are not clearly right', () => {
@@ -158,7 +209,7 @@ describe('toScorerWordResult', () => {
       { heard: 'migrant', score: 85, status: 'unclear' },
       { heard_text: 'migrant' },
     );
-    expect(toScorerWordResult(unclear, 'mitigate', MITIGATE).status).toBe('other_word');
+    expect(toScorerWordResult(unclear, 'mitigate', MITIGATE, STONES).status).toBe('other_word');
     const wobbly = reply(
       {
         score: 92,
@@ -166,7 +217,7 @@ describe('toScorerWordResult', () => {
           ['M', 95],
           ['IH', 90],
           ['T', 92],
-          ['AH', 30],
+          ['AH', 20],
           ['G', 91],
           ['EY', 93],
           ['T', 92],
@@ -174,7 +225,7 @@ describe('toScorerWordResult', () => {
       },
       { heard_text: 'mitigant' },
     );
-    expect(toScorerWordResult(wobbly, 'mitigate', MITIGATE).status).toBe('other_word');
+    expect(toScorerWordResult(wobbly, 'mitigate', MITIGATE, STONES).status).toBe('other_word');
   });
 
   it('ok when Whisper misheard a word whose sounds are all right (same length, 90+, no wobble)', () => {
@@ -182,13 +233,16 @@ describe('toScorerWordResult', () => {
       reply({ score: HEARD_TRUST_SCORE + 2 }, { heard_text: 'Mitty gate' }),
       'mitigate',
       MITIGATE,
+      STONES,
     );
     expect(r.status).toBe('ok');
   });
 
   it('ok when Whisper heard the word, with punctuation, capitals, extra words or UK spelling', () => {
     for (const heard_text of ['Mitigate.', 'mitigate, mitigate', 'I mitigate']) {
-      expect(toScorerWordResult(reply({}, { heard_text }), 'mitigate', MITIGATE).status).toBe('ok');
+      expect(
+        toScorerWordResult(reply({}, { heard_text }), 'mitigate', MITIGATE, STONES).status,
+      ).toBe('ok');
     }
     expect(heardOtherWord('Colour', 'color')).toBeNull();
     expect(heardOtherWord('criticise', 'criticize')).toBeNull();
@@ -196,15 +250,40 @@ describe('toScorerWordResult', () => {
     expect(heardOtherWord('lookup', 'look up')).toBeNull();
   });
 
-  it('falls back to one stone when the IPA syllables do not match the phones', () => {
-    for (const ipa of ['', '/ˈmɪ.tɪ/', '/ˈmɪt/']) {
-      const r = toScorerWordResult(reply(), 'mitigate', ipa);
-      expect(r.syllables).toEqual([{ ipa: 'mitigate', score: 92, wobbly: false, heard_ipa: null }]);
-    }
+  it('a scorer split that differs from the stored stones is a scoring error, never one stone', () => {
+    const two = [
+      { text: 'miti', stressed: true },
+      { text: 'gate', stressed: false },
+    ];
+    expect(() => toScorerWordResult(reply(), 'mitigate', MITIGATE, two)).toThrow(
+      SyllableMismatchError,
+    );
+    // Labels fall back to the stone text when the IPA splits differently.
+    const r = toScorerWordResult(reply(), 'mitigate', '/ˈmɪtɪɡeɪt/', STONES);
+    expect(r.syllables.map((s) => s.ipa)).toEqual(['mi', 'ti', 'gate']);
+  });
+
+  it('a one-stone word takes all its phones as one syllable', () => {
+    const cat = reply(
+      {
+        text: 'cat',
+        phones: phones([
+          ['K', 90],
+          ['AE', 80],
+          ['T', 70],
+        ]),
+      },
+      { heard_text: 'cat' },
+    );
+    const r = toScorerWordResult(cat, 'cat', '/kæt/', [{ text: 'cat', stressed: true }]);
+    expect(r.syllables).toHaveLength(1);
+    expect(r.syllables[0]).toMatchObject({ text: 'cat', score: 80, wobbly: false });
   });
 
   it('uses the overall total when the word was not scored (no phones known)', () => {
-    const r = toScorerWordResult(reply({ score: null, phones: [] }, { total: 77 }), 'zzqxv', '');
+    const r = toScorerWordResult(reply({ score: null, phones: [] }, { total: 77 }), 'zzqxv', '', [
+      { text: 'zzqxv', stressed: true },
+    ]);
     expect(r.total).toBe(77);
     expect(r.syllables).toHaveLength(1);
   });

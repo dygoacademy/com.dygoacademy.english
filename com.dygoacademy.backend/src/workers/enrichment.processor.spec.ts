@@ -3,6 +3,7 @@ import { Job, UnrecoverableError } from 'bullmq';
 
 import { GeminiEnrichmentService, LexiconEntry } from '../ai/gemini-enrichment.service';
 import { GoogleWordTtsService } from '../ai/google-word-tts.service';
+import { PronDataService, type PronData } from '../ai/pron-data.service';
 import { UsageCapExceededError } from '../ai/usage-cap.service';
 import { DatabaseService } from '../database/database.service';
 import {
@@ -28,6 +29,14 @@ const encodeForWebMock = encodeForWeb as jest.MockedFunction<typeof encodeForWeb
  * terminal failure (last BullMQ attempt) records FAILED with a reason
  * instead of silently dropping the word.
  */
+const PRON_DATA: PronData = {
+  syllables_us: [{ text: 'e', stressed: false, start_ms: 0, end_ms: 100 }],
+  syllables_uk: null,
+  pron_tip: { 'en-US': 'tip', 'vi-VN': 'tip', 'zh-CN': 'tip' },
+  audio_slow_url_us: null,
+  audio_slow_url_uk: null,
+};
+
 describe('EnrichmentProcessor', () => {
   let processor: EnrichmentProcessor;
   let queryMock: jest.Mock;
@@ -38,6 +47,7 @@ describe('EnrichmentProcessor', () => {
   let googleConfigured: boolean;
   let uploadMock: jest.Mock;
   let hasObjectMock: jest.Mock;
+  let pronMakeMock: jest.Mock;
 
   const entry: LexiconEntry = {
     part_of_speech: 'adjective',
@@ -94,6 +104,7 @@ describe('EnrichmentProcessor', () => {
       .fn()
       .mockResolvedValue('http://localhost:9000/dygo-audio/audio/en/us/abc.wav');
     hasObjectMock = jest.fn().mockResolvedValue(false); // default: no audio in storage yet
+    pronMakeMock = jest.fn().mockResolvedValue(PRON_DATA);
     encodeForWebMock.mockReset();
     encodeForWebMock.mockResolvedValue({
       primary: 'm4a',
@@ -127,6 +138,7 @@ describe('EnrichmentProcessor', () => {
             synthesizeWord: synthesizeWordMock,
           },
         },
+        { provide: PronDataService, useValue: { make: pronMakeMock } },
         {
           provide: StorageService,
           useValue: {
@@ -152,6 +164,50 @@ describe('EnrichmentProcessor', () => {
     const updateCall = queryMock.mock.calls[1];
     expect(updateCall[0]).toMatch(/update public\.topic_words/i);
     expect(updateCall[1]).toEqual(['lex-1', 'tw-1']);
+  });
+
+  it('pronunciation v2: after READY, a word missing its stones gets them (and the row is written)', async () => {
+    const row = {
+      id: 'lex-1',
+      normalized_word: 'ephemeral',
+      language_code: 'en',
+      ipa_us: null,
+      ipa_uk: null,
+      audio_url_us: null,
+      audio_url_uk: null,
+      has_data: false,
+    };
+    queryMock.mockResolvedValueOnce([{ id: 'lex-1', audio_url_us: 'https://audio.example/x.wav' }]);
+    queryMock.mockResolvedValueOnce([]); // topic_words update (READY)
+    queryMock.mockResolvedValueOnce([row]); // pron data read
+    queryMock.mockResolvedValueOnce([]); // pron data write
+
+    await processor.process(makeJob());
+
+    const sql = queryMock.mock.calls.map((c) => String(c[0]));
+    const ready = sql.findIndex((q) => /update public\.topic_words/i.test(q));
+    const write = sql.findIndex((q) => /set syllables_us = \$2::jsonb/.test(q));
+    expect(ready).toBeGreaterThanOrEqual(0);
+    expect(write).toBeGreaterThan(ready); // the learner never waits for it
+    expect(pronMakeMock).toHaveBeenCalledWith(row);
+    expect(queryMock.mock.calls[write][1][1]).toBe(JSON.stringify(PRON_DATA.syllables_us));
+  });
+
+  it('pronunciation v2: a word that has its data is left alone; a failure never fails the word', async () => {
+    queryMock.mockResolvedValueOnce([{ id: 'lex-1', audio_url_us: 'https://audio.example/x.wav' }]);
+    queryMock.mockResolvedValueOnce([]);
+    queryMock.mockResolvedValueOnce([{ id: 'lex-1', has_data: true }]);
+    await processor.process(makeJob());
+    expect(pronMakeMock).not.toHaveBeenCalled();
+
+    queryMock.mockReset();
+    queryMock.mockResolvedValueOnce([{ id: 'lex-1', audio_url_us: 'https://audio.example/x.wav' }]);
+    queryMock.mockResolvedValueOnce([]);
+    queryMock.mockResolvedValueOnce([
+      { id: 'lex-1', normalized_word: 'ephemeral', has_data: false },
+    ]);
+    pronMakeMock.mockRejectedValueOnce(new Error('Daily google_tts limit reached'));
+    await expect(processor.process(makeJob())).resolves.toBeUndefined();
   });
 
   it('cache miss: calls Gemini + TTS + storage, upserts master_lexicon, marks READY', async () => {
@@ -279,9 +335,10 @@ describe('EnrichmentProcessor', () => {
 
     await processor.process(makeJob());
 
-    const last = queryMock.mock.calls[queryMock.mock.calls.length - 1];
-    expect(last[0]).toMatch(/update public\.topic_words/i);
-    expect(last[1]).toEqual(['lex-1', 'tw-1']);
+    const ready = queryMock.mock.calls.find((c) =>
+      /update public\.topic_words/i.test(String(c[0])),
+    );
+    expect(ready?.[1]).toEqual(['lex-1', 'tw-1']);
   });
 
   it('audio-backfill job: reuses audio already in storage (from before a reset) without calling TTS', async () => {

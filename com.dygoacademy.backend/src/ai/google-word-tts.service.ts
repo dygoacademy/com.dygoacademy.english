@@ -4,6 +4,8 @@ import { ConfigService } from '@nestjs/config';
 import { UsageCapService } from './usage-cap.service';
 
 const TTS_URL = 'https://texttospeech.googleapis.com/v1/text:synthesize';
+/** SSML mark timepoints are only on v1beta1 (enableTimePointing). */
+const TTS_BETA_URL = 'https://texttospeech.googleapis.com/v1beta1/text:synthesize';
 
 /** A word clip's accent: profiles.english_variety en-GB -> UK, anything else -> US. */
 export type WordAccent = 'UK' | 'US';
@@ -96,6 +98,29 @@ export function wordSsml(
 }
 
 /**
+ * SSML that says the word one stone at a time, `<mark name="s{k}"/>` before
+ * stone k and `<mark name="end"/>` after the last, each stone from its own
+ * IPA (`ipas`, stress marks kept) with its spelling as the text. Marks can't
+ * go inside a `<phoneme>`, so this is only for timing the stones: it says
+ * the word more carefully than `wordSsml` (see pron-syllables syllableSpans).
+ */
+export function markedWordSsml(
+  texts: readonly string[],
+  ipas: readonly string[],
+  accent: WordAccent = 'US',
+): string | null {
+  const phs = ipas.map((ipa) => ipaForPhoneme(ipa, accent));
+  if (phs.some((ph) => !ph) || texts.length !== ipas.length) return null;
+  const body = texts
+    .map(
+      (t, k) =>
+        `<mark name="s${k}"/><phoneme alphabet="ipa" ph="${phs[k]}">${escapeXml(t)}</phoneme>`,
+    )
+    .join('');
+  return `<speak>${body}<mark name="end"/></speak>`;
+}
+
+/**
  * Word audio (Hear it, Slowly, Review) from Google Cloud TTS, said from the
  * word's IPA. Replaced Gemini TTS for new clips on 2026-10-18: Gemini's
  * voice model only saw the spelling and sometimes said a different word
@@ -120,18 +145,43 @@ export class GoogleWordTtsService {
 
   /**
    * A 24 kHz mono WAV of `word` in the accent's voice, said from `ipa` (the
-   * caller picks it with `ipaForAccent`). Throws on a cap, network or API error.
+   * caller picks it with `ipaForAccent`), at `speakingRate` (default the
+   * learner pace; "Slowly" uses PRON.slowSpeakingRate). Throws on a cap,
+   * network or API error.
    */
   async synthesizeWord(
     word: string,
     ipa: string | null | undefined,
     accent: WordAccent = 'US',
+    speakingRate = WORD_SPEAKING_RATE,
   ): Promise<Buffer> {
+    return (await this.synthesize(wordSsml(word, ipa, accent), accent, speakingRate, false)).wav;
+  }
+
+  /**
+   * The word said stone by stone (`markedWordSsml`) and when each mark was
+   * reached (seconds, by mark name). Null when a stone's IPA can't be said.
+   */
+  async synthesizeMarked(
+    texts: readonly string[],
+    ipas: readonly string[],
+    accent: WordAccent = 'US',
+  ): Promise<{ wav: Buffer; marks: Record<string, number> } | null> {
+    const ssml = markedWordSsml(texts, ipas, accent);
+    if (!ssml) return null;
+    return this.synthesize(ssml, accent, WORD_SPEAKING_RATE, true);
+  }
+
+  private async synthesize(
+    ssml: string,
+    accent: WordAccent,
+    speakingRate: number,
+    marks: boolean,
+  ): Promise<{ wav: Buffer; marks: Record<string, number> }> {
     const apiKey = this.apiKey();
     if (!apiKey) throw new Error('GOOGLE_TTS_API_KEY is not configured.');
-    const ssml = wordSsml(word, ipa, accent);
     await this.usage.take('google_tts', ssml.length);
-    const res = await fetch(`${TTS_URL}?key=${encodeURIComponent(apiKey)}`, {
+    const res = await fetch(`${marks ? TTS_BETA_URL : TTS_URL}?key=${encodeURIComponent(apiKey)}`, {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify({
@@ -140,16 +190,60 @@ export class GoogleWordTtsService {
         audioConfig: {
           audioEncoding: 'LINEAR16',
           sampleRateHertz: SAMPLE_RATE,
-          speakingRate: WORD_SPEAKING_RATE,
+          speakingRate,
         },
+        ...(marks ? { enableTimePointing: ['SSML_MARK'] } : {}),
       }),
     });
     if (!res.ok) {
       throw new Error(`Google TTS ${res.status}: ${(await res.text()).slice(0, 300)}`);
     }
-    const body = (await res.json()) as { audioContent?: string };
-    if (!body.audioContent) throw new Error(`Google TTS returned no audio for "${word}"`);
+    const body = (await res.json()) as {
+      audioContent?: string;
+      timepoints?: { markName: string; timeSeconds: number }[];
+    };
+    if (!body.audioContent) throw new Error('Google TTS returned no audio');
     // LINEAR16 comes back as a whole WAV file (RIFF header included).
-    return Buffer.from(body.audioContent, 'base64');
+    return {
+      wav: Buffer.from(body.audioContent, 'base64'),
+      marks: Object.fromEntries((body.timepoints ?? []).map((t) => [t.markName, t.timeSeconds])),
+    };
   }
+}
+
+/**
+ * The voiced part of a 16-bit PCM WAV (seconds): first to last sample louder
+ * than `threshold` (800 ≈ −32 dBFS). Null when it isn't such a WAV or is silent.
+ */
+export function voicedSpan(wav: Buffer, threshold = 800): { start: number; end: number } | null {
+  if (wav.length < 44 || wav.toString('ascii', 0, 4) !== 'RIFF') return null;
+  // Find the fmt and data chunks (Google's header is 44 bytes; ffmpeg's can be longer).
+  let at = 12;
+  let rate = 0;
+  let channels = 1;
+  let bits = 16;
+  while (at + 8 <= wav.length) {
+    const id = wav.toString('ascii', at, at + 4);
+    const size = wav.readUInt32LE(at + 4);
+    if (id === 'fmt ') {
+      channels = wav.readUInt16LE(at + 10);
+      rate = wav.readUInt32LE(at + 12);
+      bits = wav.readUInt16LE(at + 22);
+    } else if (id === 'data') {
+      if (!rate || bits !== 16) return null;
+      const end = Math.min(wav.length, at + 8 + size);
+      const frame = 2 * channels;
+      let first = -1;
+      let last = -1;
+      for (let i = at + 8, n = 0; i + 1 < end; i += frame, n++) {
+        if (Math.abs(wav.readInt16LE(i)) > threshold) {
+          if (first < 0) first = n;
+          last = n;
+        }
+      }
+      return first < 0 ? null : { start: first / rate, end: (last + 1) / rate };
+    }
+    at += 8 + size + (size % 2);
+  }
+  return null;
 }

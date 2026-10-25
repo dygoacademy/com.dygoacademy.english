@@ -51,10 +51,14 @@ Exported from the canvas on 2026-09-26:
 | `S1-seed-drop` | S1 · Fruit drops seeds (canvas page "Adult · Seeds & Harvest", approved 2026-10-23; English only) | after a review that turns a word into fruit | Seeds & Harvest Phase 2 |
 | `S2-bed-harvest` | S2 · Bed harvest | `/topics/[id]/harvest` | Seeds & Harvest Phase 1 |
 | `S3-seed-packets`, `S3-seed-packets-goal` | S3 · Pick a seed packet (first packet selected; Same goal selected) | `/topics/[id]/packets` | Seeds & Harvest Phase 1 |
+| `P1-say-word` (+ `-loading`, `-playing`, `-slowly`, `-sound-error`), `P2-recording(-beep)`, `P2b-not-heard` (+ `-noisy`, `-other-word`), `P3-checking` | P1 Say the word, P2 Recording, P2b Couldn't hear you, P3 Checking (canvas page "Adult · Pronunciation", 2026-10-11) | `/sounds/word` | Pronunciation Part 2 |
+| `P4-result-pass`, `-pass-last`, `-almost`, `-almost-last`, `-retry`, `-retry-last`, `-sunny-pass-last`, `-compensation` | P4 Result **v2** (2026-10-25): syllable chips, Native / You, one big button + link; pass, almost perfect and retry, on a middle bee and the last | `/sounds/word` | Pronunciation v2 Step A (references), Step B (built, phone; iPad keeps iP4) |
+| `SP0-mic`, `SP0-mic-denied` | SP0 Microphone, first time and denied (2026-10-25 board) | before the first recording | Pronunciation v2 Step B (built) |
 
 Every screen above also has a **Vietnamese reference**, `<name>-vi` (for example `A1-todays-garden-vi`, `GR3-tricky-patches-vi`): 24 English and 24 Vietnamese references in all (AU added 2026-09-29). Exception: S1–S3 (Seeds & Harvest) have no Vietnamese boards yet; they come in that plan's Phase 3, and until then vi-VN uses the English layout with translated copy, checked like Chinese.
 
 Seeds & Harvest (S1–S3): the build guide with every value per screen is `seeds-harvest.md` in this folder.
+Pronunciation (P1–P4, P2b, SP0): `pronunciation.md`; screens are checked on `/dev/pron` (development only). The old P4 references (`P4-result-pollinated`, `-long-word`, `-one-stone`) were removed on 2026-10-25 with the v2 board.
 
 ## Languages
 

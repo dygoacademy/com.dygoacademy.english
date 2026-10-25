@@ -43,6 +43,9 @@ ALSO = {
     "R": ["r", "ɾ", "ɛɹ", "ɑːɹ", "ɔːɹ", "ɪɹ", "ʊɹ", "ɚ"], "T": ["ɾ"], "UH": ["ʊɹ"], "UW": ["u"],
 }
 SCALE = 50  # model score (0–2) → 0–100
+# A phone's `heard` is given only when the frames' best non-blank token averages at least this
+# probability (greedy CTC decode); below it the model isn't sure what was said: null.
+HEARD_MIN_PROB = 0.5
 
 
 def pct(x: float) -> int:
@@ -52,6 +55,7 @@ def pct(x: float) -> int:
 class Gopt:
     def __init__(self, vocab: dict[str, int], blank: int) -> None:
         self.blank = blank
+        self.token = {i: t for t, i in vocab.items()}
         self.prim_id = {p: vocab[t] for p, t in PRIMARY.items()}
         self.cls_ids = [sorted({vocab[PRIMARY[p]]} | {vocab[t] for t in ALSO.get(p, []) if t in vocab}) for p in CLASSES]
         self.ah0, self.er0 = vocab["ə"], vocab["ɚ"]
@@ -65,16 +69,17 @@ class Gopt:
         self.model.eval()
 
     # ── features ──────────────────────────────────────────────────────────
-    def features(self, lp: torch.Tensor, phones: list[str]) -> tuple[np.ndarray, bool]:
+    def features(self, lp: torch.Tensor, phones: list[str]) -> tuple[np.ndarray, bool, list[list[int]]]:
         """(n, 84) float32 for the phones (ARPAbet with stress digits) force-aligned
-        to `lp` (log-softmax frames × vocab); False when the audio is too short to align."""
+        to `lp` (log-softmax frames × vocab); False when the audio is too short to align;
+        each phone's frames (from its first aligned frame up to the next phone's)."""
         n = len(phones)
         pure = [p.rstrip("012") for p in phones]
         ids = [self.ah0 if p == "AH0" else self.er0 if p == "ER0" else self.prim_id[q] for p, q in zip(phones, pure)]
         out = np.zeros((n, 84), np.float32)
         t = lp.shape[0]
         if n == 0 or t < 2 * n:
-            return out, False
+            return out, False, [[] for _ in phones]
         ali, _ = AF.forced_align(lp.unsqueeze(0), torch.tensor([ids]), blank=self.blank)
         spans: list[list[int]] = [[] for _ in ids]
         k, prev = -1, self.blank
@@ -95,11 +100,13 @@ class Gopt:
         cls = torch.stack([q[:, c].sum(-1) for c in self.cls_ids], -1)  # (T, 39)
         starts = [s[0] if s else None for s in spans]
         ok = all(spans)
+        extents: list[list[int]] = [[] for _ in ids]
         for j, fr in enumerate(spans):
             if not fr:
                 continue
             nxt = next((starts[m] for m in range(j + 1, n) if starts[m] is not None), fr[-1] + 3)
             ext = list(range(fr[0], min(t, max(nxt, fr[-1] + 1))))
+            extents[j] = ext
             lpp = torch.log(cls[fr].mean(0).clamp_min(1e-9)).clamp_min(-10)
             own = CLASSES.index(pure[j])
             out[j, :39] = lpp.numpy()
@@ -110,7 +117,28 @@ class Gopt:
             out[j, 81] = float(pmax[fr].mean())
             out[j, 82] = len(fr)
             out[j, 83] = float(int(lpp.argmax()) == own)
-        return out, ok
+        return out, ok, extents
+
+    def heard(self, lp: torch.Tensor, frames: list[int]) -> str | None:
+        """What `frames` sounded like as IPA: greedy CTC decode (best token per frame, repeats
+        and blanks dropped). None when no token stands out (mean best non-blank probability
+        under HEARD_MIN_PROB) or nothing but blank was heard."""
+        if not frames:
+            return None
+        seg = lp[frames]
+        best = seg.argmax(-1).tolist()
+        voiced = [f for f, b in enumerate(best) if b != self.blank]
+        if not voiced:
+            return None
+        if float(seg[voiced].exp().max(-1).values.mean()) < HEARD_MIN_PROB:
+            return None
+        out, prev = [], self.blank
+        for b in best:
+            if b != self.blank and b != prev:
+                out.append(self.token.get(b, ""))
+            prev = b
+        text = "".join(out)
+        return text or None
 
     # ── scores ────────────────────────────────────────────────────────────
     def run(self, feats: np.ndarray, phones: list[str]) -> dict:
@@ -129,12 +157,15 @@ class Gopt:
             "utt": [float(u[0, 0]) for u in (u1, u2, u3, u4, u5)],
         }
 
-    def score(self, lp: torch.Tensor, words: list[list[str]]) -> dict:
+    def score(self, lp: torch.Tensor, words: list[list[str]], frame_ms: float = 20.0) -> dict:
         """Scores for a sentence whose words have these phone lists (an empty list =
         a word with no known phones: left out, `None`). Returns per word
-        `{"score", "phones": [{"phone", "score"}]}` or None, plus the utterance scores."""
+        `{"score", "phones": [{"phone", "score", "start_ms", "end_ms", "heard"}]}` or None,
+        plus the utterance scores. `start_ms` / `end_ms`: where the forced alignment put the
+        phone (`frame_ms` a frame; null when it couldn't), `heard`: what it sounded like
+        (`heard`, IPA or null). Only fields were added, so older backends keep working."""
         flat = [p for w in words for p in w]
-        feats, aligned = self.features(lp, flat)
+        feats, aligned, frames = self.features(lp, flat)
         out_words: list[dict | None] = [None] * len(words)
         acc = tot = weight = 0.0
         if aligned:
@@ -148,11 +179,16 @@ class Gopt:
                 k = 0
                 for i in group:
                     m = len(words[i])
+                    base = offsets[i]
                     out_words[i] = {
                         "score": pct(float(np.mean(res["word"][k : k + m]))),
                         "phones": [
-                            {"phone": p.rstrip("012"), "score": pct(s)}
-                            for p, s in zip(words[i], res["phone"][k : k + m])
+                            {
+                                "phone": p.rstrip("012"),
+                                "score": pct(s),
+                                **self.timing(lp, frames[base + q], frame_ms),
+                            }
+                            for q, (p, s) in enumerate(zip(words[i], res["phone"][k : k + m]))
                         ],
                     }
                     k += m
@@ -164,4 +200,14 @@ class Gopt:
             "accuracy": pct(acc / weight) if weight else None,
             "total": pct(tot / weight) if weight else None,
             "aligned": aligned,
+        }
+
+    def timing(self, lp: torch.Tensor, frames: list[int], frame_ms: float) -> dict:
+        """A phone's place in the clip (ms) and what it sounded like."""
+        if not frames:
+            return {"start_ms": None, "end_ms": None, "heard": None}
+        return {
+            "start_ms": int(round(frames[0] * frame_ms)),
+            "end_ms": int(round((frames[-1] + 1) * frame_ms)),
+            "heard": self.heard(lp, frames),
         }

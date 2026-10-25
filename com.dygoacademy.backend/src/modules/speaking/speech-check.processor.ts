@@ -9,7 +9,13 @@ import { resolveUserTimezone } from '../srs/srs.service';
 import { SPEECH_CHECK_QUEUE, SpeechCheckJob } from '../../queues/queue.constants';
 import { toCheckResult, toWordCheckResult } from './speech-check.mapper';
 import { ScorerPool, SpeechCheckStore } from './speech-check.store';
-import { SPEECH_CHECKER, SpeechCheckError, SpeechChecker } from './speech-checker';
+import { SyllableMismatchError } from './pronunciation-word';
+import {
+  SPEECH_CHECKER,
+  SpeechCheckError,
+  SpeechChecker,
+  type SpeechAudio,
+} from './speech-checker';
 import { VoiceDonationService } from '../voice-donation/voice-donation.service';
 
 /**
@@ -20,8 +26,10 @@ import { VoiceDonationService } from '../voice-donation/voice-donation.service';
  * time). A word check that passes pollinates the word (`speaking_harvests`,
  * once per word, as the learner; never SRS). Voice donation: when the
  * learner's consent is active, an encrypted copy of a scored recording is
- * kept after the result is out (VoiceDonationService.keep, never throws);
- * otherwise the recording is dropped as before. Never throws, so BullMQ doesn't retry: the app shows a failure at
+ * kept after the result is out (VoiceDonationService.keep, never throws).
+ * Every other recording is deleted right after scoring: the buffer is
+ * zero-filled once the result (and any donation copy) is done, and on a
+ * failure at once (pronunciation v2, Dylan 2026-10-25). Never throws, so BullMQ doesn't retry: the app shows a failure at
  * once and the learner can Check again or Record again.
  */
 @Processor(SPEECH_CHECK_QUEUE)
@@ -53,15 +61,22 @@ export class SpeechCheckProcessor extends WorkerHost implements OnModuleInit {
     }
     const scorer = this.pool.acquire();
     const started = Date.now();
+    let donation: Promise<boolean> = Promise.resolve(false);
     try {
       const data = job.data;
       if (data.kind === 'word') {
-        const raw = await this.checker.checkWord(audio, data.word, data.ipa ?? '', scorer);
-        const result = toWordCheckResult(raw, data.word, data.ipa);
+        const raw = await this.checker.checkWord(
+          audio,
+          data.word,
+          data.ipa ?? '',
+          data.stones,
+          scorer,
+        );
+        const result = toWordCheckResult(raw, data.stones);
         const pollinated =
           result.passed && (await this.pollinate(data.userId, data.lexiconId, result.total));
         this.store.done(checkId, { ...result, pollinated });
-        void this.donations.keep(data.userId, audio, {
+        donation = this.donations.keep(data.userId, audio, {
           kind: 'word',
           text: data.word,
           targetIpa: data.ipa,
@@ -72,7 +87,7 @@ export class SpeechCheckProcessor extends WorkerHost implements OnModuleInit {
       } else {
         const raw = await this.checker.check(audio, data.sentence, data.targetIndex, scorer);
         this.store.done(checkId, toCheckResult(raw, data.sentence.trim().split(/\s+/).length));
-        void this.donations.keep(data.userId, audio, {
+        donation = this.donations.keep(data.userId, audio, {
           kind: 'sentence',
           text: data.sentence,
           targetIpa: null,
@@ -82,11 +97,21 @@ export class SpeechCheckProcessor extends WorkerHost implements OnModuleInit {
         });
       }
     } catch (err) {
-      const reason = err instanceof SpeechCheckError ? err.kind : 'unavailable';
-      if (!(err instanceof SpeechCheckError))
-        this.logger.warn(`speech check error: ${String(err)}`);
-      this.store.failed(checkId, reason);
+      if (err instanceof SyllableMismatchError) {
+        // A scoring error (P3 Check again / Record again), logged to find such words.
+        this.logger.warn(
+          `word check: syllable mismatch for "${(job.data as { word?: string }).word}": ${err.message}`,
+        );
+        this.store.failed(checkId, 'syllable_mismatch');
+      } else {
+        const reason = err instanceof SpeechCheckError ? err.kind : 'unavailable';
+        if (!(err instanceof SpeechCheckError))
+          this.logger.warn(`speech check error: ${String(err)}`);
+        this.store.failed(checkId, reason);
+      }
     } finally {
+      // Deleted right after scoring; a donation copy (consent only) is made first.
+      void donation.finally(() => wipe(audio));
       this.pool.release(scorer);
       // Timings only: never the audio, the sentence or the result.
       this.logger.log(`speech check ${Date.now() - started} ms on ${scorer}`);
@@ -134,4 +159,9 @@ export class SpeechCheckProcessor extends WorkerHost implements OnModuleInit {
       this.logger.warn(`weekly missions: ${String(err)}`);
     }
   }
+}
+
+/** Overwrites a recording's bytes, so nothing of it is left in memory once it's dropped. */
+export function wipe(audio: SpeechAudio): void {
+  audio.buffer.fill(0);
 }

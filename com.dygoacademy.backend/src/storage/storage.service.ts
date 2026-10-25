@@ -1,6 +1,11 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { HeadObjectCommand, PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
+import {
+  GetObjectCommand,
+  HeadObjectCommand,
+  PutObjectCommand,
+  S3Client,
+} from '@aws-sdk/client-s3';
 import { createHash } from 'node:crypto';
 
 /**
@@ -93,6 +98,24 @@ export class StorageService {
    * (media.dygoacademy.com and R2's bucket domain) resolve to the bucket
    * root, so there's never a bucket segment.
    */
+  /** The object at `key`, or null when it isn't there. */
+  async getObject(key: string): Promise<Buffer | null> {
+    try {
+      const res = await this.client.send(new GetObjectCommand({ Bucket: this.bucket, Key: key }));
+      return res.Body ? Buffer.from(await res.Body.transformToByteArray()) : null;
+    } catch (err) {
+      const status = (err as { $metadata?: { httpStatusCode?: number } }).$metadata?.httpStatusCode;
+      if (status === 404 || (err as { name?: string }).name === 'NoSuchKey') return null;
+      throw err;
+    }
+  }
+
+  /** The key of one of our public URLs (`publicUrlFor`), or null for any other URL. */
+  keyForUrl(url: string | null | undefined): string | null {
+    const base = `${this.publicUrl.replace(/\/+$/, '')}/`;
+    return url && url.startsWith(base) ? url.slice(base.length) : null;
+  }
+
   publicUrlFor(key: string): string {
     return `${this.publicUrl.replace(/\/+$/, '')}/${key}`;
   }

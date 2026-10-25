@@ -47,6 +47,18 @@ export interface SpeakingSyllable {
   stressed: boolean;
 }
 
+/** A stored stone (pronunciation v2): its place in the word clip `syllables_clip_url` (ms); null when not measured. */
+export interface StoredSyllable extends SpeakingSyllable {
+  start_ms: number | null;
+  end_ms: number | null;
+}
+
+/** The P1 tip by app locale, syllables in `<b>` (master_lexicon.pron_tip). */
+export type PronTip = Record<'en-US' | 'vi-VN' | 'zh-CN', string>;
+
+/** Why a word isn't offered in Pronunciation. */
+export type PronBlockedReason = 'no_syllables';
+
 /** One sentence in `GET /api/v1/speaking/session` and `GET /api/v1/speaking/words/:topicWordId`. */
 export interface SpeakingSessionItem {
   id: string;
@@ -73,8 +85,18 @@ export interface SpeakingSessionItem {
   word_audio_url_us?: string | null;
   /** The same in British English; null until made (play `word_audio_url_us`). Optional for older APIs. */
   word_audio_url_uk?: string | null;
-  /** The word's syllables for the stones, from the default accent's IPA; [] without one (optional for older APIs). */
-  syllables?: SpeakingSyllable[];
+  /** The word said slowly ("Slowly"); null until made. Optional for older APIs. */
+  word_audio_slow_url_us?: string | null;
+  word_audio_slow_url_uk?: string | null;
+  /**
+   * The stored stones in the profile accent (else the other accent's); [] when the word has
+   * none (not offered in Pronunciation). Spans are inside `syllables_clip_url`.
+   */
+  syllables?: StoredSyllable[];
+  /** The word clip the syllable spans belong to; null without one. Optional for older APIs. */
+  syllables_clip_url?: string | null;
+  /** The P1 tip by app locale; null until made. Optional for older APIs. */
+  pron_tip?: PronTip | null;
 }
 
 /** The Pond (Sound Garden on the Missions tab): `GET /api/v1/speaking/session[?topic_id=]`. */
@@ -89,6 +111,8 @@ export interface SpeakingSession {
 export interface SpeakingWordItem {
   default_accent: SpeakingAccent;
   item: SpeakingSessionItem;
+  /** `no_syllables`: not offered in Pronunciation (sentences still work). Null otherwise; absent from older APIs. */
+  blocked?: PronBlockedReason | null;
 }
 
 export interface SpeakingWordMark {
@@ -125,8 +149,8 @@ export interface SpeakingHarvestWord {
   /** The word's IPAs ("Bees are waiting" sound line); the row shows the profile accent's. Optional for older APIs. */
   ipa_uk?: string | null;
   ipa_us?: string | null;
-  /** The word's syllables (MI · ti · gate) in the profile accent, shown on the bee row instead of the IPA; optional for older APIs. */
-  syllables?: SpeakingSyllable[];
+  /** The stored stones (MI · ti · gate) in the profile accent, shown on the bee row; words without are left out. Optional for older APIs. */
+  syllables?: StoredSyllable[];
 }
 
 /** `GET /api/v1/groups/:id/echo` (SE6): the trickiest speakable word, totals only. */
@@ -182,12 +206,18 @@ export interface SpeakingCheckState<R = SpeakingCheckResult> {
 
 /** One syllable's verdict in a word check (Pronunciation P4). */
 export interface SpeakingWordCheckSyllable {
+  /** The syllable's IPA ("tɪ"), else the stone's text. */
   ipa: string;
+  /** The stone's text (absent from older APIs). */
+  text?: string;
   score: number;
-  /** The stone wobbles on P4. */
+  /** Under 60 (the server's view; P4 works its looks out from `score` with pron-config). */
   wobbly: boolean;
-  /** What a wobbly syllable sounded like ("taɪ"), when the scorer is sure; else null. */
+  /** What the syllable sounded like ("taɪ"), when the scorer is sure; else null. */
   heard_ipa: string | null;
+  /** Where the syllable is in the learner's take (ms), for "You" on its chip; null/absent when unknown. */
+  start_ms?: number | null;
+  end_ms?: number | null;
 }
 
 /** `POST /api/v1/speaking/check-pronunciation` → `GET /api/v1/speaking/check/:id` result: one word, a score per syllable. */
@@ -201,7 +231,7 @@ export interface SpeakingWordCheckResult {
   total: number;
   heard_text: string;
   syllables: SpeakingWordCheckSyllable[];
-  /** The same syllables spelled for the screen; [] if they don't line up. */
+  /** The stones (the word's stored syllables); [] from older APIs when they didn't line up. */
   spelling: SpeakingSyllable[];
   user_duration_ms: number;
   check_ms: number;

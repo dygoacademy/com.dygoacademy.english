@@ -17,6 +17,7 @@ import { SpeechCheckJob } from '../../queues/queue.constants';
 import { SpeechCheckProcessor } from './speech-check.processor';
 import { SpeechCheckService } from './speech-check.service';
 import { AUDIO_TTL_MS, RESULT_TTL_MS, ScorerPool, SpeechCheckStore } from './speech-check.store';
+import { SyllableMismatchError } from './pronunciation-word';
 import { ScorerResult, ScorerWordResult, SpeechCheckError } from './speech-checker';
 import type { SpeakingCheckResult, SpeakingWordCheckResult } from './speaking.types';
 import type { VoiceDonationService } from '../voice-donation/voice-donation.service';
@@ -305,6 +306,50 @@ describe('SpeechCheckProcessor', () => {
     store.onModuleDestroy();
   });
 
+  it('deletes the recording right after scoring when the learner has not opted in', async () => {
+    const rec = audio();
+    const { store, processor, job, keep } = make(jest.fn().mockResolvedValue(scorer({})));
+    store.add('c1', 'u', rec);
+    await processor.process(job('c1'));
+    await new Promise((r) => setImmediate(r));
+    expect(keep).toHaveBeenCalled(); // keep() finds no active consent and keeps nothing
+    expect(rec.buffer.every((b) => b === 0)).toBe(true);
+    store.onModuleDestroy();
+  });
+
+  it('opted in: the donation copy is made from the recording before it is deleted', async () => {
+    const rec = audio();
+    let copied: string | null = null;
+    const keep = jest.fn(async (_u: string, a: { buffer: Buffer }) => {
+      await new Promise((r) => setTimeout(r, 5));
+      copied = a.buffer.toString('hex');
+      return true;
+    });
+    const original = rec.buffer.toString('hex');
+    const { store, processor, job } = makeProcessor(
+      jest.fn().mockResolvedValue(scorer({})),
+      jest.fn(),
+      jest.fn(),
+      keep,
+    );
+    store.add('c1', 'u', rec);
+    await processor.process(job('c1'));
+    await new Promise((r) => setTimeout(r, 20));
+    expect(copied).toBe(original);
+    expect(rec.buffer.every((b) => b === 0)).toBe(true);
+    store.onModuleDestroy();
+  });
+
+  it('a failed check deletes the recording too', async () => {
+    const rec = audio();
+    const { store, processor, job } = make(jest.fn().mockRejectedValue(new Error('boom')));
+    store.add('c1', 'u', rec);
+    await processor.process(job('c1'));
+    await new Promise((r) => setImmediate(r));
+    expect(rec.buffer.every((b) => b === 0)).toBe(true);
+    store.onModuleDestroy();
+  });
+
   it('voice donation: a failed check keeps nothing', async () => {
     const { store, processor, job, keep } = make(jest.fn().mockRejectedValue(new Error('boom')));
     store.add('c1', 'u', audio());
@@ -340,6 +385,12 @@ describe('SpeechCheckProcessor', () => {
 
 describe('Word check (Pronunciation, 2026-10-11)', () => {
   const MITIGATE = '/ˈmɪt.ɪ.ɡeɪt/';
+  const STONES = [
+    { text: 'mi', stressed: true },
+    { text: 'ti', stressed: false },
+    { text: 'gate', stressed: false },
+  ];
+  const STORED = STONES.map((x) => ({ ...x, start_ms: null, end_ms: null }));
   const raw = (over: Partial<ScorerWordResult> = {}): ScorerWordResult => ({
     status: 'ok',
     total: 76,
@@ -347,34 +398,57 @@ describe('Word check (Pronunciation, 2026-10-11)', () => {
     duration_ms: 900,
     latency_ms: 700,
     syllables: [
-      { ipa: 'ˈmɪt', score: 91, wobbly: false, heard_ipa: null },
-      { ipa: 'ɪ', score: 48, wobbly: true, heard_ipa: 'aɪ' },
-      { ipa: 'ɡeɪt', score: 88, wobbly: false, heard_ipa: null },
+      {
+        ipa: 'ˈmɪt',
+        text: 'mi',
+        score: 91,
+        wobbly: false,
+        heard_ipa: null,
+        start_ms: 90,
+        end_ms: 220,
+      },
+      {
+        ipa: 'ɪ',
+        text: 'ti',
+        score: 48,
+        wobbly: true,
+        heard_ipa: 'aɪ',
+        start_ms: 220,
+        end_ms: 380,
+      },
+      {
+        ipa: 'ɡeɪt',
+        text: 'gate',
+        score: 88,
+        wobbly: false,
+        heard_ipa: null,
+        start_ms: 380,
+        end_ms: 640,
+      },
     ],
     ...over,
   });
 
-  it('passed = heard as the word at 80+; the spelling lines up with the stones', () => {
-    const almost = toWordCheckResult(raw(), 'mitigate', MITIGATE);
+  it('passed = heard as the word at 80+; the stones are the stored ones', () => {
+    const almost = toWordCheckResult(raw(), STONES);
     expect(almost).toMatchObject({ kind: 'word', status: 'ok', passed: false, total: 76 });
-    expect(almost.spelling.map((s) => s.text)).toEqual(['mi', 'ti', 'gate']);
-    expect(almost.spelling[0].stressed).toBe(true);
-    expect(almost.syllables[1]).toEqual({ ipa: 'ɪ', score: 48, wobbly: true, heard_ipa: 'aɪ' });
-    expect(toWordCheckResult(raw({ total: 80 }), 'mitigate', MITIGATE).passed).toBe(true);
-    expect(
-      toWordCheckResult(raw({ status: 'not_heard', total: 90 }), 'mitigate', MITIGATE).passed,
-    ).toBe(false);
-    expect(
-      toWordCheckResult(raw({ status: 'other_word', total: 40 }), 'mitigate', MITIGATE),
-    ).toMatchObject({
+    expect(almost.spelling).toEqual(STONES);
+    expect(almost.syllables[1]).toEqual({
+      ipa: 'ɪ',
+      text: 'ti',
+      score: 48,
+      wobbly: true,
+      heard_ipa: 'aɪ',
+      start_ms: 220,
+      end_ms: 380,
+    });
+    expect(toWordCheckResult(raw({ total: 80 }), STONES).passed).toBe(true);
+    expect(toWordCheckResult(raw({ total: 79 }), STONES).passed).toBe(false);
+    expect(toWordCheckResult(raw({ status: 'not_heard', total: 90 }), STONES).passed).toBe(false);
+    expect(toWordCheckResult(raw({ status: 'other_word', total: 40 }), STONES)).toMatchObject({
       status: 'other_word',
       passed: false,
     });
-    // The scorer fell back to one syllable (no IPA): no spelled stones.
-    const one = raw({
-      syllables: [{ ipa: 'mitigate', score: 70, wobbly: false, heard_ipa: null }],
-    });
-    expect(toWordCheckResult(one, 'mitigate', null).spelling).toEqual([]);
   });
 
   function service(rows: unknown[]) {
@@ -397,12 +471,14 @@ describe('Word check (Pronunciation, 2026-10-11)', () => {
     return { s, queryAs, queue };
   }
 
-  it('queues the word and its IPA for the accent, read as the learner; 404 when unreadable', async () => {
+  it('queues the word, its IPA and its stored stones for the accent, read as the learner; 404 when unreadable', async () => {
     const word = {
       lexicon_id: 'lex-1',
       word: 'mitigate',
       ipa_uk: MITIGATE,
       ipa_us: '/ˈmɪt̬.ə.ɡeɪt/',
+      syllables_us: STORED,
+      syllables_uk: STORED,
     };
     const { s, queryAs, queue } = service([word]);
     const r = await s.enqueueWord('u', 'tw-1', 'UK', audio(), { device: 'tablet' });
@@ -413,6 +489,7 @@ describe('Word check (Pronunciation, 2026-10-11)', () => {
       userId: 'u',
       word: 'mitigate',
       ipa: MITIGATE,
+      stones: STONES,
       lexiconId: 'lex-1',
       accent: 'UK',
       device: 'tablet',
@@ -431,6 +508,23 @@ describe('Word check (Pronunciation, 2026-10-11)', () => {
     );
   });
 
+  it('refuses a word with no stored stones (blocked: no_syllables), queuing nothing', async () => {
+    const { s, queue } = service([
+      {
+        lexicon_id: 'lex-2',
+        word: 'flat tyre',
+        ipa_uk: null,
+        ipa_us: null,
+        syllables_us: null,
+        syllables_uk: null,
+      },
+    ]);
+    await expect(s.enqueueWord('u', 'tw-2', 'US', audio())).rejects.toMatchObject({
+      message: 'no_syllables',
+    });
+    expect(queue.add).not.toHaveBeenCalled();
+  });
+
   const wordJob = (checkId: string) =>
     ({
       data: {
@@ -439,6 +533,7 @@ describe('Word check (Pronunciation, 2026-10-11)', () => {
         userId: 'u',
         word: 'mitigate',
         ipa: MITIGATE,
+        stones: STONES,
         lexiconId: 'lex-1',
       },
     }) as Job<SpeechCheckJob>;
@@ -456,6 +551,7 @@ describe('Word check (Pronunciation, 2026-10-11)', () => {
       expect.objectContaining({ mimetype: 'audio/mp4' }),
       'mitigate',
       MITIGATE,
+      STONES,
       expect.stringMatching(/^http:\/\/s[01]$/),
     );
     expect(queryAs).toHaveBeenCalledWith(
@@ -497,6 +593,17 @@ describe('Word check (Pronunciation, 2026-10-11)', () => {
       });
       store.onModuleDestroy();
     }
+  });
+
+  it('a scorer split unlike the stones fails the check as syllable_mismatch (P3 Check again)', async () => {
+    const { store, processor } = makeProcessor(
+      jest.fn(),
+      jest.fn().mockRejectedValue(new SyllableMismatchError(3, 2)),
+    );
+    store.add('w1', 'u', audio());
+    await processor.process(wordJob('w1'));
+    expect(store.get('w1', 'u')).toMatchObject({ status: 'failed', reason: 'syllable_mismatch' });
+    store.onModuleDestroy();
   });
 
   it('a failed save still shows the result', async () => {

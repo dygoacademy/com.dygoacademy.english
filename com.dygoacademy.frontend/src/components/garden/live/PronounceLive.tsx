@@ -2,12 +2,14 @@
 
 import * as React from 'react';
 import { useQueries, useQueryClient } from '@tanstack/react-query';
+import { useLocale } from 'next-intl';
 import { useRouter } from 'next/navigation';
 
 import { LIVE_LEVELS_PER_SECOND, useLiveLevels } from '@/hooks/useLiveLevels';
 import { ENVELOPE_FPS } from '@/lib/speaking/audio';
 import { useNativeEnvelope } from '@/hooks/useNativeEnvelope';
-import { prepareSlowClip, usePlayer } from '@/hooks/usePlayer';
+import { getPlayerTag, prepareSlowClip, usePlayer } from '@/hooks/usePlayer';
+import { useTake } from '@/hooks/useTake';
 import { useTopic } from '@/hooks/useTopic';
 import { apiClient } from '@/lib/api-client';
 import {
@@ -22,6 +24,7 @@ import {
   type Recording,
 } from '@/lib/speaking/audio';
 import { beepAndVibrate } from '@/lib/speaking/beep';
+import { track } from '@/lib/track';
 import { BEEP_GUARD_MS, SPEECH_SKIP_MS } from '@/lib/speaking/constants';
 import {
   litStones,
@@ -35,7 +38,10 @@ import {
   PRON_SLOW_RATE,
   pronVoiceEnded,
   resultView,
+  slowWord,
+  stoneText,
   stoneShares,
+  takeSyllable,
   unusableTake,
   voiceIn,
   voicedBars,
@@ -43,21 +49,23 @@ import {
   wordStones,
   type PronResultView,
 } from '@/lib/speaking/pronounce';
-import type { SpeakingWordItem } from '@/types';
+import type { PronTip, SpeakingWordCheckResult, SpeakingWordItem } from '@/types';
+import type { P4Action } from '@/lib/speaking/pron-result';
 
 import {
   PronounceScreen,
   type PronCompare,
   type PronNotHeardReason,
-  type PronAudio,
   type PronPhase,
 } from '../pronounce/PronounceScreen';
+import { PronResult } from '../pronounce/PronResult';
+import { SpeakMicScreen } from '../pronounce/SpeakMicScreen';
 import { SpeakNotice, type SpeakNoticeKind } from '../speaking/SpeakNotice';
 import { LiveError, LiveLoading } from './LiveState';
 
 /**
- * /sounds/word: Pronunciation "Stepping stones" (plan Part 2). Up to three
- * words in a row ("Bee 1 of 3"), each from `GET /speaking/words/:id`.
+ * /sounds/word: Pronunciation "Stepping stones" (plan Part 2). The words
+ * in a row ("Bee 1 of 3"), each from `GET /speaking/words/:id`.
  * P1 → tap the mic: the mic listens to the room for PRON_ROOM_MS, then a
  * beep and the take (P2: stones light as the voice goes on; stops 1 s
  * after the voice, at 4 s, or on Stop) → too quiet / too noisy: P2b, no
@@ -84,10 +92,24 @@ export function PronounceLive({
     })),
   });
   const topic = useTopic(topicId);
+  const router = useRouter();
   const [index, setIndex] = React.useState(0);
   const current = words[index];
+  const blocked = current?.data?.blocked ?? null;
 
-  if (!current?.data) {
+  // A word without stored stones isn't offered (pronunciation v2): logged,
+  // then the next bee, or back to the bed when it was the last.
+  React.useEffect(() => {
+    if (!blocked || !current?.data) return;
+    track({
+      name: 'pron_word_blocked',
+      props: { word_id: current.data.item.topic_word_id, reason: blocked },
+    });
+    if (index + 1 < wordIds.length) setIndex(index + 1);
+    else router.replace(closeHref);
+  }, [blocked, current?.data, index, wordIds.length, router, closeHref]);
+
+  if (!current?.data || blocked) {
     if (current?.isError) return <LiveError onRetry={() => void current.refetch()} />;
     return <LiveLoading />;
   }
@@ -127,15 +149,23 @@ function PronounceWord({
   onNext: () => void;
 }) {
   const router = useRouter();
+  const locale = useLocale() as keyof PronTip;
   const queryClient = useQueryClient();
   const player = usePlayer();
   const { item, default_accent: accent } = data;
   const stones = React.useMemo(() => wordStones(item), [item]);
   const wordS = nativeWordSeconds(item, accent);
 
-  const [phase, setPhase] = React.useState<PronPhase>('say');
-  /** Which of Hear it / Slowly the learner tapped last (null: some other clip). */
-  const [asked, setAsked] = React.useState<'hear' | 'slow' | null>(null);
+  const [phase, setPhase] = React.useState<PronPhase | 'mic'>('say');
+  /** SP0: ask before the first recording, or how to turn the mic back on. */
+  const [micState, setMicState] = React.useState<'ask' | 'denied'>('ask');
+  /** The mic permission as the browser reports it, read ahead so a tap stays a tap (iOS). */
+  const micPermission = useMicPermission();
+  /** The check behind P4 (each stone's heard IPA and its time in the take). */
+  const [check, setCheck] = React.useState<SpeakingWordCheckResult | null>(null);
+  /** P4: the chip selected (the weak one at first on almost and retry). */
+  const [chip, setChip] = React.useState(-1);
+  const chipTimer = React.useRef<ReturnType<typeof setTimeout> | null>(null);
   const [notice, setNotice] = React.useState<SpeakNoticeKind | null>(() =>
     speakingSupport().recorder ? null : 'unsupported',
   );
@@ -144,7 +174,10 @@ function PronounceWord({
   const [started, setStarted] = React.useState(false);
   const [elapsedMs, setElapsedMs] = React.useState(0);
   const [recording, setRecording] = React.useState<Recording | null>(null);
-  const [recUrl, setRecUrl] = React.useState<string | null>(null);
+  /** The take for "You": in memory only, cleared on leaving P4 (useTake). */
+  const take = useTake();
+  /** Tries on this word, for pron_scored's attempt_no. */
+  const attempts = React.useRef(0);
   const [failed, setFailed] = React.useState(false);
   const [checkRun, setCheckRun] = React.useState(0);
   const [result, setResult] = React.useState<PronResultView | null>(null);
@@ -162,8 +195,8 @@ function PronounceWord({
   const live = useLiveLevels(stream, phase === 'recording');
   const liveRef = React.useRef(live);
   liveRef.current = live;
-  const take = started ? live.slice(startBar.current) : [];
-  const lit = litStones(voiceIn(take, LIVE_LEVELS_PER_SECOND).voicedMs, stones.length, wordS);
+  const takeBars = started ? live.slice(startBar.current) : [];
+  const lit = litStones(voiceIn(takeBars, LIVE_LEVELS_PER_SECOND).voicedMs, stones.length, wordS);
 
   const clearTimers = () => {
     timers.current.forEach(clearTimeout);
@@ -182,16 +215,11 @@ function PronounceWord({
     [],
   );
 
-  // The take as a URL for "Hear mine"; revoked when replaced.
+  // The take for "You" (P3, P4), kept only in memory.
+  const keepTake = take.keep;
   React.useEffect(() => {
-    if (!recording) {
-      setRecUrl(null);
-      return;
-    }
-    const u = URL.createObjectURL(recording.blob);
-    setRecUrl(u);
-    return () => URL.revokeObjectURL(u);
-  }, [recording]);
+    if (recording) keepTake(recording.blob);
+  }, [recording, keepTake]);
 
   // The 4 s ring.
   React.useEffect(() => {
@@ -204,7 +232,7 @@ function PronounceWord({
 
   // Stop by itself PRON_SILENCE_MS after the voice ends.
   React.useEffect(() => {
-    if (started && pronVoiceEnded(take, LIVE_LEVELS_PER_SECOND)) void stopRecording();
+    if (started && pronVoiceEnded(takeBars, LIVE_LEVELS_PER_SECOND)) void stopRecording();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [started, live]);
 
@@ -221,13 +249,35 @@ function PronounceWord({
         });
         if (!alive) return;
         if (r.status === 'not_heard' || r.status === 'other_word') {
-          setReason(r.status === 'other_word' ? 'other' : 'quiet');
+          const why = r.status === 'other_word' ? 'other' : 'quiet';
+          setReason(why);
           setHeard(r.heard_text);
           setPhase('notHeard');
+          track({ name: 'pron_not_heard', props: { word_id: item.topic_word_id, reason: why } });
           return;
         }
-        setResult(resultView(stones, r));
+        const view = resultView(stones, r);
+        // The scorer's syllables don't line up with the stones: a scoring
+        // error (P3 Check again / Record again), never one stone for the word.
+        if (!view) {
+          setFailed(true);
+          return;
+        }
+        setResult(view);
+        setCheck(r);
+        setChip(view.selected);
         setPhase('result');
+        attempts.current += 1;
+        track({
+          name: 'pron_scored',
+          props: {
+            word_id: item.topic_word_id,
+            overall: r.total,
+            result: view.outcome,
+            weak_syllable: view.first?.text ?? null,
+            attempt_no: attempts.current,
+          },
+        });
         if (r.pollinated && topicId) {
           void queryClient.invalidateQueries({ queryKey: ['speaking', 'harvest', topicId] });
         }
@@ -262,13 +312,14 @@ function PronounceWord({
       if (unusable) {
         setReason(unusable);
         setPhase('notHeard');
+        track({ name: 'pron_not_heard', props: { word_id: item.topic_word_id, reason: unusable } });
         return;
       }
       setRecording(rec);
       setFailed(false);
       setPhase('checking');
     },
-    [],
+    [item.topic_word_id],
   );
 
   async function startRecording() {
@@ -277,6 +328,7 @@ function PronounceWord({
     setNotice(null);
     setResult(null);
     setRecording(null);
+    take.clear(); // a new try: the old take is gone
     setFailed(false);
     setStarted(false);
     setElapsedMs(0);
@@ -303,8 +355,27 @@ function PronounceWord({
       );
     } catch (err) {
       const kind = (err as { kind?: MicErrorKind }).kind ?? 'failed';
-      setNotice(kind === 'unsupported' ? 'unsupported' : 'denied');
-      setPhase('say');
+      if (kind === 'unsupported') {
+        setNotice('unsupported');
+        setPhase('say');
+      } else {
+        // SP0 denied: how to turn the mic back on.
+        setMicState('denied');
+        setPhase('mic');
+      }
+    }
+  }
+
+  /** The mic on P1: SP0 the first time (or while it's off), else straight to P2. */
+  function tapMic() {
+    if (micPermission === 'denied') {
+      setMicState('denied');
+      setPhase('mic');
+    } else if (micPermission !== 'granted' && !micAsked()) {
+      setMicState('ask');
+      setPhase('mic');
+    } else {
+      void startRecording();
     }
   }
 
@@ -325,43 +396,86 @@ function PronounceWord({
     finish(null);
   }
 
-  const play = (src: NativeClip | null, rate = 1, which: 'hear' | 'slow' | null = null) => {
+  const play = (src: NativeClip | null, rate = 1) => {
     if (!src) return;
-    setAsked(which);
     void player.play(src.src, nativeClipRate(src, rate), src.span).catch(() => undefined);
   };
   const hearMine = () => {
-    setAsked(null);
-    if (recUrl) void player.play(recUrl, 1).catch(() => undefined);
+    if (take.url) {
+      track({ name: 'pron_word_played', props: { word_id: item.topic_word_id, voice: 'you', screen: 'P4' } });
+      void player.play(take.url, 1).catch(() => undefined);
+    }
   };
 
-  // Hear it / Slowly show loading, playing and a failed play (P1 boards,
-  // 2026-10-18): learners couldn't tell a tap worked and tapped again.
+  // Hear it / Slowly (SoundButtons): loading, playing (a tap stops it) and
+  // a failed play, one sound at a time through the shared player.
   const native = nativeWord(item, accent);
-  let audio: PronAudio = 'idle';
-  if (asked && native && player.src === native.src) {
-    audio = player.loading ? (asked === 'hear' ? 'loadingHear' : 'loadingSlow') : asked;
-  } else if (asked && !player.src && player.error) {
-    audio = 'error';
-  }
-  // Slowly plays a slowed copy (usePlayer): make it before the tap.
-  const nativeSrc = native?.src;
-  const nativeStart = native?.span?.start;
-  const nativeEnd = native?.span?.end;
-  const nativeMadeAt = native?.madeAt;
+  const slow = slowWord(item, accent);
+  // A slowed copy of the word clip (usePlayer) when there's no slow clip: make it before the tap.
+  const slowSrc = slow?.clip.src;
+  const slowStart = slow?.clip.span?.start;
+  const slowEnd = slow?.clip.span?.end;
+  const slowMadeAt = slow?.clip.madeAt;
+  const slowRate = slow?.rate;
   React.useEffect(() => {
-    if (!nativeSrc) return;
+    if (!slowSrc || slowRate === undefined) return;
     const clip: NativeClip = {
-      src: nativeSrc,
-      span: nativeStart !== undefined && nativeEnd !== undefined ? { start: nativeStart, end: nativeEnd } : undefined,
-      madeAt: nativeMadeAt,
+      src: slowSrc,
+      span: slowStart !== undefined && slowEnd !== undefined ? { start: slowStart, end: slowEnd } : undefined,
+      madeAt: slowMadeAt,
     };
-    for (const rate of [1, PRON_SLOW_RATE]) prepareSlowClip(clip.src, nativeClipRate(clip, rate), clip.span);
-  }, [nativeSrc, nativeStart, nativeEnd, nativeMadeAt]);
-  const tapNative = (which: 'hear' | 'slow') => {
-    if (audio === which) return player.stop(); // playing: a tap stops it
-    if (audio === (which === 'hear' ? 'loadingHear' : 'loadingSlow')) return; // a double tap
-    play(native, which === 'slow' ? PRON_SLOW_RATE : 1, which);
+    prepareSlowClip(clip.src, nativeClipRate(clip, slowRate), clip.span);
+  }, [slowSrc, slowStart, slowEnd, slowMadeAt, slowRate]);
+  const nativeSrc = native?.src;
+
+  /** Leaving P4 (next bee, back to the bed, close): the take is cleared first. */
+  const leave = (then: () => void) => {
+    if (chipTimer.current) clearTimeout(chipTimer.current);
+    player.stop();
+    take.clear();
+    then();
+  };
+
+  /**
+   * A chip: that syllable said by the native speaker, then by the learner
+   * (its time in the take; the whole take when the scorer gave none).
+   */
+  const playChip = (k: number) => {
+    if (!result) return;
+    setChip(k);
+    if (chipTimer.current) clearTimeout(chipTimer.current);
+    track({
+      name: 'pron_chip_played',
+      props: { word_id: item.topic_word_id, syllable: stoneText(result.stones[k]), state: result.states[k] },
+    });
+    const clip = nativeSyllable(item, accent, k);
+    if (!clip) return;
+    const rate = nativeClipRate(clip, PRON_SLOW_RATE);
+    const tag = `p4-chip-${k}`;
+    void player.play(clip.src, rate, clip.span, tag).catch(() => undefined);
+    const span = check ? takeSyllable(check, k) : null;
+    const ms = clip.span ? ((clip.span.end - clip.span.start) * 1000) / rate : 900;
+    chipTimer.current = setTimeout(() => {
+      chipTimer.current = null;
+      // Only if nothing else was played meanwhile.
+      if (take.url && getPlayerTag() === tag) {
+        void player.play(take.url, 1, span ?? undefined, `${tag}-you`).catch(() => undefined);
+      }
+    }, ms + 250);
+  };
+
+  const p4Action = (action: P4Action) => {
+    if (action === 'nextBee') return leave(onNext);
+    if (action === 'skip') {
+      // Skip doesn't count as a try (default).
+      track({ name: 'pron_skipped', props: { word_id: item.topic_word_id } });
+      return leave(onNext);
+    }
+    if (action === 'tryAgain' || action === 'sayAgain' || action === 'polish') {
+      track({ name: 'pron_say_again', props: { word_id: item.topic_word_id, from_result: true } });
+      if (chipTimer.current) clearTimeout(chipTimer.current);
+      void startRecording();
+    }
   };
 
   // P4 "Compare your voice": the voiced part of the native clip and of the take.
@@ -391,7 +505,50 @@ function PronounceWord({
   const meaning = item.meaning_translation ?? item.definition_en;
   const ipa = accent === 'UK' ? (item.ipa_uk ?? item.ipa_us) : (item.ipa_us ?? item.ipa_uk);
 
-  return (
+  if (phase === 'mic') {
+    return (
+      <SpeakMicScreen
+        state={micState}
+        closeHref={closeHref}
+        onAllow={() => {
+          markMicAsked();
+          void startRecording();
+        }}
+        onOpenSettings={() => void startRecording()}
+        onListen={() => setPhase('say')}
+      />
+    );
+  }
+
+  const nativeClipProp = native
+    ? { src: native.src, span: native.span, rate: nativeClipRate(native, 1) }
+    : { src: null };
+  const p4 =
+    phase === 'result' && result && check ? (
+      <div className="ipad:hidden" data-screen="p4">
+        <PronResult
+          word={item.word}
+          index={index}
+          total={total}
+          view={result}
+          syllables={check.syllables}
+          nextWord={nextWord}
+          closeHref={closeHref}
+          nativeClip={nativeClipProp}
+          mineClip={{ src: take.url }}
+          nativeS={compare?.nativeS ?? null}
+          mineS={compare?.mineS ?? null}
+          selected={chip}
+          onChip={playChip}
+          onAction={p4Action}
+          onPlayed={(voice) =>
+            track({ name: 'pron_word_played', props: { word_id: item.topic_word_id, voice, screen: 'P4' } })
+          }
+        />
+      </div>
+    ) : null;
+
+  const screen = (
     <PronounceScreen
       phase={phase}
       word={item.word}
@@ -403,10 +560,27 @@ function PronounceWord({
       total={total}
       topic={topic}
       closeHref={closeHref}
-      audio={audio}
-      onHearIt={() => tapNative('hear')}
-      onSlowly={() => tapNative('slow')}
-      onMic={() => void startRecording()}
+      hearClip={
+        native
+          ? { src: native.src, span: native.span, rate: nativeClipRate(native, 1) }
+          : { src: null }
+      }
+      slowClip={
+        slow
+          ? { src: slow.clip.src, span: slow.clip.span, rate: nativeClipRate(slow.clip, slow.rate) }
+          : { src: null }
+      }
+      mineClip={{ src: take.url }}
+      nativeClip={
+        native
+          ? { src: native.src, span: native.span, rate: nativeClipRate(native, 1) }
+          : { src: null }
+      }
+      onPlayed={(voice, screen) =>
+        track({ name: 'pron_word_played', props: { word_id: item.topic_word_id, voice, screen } })
+      }
+      tip={item.pron_tip?.[locale] ?? null}
+      onMic={tapMic}
       notice={
         notice ? (
           <SpeakNotice
@@ -418,12 +592,15 @@ function PronounceWord({
       }
       micAvailable={notice !== 'unsupported'}
       lit={lit}
-      levels={take}
+      levels={takeBars}
       elapsedMs={elapsedMs}
       onStop={() => void stopRecording()}
       onCancel={cancelRecording}
       onHearMine={hearMine}
-      onHearNative={() => play(nativeWord(item, accent))}
+      onHearNative={() => {
+        track({ name: 'pron_word_played', props: { word_id: item.topic_word_id, voice: 'native', screen: 'P4' } });
+        play(nativeWord(item, accent));
+      }}
       failed={failed}
       onCheckAgain={() => {
         setFailed(false);
@@ -432,21 +609,83 @@ function PronounceWord({
       onRecordAgain={() => void startRecording()}
       result={result}
       compare={compare}
-      // One syllable cut from the sentence is too quick to follow at 1×.
-      onHearSyllable={() =>
-        result?.first
-          ? play(nativeSyllable(item, accent, result.first.index), PRON_SLOW_RATE)
-          : undefined
-      }
-      onTryAgain={() => void startRecording()}
+      // One syllable cut from the word is too quick to follow at 1×.
+      onHearSyllable={() => {
+        if (!result?.first) return;
+        track({
+          name: 'pron_chip_played',
+          props: {
+            word_id: item.topic_word_id,
+            syllable: result.first.text,
+            state: result.states[result.first.index],
+          },
+        });
+        play(nativeSyllable(item, accent, result.first.index), PRON_SLOW_RATE);
+      }}
+      onTryAgain={() => {
+        if (phase === 'result') {
+          track({ name: 'pron_say_again', props: { word_id: item.topic_word_id, from_result: true } });
+        }
+        void startRecording();
+      }}
       nextWord={nextWord}
       onNext={() => {
-        player.stop();
-        onNext();
+        // Next bee from a retry is a skip (default: it doesn't count as a try).
+        if (result && !result.passed) track({ name: 'pron_skipped', props: { word_id: item.topic_word_id } });
+        leave(onNext);
       }}
       reason={reason}
       heard={heard}
       onHearFirst={() => setPhase('say')}
     />
   );
+  // P4: the v2 board on a phone; the iPad keeps its own result layout (iP4).
+  return p4 ? (
+    <>
+      {p4}
+      <div className="hidden ipad:block">{screen}</div>
+    </>
+  ) : (
+    screen
+  );
+}
+
+const MIC_ASKED_KEY = 'dygo:mic-asked';
+/** True once SP0 was shown on this device (where the browser can't say whether it may use the mic). */
+function micAsked(): boolean {
+  try {
+    return window.localStorage.getItem(MIC_ASKED_KEY) === '1';
+  } catch {
+    return false;
+  }
+}
+function markMicAsked(): void {
+  try {
+    window.localStorage.setItem(MIC_ASKED_KEY, '1');
+  } catch {
+    // Private mode: SP0 may show again; harmless.
+  }
+}
+
+/** The browser's microphone permission, kept current; `unknown` where it can't be read (older Safari). */
+function useMicPermission(): 'granted' | 'denied' | 'prompt' | 'unknown' {
+  const [state, setState] = React.useState<'granted' | 'denied' | 'prompt' | 'unknown'>('unknown');
+  React.useEffect(() => {
+    let status: PermissionStatus | null = null;
+    let alive = true;
+    const read = () => status && alive && setState(status.state as 'granted' | 'denied' | 'prompt');
+    navigator.permissions
+      ?.query({ name: 'microphone' as PermissionName })
+      .then((s) => {
+        status = s;
+        read();
+        s.addEventListener('change', read);
+      })
+      .catch(() => undefined);
+    return () => {
+      alive = false;
+      status?.removeEventListener('change', read);
+    };
+  }, []);
+  return state;
 }
