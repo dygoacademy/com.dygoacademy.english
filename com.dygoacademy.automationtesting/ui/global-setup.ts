@@ -33,7 +33,8 @@ export default async function globalSetup(config: FullConfig): Promise<void> {
     ]);
     const page = await context.newPage();
     await page.goto('/login?next=%2Fgarden');
-    await page.getByLabel('Email', { exact: true }).fill(creds.email);
+    // The garden sign-in (AU1) labels it "Email address" (the classic page said "Email").
+    await page.getByLabel(/^Email( address)?$/).fill(creds.email);
     await page.getByLabel('Password', { exact: true }).fill(creds.password);
     await page.getByRole('button', { name: 'Sign in', exact: true }).click();
     try {

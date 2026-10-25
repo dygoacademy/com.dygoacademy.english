@@ -1424,3 +1424,8 @@ Engineering-facing log of shipped fixes and changes, one dated entry per change.
 * **Files**: `docs/design/garden/CHANGELOG.md` (P1–P4, P2b, SP0 Built), `docs/design/garden/README.md`, `docs/design/garden/pronunciation.md` (flow, `/dev/pron`), new `docs/reports/pron-v2 step B PR.md`.
 * **What**: Step B's design status, screenshot numbers, tests and flagged defaults.
 * **Verified**: numbers from the screenshot run and the test runs of this step.
+
+### Fixed: UI test sign-in finds the garden login's "Email address" field
+* **Files**: `com.dygoacademy.automationtesting/ui/global-setup.ts`.
+* **What**: Dylan's run for the pronunciation Step C checks (2026-10-25) timed out at `getByLabel('Email', { exact: true })`: the garden sign-in page (AU1) labels the field "Email address". The setup now matches either label.
+* **Verified**: the login page on localhost:3000 has inputs labelled "Email address" and "Password" and a "Sign in" button (checked headless, no credentials typed).
