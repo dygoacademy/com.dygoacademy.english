@@ -150,6 +150,9 @@ async function main() {
     const blobs = await page.evaluate(() => window.__blobs);
     await p4.getByRole('link', { name: T('pronounce.result.backToBed') }).click();
     await page.waitForURL((u) => !u.pathname.startsWith('/sounds'), { timeout: 15000 });
+    // The URL changes before the old screen unmounts (and lets go of the take).
+    await page.locator('[data-screen="p4"]').waitFor({ state: 'detached', timeout: 15000 });
+    await page.waitForTimeout(500);
     const alive = await page.evaluate(async (us) => {
       let n = 0;
       for (const u of us) {

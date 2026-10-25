@@ -1,0 +1,50 @@
+{
+  "locale": "vi-VN",
+  "results": [
+    {
+      "name": "1 sunny: pass on the last bee (Clean crossing!, Back to the bed, Say it again, Bee 1 of 1)",
+      "ok": true,
+      "note": ""
+    },
+    {
+      "name": "7 P4 Native pill is a SoundButton (loading or playing after a tap)",
+      "ok": true,
+      "note": "data-sound=playing"
+    },
+    {
+      "name": "6 the take is gone from the phone after leaving P4",
+      "ok": true,
+      "note": "1 take URL(s), 0 still readable"
+    },
+    {
+      "name": "2 compensation: 4 stones, SA the big one (P1)",
+      "ok": true,
+      "note": ""
+    },
+    {
+      "name": "7 P1 Hear it is a SoundButton (loading or playing after a tap)",
+      "ok": true,
+      "note": "data-sound=loading"
+    },
+    {
+      "name": "2 compensation: P4 with 4 chips and Next bee: sunny",
+      "ok": true,
+      "note": "4 chips"
+    },
+    {
+      "name": "5 cloudy as cloud: P2b other word, \"We heard cloud\", no playback buttons",
+      "ok": true,
+      "note": "0 sound buttons"
+    },
+    {
+      "name": "5 Try again from P2b records straight away",
+      "ok": true,
+      "note": ""
+    },
+    {
+      "name": "6 quiet take: P2b \"We couldn't hear you\", doesn't count, nothing sent",
+      "ok": true,
+      "note": "0 upload(s)"
+    }
+  ]
+}

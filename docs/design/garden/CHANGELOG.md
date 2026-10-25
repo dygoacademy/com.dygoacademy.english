@@ -241,6 +241,9 @@ All iPad screens: sidebar (Garden · Missions · Topics · Groups · Me + Shared
 
 Newest first. Format: `### YYYY-MM-DD — title` then lines tagged **Added / Changed / Removed / Decision**, with screen IDs and status.
 
+### 2026-10-25 — Pronunciation v2 Step C: UAT (Built, on UAT)
+- Deployed to UAT (merge `180b288`, fix `06aef8f`). Phone checks at 390 × 844 on the UAT build: sunny pass on the last bee, compensation's 4 stones (SA big), cloudy as "cloud" → P2b other word, a quiet try → P2b, a pass changes no stage or review date, the take gone after P4, one SoundButton everywhere: all pass. P4 retry and almost perfect weren't reached with synthetic takes (the scorer passes a single wrong vowel); open question for Dylan in `docs/reports/pron-v2 step C PR.md`.
+
 ### 2026-10-25 — Pronunciation v2 Step B: P1–P4, P2b, SP0 (Built)
 - *Built* (branch `pron-v2/step-b`, `f02b873`): P4 v2 and SP0 on phones; P1–P3 and P2b with the shared SoundButton, the stored tip and the events; Say all runs every bee it is given. The 10 flagged defaults of Step A apply (Dylan, "Go", 2026-10-25).
 - Screenshot check at 390 × 844 @2x, reduced motion, against `reference/` (page `/dev/pron`, development only): P4 (8 states) and SP0 (2) 0.000 % EN, ≤ 0.026 % VI; P3 and P2b ≤ 0.1 %; P2 0.36–0.49 % (sample voice bars); P1 0.34 % EN / 1.24 % VI (the IPA line's glyph fallback and the second hop arc, unchanged parts). iPad (iP1–iP4, iP2b) not changed.
