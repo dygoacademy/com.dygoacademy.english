@@ -2,7 +2,7 @@
 
 Location in the repo: `docs/design/CHANGELOG.md`
 Design source of truth: the **Dygo Word Garden** design canvas (owner: Dylan).
-Last updated: **2026-10-23**
+Last updated: **2026-10-25**
 
 ---
 
@@ -118,7 +118,7 @@ Every row has an English file and a Vietnamese twin (`…Vi.dc.html`) unless not
 #### Speaking (Phase 13) — page "Adult · Speaking"
 | ID | Screen | File | Status | What's on it | Goes to | Build status |
 |---|---|---|---|---|---|---|
-| SP0 | Mic permission | `SpeakMic` | For approval | Before the first SP2 only. Why we need the mic + "recordings are checked, then deleted"; Allow. Denied state → how to turn it on in Settings, and "Listen only for now". Design tweak `state` = ask / denied. | SP2, SP1 | Not built |
+| SP0 | Mic permission | `SpeakMic` | Approved | 2026-10-25: also before Pronunciation's first recording (board re-exported, `reference/SP0-mic(-denied)(-vi)`). Before the first SP2 only. Why we need the mic + "recordings are checked, then deleted"; Allow. Denied state → how to turn it on in Settings, and "Listen only for now". Design tweak `state` = ask / denied. | SP2, SP1 | Not built |
 | SP1 | Listen | `SpeakListen` | Built | Compact word card (word 28 px + IPA with stressed syllable in amber, C1/verb tags, meaning — VI: Vietnamese meaning first). **"Say this sentence"** card (22 px, target word highlighted). Native-speaker card: sentence waveform (target word band tinted), Play, UK/US and 1× / 0.75× chips. Clay mic button. No timer on this screen. | SP2, A7 | Phase 13 S7 `0bdec5e`, v2 `a14c1d1`; no fixture page yet (S18b closed as is) |
 | SP2 | Speaking (3·2·1·beep) | `SpeakRecording` | Built | Sentence stays visible. **Countdown 3 · 2 · 1** over the empty waveform ("Get ready · Recording starts after the beep · tap to start now"); tap skips. Beep + haptic, mic turns clay, recording starts just after the beep. Then: follow-along sentence, live clay waveform over pale native shape, elapsed time only (**no time limit**), stress tip, Stop; "or just pause, it stops by itself" (~2 s silence). Cancel → SP1. | SP3, SP1 | v2 S15 `a14c1d1`; silent-switch fix `5e5852c`; pixel diff en 0.06 / 0.40 %, vi 0.12 / 0.46 % (pass) |
 | SP2b | Couldn't hear you | `SpeakNotHeard` | For approval | Silence or too quiet. Live mic-check bars ("say anything"), 3 tips, Try again; no stage lost. | SP2 | Not built |
@@ -134,7 +134,7 @@ Separate from Speaking (sentences). Starts from "Bees are waiting" on A7. EN + V
 | P2 | Recording | `PronStonesRecord` | Built | Tap → beep + vibration, **no countdown**. Cancel · "● Recording". Stones light up left to right as the voice goes on (live hint, not the score), bee hops along; "Your voice" level bars. Stops ~1 s after the voice ends, **4 s max** (ring), or tap. Design tweak `moment` = beep / MI / ti / gate. | P3, P2b, P1 | Pronunciation Part 2 `24396d0` |
 | P2b | Couldn't hear you | `PronStonesNotHeard` | Built | Dark stones, bee with "?". Reasons: quiet, noisy, another word ("We heard 'medicate'"). Two tips, "This try doesn't count. Nothing is lost.", Try again, "Hear the word first". Tweak `reason`. | P2, P1 | Pronunciation Part 2 `24396d0` |
 | P3 | Checking | `PronStonesChecking` | Built | "Got it. Checking each stone…", stones shimmer, Hear mine / Hear native, "Usually 1–2 seconds". Recording checked, then deleted. | P4 | Pronunciation Part 2 `24396d0` |
-| P4 | Result | `PronStonesResult` | Built | **Retry:** "Almost · 2 of 3 stones", the wobbly stone tilts orange, "ti sounded like /taɪ/ · Try it like the native: /tɪ/", Hear "ti" / Hear mine, Try again → P2, Next bee. **Pass (80 %+):** "Pollinated · 3 of 3 stones", "Clean crossing!", bee flies off, "on its way to fruit", Next bee: {word} / Back to the bed. Tweak `result`. | P2, P1 (next bee), A7 | Pronunciation Part 2 `24396d0` |
+| P4 | Result (v2) | `PronStonesResult` | Approved | **v2, 2026-10-25:** one stone per stored syllable (clean green, close pale with amber dashes, wobbly clay tilted), a chip per syllable under the pond (Clean / Close / Wobbly; selected = amber ring, "Native → you"), Whole word Native / You pills, one big button + a link. **Pass:** "Pollinated · n of n stones", "Clean crossing!". **Almost perfect** (a pass with a syllable under 85): "Good crossing!", that stone close. **Retry:** "Almost · k of n stones", "One wobbly stone", "{syl} sounded like {heard}". Buttons by outcome and last bee (`pronunciation.md`). Tweaks `result` (pass / almostPerfect / retry), `word`, `round` (next / last). | P2, P1 (next bee), A7 | Step A `pron-v2/step-a`: references, stones, SoundButton, rules; the screen is Step B |
 | SE1 | Entry · Home speaking mission | `EntryHome` | Approved | A1 with the 3rd mission as **"Say 3 ripe words · 2 min"** (clay mic, light clay highlight), still counts to Golden Bloom; rotates with Collocation challenge. **2026-10-07: merged into A1 on the canvas; this board was removed (see A1).** | SP1 || Board drafted by Claude Code 2026-10-06 (EN + VI, `reference/SE1-entry-home`), built 2026-10-06 (see `Change Log.md`, "Speaking entry points SE1 / SE2 / SE5 / SE6"); `garden:diff` after the UAT deploy. |
 | SE2 | Entry · Topic bed Speak | `EntryBed` | Approved | A7 with a full-width **"Speak · 5 sentences from this bed"** row under Water / Quiz / + . **2026-10-07: merged into A7 on the canvas; this board was removed (see A7).** | SP1 || Board drafted by Claude Code 2026-10-06 (EN + VI, `reference/SE2-entry-bed`), built 2026-10-06 (see `Change Log.md`, "Speaking entry points SE1 / SE2 / SE5 / SE6"); `garden:diff` after the UAT deploy. |
 | SE5 | Entry · Harvest by voice | `EntryHarvest` | Approved | A7 with a **"Ready to harvest"** card: ripe Flower words, each with a mic; saying it well turns it into Fruit. **2026-10-07: merged into A7 on the canvas; this board was removed (see A7).** | SP1 || Board drafted by Claude Code 2026-10-06 (EN + VI, `reference/SE5-entry-harvest`), built 2026-10-06 (see `Change Log.md`, "Speaking entry points SE1 / SE2 / SE5 / SE6"); `garden:diff` after the UAT deploy. |
@@ -240,6 +240,13 @@ All iPad screens: sidebar (Garden · Missions · Topics · Groups · Me + Shared
 ## 3. Changelog
 
 Newest first. Format: `### YYYY-MM-DD — title` then lines tagged **Added / Changed / Removed / Decision**, with screen IDs and status.
+
+### 2026-10-25 — P4 v2 result + SP0 for Pronunciation (Approved; Step A built)
+- **Changed** `source/PronStonesResult(Vi).dc.html` → the canvas P4 v2 board: syllable chips, the close (almost perfect) state, Native / You pills, one big button + link, last-bee variants. **Added** `reference/P4-result-pass`, `-pass-last`, `-almost`, `-almost-last`, `-retry` (redrawn), `-retry-last`, `-sunny-pass-last`, `-compensation`, each with `-vi`. **Removed** `reference/P4-result-pollinated`, `-long-word`, `-one-stone` (+ `-vi`), which drew the old P4.
+- **Added** `source/SpeakMic(Vi).dc.html` (SP0) and `reference/SP0-mic`, `SP0-mic-denied` (+ `-vi`). It shows nothing about voice donation (Dylan, 2026-10-25).
+- **Changed** `tools/render.js`: the jobs above; the runtime also passes the overrides as props (the v2 boards read `this.props`).
+- **Decision** Dylan's pronunciation rebuild plan (2026-10-25): stored syllables (a word without any is not offered), wobbly = under 60, almost perfect = a pass with a syllable under 85, one sound button everywhere, recordings deleted right after scoring unless the learner donates their voice. *Approved (Dylan, 2026-10-25).*
+- *Built* Step A (branch `pron-v2/step-a`): stone states, `ResultStones` (P4 v2 stones, board values), `SoundButton` on P1 / P3 (P4 pills ready for Step B), the config, data and server parts. The P4 and SP0 screens themselves are Step B. Guide: `pronunciation.md`.
 
 ### 2026-10-24 — S4–S7 Seeds & Harvest follow-ups (Built)
 - **Added** on the canvas page "Adult · Seeds & Harvest", second row: S4 `HomeNextPacket`, S5 `HomeDroppedSeeds`, S6 `TodayDoneHarvest`, S7 `HarvestShareCard`; `source/*.dc.html`, `reference/S4-home-next-packet`, `S5-home-dropped-seeds`, `S6-today-done-harvest`, `S7-harvest-share-card`, `tools/render.js` jobs. English only.
