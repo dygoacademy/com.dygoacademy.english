@@ -5,6 +5,7 @@
  *
  *   node scripts/us-ipa-fix.js --out ../database/content/us_ipa_fix.csv   # propose, write nothing to the DB
  *   node scripts/us-ipa-fix.js --apply ../database/content/us_ipa_fix.csv # write the CSV's changed rows
+ *   node scripts/us-ipa-fix.js --apply ../database/content/uk_ipa_fix.csv # same for ipa_uk (old_ipa_uk header)
  *
  * Why: enrichment used to return the British IPA in both fields for many
  * words ("inevitable" /ɪˈnev.ɪ.tə.bəl/ in both), so the US clip was said
@@ -54,9 +55,16 @@ function csvCell(s) {
   return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
 }
 
+/**
+ * Rows as { word, other, old, new }. The header says which accent the CSV
+ * changes: `old_ipa_us,new_ipa_us` (this script's --out) or
+ * `old_ipa_uk,new_ipa_uk` (the hand-made UK fix, uk_ipa_fix_*.csv).
+ */
 function parseCsv(text) {
+  const [header, ...lines] = text.split('\n');
+  const column = header.includes('old_ipa_uk') ? 'ipa_uk' : 'ipa_us';
   const rows = [];
-  for (const line of text.split('\n').slice(1)) {
+  for (const line of lines) {
     if (!line.trim()) continue;
     const cells = [];
     let cur = '';
@@ -72,9 +80,9 @@ function parseCsv(text) {
       else cur += c;
     }
     cells.push(cur);
-    rows.push({ word: cells[0], ipa_uk: cells[1], old_ipa_us: cells[2], new_ipa_us: cells[3] });
+    rows.push({ word: cells[0], old: cells[2], new: cells[3] });
   }
-  return rows;
+  return { column, rows };
 }
 
 const PROMPT = [
@@ -146,22 +154,22 @@ async function propose(db, env, out) {
 }
 
 async function apply(db, file) {
-  const rows = parseCsv(fs.readFileSync(file, 'utf8')).filter(
-    (r) => norm(r.new_ipa_us) !== norm(r.old_ipa_us) && wellFormed(r.new_ipa_us),
-  );
+  const csv = parseCsv(fs.readFileSync(file, 'utf8'));
+  const { column } = csv;
+  const rows = csv.rows.filter((r) => r.new !== r.old && wellFormed(r.new));
   await db.query('begin');
   let updated = 0;
   for (const r of rows) {
     // Only where the row still holds the IPA the CSV was made from.
     const res = await db.query(
-      `update public.master_lexicon set ipa_us = $2, updated_at = now()
-        where normalized_word = $1 and ipa_us = $3`,
-      [r.word, r.new_ipa_us, r.old_ipa_us],
+      `update public.master_lexicon set ${column} = $2, updated_at = now()
+        where normalized_word = $1 and ${column} = $3`,
+      [r.word, r.new, r.old],
     );
     updated += res.rowCount;
   }
   await db.query('commit');
-  console.log(`us-ipa-fix: updated ipa_us of ${updated} word(s). Remake their US clips with:`);
+  console.log(`us-ipa-fix: updated ${column} of ${updated} word(s). Remake their clips with:`);
   console.log(`  npm run audio-backfill -- ${rows.map((r) => `--word ${JSON.stringify(r.word)}`).join(' ')}`);
 }
 
