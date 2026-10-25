@@ -22,6 +22,18 @@ a{color:#B4552E}a:hover{color:#8A3E20}
 .splash{transform-box:fill-box;transform-origin:center;animation:splash 1.2s ease-out infinite}
 @keyframes hop{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
 .hop{animation:hop .6s ease-in-out infinite}
+@keyframes hfill{0%,100%{transform:scaleY(.3)}50%{transform:scaleY(1)}}
+.hfill1,.hfill2,.hfill3,.hbub{transform-box:fill-box;transform-origin:50% 100%}
+.hfill1{animation:hfill 1.4s ease-in-out infinite}.hfill2{animation:hfill 1.4s ease-in-out .25s infinite}.hfill3{animation:hfill 1.4s ease-in-out .5s infinite}
+@keyframes hbub{0%,100%{transform:scaleY(.82)}50%{transform:scaleY(1)}}
+.hbub{animation:hbub .5s ease-in-out infinite}
+@keyframes hhov{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+.hhov{animation:hhov 1.6s ease-in-out infinite}
+@keyframes vh{0%,100%{opacity:.12}45%{opacity:1}}
+.vh{opacity:.12;animation:vh 1.5s ease-in-out infinite}
+.quiet .vh{animation:none;opacity:.12}
+@keyframes recdot{0%,100%{opacity:1}50%{opacity:.25}}
+.recdot{animation:recdot 1s ease-in-out infinite}
 @media (prefers-reduced-motion: reduce){*{animation:none !important}}
 </style>
 </helmet>
@@ -35,26 +47,45 @@ a{color:#B4552E}a:hover{color:#8A3E20}
 <span lang="en" style="font-family: 'Fraunces', serif; font-weight: 600; font-size: 44px; line-height: 1.05">mitigate</span>
 <span style="font-size: 16px; color: #5E6A62">{{prompt}}</span>
 </div>
-<div style="border-radius: 26px; background: #24463A; padding: 0; overflow: hidden">
-<svg width="100%" viewBox="0 0 334 170" role="img" aria-label="{{pondLabel}}" style="display: block; height: auto">
-<path d="M0 120 Q 84 110 167 120 T 334 120 V170 H0 Z" fill="#1F3E33"></path><path d="M0 120 Q 84 110 167 120 T 334 120" fill="none" stroke="#3A5E4F" stroke-width="2"></path>
-<ellipse cx="62" cy="110" rx="50" ry="22" fill="{{c1}}"></ellipse>
-<ellipse cx="168" cy="116" rx="32" ry="14" fill="{{c2}}"></ellipse>
-<ellipse cx="268" cy="114" rx="40" ry="17" fill="{{c3}}"></ellipse>
-<sc-if value="{{s1}}" hint-placeholder-val="{{true}}"><ellipse class="splash" cx="62" cy="122" rx="54" ry="10" fill="none" stroke="#F2D28B" stroke-width="2"></ellipse></sc-if>
-<sc-if value="{{s2}}" hint-placeholder-val="{{false}}"><ellipse class="splash" cx="168" cy="124" rx="34" ry="8" fill="none" stroke="#F2D28B" stroke-width="2"></ellipse></sc-if>
-<sc-if value="{{s3}}" hint-placeholder-val="{{false}}"><ellipse class="splash" cx="268" cy="124" rx="42" ry="9" fill="none" stroke="#F2D28B" stroke-width="2"></ellipse></sc-if>
-<text x="62" y="118" text-anchor="middle" font-family="DM Sans" font-weight="700" font-size="24" fill="#1C2B24">MI</text>
-<text x="168" y="121" text-anchor="middle" font-family="DM Sans" font-weight="600" font-size="16" fill="{{t2}}">ti</text>
-<text x="268" y="120" text-anchor="middle" font-family="DM Sans" font-weight="600" font-size="19" fill="{{t3}}">gate</text>
-<g class="hop"><g transform="{{beeT}}"><g transform="translate(0,10) scale(1.7)"><g transform="translate(-16,-17)"><ellipse cx="12" cy="9" rx="6" ry="4.5" fill="#E8F2F8" stroke="#BFD8E8" stroke-width="1" transform="rotate(-25 12 9)"></ellipse><ellipse cx="20" cy="9" rx="6" ry="4.5" fill="#E8F2F8" stroke="#BFD8E8" stroke-width="1" transform="rotate(25 20 9)"></ellipse><ellipse cx="16" cy="19" rx="9" ry="7" fill="#F2C744"></ellipse><path d="M12 13.2 V24.8" stroke="#3B3020" stroke-width="2.4"></path><path d="M17 12.2 V25.8" stroke="#3B3020" stroke-width="2.4"></path><circle cx="23.5" cy="17.5" r="1.3" fill="#3B3020"></circle><path d="M7 19 L5 19" stroke="#3B3020" stroke-width="1.6" stroke-linecap="round"></path></g></g></g></g>
+<div style="border-radius: 26px; background: #24463A; overflow: hidden; display: flex; flex-direction: column">
+<div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 12px 16px 0">
+<span style="font-size: 12px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: #DDE7DA">{{combTitle}}</span>
+<span style="display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 700; color: #F2D28B"><svg width="22" height="4" viewBox="0 0 22 4" aria-hidden="true"><path d="M0 2 H22" stroke="#F2D28B" stroke-width="2" stroke-dasharray="4 3"></path></svg>Pass line 80%</span>
+</div>
+<div style="position: relative">
+<svg width="100%" viewBox="0 0 334 150" role="img" aria-label="{{combLabel}}" style="display: block; height: auto">
+<defs><sc-for list="{{cells}}" as="c" hint-placeholder-count="3"><clipPath id="{{c.clipId}}"><polygon points="{{c.pts}}"></polygon></clipPath></sc-for></defs>
+<sc-for list="{{cells}}" as="c" hint-placeholder-count="3"><polygon points="{{c.pts}}" fill="{{c.cellFill}}"></polygon><g clip-path="{{c.clipUrl}}"><rect class="{{c.honeyClass}}" x="{{c.hx}}" y="{{c.hy}}" width="{{c.hw}}" height="{{c.hh}}" fill="{{c.honey}}"></rect></g><polygon points="{{c.pts}}" fill="none" stroke="{{c.edge}}" stroke-width="2.5" stroke-linejoin="round"></polygon></sc-for>
+<path d="M0 68 H334" stroke="#F2D28B" stroke-width="2" stroke-dasharray="5 4" opacity=".95"></path>
+<g transform="{{beeT}}"><g class="hop"><g transform="scale(1.15)"><g transform="translate(-16,-17)"><ellipse cx="12" cy="9" rx="6" ry="4.5" fill="#E8F2F8" stroke="#BFD8E8" stroke-width="1" transform="rotate(-25 12 9)"></ellipse><ellipse cx="20" cy="9" rx="6" ry="4.5" fill="#E8F2F8" stroke="#BFD8E8" stroke-width="1" transform="rotate(25 20 9)"></ellipse><ellipse cx="16" cy="19" rx="9" ry="7" fill="#F2C744"></ellipse><path d="M12 13.2 V24.8" stroke="#3B3020" stroke-width="2.4"></path><path d="M17 12.2 V25.8" stroke="#3B3020" stroke-width="2.4"></path><circle cx="23.5" cy="17.5" r="1.3" fill="#3B3020"></circle></g></g></g></g>
 </svg>
+<div aria-hidden="true" style="position: absolute; inset: 0; pointer-events: none"><sc-for list="{{cells}}" as="c" hint-placeholder-count="3"><span lang="en" style="position: absolute; left: {{c.left}}; top: {{c.top}}; transform: translate(-50%, -50%); font-family: 'DM Sans', sans-serif; font-weight: 800; font-size: {{c.px}}; line-height: 1; color: {{c.fg}}; white-space: nowrap">{{c.text}}</span></sc-for></div>
+</div>
 </div>
 <div style="background: #FFFFFF; border: 1px solid #E3DDD0; border-radius: 18px; padding: 10px 14px; display: flex; align-items: center; gap: 12px">
-<span style="font-size: 12px; font-weight: 700; color: #5E6A62; flex-shrink: 0">Your voice</span>
-<svg width="100%" height="34" viewBox="0 0 220 34" preserveAspectRatio="none" aria-hidden="true">
-<rect class="lvl" x="2" y="6" width="6" height="22" rx="3" fill="#B4552E"></rect><rect class="lvl" x="14" y="2" width="6" height="30" rx="3" fill="#B4552E" style="animation-delay: .1s"></rect><rect class="lvl" x="26" y="8" width="6" height="18" rx="3" fill="#B4552E" style="animation-delay: .25s"></rect><rect class="lvl" x="38" y="4" width="6" height="26" rx="3" fill="#B4552E" style="animation-delay: .05s"></rect><rect class="lvl" x="50" y="10" width="6" height="14" rx="3" fill="#B4552E" style="animation-delay: .3s"></rect><rect class="lvl" x="62" y="3" width="6" height="28" rx="3" fill="#B4552E" style="animation-delay: .15s"></rect><rect class="lvl" x="74" y="7" width="6" height="20" rx="3" fill="#B4552E" style="animation-delay: .35s"></rect><rect class="lvl" x="86" y="5" width="6" height="24" rx="3" fill="#B4552E" style="animation-delay: .2s"></rect><rect class="lvl" x="98" y="9" width="6" height="16" rx="3" fill="#B4552E" style="animation-delay: .4s"></rect><rect class="lvl" x="110" y="3" width="6" height="28" rx="3" fill="#B4552E" style="animation-delay: .12s"></rect>
-<rect x="122" y="15" width="98" height="4" rx="2" fill="#EFEAE0"></rect>
+<span style="display: flex; flex-direction: column; gap: 2px; flex-shrink: 0; width: 86px"><span style="font-size: 12px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: #5E6A62">Your voice</span><span style="display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 700; color: {{voiceFg}}"><sc-if value="{{voiceRec}}" hint-placeholder-val="{{true}}"><span class="recdot" aria-hidden="true" style="width: 8px; height: 8px; border-radius: 4px; background: #B4552E; flex-shrink: 0"></span></sc-if>{{voiceHint}}</span></span>
+<svg class="{{voiceCls}}" width="100%" viewBox="0 0 200 40" aria-hidden="true" style="display: block; flex: 1; min-width: 0; height: auto">
+<polygon points="10.0,2.8 18.0,7.4 18.0,16.6 10.0,21.2 2.0,16.6 2.0,7.4" fill="#EFEAE0"></polygon><polygon class="vh" points="10.0,2.8 18.0,7.4 18.0,16.6 10.0,21.2 2.0,16.6 2.0,7.4" fill="#F2D28B" style="animation-delay: 0.00s"></polygon>
+<polygon points="18.9,17.8 26.9,22.4 26.9,31.6 18.9,36.2 10.9,31.6 10.9,22.4" fill="#EFEAE0"></polygon><polygon class="vh" points="18.9,17.8 26.9,22.4 26.9,31.6 18.9,36.2 10.9,31.6 10.9,22.4" fill="#F2D28B" style="animation-delay: 0.07s"></polygon>
+<polygon points="27.8,2.8 35.8,7.4 35.8,16.6 27.8,21.2 19.8,16.6 19.8,7.4" fill="#EFEAE0"></polygon><polygon class="vh" points="27.8,2.8 35.8,7.4 35.8,16.6 27.8,21.2 19.8,16.6 19.8,7.4" fill="#F2D28B" style="animation-delay: 0.14s"></polygon>
+<polygon points="36.7,17.8 44.7,22.4 44.7,31.6 36.7,36.2 28.7,31.6 28.7,22.4" fill="#EFEAE0"></polygon><polygon class="vh" points="36.7,17.8 44.7,22.4 44.7,31.6 36.7,36.2 28.7,31.6 28.7,22.4" fill="#F2D28B" style="animation-delay: 0.21s"></polygon>
+<polygon points="45.6,2.8 53.6,7.4 53.6,16.6 45.6,21.2 37.6,16.6 37.6,7.4" fill="#EFEAE0"></polygon><polygon class="vh" points="45.6,2.8 53.6,7.4 53.6,16.6 45.6,21.2 37.6,16.6 37.6,7.4" fill="#F2D28B" style="animation-delay: 0.28s"></polygon>
+<polygon points="54.5,17.8 62.5,22.4 62.5,31.6 54.5,36.2 46.5,31.6 46.5,22.4" fill="#EFEAE0"></polygon><polygon class="vh" points="54.5,17.8 62.5,22.4 62.5,31.6 54.5,36.2 46.5,31.6 46.5,22.4" fill="#F2D28B" style="animation-delay: 0.35s"></polygon>
+<polygon points="63.4,2.8 71.4,7.4 71.4,16.6 63.4,21.2 55.4,16.6 55.4,7.4" fill="#EFEAE0"></polygon><polygon class="vh" points="63.4,2.8 71.4,7.4 71.4,16.6 63.4,21.2 55.4,16.6 55.4,7.4" fill="#F2C744" style="animation-delay: 0.42s"></polygon>
+<polygon points="72.3,17.8 80.3,22.4 80.3,31.6 72.3,36.2 64.3,31.6 64.3,22.4" fill="#EFEAE0"></polygon><polygon class="vh" points="72.3,17.8 80.3,22.4 80.3,31.6 72.3,36.2 64.3,31.6 64.3,22.4" fill="#F2C744" style="animation-delay: 0.49s"></polygon>
+<polygon points="81.2,2.8 89.2,7.4 89.2,16.6 81.2,21.2 73.2,16.6 73.2,7.4" fill="#EFEAE0"></polygon><polygon class="vh" points="81.2,2.8 89.2,7.4 89.2,16.6 81.2,21.2 73.2,16.6 73.2,7.4" fill="#F2C744" style="animation-delay: 0.56s"></polygon>
+<polygon points="90.1,17.8 98.1,22.4 98.1,31.6 90.1,36.2 82.1,31.6 82.1,22.4" fill="#EFEAE0"></polygon><polygon class="vh" points="90.1,17.8 98.1,22.4 98.1,31.6 90.1,36.2 82.1,31.6 82.1,22.4" fill="#F2C744" style="animation-delay: 0.63s"></polygon>
+<polygon points="99.0,2.8 107.0,7.4 107.0,16.6 99.0,21.2 91.0,16.6 91.0,7.4" fill="#EFEAE0"></polygon><polygon class="vh" points="99.0,2.8 107.0,7.4 107.0,16.6 99.0,21.2 91.0,16.6 91.0,7.4" fill="#F2C744" style="animation-delay: 0.70s"></polygon>
+<polygon points="107.9,17.8 115.9,22.4 115.9,31.6 107.9,36.2 99.9,31.6 99.9,22.4" fill="#EFEAE0"></polygon><polygon class="vh" points="107.9,17.8 115.9,22.4 115.9,31.6 107.9,36.2 99.9,31.6 99.9,22.4" fill="#E8B23A" style="animation-delay: 0.77s"></polygon>
+<polygon points="116.8,2.8 124.8,7.4 124.8,16.6 116.8,21.2 108.8,16.6 108.8,7.4" fill="#EFEAE0"></polygon><polygon class="vh" points="116.8,2.8 124.8,7.4 124.8,16.6 116.8,21.2 108.8,16.6 108.8,7.4" fill="#E8B23A" style="animation-delay: 0.84s"></polygon>
+<polygon points="125.7,17.8 133.7,22.4 133.7,31.6 125.7,36.2 117.7,31.6 117.7,22.4" fill="#EFEAE0"></polygon><polygon class="vh" points="125.7,17.8 133.7,22.4 133.7,31.6 125.7,36.2 117.7,31.6 117.7,22.4" fill="#E8B23A" style="animation-delay: 0.91s"></polygon>
+<polygon points="134.6,2.8 142.6,7.4 142.6,16.6 134.6,21.2 126.6,16.6 126.6,7.4" fill="#EFEAE0"></polygon><polygon class="vh" points="134.6,2.8 142.6,7.4 142.6,16.6 134.6,21.2 126.6,16.6 126.6,7.4" fill="#E8B23A" style="animation-delay: 0.98s"></polygon>
+<polygon points="143.5,17.8 151.5,22.4 151.5,31.6 143.5,36.2 135.5,31.6 135.5,22.4" fill="#EFEAE0"></polygon><polygon class="vh" points="143.5,17.8 151.5,22.4 151.5,31.6 143.5,36.2 135.5,31.6 135.5,22.4" fill="#E8B23A" style="animation-delay: 1.05s"></polygon>
+<polygon points="152.4,2.8 160.4,7.4 160.4,16.6 152.4,21.2 144.4,16.6 144.4,7.4" fill="#EFEAE0"></polygon><polygon class="vh" points="152.4,2.8 160.4,7.4 160.4,16.6 152.4,21.2 144.4,16.6 144.4,7.4" fill="#E0A030" style="animation-delay: 1.12s"></polygon>
+<polygon points="161.3,17.8 169.3,22.4 169.3,31.6 161.3,36.2 153.3,31.6 153.3,22.4" fill="#EFEAE0"></polygon><polygon class="vh" points="161.3,17.8 169.3,22.4 169.3,31.6 161.3,36.2 153.3,31.6 153.3,22.4" fill="#E0A030" style="animation-delay: 1.19s"></polygon>
+<polygon points="170.2,2.8 178.2,7.4 178.2,16.6 170.2,21.2 162.2,16.6 162.2,7.4" fill="#EFEAE0"></polygon><polygon class="vh" points="170.2,2.8 178.2,7.4 178.2,16.6 170.2,21.2 162.2,16.6 162.2,7.4" fill="#E0A030" style="animation-delay: 1.26s"></polygon>
+<polygon points="179.1,17.8 187.1,22.4 187.1,31.6 179.1,36.2 171.1,31.6 171.1,22.4" fill="#EFEAE0"></polygon><polygon class="vh" points="179.1,17.8 187.1,22.4 187.1,31.6 179.1,36.2 171.1,31.6 171.1,22.4" fill="#E0A030" style="animation-delay: 1.33s"></polygon>
+<polygon points="188.0,2.8 196.0,7.4 196.0,16.6 188.0,21.2 180.0,16.6 180.0,7.4" fill="#EFEAE0"></polygon><polygon class="vh" points="188.0,2.8 196.0,7.4 196.0,16.6 188.0,21.2 180.0,16.6 180.0,7.4" fill="#E0A030" style="animation-delay: 1.40s"></polygon>
 </svg>
 </div>
 <div style="margin-top: auto; display: flex; flex-direction: column; align-items: center; gap: 10px">
@@ -70,19 +101,37 @@ a{color:#B4552E}a:hover{color:#8A3E20}
 </x-dc>
 <script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844},"moment":{"editor":"enum","options":["beep","MI","ti","gate"],"default":"MI","section":"Demo"}}'>
 class Component extends DCLogic {
+  comb(mode, k) {
+    const SYL = [['MI', 1], ['ti', 0], ['gate', 0]], n = SYL.length, slot = 334 / n, R = 40, CY = 100, HW = R * Math.sqrt(3) / 2;
+    const hex = (cx, cy, rr) => [-90, -30, 30, 90, 150, 210].map(a => { const t = a * Math.PI / 180; return (cx + rr * Math.cos(t)).toFixed(1) + ',' + (cy + rr * Math.sin(t)).toFixed(1); }).join(' ');
+    return SYL.map((s, i) => {
+      const cx = +(slot * (i + .5)).toFixed(1);
+      let h = 0, cls = '', fill = '#FBF7EC', fg = '#1C2B24', edge = '#3A5E4F';
+      if (mode === 'rec' && k >= i + 1) { h = 50; cls = k === i + 1 ? 'hbub' : ''; }
+      if (mode === 'check') { h = 58; cls = 'hfill' + (i % 3 + 1); }
+      if (mode === 'none') { fill = '#3A5E4F'; fg = '#DDE7DA'; edge = '#5E7F70'; }
+      return { text: s[0], px: (s[1] ? 21 : 16) + 'px', fg, edge, cellFill: fill, pts: hex(cx, CY, R),
+        clipId: mode + 'Hx' + i, clipUrl: 'url(#' + mode + 'Hx' + i + ')',
+        hx: (cx - HW).toFixed(1), hw: (2 * HW).toFixed(1), hy: (CY + R - h).toFixed(1), hh: h,
+        honey: mode === 'rec' ? '#F2D28B' : '#F2C744', honeyClass: cls,
+        left: (cx / 334 * 100).toFixed(2) + '%', top: (CY / 150 * 100).toFixed(2) + '%', cx };
+    });
+  }
   renderVals() {
     const m = this.props.moment ?? this.state.moment ?? 'MI';
     const order = ['beep', 'MI', 'ti', 'gate'];
     const k = order.indexOf(m);
     const lit = '#E8C66A', dark = '#5E7F70';
     return {
+      cells: this.comb('rec', k), combTitle: k === 0 ? 'Waiting for your voice' : 'Filling as you speak',
+      combLabel: k === 0 ? 'Empty cells waiting for your voice' : 'Cells fill as Dygo hears each part: ' + order.slice(1, k + 1).join(', ') + '. This is your live voice, not your score',
+      voiceHint: k === 0 ? 'Starting…' : 'Recording', voiceFg: k === 0 ? '#5E6A62' : '#B4552E', voiceRec: k !== 0, voiceCls: k === 0 ? 'quiet' : '',
       prompt: k === 0 ? 'Beep! Say it now' : 'Keep going…',
       status: k === 0 ? 'Say “mitigate” now' : 'Listening…',
       c1: k >= 1 ? lit : dark, c2: k >= 2 ? lit : dark, c3: k >= 3 ? lit : dark,
       t2: k >= 2 ? '#1C2B24' : '#F4F1EA', t3: k >= 3 ? '#1C2B24' : '#F4F1EA',
       s1: k === 1, s2: k === 2, s3: k === 3,
-      beeT: 'translate(' + (k <= 1 ? 62 : (k === 2 ? 168 : 268)) + ',36)',
-      pondLabel: k === 0 ? 'Stones waiting for your voice' : 'Stones light up as Dygo hears each part: ' + order.slice(1, k + 1).join(', ')
+      beeT: 'translate(' + (k <= 1 ? 55.7 : (k === 2 ? 167 : 278.3)) + ',34)',
     };
   }
 }

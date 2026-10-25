@@ -14,6 +14,13 @@ body{margin:0;font-family:'DM Sans',sans-serif;background:#F4F1EA;color:#1C2B24}
 a{color:#B4552E}a:hover{color:#8A3E20}
 @keyframes rise{0%{transform:translateY(8px);opacity:0}100%{transform:translateY(0);opacity:1}}
 .rise{animation:rise .3s ease-out}
+@keyframes hfill{0%,100%{transform:scaleY(.3)}50%{transform:scaleY(1)}}
+.hfill1,.hfill2,.hfill3,.hbub{transform-box:fill-box;transform-origin:50% 100%}
+.hfill1{animation:hfill 1.4s ease-in-out infinite}.hfill2{animation:hfill 1.4s ease-in-out .25s infinite}.hfill3{animation:hfill 1.4s ease-in-out .5s infinite}
+@keyframes hbub{0%,100%{transform:scaleY(.82)}50%{transform:scaleY(1)}}
+.hbub{animation:hbub .5s ease-in-out infinite}
+@keyframes hhov{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+.hhov{animation:hhov 1.6s ease-in-out infinite}
 @media (prefers-reduced-motion: reduce){*{animation:none !important}}
 </style>
 </helmet>
@@ -23,18 +30,21 @@ a{color:#B4552E}a:hover{color:#8A3E20}
 <span style="flex-grow: 1; text-align: center; font-size: 12px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: #3E7F5A">Pronunciation</span>
 <span style="width: 74px; text-align: right; font-size: 13px; font-weight: 700; color: #5E6A62">Bee 1 of 3</span>
 </div>
-<div style="border-radius: 26px; background: #24463A; padding: 0; overflow: hidden; margin-top: 8px">
-<svg width="100%" viewBox="0 0 334 150" role="img" aria-label="The stones stay dark and the bee waits" style="display: block; height: auto">
-<path d="M0 104 Q 84 94 167 104 T 334 104 V150 H0 Z" fill="#1F3E33"></path><path d="M0 104 Q 84 94 167 104 T 334 104" fill="none" stroke="#3A5E4F" stroke-width="2"></path>
-<ellipse cx="62" cy="94" rx="50" ry="22" fill="#5E7F70"></ellipse>
-<ellipse cx="168" cy="100" rx="32" ry="14" fill="#5E7F70"></ellipse>
-<ellipse cx="268" cy="98" rx="40" ry="17" fill="#5E7F70"></ellipse>
-<text x="62" y="102" text-anchor="middle" font-family="DM Sans" font-weight="700" font-size="24" fill="#F4F1EA">MI</text>
-<text x="168" y="105" text-anchor="middle" font-family="DM Sans" font-weight="600" font-size="16" fill="#F4F1EA">ti</text>
-<text x="268" y="104" text-anchor="middle" font-family="DM Sans" font-weight="600" font-size="19" fill="#F4F1EA">gate</text>
-<g transform="translate(62,26)"><g transform="translate(0,10) scale(1.7)"><g transform="translate(-16,-17)"><ellipse cx="12" cy="9" rx="6" ry="4.5" fill="#E8F2F8" stroke="#BFD8E8" stroke-width="1" transform="rotate(-25 12 9)"></ellipse><ellipse cx="20" cy="9" rx="6" ry="4.5" fill="#E8F2F8" stroke="#BFD8E8" stroke-width="1" transform="rotate(25 20 9)"></ellipse><ellipse cx="16" cy="19" rx="9" ry="7" fill="#F2C744"></ellipse><path d="M12 13.2 V24.8" stroke="#3B3020" stroke-width="2.4"></path><path d="M17 12.2 V25.8" stroke="#3B3020" stroke-width="2.4"></path><circle cx="23.5" cy="17.5" r="1.3" fill="#3B3020"></circle><path d="M7 19 L5 19" stroke="#3B3020" stroke-width="1.6" stroke-linecap="round"></path></g></g></g>
-<text x="96" y="30" font-family="Fraunces" font-weight="600" font-size="22" fill="#F2D28B">?</text>
+<div style="border-radius: 26px; background: #24463A; overflow: hidden; display: flex; flex-direction: column; margin-top: 8px">
+<div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 12px 16px 0">
+<span style="font-size: 12px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: #DDE7DA">{{combTitle}}</span>
+<span style="display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 700; color: #F2D28B"><svg width="22" height="4" viewBox="0 0 22 4" aria-hidden="true"><path d="M0 2 H22" stroke="#F2D28B" stroke-width="2" stroke-dasharray="4 3"></path></svg>Pass line 80%</span>
+</div>
+<div style="position: relative">
+<svg width="100%" viewBox="0 0 334 150" role="img" aria-label="{{combLabel}}" style="display: block; height: auto">
+<defs><sc-for list="{{cells}}" as="c" hint-placeholder-count="3"><clipPath id="{{c.clipId}}"><polygon points="{{c.pts}}"></polygon></clipPath></sc-for></defs>
+<sc-for list="{{cells}}" as="c" hint-placeholder-count="3"><polygon points="{{c.pts}}" fill="{{c.cellFill}}"></polygon><g clip-path="{{c.clipUrl}}"><rect class="{{c.honeyClass}}" x="{{c.hx}}" y="{{c.hy}}" width="{{c.hw}}" height="{{c.hh}}" fill="{{c.honey}}"></rect></g><polygon points="{{c.pts}}" fill="none" stroke="{{c.edge}}" stroke-width="2.5" stroke-linejoin="round"></polygon></sc-for>
+<path d="M0 68 H334" stroke="#F2D28B" stroke-width="2" stroke-dasharray="5 4" opacity=".95"></path>
+<text x="82" y="26" font-family="Fraunces" font-weight="600" font-size="22" fill="#F2D28B">?</text>
+<g transform="{{beeT}}"><g class=""><g transform="scale(1.15)"><g transform="translate(-16,-17)"><ellipse cx="12" cy="9" rx="6" ry="4.5" fill="#E8F2F8" stroke="#BFD8E8" stroke-width="1" transform="rotate(-25 12 9)"></ellipse><ellipse cx="20" cy="9" rx="6" ry="4.5" fill="#E8F2F8" stroke="#BFD8E8" stroke-width="1" transform="rotate(25 20 9)"></ellipse><ellipse cx="16" cy="19" rx="9" ry="7" fill="#F2C744"></ellipse><path d="M12 13.2 V24.8" stroke="#3B3020" stroke-width="2.4"></path><path d="M17 12.2 V25.8" stroke="#3B3020" stroke-width="2.4"></path><circle cx="23.5" cy="17.5" r="1.3" fill="#3B3020"></circle></g></g></g></g>
 </svg>
+<div aria-hidden="true" style="position: absolute; inset: 0; pointer-events: none"><sc-for list="{{cells}}" as="c" hint-placeholder-count="3"><span lang="en" style="position: absolute; left: {{c.left}}; top: {{c.top}}; transform: translate(-50%, -50%); font-family: 'DM Sans', sans-serif; font-weight: 800; font-size: {{c.px}}; line-height: 1; color: {{c.fg}}; white-space: nowrap">{{c.text}}</span></sc-for></div>
+</div>
 </div>
 <div class="rise" style="display: flex; flex-direction: column; gap: 6px; text-align: center">
 <span style="font-family: 'Fraunces', serif; font-weight: 600; font-size: 28px; line-height: 1.15">{{title}}</span>
@@ -53,14 +63,30 @@ a{color:#B4552E}a:hover{color:#8A3E20}
 </x-dc>
 <script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844},"reason":{"editor":"enum","options":["quiet","noisy","otherWord"],"default":"quiet","section":"Demo"}}'>
 class Component extends DCLogic {
+  comb(mode, k) {
+    const SYL = [['MI', 1], ['ti', 0], ['gate', 0]], n = SYL.length, slot = 334 / n, R = 40, CY = 100, HW = R * Math.sqrt(3) / 2;
+    const hex = (cx, cy, rr) => [-90, -30, 30, 90, 150, 210].map(a => { const t = a * Math.PI / 180; return (cx + rr * Math.cos(t)).toFixed(1) + ',' + (cy + rr * Math.sin(t)).toFixed(1); }).join(' ');
+    return SYL.map((s, i) => {
+      const cx = +(slot * (i + .5)).toFixed(1);
+      let h = 0, cls = '', fill = '#FBF7EC', fg = '#1C2B24', edge = '#3A5E4F';
+      if (mode === 'rec' && k >= i + 1) { h = 50; cls = k === i + 1 ? 'hbub' : ''; }
+      if (mode === 'check') { h = 58; cls = 'hfill' + (i % 3 + 1); }
+      if (mode === 'none') { fill = '#3A5E4F'; fg = '#DDE7DA'; edge = '#5E7F70'; }
+      return { text: s[0], px: (s[1] ? 21 : 16) + 'px', fg, edge, cellFill: fill, pts: hex(cx, CY, R),
+        clipId: mode + 'Hx' + i, clipUrl: 'url(#' + mode + 'Hx' + i + ')',
+        hx: (cx - HW).toFixed(1), hw: (2 * HW).toFixed(1), hy: (CY + R - h).toFixed(1), hh: h,
+        honey: mode === 'rec' ? '#F2D28B' : '#F2C744', honeyClass: cls,
+        left: (cx / 334 * 100).toFixed(2) + '%', top: (CY / 150 * 100).toFixed(2) + '%', cx };
+    });
+  }
   renderVals() {
     const r = this.props.reason ?? this.state.reason ?? 'quiet';
     const v = {
       quiet: { title: 'We couldn\'t hear you', body: 'The bee heard almost nothing.', tip1: 'Hold the phone about a hand away from your mouth', tip2: 'Speak a little louder than normal' },
       noisy: { title: 'Too noisy to hear', body: 'There was a lot of sound around you.', tip1: 'Move somewhere a bit quieter', tip2: 'Speak close to the phone, then wait for the beep' },
-      otherWord: { title: 'That sounded like another word', body: 'We heard “medicate”. Say just “mitigate”.', tip1: 'Tap Hear it and copy the native speaker', tip2: 'Start with the big stone: MI' }
+      otherWord: { title: 'That sounded like another word', body: 'We heard “medicate”. Say just “mitigate”.', tip1: 'Tap Hear it and copy the native speaker', tip2: 'Start with the loud cell: MI' }
     }[r];
-    return v;
+    return { ...v, cells: this.comb('none', 0), combTitle: 'No honey yet', combLabel: 'The cells stay empty and the bee waits', beeT: 'translate(55.7,34)' };
   }
 }
 </script>
