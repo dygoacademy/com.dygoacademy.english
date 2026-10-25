@@ -194,7 +194,6 @@ export function PronounceScreen(props: PronounceScreenProps) {
   const reached = props.reached ?? 0;
   const syls = syllables.map(stoneText);
   const loud = stoneText(syllables.find((s) => s.stressed) ?? syllables[0] ?? { text: '', stressed: false });
-  const passLine = t('comb.passLine', { mark: 80 });
   const bold = (chunks: React.ReactNode) => <b lang="en">{chunks}</b>;
 
   /** A listen button: stops it while it loads or plays, else plays it (and stops the other). */
@@ -366,7 +365,7 @@ export function PronounceScreen(props: PronounceScreenProps) {
             : t('comb.title.dim');
     const label =
       mode === 'empty'
-        ? t('comb.label.empty', { n: syls.length, syls: syls.join(', '), loud, mark: 80 })
+        ? t('comb.label.empty', { n: syls.length, syls: syls.join(', '), loud })
         : mode === 'live'
           ? reached === 0
             ? t('comb.label.liveWait')
@@ -379,7 +378,6 @@ export function PronounceScreen(props: PronounceScreenProps) {
         mode={mode}
         syllables={syllables}
         title={title}
-        passLine={passLine}
         label={label}
         reached={reached}
         className={phase === 'notHeard' ? 'mt-2 ipad:mt-0' : undefined}

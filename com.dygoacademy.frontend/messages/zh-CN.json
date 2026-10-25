@@ -1611,7 +1611,7 @@
           "result": "Fill each cell"
         },
         "label": {
-          "empty": "{n} empty honeycomb cells for {syls}. {loud} is the loud part. Each cell needs to fill past the {mark}% line.",
+          "empty": "{n} empty honeycomb cells for {syls}. {loud} is the loud part.",
           "liveWait": "Empty cells waiting for your voice",
           "live": "Cells fill as Dygo hears each part: {parts}. This is your live voice, not your score",
           "checking": "Honey rises and falls in each cell while Dygo checks",
@@ -1624,11 +1624,11 @@
         "error": "Couldn't play the sound. Tap to try again."
       },
       "p1": {
-        "tip": "Fill every cell past the line: say <b>{loud}</b> loud, <b>{light}</b> light, then <b>{rest}</b>.",
-        "tipTwo": "Fill every cell past the line: say <b>{loud}</b> loud, then <b>{light}</b> light.",
-        "tipLate": "Fill every cell past the line: say <b>{light}</b> light, <b>{loud}</b> loud, then <b>{rest}</b>.",
-        "tipLateEnd": "Fill every cell past the line: say <b>{light}</b> light, then <b>{loud}</b> loud.",
-        "tipOne": "Fill the cell past the line: say <b>{loud}</b> clearly.",
+        "tip": "Fill every cell with honey: say <b>{loud}</b> loud, <b>{light}</b> light, then <b>{rest}</b>.",
+        "tipTwo": "Fill every cell with honey: say <b>{loud}</b> loud, then <b>{light}</b> light.",
+        "tipLate": "Fill every cell with honey: say <b>{light}</b> light, <b>{loud}</b> loud, then <b>{rest}</b>.",
+        "tipLateEnd": "Fill every cell with honey: say <b>{light}</b> light, then <b>{loud}</b> loud.",
+        "tipOne": "Fill the cell with honey: say <b>{loud}</b> clearly.",
         "listenEyebrow": "Listen first",
         "listenTitle": "Hear how it sounds",
         "normal": "Normal",

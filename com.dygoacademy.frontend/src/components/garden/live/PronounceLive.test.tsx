@@ -245,12 +245,13 @@ describe('PronounceLive (honeycomb)', () => {
     expect(screen.getByText('Bee 1 of 1')).toBeTruthy();
     expect(
       screen.getByRole('img', {
-        name: '3 empty honeycomb cells for MI, ti, gate. MI is the loud part. Each cell needs to fill past the 80% line.',
+        name: '3 empty honeycomb cells for MI, ti, gate. MI is the loud part.',
       }),
     ).toBeTruthy();
     expect(screen.getByText('Big letters = loud part')).toBeTruthy();
-    expect(screen.getByText('Pass line 80%')).toBeTruthy();
-    expect(document.body.textContent).toContain('Fill every cell past the line: say MI loud, ti light, then gate.');
+    expect(screen.queryByText('Pass line 80%')).toBeNull();
+    expect(document.querySelector('[data-pass-line]')).toBeNull();
+    expect(document.body.textContent).toContain('Fill every cell with honey: say MI loud, ti light, then gate.');
     expect(document.querySelector('[data-stone], [data-chip]')).toBeNull();
   });
 

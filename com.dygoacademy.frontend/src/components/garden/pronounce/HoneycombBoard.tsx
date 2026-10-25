@@ -23,9 +23,9 @@ import { gcn } from '../cn';
 
 /**
  * The honeycomb board (honeycomb plan §2.1, boards PronStones*.dc.html):
- * the forest card with a title and the "Pass line 80%" legend, one
- * hexagon per syllable, the dashed pass line, the A7 bee. One component,
- * five modes:
+ * the forest card with a title, one hexagon per syllable and the A7 bee.
+ * The dashed 80% pass line and its "Pass line 80%" legend are drawn in
+ * `result` mode only (P4). One component, five modes:
  *
  * - `empty` (P1): cream cells, the bee over cell 1 and the hop path.
  * - `live` (P2): pale honey in each cell the voice has reached (`reached`),
@@ -59,8 +59,8 @@ export interface HoneycombBoardProps {
   mode: CombMode;
   syllables: readonly SpeakingSyllable[];
   title: string;
-  /** "Pass line 80%". */
-  passLine: string;
+  /** "Pass line 80%", shown in `result` mode only. */
+  passLine?: string;
   /** The board's description for screen readers (`role="img"`). */
   label: string;
   /** `live`: cells the voice has reached so far. */
@@ -194,6 +194,7 @@ export function HoneycombBoard({
   const cells = combCells(syllables.length);
   const dim = mode === 'dim';
   const selected = mode === 'result' ? (result?.selected ?? -1) : -1;
+  const showPass = mode === 'result';
 
   const honey = (c: CombCell, i: number) => {
     const x = c.cx - COMB_HW;
@@ -260,7 +261,7 @@ export function HoneycombBoard({
     >
       <div className="flex items-center justify-between gap-2 px-4 pt-3">
         <span className="text-[12px] font-bold uppercase tracking-[.08em] text-[var(--comb-title)]">{title}</span>
-        <PassLineLegend label={passLine} />
+        {showPass && passLine ? <PassLineLegend label={passLine} /> : null}
       </div>
       <div className="relative">
         <svg
@@ -306,14 +307,16 @@ export function HoneycombBoard({
               </g>
             );
           })}
-          <path
-            d={`M0 ${PASS_LINE_Y} H${COMB.width}`}
-            stroke="var(--comb-honey-pale)"
-            strokeWidth="2"
-            strokeDasharray="5 4"
-            opacity=".95"
-            data-pass-line={PASS_LINE_Y}
-          />
+          {showPass ? (
+            <path
+              d={`M0 ${PASS_LINE_Y} H${COMB.width}`}
+              stroke="var(--comb-honey-pale)"
+              strokeWidth="2"
+              strokeDasharray="5 4"
+              opacity=".95"
+              data-pass-line={PASS_LINE_Y}
+            />
+          ) : null}
           {mode === 'empty' ? (
             <path
               d={hopPath(cells)}

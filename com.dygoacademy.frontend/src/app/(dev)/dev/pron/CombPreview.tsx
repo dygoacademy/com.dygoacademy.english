@@ -95,7 +95,6 @@ export function CombPreview() {
                       ? 'comb.title.checking'
                       : 'comb.title.dim',
               )}
-              passLine={t('comb.passLine', { mark: 80 })}
               label={word}
               reached={mode === 'live' ? 2 : 0}
             />

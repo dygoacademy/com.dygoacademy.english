@@ -17,7 +17,7 @@ Customer feedback:
 
 1. **Per-syllable playback on P4 was inaccurate.** Cutting audio at syllable boundaries sounds wrong. → Remove it. Each syllable shows **pass / not yet + % match with native** instead.
 2. **The "Whole word" controls were hard to use.** → Replace them with one consistent **listen card** pattern (two large play buttons) on P1, P3 and P4.
-3. **Make the flow consistent.** → Every screen uses the same **honeycomb board**: one hexagon cell per syllable, honey fills a cell to show progress or score, and a dashed **80% pass line** marks the goal. This replaces the stones on every screen.
+3. **Make the flow consistent.** → Every screen uses the same **honeycomb board**: one hexagon cell per syllable, and honey fills a cell to show progress or score. This replaces the stones on every screen. The dashed **80% pass line** appears **only on P4** (the result).
 
 Flow (unchanged): Topic bed → **P1** Say the word → (SP0 mic permission, first time) → **P2** Recording → **P3** Checking → **P4** Result, or **P2b** Couldn't hear you.
 
@@ -29,9 +29,9 @@ Flow (unchanged): Topic bed → **P1** Say the word → (SP0 mic permission, fir
 
 The dark green card (`#24463A`, radius 26).
 
-- **Header row:** a title on the left (12px uppercase, `#DDE7DA`). On the right, the legend: a dashed swatch plus "Pass line 80%" (`#F2D28B`).
+- **Header row:** a title on the left (12px uppercase, `#DDE7DA`). **`result` mode only:** on the right, the legend: a dashed swatch plus "Pass line 80%" (`#F2D28B`).
 - **Cells:** a 334 × 150 SVG viewBox with one pointy-top hexagon per syllable (radius 40, centre y 100), centred in equal slots. It must work for 2–4 syllables.
-- **Pass line:** a dashed line across the whole board at `y = cy + R − 2R × 0.8`.
+- **Pass line (`result` mode only):** a dashed line across the whole board at `y = cy + R − 2R × 0.8`. Never show it on P1, P2, P3 or P2b.
 - **Cell text:** an HTML overlay positioned in % (crisper text and easier i18n). Stressed syllables are UPPERCASE at 21px; the others are 16px. All weight 800.
 - **Bee:** the existing bee SVG at scale 1.15, hovering 4px above the cell row (~34 units from the top).
 - **Clip paths:** honey is clipped to each hexagon. Use `useId()` for clip-path ids so two boards never clash.
@@ -78,7 +78,7 @@ One audio element per screen. `play(key)`, `stop()`, exposes `{ key, state: 'idl
 
 ### 2.4 Other shared pieces
 
-`BeeMarker` (reuse the existing SVG), `PassLineLegend`, and `ScreenHeader` (close/cancel, eyebrow, "Bee 1 of 3"). Every animation respects `prefers-reduced-motion` (static frames).
+`BeeMarker` (reuse the existing SVG), `PassLineLegend` (P4 only), and `ScreenHeader` (close/cancel, eyebrow, "Bee 1 of 3"). Every animation respects `prefers-reduced-motion` (static frames).
 
 ---
 
@@ -90,16 +90,16 @@ Top to bottom:
 
 1. Header: Close · "PRONUNCIATION" · Bee x of y.
 2. Word (Fraunces 44px), then IPA · short meaning.
-3. `HoneycombBoard mode="empty"`.
+3. `HoneycombBoard mode="empty"` (no pass line).
 4. `ListenCard` with Normal / Slowly.
-5. Tip box (`#FBF4E4`, text `#4A3A10`): "Fill every cell past the line: say **MI** loud, **ti** light, then **gate**." Generate it from the syllables: the stressed one is "loud", the next one is "light".
+5. Tip box (`#FBF4E4`, text `#4A3A10`): "Fill every cell with honey: say **MI** loud, **ti** light, then **gate**." Generate it from the syllables: the stressed one is "loud", the next one is "light".
 6. Bottom: "Tap, then say just the word", an 84px clay mic button (→ P2), and "First time: your phone asks for the microphone".
 
 ### P2 · Recording (`PronStonesRecord`)
 
 1. Header: Cancel (→ P1, nothing sent) · "● RECORDING" · Bee x of y.
 2. Word, then prompt: "Beep! Say it now" → "Keep going…".
-3. `HoneycombBoard mode="live"`. Cells fill left to right as the voice reaches each part.
+3. `HoneycombBoard mode="live"` (no pass line). Cells fill left to right as the voice reaches each part.
    - **How to drive it:** split the native audio duration into syllable slots by the syllable timings (or equal slots if there are none). Map the learner's *voiced* time onto those slots. A cell counts as reached once voiced time passes the start of its slot.
    - This is a progress cue only, not a score.
 4. **Your voice meter** (white card, radius 18):
@@ -123,7 +123,7 @@ Recording rules (unchanged):
 
 1. Header with **no close button** (it's 1–2 s) · "PRONUNCIATION" · Bee x of y.
 2. Word, then "Got it. Checking each cell…".
-3. `HoneycombBoard mode="checking"`.
+3. `HoneycombBoard mode="checking"` (no pass line).
 4. `ListenCard` titled "While Dygo checks · Have a listen" with Native / Your try. Both work here.
 5. Bottom: three pulsing dots and "Usually 1–2 seconds".
 6. **Server error:** inline "Check again / Record again" (same pattern as SP3).
@@ -131,7 +131,7 @@ Recording rules (unchanged):
 ### P2b · Couldn't hear you (`PronStonesNotHeard`)
 
 1. Header: Close · "PRONUNCIATION" · Bee x of y.
-2. `HoneycombBoard mode="dim"` (8px extra top margin).
+2. `HoneycombBoard mode="dim"` (no pass line, 8px extra top margin).
 3. Title (Fraunces 28px), body, and a white card with two numbered tips. The text depends on the reason:
 
 | reason | title | body | tip 1 | tip 2 |
@@ -150,7 +150,7 @@ Recording rules (unchanged):
    - Badge: "Hive full · n of n cells" (green `#DDE7DA` / `#24463A`) or "Almost · k of n cells" (`#FBF4E4` / `#6B5215`).
    - Headline (Fraunces 30px).
    - **One short sub line that never repeats the syllable score.** The detail strip owns that.
-3. `HoneycombBoard mode="result"` with the detail strip.
+3. `HoneycombBoard mode="result"` with the pass line, its legend, and the detail strip.
 4. **Listen & compare card. No text inside except the button labels.**
    - **Mirror waveform** (330 × 70) on the left: 40 native bars above a centre line (`#3E7F5A`) and 40 learner bars below it (`#B4552E`).
    - On retry/close, the weak syllable's zone is tinted `#FBEFE9` with a tiny syllable tag (`#8A3E20`).
@@ -210,13 +210,13 @@ All strings go in i18n. ZH keys fall back to EN. Check the existing VI glossary 
 
 | key | EN | VI (draft) |
 |---|---|---|
-| comb.passLine | Pass line {mark}% | Vạch đạt {mark}% |
+| comb.passLine (P4 only) | Pass line {mark}% | Vạch đạt {mark}% |
 | comb.title.empty | Big letters = loud part | Chữ to = phần đọc mạnh |
 | comb.title.live.wait / live | Waiting for your voice / Filling as you speak | Đang chờ giọng bạn / Đang lấp đầy khi bạn nói |
 | comb.title.checking | Measuring the honey | Đang đo mật |
 | comb.title.dim | No honey yet | Chưa có mật |
 | comb.title.result | Fill each cell | Lấp đầy từng ô |
-| p1.tip | Fill every cell past the line: say {loud} loud, {light} light, then {rest}. | Lấp mọi ô qua vạch: đọc {loud} mạnh, {light} nhẹ, rồi {rest}. |
+| p1.tip | Fill every cell with honey: say {loud} loud, {light} light, then {rest}. | Lấp đầy mật mọi ô: đọc {loud} mạnh, {light} nhẹ, rồi {rest}. |
 | p1.listen.eyebrow / title | Listen first / Hear how it sounds | Nghe trước / Nghe cách đọc |
 | p1.btn.normal / sub | Normal / Real speed | Bình thường / Tốc độ thật |
 | p1.btn.slow / sub | Slowly / Each part clear | Chậm / Rõ từng phần |
@@ -274,7 +274,7 @@ Fonts: Fraunces 600 (display), DM Sans 400–800 (UI). Touch targets ≥ 44px. T
 - Unit tests: thresholds, resultKind, the CTA matrix, live-fill mapping, and P1 tip generation for 2-, 3- and 4-syllable words.
 
 ### Phase 2: Shared components
-- `HoneycombBoard` (all five modes), `ListenCard` + `PlayButton` (all states), `BeeMarker`, `PassLineLegend`, `VoiceMeterComb`, `MirrorWave`, `MatchRing`, `SyllableDetail`.
+- `HoneycombBoard` (all five modes; pass line and legend in `result` mode only), `ListenCard` + `PlayButton` (all states), `BeeMarker`, `PassLineLegend`, `VoiceMeterComb`, `MirrorWave`, `MatchRing`, `SyllableDetail`.
 - Add a Storybook/preview page if the repo has one: each mode × 2 / 3 / 4 syllables.
 
 ### Phase 3: Screens
@@ -292,7 +292,7 @@ Fonts: Fraunces 600 (display), DM Sans 400–800 (UI). Touch targets ≥ 44px. T
   - Reduced-motion users see static frames.
   - Keyboard order: cells → play buttons → CTA.
 - **Tests:**
-  - Component tests: selection → detail text; play buttons are mutually exclusive; P2 meter shows no quality words.
+  - Component tests: selection → detail text; play buttons are mutually exclusive; P2 meter shows no quality words; the pass line renders only in `result` mode.
   - Playwright screenshots: every screen × {mitigate, compensation, cloudy} × {EN, VI} at 390px and 1194px, plus P4 × {pass, almost, retry} and P2b × {quiet, noisy, otherWord}.
 - Run lint, typecheck and jest. If `next build` hangs in the sandbox (a known issue), note it instead of retrying.
 
@@ -304,7 +304,7 @@ Fonts: Fraunces 600 (display), DM Sans 400–800 (UI). Touch targets ≥ 44px. T
 
 ## 8. Acceptance criteria
 
-- [ ] No stepping stones remain anywhere in the pronunciation flow. All five screens use `HoneycombBoard`.
+- [ ] No stepping stones remain anywhere in the pronunciation flow. All five screens use `HoneycombBoard`. The pass line and its legend appear only on P4.
 - [ ] P1: empty cells, Normal / Slowly buttons with loading, playing, stop and error states; the tip is generated from the syllables.
 - [ ] P2: cells fill with *pale* honey as each part is heard. The honeycomb voice meter follows the real mic level. The status reads "Starting…" then "● Recording", with no quality words. The auto-stop rules behave as before.
 - [ ] P3: honey rises and falls while checking, Native / Your try both play, and a server error shows the inline retry.

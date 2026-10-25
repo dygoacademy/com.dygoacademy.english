@@ -14,14 +14,15 @@ Branch `pron-honeycomb` (worktree `com.dygoacademy.english-honeycomb`), on top o
 | 5a1909a | 3 | P1, P2, P3, P2b, P4 rebuilt on the honeycomb, phone and iPad in one tree. The stones (`PondStones`, `ResultStones`, `PronResult`), the stone layout, the syllable audio slicing and the stone copy and CSS are deleted |
 | 8314c19 | Design | The honeycomb boards in `docs/design/garden/source/` and their English references (rule 13) |
 | 41abbcf | 4 | Screen tests and the screenshots below |
+| (after deploy) | Plan v2 | Dylan reposted the plan (2026-10-25 23:05 UTC): the 80% pass line and its legend now show on P4 only, and the P1 tip reads "Fill every cell with honey: …". The board draws the line in `result` mode only, the P1 board label no longer mentions the line, the plan in `docs/specs/` is updated, the boards and references are redrawn and the screenshots retaken |
 
 Screen by screen:
 
-- **P1**: empty cells (stressed syllable in capitals), Normal / Slowly with loading, playing (solid, "Playing, tap to stop"), stop and error states. The tip comes from the syllables ("say **MI** loud, **ti** light, then **gate**").
+- **P1**: empty cells with no pass line (stressed syllable in capitals), Normal / Slowly with loading, playing (solid, "Playing, tap to stop"), stop and error states. The tip comes from the syllables ("Fill every cell with honey: say **MI** loud, **ti** light, then **gate**").
 - **P2**: pale honey fills each cell once the voice reaches its slot of the native word (the stored syllable spans, else equal slots). The honeycomb meter follows the live mic level (AnalyserNode RMS, ~60 fps, short decay). "Starting…" during the beep, then the blinking dot and "Recording". No quality words. Auto-stop, the 4 s cap, quiet and noisy rules are unchanged.
 - **P3**: honey rises and falls; Native / Your try both play; no close button; a server error shows Check again / Record again.
 - **P2b**: dim cells and the bee with "?", quiet / noisy / other word; Try again → P2, Hear the word first → P1.
-- **P4**: honey to each score, ✓ / ✗ badges, the 80% line, the detail strip (`aria-live`). A clean pass selects nothing ("All pass"); almost and retry select the weakest cell. Tapping a cell never plays audio. The listen card holds the mirror waveform (40 native bars over 40 of the take, the weak syllable's zone tinted), the match ring and Native / Your try, nothing else. CTAs as plan §5.
+- **P4**: honey to each score, ✓ / ✗ badges, the 80% line and its legend (P4 is the only screen with them), the detail strip (`aria-live`). A clean pass selects nothing ("All pass"); almost and retry select the weakest cell. Tapping a cell never plays audio. The listen card holds the mirror waveform (40 native bars over 40 of the take, the weak syllable's zone tinted), the match ring and Native / Your try, nothing else. CTAs as plan §5.
 - **iPad** (the app's `ipad:` layout, 600px+): two columns, the word and board on the left, the listen card, tips and actions on the right.
 - **Slowly** is the word clip at 0.75, from the copy slowed in the browser (pitch kept, WSOLA), because a slow `playbackRate` went silent on iPhone. `/garden/_speaking` Slow compare does the same.
 

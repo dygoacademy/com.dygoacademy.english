@@ -1607,7 +1607,7 @@
           "result": "Lấp đầy từng ô"
         },
         "label": {
-          "empty": "{n} ô tổ ong trống cho {syls}. {loud} là phần đọc mạnh. Mỗi ô cần lấp qua vạch {mark}%.",
+          "empty": "{n} ô tổ ong trống cho {syls}. {loud} là phần đọc mạnh.",
           "liveWait": "Các ô trống đang chờ giọng bạn",
           "live": "Các ô được lấp khi Dygo nghe từng phần: {parts}. Đây là giọng bạn lúc này, không phải điểm",
           "checking": "Mật dâng lên hạ xuống trong từng ô khi Dygo kiểm tra",
@@ -1620,11 +1620,11 @@
         "error": "Không phát được âm thanh. Chạm để thử lại."
       },
       "p1": {
-        "tip": "Lấp mọi ô qua vạch: đọc <b>{loud}</b> mạnh, <b>{light}</b> nhẹ, rồi <b>{rest}</b>.",
-        "tipTwo": "Lấp mọi ô qua vạch: đọc <b>{loud}</b> mạnh, rồi <b>{light}</b> nhẹ.",
-        "tipLate": "Lấp mọi ô qua vạch: đọc <b>{light}</b> nhẹ, <b>{loud}</b> mạnh, rồi <b>{rest}</b>.",
-        "tipLateEnd": "Lấp mọi ô qua vạch: đọc <b>{light}</b> nhẹ, rồi <b>{loud}</b> mạnh.",
-        "tipOne": "Lấp ô qua vạch: đọc <b>{loud}</b> thật rõ.",
+        "tip": "Lấp đầy mật mọi ô: đọc <b>{loud}</b> mạnh, <b>{light}</b> nhẹ, rồi <b>{rest}</b>.",
+        "tipTwo": "Lấp đầy mật mọi ô: đọc <b>{loud}</b> mạnh, rồi <b>{light}</b> nhẹ.",
+        "tipLate": "Lấp đầy mật mọi ô: đọc <b>{light}</b> nhẹ, <b>{loud}</b> mạnh, rồi <b>{rest}</b>.",
+        "tipLateEnd": "Lấp đầy mật mọi ô: đọc <b>{light}</b> nhẹ, rồi <b>{loud}</b> mạnh.",
+        "tipOne": "Lấp đầy mật ô này: đọc <b>{loud}</b> thật rõ.",
         "listenEyebrow": "Nghe trước",
         "listenTitle": "Nghe cách đọc",
         "normal": "Thường",

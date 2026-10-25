@@ -20,25 +20,52 @@ const MITIGATE = [
 ];
 
 describe('HoneycombBoard', () => {
-  it('draws one cell per syllable (2–4), the pass line at 80%, and the stressed one in capitals', () => {
+  it('draws one cell per syllable (2–4) and the stressed one in capitals', () => {
     for (const n of [2, 3, 4]) {
       const syl = Array.from({ length: n }, (_, k) => ({ text: `s${'abcd'[k]}`, stressed: k === 0 }));
       const { container, unmount } = renderWithIntl(
         <HoneycombBoard mode="empty" syllables={syl} title="T" passLine="Pass line 80%" label="board" />,
       );
       expect(container.querySelectorAll('clipPath')).toHaveLength(n);
-      expect(container.querySelector('[data-pass-line]')?.getAttribute('data-pass-line')).toBe(String(PASS_LINE_Y));
       expect(screen.getByText('SA')).toBeTruthy();
       unmount();
     }
+  });
+
+  it('draws the pass line and its legend in result mode only', () => {
+    for (const mode of ['empty', 'live', 'checking', 'dim'] as const) {
+      const { container, unmount } = renderWithIntl(
+        <HoneycombBoard mode={mode} syllables={MITIGATE} title="T" passLine="Pass line 80%" label="b" reached={1} />,
+      );
+      expect(container.querySelector('[data-pass-line]')).toBeNull();
+      expect(screen.queryByText('Pass line 80%')).toBeNull();
+      unmount();
+    }
+    const { container } = renderWithIntl(
+      <HoneycombBoard
+        mode="result"
+        syllables={MITIGATE}
+        title="T"
+        passLine="Pass line 80%"
+        label="r"
+        result={{
+          cells: MITIGATE.map(() => ({ score: 95, status: 'pass' as const, aria: 'a' })),
+          selected: -1,
+          onSelect: () => {},
+          detail: { tag: 'All pass', tone: 'all', text: 'x' },
+        }}
+      />,
+    );
+    expect(container.querySelector('[data-pass-line]')?.getAttribute('data-pass-line')).toBe(String(PASS_LINE_Y));
+    expect(screen.getByText('Pass line 80%')).toBeTruthy();
     expect(PASS_LINE_Y).toBe(76);
   });
 
   it('two boards never share clip-path ids', () => {
     const { container } = renderWithIntl(
       <>
-        <HoneycombBoard mode="checking" syllables={MITIGATE} title="T" passLine="P" label="a" />
-        <HoneycombBoard mode="checking" syllables={MITIGATE} title="T" passLine="P" label="b" />
+        <HoneycombBoard mode="checking" syllables={MITIGATE} title="T" label="a" />
+        <HoneycombBoard mode="checking" syllables={MITIGATE} title="T" label="b" />
       </>,
     );
     const ids = [...container.querySelectorAll('clipPath')].map((c) => c.id);
@@ -47,7 +74,7 @@ describe('HoneycombBoard', () => {
 
   it('live: pale honey only in the reached cells, the current one bubbling', () => {
     const { container } = renderWithIntl(
-      <HoneycombBoard mode="live" syllables={MITIGATE} title="T" passLine="P" label="l" reached={2} />,
+      <HoneycombBoard mode="live" syllables={MITIGATE} title="T" label="l" reached={2} />,
     );
     const honey = container.querySelectorAll('g[clip-path] rect');
     expect(honey).toHaveLength(2);
