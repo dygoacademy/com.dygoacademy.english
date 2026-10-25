@@ -15,7 +15,11 @@ export const PRON = {
    * 70 line and "any phone under 45" were dropped (plan section 2).
    */
   wobblyBelow: 60,
-  /** A pass: the word's overall score at least this (D-3: visual only, never the stage or review dates). */
+  /**
+   * A pass: every syllable and the overall score at least this (the
+   * honeycomb's pass line, 2026-10-25; D-3: visual only, never the stage or
+   * review dates). The pollinate check reads POLLINATE_MIN_SCORE (the same 80).
+   */
   passAtLeast: 80,
   /** A pass with any syllable under this is "almost perfect" (that syllable shows as close). */
   cleanAtLeast: 85,

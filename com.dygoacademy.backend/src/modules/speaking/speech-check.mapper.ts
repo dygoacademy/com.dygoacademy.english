@@ -45,9 +45,10 @@ export function toCheckResult(raw: ScorerResult, wordCount: number): SpeakingChe
 
 /**
  * The scorer's word reply → what P4 shows: one syllable per stored stone
- * (`stones`), and `passed` = heard as the word at POLLINATE_MIN_SCORE or
- * more. The app works out pass / almost perfect / retry and each stone's
- * look from the scores (its pron-config.ts).
+ * (`stones`), and `passed` = heard as the word with every syllable at
+ * POLLINATE_MIN_SCORE or more (the honeycomb's pass line, Dylan 2026-10-25;
+ * was the overall score alone), so P4 and pollination always agree. The
+ * app works out pass / almost perfect / retry from the same scores.
  */
 export function toWordCheckResult(
   raw: ScorerWordResult,
@@ -57,7 +58,10 @@ export function toWordCheckResult(
   return {
     kind: 'word',
     status: raw.status,
-    passed: raw.status === 'ok' && total >= POLLINATE_MIN_SCORE,
+    passed:
+      raw.status === 'ok' &&
+      total >= POLLINATE_MIN_SCORE &&
+      raw.syllables.every((x) => x.score >= POLLINATE_MIN_SCORE),
     total,
     heard_text: raw.heard_text,
     syllables: raw.syllables,

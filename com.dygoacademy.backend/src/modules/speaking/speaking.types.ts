@@ -90,7 +90,11 @@ export interface SpeakingAttempt {
   created_at: string;
 }
 
-/** A word said at this score or more is Pollinated (D-3, changed 2026-10-11: one 80 % rule, visual only). */
+/**
+ * A word said with every syllable (and the overall score) at this or more is
+ * Pollinated (D-3: one 80 % rule, visual only; per syllable since the
+ * honeycomb, 2026-10-25).
+ */
 export const POLLINATE_MIN_SCORE = 80;
 
 /** `GET /speaking/harvest?topic_id=`: a bed's words with a speaking item, and which are harvested. */
@@ -182,7 +186,7 @@ export interface SpeakingWordCheckSyllable {
 
 /**
  * `POST /speaking/check-pronunciation` (Pronunciation P3 → P4): one word, a score
- * per syllable. `passed` = said clearly at POLLINATE_MIN_SCORE or more,
+ * per syllable. `passed` = said clearly with every syllable at POLLINATE_MIN_SCORE or more,
  * which pollinates the word (once per word; never touches SRS).
  */
 export interface SpeakingWordCheckResult {

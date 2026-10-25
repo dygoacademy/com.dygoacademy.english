@@ -214,7 +214,7 @@ export class SpeakingController {
     description:
       'Same queue, limits and polling as POST /speaking/check-speech (poll GET /speaking/check/:id). ' +
       'The scorer checks the word against its IPA for the accent: a score per syllable, which ' +
-      'ones wobbled (and what they sounded like), not_heard / other_word. passed = ok and 80+; ' +
+      'ones wobbled (and what they sounded like), not_heard / other_word. passed = ok with every syllable 80+; ' +
       'a passed word is pollinated (speaking_harvests, once per word; never SRS). The ' +
       'recording is never stored. 404 when the learner cannot read the word.',
   })

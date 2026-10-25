@@ -87,12 +87,15 @@ function clearSpan() {
  * The Pond remembers, from a slowed copy played at 1× (`slow-clip.ts`):
  * on iPhone a slow playbackRate played silently right after Hear it
  * (Dylan, 2026-10-18). `state.src` stays `src` while the copy plays.
+ * `stretch` asks for the slowed copy at a PLAYER_RATES rate too
+ * (Pronunciation's Slowly at 0.75×, the honeycomb plan of 2026-10-25).
  */
 export async function playClip(
   src: string,
   rate: number = state.rate,
   span?: ClipSpan,
   tag: string | null = null,
+  { stretch = false }: { stretch?: boolean } = {},
 ): Promise<void> {
   // Not recording: speaker, and through the silent switch (iOS).
   prepareForPlayback();
@@ -101,8 +104,8 @@ export async function playClip(
   el.pause();
   el.muted = false;
   clearSpan();
-  set({ src, rate: isPlayerRate(rate) ? rate : state.rate, error: null, loading: true, tag });
-  if (isPlayerRate(rate) || rate >= 1) return start(el, id, src, src, rate, span);
+  set({ src, rate: isPlayerRate(rate) && !stretch ? rate : state.rate, error: null, loading: true, tag });
+  if ((isPlayerRate(rate) && !stretch) || rate >= 1) return start(el, id, src, src, rate, span);
 
   const ready = readySlowClip(src, rate, span);
   if (ready) return start(el, id, src, ready, 1);
@@ -176,8 +179,8 @@ async function start(
  * with its native clip), so Slowly starts at once. Errors are ignored:
  * the tap then tries again or falls back.
  */
-export function prepareSlowClip(src: string, rate: number, span?: ClipSpan): void {
-  if (isPlayerRate(rate) || rate >= 1) return;
+export function prepareSlowClip(src: string, rate: number, span?: ClipSpan, stretch = false): void {
+  if ((isPlayerRate(rate) && !stretch) || rate >= 1) return;
   makeSlowClip(src, rate, span).catch(() => {});
 }
 
@@ -240,8 +243,8 @@ const serverState: PlayerState = { src: null, rate: 1, error: null, loading: fal
 export function usePlayer() {
   const current = useSyncExternalStore(subscribe, getState, () => serverState);
   const play = useCallback(
-    (src: string, rate?: number, span?: ClipSpan, tag?: string | null) =>
-      playClip(src, rate, span, tag ?? null),
+    (src: string, rate?: number, span?: ClipSpan, tag?: string | null, opts?: { stretch?: boolean }) =>
+      playClip(src, rate, span, tag ?? null, opts),
     [],
   );
   return {

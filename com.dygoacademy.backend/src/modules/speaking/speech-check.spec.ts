@@ -429,7 +429,10 @@ describe('Word check (Pronunciation, 2026-10-11)', () => {
     ...over,
   });
 
-  it('passed = heard as the word at 80+; the stones are the stored ones', () => {
+  const scored = (...scores: number[]) =>
+    raw().syllables.map((x, k) => ({ ...x, score: scores[k], wobbly: scores[k] < 60 }));
+
+  it('passed = heard as the word with every syllable at 80+; the stones are the stored ones', () => {
     const almost = toWordCheckResult(raw(), STONES);
     expect(almost).toMatchObject({ kind: 'word', status: 'ok', passed: false, total: 76 });
     expect(almost.spelling).toEqual(STONES);
@@ -442,8 +445,21 @@ describe('Word check (Pronunciation, 2026-10-11)', () => {
       start_ms: 220,
       end_ms: 380,
     });
-    expect(toWordCheckResult(raw({ total: 80 }), STONES).passed).toBe(true);
-    expect(toWordCheckResult(raw({ total: 79 }), STONES).passed).toBe(false);
+    const pass = scored(91, 80, 88);
+    expect(toWordCheckResult(raw({ total: 86, syllables: pass }), STONES).passed).toBe(true);
+    expect(
+      toWordCheckResult(raw({ total: 80, syllables: scored(80, 80, 80) }), STONES).passed,
+    ).toBe(true);
+    // One syllable under the line fails the word, even at 82 overall (the board's mitigate retry).
+    expect(
+      toWordCheckResult(raw({ total: 82, syllables: scored(95, 56, 94) }), STONES).passed,
+    ).toBe(false);
+    expect(
+      toWordCheckResult(raw({ total: 86, syllables: scored(91, 79, 88) }), STONES).passed,
+    ).toBe(false);
+    expect(
+      toWordCheckResult(raw({ total: 79, syllables: scored(80, 80, 80) }), STONES).passed,
+    ).toBe(false);
     expect(toWordCheckResult(raw({ status: 'not_heard', total: 90 }), STONES).passed).toBe(false);
     expect(toWordCheckResult(raw({ status: 'other_word', total: 40 }), STONES)).toMatchObject({
       status: 'other_word',
@@ -539,7 +555,9 @@ describe('Word check (Pronunciation, 2026-10-11)', () => {
     }) as Job<SpeechCheckJob>;
 
   it('a passed word is pollinated, as the learner, once (never SRS)', async () => {
-    const checkWord = jest.fn().mockResolvedValue(raw({ total: 86 }));
+    const checkWord = jest
+      .fn()
+      .mockResolvedValue(raw({ total: 86, syllables: scored(91, 80, 88) }));
     const queryAs = jest
       .fn()
       .mockResolvedValueOnce([{ id: 'h1' }])
@@ -610,7 +628,7 @@ describe('Word check (Pronunciation, 2026-10-11)', () => {
     const queryAs = jest.fn().mockRejectedValue(new Error('check constraint'));
     const { store, processor } = makeProcessor(
       jest.fn(),
-      jest.fn().mockResolvedValue(raw({ total: 95 })),
+      jest.fn().mockResolvedValue(raw({ total: 95, syllables: scored(96, 94, 95) })),
       queryAs,
     );
     store.add('w1', 'u', audio());
