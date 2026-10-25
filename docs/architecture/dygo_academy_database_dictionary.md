@@ -724,6 +724,8 @@ Seeds & Harvest Phase 2 (`20261024_seed_drops.sql`). `word_relations (lexicon_id
 
 Since `20261025_word_audio_uk.sql`: every word has two clips. `master_lexicon.audio_url_us` (named `audio_url` until `20261025_word_audio_us.sql`) is the US clip (Google `en-US-Neural2-F`, said from `ipa_us`) and `audio_url_uk` the UK clip (`en-GB-Neural2-C`, said from `ipa_uk`); each is made from the other accent's IPA when its own is missing. `audio_url_uk` is null until enrichment or `npm run audio-backfill` makes it (it needs `GOOGLE_TTS_API_KEY`), and the app then plays `audio_url_us`. The app shows and plays the accent of `profiles.english_variety` (`en-GB` → UK, anything else → US). Storage keys: `audio/<lang>/us/…` and `audio/<lang>/uk/…`.
 
+`20261025_word_pron_data.sql` also added `audio_slow_url_us` / `audio_slow_url_uk` (the word said slowly by Google TTS); `20261025_word_pron_no_slow.sql` drops them again the same day: Pronunciation's Slowly plays `audio_url_us` / `audio_url_uk` slowed to 0.7× in the browser.
+
 Since `20261025_word_phrases.sql`: `master_lexicon.is_phrase` (boolean, default false; backfilled true for any spelling with a space) marks pairings such as "mitigate the risk". A relation drops only when its related word has a `master_lexicon` entry with `audio_url_us`; the seed is then a READY topic word linked to that entry. A fruit word drops at most once (`seed_drops.dropped_by`). The whole drop is behind `SEED_DROPS_ENABLED` (off by default).
 
 ---

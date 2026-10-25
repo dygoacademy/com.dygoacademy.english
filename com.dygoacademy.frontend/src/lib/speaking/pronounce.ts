@@ -422,18 +422,15 @@ export function nativeWordSeconds(item: SpeakingSessionItem, accent: SpeakingAcc
 }
 
 /**
- * "Slowly": the word said slowly in the accent (pronunciation v2's slow
- * clip, played at 1×), else the word clip at PRON_SLOW_RATE.
+ * "Slowly": the accent's word clip at PRON_SLOW_RATE, played from a copy
+ * slowed in the browser with the pitch kept (usePlayer, `slow-clip.ts`).
+ * The TTS slow clip was dropped on 2026-10-25: Dylan compared the two on
+ * /garden/_speaking and this sounded as good.
  */
 export function slowWord(
   item: SpeakingSessionItem,
   accent: SpeakingAccent,
 ): { clip: NativeClip; rate: number } | null {
-  const slow =
-    accent === 'UK'
-      ? (item.word_audio_slow_url_uk ?? item.word_audio_slow_url_us)
-      : (item.word_audio_slow_url_us ?? item.word_audio_slow_url_uk);
-  if (slow) return { clip: { src: slow }, rate: 1 };
   const word = nativeWord(item, accent);
   return word ? { clip: word, rate: PRON_SLOW_RATE } : null;
 }

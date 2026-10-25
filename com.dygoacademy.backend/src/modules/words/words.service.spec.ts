@@ -141,7 +141,7 @@ describe('WordsService', () => {
     });
   });
   describe('lookupGuestWord', () => {
-    it('reads both accents’ normal and slow clips as anon', async () => {
+    it('reads both accents’ clips as anon', async () => {
       const queryAsAnon = jest.fn().mockResolvedValue([{ source_word: 'inevitable' }]);
       const moduleRef = await Test.createTestingModule({
         providers: [
@@ -153,14 +153,9 @@ describe('WordsService', () => {
 
       await moduleRef.get(WordsService).lookupGuestWord('Inevitable');
       const [sql, params] = queryAsAnon.mock.calls[0];
-      for (const column of [
-        'audio_url_us',
-        'audio_url_uk',
-        'audio_slow_url_us',
-        'audio_slow_url_uk',
-      ]) {
-        expect(sql).toContain(column);
-      }
+      expect(sql).toContain('audio_url_us');
+      expect(sql).toContain('audio_url_uk');
+      expect(sql).not.toContain('audio_slow_url');
       expect(params).toEqual(['Inevitable', 'en']);
     });
   });

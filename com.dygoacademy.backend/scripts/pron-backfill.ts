@@ -2,8 +2,7 @@
 /**
  * pron-backfill — pronunciation v2 data for words that don't have it yet:
  * the stones (master_lexicon.syllables_us / _uk, with each syllable's place
- * in the word clip), the slow clip (audio_slow_url_us / _uk) and the P1 tip
- * (pron_tip). See src/ai/pron-data.service.ts.
+ * in the word clip) and the P1 tip (pron_tip). See src/ai/pron-data.service.ts.
  *
  *   npm run pron-backfill -- --dry-run         # what would be made, and which words get no stones
  *   npm run pron-backfill                      # words missing any of it (at most 500)
@@ -144,7 +143,7 @@ async function main() {
       ({ rows } = await db.query(
         `select ${cols} from public.master_lexicon ml
           where ml.syllables_us is null or ml.pron_tip is null
-             or ($2 and (ml.syllables_uk is null or ml.audio_slow_url_us is null or ml.audio_slow_url_uk is null))
+             or ($2 and ml.syllables_uk is null)
           order by ml.created_at
           limit $1`,
         [args.limit, made],
@@ -155,7 +154,7 @@ async function main() {
       return;
     }
     if (!tts.isConfigured()) {
-      console.log('pron-backfill: no GOOGLE_TTS_API_KEY: US stones and tips only (no spans, no slow clips, no UK).');
+      console.log('pron-backfill: no GOOGLE_TTS_API_KEY: US stones and tips only (no spans, no UK).');
     }
 
     const noStones = (r: PronDataRow) =>

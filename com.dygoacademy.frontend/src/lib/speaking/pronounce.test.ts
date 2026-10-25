@@ -341,14 +341,13 @@ describe('stored syllable clips (pronunciation v2)', () => {
     expect(takeSyllable(CHECK, 2)).toBeNull();
   });
 
-  it('Slowly: the slow clip at 1x, else the word clip at 0.7', () => {
-    const slow = {
-      word_audio_slow_url_us: 'https://m/slow-us.m4a',
+  it("Slowly: the accent's word clip at 0.7", () => {
+    const both = {
       word_audio_url_us: 'https://m/us.m4a',
+      word_audio_url_uk: 'https://m/uk.m4a',
     } as SpeakingSessionItem;
-    expect(slowWord(slow, 'UK')).toEqual({ clip: { src: 'https://m/slow-us.m4a' }, rate: 1 });
-    const none = { word_audio_url_us: 'https://m/us.m4a' } as SpeakingSessionItem;
-    expect(slowWord(none, 'US')).toEqual({ clip: { src: 'https://m/us.m4a' }, rate: 0.7 });
+    expect(slowWord(both, 'UK')).toEqual({ clip: { src: 'https://m/uk.m4a' }, rate: 0.7 });
+    expect(slowWord(both, 'US')).toEqual({ clip: { src: 'https://m/us.m4a' }, rate: 0.7 });
   });
 });
 

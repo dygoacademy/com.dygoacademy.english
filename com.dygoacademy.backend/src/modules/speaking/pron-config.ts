@@ -25,8 +25,6 @@ export const PRON = {
    * (c51f28a).
    */
   otherWordTrust: 90,
-  /** The "Slowly" clip's Google TTS speakingRate. */
-  slowSpeakingRate: 0.7,
 } as const;
 
 /** How a scored syllable looks on its stone. */

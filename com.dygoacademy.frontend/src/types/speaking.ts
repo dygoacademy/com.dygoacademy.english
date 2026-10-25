@@ -85,9 +85,6 @@ export interface SpeakingSessionItem {
   word_audio_url_us?: string | null;
   /** The same in British English; null until made (play `word_audio_url_us`). Optional for older APIs. */
   word_audio_url_uk?: string | null;
-  /** The word said slowly ("Slowly"); null until made. Optional for older APIs. */
-  word_audio_slow_url_us?: string | null;
-  word_audio_slow_url_uk?: string | null;
   /**
    * The stored stones in the profile accent (else the other accent's); [] when the word has
    * none (not offered in Pronunciation). Spans are inside `syllables_clip_url`.

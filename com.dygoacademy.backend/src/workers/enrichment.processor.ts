@@ -313,7 +313,7 @@ export class EnrichmentProcessor extends WorkerHost {
 
   /**
    * Pronunciation v2 (20261025_word_pron_data.sql): the word's stones (with
-   * their place in each accent's clip), the slow clip and the P1 tip. Only
+   * their place in each accent's clip) and the P1 tip. Only
    * when missing, unless `remake`. Never fails the word: a word without
    * stones is just not offered in Pronunciation until `npm run pron-backfill`.
    */
@@ -321,10 +321,9 @@ export class EnrichmentProcessor extends WorkerHost {
     try {
       const [row] = await this.db.queryAsService<PronDataRow & { has_data: boolean }>(
         `select id, normalized_word, language_code, ipa_us, ipa_uk, audio_url_us, audio_url_uk,
-                (syllables_us is not null and pron_tip is not null
-                  and (audio_slow_url_us is not null or $2::boolean = false)) as has_data
+                (syllables_us is not null and pron_tip is not null) as has_data
            from public.master_lexicon where id = $1`,
-        [lexiconId, this.wordTts.isConfigured()],
+        [lexiconId],
       );
       if (!row || (row.has_data && !remake)) return;
       const update = pronDataUpdate(row.id, await this.pronData.make(row));

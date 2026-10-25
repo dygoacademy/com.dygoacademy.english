@@ -9,40 +9,34 @@ import { PRON_SLOW_RATE } from '@/lib/speaking/pronounce';
 import type { GuestWordCard, SpeakingAccent } from '@/types';
 
 /**
- * "Slowly" A/B (Dylan, 2026-10-25): is the TTS slow clip
- * (audio_slow_url_*, Google speakingRate 0.7) worth keeping, or is the word
- * clip slowed in the browser (what Pronunciation's Slowly plays without one)
- * good enough? Each button plays only its own accent's clip, no fallback,
- * so the two are compared fairly. Dev tool: English labels (see page.tsx).
+ * "Slowly" check: a word's clip at 1× and slowed to PRON_SLOW_RATE in the
+ * browser (pitch kept), exactly as Pronunciation's Slowly plays it. Was an
+ * A/B against the TTS slow clip (audio_slow_url_*) until Dylan chose the
+ * browser slowdown and the slow clips were dropped (2026-10-25). Each
+ * button plays only the chosen accent's clip. Dev tool: English labels
+ * (see page.tsx).
  */
 export const SLOW_COPY = {
-  title: '4 · Slowly A / B',
-  help: 'A = the slow clip Google made (speakingRate 0.7). B = the normal clip slowed to 0.7× here (pitch kept), what Slowly plays without a slow clip.',
+  title: '4 · Slowly',
+  help: 'Slowly = the normal clip slowed here (pitch kept), as Pronunciation plays it.',
   word: 'Word',
   accent: 'Accent',
   lookUp: 'Look up',
   notFound: 'Not in the lexicon.',
   normal: 'Normal 1×',
-  a: 'A · slow clip',
-  b: `B · normal at ${PRON_SLOW_RATE}×`,
+  slow: `Slowly ${PRON_SLOW_RATE}×`,
   none: (label: string) => `${label} (none)`,
 } as const;
 
 type Clip = { src: string | null; rate: number };
 
-/** The three clips for `accent`: normal, A (TTS slow clip) and B (normal clip at PRON_SLOW_RATE). */
+/** The accent's clip at 1× and at PRON_SLOW_RATE. */
 export function slowCompareClips(
   word: GuestWordCard,
   accent: SpeakingAccent,
-): { normal: Clip; a: Clip; b: Clip } {
-  const uk = accent === 'UK';
-  const normal = (uk ? word.audio_url_uk : word.audio_url_us) ?? null;
-  const slow = (uk ? word.audio_slow_url_uk : word.audio_slow_url_us) ?? null;
-  return {
-    normal: { src: normal, rate: 1 },
-    a: { src: slow, rate: 1 },
-    b: { src: normal, rate: PRON_SLOW_RATE },
-  };
+): { normal: Clip; slow: Clip } {
+  const normal = (accent === 'UK' ? word.audio_url_uk : word.audio_url_us) ?? null;
+  return { normal: { src: normal, rate: 1 }, slow: { src: normal, rate: PRON_SLOW_RATE } };
 }
 
 export function SlowCompare() {
@@ -67,11 +61,11 @@ export function SlowCompare() {
   };
 
   const clips = word ? slowCompareClips(word, accent) : null;
-  // B is a slowed copy made in the browser: make it before the tap, as Pronunciation does.
-  const bSrc = clips?.b.src;
+  // Slowly plays a copy slowed in the browser: make it before the tap, as Pronunciation does.
+  const slowSrc = clips?.slow.src;
   useEffect(() => {
-    if (bSrc) prepareSlowClip(bSrc, PRON_SLOW_RATE);
-  }, [bSrc]);
+    if (slowSrc) prepareSlowClip(slowSrc, PRON_SLOW_RATE);
+  }, [slowSrc]);
 
   const button = (label: string, clip: Clip) => (
     <Button
@@ -121,8 +115,7 @@ export function SlowCompare() {
           </p>
           <div className="mt-2 flex flex-wrap gap-2">
             {button(SLOW_COPY.normal, clips.normal)}
-            {button(SLOW_COPY.a, clips.a)}
-            {button(SLOW_COPY.b, clips.b)}
+            {button(SLOW_COPY.slow, clips.slow)}
           </div>
         </div>
       )}

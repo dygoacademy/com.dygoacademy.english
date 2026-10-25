@@ -84,28 +84,22 @@ describe('PronDataService', () => {
     return { svc, tts, storage };
   }
 
-  it('stones per accent with spans in the word clip (read from its .wav copy), slow clips, the tip', async () => {
+  it('stones per accent with spans in the word clip (read from its .wav copy), the tip', async () => {
     const { svc, tts, storage } = make();
     const d = await svc.make(row);
     expect(storage.getObject).toHaveBeenCalledWith('audio/en/us/a.wav');
-    expect(tts.synthesizeWord).toHaveBeenCalledWith('mitigate', row.ipa_us, 'US', 0.7); // slow clip only
+    // The clips come from storage, and there is no slow clip any more: no word TTS.
+    expect(tts.synthesizeWord).not.toHaveBeenCalled();
+    expect(storage.upload).not.toHaveBeenCalled();
     expect(d.syllables_us?.map((s) => s.text)).toEqual(['mi', 'ti', 'gate']);
     expect(d.syllables_us?.[0]).toMatchObject({ stressed: true, start_ms: 31, end_ms: 210 });
     expect(d.syllables_us?.[2].end_ms).toBe(800);
     expect(d.syllables_uk).toHaveLength(3);
-    expect(d.audio_slow_url_us).toMatch(/^https:\/\/media\.test\/audio\/en\/us\/.+\.m4a$/);
-    expect(d.audio_slow_url_uk).toMatch(/\/uk\//);
+    expect(d).not.toHaveProperty('audio_slow_url_us');
     expect(d.pron_tip?.['en-US']).toContain('<b>MI</b>');
   });
 
-  it('reuses a slow clip already in storage (no TTS)', async () => {
-    const { svc, tts, storage } = make();
-    storage.hasObject.mockResolvedValue(true);
-    await svc.make(row);
-    expect(tts.synthesizeWord).not.toHaveBeenCalled();
-  });
-
-  it('no stones: syllables null (the word is blocked), still a slow clip', async () => {
+  it('no stones: syllables null (the word is blocked)', async () => {
     const { svc } = make();
     const d = await svc.make({
       ...row,
@@ -116,27 +110,19 @@ describe('PronDataService', () => {
     expect(d.syllables_us).toBeNull();
     expect(d.syllables_uk).toBeNull();
     expect(d.pron_tip).toBeNull();
-    expect(d.audio_slow_url_us).not.toBeNull();
   });
 
-  it('without Google TTS: US stones without spans, no UK, no slow clip', async () => {
+  it('without Google TTS: US stones without spans, no UK', async () => {
     const { svc, tts } = make(false);
     const d = await svc.make(row);
     expect(d.syllables_us?.every((s) => s.start_ms === null)).toBe(true);
     expect(d.syllables_uk).toBeNull();
-    expect(d.audio_slow_url_us).toBeNull();
     expect(tts.synthesizeMarked).not.toHaveBeenCalled();
   });
 
-  it('writes the row, keeping slow clips it did not make', () => {
-    const u = pronDataUpdate('lex-1', {
-      syllables_us: null,
-      syllables_uk: null,
-      pron_tip: null,
-      audio_slow_url_us: null,
-      audio_slow_url_uk: null,
-    });
-    expect(u.text).toMatch(/audio_slow_url_us = coalesce\(\$5, audio_slow_url_us\)/);
-    expect(u.params).toEqual(['lex-1', null, null, null, null, null]);
+  it('writes the stones and tip, nothing about slow clips', () => {
+    const u = pronDataUpdate('lex-1', { syllables_us: null, syllables_uk: null, pron_tip: null });
+    expect(u.text).not.toMatch(/audio_slow_url/);
+    expect(u.params).toEqual(['lex-1', null, null, null]);
   });
 });

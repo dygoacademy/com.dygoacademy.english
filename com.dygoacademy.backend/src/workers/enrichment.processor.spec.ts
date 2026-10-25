@@ -33,8 +33,6 @@ const PRON_DATA: PronData = {
   syllables_us: [{ text: 'e', stressed: false, start_ms: 0, end_ms: 100 }],
   syllables_uk: null,
   pron_tip: { 'en-US': 'tip', 'vi-VN': 'tip', 'zh-CN': 'tip' },
-  audio_slow_url_us: null,
-  audio_slow_url_uk: null,
 };
 
 describe('EnrichmentProcessor', () => {

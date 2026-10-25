@@ -145,17 +145,16 @@ export class GoogleWordTtsService {
 
   /**
    * A 24 kHz mono WAV of `word` in the accent's voice, said from `ipa` (the
-   * caller picks it with `ipaForAccent`), at `speakingRate` (default the
-   * learner pace; "Slowly" uses PRON.slowSpeakingRate). Throws on a cap,
-   * network or API error.
+   * caller picks it with `ipaForAccent`), at the learner pace. Throws on a
+   * cap, network or API error.
    */
   async synthesizeWord(
     word: string,
     ipa: string | null | undefined,
     accent: WordAccent = 'US',
-    speakingRate = WORD_SPEAKING_RATE,
   ): Promise<Buffer> {
-    return (await this.synthesize(wordSsml(word, ipa, accent), accent, speakingRate, false)).wav;
+    return (await this.synthesize(wordSsml(word, ipa, accent), accent, WORD_SPEAKING_RATE, false))
+      .wav;
   }
 
   /**

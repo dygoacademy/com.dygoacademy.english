@@ -42,7 +42,6 @@ const ITEM_COLUMNS = `
   si.id, si.lexicon_id, w.topic_word_id, ml.normalized_word as word, ml.part_of_speech,
   ml.cefr_level::text as cefr_level, ml.ipa_uk, ml.ipa_us, ml.definition_en,
   ml.audio_url_us as word_audio_url_us, ml.audio_url_uk as word_audio_url_uk,
-  ml.audio_slow_url_us as word_audio_slow_url_us, ml.audio_slow_url_uk as word_audio_slow_url_uk,
   ml.syllables_us, ml.syllables_uk, ml.pron_tip,
   wt.locale as meaning_locale, wt.meaning as meaning_translation,
   si.sentence, si.target_index,

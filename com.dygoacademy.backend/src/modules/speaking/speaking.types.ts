@@ -51,9 +51,6 @@ export interface SpeakingSessionItem {
   word_audio_url_us: string | null;
   /** The same in British English (master_lexicon.audio_url_uk); null until made, then play word_audio_url_us. */
   word_audio_url_uk: string | null;
-  /** The word said slowly (master_lexicon.audio_slow_url_us / _uk) for "Slowly"; null until made. */
-  word_audio_slow_url_us: string | null;
-  word_audio_slow_url_uk: string | null;
   /**
    * The stones (MI · ti · gate), stored per accent (master_lexicon.syllables_us / _uk): the
    * profile accent's, else the other accent's; [] when the word has none (not offered in

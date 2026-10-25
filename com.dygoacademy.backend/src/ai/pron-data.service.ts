@@ -1,6 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
 
-import { PRON } from '../modules/speaking/pron-config';
 import {
   buildSyllables,
   ipaPerStone,
@@ -9,14 +8,11 @@ import {
   type PronTip,
   type StoredSyllable,
 } from '../modules/speaking/pron-syllables';
-import { encodeForWeb, filesToStore } from '../storage/audio-encode';
 import { StorageService } from '../storage/storage.service';
 import {
   GoogleWordTtsService,
-  WORD_VOICES,
   WordAccent,
   ipaForAccent,
-  ipaForPhoneme,
   voicedSpan,
 } from './google-word-tts.service';
 
@@ -36,8 +32,6 @@ export interface PronData {
   syllables_us: StoredSyllable[] | null;
   syllables_uk: StoredSyllable[] | null;
   pron_tip: PronTip | null;
-  audio_slow_url_us: string | null;
-  audio_slow_url_uk: string | null;
 }
 
 const CLIP_COLUMN: Record<WordAccent, 'audio_url_us' | 'audio_url_uk'> = {
@@ -46,8 +40,8 @@ const CLIP_COLUMN: Record<WordAccent, 'audio_url_us' | 'audio_url_uk'> = {
 };
 
 /**
- * Pronunciation v2 (plan of 2026-10-25): a word's stored stones, slow clip
- * and P1 tip. Per accent:
+ * Pronunciation v2 (plan of 2026-10-25): a word's stored stones and P1
+ * tip. Per accent:
  *
  * - Stones: the spelling split to match the IPA (`buildSyllables`); none
  *   when they can't be worked out (the word is then not offered).
@@ -56,8 +50,9 @@ const CLIP_COLUMN: Record<WordAccent, 'audio_url_us' | 'audio_url_uk'> = {
  *   are scaled onto the word clip's voiced part (`syllableSpans`); the clip
  *   is read from storage (its .wav copy), else made again from the IPA. A
  *   word with one stone needs no marks. Without Google TTS the spans stay null.
- * - Slowly: the word at speakingRate PRON.slowSpeakingRate, stored like the
- *   word clip (deterministic key, so a re-run costs no TTS).
+ *
+ * No slow clip since 2026-10-25: Slowly plays the word clip slowed in the
+ * browser (Dylan compared the two on /garden/_speaking and chose that).
  *
  * Used by the enrichment worker (new words, fill-ins) and by
  * scripts/pron-backfill.ts, which builds it without Nest.
@@ -71,7 +66,7 @@ export class PronDataService {
     private readonly storage: StorageService,
   ) {}
 
-  /** The accents made: both with Google TTS, else US only (stones still, no spans or slow clip). */
+  /** The accents made: both with Google TTS, else US only (stones still, no spans). */
   accents(): WordAccent[] {
     return this.tts.isConfigured() ? ['US', 'UK'] : ['US'];
   }
@@ -83,8 +78,6 @@ export class PronDataService {
       syllables_us: null,
       syllables_uk: null,
       pron_tip: null,
-      audio_slow_url_us: null,
-      audio_slow_url_uk: null,
     };
     for (const accent of this.accents()) {
       const ipa = ipaForAccent(row, accent);
@@ -94,9 +87,6 @@ export class PronDataService {
         out[`syllables_${key}`] = this.tts.isConfigured()
           ? await this.withSpans(word, ipa, accent, stones, row[CLIP_COLUMN[accent]])
           : stones;
-      }
-      if (this.tts.isConfigured()) {
-        out[`audio_slow_url_${key}`] = await this.slowClip(word, row.language_code, ipa, accent);
       }
     }
     const tipStones = out.syllables_us ?? out.syllables_uk;
@@ -150,27 +140,6 @@ export class PronDataService {
     if (!clipUrl) return null;
     return this.tts.synthesizeWord(word, ipa, accent);
   }
-
-  private async slowClip(
-    word: string,
-    languageCode: string,
-    ipa: string | null,
-    accent: WordAccent,
-  ): Promise<string> {
-    const madeFrom = `${WORD_VOICES[accent]}@${PRON.slowSpeakingRate}|${ipaForPhoneme(ipa, accent) ?? ''}`;
-    const keyFor = (ext: 'm4a' | 'wav') =>
-      StorageService.audioKeyFor(word, languageCode, ext, madeFrom, accent);
-    for (const ext of ['m4a', 'wav'] as const) {
-      if (await this.storage.hasObject(keyFor(ext))) return this.storage.publicUrlFor(keyFor(ext));
-    }
-    const wav = await this.tts.synthesizeWord(word, ipa, accent, PRON.slowSpeakingRate);
-    const audio = await encodeForWeb(wav);
-    const urls: string[] = [];
-    for (const file of filesToStore(audio, keyFor)) {
-      urls.push(await this.storage.upload(file.key, file.body, file.contentType));
-    }
-    return urls[0];
-  }
 }
 
 /** The update that stores `data` on master_lexicon row `id` (enrichment and the backfill). */
@@ -178,8 +147,6 @@ export function pronDataUpdate(id: string, data: PronData): { text: string; para
   return {
     text: `update public.master_lexicon
               set syllables_us = $2::jsonb, syllables_uk = $3::jsonb, pron_tip = $4::jsonb,
-                  audio_slow_url_us = coalesce($5, audio_slow_url_us),
-                  audio_slow_url_uk = coalesce($6, audio_slow_url_uk),
                   updated_at = now()
             where id = $1`,
     params: [
@@ -187,8 +154,6 @@ export function pronDataUpdate(id: string, data: PronData): { text: string; para
       data.syllables_us ? JSON.stringify(data.syllables_us) : null,
       data.syllables_uk ? JSON.stringify(data.syllables_uk) : null,
       data.pron_tip ? JSON.stringify(data.pron_tip) : null,
-      data.audio_slow_url_us,
-      data.audio_slow_url_uk,
     ],
   };
 }
