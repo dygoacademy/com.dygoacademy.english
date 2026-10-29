@@ -1,16 +1,8 @@
-import {
-  Body,
-  Controller,
-  Get,
-  HttpCode,
-  HttpStatus,
-  Param,
-  ParseUUIDPipe,
-  Post,
-} from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, HttpStatus, Param, Post } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
+import { ParseLooseUuidPipe } from '../../common/pipes/parse-loose-uuid.pipe';
 import {
   ActiveBed,
   BedHarvest,
@@ -67,7 +59,7 @@ export class BedsController {
   @ApiOperation({ summary: 'The seeds one fruit word dropped (S1)' })
   async drop(
     @CurrentUser('id') userId: string,
-    @Param('droppedBy', ParseUUIDPipe) droppedBy: string,
+    @Param('droppedBy', ParseLooseUuidPipe) droppedBy: string,
   ): Promise<SeedDrop> {
     return this.beds.drop(userId, droppedBy);
   }
@@ -77,7 +69,7 @@ export class BedsController {
   @ApiOperation({ summary: 'S1 was shown for this drop' })
   async seen(
     @CurrentUser('id') userId: string,
-    @Param('droppedBy', ParseUUIDPipe) droppedBy: string,
+    @Param('droppedBy', ParseLooseUuidPipe) droppedBy: string,
   ): Promise<void> {
     await this.beds.markDropSeen(userId, droppedBy);
   }
@@ -91,7 +83,7 @@ export class BedsController {
   })
   async harvest(
     @CurrentUser('id') userId: string,
-    @Param('topicId', ParseUUIDPipe) topicId: string,
+    @Param('topicId', ParseLooseUuidPipe) topicId: string,
   ): Promise<BedHarvest> {
     return this.beds.harvest(userId, topicId);
   }
