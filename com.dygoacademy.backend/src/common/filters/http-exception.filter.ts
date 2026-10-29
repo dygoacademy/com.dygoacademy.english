@@ -6,7 +6,7 @@ import {
   HttpStatus,
   Logger,
 } from '@nestjs/common';
-import { Request, Response } from 'express';
+import { NodeRequest, NodeResponse } from '@nestjs/platform-node';
 
 import { ApiErrorResponse } from '../interfaces/api-response.interface';
 
@@ -16,8 +16,8 @@ export class HttpExceptionFilter implements ExceptionFilter {
 
   catch(exception: unknown, host: ArgumentsHost): void {
     const ctx = host.switchToHttp();
-    const response = ctx.getResponse<Response>();
-    const request = ctx.getRequest<Request>();
+    const response = ctx.getResponse<NodeResponse>();
+    const request = ctx.getRequest<NodeRequest>();
 
     const status =
       exception instanceof HttpException ? exception.getStatus() : HttpStatus.INTERNAL_SERVER_ERROR;
@@ -46,7 +46,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
       error,
       message,
       timestamp: new Date().toISOString(),
-      path: request.url,
+      path: request.originalUrl,
     };
     response.status(status).json(body);
   }

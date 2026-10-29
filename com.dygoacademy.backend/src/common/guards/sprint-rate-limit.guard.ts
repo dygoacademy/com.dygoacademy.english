@@ -5,7 +5,7 @@ import {
   HttpStatus,
   Injectable,
 } from '@nestjs/common';
-import { Request } from 'express';
+import { NodeRequest } from '@nestjs/platform-node';
 
 /**
  * FR-6.2's `POST /notifications/groups/:groupId/sprint` had no rate limit at
@@ -36,8 +36,8 @@ export class SprintRateLimitGuard implements CanActivate {
   private readonly lastTriggeredAt = new Map<string, number>();
 
   canActivate(context: ExecutionContext): boolean {
-    const request = context.switchToHttp().getRequest<Request>();
-    const rawGroupId = request.params?.groupId;
+    const request = context.switchToHttp().getRequest<NodeRequest>();
+    const rawGroupId: unknown = request.params?.groupId;
     const groupId = typeof rawGroupId === 'string' ? rawGroupId : undefined;
     if (!groupId) {
       // No groupId on the route at all is a routing bug, not a rate-limit

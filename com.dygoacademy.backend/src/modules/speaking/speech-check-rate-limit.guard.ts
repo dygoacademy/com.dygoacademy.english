@@ -5,8 +5,8 @@ import {
   HttpStatus,
   Injectable,
 } from '@nestjs/common';
-import { Request } from 'express';
 
+import { AuthenticatedRequest } from '../../common/guards/supabase-jwt.guard';
 import { SPEAKING_CHECKS_PER_HOUR } from './speaking.types';
 
 /**
@@ -28,7 +28,7 @@ export class SpeechCheckRateLimitGuard implements CanActivate {
   private readonly hits = new Map<string, number[]>();
 
   canActivate(context: ExecutionContext): boolean {
-    const request = context.switchToHttp().getRequest<Request>();
+    const request = context.switchToHttp().getRequest<AuthenticatedRequest>();
     const userId = request.user?.id;
     if (!userId) return true; // no user = the JWT guard already refused it
 

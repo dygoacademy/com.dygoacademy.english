@@ -1,7 +1,7 @@
 import { CanActivate, ExecutionContext, Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Reflector } from '@nestjs/core';
-import { Request } from 'express';
+import { NodeRequest } from '@nestjs/platform-node';
 import * as jwt from 'jsonwebtoken';
 
 import { IS_PUBLIC_KEY } from '../decorators/public.decorator';
@@ -12,11 +12,8 @@ export interface AuthenticatedUser {
   email?: string;
 }
 
-declare module 'express' {
-  interface Request {
-    user?: AuthenticatedUser;
-  }
-}
+/** A request this guard has let through carries the verified user. */
+export type AuthenticatedRequest = NodeRequest & { user?: AuthenticatedUser };
 
 /**
  * Verifies the Supabase access token.
@@ -46,7 +43,7 @@ export class SupabaseJwtGuard implements CanActivate {
     ]);
     if (isPublic) return true;
 
-    const request = context.switchToHttp().getRequest<Request>();
+    const request = context.switchToHttp().getRequest<AuthenticatedRequest>();
     const token = this.extractToken(request);
     if (!token) {
       throw new UnauthorizedException('Missing bearer token');
@@ -78,7 +75,7 @@ export class SupabaseJwtGuard implements CanActivate {
     }
   }
 
-  private extractToken(request: Request): string | undefined {
+  private extractToken(request: AuthenticatedRequest): string | undefined {
     const header = request.headers.authorization;
     if (!header) return undefined;
     const [scheme, value] = header.split(' ');
