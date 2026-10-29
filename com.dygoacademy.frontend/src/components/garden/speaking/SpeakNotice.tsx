@@ -91,14 +91,20 @@ export function SpeakNotice({ kind, onPrimary, onSecondary, donating = false }: 
         </span>
       ))}
       {primary || secondary ? (
+        // The garden buttons stop at 400px from md up; inside this card they
+        // fill its inner width so they sit under the text on wide screens.
         <div className="mt-1 flex flex-col gap-2">
           {primary && onPrimary ? (
-            <Button variant={kind === 'mic' ? 'primary' : 'forest'} onClick={onPrimary}>
+            <Button
+              variant={kind === 'mic' ? 'primary' : 'forest'}
+              className="md:max-w-none"
+              onClick={onPrimary}
+            >
               {primary}
             </Button>
           ) : null}
           {secondary && onSecondary ? (
-            <Button variant="secondary" onClick={onSecondary}>
+            <Button variant="secondary" className="md:max-w-none" onClick={onSecondary}>
               {secondary}
             </Button>
           ) : null}
