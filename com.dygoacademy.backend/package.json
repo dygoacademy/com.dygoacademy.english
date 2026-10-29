@@ -4,7 +4,7 @@
   "description": "Dygo Academy — NestJS modular monolith API",
   "private": true,
   "engines": {
-    "node": ">=20"
+    "node": "^20.19.0 || >=22.12.0"
   },
   "scripts": {
     "build": "nest build",
@@ -39,12 +39,12 @@
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1122.0",
     "@google/genai": "^2.19.0",
-    "@nestjs/bullmq": "^10.2.3",
-    "@nestjs/common": "^10.4.15",
-    "@nestjs/config": "^3.3.0",
-    "@nestjs/core": "^10.4.15",
-    "@nestjs/platform-express": "^10.4.15",
-    "@nestjs/swagger": "^8.1.0",
+    "@nestjs/bullmq": "^12.0.0",
+    "@nestjs/common": "^12.3.2",
+    "@nestjs/config": "^12.0.1",
+    "@nestjs/core": "^12.3.2",
+    "@nestjs/platform-express": "^12.3.2",
+    "@nestjs/swagger": "^12.0.5",
     "bullmq": "^5.34.6",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.1",
@@ -58,9 +58,9 @@
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
-    "@nestjs/cli": "^10.4.9",
-    "@nestjs/schematics": "^10.2.3",
-    "@nestjs/testing": "^10.4.22",
+    "@nestjs/cli": "^12.0.11",
+    "@nestjs/schematics": "^12.0.0",
+    "@nestjs/testing": "^12.3.2",
     "@types/express": "^5.0.0",
     "@types/jest": "^29.5.14",
     "@types/jsonwebtoken": "^9.0.7",
@@ -76,7 +76,7 @@
     "ts-jest": "^29.4.12",
     "ts-loader": "^9.5.1",
     "ts-node": "^10.9.2",
-    "typescript": "^5.7.2",
+    "typescript": "^6.0.0",
     "typescript-eslint": "^8.69.0"
   },
   "jest": {
@@ -89,11 +89,15 @@
     ],
     "testRegex": ".*\\.spec\\.ts$",
     "transform": {
-      "^.+\\.(t|j)s$": "ts-jest"
+      "^.+\\.ts$": "ts-jest",
+      "/node_modules/@nestjs/.+\\.js$": "<rootDir>/../test/esm-to-cjs.transform.js"
     },
     "collectCoverageFrom": [
       "**/*.(t|j)s"
     ],
-    "coverageDirectory": "../coverage"
+    "coverageDirectory": "../coverage",
+    "transformIgnorePatterns": [
+      "/node_modules/(?!@nestjs/)"
+    ]
   }
 }

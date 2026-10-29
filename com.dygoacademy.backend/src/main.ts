@@ -35,7 +35,10 @@ async function bootstrap(): Promise<void> {
     config.get<string>('frontendUrl', 'http://localhost:3000'),
   ]);
   app.enableCors({
-    origin: (origin, callback) => {
+    origin: (
+      origin: string | undefined,
+      callback: (err: Error | null, allow?: boolean) => void,
+    ) => {
       callback(null, !origin || allowedOrigins.has(origin));
     },
     credentials: true,
