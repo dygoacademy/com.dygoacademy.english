@@ -45,7 +45,8 @@ import { useReminderSwitch } from "./useReminderSwitch";
  * (saves `english_variety`), both via PATCH /profiles/me. Time in the
  * garden is `garden_minutes` (GET /srs/stats), shown in hours ("—" from an
  * older backend); family stays hidden. UI-L: "Meanings in" shows the profile's
- * meaning language and opens the language sheet (app + meaning language).
+ * meaning language; A8d: it opens /me/meanings, and the language sheet (app
+ * language + US/UK) opens from the Account sheet.
  * SO-1: the gear opens the Account sheet (who's signed in, Sign out).
  * Voice donation (NEXT_PUBLIC_VOICE_DONATION): the "Privacy & data" row,
  * on/off from GET /profiles/me/voice-donation (off until it loads).
@@ -114,7 +115,7 @@ export function MeLive() {
         onReminderChange={(on) => void reminder.change(on)}
         reminderHref={GARDEN_ROUTES.reminder}
         meanings={preferences.meaningLocale ?? "none"}
-        onLanguageClick={() => setLanguageOpen(true)}
+        meaningsHref={GARDEN_ROUTES.meanings}
         family={null}
         privacy={
           isVoiceDonationOn()
@@ -128,17 +129,19 @@ export function MeLive() {
         onOpenChange={setAccountOpen}
         name={name}
         email={email}
+        onLanguageClick={() => {
+          setAccountOpen(false);
+          setLanguageOpen(true);
+        }}
       />
       <LanguageSheet
         open={languageOpen}
         onOpenChange={setLanguageOpen}
         uiLocale={language.uiLocale}
-        meaningLocale={language.meaningLocale}
         englishVariety={variety}
         onChange={({ englishVariety, ...next }) => {
           if (englishVariety) prefs.mutate({ englishVariety });
-          if (next.uiLocale !== undefined || next.meaningLocale !== undefined)
-            void language.change(next);
+          if (next.uiLocale !== undefined) void language.change(next);
         }}
         saving={language.saving || prefs.isPending}
         error={

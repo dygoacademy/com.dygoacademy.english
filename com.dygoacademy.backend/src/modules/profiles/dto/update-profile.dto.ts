@@ -1,5 +1,5 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { IsIn, IsInt, IsOptional, Max, Min, ValidateIf } from 'class-validator';
+import { IsBoolean, IsIn, IsInt, IsOptional, Max, Min, ValidateIf } from 'class-validator';
 
 /**
  * App locales the garden ships in (phase 12 plan, UI-L), as full BCP 47
@@ -67,4 +67,12 @@ export class UpdateProfileDto {
   @Min(DAILY_GOAL_MIN)
   @Max(DAILY_GOAL_MAX)
   dailyGoalMinutes?: number;
+
+  @ApiPropertyOptional({
+    description:
+      'A8d Recall first: hide the meaning-language line on the review card until tapped. Not nullable.',
+  })
+  @ValidateIf((_, value) => value !== undefined)
+  @IsBoolean()
+  recallFirst?: boolean;
 }

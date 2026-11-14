@@ -36,7 +36,7 @@ export default async function ProfileBoardsPage({
       meaningLocale={null}
       ipadNav={sp.ipad === '1'}
     >
-      <ProfileGallery screen={sp.s ?? 'A8c-reminder'} />
+      <ProfileGallery screen={sp.s ?? 'A8c-reminder'} vi={locale === 'vi-VN'} />
     </GardenRoot>
   );
 }

@@ -169,6 +169,7 @@ Application-level user record, 1:1 with `auth.users`.
 | `study_goal` | `text` | yes | — (OB2) |
 | `target_band` | `numeric(3,1)` | yes | — (OB2) |
 | `first_topic_id` | `uuid` | yes | — (OB3) |
+| `recall_first` | `boolean` | NO | `true` (A8d Recall first: the review card hides the meaning-language line until tapped; `20261114_profile_recall_first.sql`) |
 
 **Keys**
 

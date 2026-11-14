@@ -8,6 +8,7 @@ import { useActiveBed, useNextSeedDrop } from '@/hooks/useBeds';
 import { type TodayMissions, useTodayMissions } from '@/hooks/useMissions';
 import { useRateWord } from '@/hooks/useRateWord';
 import { useStudySession } from '@/hooks/useStudySession';
+import { useMyProfile } from '@/hooks/useProfile';
 import { useTopics } from '@/hooks/useTopics';
 import { languageOf } from '@/i18n/config';
 import { forAccent, useAccent } from '@/lib/accent';
@@ -80,6 +81,7 @@ export function ReviewLive({
   // S2: a planting session that planted the active bed's last word ends in its harvest.
   const activeBed = useActiveBed(sessionOver && planting);
   const { meaningLocale } = useGardenPreferences();
+  const recallFirst = useMyProfile().data?.recall_first ?? true;
 
   const [cards, setCards] = React.useState<DueCard[] | null>(null);
   const [index, setIndex] = React.useState(0);
@@ -159,6 +161,8 @@ export function ReviewLive({
                     }
                   : null,
                 meaningFirst: meaningLocale !== null,
+                // A8d Recall first, on unless the learner turned it off.
+                recallFirst,
                 example: card.example_sentences?.[0]?.sentence ?? null,
                 collocations: null,
                 synonyms: card.synonyms?.map((synonym) => synonym.word).filter(Boolean) ?? null,

@@ -38,6 +38,12 @@ export interface ReviewCardProps {
    * whenever the learner has a meaning language (UI-L decision).
    */
   meaningFirst?: boolean;
+  /**
+   * A8d Recall first (`profiles.recall_first`): the answer shows the
+   * English definition first and keeps the meaning-language line behind a
+   * dashed "Show Vietnamese" chip until it is tapped (once per word).
+   */
+  recallFirst?: boolean;
   example?: string | null;
   collocations?: readonly string[] | null;
   /** Synonym chips under "Synonyms" (canvas A2), from `master_lexicon.synonyms`. */
@@ -77,6 +83,7 @@ export function ReviewCard({
   meaning,
   meaningTranslation,
   meaningFirst = false,
+  recallFirst = false,
   example,
   collocations,
   synonyms,
@@ -84,6 +91,9 @@ export function ReviewCard({
 }: ReviewCardProps) {
   const t = useTranslations('components.review');
   const pos = useTranslations('components.partOfSpeech');
+  // Recall first: the translation stays hidden until tapped, again for each new word.
+  const [shownFor, setShownFor] = React.useState<string | null>(null);
+  const hideTranslation = recallFirst && !!meaningTranslation?.text && shownFor !== word;
   const tags = [
     level ? { text: level, strong: true } : null,
     topic ? { text: topic, strong: false } : null,
@@ -136,7 +146,24 @@ export function ReviewCard({
         <div className={gcn('rise flex flex-col gap-[14px]', ANSWER_PANE)}>
           <div className="flex flex-col gap-0.5">
             <h3 className="sr-only">{t('meaning')}</h3>
-            {meaningFirst && meaningTranslation?.text ? (
+            {hideTranslation ? (
+              <>
+                <span lang="en" className="text-[17px] font-semibold leading-[1.35]">
+                  {meaning}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setShownFor(word)}
+                  className="mt-1.5 self-start rounded-[10px] border border-dashed border-stage-sprout-leaf bg-forest-wash px-2.5 py-1 text-[13px] font-semibold text-forest"
+                >
+                  {t(
+                    meaningTranslation?.lang.startsWith('zh')
+                      ? 'recallShow.zh-CN'
+                      : 'recallShow.vi-VN',
+                  )}
+                </button>
+              </>
+            ) : meaningFirst && meaningTranslation?.text ? (
               <>
                 <span
                   lang={meaningTranslation.lang}

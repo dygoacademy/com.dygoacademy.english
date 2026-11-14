@@ -29,6 +29,7 @@ const ROW = {
   meaning_locale: 'vi-VN',
   english_variety: 'en-US',
   daily_goal_minutes: 10,
+  recall_first: true,
 };
 
 describe('ProfilesService.updateMine', () => {
@@ -82,7 +83,9 @@ describe('ProfilesService.getMine (UI-6)', () => {
     await expect(service.getMine('user-42')).resolves.toEqual(ROW);
     const [userId, sql, params] = queryAs.mock.calls[0];
     expect(userId).toBe('user-42');
-    expect(sql).toMatch(/english_variety, daily_goal_minutes from public\.profiles where id = \$1/);
+    expect(sql).toMatch(
+      /english_variety, daily_goal_minutes, recall_first from public\.profiles where id = \$1/,
+    );
     expect(params).toEqual(['user-42']);
   });
 
@@ -109,9 +112,19 @@ describe('ProfilesService.updateMine prefs (UI-6)', () => {
     expect(sql).toMatch(/english_variety = \$2, daily_goal_minutes = \$3/);
     expect(sql).not.toMatch(/ui_locale =/);
     expect(sql).toMatch(
-      /returning id, ui_locale, meaning_locale, english_variety, daily_goal_minutes/,
+      /returning id, ui_locale, meaning_locale, english_variety, daily_goal_minutes, recall_first/,
     );
     expect(params).toEqual(['user-42', 'en-GB', 20]);
+  });
+
+  it('updates recall_first (A8d) on its own', async () => {
+    const queryAs = jest.fn().mockResolvedValue([{ ...ROW, recall_first: false }]);
+    const service = await makeService(queryAs);
+    const result = await service.updateMine('user-42', { recallFirst: false });
+    const [, sql, params] = queryAs.mock.calls[0];
+    expect(sql).toMatch(/set recall_first = \$2,/);
+    expect(params).toEqual(['user-42', false]);
+    expect(result.recall_first).toBe(false);
   });
 
   it("a bigger daily goal raises today's Plant mission, never lowers it", async () => {

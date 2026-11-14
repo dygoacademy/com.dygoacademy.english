@@ -9,7 +9,8 @@ import { UpdateProfileDto } from './dto/update-profile.dto';
 
 /**
  * The caller's own settings, as `GET` / `PATCH /profiles/me` return them
- * (UI-L locales; UI-6 U6-4 adds `english_variety` and `daily_goal_minutes`).
+ * (UI-L locales; UI-6 U6-4 adds `english_variety` and `daily_goal_minutes`;
+ * A8d adds `recall_first`).
  */
 export interface ProfileLanguage {
   id: string;
@@ -17,6 +18,8 @@ export interface ProfileLanguage {
   meaning_locale: string | null;
   english_variety: string;
   daily_goal_minutes: number;
+  /** A8d: hide the translation on the review card until tapped (default true). */
+  recall_first: boolean;
 }
 
 /** UI-6 keepsake kinds (user_keepsakes.kind; 20261001_retention.sql). */
@@ -49,7 +52,8 @@ export interface Keepsakes {
   golden_blooms: number;
 }
 
-const PROFILE_COLUMNS = 'id, ui_locale, meaning_locale, english_variety, daily_goal_minutes';
+const PROFILE_COLUMNS =
+  'id, ui_locale, meaning_locale, english_variety, daily_goal_minutes, recall_first';
 
 /**
  * Onboarding OB1–OB5, as `GET` / `PATCH /profiles/me/onboarding` return it
@@ -153,6 +157,7 @@ export class ProfilesService {
       ['meaningLocale', 'meaning_locale'],
       ['englishVariety', 'english_variety'],
       ['dailyGoalMinutes', 'daily_goal_minutes'],
+      ['recallFirst', 'recall_first'],
     ];
     for (const [key, column] of fields) {
       if (dto[key] !== undefined) {
@@ -162,7 +167,7 @@ export class ProfilesService {
     }
     if (sets.length === 0) {
       throw new BadRequestException(
-        'Send uiLocale, meaningLocale, englishVariety and/or dailyGoalMinutes.',
+        'Send uiLocale, meaningLocale, englishVariety, dailyGoalMinutes and/or recallFirst.',
       );
     }
 

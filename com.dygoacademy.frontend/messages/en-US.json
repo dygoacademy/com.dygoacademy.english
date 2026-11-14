@@ -20,7 +20,8 @@
       "seedPackets": "Pick a seed packet",
       "seedDrop": "Fruit drops seeds",
       "reminder": "Reminder",
-      "goal": "Daily goal"
+      "goal": "Daily goal",
+      "meanings": "Meanings in"
     },
     "update": {
       "available": "There’s a new version of Dygo.",
@@ -272,7 +273,11 @@
       "collocations": "Collocations",
       "synonyms": "Synonyms",
       "hiddenHint": "Say the meaning out loud,<br></br>then check.",
-      "quoted": "“{text}”"
+      "quoted": "“{text}”",
+      "recallShow": {
+        "vi-VN": "Show Vietnamese",
+        "zh-CN": "Show Chinese"
+      }
     },
     "partOfSpeech": {
       "noun": "noun",
@@ -332,7 +337,8 @@
       "variety": "English dialect",
       "varietyHint": "Used for spelling and pronunciation across your garden.",
       "varietyUS": "US English 🇺🇸",
-      "varietyUK": "UK English 🇬🇧"
+      "varietyUK": "UK English 🇬🇧",
+      "descriptionApp": "Pick the language for the app and your English accent."
     },
     "account": {
       "title": "Account",
@@ -340,7 +346,8 @@
       "signOut": "Sign out",
       "signingOut": "Signing out…",
       "cancel": "Cancel",
-      "error": "We couldn’t sign you out. Check your connection and try again."
+      "error": "We couldn’t sign you out. Check your connection and try again.",
+      "language": "App language & accent"
     },
     "groups": {
       "roles": {
@@ -1925,6 +1932,36 @@
       "week": "minutes a week",
       "barrel": "Busy day? A rain barrel keeps your streak safe. You can hold up to 3.",
       "save": "Save goal",
+      "error": "Couldn't save. Check your connection and try again."
+    },
+    "meanings": {
+      "title": "Meanings in",
+      "back": "Back",
+      "intro": "How Dygo explains new words. The words you learn always stay in English.",
+      "option": {
+        "none": {
+          "title": "English only",
+          "sub": "Simple English definitions"
+        },
+        "vi-VN": {
+          "title": "Tiếng Việt",
+          "sub": "Vietnamese meaning first, English under it"
+        },
+        "zh-CN": {
+          "title": "中文（简体）",
+          "sub": "Chinese meaning first, English under it"
+        }
+      },
+      "recall": {
+        "title": "Recall first",
+        "body": "Show the translation only after you answer. Words stick better."
+      },
+      "preview": "Preview · review card",
+      "hidden": {
+        "vi-VN": "Vietnamese shows after you answer",
+        "zh-CN": "Chinese shows after you answer"
+      },
+      "save": "Save",
       "error": "Couldn't save. Check your connection and try again."
     }
   }

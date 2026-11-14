@@ -5,7 +5,7 @@ import { useTranslations } from 'next-intl';
 
 import { BottomSheet } from './BottomSheet';
 import { gcn } from './cn';
-import { SignOutIcon } from './icons';
+import { ChevronRightIcon, SignOutIcon, TranslateIcon } from './icons';
 
 /**
  * The Account sheet (SO-1, canvas `reference/A8-me-account`), opened
@@ -26,6 +26,11 @@ export interface AccountSheetProps {
    * Toast): content outside a modal sheet is hidden from VoiceOver.
    */
   notice?: React.ReactNode;
+  /**
+   * A8d moved "Meanings in" to its own screen, so the app language and
+   * US/UK English open from here (a row under the account card).
+   */
+  onLanguageClick?: () => void;
 }
 
 export function AccountSheet({
@@ -36,6 +41,7 @@ export function AccountSheet({
   onSignOut,
   signingOut = false,
   notice,
+  onLanguageClick,
 }: AccountSheetProps) {
   const t = useTranslations('components.account');
 
@@ -68,6 +74,20 @@ export function AccountSheet({
             </span>
           </div>
         </div>
+
+        {onLanguageClick ? (
+          <button
+            type="button"
+            onClick={onLanguageClick}
+            disabled={signingOut}
+            aria-haspopup="dialog"
+            className="flex h-[52px] items-center gap-3 rounded-[18px] border border-border bg-surface px-[14px] text-left text-text disabled:opacity-60"
+          >
+            <TranslateIcon width={20} height={20} stroke="var(--color-forest)" />
+            <span className="flex-grow text-[15px] font-semibold">{t('language')}</span>
+            <ChevronRightIcon width={16} height={16} stroke="var(--color-text-muted)" />
+          </button>
+        ) : null}
 
         <button
           type="button"

@@ -20,7 +20,8 @@
       "seedPackets": "Chọn gói hạt giống",
       "seedDrop": "Quả rơi hạt",
       "reminder": "Lời nhắc",
-      "goal": "Mục tiêu mỗi ngày"
+      "goal": "Mục tiêu mỗi ngày",
+      "meanings": "Ngôn ngữ giải nghĩa"
     },
     "update": {
       "available": "Dygo vừa có bản mới.",
@@ -272,7 +273,11 @@
       "collocations": "Cụm từ đi kèm",
       "synonyms": "Từ đồng nghĩa",
       "hiddenHint": "Nói to nghĩa của từ,<br></br>rồi xem đáp án.",
-      "quoted": "“{text}”"
+      "quoted": "“{text}”",
+      "recallShow": {
+        "vi-VN": "Xem nghĩa tiếng Việt",
+        "zh-CN": "Xem nghĩa tiếng Trung"
+      }
     },
     "partOfSpeech": {
       "noun": "danh từ",
@@ -332,7 +337,8 @@
       "variety": "Kiểu tiếng Anh",
       "varietyHint": "Dùng cho chính tả và phát âm trong cả khu vườn.",
       "varietyUS": "Tiếng Anh Mỹ 🇺🇸",
-      "varietyUK": "Tiếng Anh Anh 🇬🇧"
+      "varietyUK": "Tiếng Anh Anh 🇬🇧",
+      "descriptionApp": "Chọn ngôn ngữ cho ứng dụng và giọng tiếng Anh của bạn."
     },
     "account": {
       "title": "Tài khoản",
@@ -340,7 +346,8 @@
       "signOut": "Đăng xuất",
       "signingOut": "Đang đăng xuất…",
       "cancel": "Hủy",
-      "error": "Chưa đăng xuất được. Bạn kiểm tra kết nối rồi thử lại nhé."
+      "error": "Chưa đăng xuất được. Bạn kiểm tra kết nối rồi thử lại nhé.",
+      "language": "Ngôn ngữ ứng dụng & giọng"
     },
     "groups": {
       "roles": {
@@ -1925,6 +1932,36 @@
       "week": "phút mỗi tuần",
       "barrel": "Bận quá? Một thùng nước mưa giữ chuỗi ngày học. Bạn giữ được tối đa 3 thùng.",
       "save": "Lưu mục tiêu",
+      "error": "Chưa lưu được. Kiểm tra kết nối rồi thử lại."
+    },
+    "meanings": {
+      "title": "Ngôn ngữ giải nghĩa",
+      "back": "Quay lại",
+      "intro": "Cách Dygo giải nghĩa từ mới. Từ bạn học luôn giữ nguyên tiếng Anh.",
+      "option": {
+        "none": {
+          "title": "English only",
+          "sub": "Định nghĩa bằng tiếng Anh đơn giản"
+        },
+        "vi-VN": {
+          "title": "Tiếng Việt",
+          "sub": "Nghĩa tiếng Việt trước, tiếng Anh bên dưới"
+        },
+        "zh-CN": {
+          "title": "中文（简体）",
+          "sub": "Nghĩa tiếng Trung trước, tiếng Anh bên dưới"
+        }
+      },
+      "recall": {
+        "title": "Nhớ trước, xem sau",
+        "body": "Chỉ hiện bản dịch sau khi bạn trả lời. Từ sẽ nhớ lâu hơn."
+      },
+      "preview": "Xem trước · thẻ ôn tập",
+      "hidden": {
+        "vi-VN": "Nghĩa tiếng Việt hiện sau khi bạn trả lời",
+        "zh-CN": "Nghĩa tiếng Trung hiện sau khi bạn trả lời"
+      },
+      "save": "Lưu",
       "error": "Chưa lưu được. Kiểm tra kết nối rồi thử lại."
     }
   }

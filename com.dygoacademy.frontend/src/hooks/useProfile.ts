@@ -14,6 +14,8 @@ export interface MyProfile {
   meaning_locale: string | null;
   english_variety: EnglishVariety;
   daily_goal_minutes: number;
+  /** A8d Recall first (absent from an older backend: treat as true). */
+  recall_first?: boolean;
 }
 
 export type KeepsakeKind = 'FIRST_HARVEST' | 'STREAK' | 'GOLDEN_BLOOMS';
@@ -29,6 +31,8 @@ export interface MyKeepsakes {
 export interface ProfilePrefsChange {
   englishVariety?: EnglishVariety;
   dailyGoalMinutes?: number;
+  /** A8d. */
+  recallFirst?: boolean;
 }
 
 export function useMyProfile() {

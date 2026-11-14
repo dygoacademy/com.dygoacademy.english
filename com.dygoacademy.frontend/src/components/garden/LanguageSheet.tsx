@@ -33,7 +33,8 @@ export interface LanguageSheetProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   uiLocale: AppLocale;
-  meaningLocale: MeaningLocale | null;
+  /** Leave out to hide the meanings group (A8d Meanings in has its own screen). */
+  meaningLocale?: MeaningLocale | null;
   /** UK/US English (U6-7); the group is hidden when undefined. */
   englishVariety?: EnglishVarietyCode;
   onChange: (change: {
@@ -63,7 +64,7 @@ export function LanguageSheet({
       open={open}
       onOpenChange={onOpenChange}
       title={t("title")}
-      description={t("description")}
+      description={meaningLocale === undefined ? t("descriptionApp") : t("description")}
     >
       <RadioGroup legend={t("appLanguage")}>
         {LOCALES.map((code) => (
@@ -79,6 +80,7 @@ export function LanguageSheet({
         ))}
       </RadioGroup>
 
+      {meaningLocale !== undefined ? (
       <RadioGroup legend={t("meaningLanguage")} hint={t("meaningHint")}>
         {MEANING_LOCALES.map((code) => (
           <RadioRow
@@ -98,6 +100,7 @@ export function LanguageSheet({
           label={t("meaningNone")}
         />
       </RadioGroup>
+      ) : null}
 
       {englishVariety ? (
         <RadioGroup legend={t("variety")} hint={t("varietyHint")}>

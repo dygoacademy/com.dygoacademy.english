@@ -17,11 +17,13 @@ export function AccountSheetLive({
   onOpenChange,
   name,
   email,
+  onLanguageClick,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   name: string;
   email: string;
+  onLanguageClick?: () => void;
 }) {
   const t = useTranslations("components.account");
   const { signOut, signingOut, error, clearError } = useSignOut();
@@ -35,6 +37,7 @@ export function AccountSheetLive({
         email={email}
         signingOut={signingOut}
         onSignOut={() => void signOut()}
+        onLanguageClick={onLanguageClick}
         notice={
           <Toast
             open={error}
