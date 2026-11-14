@@ -314,7 +314,11 @@
       "missions": "Nhiệm vụ",
       "topics": "Chủ đề",
       "me": "Hồ sơ",
-      "groups": "Nhóm"
+      "groups": "Nhóm",
+      "brand": "Dygo",
+      "sharedGardens": "Vườn chung",
+      "streak": "{count} ngày liên tiếp",
+      "barrel": "Thùng nước mưa · còn {count}"
     },
     "sheet": {
       "close": "Đóng"

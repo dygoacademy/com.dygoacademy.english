@@ -459,6 +459,7 @@
     --color-text-soft: #44524a; /* progress line inside the Next up panel */
     --color-divider: #efeae0; /* rows inside a settings card */
     --color-text-faint: #8a928c; /* A8c channels that are "Soon" */
+    --color-sidebar: #ede8dc; /* iPad sidebar panel (iA8) */
     /* A8c Reminder sky: dawn (before 10:00), day, night (from 19:00). */
     --reminder-sky-dawn: linear-gradient(#f6e3dc, #fbf4e4);
     --reminder-sky-day: linear-gradient(#e3f0f8, #f4f1ea);
@@ -1034,7 +1035,7 @@
 
 /*
  * UI-3 U3-2 iPad navigation (NEXT_PUBLIC_GARDEN_IPAD_NAV, off by default):
- * the fixed rail (80px, 600–1023px) and sidebar (240px, ≥ 1024px) sit on
+ * the fixed rail (80px, 600–1023px) and sidebar (264px, ≥ 1024px; iA8) sit on
  * the left edge, so the garden root makes room for them. Only matches when
  * GardenTabBar rendered them (`data-garden-nav`), so nothing changes with
  * the flag off, below 600px, or on classic screens.
@@ -1046,7 +1047,7 @@
 }
 @media (min-width: 1024px) {
   [data-ui='garden']:has([data-garden-nav]) {
-    padding-left: 240px;
+    padding-left: 264px;
   }
 }
 

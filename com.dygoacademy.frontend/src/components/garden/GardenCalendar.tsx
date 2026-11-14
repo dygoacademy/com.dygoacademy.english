@@ -3,6 +3,7 @@ import { gcn } from './cn';
 /**
  * Garden calendar (canvas A8): 16 week columns of 7 days, 13px squares 3px
  * apart (9px tall when `compact`: A8 with the Privacy & data row, 2026-10-11), radius 3, shaded by how many missions were done that day (0–3).
+ * iA8 (iPad landscape, `ipad-lg:`): 22px tall, 5px apart, radius 5.
  * Days still to come are an empty outline. Under it, the legend ("Each
  * square = one day's missions", 0 ■■■■ 3).
  *
@@ -19,12 +20,7 @@ const LEVEL = [
   'bg-forest border-forest',
 ] as const;
 
-const SWATCH = [
-  'bg-track',
-  'bg-calendar-1',
-  'bg-stage-tree-canopy',
-  'bg-forest',
-];
+const SWATCH = ['bg-track', 'bg-calendar-1', 'bg-stage-tree-canopy', 'bg-forest'];
 
 export function GardenCalendar({
   weeks,
@@ -49,14 +45,16 @@ export function GardenCalendar({
       <div
         role="img"
         aria-label={label}
-        className={gcn('grid gap-[3px]', className)}
-        style={{ gridTemplateColumns: `repeat(${weeks.length}, minmax(0, 1fr))` }}
+        className={gcn('grid gap-[3px] ipad-lg:gap-[5px]', className)}
+        style={{
+          gridTemplateColumns: `repeat(${weeks.length}, minmax(0, 1fr))`,
+        }}
       >
         {weeks.map((days, w) => (
           <div
             key={w}
             className={gcn(
-              'grid gap-[3px]',
+              'grid gap-[3px] ipad-lg:grid-rows-[repeat(7,22px)] ipad-lg:gap-[5px]',
               compact ? 'grid-rows-[repeat(7,9px)]' : 'grid-rows-[repeat(7,13px)]',
             )}
           >
@@ -64,7 +62,7 @@ export function GardenCalendar({
               <span
                 key={d}
                 className={gcn(
-                  'rounded-[3px] border',
+                  'rounded-[3px] border ipad-lg:rounded-[5px]',
                   level === null ? 'border-border bg-transparent' : LEVEL[level],
                 )}
               />

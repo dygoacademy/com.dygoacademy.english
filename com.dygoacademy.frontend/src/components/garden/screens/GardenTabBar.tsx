@@ -40,6 +40,7 @@ export function GardenTabBar({
   ipadNav = isGardenIpadNavOn(),
   bar = true,
   sidebar,
+  sidebarFooter,
 }: {
   active: GardenTab;
   sticky?: boolean;
@@ -51,21 +52,40 @@ export function GardenTabBar({
   bar?: boolean;
   /** Under the sidebar's items at `lg` (the topic beds, the shared gardens). */
   sidebar?: React.ReactNode;
+  /** At the bottom of the sidebar (iA8: the streak card). */
+  sidebarFooter?: React.ReactNode;
 }) {
   const fromContext = useGroupsTab();
   const showGroups = groups ?? fromContext;
   const t = useTranslations('components.tabBar');
   const items = [
-    { key: 'garden', href: GARDEN_ROUTES.home, label: t('garden'), icon: <GardenTabIcon /> },
+    {
+      key: 'garden',
+      href: GARDEN_ROUTES.home,
+      label: t('garden'),
+      icon: <GardenTabIcon />,
+    },
     {
       key: 'missions',
       href: GARDEN_ROUTES.missions,
       label: t('missions'),
       icon: <MissionsTabIcon />,
     },
-    { key: 'topics', href: GARDEN_ROUTES.topics, label: t('topics'), icon: <TopicsTabIcon /> },
+    {
+      key: 'topics',
+      href: GARDEN_ROUTES.topics,
+      label: t('topics'),
+      icon: <TopicsTabIcon />,
+    },
     ...(showGroups || active === 'groups'
-      ? [{ key: 'groups', href: GARDEN_ROUTES.groups, label: t('groups'), icon: <GroupsTabIcon /> }]
+      ? [
+          {
+            key: 'groups',
+            href: GARDEN_ROUTES.groups,
+            label: t('groups'),
+            icon: <GroupsTabIcon />,
+          },
+        ]
       : []),
     { key: 'me', href: GARDEN_ROUTES.me, label: t('me'), icon: <MeTabIcon /> },
   ];
@@ -83,7 +103,7 @@ export function GardenTabBar({
         />
       ) : null}
       <GardenRail items={items} activeKey={active} />
-      <GardenSidebar items={items} activeKey={active}>
+      <GardenSidebar items={items} activeKey={active} footer={sidebarFooter}>
         {sidebar}
       </GardenSidebar>
     </>
@@ -96,9 +116,9 @@ export const SCREEN_CLASSES =
 
 /**
  * UI-7 U7-2 (design system §10): added to SCREEN_CLASSES on screens that
- * render the iPad nav. With the nav on, the column widens and leaves room
- * for the fixed rail (80px, `ipad:`) or sidebar (240px, `ipad-lg:`):
- * content up to 720px at `md` and 960px at `lg`.
+ * render the iPad nav. With the nav on, the column widens: up to 720px at
+ * `md` and 960px at `lg`. The room for the fixed rail (80px) or
+ * sidebar (264px) is the garden root's padding (globals.css), so the
+ * column doesn't add it again.
  */
-export const IPAD_NAV_COLUMN =
-  'ipad:max-w-[800px] ipad:pl-20 ipad-lg:max-w-[1200px] ipad-lg:pl-60';
+export const IPAD_NAV_COLUMN = 'ipad:max-w-[720px] ipad-lg:max-w-[960px]';

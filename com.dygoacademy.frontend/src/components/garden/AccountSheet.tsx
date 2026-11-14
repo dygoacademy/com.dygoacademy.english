@@ -1,11 +1,23 @@
 'use client';
 
-import type * as React from 'react';
+import * as React from 'react';
 import { useTranslations } from 'next-intl';
 
 import { BottomSheet } from './BottomSheet';
 import { gcn } from './cn';
 import { ChevronRightIcon, SignOutIcon, TranslateIcon } from './icons';
+
+/**
+ * iA8-me-account (iPad landscape, `ipad-lg:`): the same dialog as a
+ * 340px popover hanging under the gear (`anchor`), with a caret, a clear
+ * backdrop, no title or Cancel, and a 48px Sign out.
+ */
+const POPOVER = [
+  'ipad-lg:inset-x-auto ipad-lg:bottom-auto ipad-lg:left-auto ipad-lg:right-[var(--account-right,28px)] ipad-lg:top-[var(--account-top,100px)]',
+  'ipad-lg:w-[340px] ipad-lg:max-w-none ipad-lg:translate-x-0 ipad-lg:translate-y-0 ipad-lg:overflow-visible',
+  'ipad-lg:rounded-[20px] ipad-lg:[&&]:rounded-[20px] ipad-lg:border ipad-lg:border-border ipad-lg:bg-surface ipad-lg:p-4',
+  'ipad-lg:shadow-[0_18px_44px_rgba(20,42,33,0.22)]',
+].join(' ');
 
 /**
  * The Account sheet (SO-1, canvas `reference/A8-me-account`), opened
@@ -31,6 +43,8 @@ export interface AccountSheetProps {
    * US/UK English open from here (a row under the account card).
    */
   onLanguageClick?: () => void;
+  /** The gear that opened it: the iPad popover hangs under it. */
+  anchor?: HTMLElement | null;
 }
 
 export function AccountSheet({
@@ -42,8 +56,20 @@ export function AccountSheet({
   signingOut = false,
   notice,
   onLanguageClick,
+  anchor = null,
 }: AccountSheetProps) {
   const t = useTranslations('components.account');
+  const [place, setPlace] = React.useState<React.CSSProperties | undefined>(undefined);
+
+  React.useLayoutEffect(() => {
+    if (!open || !anchor) return;
+    // 10px under the gear, its right edge 8px past the gear's (the board's 28px / 100px at 1194).
+    const rect = anchor.getBoundingClientRect();
+    setPlace({
+      '--account-top': `${Math.round(rect.bottom + 10)}px`,
+      '--account-right': `${Math.round(window.innerWidth - rect.right - 8)}px`,
+    } as React.CSSProperties);
+  }, [open, anchor]);
 
   return (
     <BottomSheet
@@ -57,10 +83,20 @@ export function AccountSheet({
       closeButton={false}
       // A8-me-account canvas (phone): 28px top corners ([&&] beats the shared rounded-t-hero), a 40px grabber and 4px more
       // between grabber and title than the shared sheet header.
-      className="bg-bg [&&]:rounded-t-[28px] md:[&&]:rounded-t-hero [&_[data-testid=sheet-grabber]>span]:w-10 [&_[data-testid=sheet-grabber]]:mb-1"
+      className={`bg-bg [&&]:rounded-t-[28px] md:[&&]:rounded-t-hero [&_[data-testid=sheet-grabber]>span]:w-10 [&_[data-testid=sheet-grabber]]:mb-1 ${POPOVER}`}
+      headerClassName="ipad-lg:sr-only"
+      bodyClassName="ipad-lg:overflow-visible ipad-lg:p-0"
+      overlayClassName="ipad-lg:bg-transparent"
+      contentStyle={place}
+      before={
+        <span
+          aria-hidden="true"
+          className="absolute -top-2 right-[22px] hidden h-[14px] w-[14px] rotate-45 border-l border-t border-border bg-surface ipad-lg:block"
+        />
+      }
     >
-      <div className="flex flex-col gap-[14px] pb-[18px] pt-2">
-        <div className="flex items-center gap-3 rounded-[18px] border border-border bg-surface px-[14px] py-3">
+      <div className="flex flex-col gap-[14px] pb-[18px] pt-2 ipad-lg:gap-3 ipad-lg:p-0">
+        <div className="flex items-center gap-3 rounded-[18px] border border-border bg-surface px-[14px] py-3 ipad-lg:rounded-none ipad-lg:border-0 ipad-lg:p-0">
           <span
             aria-hidden="true"
             className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-forest font-display text-[20px] font-semibold text-gold-light"
@@ -96,6 +132,7 @@ export function AccountSheet({
           aria-busy={signingOut || undefined}
           className={gcn(
             'flex h-14 items-center justify-center gap-2 rounded-[18px] border-2 border-primary text-[16px] font-bold text-primary',
+            'ipad-lg:h-12 ipad-lg:rounded-[14px] ipad-lg:text-[15px]',
             'transition-[transform,background-color] duration-press ease-garden hover:bg-surface active:scale-[0.98]',
             'disabled:cursor-default disabled:opacity-60 disabled:active:scale-100',
           )}
@@ -108,7 +145,7 @@ export function AccountSheet({
           type="button"
           onClick={() => onOpenChange(false)}
           disabled={signingOut}
-          className="-my-3 min-h-11 text-[15px] font-semibold text-forest disabled:opacity-60"
+          className="-my-3 min-h-11 text-[15px] font-semibold text-forest disabled:opacity-60 ipad-lg:hidden"
         >
           {t('cancel')}
         </button>

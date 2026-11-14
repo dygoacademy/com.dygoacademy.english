@@ -314,7 +314,11 @@
       "missions": "Missions",
       "topics": "Topics",
       "me": "Profile",
-      "groups": "Groups"
+      "groups": "Groups",
+      "brand": "Dygo",
+      "sharedGardens": "Shared gardens",
+      "streak": "{count, plural, one {# day streak} other {#-day streak}}",
+      "barrel": "Rain barrel · {count} left"
     },
     "sheet": {
       "close": "Close"
