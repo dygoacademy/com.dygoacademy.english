@@ -3,7 +3,8 @@
 import * as React from 'react';
 import { useTranslations } from 'next-intl';
 
-import type { MeaningLocale } from '@/i18n/config';
+import type { EnglishVariety } from '@/hooks/useProfile';
+import type { AppLocale, MeaningLocale } from '@/i18n/config';
 
 import { gcn } from '../cn';
 import { useGardenFormat, type ClockTime } from '../format';
@@ -12,6 +13,7 @@ import {
   BellIcon,
   FamilyIcon,
   GearIcon,
+  GlobeIcon,
   GoldenBloomIcon,
   HarvestFruitIcon,
   MissionsTabIcon,
@@ -23,7 +25,9 @@ import { SettingsList, SettingsRow } from '../SettingsList';
 import { StatTile } from '../StatTile';
 import { Switch } from '../Switch';
 import { IconButton } from '../IconButton';
+import { potFor } from './DailyGoalScreen';
 import { GardenTabBar, IPAD_NAV_COLUMN, SCREEN_CLASSES } from './GardenTabBar';
+import { APP_LANGUAGE_NAMES } from './LanguageScreen';
 
 /**
  * A8 · Me (canvas `reference/A8-me`).
@@ -44,7 +48,12 @@ import { GardenTabBar, IPAD_NAV_COLUMN, SCREEN_CLASSES } from './GardenTabBar';
  *
  * Voice donation (canvas 2026-10-11): `privacy` adds the "Privacy & data"
  * row (→ A8e) after "Meanings in"; to fit it the screen is a little
- * tighter (10px gaps, 18px top, 48px rows, 9px calendar squares).
+ * tighter (10px gaps, 18px top, 9px calendar squares).
+ *
+ * A8f (board 2026-11-14): `language` adds the "Language & accent" row
+ * (app language · US/UK, → /me/language) after "Meanings in", and the
+ * settings rows are 46px so six rows fit. The daily goal row names the
+ * pot ("Steady · 10 min").
  */
 export type KeepsakeItem =
   | { type: 'firstHarvest' }
@@ -82,12 +91,12 @@ export interface MeScreenProps {
   reminderHref?: string;
   /**
    * The review card's meaning language ('none' = English only); null
-   * while unknown. The row opens the language sheet (`onLanguageClick`).
+   * while unknown. The row links to A8d (`meaningsHref`).
    */
   meanings: MeaningLocale | 'none' | null;
-  onLanguageClick?: () => void;
-  /** A8d: the row links to the Meanings in screen instead. */
   meaningsHref?: string;
+  /** A8f: the app language and US/UK English; the row links to `href`. null hides it. */
+  language?: { appLocale: AppLocale; variety: EnglishVariety; href: string } | null;
   family: { name: string; href: string } | null;
   /** A8 "Privacy & data" row (voice donation on/off); null hides it. */
   privacy?: { donating: boolean; href: string } | null;
@@ -125,6 +134,9 @@ const SETTINGS = gcn(
 
 const ICON = { width: 20, height: 20, stroke: 'var(--color-forest)' } as const;
 
+/** The daily goal pot's name (A8b tiers). */
+const TIER = { 5: 'light', 10: 'steady', 15: 'intense' } as const;
+
 export function MeScreen({
   name,
   goal,
@@ -138,8 +150,8 @@ export function MeScreen({
   onReminderChange,
   reminderHref,
   meanings,
-  onLanguageClick,
   meaningsHref,
+  language = null,
   family,
   privacy = null,
   onAccountClick,
@@ -148,11 +160,12 @@ export function MeScreen({
   sidebarFooter,
 }: MeScreenProps) {
   const t = useTranslations('screens.me');
+  const tGoal = useTranslations('screens.goal');
   const f = useGardenFormat();
   const [remindOn, setRemindOn] = React.useState(reminder?.on ?? false);
   const dash = t('unknown');
   const num = (value: number | null) => (value === null ? dash : f.number(value));
-  const compact = privacy !== null;
+  const compact = privacy !== null || language !== null;
 
   return (
     <div
@@ -330,7 +343,7 @@ export function MeScreen({
               value={
                 dailyGoal
                   ? t('dailyGoalValue', {
-                      missions: dailyGoal.missions,
+                      tier: tGoal(`tier.${TIER[potFor(dailyGoal.minutes)]}.title`),
                       minutes: dailyGoal.minutes,
                     })
                   : t('comingSoonShort')
@@ -372,10 +385,21 @@ export function MeScreen({
               label={t('meanings')}
               value={meanings ? t(`meaningsValue.${meanings}`) : t('comingSoonShort')}
               href={meaningsHref}
-              onClick={meaningsHref ? undefined : onLanguageClick}
               chevron
               compact={compact}
             />
+            {language ? (
+              <SettingsRow
+                icon={<GlobeIcon {...ICON} />}
+                label={t('language')}
+                value={t('languageValue', {
+                  language: APP_LANGUAGE_NAMES[language.appLocale].name,
+                  accent: t(language.variety === 'en-GB' ? 'accentShort.uk' : 'accentShort.us'),
+                })}
+                href={language.href}
+                compact
+              />
+            ) : null}
             {privacy ? (
               <SettingsRow
                 icon={<ShieldCheckIcon {...ICON} />}

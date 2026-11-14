@@ -25,7 +25,8 @@
       "seedDrop": "果实掉下种子",
       "reminder": "提醒",
       "goal": "每日目标",
-      "meanings": "释义语言"
+      "meanings": "释义语言",
+      "language": "语言与口音"
     },
     "update": {
       "available": "Dygo 有新版本了",
@@ -328,25 +329,12 @@
       "close": "关闭"
     },
     "language": {
-      "title": "语言",
-      "description": "选择应用语言，以及复习卡片上显示的释义语言。",
       "appLanguage": "应用语言",
-      "meaningLanguage": "释义语言",
-      "meaningHint": "始终显示英文释义。",
       "names": {
         "en-US": "English",
         "vi-VN": "Tiếng Việt",
         "zh-CN": "简体中文"
-      },
-      "meaningWith": "{language} + English",
-      "meaningNone": "仅英文",
-      "saving": "正在保存…",
-      "error": "没能保存，请检查网络后再试。",
-      "variety": "英语类型",
-      "varietyHint": "用于整个花园的拼写和发音。",
-      "varietyUS": "美式英语",
-      "varietyUK": "英式英语",
-      "descriptionApp": "选择应用语言和你的英语口音。"
+      }
     },
     "account": {
       "title": "账户",
@@ -354,8 +342,7 @@
       "signOut": "退出登录",
       "signingOut": "正在退出…",
       "cancel": "取消",
-      "error": "没能退出登录，请检查网络后再试。",
-      "language": "应用语言和口音"
+      "error": "没能退出登录，请检查网络后再试。"
     },
     "groups": {
       "roles": {
@@ -952,7 +939,7 @@
         "nextBlooms": "下一个：{count} 朵金花"
       },
       "dailyGoal": "每日目标",
-      "dailyGoalValue": "{missions} 个任务 · {minutes} 分钟",
+      "dailyGoalValue": "{tier} · {minutes} 分钟",
       "comingSoonShort": "即将上线",
       "reminder": "提醒时间",
       "reminderBlocked": {
@@ -969,6 +956,12 @@
         "none": "English",
         "vi-VN": "Tiếng Việt + English",
         "zh-CN": "简体中文 + English"
+      },
+      "language": "语言与口音",
+      "languageValue": "{language} · {accent}",
+      "accentShort": {
+        "us": "美式",
+        "uk": "英式"
       },
       "account": "账户",
       "privacy": "隐私与数据",
@@ -1968,6 +1961,23 @@
       "hidden": {
         "vi-VN": "回答后显示越南语",
         "zh-CN": "回答后显示中文"
+      },
+      "save": "保存",
+      "error": "未能保存。请检查网络后重试。"
+    },
+    "language": {
+      "title": "语言与口音",
+      "back": "返回",
+      "intro": "Dygo 跟你说话用的语言，以及你听到的英语。",
+      "app": {
+        "label": "应用语言",
+        "hint": "菜单、按钮和提示。你学的单词始终是英语。"
+      },
+      "accent": {
+        "label": "英语口音",
+        "us": "美式英语",
+        "uk": "英式英语",
+        "hint": "每个单词的拼写、音标和发音都会跟随这个选择。"
       },
       "save": "保存",
       "error": "未能保存。请检查网络后重试。"

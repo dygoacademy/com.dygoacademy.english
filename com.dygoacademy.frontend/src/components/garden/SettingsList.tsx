@@ -52,13 +52,13 @@ export function SettingsRow({
   labelId?: string;
   /** Makes the row a button (e.g. opens a sheet); same box as the div row. */
   onClick?: () => void;
-  /** 48px rows (A8 with the Privacy & data row, canvas 2026-10-11). */
+  /** 46px rows (A8 with six rows, A8f board 2026-11-14). */
   compact?: boolean;
 }) {
-  // Content-box, as in the canvas: 52px (48px compact) plus the 1px divider.
+  // Content-box, as in the canvas: 52px (46px compact) plus the 1px divider.
   const classes = gcn(
     'box-content flex items-center gap-3 border-b border-divider px-[14px] text-text',
-    compact ? 'h-12' : 'h-[52px]',
+    compact ? 'h-[46px]' : 'h-[52px]',
   );
   const content = (
     <>
@@ -76,6 +76,8 @@ export function SettingsRow({
   if (href !== undefined && control) {
     // A link and a control (A8 Reminder: the row opens A8c, the switch
     // stays): the link covers the icon, label and value, not the switch.
+    // The phone board (A8) shows the value as a forest link "7:30 AM ›";
+    // iA8 keeps it muted.
     return (
       <div className={classes}>
         <Link href={href} className="flex flex-grow items-center gap-3 self-stretch text-text">
@@ -83,7 +85,14 @@ export function SettingsRow({
           <span id={labelId} className="flex-grow text-[15px] font-semibold">
             {label}
           </span>
-          {value ? <span className="text-[14px] text-muted-foreground">{value}</span> : null}
+          {value ? (
+            <span className="px-1 text-[14px] font-semibold text-forest underline ipad-lg:px-0 ipad-lg:font-normal ipad-lg:text-muted-foreground ipad-lg:no-underline">
+              {value}
+              <span aria-hidden="true" className="ipad-lg:hidden">
+                {' ›'}
+              </span>
+            </span>
+          ) : null}
         </Link>
         {control}
       </div>

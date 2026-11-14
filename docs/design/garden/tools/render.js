@@ -229,6 +229,9 @@ const JOBS = [
   ['AdultMeaningLangVi.dc.html', 'vi', 'A8d-meanings-vi-shown-vi', { recall: false }],
   ['AdultMeaningLangVi.dc.html', 'vi', 'A8d-meanings-en-vi', { pick: 'en' }],
   ['AdultMeaningLangVi.dc.html', 'vi', 'A8d-meanings-zh-recall-vi', { pick: 'zh', recall: true }],
+  // A8f Language & accent (Dylan, 2026-11-14): app language + English accent.
+  ['AdultLanguage.dc.html', 'en', 'A8f-language', {}],
+  ['AdultLanguageVi.dc.html', 'vi', 'A8f-language-vi', {}],
   // iA8 iPad Me (1194 x 834; the app shows it from 1024 px behind NEXT_PUBLIC_GARDEN_IPAD_NAV).
   ['iPadMe.dc.html', 'en', 'iA8-me', { $size: [1194, 834] }],
   ['iPadMe.dc.html', 'en', 'iA8-me-account', { $size: [1194, 834], account: true }],

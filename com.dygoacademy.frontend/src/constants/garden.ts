@@ -86,6 +86,8 @@ export const GARDEN_ROUTES = {
   goal: '/me/goal',
   /** A8d Meanings in: the review card's meaning language and Recall first. */
   meanings: '/me/meanings',
+  /** A8f Language & accent: the app language and US / UK English. */
+  language: '/me/language',
   /**
    * Onboarding OB1 About you → OB4 Reminder → OB5 All set (design
    * changelog, page "Adult · Onboarding", 2026-10-12): after AU2 Create

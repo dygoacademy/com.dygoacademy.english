@@ -21,7 +21,8 @@
       "seedDrop": "Quả rơi hạt",
       "reminder": "Lời nhắc",
       "goal": "Mục tiêu mỗi ngày",
-      "meanings": "Ngôn ngữ giải nghĩa"
+      "meanings": "Ngôn ngữ giải nghĩa",
+      "language": "Ngôn ngữ & giọng"
     },
     "update": {
       "available": "Dygo vừa có bản mới.",
@@ -324,25 +325,12 @@
       "close": "Đóng"
     },
     "language": {
-      "title": "Ngôn ngữ",
-      "description": "Chọn ngôn ngữ cho ứng dụng và cho phần nghĩa trên thẻ.",
       "appLanguage": "Ngôn ngữ ứng dụng",
-      "meaningLanguage": "Giải nghĩa hiển thị bằng",
-      "meaningHint": "Luôn kèm định nghĩa tiếng Anh.",
       "names": {
         "en-US": "Tiếng Anh (English)",
         "vi-VN": "Tiếng Việt",
         "zh-CN": "Tiếng Trung (简体中文)"
-      },
-      "meaningWith": "{language} + Tiếng Anh",
-      "meaningNone": "Chỉ tiếng Anh",
-      "saving": "Đang lưu…",
-      "error": "Chưa lưu được. Bạn kiểm tra kết nối rồi thử lại nhé.",
-      "variety": "Kiểu tiếng Anh",
-      "varietyHint": "Dùng cho chính tả và phát âm trong cả khu vườn.",
-      "varietyUS": "Tiếng Anh Mỹ 🇺🇸",
-      "varietyUK": "Tiếng Anh Anh 🇬🇧",
-      "descriptionApp": "Chọn ngôn ngữ cho ứng dụng và giọng tiếng Anh của bạn."
+      }
     },
     "account": {
       "title": "Tài khoản",
@@ -350,8 +338,7 @@
       "signOut": "Đăng xuất",
       "signingOut": "Đang đăng xuất…",
       "cancel": "Hủy",
-      "error": "Chưa đăng xuất được. Bạn kiểm tra kết nối rồi thử lại nhé.",
-      "language": "Ngôn ngữ ứng dụng & giọng"
+      "error": "Chưa đăng xuất được. Bạn kiểm tra kết nối rồi thử lại nhé."
     },
     "groups": {
       "roles": {
@@ -948,7 +935,7 @@
         "nextBlooms": "{count} Hoa Vàng · mốc tiếp theo"
       },
       "dailyGoal": "Mục tiêu mỗi ngày",
-      "dailyGoalValue": "{missions} nhiệm vụ · {minutes} phút",
+      "dailyGoalValue": "{tier} · {minutes} phút",
       "comingSoonShort": "Sắp có",
       "reminder": "Giờ nhắc",
       "reminderBlocked": {
@@ -965,6 +952,12 @@
         "none": "Tiếng Anh",
         "vi-VN": "Tiếng Việt + Tiếng Anh",
         "zh-CN": "Tiếng Trung + Tiếng Anh"
+      },
+      "language": "Ngôn ngữ & giọng",
+      "languageValue": "{language} · {accent}",
+      "accentShort": {
+        "us": "Mỹ",
+        "uk": "Anh"
       },
       "account": "Tài khoản",
       "privacy": "Quyền riêng tư",
@@ -1964,6 +1957,23 @@
       "hidden": {
         "vi-VN": "Nghĩa tiếng Việt hiện sau khi bạn trả lời",
         "zh-CN": "Nghĩa tiếng Trung hiện sau khi bạn trả lời"
+      },
+      "save": "Lưu",
+      "error": "Chưa lưu được. Kiểm tra kết nối rồi thử lại."
+    },
+    "language": {
+      "title": "Ngôn ngữ & giọng",
+      "back": "Quay lại",
+      "intro": "Ngôn ngữ Dygo dùng với bạn, và giọng tiếng Anh bạn nghe.",
+      "app": {
+        "label": "Ngôn ngữ ứng dụng",
+        "hint": "Menu, nút và gợi ý. Từ bạn học luôn là tiếng Anh."
+      },
+      "accent": {
+        "label": "Giọng tiếng Anh",
+        "us": "Tiếng Anh Mỹ",
+        "uk": "Tiếng Anh Anh",
+        "hint": "Chính tả, IPA và âm thanh của mọi từ sẽ theo lựa chọn này."
       },
       "save": "Lưu",
       "error": "Chưa lưu được. Kiểm tra kết nối rồi thử lại."
