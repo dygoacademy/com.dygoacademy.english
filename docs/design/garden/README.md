@@ -62,7 +62,8 @@ Exported from the canvas on 2026-09-26:
 Every screen above also has a **Vietnamese reference**, `<name>-vi` (for example `A1-todays-garden-vi`, `GR3-tricky-patches-vi`): 24 English and 24 Vietnamese references in all (AU added 2026-09-29). Exceptions: the pronunciation honeycomb (P1–P4, P2b) has English phone boards only (no `-vi`, no iPad boards; the iPad layout is the plan's two columns, vi-VN the English layout with translated copy), and S1–S3 (Seeds & Harvest) have no Vietnamese boards yet; they come in that plan's Phase 3, and until then vi-VN uses the English layout with translated copy, checked like Chinese.
 
 Seeds & Harvest (S1–S3): the build guide with every value per screen is `seeds-harvest.md` in this folder.
-Pronunciation (P1–P4, P2b, SP0): `pronunciation.md`; screens are checked on `/dev/pron` (development only). The old P4 references (`P4-result-pollinated`, `-long-word`, `-one-stone`) were removed on 2026-10-25 with the v2 board.
+Pronunciation (P1–P4, P2b, SP0): `pronunciation.md`; screens are checked on `/dev/pron` (development only).
+Adult Profile (A8b, A8c, A8d, iA8): checked on `/dev/profile?s=<reference>&locale=en-US|vi-VN` (development only, the boards' sample data). The old P4 references (`P4-result-pollinated`, `-long-word`, `-one-stone`) were removed on 2026-10-25 with the v2 board.
 
 ## Languages
 

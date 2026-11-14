@@ -22,7 +22,8 @@
       "privacy": "隐私与数据",
       "bedHarvest": "花圃收获",
       "seedPackets": "选一包种子",
-      "seedDrop": "果实掉下种子"
+      "seedDrop": "果实掉下种子",
+      "reminder": "提醒"
     },
     "update": {
       "available": "Dygo 有新版本了",
@@ -1862,6 +1863,54 @@
       "grows": "你的花圃从 <b>{before} 个单词长到 {after} 个</b>",
       "plantNow": "现在就种",
       "later": "以后，明天再种"
+    },
+    "reminder": {
+      "title": "提醒",
+      "back": "返回",
+      "main": {
+        "title": "成熟提醒",
+        "body": "每天一次，只在有单词成熟时"
+      },
+      "preset": {
+        "morning": "早上 · {time}",
+        "lunch": "午间 · {time}",
+        "evening": "晚上 · {time}"
+      },
+      "smart": {
+        "title": "智能时间",
+        "body": "在最多单词成熟时提醒我",
+        "sky": "智能"
+      },
+      "daysLabel": "日期",
+      "days": {
+        "1": "一",
+        "2": "二",
+        "3": "三",
+        "4": "四",
+        "5": "五",
+        "6": "六",
+        "7": "日"
+      },
+      "dayNames": {
+        "1": "星期一",
+        "2": "星期二",
+        "3": "星期三",
+        "4": "星期四",
+        "5": "星期五",
+        "6": "星期六",
+        "7": "星期日"
+      },
+      "channelsTitle": "提醒方式",
+      "channel": {
+        "push": "手机通知",
+        "zalo": "Zalo",
+        "email": "电子邮件"
+      },
+      "soon": "即将推出",
+      "soonLabel": "{channel}（即将推出）",
+      "quiet": "免打扰时段：22:00 至 7:00 不发送提醒。",
+      "off": "提醒已关闭。成熟的单词会在花园里等你，但放太久会枯萎。",
+      "error": "未能保存。请检查网络后重试。"
     }
   }
 }

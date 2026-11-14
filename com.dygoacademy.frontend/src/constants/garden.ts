@@ -80,6 +80,8 @@ export const GARDEN_ROUTES = {
   me: '/me',
   /** A8e Privacy & data (voice donation; 404 unless NEXT_PUBLIC_VOICE_DONATION). */
   privacy: '/me/privacy',
+  /** A8c Reminder: one ripening reminder (time, Smart time, days, channels). */
+  reminder: '/me/reminder',
   /**
    * Onboarding OB1 About you → OB4 Reminder → OB5 All set (design
    * changelog, page "Adult · Onboarding", 2026-10-12): after AU2 Create

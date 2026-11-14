@@ -68,6 +68,8 @@ export interface MeScreenProps {
   /** `blocked`: why this browser can't get reminders; the row then says so instead of showing a switch. */
   reminder: { time: ClockTime; on: boolean; blocked?: 'install' | 'unsupported' | 'blocked' | null } | null;
   onReminderChange?: (on: boolean) => void;
+  /** A8c: the reminder row's label opens the Reminder screen; the switch stays. */
+  reminderHref?: string;
   /**
    * The review card's meaning language ('none' = English only); null
    * while unknown. The row opens the language sheet (`onLanguageClick`).
@@ -98,6 +100,7 @@ export function MeScreen({
   onDailyGoalClick,
   reminder,
   onReminderChange,
+  reminderHref,
   meanings,
   onLanguageClick,
   family,
@@ -278,6 +281,7 @@ export function MeScreen({
               icon={<BellIcon {...ICON} />}
               label={t('reminder')}
               labelId="garden-me-reminder"
+              href={reminder ? reminderHref : undefined}
               value={
                 reminder?.blocked
                   ? t(`reminderBlocked.${reminder.blocked}`)

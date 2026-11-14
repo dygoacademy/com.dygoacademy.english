@@ -120,6 +120,7 @@ const config: Config = {
         'water-deep': 'var(--color-water-deep)',
         'soft-text': 'var(--color-text-soft)',
         divider: 'var(--color-divider)',
+        'text-faint': 'var(--color-text-faint)',
         'dashed-line': 'var(--color-dashed)',
         'locked-bg': 'var(--color-locked-bg)',
         'locked-border': 'var(--color-locked-border)',
