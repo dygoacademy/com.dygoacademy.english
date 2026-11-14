@@ -15,7 +15,7 @@ const ITEMS = [
 describe('BottomTabBar', () => {
   it('is a labelled nav with four links, and marks only the active one', () => {
     renderWithIntl(<BottomTabBar items={ITEMS} activeKey="topics" />);
-    const nav = screen.getByRole('navigation', { name: 'Main' });
+    const nav = screen.getByRole('navigation', { name: 'Main navigation' });
     const links = nav.querySelectorAll('a');
     expect(links).toHaveLength(4);
     expect(screen.getByRole('link', { name: 'Topics' }).getAttribute('aria-current')).toBe('page');

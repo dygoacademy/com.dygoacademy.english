@@ -32,7 +32,7 @@ describe('QuizResultScreen (U5-6, UI-5 QZ-2)', () => {
     expect(screen.getByText('mitigate')).toBeTruthy();
     const back = screen.getByRole('link', { name: 'Back to bed' });
     expect(back.getAttribute('href')).toBe('/topics/t1');
-    expect(screen.queryByRole('link', { name: 'Drill tricky words' })).toBeNull();
+    expect(screen.queryByRole('link', { name: 'Practice tricky words' })).toBeNull();
   });
 
   it('all right: bloom art, muted 0 tile, no missed list, no drill link', () => {
@@ -47,15 +47,15 @@ describe('QuizResultScreen (U5-6, UI-5 QZ-2)', () => {
         drillHref="/quiz?mode=leech"
       />,
     );
-    expect(screen.getByText('Quiz done')).toBeTruthy();
-    expect(screen.getByText('Every answer right. This bed is thriving.')).toBeTruthy();
+    expect(screen.getByText('Quiz done 🌟')).toBeTruthy();
+    expect(screen.getByText('You got every one right 🌱')).toBeTruthy();
     expect(screen.getByTestId('quiz-result-bloom')).toBeTruthy();
     expect(screen.queryByTestId('quiz-result-watering')).toBeNull();
     expect(screen.getByText('0').className).toContain('text-placeholder');
     expect(screen.getByText('5').className).toContain('text-success');
     expect(screen.queryByRole('heading', { name: 'Words that need water' })).toBeNull();
     expect(screen.getByRole('link', { name: 'Back to topics' })).toBeTruthy();
-    expect(screen.queryByRole('link', { name: 'Drill tricky words' })).toBeNull();
+    expect(screen.queryByRole('link', { name: 'Practice tricky words' })).toBeNull();
   });
 
   it('normal quiz with misses: watering-can art, gold tile and the drill link', () => {
@@ -73,7 +73,7 @@ describe('QuizResultScreen (U5-6, UI-5 QZ-2)', () => {
     expect(screen.getByTestId('quiz-result-watering')).toBeTruthy();
     expect(screen.getByText('1').className).toContain('text-gold-text');
     expect(
-      screen.getByRole('link', { name: 'Drill tricky words' }).getAttribute('href'),
+      screen.getByRole('link', { name: 'Practice tricky words' }).getAttribute('href'),
     ).toBe('/quiz?topic=t1&mode=leech');
   });
 
@@ -90,9 +90,9 @@ describe('QuizResultScreen (U5-6, UI-5 QZ-2)', () => {
         drillHref="/quiz?topic=t1&mode=leech"
       />,
     );
-    expect(screen.getByText('Drill done')).toBeTruthy();
+    expect(screen.getByText('Practice done 🎉')).toBeTruthy();
     expect(screen.getByRole('heading', { name: 'Words that need water' })).toBeTruthy();
-    expect(screen.queryByRole('link', { name: 'Drill tricky words' })).toBeNull();
+    expect(screen.queryByRole('link', { name: 'Practice tricky words' })).toBeNull();
   });
 });
 

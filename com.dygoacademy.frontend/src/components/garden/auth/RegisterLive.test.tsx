@@ -31,7 +31,7 @@ async function signUp() {
     </div>,
   );
   fireEvent.change(screen.getByLabelText('Your name'), { target: { value: 'Minh' } });
-  fireEvent.change(screen.getByLabelText('Email'), { target: { value: 'minh@example.com' } });
+  fireEvent.change(screen.getByLabelText('Email address'), { target: { value: 'minh@example.com' } });
   fireEvent.change(screen.getByLabelText('Password'), { target: { value: 'gardenpass' } });
   await act(async () => {
     fireEvent.click(screen.getByRole('button', { name: /Create account/ }));

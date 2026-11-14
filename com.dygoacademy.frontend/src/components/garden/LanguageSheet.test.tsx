@@ -29,7 +29,7 @@ describe("LanguageSheet", () => {
     renderSheet();
     expect(screen.getByRole("dialog", { name: "Language" })).toBeTruthy();
     expect(screen.getByRole("group", { name: "App language" })).toBeTruthy();
-    expect(screen.getByRole("group", { name: "Meanings in" })).toBeTruthy();
+    expect(screen.getByRole("group", { name: "Meanings shown in" })).toBeTruthy();
     expect(
       (screen.getByRole("radio", { name: "English" }) as HTMLInputElement)
         .checked,
@@ -78,17 +78,17 @@ describe("LanguageSheet", () => {
 
   it("hides UK/US English unless given (U6-7)", () => {
     renderSheet();
-    expect(screen.queryByRole("group", { name: "English style" })).toBeNull();
+    expect(screen.queryByRole("group", { name: "English dialect" })).toBeNull();
   });
 
   it("picks UK or US English (U6-7)", () => {
     const onChange = renderSheet({ englishVariety: "en-US" });
-    expect(screen.getByRole("group", { name: "English style" })).toBeTruthy();
+    expect(screen.getByRole("group", { name: "English dialect" })).toBeTruthy();
     expect(
-      (screen.getByRole("radio", { name: "US English" }) as HTMLInputElement)
+      (screen.getByRole("radio", { name: "US English 🇺🇸" }) as HTMLInputElement)
         .checked,
     ).toBe(true);
-    fireEvent.click(screen.getByRole("radio", { name: "UK English" }));
+    fireEvent.click(screen.getByRole("radio", { name: "UK English 🇬🇧" }));
     expect(onChange).toHaveBeenLastCalledWith({ englishVariety: "en-GB" });
   });
 });

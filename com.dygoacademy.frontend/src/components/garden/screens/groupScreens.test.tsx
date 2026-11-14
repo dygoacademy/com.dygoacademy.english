@@ -38,7 +38,7 @@ describe('SharedGardensScreen', () => {
   it('counts gardens and gardeners and marks the Groups tab', () => {
     renderWithIntl(<SharedGardensScreen {...props} />);
     expect(screen.getByText('3 gardens · 25 gardeners')).toBeTruthy();
-    expect(screen.getByRole('heading', { level: 1 }).textContent).toBe('Shared gardens');
+    expect(screen.getByRole('heading', { level: 1 }).textContent).toBe('Shared Gardens');
     expect(screen.getByRole('link', { name: 'Groups' }).getAttribute('aria-current')).toBe('page');
     fireEvent.click(screen.getByRole('button', { name: 'Create a garden' }));
     expect(props.start.onClick).toHaveBeenCalled();
@@ -55,8 +55,8 @@ describe('SharedGardensScreen', () => {
         <SharedGardensScreen {...props} />
       </NextIntlClientProvider>,
     );
-    expect(screen.getByText('3 khu vườn · 25 người')).toBeTruthy();
-    expect(screen.getByText('Tham gia bằng link')).toBeTruthy();
+    expect(screen.getByText('3 vườn · 25 người làm vườn')).toBeTruthy();
+    expect(screen.getByText('Tham gia bằng liên kết')).toBeTruthy();
   });
 });
 
@@ -89,7 +89,7 @@ describe('TendGardenScreen', () => {
     expect(onSize).toHaveBeenCalledWith(20);
     fireEvent.click(screen.getByRole('button', { name: 'Start rain day · 10 words each' }));
     expect(onStart).toHaveBeenCalled();
-    expect(screen.getByText('Sends a push to 5 gardeners · tricky words first')).toBeTruthy();
+    expect(screen.getByText('Sends a notification to 5 gardeners · tricky words come first')).toBeTruthy();
   });
 
   it('SE6: the Echo challenge shows totals only and trims tricky patches to 2 rows', () => {
@@ -125,8 +125,8 @@ describe('TendGardenScreen', () => {
       />,
     );
     expect(screen.getByRole('tab', { name: 'Gardeners' }).getAttribute('aria-selected')).toBe('true');
-    expect(screen.getByText('2 invite links active')).toBeTruthy();
-    expect(screen.getByText(/manages gardeners, invites and rain days/)).toBeTruthy();
+    expect(screen.getByText('2 active invite links')).toBeTruthy();
+    expect(screen.getByText(/looks after members and rain days/)).toBeTruthy();
     expect(screen.getByRole('button', { name: 'Invite' })).toBeTruthy();
   });
 });

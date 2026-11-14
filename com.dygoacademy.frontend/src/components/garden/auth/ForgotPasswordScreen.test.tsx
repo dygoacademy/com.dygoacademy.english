@@ -48,21 +48,21 @@ describe('ForgotPasswordScreen (AU4)', () => {
     const { onSubmit } = renderForgot();
     expect(screen.getByRole('heading', { name: 'Reset your password' })).toBeTruthy();
     expect(screen.getByRole('link', { name: 'Back' }).getAttribute('href')).toBe('/login');
-    const email = screen.getByLabelText('Email');
+    const email = screen.getByLabelText('Email address');
     expect(email.getAttribute('autocomplete')).toBe('email');
     fireEvent.change(email, { target: { value: ' minh@example.com ' } });
     fireEvent.submit(email.closest('form')!);
     expect(onSubmit).toHaveBeenCalledWith('minh@example.com');
-    expect(screen.queryByText('Check your inbox')).toBeNull();
+    expect(screen.queryByText('Check your inbox 📩')).toBeNull();
   });
 
   it('shows "Check your inbox" with the address, back to sign in and send again', () => {
     const { onResend } = renderForgot({ sentTo: 'minh@example.com' });
-    expect(screen.getByText('Check your inbox')).toBeTruthy();
-    expect(screen.getByText('We sent a link to minh@example.com. It works for 1 hour.')).toBeTruthy();
-    expect(screen.queryByLabelText('Email')).toBeNull();
+    expect(screen.getByText('Check your inbox 📩')).toBeTruthy();
+    expect(screen.getByText('We sent a reset link to minh@example.com. It works for 1 hour.')).toBeTruthy();
+    expect(screen.queryByLabelText('Email address')).toBeNull();
     expect(screen.getByRole('link', { name: 'Back to sign in' }).getAttribute('href')).toBe('/login');
-    fireEvent.click(screen.getByRole('button', { name: "Didn't get it? Send again" }));
+    fireEvent.click(screen.getByRole('button', { name: "Didn't get the email? Resend link" }));
     expect(onResend).toHaveBeenCalled();
   });
 
@@ -93,6 +93,6 @@ describe('ResetPasswordScreen (AU4 set a new password)', () => {
     renderReset({ stage: 'expired' });
     expect(screen.getByRole('heading', { name: 'This link has expired' })).toBeTruthy();
     expect(screen.queryByLabelText('New password')).toBeNull();
-    expect(screen.getByRole('link', { name: 'Send a new link' }).getAttribute('href')).toBe('/forgot-password');
+    expect(screen.getByRole('link', { name: 'Send new link' }).getAttribute('href')).toBe('/forgot-password');
   });
 });

@@ -37,6 +37,8 @@ vi.mock('@/hooks/useNotificationSchedules', () => ({ useNotificationSchedules: (
 vi.mock('@/hooks/useMissions', () => ({ useTodayMissions: () => query(missions.data) }));
 vi.mock('@/hooks/useTopics', () => ({ useTopics: () => query(topics.data) }));
 vi.mock('@/hooks/useOnboarding', () => ({ useOnboarding: () => query(onboarding.data) }));
+// Seeds & Harvest: the active bed (no bed here, so the Plant mission falls back to the topics).
+vi.mock('@/hooks/useBeds', () => ({ useActiveBed: () => query(null) }));
 
 import { HomeLive } from './HomeLive';
 

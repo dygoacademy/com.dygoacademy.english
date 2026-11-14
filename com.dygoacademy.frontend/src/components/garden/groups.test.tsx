@@ -134,7 +134,7 @@ describe('InviteSheetBody', () => {
     renderWithIntl(
       <InviteSheetBody role="READ" onRoleChange={onRoleChange} expires="In 7 days" uses="20 times" link={null} linkPlaceholder="The link is made when you copy or share it" />,
     );
-    const group = screen.getByRole('radiogroup', { name: 'Role for new gardeners' });
+    const group = screen.getByRole('radiogroup', { name: 'Role for new members' });
     expect(within(group).getByRole('radio', { name: 'Viewer' }).getAttribute('aria-checked')).toBe('true');
     fireEvent.click(within(group).getByRole('radio', { name: 'Editor' }));
     expect(onRoleChange).toHaveBeenCalledWith('WRITE');

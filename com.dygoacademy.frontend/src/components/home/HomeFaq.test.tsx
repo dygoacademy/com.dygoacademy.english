@@ -36,6 +36,6 @@ describe('HomeFaq (Home page v2 HP-9)', () => {
       FAQ_KEYS.map((key) => enUS.screens.home.public.faq.items[key].q),
     );
     expect(details.filter((d) => d.open).map((d) => d.querySelector('summary')?.textContent)).toEqual(['Is Dygo free?']);
-    expect(screen.getByText('Yes. It’s free to start, and you don’t need a credit card.')).toBeTruthy();
+    expect(screen.getByText('Yes. It’s free to start, and you don’t need a card.')).toBeTruthy();
   });
 });

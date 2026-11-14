@@ -265,7 +265,7 @@ describe('SpeakCompareScreen (SP3)', () => {
     expect(screen.getByRole('img', { name: /in clay over the native/ })).toBeTruthy();
     expect(screen.getByText(/3\.4s · native/)).toBeTruthy();
     expect(within(screen.getByRole('status')).getByText('Checking your sentence…')).toBeTruthy();
-    expect(screen.getByText('Your recording is checked, then deleted.')).toBeTruthy();
+    expect(screen.getByText('We use your recording only to check it, then delete it.')).toBeTruthy();
     expect(screen.getByText(SPEAK_FIXTURE_ITEM.sentence)).toBeTruthy();
     expect(screen.queryByTestId('wave-target')).toBeNull();
     expect(screen.queryByText(/% match/)).toBeNull();
@@ -280,7 +280,7 @@ describe('SpeakCompareScreen (SP3)', () => {
     const alert = screen.getByRole('alert');
     expect(within(alert).getByText("Couldn't check this one")).toBeTruthy();
     expect(
-      within(alert).getByText("The connection dropped. Your recording wasn't saved."),
+      within(alert).getByText('The connection dropped. Your recording wasn’t kept.'),
     ).toBeTruthy();
     fireEvent.click(within(alert).getByRole('button', { name: 'Check again' }));
     fireEvent.click(within(alert).getByRole('button', { name: 'Record again' }));

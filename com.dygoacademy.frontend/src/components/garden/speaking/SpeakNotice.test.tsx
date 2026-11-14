@@ -20,8 +20,8 @@ describe('SpeakNotice (T7 states)', () => {
     const allow = vi.fn();
     const later = vi.fn();
     renderWithIntl(<SpeakNotice kind="mic" onPrimary={allow} onSecondary={later} />);
-    expect(screen.getByText(/We don't save your recordings/)).toBeTruthy();
-    expect(screen.getByText(/headphones help/)).toBeTruthy();
+    expect(screen.getByText(/Your recording is used only to check this sentence, then deleted/)).toBeTruthy();
+    expect(screen.getByText(/Headphones help/)).toBeTruthy();
     fireEvent.click(screen.getByRole('button', { name: 'Allow microphone' }));
     fireEvent.click(screen.getByRole('button', { name: 'Not now' }));
     expect(allow).toHaveBeenCalled();

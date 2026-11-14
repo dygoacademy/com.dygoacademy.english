@@ -18,7 +18,7 @@ describe('RatingBar', () => {
     const group = screen.getByRole('group', { name: 'How well did you remember it?' });
     const buttons = group.querySelectorAll('button');
     expect(buttons).toHaveLength(4);
-    expect(screen.getByRole('button', { name: /Again.*1 min/ })).toBeTruthy();
+    expect(screen.getByRole('button', { name: /Forgot.*1 min/ })).toBeTruthy();
     expect(screen.getByRole('button', { name: /Hard.*8 min/ })).toBeTruthy();
     expect(screen.getByRole('button', { name: /Good.*3 days/ })).toBeTruthy();
     expect(screen.getByRole('button', { name: /Easy.*8 days/ })).toBeTruthy();

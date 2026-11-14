@@ -58,9 +58,9 @@ describe('AppUpdateWatcher', () => {
   it('a new build shows a banner that can be closed with Later', async () => {
     server.deployed = 'build-b';
     await act(async () => void renderWithIntl(<AppUpdateWatcher />));
-    expect(screen.getByText('A new version of Dygo is ready.')).toBeTruthy();
+    expect(screen.getByText('There’s a new version of Dygo.')).toBeTruthy();
     fireEvent.click(screen.getByRole('button', { name: 'Later' }));
-    expect(screen.queryByText('A new version of Dygo is ready.')).toBeNull();
+    expect(screen.queryByText('There’s a new version of Dygo.')).toBeNull();
     expect(reload).not.toHaveBeenCalled();
   });
 

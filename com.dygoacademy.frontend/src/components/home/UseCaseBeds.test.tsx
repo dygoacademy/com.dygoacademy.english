@@ -67,13 +67,13 @@ describe('UseCaseBeds (Home page v2 What do you need English for?, HP-8)', () =>
   it('shows Coming soon and the "start with your own words" line on unseeded beds only', () => {
     renderBeds();
     const expectations: [string, boolean, string][] = [
-      ['Work', true, 'Words for emails, meetings and talking to customers. Until then, start with your own words.'],
+      ['Work', true, 'Words for emails, meetings and talking to customers. In the meantime, start with your own words.'],
       ['Study & IELTS', false, 'The IELTS Academic word list is ready to go.'],
-      ['Travel', true, 'Get around with confidence on your next trip. Until then, start with your own words.'],
+      ['Travel', true, 'Words that help you find your way on your next trip. In the meantime, start with your own words.'],
       [
         'Daily life',
         true,
-        'Everyday words for shopping, appointments and getting things done. Until then, start with your own words.',
+        'Everyday words for shopping, appointments and getting things done. In the meantime, start with your own words.',
       ],
       ['My own words', false, 'Save any word you come across, with your own meaning and example sentence.'],
     ];
