@@ -24,7 +24,8 @@
       "seedPackets": "选一包种子",
       "seedDrop": "果实掉下种子",
       "reminder": "提醒",
-      "goal": "每日目标"
+      "goal": "每日目标",
+      "meanings": "释义语言"
     },
     "update": {
       "available": "Dygo 有新版本了",
@@ -276,7 +277,11 @@
       "collocations": "常用搭配",
       "synonyms": "近义词",
       "hiddenHint": "先大声说出意思，<br></br>再核对答案。",
-      "quoted": "“{text}”"
+      "quoted": "“{text}”",
+      "recallShow": {
+        "vi-VN": "显示越南语",
+        "zh-CN": "显示中文"
+      }
     },
     "partOfSpeech": {
       "noun": "名词",
@@ -336,7 +341,8 @@
       "variety": "英语类型",
       "varietyHint": "用于整个花园的拼写和发音。",
       "varietyUS": "美式英语",
-      "varietyUK": "英式英语"
+      "varietyUK": "英式英语",
+      "descriptionApp": "选择应用语言和你的英语口音。"
     },
     "account": {
       "title": "账户",
@@ -344,7 +350,8 @@
       "signOut": "退出登录",
       "signingOut": "正在退出…",
       "cancel": "取消",
-      "error": "没能退出登录，请检查网络后再试。"
+      "error": "没能退出登录，请检查网络后再试。",
+      "language": "应用语言和口音"
     },
     "groups": {
       "roles": {
@@ -1929,6 +1936,36 @@
       "week": "分钟每周",
       "barrel": "太忙了？雨水桶能保住你的连续天数。最多可存 3 个。",
       "save": "保存目标",
+      "error": "未能保存。请检查网络后重试。"
+    },
+    "meanings": {
+      "title": "释义语言",
+      "back": "返回",
+      "intro": "Dygo 如何解释新单词。你学的单词始终是英文。",
+      "option": {
+        "none": {
+          "title": "English only",
+          "sub": "简单的英文释义"
+        },
+        "vi-VN": {
+          "title": "Tiếng Việt",
+          "sub": "先显示越南语释义，下面是英文"
+        },
+        "zh-CN": {
+          "title": "中文（简体）",
+          "sub": "先显示中文释义，下面是英文"
+        }
+      },
+      "recall": {
+        "title": "先回想",
+        "body": "回答之后才显示翻译。这样记得更牢。"
+      },
+      "preview": "预览 · 复习卡",
+      "hidden": {
+        "vi-VN": "回答后显示越南语",
+        "zh-CN": "回答后显示中文"
+      },
+      "save": "保存",
       "error": "未能保存。请检查网络后重试。"
     }
   }

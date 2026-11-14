@@ -76,6 +76,8 @@ export interface MeScreenProps {
    */
   meanings: MeaningLocale | 'none' | null;
   onLanguageClick?: () => void;
+  /** A8d: the row links to the Meanings in screen instead. */
+  meaningsHref?: string;
   family: { name: string; href: string } | null;
   /** A8 "Privacy & data" row (voice donation on/off); null hides it. */
   privacy?: { donating: boolean; href: string } | null;
@@ -103,6 +105,7 @@ export function MeScreen({
   reminderHref,
   meanings,
   onLanguageClick,
+  meaningsHref,
   family,
   privacy = null,
   onAccountClick,
@@ -308,7 +311,8 @@ export function MeScreen({
               icon={<TranslateIcon {...ICON} />}
               label={t('meanings')}
               value={meanings ? t(`meaningsValue.${meanings}`) : t('comingSoonShort')}
-              onClick={onLanguageClick}
+              href={meaningsHref}
+              onClick={meaningsHref ? undefined : onLanguageClick}
               chevron
               compact={compact}
             />

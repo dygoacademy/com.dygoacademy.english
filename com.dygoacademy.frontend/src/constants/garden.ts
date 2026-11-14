@@ -84,6 +84,8 @@ export const GARDEN_ROUTES = {
   reminder: '/me/reminder',
   /** A8b Daily goal: the three pots (5 / 10 / 15 min). */
   goal: '/me/goal',
+  /** A8d Meanings in: the review card's meaning language and Recall first. */
+  meanings: '/me/meanings',
   /**
    * Onboarding OB1 About you → OB4 Reminder → OB5 All set (design
    * changelog, page "Adult · Onboarding", 2026-10-12): after AU2 Create
