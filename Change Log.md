@@ -1547,3 +1547,7 @@ Engineering-facing log of shipped fixes and changes, one dated entry per change.
 ### Added: A8f Language & accent boards (Dylan, 2026-11-14)
 * **Files**: `docs/design/garden/source/AdultLanguage.dc.html`, `AdultLanguageVi.dc.html` (new), `AdultMe.dc.html`, `AdultMeVi.dc.html` (changed).
 * **What**: Dylan's approved boards as handed over: the new A8f screen (app language + English accent), and A8 with a "Language & accent" row after "Meanings in", 46px settings rows and the Daily goal row "Steady · 10 min". References are exported in the next commit.
+
+### Added: A8f references exported (A8f Language & accent, A8 with its row)
+* **Files**: `docs/design/garden/tools/render.js` (jobs `A8f-language`, `A8f-language-vi`); `reference/A8f-language(-vi)` new, `reference/A8-me(-vi)` and `A8-me-account(-vi)` exported again from the updated AdultMe boards.
+* **What**: the boards committed just before, exported with render.js at 390 × 844 @2x. The iA8 references were rendered too and came out unchanged.
