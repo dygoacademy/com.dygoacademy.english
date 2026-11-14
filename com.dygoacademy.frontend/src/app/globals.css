@@ -458,6 +458,11 @@
     --color-water-deep: #2f6e99; /* "Next up" label, Start button shadow */
     --color-text-soft: #44524a; /* progress line inside the Next up panel */
     --color-divider: #efeae0; /* rows inside a settings card */
+    --color-text-faint: #8a928c; /* A8c channels that are "Soon" */
+    /* A8c Reminder sky: dawn (before 10:00), day, night (from 19:00). */
+    --reminder-sky-dawn: linear-gradient(#f6e3dc, #fbf4e4);
+    --reminder-sky-day: linear-gradient(#e3f0f8, #f4f1ea);
+    --reminder-sky-night: linear-gradient(#24463a, #3e6b57);
     --color-forest-wash: #f1f6ef; /* A1b "Want a little more?" icon wells */
     --color-forest-wash-border: #cfe0c8; /* A7 pollinated bee row */
     --color-wilt-wash: #f3eedd; /* A4 Rescue wilting words icon well */

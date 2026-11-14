@@ -111,6 +111,7 @@ export function MeLive() {
             : null
         }
         onReminderChange={(on) => void reminder.change(on)}
+        reminderHref={GARDEN_ROUTES.reminder}
         meanings={preferences.meaningLocale ?? "none"}
         onLanguageClick={() => setLanguageOpen(true)}
         family={null}

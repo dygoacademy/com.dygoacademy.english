@@ -42,7 +42,7 @@ export function SettingsRow({
   icon: React.ReactNode;
   label: string;
   value?: string;
-  /** Makes the row a link with a chevron. */
+  /** Makes the row a link with a chevron (with `control`: the label part is the link). */
   href?: string;
   /** A control at the end instead of the chevron (e.g. a Switch). */
   control?: React.ReactNode;
@@ -73,6 +73,22 @@ export function SettingsRow({
         ) : null)}
     </>
   );
+  if (href !== undefined && control) {
+    // A link and a control (A8 Reminder: the row opens A8c, the switch
+    // stays): the link covers the icon, label and value, not the switch.
+    return (
+      <div className={classes}>
+        <Link href={href} className="flex flex-grow items-center gap-3 self-stretch text-text">
+          {icon}
+          <span id={labelId} className="flex-grow text-[15px] font-semibold">
+            {label}
+          </span>
+          {value ? <span className="text-[14px] text-muted-foreground">{value}</span> : null}
+        </Link>
+        {control}
+      </div>
+    );
+  }
   if (href !== undefined) {
     return (
       <Link href={href} className={classes}>

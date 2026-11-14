@@ -18,7 +18,8 @@
       "privacy": "Privacy & data",
       "bedHarvest": "Bed harvest",
       "seedPackets": "Pick a seed packet",
-      "seedDrop": "Fruit drops seeds"
+      "seedDrop": "Fruit drops seeds",
+      "reminder": "Reminder"
     },
     "update": {
       "available": "There’s a new version of Dygo.",
@@ -1858,6 +1859,54 @@
       "grows": "Your bed grows from <b>{before, plural, one {# word} other {# words}} to {after}</b>",
       "plantNow": "Plant them now",
       "later": "Later, in tomorrow's planting"
+    },
+    "reminder": {
+      "title": "Reminder",
+      "back": "Back",
+      "main": {
+        "title": "Ripening reminder",
+        "body": "One a day, only when words are ripe"
+      },
+      "preset": {
+        "morning": "Morning · {time}",
+        "lunch": "Lunch · {time}",
+        "evening": "Evening · {time}"
+      },
+      "smart": {
+        "title": "Smart time",
+        "body": "Remind me when the most words ripen",
+        "sky": "Smart"
+      },
+      "daysLabel": "Days",
+      "days": {
+        "1": "M",
+        "2": "T",
+        "3": "W",
+        "4": "T",
+        "5": "F",
+        "6": "S",
+        "7": "S"
+      },
+      "dayNames": {
+        "1": "Monday",
+        "2": "Tuesday",
+        "3": "Wednesday",
+        "4": "Thursday",
+        "5": "Friday",
+        "6": "Saturday",
+        "7": "Sunday"
+      },
+      "channelsTitle": "Remind me by",
+      "channel": {
+        "push": "Phone notification",
+        "zalo": "Zalo",
+        "email": "Email"
+      },
+      "soon": "Soon",
+      "soonLabel": "{channel} (Soon)",
+      "quiet": "Quiet hours: no reminders between 22:00 and 7:00.",
+      "off": "Reminders are off. Ripe words will wait in your garden, but they wilt if left too long.",
+      "error": "Couldn't save. Check your connection and try again."
     }
   }
 }
