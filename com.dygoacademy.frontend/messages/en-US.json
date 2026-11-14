@@ -19,7 +19,8 @@
       "bedHarvest": "Bed harvest",
       "seedPackets": "Pick a seed packet",
       "seedDrop": "Fruit drops seeds",
-      "reminder": "Reminder"
+      "reminder": "Reminder",
+      "goal": "Daily goal"
     },
     "update": {
       "available": "There’s a new version of Dygo.",
@@ -359,14 +360,6 @@
       "you": "(you)",
       "changeRole": "Change {name}'s role",
       "remove": "Remove from garden"
-    },
-    "dailyGoal": {
-      "title": "Daily goal",
-      "description": "How long you’d like to spend in your garden each day.",
-      "legend": "Minutes per day",
-      "minutes": "{count} min",
-      "saving": "Saving…",
-      "error": "That didn’t save. Check your connection and try again."
     }
   },
   "screens": {
@@ -1906,6 +1899,32 @@
       "soonLabel": "{channel} (Soon)",
       "quiet": "Quiet hours: no reminders between 22:00 and 7:00.",
       "off": "Reminders are off. Ripe words will wait in your garden, but they wilt if left too long.",
+      "error": "Couldn't save. Check your connection and try again."
+    },
+    "goal": {
+      "title": "Daily goal",
+      "back": "Back",
+      "intro": "How much watering fits your day? You can change it anytime.",
+      "tier": {
+        "light": {
+          "title": "Light",
+          "sub": "About 5 min a day"
+        },
+        "steady": {
+          "title": "Steady",
+          "sub": "About 10 min a day",
+          "note": "Grows a Golden Bloom every day"
+        },
+        "intense": {
+          "title": "Intense",
+          "sub": "About 15 min a day",
+          "note": "For a test date coming up soon"
+        }
+      },
+      "pace": "At this pace",
+      "week": "minutes a week",
+      "barrel": "Busy day? A rain barrel keeps your streak safe. You can hold up to 3.",
+      "save": "Save goal",
       "error": "Couldn't save. Check your connection and try again."
     }
   }

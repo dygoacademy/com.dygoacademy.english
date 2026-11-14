@@ -14,7 +14,6 @@ import { useVoiceDonation } from "@/hooks/useVoiceDonation";
 import { GARDEN_ROUTES } from "@/constants/garden";
 import { isVoiceDonationOn } from "@/lib/voice-donation";
 
-import { DailyGoalSheet } from "../DailyGoalSheet";
 import { parseClock } from "../format";
 import { LanguageSheet } from "../LanguageSheet";
 import { useGardenPreferences } from "../preferences";
@@ -41,8 +40,8 @@ import { useReminderSwitch } from "./useReminderSwitch";
  * zone; U6-7b: shared with A3 via useReminderSwitch, which also makes sure
  * Web Push is subscribed when it turns on). UI-6 U6-7: best streak (`best_streak_days`, GET /srs/stats),
  * Golden Blooms and keepsakes (GET /me/keepsakes), the calendar (missions
- * per day, GET /missions/week), the daily goal row (opens DailyGoalSheet,
- * saves `daily_goal_minutes`) and UK/US English in the language sheet
+ * per day, GET /missions/week), the daily goal row (A8b: opens /me/goal,
+ * which saves `daily_goal_minutes`) and UK/US English in the language sheet
  * (saves `english_variety`), both via PATCH /profiles/me. Time in the
  * garden is `garden_minutes` (GET /srs/stats), shown in hours ("—" from an
  * older backend); family stays hidden. UI-L: "Meanings in" shows the profile's
@@ -64,7 +63,6 @@ export function MeLive() {
   const profile = useMyProfile();
   const donation = useVoiceDonation();
   const prefs = useUpdateProfilePrefs();
-  const [goalOpen, setGoalOpen] = React.useState(false);
   // Optimistic: show the value being saved until the reply lands.
   const pending = prefs.isPending ? prefs.variables : undefined;
   const goalMinutes =
@@ -97,9 +95,12 @@ export function MeLive() {
         dailyGoal={
           goalMinutes === null
             ? null
-            : { missions: missionsForGoal(goalMinutes), minutes: goalMinutes }
+            : {
+                missions: missionsForGoal(goalMinutes),
+                minutes: goalMinutes,
+                href: GARDEN_ROUTES.goal,
+              }
         }
-        onDailyGoalClick={() => setGoalOpen(true)}
         // Always shown, so a learner who skipped it in onboarding can turn it on.
         reminder={
           reminder.schedules
@@ -145,16 +146,6 @@ export function MeLive() {
           (prefs.isError && lastPref?.englishVariety !== undefined)
         }
       />
-      {goalMinutes !== null ? (
-        <DailyGoalSheet
-          open={goalOpen}
-          onOpenChange={setGoalOpen}
-          minutes={goalMinutes}
-          onChange={(minutes) => prefs.mutate({ dailyGoalMinutes: minutes })}
-          saving={prefs.isPending}
-          error={prefs.isError && lastPref?.dailyGoalMinutes !== undefined}
-        />
-      ) : null}
     </>
   );
 }

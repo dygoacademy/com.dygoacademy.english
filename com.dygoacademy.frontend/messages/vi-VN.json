@@ -19,7 +19,8 @@
       "bedHarvest": "Thu hoạch luống",
       "seedPackets": "Chọn gói hạt giống",
       "seedDrop": "Quả rơi hạt",
-      "reminder": "Lời nhắc"
+      "reminder": "Lời nhắc",
+      "goal": "Mục tiêu mỗi ngày"
     },
     "update": {
       "available": "Dygo vừa có bản mới.",
@@ -359,14 +360,6 @@
       "you": "(bạn)",
       "changeRole": "Đổi vai trò của {name}",
       "remove": "Xóa khỏi vườn"
-    },
-    "dailyGoal": {
-      "title": "Mục tiêu mỗi ngày",
-      "description": "Mỗi ngày bạn muốn dành bao lâu cho khu vườn.",
-      "legend": "Số phút mỗi ngày",
-      "minutes": "{count} phút",
-      "saving": "Đang lưu…",
-      "error": "Chưa lưu được. Bạn kiểm tra kết nối rồi thử lại nhé."
     }
   },
   "screens": {
@@ -1906,6 +1899,32 @@
       "soonLabel": "{channel} (Sắp có)",
       "quiet": "Giờ yên tĩnh: không nhắc từ 22:00 đến 7:00.",
       "off": "Đã tắt lời nhắc. Từ đã chín vẫn chờ trong vườn, nhưng để lâu sẽ héo.",
+      "error": "Chưa lưu được. Kiểm tra kết nối rồi thử lại."
+    },
+    "goal": {
+      "title": "Mục tiêu mỗi ngày",
+      "back": "Quay lại",
+      "intro": "Mỗi ngày bạn có bao nhiêu thời gian để tưới? Đổi lúc nào cũng được.",
+      "tier": {
+        "light": {
+          "title": "Nhẹ nhàng",
+          "sub": "Khoảng 5 phút mỗi ngày"
+        },
+        "steady": {
+          "title": "Đều đặn",
+          "sub": "Khoảng 10 phút mỗi ngày",
+          "note": "Đủ để nở Hoa Vàng mỗi ngày"
+        },
+        "intense": {
+          "title": "Chăm chỉ",
+          "sub": "Khoảng 15 phút mỗi ngày",
+          "note": "Dành cho khi sắp đến ngày thi"
+        }
+      },
+      "pace": "Với nhịp này",
+      "week": "phút mỗi tuần",
+      "barrel": "Bận quá? Một thùng nước mưa giữ chuỗi ngày học. Bạn giữ được tối đa 3 thùng.",
+      "save": "Lưu mục tiêu",
       "error": "Chưa lưu được. Kiểm tra kết nối rồi thử lại."
     }
   }
