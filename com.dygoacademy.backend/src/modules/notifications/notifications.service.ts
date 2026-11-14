@@ -18,7 +18,13 @@ export interface StudySchedule {
   reminder_time: string;
   timezone: string;
   is_enabled: boolean;
+  /** A8c: ISO weekdays (1 = Monday). */
+  days: number[];
+  smart: boolean;
+  channels: string[];
 }
+
+const SCHEDULE_COLUMNS = 'id, reminder_time::text, timezone, is_enabled, days, smart, channels';
 
 export interface SprintResult {
   recipients: number;
@@ -92,7 +98,7 @@ export class NotificationsService {
   async listSchedules(userId: string): Promise<StudySchedule[]> {
     return this.db.queryAs<StudySchedule>(
       userId,
-      `select id, reminder_time::text, timezone, is_enabled
+      `select ${SCHEDULE_COLUMNS}
          from public.study_schedules
         where user_id = $1
         order by reminder_time asc`,
@@ -101,25 +107,40 @@ export class NotificationsService {
   }
 
   /**
-   * `on conflict (user_id, reminder_time)` — see UpsertScheduleDto's header
-   * comment. A second POST for the same clock time toggles `is_enabled` /
-   * updates the timezone rather than erroring, which matters because the
-   * frontend's settings screen has no separate "edit" affordance — the
-   * time picker and the save button are the same form either way.
+   * The learner's one reminder (`study_schedules_one_per_user`,
+   * 20261114_reminder_settings.sql): `on conflict (user_id)` moves the time
+   * and updates the rest, so choosing a new time never leaves a second
+   * reminder behind. `days`, `smart` and `channels` left out keep what is
+   * saved; a new row gets the column defaults (Mon–Sat, off, push).
    */
   async upsertSchedule(userId: string, dto: UpsertScheduleDto): Promise<StudySchedule> {
     const [row] = await this.db.queryAs<StudySchedule>(
       userId,
-      `insert into public.study_schedules (user_id, reminder_time, timezone, is_enabled)
-       values ($1, $2::time, $3, $4)
-       on conflict (user_id, reminder_time) do update set
-         timezone   = excluded.timezone,
-         is_enabled = excluded.is_enabled,
-         updated_at = now()
-       returning id, reminder_time::text, timezone, is_enabled`,
-      [userId, dto.reminderTime, dto.timezone, dto.isEnabled ?? true],
+      `insert into public.study_schedules (user_id, reminder_time, timezone, is_enabled, days, smart, channels)
+       values ($1, $2::time, $3, $4,
+               coalesce($5::smallint[], '{1,2,3,4,5,6}'),
+               coalesce($6::boolean, false),
+               coalesce($7::text[], '{push}'))
+       on conflict (user_id) do update set
+         reminder_time = excluded.reminder_time,
+         timezone      = excluded.timezone,
+         is_enabled    = excluded.is_enabled,
+         days          = coalesce($5::smallint[], study_schedules.days),
+         smart         = coalesce($6::boolean, study_schedules.smart),
+         channels      = coalesce($7::text[], study_schedules.channels),
+         updated_at    = now()
+       returning ${SCHEDULE_COLUMNS}`,
+      [
+        userId,
+        dto.reminderTime,
+        dto.timezone,
+        dto.isEnabled ?? true,
+        dto.days ?? null,
+        dto.smart ?? null,
+        dto.channels ?? null,
+      ],
     );
-    return row;
+    return { ...row, days: row.days.map(Number) };
   }
 
   async deleteSchedule(userId: string, id: string): Promise<void> {

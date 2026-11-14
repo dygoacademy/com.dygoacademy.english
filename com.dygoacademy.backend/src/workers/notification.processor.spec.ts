@@ -22,6 +22,7 @@ function learnerDb(
   const answer = (userId: string, text: string) => {
     const r = rows[userId] ?? {};
     if (text.includes('select timezone from public.profiles')) return r.tz ?? [{ timezone: 'UTC' }];
+    if (text.includes('extract(hour from uws.next_due_at')) return [];
     if (text.includes('from public.user_word_srs')) {
       const totals = r.totals ?? [{ due_now: '0', leech_count: '0' }];
       if (totals instanceof Error) throw totals;
@@ -35,6 +36,21 @@ function learnerDb(
   return jest.fn((userId: string, text: string) =>
     Promise.resolve().then(() => answer(userId, text)),
   );
+}
+
+/** A schedule row as the tick's query returns it, due now unless overridden. */
+function due(userId: string, over: Record<string, unknown> = {}) {
+  return {
+    user_id: userId,
+    timezone: 'UTC',
+    days: [1, 2, 3, 4, 5, 6],
+    channels: ['push'],
+    smart: false,
+    saved_minute: 20 * 60,
+    now_minute: 20 * 60 + 3,
+    iso_dow: 2,
+    ...over,
+  };
 }
 
 describe('NotificationProcessor', () => {
@@ -83,7 +99,7 @@ describe('NotificationProcessor', () => {
 
   it("reads each learner's numbers RLS-scoped as that learner", async () => {
     await build({ 'user-1': { totals: [{ due_now: '2', leech_count: '0' }] } });
-    queryAsServiceMock.mockResolvedValueOnce([{ user_id: 'user-1' }]);
+    queryAsServiceMock.mockResolvedValueOnce([due('user-1')]);
 
     await processor.process(makeJob());
 
@@ -95,7 +111,7 @@ describe('NotificationProcessor', () => {
 
   it('nudges a matched learner with nothing due who has not studied today', async () => {
     await build({ 'user-1': { learner: [{ ui_locale: 'vi-VN', studied_today: false }] } });
-    queryAsServiceMock.mockResolvedValueOnce([{ user_id: 'user-1' }]);
+    queryAsServiceMock.mockResolvedValueOnce([due('user-1')]);
 
     await processor.process(makeJob());
 
@@ -107,7 +123,7 @@ describe('NotificationProcessor', () => {
 
   it('skips a matched learner with nothing due who already studied today', async () => {
     await build({ 'user-1': { learner: [{ ui_locale: null, studied_today: true }] } });
-    queryAsServiceMock.mockResolvedValueOnce([{ user_id: 'user-1' }]);
+    queryAsServiceMock.mockResolvedValueOnce([due('user-1')]);
 
     await processor.process(makeJob());
 
@@ -116,7 +132,7 @@ describe('NotificationProcessor', () => {
 
   it('dispatches a leech-priority push for a matched user with due leeches', async () => {
     await build({ 'user-1': { totals: [{ due_now: '5', leech_count: '2' }] } });
-    queryAsServiceMock.mockResolvedValueOnce([{ user_id: 'user-1' }]);
+    queryAsServiceMock.mockResolvedValueOnce([due('user-1')]);
 
     await processor.process(makeJob());
 
@@ -132,12 +148,63 @@ describe('NotificationProcessor', () => {
       'user-1': { totals: new Error('db down') },
       'user-2': { totals: [{ due_now: '3', leech_count: '0' }] },
     });
-    queryAsServiceMock.mockResolvedValueOnce([{ user_id: 'user-1' }, { user_id: 'user-2' }]);
+    queryAsServiceMock.mockResolvedValueOnce([due('user-1'), due('user-2')]);
 
     await processor.process(makeJob());
 
     expect(sendToUserMock).toHaveBeenCalledTimes(1);
     expect(sendToUserMock.mock.calls[0][0]).toBe('user-2');
+  });
+
+  describe('A8c rules', () => {
+    it('sends nothing on a day that is not ticked (Sunday, Mon–Sat saved)', async () => {
+      await build({ 'user-1': { totals: [{ due_now: '3', leech_count: '0' }] } });
+      queryAsServiceMock.mockResolvedValueOnce([due('user-1', { iso_dow: 7 })]);
+      await processor.process(makeJob());
+      expect(sendToUserMock).not.toHaveBeenCalled();
+    });
+
+    it('sends nothing in quiet hours, even at the saved time', async () => {
+      await build({ 'user-1': { totals: [{ due_now: '3', leech_count: '0' }] } });
+      queryAsServiceMock.mockResolvedValueOnce([
+        due('user-1', { saved_minute: 22 * 60 + 30, now_minute: 22 * 60 + 31 }),
+      ]);
+      await processor.process(makeJob());
+      expect(sendToUserMock).not.toHaveBeenCalled();
+    });
+
+    it('sends nothing when push is not one of the channels', async () => {
+      await build({ 'user-1': { totals: [{ due_now: '3', leech_count: '0' }] } });
+      queryAsServiceMock.mockResolvedValueOnce([due('user-1', { channels: ['email', 'zalo'] })]);
+      await processor.process(makeJob());
+      expect(sendToUserMock).not.toHaveBeenCalled();
+    });
+
+    it('Smart time sends at the hour when most words ripen, not at the saved time', async () => {
+      const ripening = [{ hour: 9 }, { hour: 14 }, { hour: 14 }];
+      const learner = learnerDb({ 'user-1': { totals: [{ due_now: '3', leech_count: '0' }] } });
+      await build();
+      queryAsMock.mockImplementation((userId: string, text: string) =>
+        text.includes('extract(hour from uws.next_due_at')
+          ? Promise.resolve(ripening)
+          : learner(userId, text),
+      );
+      queryAsServiceMock.mockResolvedValueOnce([
+        due('user-1', { smart: true, saved_minute: 7 * 60 + 30, now_minute: 7 * 60 + 30 }),
+        due('user-1', { smart: true, saved_minute: 7 * 60 + 30, now_minute: 14 * 60 + 5 }),
+      ]);
+      await processor.process(makeJob());
+      expect(sendToUserMock).toHaveBeenCalledTimes(1);
+    });
+
+    it('Smart time falls back to the saved time when nothing ripens today', async () => {
+      await build({ 'user-1': { totals: [{ due_now: '0', leech_count: '0' }] } });
+      queryAsServiceMock.mockResolvedValueOnce([
+        due('user-1', { smart: true, saved_minute: 7 * 60 + 30, now_minute: 7 * 60 + 35 }),
+      ]);
+      await processor.process(makeJob());
+      expect(sendToUserMock).toHaveBeenCalledTimes(1);
+    });
   });
 
   it('logs a failed tick instead of failing silently', async () => {

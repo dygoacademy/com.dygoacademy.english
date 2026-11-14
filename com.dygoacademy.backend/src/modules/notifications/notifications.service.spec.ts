@@ -96,16 +96,60 @@ describe('NotificationsService', () => {
   });
 
   it('upsertSchedule defaults isEnabled to true', async () => {
-    const queryAsMock = jest
-      .fn()
-      .mockResolvedValue([
-        { id: 's-1', reminder_time: '20:00:00', timezone: 'UTC', is_enabled: true },
-      ]);
+    const queryAsMock = jest.fn().mockResolvedValue([
+      {
+        id: 's-1',
+        reminder_time: '20:00:00',
+        timezone: 'UTC',
+        is_enabled: true,
+        days: [1, 2, 3, 4, 5, 6],
+        smart: false,
+        channels: ['push'],
+      },
+    ]);
     const service = await makeService({ queryAsMock });
 
     await service.upsertSchedule('user-1', { reminderTime: '20:00', timezone: 'UTC' });
 
-    expect(queryAsMock.mock.calls[0][2]).toEqual(['user-1', '20:00', 'UTC', true]);
+    expect(queryAsMock.mock.calls[0][2]).toEqual([
+      'user-1',
+      '20:00',
+      'UTC',
+      true,
+      null,
+      null,
+      null,
+    ]);
+  });
+
+  it('upsertSchedule moves the one reminder (conflict on user) and keeps fields left out', async () => {
+    const queryAsMock = jest.fn().mockResolvedValue([
+      {
+        id: 's-1',
+        reminder_time: '12:30:00',
+        timezone: 'UTC',
+        is_enabled: true,
+        days: ['1', '2'],
+        smart: true,
+        channels: ['push', 'email'],
+      },
+    ]);
+    const service = await makeService({ queryAsMock });
+
+    const row = await service.upsertSchedule('user-1', {
+      reminderTime: '12:30',
+      timezone: 'UTC',
+      days: [1, 2],
+      smart: true,
+      channels: ['push', 'email'],
+    });
+
+    const [, sql, params] = queryAsMock.mock.calls[0];
+    expect(sql).toContain('on conflict (user_id) do update');
+    expect(sql).toContain('reminder_time = excluded.reminder_time');
+    expect(sql).toContain('coalesce($5::smallint[], study_schedules.days)');
+    expect(params).toEqual(['user-1', '12:30', 'UTC', true, [1, 2], true, ['push', 'email']]);
+    expect(row.days).toEqual([1, 2]);
   });
 
   it('deleteSchedule throws NotFoundException when no row matched', async () => {

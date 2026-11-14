@@ -6,11 +6,24 @@ import { Job } from 'bullmq';
 import { DatabaseService } from '../database/database.service';
 import { buildReminderPayload } from '../modules/notifications/notification-message';
 import { PushDispatchService } from '../modules/notifications/push-dispatch.service';
+import {
+  isCandidate,
+  pickSmartHour,
+  shouldSend,
+  type ReminderSlot,
+} from '../modules/notifications/reminder-rules';
 import { computeSrsSummary, resolveUserTimezone } from '../modules/srs/srs.service';
 import { NOTIFICATION_QUEUE, NotificationCronJob } from '../queues/queue.constants';
 
-interface DueScheduleRow {
+interface ScheduleRow {
   user_id: string;
+  timezone: string;
+  days: number[];
+  channels: string[];
+  smart: boolean;
+  saved_minute: number;
+  now_minute: number;
+  iso_dow: number;
 }
 
 /**
@@ -21,15 +34,15 @@ interface DueScheduleRow {
  * the database rather than by a stored UTC offset that silently drifts
  * twice a year.
  *
- * BUCKET MATCHING: a UTC quarter-hour tick does not land on every user's
- * local reminder minute exactly — a timezone like `Asia/Kathmandu`
- * (UTC+5:45) shifts the alignment by 45 minutes, not a clean multiple of 15.
- * `width_bucket` over `[0, 86400)` seconds-of-day with 96 buckets partitions
- * each user's *own* local day into fixed 900-second (15-minute) windows
- * anchored to their own local midnight; comparing "now"'s bucket to
- * `reminder_time`'s bucket catches exactly one tick per reminder regardless
- * of the zone's offset, including half- and quarter-hour offsets, without
- * needing the tick schedule itself to know about every zone in use.
+ * QUARTER MATCHING: a UTC quarter-hour tick does not land on every user's
+ * local reminder minute exactly (`Asia/Kathmandu`, UTC+5:45). Each
+ * schedule's own local time is read in the database (`now() at time zone`)
+ * and both it and `reminder_time` are cut into 15-minute quarters of the
+ * local day (reminder-rules.ts); equal quarters = due. That catches exactly
+ * one tick per reminder whatever the offset.
+ *
+ * A8c (2026-11-14): days of the week, quiet hours (22:00–07:00), channels
+ * (push is the only sender) and Smart time, all in reminder-rules.ts.
  */
 @Processor(NOTIFICATION_QUEUE)
 export class NotificationProcessor extends WorkerHost {
@@ -49,16 +62,37 @@ export class NotificationProcessor extends WorkerHost {
     // "permission denied for table study_schedules" on every tick and no
     // reminder was ever sent (found 2026-10-16). The failure was silent
     // because BullMQ only marks the job failed; onFailed below logs it now.
-    const dueUsers = await this.db.queryAsService<DueScheduleRow>(
-      `select distinct s.user_id
+    //
+    // A8c (2026-11-14): the local time, weekday and saved time come back
+    // per schedule; reminder-rules.ts decides (days, quiet hours 22:00–07:00,
+    // live channels, Smart time). One row per learner since
+    // 20261114_reminder_settings.sql.
+    const rows = await this.db.queryAsService<ScheduleRow>(
+      `select s.user_id, s.timezone, s.days, s.channels, s.smart,
+              (extract(hour from s.reminder_time) * 60 + extract(minute from s.reminder_time))::int
+                as saved_minute,
+              (extract(hour from t.local) * 60 + extract(minute from t.local))::int as now_minute,
+              extract(isodow from t.local)::int as iso_dow
          from public.study_schedules s
-        where s.is_enabled
-          and width_bucket(
-                extract(epoch from ((now() at time zone s.timezone))::time), 0, 86400, 96
-              )
-              =
-              width_bucket(extract(epoch from s.reminder_time), 0, 86400, 96)`,
+        cross join lateral (select now() at time zone s.timezone as local) t
+        where s.is_enabled`,
     );
+
+    const dueUsers: { user_id: string }[] = [];
+    for (const row of rows) {
+      const slot = toSlot(row);
+      if (!isCandidate(slot)) continue;
+      try {
+        const smartHour = slot.smart ? await this.smartHour(row.user_id, row.timezone) : null;
+        if (shouldSend(slot, smartHour)) dueUsers.push({ user_id: row.user_id });
+      } catch (err) {
+        this.logger.warn(
+          `notification tick ${job.data.tickAt}: smart time failed for user ${row.user_id}: ${
+            err instanceof Error ? err.message : String(err)
+          }`,
+        );
+      }
+    }
 
     if (dueUsers.length === 0) {
       this.logger.debug(`notification tick ${job.data.tickAt}: no schedules due`);
@@ -95,6 +129,23 @@ export class NotificationProcessor extends WorkerHost {
   @OnWorkerEvent('failed')
   onFailed(job: Job<NotificationCronJob> | undefined, err: Error): void {
     this.logger.error(`notification tick ${job?.data?.tickAt ?? '?'} failed: ${err.message}`);
+  }
+
+  /**
+   * Smart time (A8c): the local hour in which each of today's words ripens,
+   * read as the learner (RLS), then reminder-rules' pickSmartHour.
+   */
+  private async smartHour(userId: string, timezone: string): Promise<number | null> {
+    const hours = await this.db.queryAs<{ hour: number }>(
+      userId,
+      `select extract(hour from uws.next_due_at at time zone $2)::int as hour
+         from public.user_word_srs uws
+        where uws.user_id = $1
+          and uws.next_due_at >= (date_trunc('day', now() at time zone $2) at time zone $2)
+          and uws.next_due_at <  (date_trunc('day', now() at time zone $2) at time zone $2) + interval '1 day'`,
+      [userId, timezone],
+    );
+    return pickSmartHour(hours.map((h) => Number(h.hour)));
   }
 
   /**
@@ -136,4 +187,15 @@ export class NotificationProcessor extends WorkerHost {
       locale: learner?.ui_locale,
     });
   }
+}
+
+function toSlot(row: ScheduleRow): ReminderSlot {
+  return {
+    nowMinute: Number(row.now_minute),
+    savedMinute: Number(row.saved_minute),
+    isoDow: Number(row.iso_dow),
+    days: (row.days ?? []).map(Number),
+    channels: row.channels ?? [],
+    smart: row.smart === true,
+  };
 }

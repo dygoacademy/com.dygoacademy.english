@@ -66,8 +66,8 @@ export class NotificationsController {
   @Post('schedules')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
-    summary: 'Create or update a daily reminder time (FR-6.1)',
-    description: 'Upsert on (user, reminderTime) — see UpsertScheduleDto.',
+    summary: 'Set the caller’s daily reminder (FR-6.1, A8c)',
+    description: 'One reminder per learner: upsert on user — see UpsertScheduleDto.',
   })
   async upsertSchedule(
     @CurrentUser('id') userId: string,
