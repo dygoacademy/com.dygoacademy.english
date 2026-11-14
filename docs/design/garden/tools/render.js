@@ -123,22 +123,22 @@ const JOBS = [
   // H3-home-v2-* → H3-landing-v2-*, H4-home-v2-* → H4-landing-v2-* (2026-10-08).
   // 2026-10-07: Speaking section (#speak) + FAQ + desktop nav link; 2026-10-08:
   // hero NEW pill and nav dot removed. Sizes from the canvas.
-  ['LandingSeoPhone.dc.html', 'en', 'H3-landing-v2-phone', { $size: [390, 8025] }],
-  ['LandingSeoPhoneVi.dc.html', 'vi', 'H3-landing-v2-phone-vi', { $size: [390, 8070] }],
-  ['LandingSeoDesktop.dc.html', 'en', 'H4-landing-v2-desktop', { $size: [1280, 5455] }],
-  ['LandingSeoDesktopVi.dc.html', 'vi', 'H4-landing-v2-desktop-vi', { $size: [1280, 5311] }],
-  ['LandingSeoPlantBloomed.dc.html', 'en', 'H3s-plant-bloomed', { $size: [390, 8442] }],
-  ['LandingSeoPlantBloomedVi.dc.html', 'vi', 'H3s-plant-bloomed-vi', { $size: [390, 8506] }],
-  ['LandingSeoPainFlipped.dc.html', 'en', 'H3s-pain-flipped', { $size: [390, 8025] }],
-  ['LandingSeoPainFlippedVi.dc.html', 'vi', 'H3s-pain-flipped-vi', { $size: [390, 8070] }],
-  ['LandingSeoUsesTravel.dc.html', 'en', 'H3s-uses-travel', { $size: [390, 8004] }],
-  ['LandingSeoUsesTravelVi.dc.html', 'vi', 'H3s-uses-travel-vi', { $size: [390, 8053] }],
+  ['LandingSeoPhone.dc.html', 'en', 'H3-landing-v2-phone', { $size: [390, 8065] }],
+  ['LandingSeoPhoneVi.dc.html', 'vi', 'H3-landing-v2-phone-vi', { $size: [390, 8115] }],
+  ['LandingSeoDesktop.dc.html', 'en', 'H4-landing-v2-desktop', { $size: [1280, 5577] }],
+  ['LandingSeoDesktopVi.dc.html', 'vi', 'H4-landing-v2-desktop-vi', { $size: [1280, 5420] }],
+  ['LandingSeoPlantBloomed.dc.html', 'en', 'H3s-plant-bloomed', { $size: [390, 8482] }],
+  ['LandingSeoPlantBloomedVi.dc.html', 'vi', 'H3s-plant-bloomed-vi', { $size: [390, 8551] }],
+  ['LandingSeoPainFlipped.dc.html', 'en', 'H3s-pain-flipped', { $size: [390, 8065] }],
+  ['LandingSeoPainFlippedVi.dc.html', 'vi', 'H3s-pain-flipped-vi', { $size: [390, 8115] }],
+  ['LandingSeoUsesTravel.dc.html', 'en', 'H3s-uses-travel', { $size: [390, 8065] }],
+  ['LandingSeoUsesTravelVi.dc.html', 'vi', 'H3s-uses-travel-vi', { $size: [390, 8098] }],
   // 2026-10-10: sources are the LandingSeo* boards (canvas page "Landing Page": three H2s
   // rewritten as search topics); the H3s state boards are repo-only copies with the same
-  // three headings. Heights are each page's rendered scrollHeight (measured 2026-10-10).
+  // three headings. Heights are each page's rendered scrollHeight (measured 2026-10-10, again 2026-11-14 after the copy update).
   // Speaking demo after "Try it now" (spk: 'done'), new 2026-10-07.
-  ['LandingSeoSpeakCompared.dc.html', 'en', 'H3s-speaking-compared', { $size: [390, 8107] }],
-  ['LandingSeoSpeakComparedVi.dc.html', 'vi', 'H3s-speaking-compared-vi', { $size: [390, 8135] }],
+  ['LandingSeoSpeakCompared.dc.html', 'en', 'H3s-speaking-compared', { $size: [390, 8147] }],
+  ['LandingSeoSpeakComparedVi.dc.html', 'vi', 'H3s-speaking-compared-vi', { $size: [390, 8180] }],
   // Speaking (canvas page "Adult · Speaking", Phase 13 handover v2, 2026-10-04): SP1–SP4.
   // componentDidMount doesn't run here, so each state is set by its overrides.
   ['SpeakListen.dc.html', 'en', 'SP1-speak-listen', {}],
