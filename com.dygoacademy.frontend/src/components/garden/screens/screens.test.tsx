@@ -140,7 +140,7 @@ describe('ReviewScreen', () => {
 
   it('shows the finished state', () => {
     renderWithIntl(<ReviewScreen {...props} state="finished" done={18} />);
-    expect(screen.getByRole('heading', { name: 'All 18 watered' })).toBeTruthy();
+    expect(screen.getByRole('heading', { name: 'All 18 words watered 🎉' })).toBeTruthy();
     expect(screen.getByRole('link', { name: 'See your garden bloom' })).toBeTruthy();
   });
 
@@ -661,7 +661,7 @@ describe('MeScreen', () => {
         onReminderChange={onReminderChange}
       />,
     );
-    const toggle = screen.getByRole('switch', { name: 'Ripening reminder' });
+    const toggle = screen.getByRole('switch', { name: 'Reminder' });
     expect(toggle.getAttribute('aria-checked')).toBe('true');
     fireEvent.click(toggle);
     expect(toggle.getAttribute('aria-checked')).toBe('false');

@@ -27,7 +27,7 @@ function renderScreen(props: Partial<SignInScreenProps> = {}) {
 describe('SignInScreen (AU1)', () => {
   it('shows the garden sign-in with no error banner', () => {
     renderScreen();
-    expect(screen.getByRole('heading', { name: 'Welcome back' })).toBeTruthy();
+    expect(screen.getByRole('heading', { name: 'Welcome back 👋' })).toBeTruthy();
     expect(screen.queryByRole('alert')).toBeNull();
     expect(screen.getByRole('link', { name: 'Forgot password?' }).getAttribute('href')).toBe('/forgot-password');
     expect(screen.getByRole('link', { name: 'Create an account' }).getAttribute('href')).toBe('/register');
@@ -36,7 +36,7 @@ describe('SignInScreen (AU1)', () => {
   it('shows one error that never says which field was wrong', () => {
     renderScreen({ error: 'mismatch' });
     expect(screen.getByRole('alert').textContent).toBe(
-      "That email and password don't match. Try again or reset your password.",
+      'That email and password don’t match. Try again, or reset your password.',
     );
   });
 
@@ -45,7 +45,7 @@ describe('SignInScreen (AU1)', () => {
     const password = screen.getByLabelText('Password') as HTMLInputElement;
     expect(password.type).toBe('password');
     expect(password.autocomplete).toBe('current-password');
-    expect((screen.getByLabelText('Email') as HTMLInputElement).autocomplete).toBe('email');
+    expect((screen.getByLabelText('Email address') as HTMLInputElement).autocomplete).toBe('email');
     fireEvent.click(screen.getByRole('button', { name: 'Show password' }));
     expect(password.type).toBe('text');
     fireEvent.click(screen.getByRole('button', { name: 'Hide password' }));

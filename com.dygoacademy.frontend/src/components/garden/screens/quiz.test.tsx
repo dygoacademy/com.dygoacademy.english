@@ -64,7 +64,7 @@ describe('QuizScreen', () => {
       <QuizScreen {...base} hint={{ status: 'shown', ipa: '/rɪˈzɪliənt/', definition: null }} />,
     );
     expect(screen.getByText('/rɪˈzɪliənt/')).toBeTruthy();
-    expect(screen.getByText('No definition for this word yet.')).toBeTruthy();
+    expect(screen.getByText('We don’t have a definition for this word yet.')).toBeTruthy();
   });
 
   it('dictation: the big play button and the app-language instruction, not the server prompt', () => {
@@ -80,8 +80,8 @@ describe('QuizScreen', () => {
         }}
       />,
     );
-    expect(screen.getByRole('button', { name: 'Play the word' }).className).toContain('h-[84px]');
-    expect(screen.getByText('Listen, then type the word you hear.')).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Play audio' }).className).toContain('h-[84px]');
+    expect(screen.getByText('Listen, then type what you hear.')).toBeTruthy();
     expect(screen.queryByText('Listen to the audio, then type the word you hear.')).toBeNull();
   });
 
@@ -157,10 +157,10 @@ describe('QuizScreen', () => {
       />,
     );
     expect(screen.getByText('Your pick')).toBeTruthy();
-    expect(screen.getByText('Not quite — it’s “robust”')).toBeTruthy();
+    expect(screen.getByText('Close. It’s “robust”')).toBeTruthy();
     // No definition anywhere: just the word.
     expect(screen.getAllByText('robust').length).toBeGreaterThan(1);
-    expect(screen.getByText('This word comes back in your next watering.')).toBeTruthy();
+    expect(screen.getByText('You’ll see this word again in your next review.')).toBeTruthy();
     expect(screen.queryByText('✕')).toBeNull();
     expect(screen.getByRole('button', { name: 'robust' }).hasAttribute('disabled')).toBe(true);
   });
@@ -181,7 +181,7 @@ describe('QuizScreen', () => {
         }}
       />,
     );
-    expect(screen.getByText('That’s right!')).toBeTruthy();
+    expect(screen.getByText('That’s right 🎉')).toBeTruthy();
     expect(screen.getByText('resilient · /rɪˈzɪliənt/')).toBeTruthy();
     expect(screen.getByText('“Kids are resilient.”')).toBeTruthy();
     fireEvent.click(screen.getByRole('button', { name: 'See results' }));

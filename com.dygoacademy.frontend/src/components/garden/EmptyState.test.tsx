@@ -37,7 +37,7 @@ describe('EmptyState', () => {
 describe('empty screens', () => {
   it('Topics with no beds', () => {
     renderWithIntl(<TopicsScreen topics={[]} filters={[]} lockedPack={null} />);
-    expect(screen.getByText('No beds yet. Plant your first one below.')).toBeTruthy();
+    expect(screen.getByText('No beds here yet. Plant your first one below.')).toBeTruthy();
   });
 
   it('Topic bed with no words says the bed is empty, not the stage', () => {
@@ -51,7 +51,7 @@ describe('empty screens', () => {
         addWordHref="/add"
       />,
     );
-    expect(screen.getByText('This bed is empty. Add your first word to plant it.')).toBeTruthy();
+    expect(screen.getByText('This bed is empty. Add a word to start planting.')).toBeTruthy();
     expect(screen.queryByText('No words at this stage yet.')).toBeNull();
   });
 

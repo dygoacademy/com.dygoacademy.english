@@ -26,13 +26,15 @@ function renderScreen(props: Partial<RegisterScreenProps> = {}) {
 describe('RegisterScreen (AU2)', () => {
   it('shows the create-account form with name, email and a new password', () => {
     renderScreen();
-    expect(screen.getByRole('heading', { name: 'Plant your first seed' })).toBeTruthy();
+    expect(screen.getByRole('heading', { name: 'Plant your first seed 🌱' })).toBeTruthy();
     expect(screen.getByLabelText('Your name').getAttribute('autocomplete')).toBe('name');
     const password = screen.getByLabelText('Password');
     expect(password.getAttribute('autocomplete')).toBe('new-password');
     expect(password.getAttribute('minlength')).toBe('6');
     expect(password.getAttribute('placeholder')).toBe('At least 6 characters');
-    expect(screen.getByText('By continuing you agree to the Terms and Privacy Policy.')).toBeTruthy();
+    expect(document.body.textContent).toContain(
+      'By creating an account, you agree to our Terms of Service and Privacy Policy.',
+    );
     expect(screen.getByRole('link', { name: 'Sign in' }).getAttribute('href')).toBe('/login');
     expect(screen.getByRole('link', { name: 'Back' }).getAttribute('href')).toBe('/login');
     expect(screen.queryByRole('alert')).toBeNull();
@@ -41,7 +43,7 @@ describe('RegisterScreen (AU2)', () => {
   it('submits the trimmed name, email and password', () => {
     const { onSubmit } = renderScreen();
     fireEvent.change(screen.getByLabelText('Your name'), { target: { value: '  Minh ' } });
-    fireEvent.change(screen.getByLabelText('Email'), { target: { value: 'minh@example.com' } });
+    fireEvent.change(screen.getByLabelText('Email address'), { target: { value: 'minh@example.com' } });
     fireEvent.change(screen.getByLabelText('Password'), { target: { value: 'gardenpass' } });
     fireEvent.click(screen.getByRole('button', { name: 'Create account' }));
     expect(onSubmit).toHaveBeenCalledWith({ name: 'Minh', email: 'minh@example.com', password: 'gardenpass', donate: false });
@@ -78,10 +80,10 @@ describe('RegisterScreen (AU3, from an invite)', () => {
       invite: { inviterName: 'Minh', groupName: 'IELTS Sprint · Week 3' },
       signInHref: '/login?next=%2Fjoin%2Fabc',
     });
-    expect(screen.getByText('Minh invited you to')).toBeTruthy();
+    expect(screen.getByText('Minh invited you to join')).toBeTruthy();
     expect(screen.getByText('IELTS Sprint · Week 3')).toBeTruthy();
     expect(screen.getByRole('heading', { name: 'Create your account' })).toBeTruthy();
-    expect(screen.getByRole('button', { name: 'Create account and join' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Create account & join' })).toBeTruthy();
     expect(screen.getByRole('link', { name: 'Sign in to join' }).getAttribute('href')).toBe(
       '/login?next=%2Fjoin%2Fabc',
     );
@@ -90,7 +92,7 @@ describe('RegisterScreen (AU3, from an invite)', () => {
   it('keeps the join wording without a banner when the preview is unknown', () => {
     renderScreen({ joining: true, invite: null });
     expect(screen.queryByText(/invited you to/)).toBeNull();
-    expect(screen.getByRole('button', { name: 'Create account and join' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Create account & join' })).toBeTruthy();
   });
 });
 

@@ -264,7 +264,7 @@ describe('SpeakLive (The Pond)', () => {
     await renderLive();
     await record();
     await waitFor(() => expect(screen.getByText('Checking your sentence…')).toBeTruthy());
-    expect(screen.getByText('Your recording is checked, then deleted.')).toBeTruthy();
+    expect(screen.getByText('We use your recording only to check it, then delete it.')).toBeTruthy();
     expect(screen.getByRole('button', { name: 'Play your recording' })).toBeTruthy();
     expect(mutate).not.toHaveBeenCalled();
     await act(async () => finish(SPEAK_FIXTURE_RESULT));
@@ -380,7 +380,7 @@ describe('SpeakLive (The Pond)', () => {
     await countdown();
     await act(async () => fireEvent.click(screen.getByRole('button', { name: 'Stop recording' })));
     await waitFor(() => expect(screen.getByTestId('quick-check')).toBeTruthy());
-    expect(screen.getByText('Quick check on this phone: the checker was busy.')).toBeTruthy();
+    expect(screen.getByText('Our checker was busy, so we did a quick check on your phone.')).toBeTruthy();
     expect(screen.getByText('In bloom · 82% match')).toBeTruthy();
     await waitFor(() => expect(mutate).toHaveBeenCalledTimes(1));
     expect(mutate.mock.calls[0][0]).toMatchObject({ score: 82, stage: 'bloom' });
@@ -434,7 +434,7 @@ describe('SpeakLive (The Pond)', () => {
     await renderLive();
     fireEvent.click(screen.getByRole('button', { name: 'Start recording' }));
     expect(screen.getByRole('dialog', { name: 'Dygo needs your microphone' })).toBeTruthy();
-    expect(screen.getByText(/We don't save your recordings/)).toBeTruthy();
+    expect(screen.getByText(/Your recording is used only to check this sentence, then deleted/)).toBeTruthy();
     expect(screen.queryByRole('button', { name: 'Start recording' })).toBeNull();
     await act(async () =>
       fireEvent.click(screen.getByRole('button', { name: 'Allow microphone' })),
@@ -457,7 +457,7 @@ describe('SpeakLive (The Pond)', () => {
     env.micError = { kind: 'denied' };
     await renderLive();
     await act(async () => fireEvent.click(screen.getByRole('button', { name: 'Start recording' })));
-    expect(screen.getByText('The microphone is off for Dygo')).toBeTruthy();
+    expect(screen.getByText('Dygo can’t use your microphone')).toBeTruthy();
     expect(screen.getByText(/Website Settings/)).toBeTruthy();
     expect(screen.queryByRole('button', { name: 'Start recording' })).toBeNull();
     fireEvent.click(screen.getByRole('button', { name: 'Skip speaking' }));
@@ -476,7 +476,7 @@ describe('SpeakLive (The Pond)', () => {
   it('no support: no mic, says so', () => {
     env.recorder = null;
     renderWithIntl(<SpeakLive />);
-    expect(screen.getByText("Speaking isn't available on this browser")).toBeTruthy();
+    expect(screen.getByText('Speaking doesn’t work in this browser')).toBeTruthy();
     expect(screen.queryByRole('button', { name: 'Start recording' })).toBeNull();
   });
 

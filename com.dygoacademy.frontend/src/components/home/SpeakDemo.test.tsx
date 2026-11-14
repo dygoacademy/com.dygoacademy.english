@@ -26,7 +26,7 @@ describe('SpeakDemo (Home page #speak, canvas 2026-10-10)', () => {
     expect(card().getAttribute('data-speak-demo')).toBe('compared');
     expect(screen.getByText('In bloom · 76% match')).toBeTruthy();
     expect(container.querySelectorAll('.home-speak-wave')).toHaveLength(0);
-    expect(screen.getByRole('link', { name: 'Practise free' }).getAttribute('href')).toBe('/register');
+    expect(screen.getByRole('link', { name: 'Practice for free' }).getAttribute('href')).toBe('/register');
 
     fireEvent.click(screen.getByRole('button', { name: 'Try again' }));
     expect(card().getAttribute('data-speak-demo')).toBe('idle');

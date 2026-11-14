@@ -101,7 +101,7 @@ describe('A8 Account sheet (SO-1)', () => {
     const { clear } = setup();
     fireEvent.click(screen.getByRole('button', { name: 'Sign out' }));
     await waitFor(() =>
-      expect(screen.getByRole('status').textContent).toContain("Couldn't sign out"),
+      expect(screen.getByRole('status').textContent).toContain('We couldn’t sign you out'),
     );
     expect(screen.getByRole('dialog', { name: 'Account' })).toBeTruthy();
     expect((screen.getByRole('button', { name: 'Sign out' }) as HTMLButtonElement).disabled).toBe(false);

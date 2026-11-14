@@ -36,10 +36,10 @@ describe('HomeScreen (Home page H1 / H2)', () => {
     expect(screen.getAllByRole('heading', { level: 2 }).map((h) => h.textContent)).toEqual([
       'How to remember English vocabulary for a long time',
       'How spaced repetition helps English learners',
-      'How to practise English speaking by yourself',
+      'How to practice English speaking on your own',
       'What do you need English for?',
-      'Everything you need to grow your vocabulary',
-      'A garden for kids, too',
+      'What’s in your garden',
+      'A garden for kids is on the way',
       'Common questions',
       'Plant your first word today',
     ]);

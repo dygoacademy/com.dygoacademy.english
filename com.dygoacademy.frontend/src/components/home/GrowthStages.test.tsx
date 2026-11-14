@@ -40,7 +40,7 @@ describe('GrowthStages (Home page v2 How your words grow, HP-7)', () => {
       'Today',
       'Weeks later',
       'A water drop means: review it today',
-      'Forgot one? No problem.',
+      'Forgot one? That’s normal.',
     ]) {
       expect(screen.getByText(text)).toBeTruthy();
     }

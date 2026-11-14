@@ -69,7 +69,7 @@ describe('PlantAWord (Home page v2 hero, HP-6)', () => {
     expect(screen.queryByText('hạn chót')).toBeNull();
     expect(screen.getByText('noun')).toBeTruthy();
     expect(screen.getByText('due date')).toBeTruthy();
-    expect(screen.getByText('I’ll remind you before it slips your mind. Want to keep this one?')).toBeTruthy();
+    expect(screen.getByText('I’ll bring this one back before it slips away. Want to keep it?')).toBeTruthy();
     expect(screen.getByRole('button', { name: 'deadline' }).getAttribute('aria-pressed')).toBe('true');
     expect((screen.getByRole('textbox') as HTMLInputElement).value).toBe('deadline');
   });
@@ -93,7 +93,7 @@ describe('PlantAWord (Home page v2 hero, HP-6)', () => {
     fireEvent.submit(screen.getByRole('textbox').closest('form') as HTMLFormElement);
     expect(screen.getByRole('heading', { level: 3, name: 'negotiate' })).toBeTruthy();
     expect(screen.getByText('to discuss something to reach an agreement')).toBeTruthy();
-    expect(screen.getByRole('link', { name: 'Save this word — it’s free' }).getAttribute('href')).toBe(
+    expect(screen.getByRole('link', { name: 'Save this word for free' }).getAttribute('href')).toBe(
       '/register?seed=negotiate',
     );
   });
@@ -104,8 +104,8 @@ describe('PlantAWord (Home page v2 hero, HP-6)', () => {
     fireEvent.change(screen.getByRole('textbox'), { target: { value: 'serendipity' } });
     fireEvent.click(screen.getByRole('button', { name: 'Plant' }));
     expect(screen.getByRole('heading', { level: 3, name: 'serendipity' })).toBe(document.activeElement);
-    expect(screen.getByText('We’ll grow “serendipity” for you once you sign up.')).toBeTruthy();
-    expect(screen.getByRole('link', { name: 'Save this word — it’s free' }).getAttribute('href')).toBe(
+    expect(screen.getByText('Sign up and we’ll start growing “serendipity” for you.')).toBeTruthy();
+    expect(screen.getByRole('link', { name: 'Save this word for free' }).getAttribute('href')).toBe(
       '/register?seed=serendipity',
     );
   });
@@ -144,7 +144,7 @@ describe('PlantAWord (Home page v2 hero, HP-6)', () => {
     renderPlant();
     fireEvent.change(screen.getByRole('textbox'), { target: { value: 'ice cream' } });
     fireEvent.click(screen.getByRole('button', { name: 'Plant' }));
-    expect(screen.getByRole('link', { name: 'Save this word — it’s free' }).getAttribute('href')).toBe(
+    expect(screen.getByRole('link', { name: 'Save this word for free' }).getAttribute('href')).toBe(
       '/register?seed=ice%20cream',
     );
   });
