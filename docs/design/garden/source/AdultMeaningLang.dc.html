@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Meanings in</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&amp;family=DM+Sans:wght@400;500;600;700&amp;display=swap">
+<style>
+body{margin:0;font-family:'DM Sans',sans-serif;background:#F4F1EA;color:#1C2B24}
+a{color:#B4552E}a:hover{color:#8A3E20}
+@keyframes rise{0%{transform:translateY(10px);opacity:0}100%{transform:translateY(0);opacity:1}}
+.rise{animation:rise .25s ease-out}
+@keyframes bloom{0%{transform:scale(.6);opacity:0}70%{transform:scale(1.06)}100%{transform:scale(1);opacity:1}}
+.bloom{animation:bloom .7s ease-out}
+@keyframes sway{0%,100%{transform:rotate(-3deg)}50%{transform:rotate(3deg)}}
+.sway{transform-box:fill-box;transform-origin:bottom center;animation:sway 3s ease-in-out infinite}
+@keyframes ripple{0%{transform:scale(.8);opacity:.5}100%{transform:scale(1.5);opacity:0}}
+.ripple{transform-box:fill-box;transform-origin:center;animation:ripple 2s ease-out infinite}
+@keyframes level{0%,100%{transform:scaleY(.25)}50%{transform:scaleY(1)}}
+.lvl{transform-box:fill-box;transform-origin:center;animation:level .8s ease-in-out infinite}
+@keyframes sink{0%{transform:translateY(-30px);opacity:0}60%{transform:translateY(4px);opacity:1}100%{transform:translateY(0)}}
+.sink{animation:sink .8s ease-out}
+@keyframes flutter{0%,100%{transform:translate(0,0)}50%{transform:translate(6px,-6px)}}
+.flutter{animation:flutter 2.6s ease-in-out infinite}
+@media (prefers-reduced-motion: reduce){*{animation:none !important}}
+
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; background: #F4F1EA; display: flex; flex-direction: column; gap: 12px; padding: 22px 20px 24px; font-family: 'DM Sans', sans-serif; color: #1C2B24; overflow: hidden; position: relative">
+<div style="display: flex; align-items: center; gap: 12px">
+<a href="AdultMe.dc.html" aria-label="Back" style="width: 44px; height: 44px; border-radius: 22px; background: #FFFFFF; border: 1px solid #E3DDD0; display: flex; align-items: center; justify-content: center; color: #1C2B24; flex-shrink: 0; cursor: pointer; padding: 0"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5 L8 12 L15 19"></path></svg></a>
+<div style="flex-grow: 1; display: flex; flex-direction: column; min-width: 0">
+<span style="font-family: 'Fraunces', serif; font-weight: 600; font-size: 24px; line-height: 1.15">Meanings in</span>
+
+</div>
+
+</div>
+<span style="font-size: 15px; color: #5E6A62; line-height: 1.4">How Dygo explains new words. The words you learn always stay in English.</span>
+<div role="radiogroup" aria-label="Meanings in" style="background: #FFFFFF; border: 1px solid #E3DDD0; border-radius: 20px; padding: 0 16px; display: flex; flex-direction: column">
+<sc-for list="{{opts}}" as="o" hint-placeholder-count="3"><button onClick="{{o.pick}}" role="radio" aria-checked="{{o.checked}}" aria-disabled="{{o.disabled}}" style="min-height: 64px; border: none; border-top: 1px solid #EFEAE0; background: transparent; display: flex; align-items: center; gap: 12px; padding: 8px 0; cursor: pointer; text-align: left; font-family: inherit; color: #1C2B24; opacity: {{o.opacity}}">
+<span style="flex-grow: 1; display: flex; flex-direction: column; gap: 2px"><span style="font-weight: 700; font-size: 16px">{{o.title}}</span><span style="font-size: 13px; color: #5E6A62">{{o.sub}}</span></span>
+<span style="width: 22px; height: 22px; border-radius: 11px; border: 2px solid #24463A; background: {{o.dot}}; box-shadow: inset 0 0 0 3px #FFFFFF; flex-shrink: 0"></span>
+</button></sc-for>
+</div>
+<sc-if value="{{showRecall}}" hint-placeholder-val="{{false}}">
+<div class="rise" style="display: flex; align-items: center; gap: 12px; background: #FFFFFF; border: 1px solid #E3DDD0; border-radius: 18px; padding: 10px 14px">
+<span style="flex-grow: 1; display: flex; flex-direction: column"><span style="font-weight: 700; font-size: 15px">Recall first</span><span style="font-size: 12px; color: #5E6A62; line-height: 1.35">Show the translation only after you answer. Words stick better.</span></span>
+<button onClick="{{toggleRecall}}" role="switch" aria-checked="{{rAria}}" aria-label="Recall first" style="width: 48px; height: 30px; border-radius: 15px; border: none; background: {{rTrack}}; position: relative; cursor: pointer; padding: 0; flex-shrink: 0"><span style="position: absolute; top: 3px; left: {{rKnob}}; width: 24px; height: 24px; border-radius: 12px; background: #FFFFFF; transition: left .2s"></span></button>
+</div>
+</sc-if>
+<div style="background: #FFFFFF; border: 1px solid #E3DDD0; border-radius: 22px; padding: 14px 16px; display: flex; flex-direction: column; gap: 6px; box-shadow: 0 5px 0 #E8E1D2">
+<span style="display: flex; justify-content: space-between"><span style="font-size: 12px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: #5E6A62">Preview · review card</span><span style="font-size: 12px; font-weight: 700; background: #DDE7DA; color: #24463A; padding: 2px 8px; border-radius: 8px">C1</span></span>
+<span lang="en" style="font-family: 'Fraunces', serif; font-weight: 600; font-size: 30px; line-height: 1.1">mitigate</span>
+<span style="font-size: 14px; color: #5E6A62">/ˈmɪt.ɪ.ɡeɪt/</span>
+<sc-if value="{{en}}" hint-placeholder-val="{{true}}"><span lang="en" class="rise" style="font-size: 16px; font-weight: 600">to make something bad less harmful or serious</span></sc-if>
+<sc-if value="{{shown}}" hint-placeholder-val="{{false}}"><span class="rise" style="display: flex; flex-direction: column; gap: 2px"><span lang="{{transLang}}" style="font-size: 16px; font-weight: 700">{{trans}}</span><span lang="en" style="font-size: 13px; color: #5E6A62">to make something bad less harmful or serious</span></span></sc-if>
+<sc-if value="{{hidden}}" hint-placeholder-val="{{false}}"><span class="rise" style="display: flex; flex-direction: column; gap: 6px"><span lang="en" style="font-size: 15px; font-weight: 600">to make something bad less harmful or serious</span><span style="align-self: flex-start; font-size: 13px; font-weight: 600; color: #24463A; background: #F1F6EF; border: 1px dashed #9CC39A; padding: 4px 10px; border-radius: 10px">{{hideNote}}</span></span></sc-if>
+</div>
+<div style="margin-top: auto"><a href="AdultMe.dc.html" style="height: 56px; border-radius: 18px; background: #B4552E; color: #FFFFFF; box-shadow: 0 4px 0 #7E3719; border: none; display: flex; align-items: center; justify-content: center; gap: 8px; font-family: 'DM Sans', sans-serif; font-weight: 700; font-size: 16px; text-decoration: none; cursor: pointer; width: 100%; box-sizing: border-box; padding: 0 16px">Save</a></div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview": {"width": 390, "height": 844}}'>
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { pick: "en", recall: true }; }
+  renderVals() {
+    const s = this.state;
+    const sw = (on) => ({ aria: on ? 'true' : 'false', track: on ? '#3E7F5A' : '#CFC8B8', knob: on ? '21px' : '3px' });
+    const opts = [{"id": "en", "title": "English only", "sub": "Simple English definitions", "soon": false}, {"id": "vi", "title": "Tiếng Việt", "sub": "Vietnamese meaning first, English under it", "soon": false}, {"id": "zh", "title": "中文（简体）", "sub": "Chinese meaning first, English under it", "soon": false}].map((o) => ({
+      ...o, checked: s.pick === o.id ? 'true' : 'false', disabled: o.soon,
+      border: s.pick === o.id ? '#24463A' : '#E3DDD0', dot: s.pick === o.id ? '#24463A' : '#FFFFFF',
+      opacity: o.soon ? '.55' : '1', pick: () => { if (!o.soon) this.setState({ pick: o.id }); }
+    }));
+    const r = sw(s.recall);
+    return {
+      opts, en: s.pick === 'en', vi: s.pick === 'vi',
+      showRecall: s.pick !== 'en', rAria: r.aria, rTrack: r.track, rKnob: r.knob, toggleRecall: () => this.setState({ recall: !s.recall }),
+      hidden: s.pick !== 'en' && s.recall, trans: s.pick === 'zh' ? '减轻，缓和' : 'giảm nhẹ, làm dịu bớt', transLang: s.pick === 'zh' ? 'zh-Hans' : 'vi', hideNote: s.pick === 'zh' ? 'Chinese shows after you answer' : 'Vietnamese shows after you answer', shown: s.pick !== 'en' && !s.recall
+    };
+  }
+}
+</script>
+</body>
+</html>
