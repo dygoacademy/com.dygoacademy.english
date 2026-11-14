@@ -12,6 +12,7 @@ import { apiClient } from '@/lib/api-client';
 
 import { useGardenPreferences } from '../preferences';
 import { LanguageScreen } from '../screens/LanguageScreen';
+import { reloadTo } from './reload';
 
 /**
  * /me/language: A8f Language & accent.
@@ -21,8 +22,10 @@ import { LanguageScreen } from '../screens/LanguageScreen';
  * language sheet did (the `dygo_locale` cookie and `ui_locale`, so it
  * follows the learner to other devices) together with `english_variety`
  * in one PATCH /profiles/me. The profile query takes the reply (IPA and
- * audio read the accent from it), the garden re-renders on the server in
- * the new language, and the learner is back on Me. An error stays here.
+ * audio read the accent from it). A new app language loads /me afresh,
+ * so the whole garden comes back in it at once (the layout holds the
+ * messages, and a soft navigation would keep the old ones); an accent
+ * change alone just goes back to Me. An error stays here.
  */
 export function LanguageLive() {
   const router = useRouter();
@@ -40,10 +43,10 @@ export function LanguageLive() {
       if (body.uiLocale !== preferences.appLocale) await setGardenLocaleCookie(body.uiLocale);
       return apiClient.patch<MyProfile>('/profiles/me', body);
     },
-    onSuccess: (saved) => {
+    onSuccess: (saved, body) => {
       queryClient.setQueryData(['profile', 'me'], saved);
-      router.refresh();
-      router.push(GARDEN_ROUTES.me);
+      if (body.uiLocale !== preferences.appLocale) reloadTo(GARDEN_ROUTES.me);
+      else router.push(GARDEN_ROUTES.me);
     },
   });
 
