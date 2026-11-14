@@ -44,7 +44,7 @@ Every column, constraint, index and policy below was read out of `pg_catalog` on
 | `master_lexicon` | Global lexicon | Global, deduplicated linguistic cache. Not tenant-scoped. | one per unique word — **bounded by vocabulary, not users** |
 | `user_word_srs` | Learning state | Per-user spaced-repetition scheduling state. | users × words — **largest OLTP table** |
 | `review_logs` | Learning state | Append-only review history, partitioned by month. | every review ever — **largest table overall** |
-| `study_schedules` | Notifications | Daily habit reminder configuration. | ≤ few per user |
+| `study_schedules` | Notifications | Daily habit reminder configuration. | one per user |
 | `push_subscriptions` | Notifications | VAPID Web Push endpoints per device. | one per device |
 | `speaking_items` | Speaking (Phase 13) | One sentence per word, with native UK/US audio keys and word timings. Shared by every bed with the word. | ≤ one per word |
 | `speaking_attempts` | Speaking (Phase 13) | One row per speaking Compare: score, stage, word marks. No audio. | append-only, grows with use |
@@ -755,11 +755,16 @@ Daily habit reminder configuration.
 | `is_enabled` | `boolean` | NO | `true` |
 | `created_at` | `timestamp with time zone` | NO | `now()` |
 | `updated_at` | `timestamp with time zone` | NO | `now()` |
+| `days` | `smallint[]` | NO | `'{1,2,3,4,5,6}'` |
+| `smart` | `boolean` | NO | `false` |
+| `channels` | `text[]` | NO | `'{push}'` |
 
 **Keys**
 
 - `study_schedules_pkey` — PRIMARY KEY: `PRIMARY KEY (id)`
-- `study_schedules_unique_time_per_user` — UNIQUE: `UNIQUE (user_id, reminder_time)`
+- `study_schedules_one_per_user` — UNIQUE: `UNIQUE (user_id)` (was `study_schedules_unique_time_per_user` on `(user_id, reminder_time)` until `20261114_reminder_settings.sql`)
+- `study_schedules_days_check` — CHECK: `days <@ '{1,2,3,4,5,6,7}'`
+- `study_schedules_channels_check` — CHECK: `channels <@ '{push,zalo,email}'`
 - `study_schedules_user_id_fkey` — FOREIGN KEY: `FOREIGN KEY (user_id) REFERENCES profiles(id) ON DELETE CASCADE`
 
 **Indexes** (beyond those backing keys)
@@ -774,7 +779,9 @@ Daily habit reminder configuration.
 
 **Operational notes**
 
-- `(user_id, reminder_time)` is unique — a user cannot register the same reminder twice.
+- One reminder per learner (`20261114_reminder_settings.sql`, A8c): `POST /notifications/schedules` moves the time instead of adding a row. The migration kept each learner's earliest row (the one the app showed) and deleted the rest.
+- `days`: ISO weekdays, 1 = Monday … 7 = Sunday (A8c default Monday–Saturday; rows from before the migration got all seven). `smart`: send at the hour (outside quiet hours) when most of today's words ripen, `reminder_time` as the fallback. `channels`: only `push` has a sender; `zalo` and `email` are saved and shown as "Soon".
+- Quiet hours (22:00–07:00) are a fixed rule in `reminder-rules.ts`, not a column.
 - `timezone` is IANA. The 15-minute cron compares against it; storing a UTC offset here would break at every DST transition.
 
 ---

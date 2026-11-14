@@ -10,7 +10,15 @@ export interface StudySchedule {
   reminder_time: string;
   timezone: string;
   is_enabled: boolean;
+  /** A8c: ISO weekdays the reminder runs on, 1 = Monday … 7 = Sunday. */
+  days: number[];
+  /** A8c Smart time: send when most words ripen (outside quiet hours). */
+  smart: boolean;
+  /** A8c: 'push' | 'zalo' | 'email'; only push is sent today. */
+  channels: ReminderChannel[];
 }
+
+export type ReminderChannel = 'push' | 'zalo' | 'email';
 
 /** `POST /api/v1/notifications/groups/:groupId/sprint` (FR-6.2) response. */
 export interface SprintResult {
