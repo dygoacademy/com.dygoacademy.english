@@ -1543,3 +1543,7 @@ Engineering-facing log of shipped fixes and changes, one dated entry per change.
 * **Heights**: the new copy is a little longer, so the home boards' `$size` heights were measured again (scrollHeight, e.g. H3 phone 8025 → 8065, VI 8070 → 8115; H4 5455 → 5577).
 * **Not changed**: structural differences that aren't wording stay as they are: the app's header nav links and language menu, the hero's "Create free account / I already have an account" buttons, the final "I already have an account" link, and the boards' "1. Listen" step numbers (split into separate nodes in the app).
 * **Verified**: every visible board string is now found in the app's messages, except sample word data and joined strings (bed line + "In the meantime…", "Stage {n}"). iA8-me 0.008%, iA8-me-account 0.006% against the app (anti-aliasing); VI 0.08% / 0.17% (Vietnamese glyph anti-aliasing). Home boards render with the footer in frame at the new heights.
+
+### Added: A8f Language & accent boards (Dylan, 2026-11-14)
+* **Files**: `docs/design/garden/source/AdultLanguage.dc.html`, `AdultLanguageVi.dc.html` (new), `AdultMe.dc.html`, `AdultMeVi.dc.html` (changed).
+* **What**: Dylan's approved boards as handed over: the new A8f screen (app language + English accent), and A8 with a "Language & accent" row after "Meanings in", 46px settings rows and the Daily goal row "Steady · 10 min". References are exported in the next commit.
