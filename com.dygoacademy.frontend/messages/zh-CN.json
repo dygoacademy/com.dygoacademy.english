@@ -23,7 +23,8 @@
       "bedHarvest": "花圃收获",
       "seedPackets": "选一包种子",
       "seedDrop": "果实掉下种子",
-      "reminder": "提醒"
+      "reminder": "提醒",
+      "goal": "每日目标"
     },
     "update": {
       "available": "Dygo 有新版本了",
@@ -363,14 +364,6 @@
       "you": "（你）",
       "changeRole": "更改{name}的角色",
       "remove": "移出花园"
-    },
-    "dailyGoal": {
-      "title": "每日目标",
-      "description": "你每天想在花园里花多少时间。",
-      "legend": "每天分钟数",
-      "minutes": "{count} 分钟",
-      "saving": "正在保存…",
-      "error": "没能保存，请检查网络后再试。"
     }
   },
   "screens": {
@@ -1910,6 +1903,32 @@
       "soonLabel": "{channel}（即将推出）",
       "quiet": "免打扰时段：22:00 至 7:00 不发送提醒。",
       "off": "提醒已关闭。成熟的单词会在花园里等你，但放太久会枯萎。",
+      "error": "未能保存。请检查网络后重试。"
+    },
+    "goal": {
+      "title": "每日目标",
+      "back": "返回",
+      "intro": "你每天有多少时间浇水？随时可以更改。",
+      "tier": {
+        "light": {
+          "title": "轻松",
+          "sub": "每天约 5 分钟"
+        },
+        "steady": {
+          "title": "稳定",
+          "sub": "每天约 10 分钟",
+          "note": "每天都能开出一朵金花"
+        },
+        "intense": {
+          "title": "冲刺",
+          "sub": "每天约 15 分钟",
+          "note": "适合考试日期临近时"
+        }
+      },
+      "pace": "按这个节奏",
+      "week": "分钟每周",
+      "barrel": "太忙了？雨水桶能保住你的连续天数。最多可存 3 个。",
+      "save": "保存目标",
       "error": "未能保存。请检查网络后重试。"
     }
   }

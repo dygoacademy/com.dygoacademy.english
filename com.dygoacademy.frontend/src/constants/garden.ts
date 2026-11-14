@@ -82,6 +82,8 @@ export const GARDEN_ROUTES = {
   privacy: '/me/privacy',
   /** A8c Reminder: one ripening reminder (time, Smart time, days, channels). */
   reminder: '/me/reminder',
+  /** A8b Daily goal: the three pots (5 / 10 / 15 min). */
+  goal: '/me/goal',
   /**
    * Onboarding OB1 About you → OB4 Reminder → OB5 All set (design
    * changelog, page "Adult · Onboarding", 2026-10-12): after AU2 Create
