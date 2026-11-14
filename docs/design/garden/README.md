@@ -29,6 +29,10 @@ Exported from the canvas on 2026-09-26:
 | `A6-topics` | A6 · Topics (Beds) | `/garden/topics` | UI-5 |
 | `A7-topic-bed`, `A7-topic-bed-filter-sprouts` | A7 · Topic Bed, unfiltered and "Sprouts" selected | `/garden/topics/[id]` | UI-5 |
 | `A8-me`, `A8-me-account` | A8 · Me, and with the Account sheet open (gear → Sign out, added 2026-09-30) | `/garden/me` | UI-6 |
+| `A8b-daily-goal` (+ `-intense`) | A8b · Daily goal: the three pots (Light / Steady / Intense = the shipped 5 / 10 / 15 min tiers), minutes a week, rain barrel note (board 2026-11-14, approved) | `/me/goal` | Adult Profile |
+| `A8c-reminder` (+ `-smart`, `-evening`, `-off`) | A8c · Reminder: one ripening reminder, time presets, Smart time, days, channels (Zalo and Email "Soon", disabled), quiet hours (2026-11-14, approved) | `/me/reminder` | Adult Profile |
+| `A8d-meanings` (+ `-vi-recall`, `-vi-shown`, `-zh-recall`; VI board `A8d-meanings-vi`, `-vi-shown-vi`, `-en-vi`, `-zh-recall-vi`) | A8d · Meanings in: English only / Tiếng Việt / 中文, Recall first, review-card preview (2026-11-14, approved) | `/me/meanings` | Adult Profile |
+| `iA8-me`, `iA8-me-account` | iA8 · Me on iPad (1194 × 834), and with the Account popover open | `/me` from 1024 px, behind `NEXT_PUBLIC_GARDEN_IPAD_NAV` | Adult Profile |
 | `Q1-quiz-choose`, `Q2-quiz-right`, `Q3-quiz-not-quite`, `Q4-quiz-cloze-hint`, `Q5-quiz-listen` | Quiz (canvas page "Adult · Quiz", added 2026-10-01): Choose the word, Synonym (right answer), wrong pick, Fill in the blank with hint, Listen and spell | `/garden/quiz?topic=…` | UI-5 QZ |
 | `Q6-quiz-result`, `Q7-quiz-result-perfect`, `Q8-quiz-drill-done` | Quiz results: some words need water, every answer right, tricky-word drill done | `/garden/quiz` (after the last question) | UI-5 QZ |
 | `H1-home-phone`, `H2-home-desktop` | Public home page (canvas page "Home page", added 2026-10-02): phone 390×3800 and desktop 1280×2600, illustrations only | `/` for signed-out visitors | Home HP |
