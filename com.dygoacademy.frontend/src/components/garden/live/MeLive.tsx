@@ -4,18 +4,13 @@ import * as React from "react";
 
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 import { useWeekMissions } from "@/hooks/useMissions";
-import {
-  useMyKeepsakes,
-  useMyProfile,
-  useUpdateProfilePrefs,
-} from "@/hooks/useProfile";
+import { useMyKeepsakes, useMyProfile } from "@/hooks/useProfile";
 import { useSrsStats } from "@/hooks/useSrsStats";
 import { useVoiceDonation } from "@/hooks/useVoiceDonation";
 import { GARDEN_ROUTES } from "@/constants/garden";
 import { isVoiceDonationOn } from "@/lib/voice-donation";
 
 import { parseClock } from "../format";
-import { LanguageSheet } from "../LanguageSheet";
 import { useGardenPreferences } from "../preferences";
 import { MeScreen } from "../screens/MeScreen";
 import { AccountSheetLive } from "./AccountSheetLive";
@@ -28,7 +23,6 @@ import {
   meKeepsakes,
   missionsForGoal,
 } from "./data";
-import { useLanguageSettings } from "./useLanguageSettings";
 import { useReminderSwitch } from "./useReminderSwitch";
 
 /**
@@ -42,12 +36,12 @@ import { useReminderSwitch } from "./useReminderSwitch";
  * Web Push is subscribed when it turns on). UI-6 U6-7: best streak (`best_streak_days`, GET /srs/stats),
  * Golden Blooms and keepsakes (GET /me/keepsakes), the calendar (missions
  * per day, GET /missions/week), the daily goal row (A8b: opens /me/goal,
- * which saves `daily_goal_minutes`) and UK/US English in the language sheet
- * (saves `english_variety`), both via PATCH /profiles/me. Time in the
+ * which saves `daily_goal_minutes`, PATCH /profiles/me). Time in the
  * garden is `garden_minutes` (GET /srs/stats), shown in hours ("—" from an
  * older backend); family stays hidden. UI-L: "Meanings in" shows the profile's
- * meaning language; A8d: it opens /me/meanings, and the language sheet (app
- * language + US/UK) opens from the Account sheet.
+ * meaning language; A8d: it opens /me/meanings.
+ * A8f: "Language & accent" shows the app language and US/UK English
+ * (`english_variety`) and opens /me/language.
  * SO-1: the gear opens the Account sheet (who's signed in, Sign out).
  * iA8 (iPad nav, landscape): the sidebar lists the shared gardens and the
  * streak card (current streak, rain barrels left); the gear's Account
@@ -57,8 +51,6 @@ import { useReminderSwitch } from "./useReminderSwitch";
  */
 export function MeLive() {
   const preferences = useGardenPreferences();
-  const language = useLanguageSettings();
-  const [languageOpen, setLanguageOpen] = React.useState(false);
   const [accountOpen, setAccountOpen] = React.useState(false);
   const [accountAnchor, setAccountAnchor] = React.useState<HTMLElement | null>(
     null,
@@ -70,14 +62,7 @@ export function MeLive() {
   const keepsakes = useMyKeepsakes();
   const profile = useMyProfile();
   const donation = useVoiceDonation();
-  const prefs = useUpdateProfilePrefs();
-  // Optimistic: show the value being saved until the reply lands.
-  const pending = prefs.isPending ? prefs.variables : undefined;
-  const goalMinutes =
-    pending?.dailyGoalMinutes ?? profile.data?.daily_goal_minutes ?? null;
-  const variety =
-    pending?.englishVariety ?? profile.data?.english_variety ?? undefined;
-  const lastPref = prefs.variables;
+  const goalMinutes = profile.data?.daily_goal_minutes ?? null;
 
   const email = user.data?.email ?? "";
   const name =
@@ -126,6 +111,11 @@ export function MeLive() {
         reminderHref={GARDEN_ROUTES.reminder}
         meanings={preferences.meaningLocale ?? "none"}
         meaningsHref={GARDEN_ROUTES.meanings}
+        language={{
+          appLocale: preferences.appLocale,
+          variety: profile.data?.english_variety ?? "en-US",
+          href: GARDEN_ROUTES.language,
+        }}
         family={null}
         privacy={
           isVoiceDonationOn()
@@ -148,25 +138,6 @@ export function MeLive() {
         name={name}
         email={email}
         anchor={accountAnchor}
-        onLanguageClick={() => {
-          setAccountOpen(false);
-          setLanguageOpen(true);
-        }}
-      />
-      <LanguageSheet
-        open={languageOpen}
-        onOpenChange={setLanguageOpen}
-        uiLocale={language.uiLocale}
-        englishVariety={variety}
-        onChange={({ englishVariety, ...next }) => {
-          if (englishVariety) prefs.mutate({ englishVariety });
-          if (next.uiLocale !== undefined) void language.change(next);
-        }}
-        saving={language.saving || prefs.isPending}
-        error={
-          language.error ||
-          (prefs.isError && lastPref?.englishVariety !== undefined)
-        }
       />
     </>
   );

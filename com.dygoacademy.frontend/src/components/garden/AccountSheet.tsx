@@ -5,7 +5,7 @@ import { useTranslations } from 'next-intl';
 
 import { BottomSheet } from './BottomSheet';
 import { gcn } from './cn';
-import { ChevronRightIcon, SignOutIcon, TranslateIcon } from './icons';
+import { SignOutIcon } from './icons';
 
 /**
  * iA8-me-account (iPad landscape, `ipad-lg:`): the same dialog as a
@@ -38,11 +38,6 @@ export interface AccountSheetProps {
    * Toast): content outside a modal sheet is hidden from VoiceOver.
    */
   notice?: React.ReactNode;
-  /**
-   * A8d moved "Meanings in" to its own screen, so the app language and
-   * US/UK English open from here (a row under the account card).
-   */
-  onLanguageClick?: () => void;
   /** The gear that opened it: the iPad popover hangs under it. */
   anchor?: HTMLElement | null;
 }
@@ -55,7 +50,6 @@ export function AccountSheet({
   onSignOut,
   signingOut = false,
   notice,
-  onLanguageClick,
   anchor = null,
 }: AccountSheetProps) {
   const t = useTranslations('components.account');
@@ -86,7 +80,7 @@ export function AccountSheet({
       className={`bg-bg [&&]:rounded-t-[28px] md:[&&]:rounded-t-hero [&_[data-testid=sheet-grabber]>span]:w-10 [&_[data-testid=sheet-grabber]]:mb-1 ${POPOVER}`}
       headerClassName="ipad-lg:sr-only"
       bodyClassName="ipad-lg:overflow-visible ipad-lg:p-0"
-      overlayClassName="ipad-lg:bg-transparent"
+      overlayClassName="bg-[rgba(28,43,36,0.45)] ipad-lg:bg-transparent"
       contentStyle={place}
       before={
         <span
@@ -110,20 +104,6 @@ export function AccountSheet({
             </span>
           </div>
         </div>
-
-        {onLanguageClick ? (
-          <button
-            type="button"
-            onClick={onLanguageClick}
-            disabled={signingOut}
-            aria-haspopup="dialog"
-            className="flex h-[52px] items-center gap-3 rounded-[18px] border border-border bg-surface px-[14px] text-left text-text disabled:opacity-60"
-          >
-            <TranslateIcon width={20} height={20} stroke="var(--color-forest)" />
-            <span className="flex-grow text-[15px] font-semibold">{t('language')}</span>
-            <ChevronRightIcon width={16} height={16} stroke="var(--color-text-muted)" />
-          </button>
-        ) : null}
 
         <button
           type="button"

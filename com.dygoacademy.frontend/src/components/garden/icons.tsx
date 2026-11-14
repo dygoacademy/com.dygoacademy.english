@@ -416,6 +416,17 @@ export function TranslateIcon(props: IconProps) {
   );
 }
 
+/** A globe (A8 "Language & accent" row, A8f). */
+export function GlobeIcon(props: IconProps) {
+  return (
+    <StrokeIcon {...props}>
+      <circle cx="12" cy="12" r="9" />
+      <path d="M3 12 H21" />
+      <path d="M12 3 C15 6 15 18 12 21 C9 18 9 6 12 3 Z" />
+    </StrokeIcon>
+  );
+}
+
 /** Two people (the Family row). */
 export function FamilyIcon(props: IconProps) {
   return (

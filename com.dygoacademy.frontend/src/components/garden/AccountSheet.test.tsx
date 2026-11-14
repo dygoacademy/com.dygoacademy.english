@@ -63,6 +63,8 @@ describe('A8 Account sheet (SO-1)', () => {
     expect(dialog.textContent).toContain('Minh');
     expect(screen.getByText('Signed in as minh@example.com')).toBeTruthy();
     expect(screen.queryByRole('button', { name: 'Close' })).toBeNull();
+    // A8f: the app language and accent moved to Me → Language & accent.
+    expect(screen.queryByRole('button', { name: /language/i })).toBeNull();
   });
 
   it('closes on Cancel without signing out', async () => {

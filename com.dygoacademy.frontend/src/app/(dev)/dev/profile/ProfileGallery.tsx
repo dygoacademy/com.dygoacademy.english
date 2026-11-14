@@ -9,9 +9,12 @@ import { GardenSidebarList, GardenSidebarStreak } from '@/components/garden/Gard
 import { GroupsTabProvider } from '@/components/garden/groupsTab';
 import type { CalendarLevel } from '@/components/garden/GardenCalendar';
 import { DailyGoalScreen, type GoalMinutes } from '@/components/garden/screens/DailyGoalScreen';
+import { LanguageScreen } from '@/components/garden/screens/LanguageScreen';
 import { MeScreen } from '@/components/garden/screens/MeScreen';
 import { MeaningsScreen, type MeaningChoice } from '@/components/garden/screens/MeaningsScreen';
 import { ReminderScreen } from '@/components/garden/screens/ReminderScreen';
+import type { EnglishVariety } from '@/hooks/useProfile';
+import type { AppLocale } from '@/i18n/config';
 import type { ReminderChannel } from '@/types';
 
 /** The boards' sample data and states (source/Adult*.dc.html, iPadMe.dc.html). */
@@ -19,8 +22,10 @@ export function ProfileGallery({ screen, vi }: { screen: string; vi: boolean }) 
   if (screen.startsWith('A8b-daily-goal'))
     return <GoalBoard intense={screen.endsWith('-intense')} />;
   if (screen.startsWith('A8d-meanings')) return <MeaningsBoard state={screen.slice(12)} vi={vi} />;
-  if (screen.startsWith('iA8-me'))
-    return <IpadMeBoard account={screen === 'iA8-me-account'} vi={vi} />;
+  if (screen.startsWith('iA8-me')) return <MeBoard account={screen === 'iA8-me-account'} vi={vi} />;
+  if (screen.startsWith('A8-me'))
+    return <MeBoard phone account={screen === 'A8-me-account'} vi={vi} />;
+  if (screen.startsWith('A8f-language')) return <LanguageBoard vi={vi} />;
   if (screen.startsWith('A8c-reminder')) return <ReminderBoard state={screen.slice(12)} />;
   return <p>Unknown board {screen}</p>;
 }
@@ -102,7 +107,36 @@ function boardCalendar(): (CalendarLevel | null)[][] {
   );
 }
 
-function IpadMeBoard({ account, vi }: { account: boolean; vi: boolean }) {
+/** A8f: the EN board starts on English, the VI board on Tiếng Việt; both on US English. */
+function LanguageBoard({ vi }: { vi: boolean }) {
+  const [appLocale, setAppLocale] = React.useState<AppLocale>(vi ? 'vi-VN' : 'en-US');
+  const [variety, setVariety] = React.useState<EnglishVariety>('en-US');
+  return (
+    <LanguageScreen
+      framed
+      backHref="#"
+      appLocale={appLocale}
+      variety={variety}
+      onAppLocale={setAppLocale}
+      onVariety={setVariety}
+      onSave={() => {}}
+    />
+  );
+}
+
+/**
+ * A8 (`phone`: AdultMe(Vi).dc.html, with the Privacy & data and Language &
+ * accent rows and the Steady goal) and iA8 (iPadMe(Vi).dc.html).
+ */
+function MeBoard({
+  account,
+  vi,
+  phone = false,
+}: {
+  account: boolean;
+  vi: boolean;
+  phone?: boolean;
+}) {
   const t = useTranslations('components.tabBar');
   const [open, setOpen] = React.useState(account);
   const [anchor, setAnchor] = React.useState<HTMLElement | null>(null);
@@ -120,11 +154,13 @@ function IpadMeBoard({ account, vi }: { account: boolean; vi: boolean }) {
           { type: 'blooms', count: 25 },
           { type: 'nextWords', current: 412, target: 500 },
         ]}
-        dailyGoal={{ missions: 3, minutes: 15, href: '#' }}
+        dailyGoal={{ missions: 3, minutes: phone ? 10 : 15, href: '#' }}
         reminder={{ time: { hour: 7, minute: 30 }, on: true }}
         reminderHref="#"
         meanings={vi ? 'vi-VN' : 'none'}
         meaningsHref="#"
+        language={phone ? { appLocale: vi ? 'vi-VN' : 'en-US', variety: 'en-US', href: '#' } : null}
+        privacy={phone ? { donating: false, href: '#' } : null}
         family={{ name: 'Na', href: '#' }}
         onAccountClick={(gear) => {
           setAnchor(gear);

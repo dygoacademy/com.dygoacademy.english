@@ -21,7 +21,8 @@
       "seedDrop": "Fruit drops seeds",
       "reminder": "Reminder",
       "goal": "Daily goal",
-      "meanings": "Meanings in"
+      "meanings": "Meanings in",
+      "language": "Language & accent"
     },
     "update": {
       "available": "There’s a new version of Dygo.",
@@ -324,25 +325,12 @@
       "close": "Close"
     },
     "language": {
-      "title": "Language",
-      "description": "Pick the language for the app and for the meanings on your cards.",
       "appLanguage": "App language",
-      "meaningLanguage": "Meanings shown in",
-      "meaningHint": "The English definition is always included.",
       "names": {
         "en-US": "English",
         "vi-VN": "Tiếng Việt",
         "zh-CN": "简体中文"
-      },
-      "meaningWith": "{language} + English",
-      "meaningNone": "English only",
-      "saving": "Saving…",
-      "error": "That didn’t save. Check your connection and try again.",
-      "variety": "English dialect",
-      "varietyHint": "Used for spelling and pronunciation across your garden.",
-      "varietyUS": "US English 🇺🇸",
-      "varietyUK": "UK English 🇬🇧",
-      "descriptionApp": "Pick the language for the app and your English accent."
+      }
     },
     "account": {
       "title": "Account",
@@ -350,8 +338,7 @@
       "signOut": "Sign out",
       "signingOut": "Signing out…",
       "cancel": "Cancel",
-      "error": "We couldn’t sign you out. Check your connection and try again.",
-      "language": "App language & accent"
+      "error": "We couldn’t sign you out. Check your connection and try again."
     },
     "groups": {
       "roles": {
@@ -948,7 +935,7 @@
         "nextBlooms": "{count} Golden Blooms · next unlock"
       },
       "dailyGoal": "Daily goal",
-      "dailyGoalValue": "{missions} missions · {minutes} min",
+      "dailyGoalValue": "{tier} · {minutes} min",
       "comingSoonShort": "Coming soon",
       "reminder": "Reminder",
       "reminderBlocked": {
@@ -965,6 +952,12 @@
         "none": "English",
         "vi-VN": "Tiếng Việt + English",
         "zh-CN": "简体中文 + English"
+      },
+      "language": "Language & accent",
+      "languageValue": "{language} · {accent}",
+      "accentShort": {
+        "us": "US",
+        "uk": "UK"
       },
       "account": "Account",
       "privacy": "Privacy & data",
@@ -1964,6 +1957,23 @@
       "hidden": {
         "vi-VN": "Vietnamese shows after you answer",
         "zh-CN": "Chinese shows after you answer"
+      },
+      "save": "Save",
+      "error": "Couldn't save. Check your connection and try again."
+    },
+    "language": {
+      "title": "Language & accent",
+      "back": "Back",
+      "intro": "The language Dygo speaks to you, and the English you hear.",
+      "app": {
+        "label": "App language",
+        "hint": "Menus, buttons and tips. The words you learn always stay in English."
+      },
+      "accent": {
+        "label": "English accent",
+        "us": "US English",
+        "uk": "UK English",
+        "hint": "Spelling, IPA and audio for every word follow this."
       },
       "save": "Save",
       "error": "Couldn't save. Check your connection and try again."
