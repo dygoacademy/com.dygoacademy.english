@@ -4,11 +4,13 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { isGardenIpadNavOn } from '@/constants/garden';
 import { renderWithIntl } from '@/test/render';
 
-import { GardenSidebarList } from './GardenSidebarList';
+import { AccountSheet } from './AccountSheet';
+import { GardenSidebarList, GardenSidebarStreak } from './GardenSidebarList';
 import { GroupsTabProvider } from './groupsTab';
 import { ReviewCard } from './ReviewCard';
-import { BED, HOME, REVIEW } from './screens/fixtures';
+import { BED, HOME, ME, REVIEW } from './screens/fixtures';
 import { GardenTabBar, IPAD_NAV_COLUMN, SCREEN_CLASSES } from './screens/GardenTabBar';
+import { MeScreen } from './screens/MeScreen';
 import { TodaysGardenScreen } from './screens/TodaysGardenScreen';
 import { TopicBedScreen } from './screens/TopicBedScreen';
 
@@ -77,15 +79,13 @@ describe('iPad layouts', () => {
     expect(SCREEN_CLASSES).toBe(
       'mx-auto flex min-h-screen-dvh w-full max-w-[560px] flex-col bg-bg text-text',
     );
-    expect(IPAD_NAV_COLUMN).toContain('ipad:pl-20');
-    expect(IPAD_NAV_COLUMN).toContain('ipad-lg:pl-60');
+    expect(IPAD_NAV_COLUMN).toContain('ipad:max-w-[720px]');
+    expect(IPAD_NAV_COLUMN).toContain('ipad-lg:max-w-[960px]');
     expect(IPAD_NAV_COLUMN.split(' ').every((c) => c.startsWith('ipad'))).toBe(true);
   });
 
   it('Today: hero 5/8 + missions 3/8 on iPad, hero full width then 6/12 rows in landscape', () => {
-    const { container } = renderWithIntl(
-      <TodaysGardenScreen {...HOME} />,
-    );
+    const { container } = renderWithIntl(<TodaysGardenScreen {...HOME} />);
     const grid = container.querySelector('.ipad\\:grid-cols-8');
     expect(grid?.className).toContain('contents');
     expect(grid?.className).toContain('ipad-lg:grid-cols-12');
@@ -155,5 +155,75 @@ describe('iPad layouts', () => {
 
     const { container } = renderWithIntl(<GardenSidebarList label="None" items={[]} />);
     expect(container.innerHTML).toBe('');
+  });
+});
+
+/** iA8 iPad Profile (canvas `reference/iA8-me`, `-account`). */
+describe('iA8 iPad Profile', () => {
+  it('sidebar: the Dygo mark, titled shared gardens with avatars, the streak card at the bottom', () => {
+    renderWithIntl(
+      <GardenTabBar
+        active="me"
+        ipadNav
+        sidebar={
+          <GardenSidebarList
+            heading
+            label="Shared gardens"
+            items={[
+              {
+                id: 'g',
+                href: '/groups/g',
+                label: 'IELTS Sprint',
+                avatar: 'I',
+                badge: '5',
+              },
+            ]}
+          />
+        }
+        sidebarFooter={<GardenSidebarStreak title="23-day streak" detail="Rain barrel · 2 left" />}
+      />,
+    );
+    const sidebar = document.querySelector('[data-garden-nav="sidebar"]')!;
+    expect(sidebar.textContent).toContain('Dygo');
+    expect(sidebar.className).toContain('w-[264px]');
+    const section = screen.getByRole('region', { name: 'Shared gardens' });
+    expect(section.querySelector('h2')?.textContent).toBe('Shared gardens');
+    expect(screen.getByRole('link', { name: /IELTS Sprint/ }).textContent).toBe('IIELTS Sprint5');
+    expect(sidebar.lastElementChild?.className).toContain('mt-auto');
+    expect(sidebar.lastElementChild?.textContent).toBe('23-day streakRain barrel · 2 left');
+    const profile = screen.getAllByRole('link', { name: 'Profile' });
+    expect(profile.some((link) => link.className.includes('bg-forest'))).toBe(true);
+  });
+
+  it('Me: the grid dissolves into stats across, calendar 1.7fr beside keepsakes, settings across', () => {
+    const { container } = renderWithIntl(<MeScreen {...ME} />);
+    const grid = container.querySelector('.ipad-lg\\:grid-cols-\\[1\\.7fr_1fr\\]');
+    expect(grid).toBeTruthy();
+    const stats = grid!.querySelector('.ipad-lg\\:col-span-2');
+    expect(stats?.className).toContain('grid-cols-4');
+  });
+
+  it('Me: the gear hands itself to onAccountClick, so the popover can hang under it', async () => {
+    const onAccountClick = vi.fn();
+    renderWithIntl(<MeScreen {...ME} onAccountClick={onAccountClick} />);
+    const gear = screen.getByRole('button', { name: 'Account' });
+    gear.click();
+    expect(onAccountClick).toHaveBeenCalledWith(gear);
+  });
+
+  it('Account: a popover in landscape, with a caret, a clear backdrop and no Cancel', () => {
+    renderWithIntl(
+      <AccountSheet
+        open
+        onOpenChange={() => {}}
+        name="Minh"
+        email="minh@example.com"
+        onSignOut={() => {}}
+      />,
+    );
+    const dialog = screen.getByRole('dialog', { name: 'Account' });
+    expect(dialog.className).toContain('ipad-lg:w-[340px]');
+    expect(dialog.className).toContain('ipad-lg:top-[var(--account-top,100px)]');
+    expect(screen.getByRole('button', { name: 'Cancel' }).className).toContain('ipad-lg:hidden');
   });
 });

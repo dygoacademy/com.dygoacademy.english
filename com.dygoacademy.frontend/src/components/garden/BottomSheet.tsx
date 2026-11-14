@@ -53,6 +53,12 @@ export interface BottomSheetProps {
   titleClassName?: string;
   descriptionClassName?: string;
   bodyClassName?: string;
+  /** The dimmed backdrop (iA8 account popover: clear). */
+  overlayClassName?: string;
+  /** Extra inline style on the sheet, e.g. CSS variables its className reads. */
+  contentStyle?: React.CSSProperties;
+  /** Rendered first inside the sheet, before the grabber (e.g. a popover caret). */
+  before?: React.ReactNode;
 }
 
 const CLOSE_DISTANCE = 96;
@@ -73,6 +79,9 @@ export function BottomSheet({
   titleClassName,
   descriptionClassName,
   bodyClassName,
+  overlayClassName,
+  contentStyle,
+  before,
 }: BottomSheetProps) {
   const t = useTranslations('components.sheet');
   const [container, setContainer] = React.useState<HTMLElement | null>(null);
@@ -114,16 +123,20 @@ export function BottomSheet({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogPortal container={container ?? undefined}>
-        <DialogOverlay />
+        <DialogOverlay className={overlayClassName} />
         <DialogPrimitive.Content
           // Outside the garden root (shouldn't happen), carry the tokens along.
           data-ui={container ? undefined : 'garden'}
           data-dragging={dragging || undefined}
           style={
             {
+              ...contentStyle,
               ...(dragging ? { transform: `translateY(${dragY}px)` } : null),
               ...(keyboard
-                ? { '--sheet-bottom': `${keyboard.inset}px`, '--sheet-max-h': `${keyboard.vh - 8}px` }
+                ? {
+                    '--sheet-bottom': `${keyboard.inset}px`,
+                    '--sheet-max-h': `${keyboard.vh - 8}px`,
+                  }
                 : null),
             } as React.CSSProperties
           }
@@ -143,6 +156,7 @@ export function BottomSheet({
           // No description: tell Radix so it doesn't warn about a missing one.
           {...(description ? {} : { 'aria-describedby': undefined })}
         >
+          {before}
           <div
             aria-hidden="true"
             data-testid="sheet-grabber"

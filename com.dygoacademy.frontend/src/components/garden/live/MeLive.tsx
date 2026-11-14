@@ -19,6 +19,7 @@ import { LanguageSheet } from "../LanguageSheet";
 import { useGardenPreferences } from "../preferences";
 import { MeScreen } from "../screens/MeScreen";
 import { AccountSheetLive } from "./AccountSheetLive";
+import { SharedGardensSidebar, StreakSidebarCard } from "./SidebarLists";
 import {
   DEFAULT_REMINDER_TIME,
   displayName,
@@ -48,6 +49,9 @@ import { useReminderSwitch } from "./useReminderSwitch";
  * meaning language; A8d: it opens /me/meanings, and the language sheet (app
  * language + US/UK) opens from the Account sheet.
  * SO-1: the gear opens the Account sheet (who's signed in, Sign out).
+ * iA8 (iPad nav, landscape): the sidebar lists the shared gardens and the
+ * streak card (current streak, rain barrels left); the gear's Account
+ * sheet hangs under it as a popover.
  * Voice donation (NEXT_PUBLIC_VOICE_DONATION): the "Privacy & data" row,
  * on/off from GET /profiles/me/voice-donation (off until it loads).
  */
@@ -56,6 +60,9 @@ export function MeLive() {
   const language = useLanguageSettings();
   const [languageOpen, setLanguageOpen] = React.useState(false);
   const [accountOpen, setAccountOpen] = React.useState(false);
+  const [accountAnchor, setAccountAnchor] = React.useState<HTMLElement | null>(
+    null,
+  );
   const user = useCurrentUser();
   const stats = useSrsStats();
   const reminder = useReminderSwitch();
@@ -74,7 +81,8 @@ export function MeLive() {
 
   const email = user.data?.email ?? "";
   const name =
-    displayName(user.data, stats.data?.display_name) ?? (email ? email.split("@")[0] : "");
+    displayName(user.data, stats.data?.display_name) ??
+    (email ? email.split("@")[0] : "");
   const schedule = reminder.schedule;
 
   return (
@@ -106,7 +114,9 @@ export function MeLive() {
         reminder={
           reminder.schedules
             ? {
-                time: parseClock(schedule?.reminder_time ?? DEFAULT_REMINDER_TIME),
+                time: parseClock(
+                  schedule?.reminder_time ?? DEFAULT_REMINDER_TIME,
+                ),
                 on: reminder.on,
                 blocked: reminder.blocked,
               }
@@ -119,16 +129,25 @@ export function MeLive() {
         family={null}
         privacy={
           isVoiceDonationOn()
-            ? { donating: donation.data?.donating ?? false, href: GARDEN_ROUTES.privacy }
+            ? {
+                donating: donation.data?.donating ?? false,
+                href: GARDEN_ROUTES.privacy,
+              }
             : null
         }
-        onAccountClick={() => setAccountOpen(true)}
+        onAccountClick={(gear) => {
+          setAccountAnchor(gear);
+          setAccountOpen(true);
+        }}
+        sidebar={<SharedGardensSidebar heading />}
+        sidebarFooter={<StreakSidebarCard />}
       />
       <AccountSheetLive
         open={accountOpen}
         onOpenChange={setAccountOpen}
         name={name}
         email={email}
+        anchor={accountAnchor}
         onLanguageClick={() => {
           setAccountOpen(false);
           setLanguageOpen(true);

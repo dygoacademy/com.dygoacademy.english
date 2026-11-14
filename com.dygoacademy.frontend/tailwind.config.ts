@@ -121,6 +121,7 @@ const config: Config = {
         'soft-text': 'var(--color-text-soft)',
         divider: 'var(--color-divider)',
         'text-faint': 'var(--color-text-faint)',
+        sidebar: 'var(--color-sidebar)',
         'dashed-line': 'var(--color-dashed)',
         'locked-bg': 'var(--color-locked-bg)',
         'locked-border': 'var(--color-locked-border)',
