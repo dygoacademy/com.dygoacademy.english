@@ -205,6 +205,35 @@ const JOBS = [
   ['AdultPrivacyVi.dc.html', 'vi', 'A8e-privacy-on-vi', { state: 'on' }],
   ['AdultPrivacyVi.dc.html', 'vi', 'A8e-privacy-delete-vi', { state: 'delete' }],
   ['AdultPrivacyVi.dc.html', 'vi', 'A8e-privacy-deleted-vi', { state: 'deleted' }],
+  // Adult Profile (boards added 2026-11-14; A8b, A8c, A8d approved by Dylan the same day).
+  // A8b Daily goal: `pick` = the selected pot (light / steady / intense).
+  ['AdultDailyGoal.dc.html', 'en', 'A8b-daily-goal', {}],
+  ['AdultDailyGoal.dc.html', 'en', 'A8b-daily-goal-intense', { pick: 'intense' }],
+  ['AdultDailyGoalVi.dc.html', 'vi', 'A8b-daily-goal-vi', {}],
+  ['AdultDailyGoalVi.dc.html', 'vi', 'A8b-daily-goal-intense-vi', { pick: 'intense' }],
+  // A8c Reminder: default (on, 7:30), Smart time, an evening time (night sky), and off.
+  ['AdultReminder.dc.html', 'en', 'A8c-reminder', {}],
+  ['AdultReminder.dc.html', 'en', 'A8c-reminder-smart', { smart: true }],
+  ['AdultReminder.dc.html', 'en', 'A8c-reminder-evening', { time: '21:00', hh: 21 }],
+  ['AdultReminder.dc.html', 'en', 'A8c-reminder-off', { on: false }],
+  ['AdultReminderVi.dc.html', 'vi', 'A8c-reminder-vi', {}],
+  ['AdultReminderVi.dc.html', 'vi', 'A8c-reminder-smart-vi', { smart: true }],
+  ['AdultReminderVi.dc.html', 'vi', 'A8c-reminder-evening-vi', { time: '21:00', hh: 21 }],
+  ['AdultReminderVi.dc.html', 'vi', 'A8c-reminder-off-vi', { on: false }],
+  // A8d Meanings in: `pick` = en / vi / zh, `recall` = Recall first.
+  ['AdultMeaningLang.dc.html', 'en', 'A8d-meanings', {}],
+  ['AdultMeaningLang.dc.html', 'en', 'A8d-meanings-vi-recall', { pick: 'vi', recall: true }],
+  ['AdultMeaningLang.dc.html', 'en', 'A8d-meanings-vi-shown', { pick: 'vi', recall: false }],
+  ['AdultMeaningLang.dc.html', 'en', 'A8d-meanings-zh-recall', { pick: 'zh', recall: true }],
+  ['AdultMeaningLangVi.dc.html', 'vi', 'A8d-meanings-vi', {}],
+  ['AdultMeaningLangVi.dc.html', 'vi', 'A8d-meanings-vi-shown-vi', { recall: false }],
+  ['AdultMeaningLangVi.dc.html', 'vi', 'A8d-meanings-en-vi', { pick: 'en' }],
+  ['AdultMeaningLangVi.dc.html', 'vi', 'A8d-meanings-zh-recall-vi', { pick: 'zh', recall: true }],
+  // iA8 iPad Me (1194 x 834; the app shows it from 1024 px behind NEXT_PUBLIC_GARDEN_IPAD_NAV).
+  ['iPadMe.dc.html', 'en', 'iA8-me', { $size: [1194, 834] }],
+  ['iPadMe.dc.html', 'en', 'iA8-me-account', { $size: [1194, 834], account: true }],
+  ['iPadMeVi.dc.html', 'vi', 'iA8-me-vi', { $size: [1194, 834] }],
+  ['iPadMeVi.dc.html', 'vi', 'iA8-me-account-vi', { $size: [1194, 834], account: true }],
   // AU2 with the donate box ticked.
   ['AdultRegister.dc.html', 'en', 'AU2-create-account-donate', { donate: true }],
   ['AdultRegisterVi.dc.html', 'vi', 'AU2-create-account-donate-vi', { donate: true }],

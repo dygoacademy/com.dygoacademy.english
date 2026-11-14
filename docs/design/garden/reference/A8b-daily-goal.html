@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8">
+<title>Daily goal</title>
+
+<style>
+body{margin:0;font-family:'DM Sans',sans-serif;background:#F4F1EA;color:#1C2B24}
+a{color:#B4552E}a:hover{color:#8A3E20}
+@keyframes rise{0%{transform:translateY(10px);opacity:0}100%{transform:translateY(0);opacity:1}}
+.rise{animation:rise .25s ease-out}
+@keyframes bloom{0%{transform:scale(.6);opacity:0}70%{transform:scale(1.06)}100%{transform:scale(1);opacity:1}}
+.bloom{animation:bloom .7s ease-out}
+@keyframes sway{0%,100%{transform:rotate(-3deg)}50%{transform:rotate(3deg)}}
+.sway{transform-box:fill-box;transform-origin:bottom center;animation:sway 3s ease-in-out infinite}
+@keyframes ripple{0%{transform:scale(.8);opacity:.5}100%{transform:scale(1.5);opacity:0}}
+.ripple{transform-box:fill-box;transform-origin:center;animation:ripple 2s ease-out infinite}
+@keyframes level{0%,100%{transform:scaleY(.25)}50%{transform:scaleY(1)}}
+.lvl{transform-box:fill-box;transform-origin:center;animation:level .8s ease-in-out infinite}
+@keyframes sink{0%{transform:translateY(-30px);opacity:0}60%{transform:translateY(4px);opacity:1}100%{transform:translateY(0)}}
+.sink{animation:sink .8s ease-out}
+@keyframes flutter{0%,100%{transform:translate(0,0)}50%{transform:translate(6px,-6px)}}
+.flutter{animation:flutter 2.6s ease-in-out infinite}
+@media (prefers-reduced-motion: reduce){*{animation:none !important}}
+
+</style><style>*,*::before,*::after{animation:none!important;transition:none!important}</style><style type="text/css"></style></head>
+<body>
+
+
+<div style="width: 390px; height: 844px; box-sizing: border-box; background: #F4F1EA; display: flex; flex-direction: column; gap: 12px; padding: 22px 20px 24px; font-family: 'DM Sans', sans-serif; color: #1C2B24; overflow: hidden; position: relative">
+<div style="display: flex; align-items: center; gap: 12px">
+<a href="AdultMe.dc.html" aria-label="Back" style="width: 44px; height: 44px; border-radius: 22px; background: #FFFFFF; border: 1px solid #E3DDD0; display: flex; align-items: center; justify-content: center; color: #1C2B24; flex-shrink: 0; cursor: pointer; padding: 0"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5 L8 12 L15 19"></path></svg></a>
+<div style="flex-grow: 1; display: flex; flex-direction: column; min-width: 0">
+<span style="font-family: 'Fraunces', serif; font-weight: 600; font-size: 24px; line-height: 1.15">Daily goal</span>
+
+</div>
+
+</div>
+<span style="font-size: 15px; color: #5E6A62; line-height: 1.4">How much watering fits your day? You can change it anytime.</span>
+<div role="radiogroup" aria-label="Daily goal" style="display: flex; flex-direction: column; gap: 8px">
+<button role="radio" aria-checked="false" style="min-height: 84px; border-radius: 20px; border: 2px solid #E3DDD0; background: #FFFFFF; display: flex; align-items: center; gap: 12px; padding: 8px 14px 8px 8px; cursor: pointer; text-align: left; font-family: inherit; color: #1C2B24">
+<span style="width: 64px; height: 64px; flex-shrink: 0"><svg width="64" height="64" viewBox="0 0 64 64" aria-hidden="true"><path d="M32 40 V18" stroke="#7FA487" stroke-width="2.2"></path><circle cx="32" cy="15" r="4.5" fill="#E8A87C"></circle><path d="M8 40 H56 L50 60 H14 Z" fill="#B4552E"></path><rect x="6" y="36" width="52" height="7" rx="3" fill="#8A3E20"></rect></svg></span>
+<span style="flex-grow: 1; display: flex; flex-direction: column; gap: 2px">
+<span style="font-weight: 700; font-size: 17px">Light</span>
+<span style="font-size: 14px; color: #5E6A62">About 5 min a day</span>
+
+</span>
+</button><button role="radio" aria-checked="true" style="min-height: 84px; border-radius: 20px; border: 2px solid #24463A; background: #F1F6EF; display: flex; align-items: center; gap: 12px; padding: 8px 14px 8px 8px; cursor: pointer; text-align: left; font-family: inherit; color: #1C2B24">
+<span style="width: 64px; height: 64px; flex-shrink: 0"><svg width="64" height="64" viewBox="0 0 64 64" aria-hidden="true"><path d="M18 40 V18" stroke="#7FA487" stroke-width="2.2"></path><circle cx="18" cy="15" r="4.5" fill="#E8A87C"></circle><path d="M32 40 V10" stroke="#7FA487" stroke-width="2.2"></path><circle cx="32" cy="7" r="4.5" fill="#9CC39A"></circle><path d="M46 40 V18" stroke="#7FA487" stroke-width="2.2"></path><circle cx="46" cy="15" r="4.5" fill="#E8A87C"></circle><path d="M8 40 H56 L50 60 H14 Z" fill="#B4552E"></path><rect x="6" y="36" width="52" height="7" rx="3" fill="#8A3E20"></rect></svg></span>
+<span style="flex-grow: 1; display: flex; flex-direction: column; gap: 2px">
+<span style="font-weight: 700; font-size: 17px">Steady</span>
+<span style="font-size: 14px; color: #5E6A62">About 10 min a day</span>
+<span style="font-size: 12px; font-weight: 700; color: #6B5215">Grows a Golden Bloom every day</span>
+</span>
+</button><button role="radio" aria-checked="false" style="min-height: 84px; border-radius: 20px; border: 2px solid #E3DDD0; background: #FFFFFF; display: flex; align-items: center; gap: 12px; padding: 8px 14px 8px 8px; cursor: pointer; text-align: left; font-family: inherit; color: #1C2B24">
+<span style="width: 64px; height: 64px; flex-shrink: 0"><svg width="64" height="64" viewBox="0 0 64 64" aria-hidden="true"><path d="M12 40 V18" stroke="#7FA487" stroke-width="2.2"></path><circle cx="12" cy="15" r="4.5" fill="#E8A87C"></circle><path d="M22 40 V10" stroke="#7FA487" stroke-width="2.2"></path><circle cx="22" cy="7" r="4.5" fill="#9CC39A"></circle><path d="M32 40 V18" stroke="#7FA487" stroke-width="2.2"></path><circle cx="32" cy="15" r="4.5" fill="#E8A87C"></circle><path d="M42 40 V10" stroke="#7FA487" stroke-width="2.2"></path><circle cx="42" cy="7" r="4.5" fill="#9CC39A"></circle><path d="M52 40 V18" stroke="#7FA487" stroke-width="2.2"></path><circle cx="52" cy="15" r="4.5" fill="#E8A87C"></circle><path d="M8 40 H56 L50 60 H14 Z" fill="#B4552E"></path><rect x="6" y="36" width="52" height="7" rx="3" fill="#8A3E20"></rect></svg></span>
+<span style="flex-grow: 1; display: flex; flex-direction: column; gap: 2px">
+<span style="font-weight: 700; font-size: 17px">Intense</span>
+<span style="font-size: 14px; color: #5E6A62">About 15 min a day</span>
+<span style="font-size: 12px; font-weight: 700; color: #6B5215">For a test date coming up soon</span>
+</span>
+</button>
+</div>
+<div style="background: #24463A; color: #F4F1EA; border-radius: 22px; padding: 16px; display: flex; flex-direction: column; gap: 10px">
+<span style="font-size: 12px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: #B7D6AE">At this pace</span>
+<span style="display: flex; align-items: baseline; gap: 6px"><span aria-live="polite" style="font-family: 'Fraunces', serif; font-weight: 600; font-size: 34px">70</span><span style="font-size: 14px; color: #DDE7DA">minutes a week</span></span>
+</div>
+<div style="display: flex; align-items: center; gap: 10px; font-size: 13px; color: #2F5A75; background: #E3F0F8; border-radius: 14px; padding: 10px 12px"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2F5A75" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 6 H19 L17.5 21 H6.5 Z"></path><path d="M4 6 H20"></path></svg><span>Busy day? A rain barrel keeps your streak safe. You can hold up to 3.</span></div>
+<div style="margin-top: auto"><a href="AdultMe.dc.html" style="height: 56px; border-radius: 18px; background: #B4552E; color: #FFFFFF; box-shadow: 0 4px 0 #7E3719; border: none; display: flex; align-items: center; justify-content: center; gap: 8px; font-family: 'DM Sans', sans-serif; font-weight: 700; font-size: 16px; text-decoration: none; cursor: pointer; width: 100%; box-sizing: border-box; padding: 0 16px">Save goal</a></div>
+</div>
+
+
+
+
+</body></html>

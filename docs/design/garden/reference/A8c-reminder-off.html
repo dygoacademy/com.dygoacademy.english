@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8">
+<title>Reminder</title>
+
+<style>
+body{margin:0;font-family:'DM Sans',sans-serif;background:#F4F1EA;color:#1C2B24}
+a{color:#B4552E}a:hover{color:#8A3E20}
+@keyframes rise{0%{transform:translateY(10px);opacity:0}100%{transform:translateY(0);opacity:1}}
+.rise{animation:rise .25s ease-out}
+@keyframes bloom{0%{transform:scale(.6);opacity:0}70%{transform:scale(1.06)}100%{transform:scale(1);opacity:1}}
+.bloom{animation:bloom .7s ease-out}
+@keyframes sway{0%,100%{transform:rotate(-3deg)}50%{transform:rotate(3deg)}}
+.sway{transform-box:fill-box;transform-origin:bottom center;animation:sway 3s ease-in-out infinite}
+@keyframes ripple{0%{transform:scale(.8);opacity:.5}100%{transform:scale(1.5);opacity:0}}
+.ripple{transform-box:fill-box;transform-origin:center;animation:ripple 2s ease-out infinite}
+@keyframes level{0%,100%{transform:scaleY(.25)}50%{transform:scaleY(1)}}
+.lvl{transform-box:fill-box;transform-origin:center;animation:level .8s ease-in-out infinite}
+@keyframes sink{0%{transform:translateY(-30px);opacity:0}60%{transform:translateY(4px);opacity:1}100%{transform:translateY(0)}}
+.sink{animation:sink .8s ease-out}
+@keyframes flutter{0%,100%{transform:translate(0,0)}50%{transform:translate(6px,-6px)}}
+.flutter{animation:flutter 2.6s ease-in-out infinite}
+@media (prefers-reduced-motion: reduce){*{animation:none !important}}
+
+</style><style>*,*::before,*::after{animation:none!important;transition:none!important}</style><style type="text/css"></style></head>
+<body>
+
+
+<div style="width: 390px; height: 844px; box-sizing: border-box; background: #F4F1EA; display: flex; flex-direction: column; gap: 12px; padding: 20px 16px 24px; font-family: 'DM Sans', sans-serif; color: #1C2B24; overflow: hidden; position: relative">
+<div style="display: flex; align-items: center; gap: 12px">
+<a href="AdultMe.dc.html" aria-label="Back" style="width: 44px; height: 44px; border-radius: 22px; background: #FFFFFF; border: 1px solid #E3DDD0; display: flex; align-items: center; justify-content: center; color: #1C2B24; flex-shrink: 0; cursor: pointer; padding: 0"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5 L8 12 L15 19"></path></svg></a>
+<div style="flex-grow: 1; display: flex; flex-direction: column; min-width: 0">
+<span style="font-family: 'Fraunces', serif; font-weight: 600; font-size: 24px; line-height: 1.15">Reminder</span>
+
+</div>
+
+</div>
+<div style="display: flex; align-items: center; gap: 12px; background: #FFFFFF; border: 1px solid #E3DDD0; border-radius: 18px; padding: 10px 14px">
+<span style="color: #24463A"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 8 A6 6 0 0 1 18 8 C18 15 21 17 21 17 H3 C3 17 6 15 6 8"></path><path d="M10 21 H14"></path></svg></span>
+<span style="flex-grow: 1; display: flex; flex-direction: column"><span style="font-weight: 700; font-size: 15px">Ripening reminder</span><span style="font-size: 12px; color: #5E6A62">One a day, only when words are ripe</span></span>
+<button role="switch" aria-checked="false" aria-label="Ripening reminder" style="width: 48px; height: 30px; border-radius: 15px; border: none; background: #CFC8B8; position: relative; cursor: pointer; padding: 0; flex-shrink: 0"><span style="position: absolute; top: 3px; left: 3px; width: 24px; height: 24px; border-radius: 12px; background: #FFFFFF; transition: left .2s"></span></button>
+</div>
+
+
+<div class="rise" style="background: #FBF4E4; border: 1px solid #EFD9A6; border-radius: 18px; padding: 14px; font-size: 14px; color: #6B5215; line-height: 1.45">Reminders are off. Ripe words will wait in your garden, but they wilt if left too long.</div>
+
+</div>
+
+
+
+
+</body></html>
