@@ -14,6 +14,9 @@ const push = vi.fn();
 const refresh = vi.fn();
 vi.mock('next/navigation', () => ({ useRouter: () => ({ push, refresh, replace: vi.fn() }) }));
 
+const reloadTo = vi.fn();
+vi.mock('./reload', () => ({ reloadTo: (path: string) => reloadTo(path) }));
+
 const setGardenLocaleCookie = vi.fn(async (_locale: string) => {});
 vi.mock('@/app/(garden)/actions', () => ({
   setGardenLocaleCookie: (locale: string) => setGardenLocaleCookie(locale),
@@ -53,9 +56,10 @@ describe('LanguageLive (A8f)', () => {
     refresh.mockReset();
     patch.mockReset();
     setGardenLocaleCookie.mockClear();
+    reloadTo.mockReset();
   });
 
-  it('Tiếng Việt + UK English: saves both, sets the cookie, the accent becomes UK, back to Me', async () => {
+  it('Tiếng Việt + UK English: saves both, sets the cookie, the accent becomes UK, reloads Me in Vietnamese', async () => {
     const queryClient = new QueryClient();
     queryClient.setQueryData(['profile', 'me'], PROFILE);
     patch.mockResolvedValue({ ...PROFILE, ui_locale: 'vi-VN', english_variety: 'en-GB' });
@@ -65,15 +69,29 @@ describe('LanguageLive (A8f)', () => {
     fireEvent.click(screen.getByRole('radio', { name: 'UK English' }));
     fireEvent.click(screen.getByRole('button', { name: 'Save' }));
 
-    await waitFor(() => expect(push).toHaveBeenCalledWith('/me'));
+    // A full load, so the layout's messages come back in the new language
+    // (a soft push kept the old ones: what Dylan saw on UAT).
+    await waitFor(() => expect(reloadTo).toHaveBeenCalledWith('/me'));
+    expect(push).not.toHaveBeenCalled();
     expect(setGardenLocaleCookie).toHaveBeenCalledWith('vi-VN');
     expect(patch).toHaveBeenCalledWith('/profiles/me', {
       uiLocale: 'vi-VN',
       englishVariety: 'en-GB',
     });
-    expect(refresh).toHaveBeenCalled();
     const saved = queryClient.getQueryData<MyProfile>(['profile', 'me']);
     expect(accentOf(saved?.english_variety)).toBe('UK');
+  });
+
+  it('accent only: saves it and goes back to Me without a reload', async () => {
+    const queryClient = new QueryClient();
+    queryClient.setQueryData(['profile', 'me'], PROFILE);
+    patch.mockResolvedValue({ ...PROFILE, english_variety: 'en-GB' });
+    renderLive(queryClient);
+    fireEvent.click(screen.getByRole('radio', { name: 'UK English' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Save' }));
+    await waitFor(() => expect(push).toHaveBeenCalledWith('/me'));
+    expect(reloadTo).not.toHaveBeenCalled();
+    expect(setGardenLocaleCookie).not.toHaveBeenCalled();
   });
 
   it('reopened: both saved choices are selected', () => {

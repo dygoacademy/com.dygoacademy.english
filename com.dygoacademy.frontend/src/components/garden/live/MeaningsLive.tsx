@@ -10,15 +10,17 @@ import { apiClient } from '@/lib/api-client';
 
 import { useGardenPreferences } from '../preferences';
 import { MeaningsScreen, type MeaningChoice } from '../screens/MeaningsScreen';
+import { reloadTo } from './reload';
 
 /**
  * /me/meanings: A8d Meanings in.
  *
  * Starts on the garden's meaning language (the server's preferences) and
  * the profile's `recall_first` (GET /profiles/me; true when an older
- * backend doesn't send it). "Save" sends both in one PATCH /profiles/me,
- * refreshes the garden on the server (the review card's meaning line is
- * joined there) and goes back to Me; an error stays on the screen.
+ * backend doesn't send it). "Save" sends both in one PATCH /profiles/me
+ * and goes back to Me: a full load when the meaning language changed (the
+ * review card's meaning line and Me's row come from the server layout),
+ * else a soft one. An error stays on the screen.
  */
 export function MeaningsLive() {
   const router = useRouter();
@@ -34,10 +36,12 @@ export function MeaningsLive() {
         meaningLocale: body.meaningLocale === 'none' ? null : body.meaningLocale,
         recallFirst: body.recallFirst,
       }),
-    onSuccess: (saved) => {
+    onSuccess: (saved, body) => {
       queryClient.setQueryData(['profile', 'me'], saved);
-      router.refresh();
-      router.push(GARDEN_ROUTES.me);
+      // The meaning language comes from the server layout (Me's row, the
+      // review card's line): load /me afresh when it changed, as A8f does.
+      if (body.meaningLocale !== (preferences.meaningLocale ?? 'none')) reloadTo(GARDEN_ROUTES.me);
+      else router.push(GARDEN_ROUTES.me);
     },
   });
 
