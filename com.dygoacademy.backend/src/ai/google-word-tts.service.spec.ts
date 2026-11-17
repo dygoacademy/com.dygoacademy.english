@@ -9,9 +9,17 @@ describe('ipaForPhoneme', () => {
     expect(ipaForPhoneme('/ˈɡɑːr.dn̩/')).toBe('ˈɡɑːr.dn');
   });
 
-  it('says the US flap t̬ as ɾ, which en-US accepts', () => {
-    expect(ipaForPhoneme('/ˈkaʊn.t̬ɚ.fɪt/')).toBe('ˈkaʊn.ɾɚ.fɪt');
+  it('says the US flap t̬ as ɾ after a vowel or r, which en-US accepts', () => {
     expect(ipaForPhoneme('/ˈwɔː.t̬ɚ/', 'US')).toBe('ˈwɔː.ɾɚ');
+    expect(ipaForPhoneme('/ˈsɪt̬.i/')).toBe('ˈsɪɾ.i');
+    expect(ipaForPhoneme('/ˈpɑːr.t̬i/')).toBe('ˈpɑːr.ɾi');
+  });
+
+  it('says t̬ after a consonant as a plain t, since no flap is said there', () => {
+    expect(ipaForPhoneme('/ˈlɔɪ.əl.t̬i/')).toBe('ˈlɔɪ.əl.ti');
+    expect(ipaForPhoneme('/ˈwɪn.t̬ɚ/')).toBe('ˈwɪn.tɚ');
+    expect(ipaForPhoneme('/ˈpeɪn.t̬ɪŋ/')).toBe('ˈpeɪn.tɪŋ');
+    expect(ipaForPhoneme('/ˈkaʊn.t̬ɚ.fɪt/')).toBe('ˈkaʊn.tɚ.fɪt');
   });
 
   it('maps US-only symbols for a UK voice, which drops a ph that has them', () => {
