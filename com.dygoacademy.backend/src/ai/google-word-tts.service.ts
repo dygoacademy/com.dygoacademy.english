@@ -51,11 +51,11 @@ const US_ONLY_TO_UK: Array<[RegExp, string]> = [
  * doesn't know and reads the text instead, so drop what it rejects:
  * slashes/brackets, alternatives after "," or ";", optional-sound
  * parentheses (the sound is kept) and combining diacritics (n̩). The US flap
- * t̬ becomes ɾ, which en-US says as a flap (dropping the mark made a hard
- * t), but only after a vowel or r: after a consonant (loyalty, winter),
- * even across a syllable dot or stress mark, no flap is said, so it becomes
- * a plain t. A UK voice gets t, and its US-only symbols mapped
- * (`US_ONLY_TO_UK`). Null when nothing usable is left.
+ * (t̬ or ɾ) after a vowel or r becomes d: en-US says ɾ like an r ("criric"
+ * for critic, Whisper check 2026-11-18) and a bare t comes out hard. After a
+ * consonant (loyalty, winter), even across a syllable dot or stress mark, no
+ * flap is said, so it becomes a plain t. A UK voice gets t, and its US-only
+ * symbols mapped (`US_ONLY_TO_UK`). Null when nothing usable is left.
  */
 export function ipaForPhoneme(
   ipa: string | null | undefined,
@@ -68,13 +68,15 @@ export function ipaForPhoneme(
     .split(/[,;]/)[0]
     .replace(/[/[\]()]/g, '')
     .normalize('NFD')
-    .replace(/([^aeiouæɑɒɔəɛɜɪʊʌɚɝːrɹ.ˈˌ ])([.ˈˌ]?)t\u032C/g, '$1$2t')
+    .replace(/([^aeiouæɑɒɔəɛɜɪʊʌɚɝːrɹ.ˈˌ ])([.ˈˌ]?)(?:t\u032C|ɾ)/g, '$1$2t')
     .replace(/t\u032C/g, 'ɾ')
     .replace(/[̀-ͯ]/g, '')
     .replace(/\s+/g, ' ')
     .trim();
   if (accent === 'UK') {
     for (const [us, uk] of US_ONLY_TO_UK) core = core.replace(us, uk);
+  } else {
+    core = core.replace(/ɾ/g, 'd');
   }
   return core && !/["<>&]/.test(core) ? core : null;
 }
