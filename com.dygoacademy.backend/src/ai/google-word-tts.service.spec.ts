@@ -9,9 +9,21 @@ describe('ipaForPhoneme', () => {
     expect(ipaForPhoneme('/ˈɡɑːr.dn̩/')).toBe('ˈɡɑːr.dn');
   });
 
-  it('says the US flap t̬ as ɾ, which en-US accepts', () => {
-    expect(ipaForPhoneme('/ˈkaʊn.t̬ɚ.fɪt/')).toBe('ˈkaʊn.ɾɚ.fɪt');
-    expect(ipaForPhoneme('/ˈwɔː.t̬ɚ/', 'US')).toBe('ˈwɔː.ɾɚ');
+  it('says the US flap (t̬ or ɾ) as d after a vowel or r, since en-US says ɾ like an r', () => {
+    expect(ipaForPhoneme('/ˈwɔː.t̬ɚ/', 'US')).toBe('ˈwɔː.dɚ');
+    expect(ipaForPhoneme('/ˈsɪt̬.i/')).toBe('ˈsɪd.i');
+    expect(ipaForPhoneme('/ˈpɑːr.t̬i/')).toBe('ˈpɑːr.di');
+    expect(ipaForPhoneme('/ˈkrɪt̬.ɪk/')).toBe('ˈkrɪd.ɪk');
+    expect(ipaForPhoneme('/juːˈbɪk.wɪ.t̬əs/')).toBe('juːˈbɪk.wɪ.dəs');
+    expect(ipaForPhoneme('/ˈbʌɾɚ/')).toBe('ˈbʌdɚ');
+  });
+
+  it('says t̬ after a consonant as a plain t, since no flap is said there', () => {
+    expect(ipaForPhoneme('/ˈlɔɪ.əl.t̬i/')).toBe('ˈlɔɪ.əl.ti');
+    expect(ipaForPhoneme('/ˈwɪn.t̬ɚ/')).toBe('ˈwɪn.tɚ');
+    expect(ipaForPhoneme('/ˈpeɪn.t̬ɪŋ/')).toBe('ˈpeɪn.tɪŋ');
+    expect(ipaForPhoneme('/ˈkaʊn.t̬ɚ.fɪt/')).toBe('ˈkaʊn.tɚ.fɪt');
+    expect(ipaForPhoneme('/ˈwɪn.ɾɚ/')).toBe('ˈwɪn.tɚ');
   });
 
   it('maps US-only symbols for a UK voice, which drops a ph that has them', () => {
